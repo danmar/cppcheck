@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "translationhandler.h"
+
 #include <QApplication>
 #include <QFile>
-#include <QDebug>
 #include <QLocale>
 #include <QMessageBox>
 #include <QFileInfo>
-#include "translationhandler.h"
+#include <QTranslator>
 #include "common.h"
 
 
@@ -30,12 +31,12 @@
 static void unused()
 {
 // NOTE: Keeping semi-colons at end of macro for style preference
-#if ((QT_VERSION >= 0x040000)&&(QT_VERSION < 0x050000))
+#if ((QT_VERSION >= 0x040000) && (QT_VERSION < 0x050000))
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "OK"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Cancel"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Close"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QDialogButtonBox", "Save"));
-#elif ((QT_VERSION >= 0x050000)&&(QT_VERSION < 0x060000))
+#elif ((QT_VERSION >= 0x050000) && (QT_VERSION < 0x060000))
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "OK"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Cancel"));
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Close"));
@@ -68,8 +69,7 @@ TranslationHandler::TranslationHandler(QObject *parent) :
 }
 
 TranslationHandler::~TranslationHandler()
-{
-}
+{}
 
 const QStringList TranslationHandler::getNames() const
 {
@@ -85,8 +85,8 @@ bool TranslationHandler::setLanguage(const QString &code)
     bool failure = false;
     QString error;
 
-    //If English is the language
-    if (code == "en") {
+    //If English is the language. Code can be e.g. en_US
+    if (code.indexOf("en") == 0) {
         //Just remove all extra translators
         if (mTranslator) {
             qApp->removeTranslator(mTranslator);

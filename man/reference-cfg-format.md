@@ -1,6 +1,6 @@
 ---
 title: Cppcheck .cfg format
-subtitle: Version 2.4
+subtitle: Version 2.6
 author: Cppcheck team
 lang: en
 documentclass: report
@@ -262,6 +262,21 @@ The type attribute can be either:
 printf - format string follows the printf rules
 
 scanf - format string follows the scanf rules
+
+### Container inputs
+
+If this is a free function for containers(like for `std::size` or `std::erase_if`) then the `<container>` tag can be used to specify the `yield` or `action`. Here is an example of `std::size`:
+
+    <function name="std::size">
+        <noreturn>false</noreturn>
+        <use-retval/>
+        <leak-ignore/>
+        <container yields="size"/>
+        <returnValue type="size_t"/>
+        <arg nr="1" direction="in">
+            <not-uninit/>
+        </arg>
+    </function>
 
 ### Value range
 
@@ -564,6 +579,8 @@ The size of the type is specified in bytes. Possible values for the "sign" attri
 A lot of C++ libraries, among those the STL itself, provide containers with very similar functionality. Libraries can be used to tell cppcheck about their behaviour. Each container needs a unique ID. It can optionally have a startPattern, which must be a valid Token::Match pattern and an endPattern that is compared to the linked token of the first token with such a link. The optional attribute "inherits" takes an ID from a previously defined container.
 
 The `hasInitializerListConstructor` attribute can be set when the container has a constructor taking an initializer list.
+
+The `view` attribute can be set when the container is a view, which means it borrows the lifetime of another container.
 
 Inside the `<container>` tag, functions can be defined inside of the tags `<size>`, `<access>` and `<other>` (on your choice). Each of them can specify an action like "resize" and/or the result it yields, for example "end-iterator".
 

@@ -138,6 +138,7 @@
 #include "symboldatabase.h"
 #include "tokenize.h"
 
+#include <cctype>
 #include <limits>
 #include <memory>
 #include <iostream>
@@ -302,7 +303,7 @@ namespace {
             }
         }
 
-        void report(std::ostream &out, const Scope *functionScope) {
+        void report(std::ostream &out, const Scope *functionScope) const {
             int linenr = -1;
             std::string code;
             for (const Token *tok = functionScope->bodyStart->next(); tok != functionScope->bodyEnd; tok = tok->next()) {
@@ -411,7 +412,7 @@ namespace {
             return tokenizer->isCPP();
         }
 
-        ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+        ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr (*executeExpression)(const Token*, Data&)) {
             const auto it = settings->functionContracts.find(function->fullName());
             if (it == settings->functionContracts.end())
                 return ExprEngine::ValuePtr();
@@ -433,7 +434,7 @@ namespace {
             return executeExpression(tokenList.front()->astTop(), *this);
         }
 
-        void contractConstraints(const Function *function, ExprEngine::ValuePtr(*executeExpression)(const Token*, Data&)) {
+        void contractConstraints(const Function *function, ExprEngine::ValuePtr (*executeExpression)(const Token*, Data&)) {
             auto value = executeContract(function, executeExpression);
             if (value)
                 constraints.push_back(value);
@@ -475,7 +476,7 @@ namespace {
             }
         }
 
-        std::string getNewSymbolName() OVERRIDE {
+        std::string getNewSymbolName() FINAL {
             return "$" + std::to_string(++(*symbolValueIndex));
         }
 
@@ -571,10 +572,6 @@ namespace {
 
         void addMissingContract(const std::string &f) {
             mTrackExecution->addMissingContract(f);
-        }
-
-        const std::set<std::string> getMissingContracts() const {
-            return mTrackExecution->getMissingContracts();
         }
 
         ExprEngine::ValuePtr notValue(ExprEngine::ValuePtr v) {
@@ -883,7 +880,7 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, ExprEngine::ValuePtr
 
 ExprEngine::ArrayValue::ArrayValue(DataBase *data, const Variable *var)
     : Value(data->getNewSymbolName(), ExprEngine::ValueType::ArrayValue)
-    , pointer(var->isPointer()), nullPointer(var->isPointer()), uninitPointer(var->isPointer())
+    , pointer(var && var->isPointer()), nullPointer(var && var->isPointer()), uninitPointer(var && var->isPointer())
 {
     if (var) {
         for (const auto &dim : var->dimensions()) {
@@ -915,8 +912,7 @@ ExprEngine::ArrayValue::ArrayValue(const std::string &name, const ExprEngine::Ar
     : Value(name, ExprEngine::ValueType::ArrayValue)
     , pointer(arrayValue.pointer), nullPointer(arrayValue.nullPointer), uninitPointer(arrayValue.uninitPointer)
     , data(arrayValue.data), size(arrayValue.size)
-{
-}
+{}
 
 
 std::string ExprEngine::ArrayValue::getRange() const
@@ -1111,7 +1107,7 @@ public:
     using ValueExpr = std::map<std::string, z3::expr>;
     using AssertionList = std::vector<z3::expr>;
 
-    class BailoutValueException: public ExprEngineException {
+    class BailoutValueException : public ExprEngineException {
     public:
         BailoutValueException() : ExprEngineException(nullptr, "Incomplete analysis") {}
     };
@@ -1129,8 +1125,7 @@ public:
         for (auto constraint : data->constraints) {
             try {
                 solver.add(getConstraintExpr(constraint));
-            } catch (const BailoutValueException &) {
-            }
+            } catch (const BailoutValueException &) {}
         }
     }
 
@@ -1925,7 +1920,8 @@ static ExprEngine::ValuePtr executeAssign(const Token *tok, Data &data)
     }
 
     const Token *lhsToken = tok->astOperand1();
-    assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
+    if (lhsToken)
+        assignValue = truncateValue(assignValue, lhsToken->valueType(), data);
     call(data.callbacks, tok, assignValue, &data);
 
     assignExprValue(lhsToken, assignValue, data);

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "settingsdialog.h"
 
-#include <QDialog>
 #include <QWidget>
 #include <QList>
-#include <QListWidgetItem>
-#include <QSettings>
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QThread>
-#include "settingsdialog.h"
+#include <QSettings>
 #include "applicationdialog.h"
 #include "applicationlist.h"
 #include "translationhandler.h"
@@ -72,7 +70,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     mCurrentStyle = new CodeEditorStyle(CodeEditorStyle::loadSettings(&settings));
     manageStyleControls();
 
-    connect(mUI.mEditPythonPath, SIGNAL(textEdited(const QString &)),
+    connect(mUI.mEditPythonPath, SIGNAL(textEdited(const QString&)),
             this, SLOT(validateEditPythonPath()));
 
     connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
@@ -85,7 +83,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
             this, SLOT(editApplication()));
     connect(mUI.mBtnDefaultApplication, SIGNAL(clicked()),
             this, SLOT(defaultApplication()));
-    connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem *)),
+    connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
             this, SLOT(editApplication()));
 
     connect(mUI.mBtnBrowsePythonPath, &QPushButton::clicked, this, &SettingsDialog::browsePythonPath);
@@ -381,8 +379,8 @@ void SettingsDialog::editCodeEditorStyle()
 void SettingsDialog::browseClangPath()
 {
     QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          tr("Select clang path"),
-                          QDir::rootPath());
+                                                            tr("Select clang path"),
+                                                            QDir::rootPath());
 
     if (!selectedDir.isEmpty()) {
         mUI.mEditClangPath->setText(selectedDir);

@@ -21,13 +21,11 @@
 #include "checkbool.h"
 
 #include "astutils.h"
-#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 
-#include <cstddef>
 #include <list>
 //---------------------------------------------------------------------------
 
@@ -71,7 +69,14 @@ void CheckBool::incrementBooleanError(const Token *tok)
         "Incrementing a variable of type 'bool' with postfix operator++ is deprecated by the C++ Standard. You should assign it the value 'true' instead.\n"
         "The operand of a postfix increment operator may be of type bool but it is deprecated by C++ Standard (Annex D-1) and the operand is always set to true. You should assign it the value 'true' instead.",
         CWE398, Certainty::normal
-    );
+        );
+}
+
+static bool isConvertedToBool(const Token* tok)
+{
+    if (!tok->astParent())
+        return false;
+    return astIsBool(tok->astParent()) || Token::Match(tok->astParent()->previous(), "if|while (");
 }
 
 //---------------------------------------------------------------------------
@@ -92,20 +97,29 @@ void CheckBool::checkBitwiseOnBoolean()
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
-                if (astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())) {
-                    if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
-                        continue;
-                    const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString() : tok->astOperand2()->expressionString();
-                    bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
-                }
+                if (!(astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())))
+                    continue;
+                if (tok->str() == "|" && !isConvertedToBool(tok) && !(astIsBool(tok->astOperand1()) && astIsBool(tok->astOperand2())))
+                    continue;
+                if (!isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP()))
+                    continue;
+                if (!isConstExpression(tok->astOperand2(), mSettings->library, true, mTokenizer->isCPP()))
+                    continue;
+                if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
+                    continue;
+                const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString()
+                                                                             : tok->astOperand2()->expressionString();
+                bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
             }
         }
     }
 }
 
-void CheckBool::bitwiseOnBooleanError(const Token *tok, const std::string &expression, const std::string &op)
+void CheckBool::bitwiseOnBooleanError(const Token* tok, const std::string& expression, const std::string& op)
 {
-    reportError(tok, Severity::style, "bitwiseOnBoolean",
+    reportError(tok,
+                Severity::style,
+                "bitwiseOnBoolean",
                 "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?",
                 CWE398,
                 Certainty::inconclusive);

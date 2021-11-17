@@ -29,8 +29,7 @@ struct InternalError;
 
 class TestSimplifyUsing : public TestFixture {
 public:
-    TestSimplifyUsing() : TestFixture("TestSimplifyUsing") {
-    }
+    TestSimplifyUsing() : TestFixture("TestSimplifyUsing") {}
 
 
 private:
@@ -70,6 +69,8 @@ private:
         TEST_CASE(simplifyUsing21);
         TEST_CASE(simplifyUsing22);
         TEST_CASE(simplifyUsing23);
+        TEST_CASE(simplifyUsing24);
+        TEST_CASE(simplifyUsing25);
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -88,9 +89,13 @@ private:
         TEST_CASE(simplifyUsing10171);
         TEST_CASE(simplifyUsing10172);
         TEST_CASE(simplifyUsing10173);
+        TEST_CASE(simplifyUsing10335);
+
+        TEST_CASE(scopeInfo1);
+        TEST_CASE(scopeInfo2);
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
+    std::string tok(const char code[], Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
         errout.str("");
 
         settings0.certainty.enable(Certainty::inconclusive);
@@ -101,7 +106,7 @@ private:
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
-        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
+        return tokenizer.tokens()->stringifyList(nullptr);
     }
 
     void simplifyUsing1() {
@@ -132,7 +137,7 @@ private:
             "a . foo ( ) ; "
             "wchar_t c ; c = 0 ; "
             "}";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing2() {
@@ -202,7 +207,7 @@ private:
             "unsigned int uvar ; uvar = 2 ; "
             "return uvar / ivar ; "
             "}";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing5() {
@@ -219,7 +224,7 @@ private:
             "struct yy_buffer_state * state ; "
             "}";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing6() {
@@ -235,14 +240,14 @@ private:
             "float fast_atan2 ( float y , float x ) { } "
             "}";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing7() {
         const char code[] = "using abc = int; "
                             "Fred :: abc f ;";
         const char expected[] = "Fred :: abc f ;";
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing8() {
@@ -273,7 +278,7 @@ private:
             "const int & trci ; "
             "const unsigned int & trcui ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing9() {
@@ -304,7 +309,7 @@ private:
             "struct U * v ; "
             "struct Unnamed0 * w ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing10() {
@@ -335,7 +340,7 @@ private:
             "union U * v ; "
             "union Unnamed0 * w ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing11() {
@@ -349,7 +354,7 @@ private:
                                 "enum abc e1 ; "
                                 "enum xyz e2 ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing12() {
@@ -367,7 +372,7 @@ private:
                                 "std :: vector < std :: vector < int > > v3 ; "
                                 "std :: list < int > :: iterator iter ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing13() {
@@ -381,7 +386,7 @@ private:
                                 "std :: vector < std :: pair < int ( * ) ( void * ) , void * > > q ; "
                                 "}";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -398,7 +403,7 @@ private:
                             "    FP_M(val);"
                             "};";
 
-        TODO_ASSERT_THROW(tok(code, true, Settings::Native, false), InternalError); // TODO: Do not throw AST validation exception
+        TODO_ASSERT_THROW(tok(code, Settings::Native, false), InternalError); // TODO: Do not throw AST validation exception
         //ASSERT_EQUALS("", errout.str());
     }
 
@@ -409,7 +414,7 @@ private:
 
             const char expected[] = "char f [ 10 ] ;";
 
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
 
         {
@@ -418,7 +423,7 @@ private:
 
             const char expected[] = "unsigned char f [ 10 ] ;";
 
-            ASSERT_EQUALS(expected, tok(code, false));
+            ASSERT_EQUALS(expected, tok(code));
         }
     }
 
@@ -435,7 +440,7 @@ private:
                                 "} ; "
                                 "struct STRFOO s ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -460,12 +465,12 @@ private:
                                 "class S3 s3 ; "
                                 "class S4 s4 ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing18() {
         const char code[] = "{ { { using a = a; using a; } } }";
-        tok(code, false); // don't crash
+        tok(code); // don't crash
     }
 
     void simplifyUsing19() {
@@ -477,7 +482,7 @@ private:
                             "   using b = float;\n"
                             "}\n"
                             "}";
-        tok(code, false); // don't hang
+        tok(code); // don't hang
     }
 
     void simplifyUsing20() {
@@ -521,13 +526,13 @@ private:
                             "   return nullptr;\n"
                             "}\n"
                             "}}}}}}}";
-        tok(code, false); // don't hang
+        tok(code); // don't hang
     }
 
     void simplifyUsing21() {
         const char code[] = "using a = b;\n"
                             "enum {}";
-        tok(code, false); // don't crash
+        tok(code); // don't crash
     }
 
     void simplifyUsing22() {
@@ -552,7 +557,7 @@ private:
                                 "fff :: fff ( ) : m_icm ( icm ) { "
                                 "} "
                                 "} } } } }";
-        ASSERT_EQUALS(expected, tok(code, false)); // don't hang
+        ASSERT_EQUALS(expected, tok(code)); // don't hang
     }
 
     void simplifyUsing23() {
@@ -582,7 +587,32 @@ private:
                                 ": m_icm ( icm ) "
                                 ", m_rt { rt :: UNKNOWN_ } { "
                                 "}";
-        ASSERT_EQUALS(expected, tok(code, false)); // don't hang
+        ASSERT_EQUALS(expected, tok(code)); // don't hang
+    }
+
+    void simplifyUsing24() {
+        const char code[] = "using value_type = const ValueFlow::Value;\n"
+                            "value_type vt;";
+        const char expected[] = "const ValueFlow :: Value vt ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyUsing25() {
+        const char code[] = "struct UnusualType {\n"
+                            "  using T = vtkm::Id;\n"
+                            "  T X;\n"
+                            "};\n"
+                            "namespace vtkm {\n"
+                            "template <>\n"
+                            "struct VecTraits<UnusualType> : VecTraits<UnusualType::T> { };\n"
+                            "}";
+        const char expected[] = "struct UnusualType { "
+                                "vtkm :: Id X ; "
+                                "} ; "
+                                "namespace vtkm { "
+                                "struct VecTraits<UnusualType> : VecTraits < vtkm :: Id > { } ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing8970() {
@@ -595,7 +625,7 @@ private:
                                 "std :: vector < int > p ; "
                                 "} ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing8971() {
@@ -619,7 +649,7 @@ private:
                                 "std :: vector < int > v2_ ; "
                                 "} ;";
 
-        ASSERT_EQUALS(expected, tok(code, false));
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void simplifyUsing8976() {
@@ -635,11 +665,11 @@ private:
 
         const char exp[] = "int i ;";
 
-        ASSERT_EQUALS(exp, tok(code, true, Settings::Unix32));
-        ASSERT_EQUALS(exp, tok(code, true, Settings::Unix64));
-        ASSERT_EQUALS(exp, tok(code, true, Settings::Win32A));
-        ASSERT_EQUALS(exp, tok(code, true, Settings::Win32W));
-        ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
+        ASSERT_EQUALS(exp, tok(code, Settings::Unix32));
+        ASSERT_EQUALS(exp, tok(code, Settings::Unix64));
+        ASSERT_EQUALS(exp, tok(code, Settings::Win32A));
+        ASSERT_EQUALS(exp, tok(code, Settings::Win32W));
+        ASSERT_EQUALS(exp, tok(code, Settings::Win64));
     }
 
     void simplifyUsing9042() {
@@ -659,7 +689,7 @@ private:
                            "} ; "
                            "template < class T > class s { } ;";
 
-        ASSERT_EQUALS(exp, tok(code, true, Settings::Win64));
+        ASSERT_EQUALS(exp, tok(code, Settings::Win64));
     }
 
     void simplifyUsing9191() {
@@ -686,7 +716,7 @@ private:
                            "signed long long A ; "
                            "}";
 
-        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyUsing9381() {
@@ -710,7 +740,7 @@ private:
                            "} "
                            "}";
 
-        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyUsing9385() {
@@ -734,7 +764,7 @@ private:
                                "A :: A ( int ) { } "
                                "A :: ~ A ( ) { int foo ; } "
                                "void A :: func ( int ) { }";
-            ASSERT_EQUALS(exp, tok(code, false));
+            ASSERT_EQUALS(exp, tok(code));
         }
         {
             const char code[] = "class A {\n"
@@ -760,7 +790,7 @@ private:
                                "A :: B :: B ( int ) { } "
                                "A :: B :: ~ B ( ) { int foo ; } "
                                "void A :: B :: func ( int ) { }";
-            ASSERT_EQUALS(exp, tok(code, false));
+            ASSERT_EQUALS(exp, tok(code));
         }
     }
 
@@ -778,7 +808,7 @@ private:
                            "int & t_ ; "
                            "} ; "
                            "A :: A ( int & t ) : t_ ( t ) { }";
-        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyUsing9518() {
@@ -788,7 +818,7 @@ private:
         const char exp[] = "namespace a { "
                            "enum a { } ; "
                            "}";
-        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyUsing9757() {
@@ -804,7 +834,7 @@ private:
                            "class MappedType<Type_t::Nil> { } ; "
                            "std :: string to_string ( Example :: Type_t type ) { "
                            "switch ( type ) { } }";
-        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyUsing10008() {
@@ -819,7 +849,7 @@ private:
                            "static void f ( ) { "
                            "const std :: vector < int > arr ; "
                            "}";
-        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS(exp, tok(code));
     }
 
     void simplifyUsing10054() { // debug: Executable scope 'x' with unknown function.
@@ -855,7 +885,7 @@ private:
                                 "void A :: f ( external :: ns1 :: B<1> ) { } "
                                 "} "
                                 "struct external :: ns1 :: B<1> { } ;";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -888,7 +918,7 @@ private:
                                 "void A :: f ( external :: ns1 :: B<1> ) { } "
                                 "} "
                                 "struct external :: ns1 :: B<1> { } ;";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -923,7 +953,7 @@ private:
                                 "void A :: f ( external :: ns1 :: B<1> ) { } "
                                 "} "
                                 "struct external :: ns1 :: B<1> { } ;";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -958,7 +988,7 @@ private:
                                 "void A :: f ( external :: ns1 :: B<1> ) { } "
                                 "} "
                                 "struct external :: ns1 :: B<1> { } ;";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -988,7 +1018,7 @@ private:
                                 "void A :: f ( external :: B<1> ) { } "
                                 "} "
                                 "struct external :: B<1> { } ;";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -1016,7 +1046,7 @@ private:
                                 "void A :: f ( B<1> ) { } "
                                 "} "
                                 "struct B<1> { } ;";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
     }
@@ -1042,7 +1072,7 @@ private:
                                 "void f ( const std :: vector < char > & ) const override ; "
                                 "} ; "
                                 "void A :: f ( const std :: vector < char > & ) const { }";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -1101,7 +1131,7 @@ private:
                                 "a . f ( v ) ; "
                                 "c . f ( v ) ; "
                                 "}";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -1129,7 +1159,7 @@ private:
                                 "   auto ret = foo::ResultCodes_e::NO_ERROR;\n"
                                 "   return ret;\n"
                                 "}";
-            tok(code, true); // don't crash
+            tok(code); // don't crash
         }
     }
 
@@ -1161,7 +1191,7 @@ private:
                            "namespace ns { "
                            "void B :: f ( const std :: vector < unsigned char > & ) const { } "
                            "}";
-        ASSERT_EQUALS(exp, tok(code, false));
+        ASSERT_EQUALS(exp, tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1190,7 +1220,7 @@ private:
                                "namespace ns { "
                                "void B :: f ( std :: function < void ( ) > ) { } "
                                "}";
-            ASSERT_EQUALS(exp, tok(code, false));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -1225,7 +1255,7 @@ private:
                                "void B :: f ( std :: function < void ( ) > ) { } "
                                "} "
                                "}";
-            ASSERT_EQUALS(exp, tok(code, false));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
     }
@@ -1251,7 +1281,7 @@ private:
                                 "void bar ( ) { "
                                 "Pr < st > p ; "
                                 "}";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -1274,8 +1304,38 @@ private:
                                 "void xxx :: foobar ( ) { "
                                 "} "
                                 "}";
-            ASSERT_EQUALS(exp, tok(code, true));
+            ASSERT_EQUALS(exp, tok(code));
         }
+    }
+
+    void simplifyUsing10335() {
+        const char code[] = "using uint8_t = unsigned char;\n"
+                            "enum E : uint8_t { E0 };";
+        const char exp[]  = "enum E : unsigned char { E0 } ;";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void scopeInfo1() {
+        const char code[] = "struct A {\n"
+                            "    enum class Mode { UNKNOWN, ENABLED, NONE, };\n"
+                            "};\n"
+                            "\n"
+                            "namespace spdlog { class logger; }\n"
+                            "using LoggerPtr = std::shared_ptr<spdlog::logger>;";
+        tok(code);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void scopeInfo2() {
+        const char code[] = "struct A {\n"
+                            "    using Map = std::map<int, int>;\n"
+                            "    Map values;\n"
+                            "};\n"
+                            "\n"
+                            "static void getInitialProgramState(const A::Map& vars = A::Map {})\n"
+                            "{}\n";
+        tok(code);
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

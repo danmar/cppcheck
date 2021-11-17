@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QSettings>
 #include <QFileDialog>
-#include <QActionGroup>
-#include <QTimer>
 #include <QStringList>
 
 #include "settings.h"
@@ -35,6 +32,9 @@ class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
 class QAction;
+class QActionGroup;
+class QSettings;
+class QTimer;
 
 /// @addtogroup GUI
 /// @{
@@ -58,8 +58,8 @@ public:
     MainWindow &operator=(const MainWindow &) = delete;
 
     /**
-      * List of checked platforms.
-      */
+     * List of checked platforms.
+     */
     Platforms mPlatforms;
 
     /**
@@ -254,11 +254,11 @@ private:
     void reAnalyzeSelected(QStringList files);
 
     /**
-      * @brief Analyze the project.
-      * @param projectFile Pointer to the project to analyze.
-      * @param checkLibrary Flag to indicate if the library should be checked.
-      * @param checkConfiguration Flag to indicate if the configuration should be checked.
-      */
+     * @brief Analyze the project.
+     * @param projectFile Pointer to the project to analyze.
+     * @param checkLibrary Flag to indicate if the library should be checked.
+     * @param checkConfiguration Flag to indicate if the configuration should be checked.
+     */
     void analyzeProject(const ProjectFile *projectFile, const bool checkLibrary = false, const bool checkConfiguration = false);
 
     /**
@@ -373,9 +373,9 @@ private:
     void loadResults(const QString &selectedFile, const QString &sourceDirectory);
 
     /**
-    * @brief Load last project results to the GUI.
-    * @return Returns true if last results was loaded
-    */
+     * @brief Load last project results to the GUI.
+     * @return Returns true if last results was loaded
+     */
     bool loadLastResults();
 
     /**

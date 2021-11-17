@@ -27,8 +27,7 @@
 
 class TestGarbage : public TestFixture {
 public:
-    TestGarbage() : TestFixture("TestGarbage") {
-    }
+    TestGarbage() : TestFixture("TestGarbage") {}
 
 private:
     Settings settings;
@@ -47,6 +46,7 @@ private:
         TEST_CASE(wrong_syntax4); // #3618
         TEST_CASE(wrong_syntax_if_macro);  // #2518 - if MACRO()
         TEST_CASE(wrong_syntax_class_x_y); // #3585 - class x y { };
+        TEST_CASE(wrong_syntax_anonymous_struct);
         TEST_CASE(syntax_case_default);
         TEST_CASE(garbageCode1);
         TEST_CASE(garbageCode2); // #4300
@@ -241,6 +241,7 @@ private:
         TEST_CASE(garbageCode213); // #8758
         TEST_CASE(garbageCode214);
         TEST_CASE(garbageCode215); // daca@home script with extension .c
+        TEST_CASE(garbageCode216); // #7884
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -266,8 +267,7 @@ private:
         // run alternate check first. It should only ensure stability - so we catch exceptions here.
         try {
             checkCodeInternal(code, alternatefilename);
-        } catch (const InternalError&) {
-        }
+        } catch (const InternalError&) {}
 
         return checkCodeInternal(code, filename);
     }
@@ -401,6 +401,11 @@ private:
             tokenizer.tokenize(istr, "test.cpp");
             ASSERT_EQUALS("[test.cpp:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
         }
+    }
+
+    void wrong_syntax_anonymous_struct() {
+        ASSERT_THROW(checkCode("struct { int x; } = {0};"), InternalError);
+        ASSERT_THROW(checkCode("struct { int x; } * = {0};"), InternalError);
     }
 
     void syntax_case_default() {
@@ -681,7 +686,7 @@ private:
     }
 
     void garbageCode55() { // #6724
-        checkCode("() __attribute__((constructor)); { } { }");
+        ASSERT_THROW(checkCode("() __attribute__((constructor)); { } { }"), InternalError);
     }
 
     void garbageCode56() { // #6713
@@ -944,9 +949,9 @@ private:
     }
 
     void garbageCode121() { // #2585
-        ASSERT_THROW(checkCode("abcdef?""?<"
-                               "123456?""?>"
-                               "+?""?="), InternalError);
+        ASSERT_THROW(checkCode("abcdef?" "?<"
+                               "123456?" "?>"
+                               "+?" "?="), InternalError);
     }
 
     void garbageCode122() { // #6303
@@ -1574,7 +1579,7 @@ private:
 
     // #8752
     void garbageCode199() {
-        checkCode("d f(){e n00e0[]n00e0&""0+f=0}");
+        checkCode("d f(){e n00e0[]n00e0&" "0+f=0}");
     }
 
     // #8757
@@ -1662,6 +1667,12 @@ private:
         ASSERT_THROW(checkCode("a = [1,2,3];"), InternalError);
     }
 
+    void garbageCode216() { // #7884
+        checkCode("template<typename> struct A {};\n"
+                  "template<typename...T> struct A<T::T...> {}; \n"
+                  "A<int> a;");
+    }
+
     void syntaxErrorFirstToken() {
         ASSERT_THROW(checkCode("&operator(){[]};"), InternalError); // #7818
         ASSERT_THROW(checkCode("*(*const<> (size_t); foo) { } *(*const (size_t)() ; foo) { }"), InternalError); // #6858
@@ -1734,12 +1745,13 @@ private:
 
     void cliCode() {
         // #8913
-        ASSERT_THROW(checkCode("public ref class LibCecSharp : public CecCallbackMethods {\n"
-                               "array<CecAdapter ^> ^ FindAdapters(String ^ path) {}\n"
-                               "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
-                               "bool bReturn(false);\n"
-                               "}\n"
-                               "};"), InternalError);
+        ASSERT_NO_THROW(checkCode(
+                            "public ref class LibCecSharp : public CecCallbackMethods {\n"
+                            "array<CecAdapter ^> ^ FindAdapters(String ^ path) {}\n"
+                            "bool GetDeviceInformation(String ^ port, LibCECConfiguration ^configuration, uint32_t timeoutMs) {\n"
+                            "bool bReturn(false);\n"
+                            "}\n"
+                            "};"));
     }
 
     void enumTrailingComma() {

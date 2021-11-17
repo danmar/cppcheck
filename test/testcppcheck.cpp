@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "check.h"
+#include "color.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "testsuite.h"
@@ -28,8 +29,7 @@
 
 class TestCppcheck : public TestFixture {
 public:
-    TestCppcheck() : TestFixture("TestCppcheck") {
-    }
+    TestCppcheck() : TestFixture("TestCppcheck") {}
 
 private:
 
@@ -37,7 +37,7 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/) OVERRIDE {}
+        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) OVERRIDE {}
         void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
 
         void reportErr(const ErrorMessage &msg) OVERRIDE {

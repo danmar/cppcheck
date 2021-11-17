@@ -16,13 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QString>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
+#include "projectfile.h"
+
 #include <QFile>
 #include <QDir>
-#include "projectfile.h"
+#include <QXmlStreamReader>
 #include "common.h"
 #include "importproject.h"
 
@@ -1072,7 +1070,7 @@ QStringList ProjectFile::fromNativeSeparators(const QStringList &paths)
 {
     QStringList ret;
     foreach (const QString &path, paths)
-        ret << QDir::fromNativeSeparators(path);
+    ret << QDir::fromNativeSeparators(path);
     return ret;
 }
 
@@ -1158,9 +1156,9 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
     QStringList searchPaths;
     searchPaths << filesDir << (filesDir + "addons/") << (filesDir + "../addons/")
 #ifdef FILESDIR
-                << (QLatin1String(FILESDIR) + "/addons/")
+        << (QLatin1String(FILESDIR) + "/addons/")
 #endif
-                ;
+    ;
 
     foreach (QString path, searchPaths) {
         QString f = path + addon + ".py";

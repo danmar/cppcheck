@@ -25,9 +25,9 @@ import html as html_lib
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.16"
+SERVER_VERSION = "1.3.21"
 
-OLD_VERSION = '2.3'
+OLD_VERSION = '2.6'
 
 
 # Set up logging
@@ -203,16 +203,19 @@ def crashReport(results_path: str) -> str:
                         # #0  0x00007ffff71cbf67 in raise () from /lib64/libc.so.6
                         m = re.search(r'(?P<number>#\d+) .* in (?P<function>.+)\(.*\) from (?P<binary>.*)$', l)
                         if m:
+                            #print('0 - {} - {} - {}'.format(m.group('number'), m.group('function'), m.group('binary')))
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) from ' + m.group('binary'))
                             continue
                         # #11 0x00000000006f2414 in valueFlowNumber (tokenlist=tokenlist@entry=0x7fffffffc610) at build/valueflow.cpp:2503
-                        m = re.search(r'(?P<number>#\d+) .* in (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
+                        m = re.search(r'(?P<number>#\d+) .* in (?P<function>.+?) \(.*\) at (?P<location>.*)$', l)
                         if m:
+                            #print('1 - {} - {} - {}'.format(m.group('number'), m.group('function'), m.group('location')))
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
                             continue
                         # #18 ForwardTraversal::updateRecursive (this=0x7fffffffb3c0, tok=0x14668a0) at build/forwardanalyzer.cpp:415
                         m = re.search(r'(?P<number>#\d+) (?P<function>.+)\(.*\) at (?P<location>.*)$', l)
                         if m:
+                            #print('2 - {} - {} - {}'.format(m.group('number'), m.group('function'), m.group('location')))
                             stack_trace.append(m.group('number') + ' ' + m.group('function') + '(...) at ' + m.group('location'))
                             continue
 
@@ -1079,7 +1082,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
-                res = re.match(r'http://cppcheck.sf.net/([a-z]+).tgz', url)
+                res = re.match(r'https?://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
                 print('results not written. res is None.')
                 continue
@@ -1148,7 +1151,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             # save data
             res = re.match(r'ftp://.*pool/main/[^/]+/([^/]+)/[^/]*tar.(gz|bz2|xz)', url)
             if res is None:
-                res = re.match(r'http://cppcheck.sf.net/([a-z]+).tgz', url)
+                res = re.match(r'https://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
                 print('info output not written. res is None.')
                 continue

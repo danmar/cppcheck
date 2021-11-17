@@ -56,7 +56,7 @@ int main(int argc, char **argv)
     std::cout << "// Recommended cppcheck command line:" << std::endl;
     std::cout << "// $ cppcheck --enable=warning,information --inline-suppr --platform=unix64 " << testfile << std::endl;
     std::cout << "// => 'unmatched suppression' warnings are false negatives." << std::endl;
-    std::cout << "//" << std::endl << std::endl ;
+    std::cout << "//" << std::endl << std::endl;
 
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
 

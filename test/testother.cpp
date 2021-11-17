@@ -33,8 +33,7 @@
 
 class TestOther : public TestFixture {
 public:
-    TestOther() : TestFixture("TestOther") {
-    }
+    TestOther() : TestFixture("TestOther") {}
 
 private:
     Settings _settings;
@@ -99,6 +98,7 @@ private:
 
         TEST_CASE(constVariable);
         TEST_CASE(constParameterCallback);
+        TEST_CASE(constPointer);
 
         TEST_CASE(switchRedundantAssignmentTest);
         TEST_CASE(switchRedundantOperationTest);
@@ -146,6 +146,7 @@ private:
         TEST_CASE(duplicateExpression9); // #9320
         TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpression11); // #8916 (function call)
+        TEST_CASE(duplicateExpression12); // #10026
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -244,6 +245,7 @@ private:
         TEST_CASE(shadowVariables);
         TEST_CASE(knownArgument);
         TEST_CASE(knownArgumentHiddenVariableExpression);
+        TEST_CASE(knownArgumentTernaryOperator);
         TEST_CASE(checkComparePointers);
 
         TEST_CASE(unusedVariableValueTemplate); // #8994
@@ -251,6 +253,10 @@ private:
         TEST_CASE(moduloOfOne);
 
         TEST_CASE(sameExpressionPointers);
+
+        TEST_CASE(checkOverlappingWrite);
+
+        TEST_CASE(constVariableArrayMember); // #10371
     }
 
     void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
@@ -1795,6 +1801,13 @@ private:
             check(code, &s64);
             ASSERT_EQUALS("", errout.str());
         }
+
+        check("Writer* getWriter();\n"
+              "\n"
+              "void foo(Buffer& buffer) {\n"
+              "    getWriter()->operator<<(buffer);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void passedByValue_externC() {
@@ -1864,6 +1877,11 @@ private:
               "    return x[0];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("const int& f(std::vector<int>& x) {\n"
+              "    return x[0];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared with const\n", errout.str());
 
         check("int f(std::vector<int>& x) {\n"
               "    x[0]++;\n"
@@ -2156,7 +2174,7 @@ private:
             "    x.dostuff();\n"
             "    const U& y = dynamic_cast<U const &>(x)\n"
             "}"
-        );
+            );
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
@@ -2323,6 +2341,16 @@ private:
               "void f(const A& x) {\n"
               "    ++(*x);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10086
+        check("struct V {\n"
+              "    V& get(typename std::vector<V>::size_type i) {\n"
+              "        std::vector<V>& arr = v;\n"
+              "        return arr[i];\n"
+              "    }\n"
+              "    std::vector<V> v;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
 
         check("void e();\n"
@@ -2581,6 +2609,12 @@ private:
               "{\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
+
+        check("void f(std::map<int, std::vector<int>> &map) {\n" // #10266
+              "  for (auto &[slave, panels] : map)\n"
+              "    panels.erase(it);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
@@ -2605,6 +2639,138 @@ private:
               "    switch (signal.signum) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:13]: (style) Parameter 'signal' can be declared with const. However it seems that 'signalEvent' is a callback function, if 'signal' is declared with const you might also need to cast function pointer(s).\n", errout.str());
+    }
+
+    void constPointer() {
+        check("void foo(int *p) { return *p; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { x = *p; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { int &ref = *p; ref = 12; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p) { x = *p + 10; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { return p[10]; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { int &ref = p[0]; ref = 12; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(int *p) { x[*p] = 12; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (p) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (p || x) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (p == 0) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (!p) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { if (*p > 123) {} }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { return *p + 1; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(int *p) { return *p > 1; }");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+
+        check("void foo(const int* c) { if (c == 0) {}; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct a { void b(); };\n"
+              "struct c {\n"
+              "    a* d;\n"
+              "    a& g() { return *d; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct a { void b(); };\n"
+              "struct c { a* d; };\n"
+              "void e(c);\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct V {\n"
+              "    V& get(typename std::vector<V>::size_type i, std::vector<V>* arr) {\n"
+              "        return arr->at(i);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {};\n"
+              "struct B : A {};\n"
+              "B* f(A* x) {\n"
+              "    return static_cast<B*>(x);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int>* x) {\n"
+              "    int& i = (*x)[0];\n"
+              "    i++;\n"
+              "    return i;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { int a; };\n"
+              "A f(std::vector<A>* x) {\n"
+              "    x->front().a = 1;\n"
+              "    return x->front();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>* v) {\n"
+              "    for(auto&& x:*v)\n"
+              "        x = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int* x;\n"
+              "    A(int* y) : x(y)\n"
+              "    {}\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b, int* x, int* y) {\n"
+              "  int* z = x;\n"
+              "  int* w = b ? y : z;\n"
+              "  *w = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b, int* x, int* y) {\n"
+              "  int& z = *x;\n"
+              "  int& w = b ? *y : z;\n"
+              "  w = 1;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Base { virtual void dostuff(int *p) = 0; };\n" // #10397
+              "class Derived: public Base { int x; void dostuff(int *p) override { x = *p; } };");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Data { char buf[128]; };\n" // #10483
+              "void encrypt(Data& data) {\n"
+              "    const char a[] = \"asfasd\";\n"
+              "    memcpy(data.buf, &a, sizeof(a));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10547
+        check("void foo(std::istream &istr) {\n"
+              "  unsigned char x[2];\n"
+              "  istr >> x[0];\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -3549,13 +3715,19 @@ private:
               "    throw 0;\n"
               "    return 1;\n"
               "}", nullptr, false, false, false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
 
         check("void foo() {\n"
               "    throw 0;\n"
               "    return;\n"
               "}", nullptr, false, false, false);
         ASSERT_EQUALS("[test.cpp:3]: (style) Consecutive return, break, continue, goto or throw statements are unnecessary.\n", errout.str());
+
+        check("int foo() {\n"
+              "    throw = 0;\n"
+              "    return 1;\n"
+              "}", "test.c", false, false, false);
+        ASSERT_EQUALS("", errout.str());
 
         check("int foo() {\n"
               "    return 0;\n"
@@ -3744,6 +3916,12 @@ private:
                                 "    bar();\n"
                                 "}", nullptr, false, false, false, false, &settings), InternalError);
         //ASSERT_EQUALS("", errout.str());
+
+        check("int foo() {\n"
+              "    exit(0);\n"
+              "    return 1;\n" // <- clarify for tools that function does not continue..
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -3786,7 +3964,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
 
-        check("void foo(int* c) {\n"
+        check("void foo(const int* c) {\n"
               "    if (x) *c == 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious equality comparison. Did you intend to assign a value instead?\n", errout.str());
@@ -4336,28 +4514,43 @@ private:
               "    *c++;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
+            errout.str());
 
         check("char* f(char** c) {\n"
               "    *c[5]--;\n"
               "    return *c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
+            errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
+            errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a[5].v[3]++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
+            errout.str());
 
         check("void f(Foo f) {\n"
               "    *f.a(1, 5).v[x + y]++;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
+            errout.str());
 
         check("char* f(char* c) {\n"
               "    (*c)++;\n"
@@ -4374,13 +4567,19 @@ private:
               "    ***c++;\n"
               "    return c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
+            errout.str());
 
         check("char** f(char*** c) {\n"
               "    **c[5]--;\n"
               "    return **c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
+            errout.str());
 
         check("char*** f(char*** c) {\n"
               "    (***c)++;\n"
@@ -4396,6 +4595,11 @@ private:
         check("void *f(char* p) {\n"
               "    for (p = path; *p++;) ;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::array<std::array<double,3>,3> array;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4685,7 +4889,7 @@ private:
               false, // runSimpleChecks
               false, // verbose
               nullptr   // settings
-             );
+              );
         ASSERT_EQUALS("", errout.str());
 
         // make sure there are not "same expression" fp when there are different ({}) expressions
@@ -5213,6 +5417,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void duplicateExpression12() { //#10026
+        check("int f(const std::vector<int> &buffer, const uint8_t index)\n"
+              "{\n"
+              "        int var = buffer[index - 1];\n"
+              "        return buffer[index - 1] - var;\n"  // <<
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n", errout.str());
+    }
+
     void duplicateExpressionLoop() {
         check("void f() {\n"
               "    int a = 1;\n"
@@ -5384,32 +5597,32 @@ private:
     }
 
     void duplicateExpressionCompareWithZero() {
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x && b) || (x != 0 && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x&&b' and 'x!=0&&b' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x != 0 && b) || (x && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x!=0&&b' and 'x&&b' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x && b) || (b && x != 0)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x&&b' and 'b&&x!=0' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((!x && b) || (x == 0 && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because '!x&&b' and 'x==0&&b' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x == 0 && b) || (!x && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because 'x==0&&b' and '!x&&b' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((!x && b) || (b && x == 0)) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||' because '!x&&b' and 'b&&x==0' represent the same value.\n", errout.str());
@@ -5423,12 +5636,12 @@ private:
               "};\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Same expression on both sides of '||' because 'getX()&&getB()' and 'getX()!=0&&getB()' represent the same value.\n", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((x && b) || (x == 0 && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(int* x, bool b) {\n"
+        check("void f(const int* x, bool b) {\n"
               "    if ((!x && b) || (x != 0 && b)) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -5467,7 +5680,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n"
                       "[test.cpp:2] -> [test.cpp:4]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
-        check("void f2(bool *a) {\n"
+        check("void f2(const bool *a) {\n"
               "    const bool b = *a;\n"
               "    if( *a == !(b) ) {}\n"
               "    if( b == !(*a) ) {}\n"
@@ -5521,25 +5734,25 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(bool *a) {\n"
+        check("void f(const bool *a) {\n"
               "    const bool b = a[42];\n"
               "    if( b == !(a[42]) ) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
-        check("void f(bool *a) {\n"
+        check("void f(const bool *a) {\n"
               "    const bool b = a[42];\n"
               "    if( a[42] == !(b) ) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
-        check("void f(bool *a) {\n"
+        check("void f(const bool *a) {\n"
               "    const bool b = *a;\n"
               "    if( b == !(*a) ) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
 
-        check("void f(bool *a) {\n"
+        check("void f(const bool *a) {\n"
               "    const bool b = *a;\n"
               "    if( *a == !(b) ) {}\n"
               "}\n");
@@ -5622,7 +5835,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void test(int * p, int * q) {\n"
+        check("void test(const int * p, const int * q) {\n"
               "    int i = *p;\n"
               "    int j = *p;\n"
               "}");
@@ -5750,7 +5963,7 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n", errout.str());
 
-        check("void test(int * p) {\n"
+        check("void test(const int * p) {\n"
               "    int i = *p;\n"
               "    int j = *p;\n"
               "}");
@@ -6200,13 +6413,13 @@ private:
     }
 
     void checkSignOfPointer() {
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (x >= 0) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
 
         {
-            const char code[] = "void foo(int* x) {\n"
+            const char code[] = "void foo(const int* x) {\n"
                                 "  int y = 0;\n"
                                 "  if (x >= y) {}\n"
                                 "}";
@@ -6215,18 +6428,18 @@ private:
             check(code, nullptr, false, false, true, true);
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
         }
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (*x >= 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (x < 0) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
 
         {
-            const char code[] = "void foo(int* x) {\n"
+            const char code[] = "void foo(const int* x) {\n"
                                 "  unsigned y = 0u;\n"
                                 "  if (x < y) {}\n"
                                 "}";
@@ -6237,32 +6450,32 @@ private:
             ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
         }
 
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (*x < 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x, int* y) {\n"
+        check("void foo(const int* x, const int* y) {\n"
               "  if (x - y < 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x, int* y) {\n"
+        check("void foo(const int* x, const int* y) {\n"
               "  if (x - y <= 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x, int* y) {\n"
+        check("void foo(const int* x, const int* y) {\n"
               "  if (x - y > 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x, int* y) {\n"
+        check("void foo(const int* x, const int* y) {\n"
               "  if (x - y >= 0) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(Bar* x) {\n"
+        check("void foo(const Bar* x) {\n"
               "  if (0 <= x) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is not.\n", errout.str());
@@ -6339,7 +6552,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (0 <= x[0]) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -6359,12 +6572,12 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo(Bar* x) {\n"
+        check("void foo(const Bar* x) {\n"
               "  if (0 > x) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) A pointer can not be negative so it is either pointless or an error to check if it is.\n", errout.str());
 
-        check("void foo(int* x) {\n"
+        check("void foo(const int* x) {\n"
               "  if (0 > x[0]) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -8115,7 +8328,7 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'y' - it's already a pointer.\n", errout.str());
 
         // no warning for bitwise AND
-        check("void f(int *b) {\n"
+        check("void f(const int *b) {\n"
               "    int x = 0x20 & *b;\n"
               "}\n", nullptr, false, true);
         ASSERT_EQUALS("", errout.str());
@@ -8152,12 +8365,18 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'ptr' - it's already a pointer.\n", errout.str());
 
         // no warning for macros
-        check("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
-              "void f(struct mutex *mut) {\n"
-              "    MUTEX_LOCK(*mut);\n"
-              "}\n", nullptr, false, true);
+        checkP("#define MUTEX_LOCK(m) pthread_mutex_lock(&(m))\n"
+               "void f(struct mutex *mut) {\n"
+               "    MUTEX_LOCK(*mut);\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkP("#define B(op)        bar(op)\n"
+               "#define C(orf)       B(&orf)\n"
+               "void foo(const int * pkey) {\n"
+               "    C(*pkey);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test_isSameExpression() { // see #5738
@@ -9098,10 +9317,22 @@ private:
                       "[test.cpp:7]: (style) Argument '0*x' to function dostuff is always 0. Constant literal calculation disable/hide variable expression 'x'.\n", errout.str());
     }
 
+    void knownArgumentTernaryOperator() { // #10374
+        check("void f(bool a, bool b) {\n"
+              "    const T* P = nullptr; \n"
+              "    long N = 0; \n"
+              "    const bool c = foo(); \n"
+              "    bar(P, N); \n"
+              "    if (c ? a : b)\n"
+              "      baz(P, N); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void checkComparePointers() {
         check("int f() {\n"
-              "    int foo[1] = {0};\n"
-              "    int bar[1] = {0};\n"
+              "    const int foo[1] = {0};\n"
+              "    const int bar[1] = {0};\n"
               "    int diff = 0;\n"
               "    if(foo > bar) {\n"
               "       diff = 1;\n"
@@ -9180,7 +9411,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("bool f(int * xp, int* yp) {\n"
+        check("bool f(const int * xp, const int* yp) {\n"
               "    return xp > yp;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
@@ -9256,11 +9487,81 @@ private:
 
     void sameExpressionPointers() {
         check("int f(int *i);\n"
-              "void g(int *a, int *b) {\n"
+              "void g(int *a, const int *b) {\n"
               "    int c = *a;\n"
               "    f(a);\n"
               "    if (b && c != *a) {}\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkOverlappingWrite() {
+        // union
+        check("void foo() {\n"
+              "    union { int i; float f; } u;\n"
+              "    u.i = 0;\n"
+              "    u.i = u.f;\n" // <- error
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Overlapping read/write of union is undefined behavior\n", errout.str());
+
+        // memcpy
+        check("void foo() {\n"
+              "    char a[10];\n"
+              "    memcpy(&a[5], &a[4], 2u);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Overlapping read/write in memcpy() is undefined behavior\n", errout.str());
+
+        check("void foo() {\n"
+              "    char a[10];\n"
+              "    memcpy(a+5, a+4, 2u);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Overlapping read/write in memcpy() is undefined behavior\n", errout.str());
+
+        check("void foo() {\n"
+              "    char a[10];\n"
+              "    memcpy(a, a+1, 2u);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Overlapping read/write in memcpy() is undefined behavior\n", errout.str());
+
+        check("void foo() {\n"
+              "    char a[8];\n"
+              "    memcpy(&a[0], &a[4], 4u);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // wmemcpy
+        check("void foo() {\n"
+              "    wchar_t a[10];\n"
+              "    wmemcpy(&a[5], &a[4], 2u);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Overlapping read/write in wmemcpy() is undefined behavior\n", errout.str());
+
+        check("void foo() {\n"
+              "    wchar_t a[10];\n"
+              "    wmemcpy(a+5, a+4, 2u);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Overlapping read/write in wmemcpy() is undefined behavior\n", errout.str());
+
+        check("void foo() {\n"
+              "    wchar_t a[10];\n"
+              "    wmemcpy(a, a+1, 2u);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Overlapping read/write in wmemcpy() is undefined behavior\n", errout.str());
+
+        // strcpy
+        check("void foo(char *ptr) {\n"
+              "    strcpy(ptr, ptr);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Overlapping read/write in strcpy() is undefined behavior\n", errout.str());
+    }
+
+    void constVariableArrayMember() { // #10371
+        check("class Foo {\n"
+              "public:\n"
+              "    Foo();\n"
+              "    int GetVal() const { return m_Arr[0]; }\n"
+              "    int m_Arr[1];\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

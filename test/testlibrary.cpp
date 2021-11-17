@@ -26,7 +26,6 @@
 
 #include <tinyxml2.h>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -34,7 +33,7 @@
 
 class TestLibrary : public TestFixture {
 public:
-    TestLibrary() : TestFixture("TestLibrary") { }
+    TestLibrary() : TestFixture("TestLibrary") {}
 
 private:
     Settings settings;
@@ -843,32 +842,32 @@ private:
 
     void version() const {
         {
-            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                    "<def>\n"
-                                    "</def>";
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "</def>";
             Library library;
             const Library::Error err = readLibrary(library, xmldata);
             ASSERT_EQUALS(true, err.errorcode == Library::ErrorCode::OK);
         }
         {
-            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                    "<def format=\"1\">\n"
-                                    "</def>";
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def format=\"1\">\n"
+                                   "</def>";
             Library library;
             const Library::Error err = readLibrary(library, xmldata);
             ASSERT_EQUALS(true, err.errorcode == Library::ErrorCode::OK);
         }
         {
-            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                    "<def format=\"42\">\n"
-                                    "</def>";
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def format=\"42\">\n"
+                                   "</def>";
             Library library;
             const Library::Error err = readLibrary(library, xmldata);
             ASSERT_EQUALS(true, err.errorcode == Library::ErrorCode::UNSUPPORTED_FORMAT);
         }
     }
 
-    void loadLibError(const char xmldata [], Library::ErrorCode errorcode, const char* file, unsigned line) const {
+    void loadLibError(const char xmldata[], Library::ErrorCode errorcode, const char* file, unsigned line) const {
         Library library;
         assertEquals(file, line, true, errorcode == readLibrary(library, xmldata).errorcode);
     }

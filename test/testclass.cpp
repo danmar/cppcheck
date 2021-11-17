@@ -19,7 +19,6 @@
 #include <tinyxml2.h>
 
 #include "checkclass.h"
-#include "ctu.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -28,8 +27,7 @@
 
 class TestClass : public TestFixture {
 public:
-    TestClass() : TestFixture("TestClass") {
-    }
+    TestClass() : TestFixture("TestClass") {}
 
 private:
     Settings settings0;
@@ -42,13 +40,13 @@ private:
         // Load std.cfg configuration
         {
             const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-            "<def>\n"
-            "  <memory>\n"
-            "    <alloc init=\"false\">malloc</alloc>\n"
-            "    <dealloc>free</dealloc>\n"
-            "  </memory>\n"
-            "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
-            "</def>";
+                                   "<def>\n"
+                                   "  <memory>\n"
+                                   "    <alloc init=\"false\">malloc</alloc>\n"
+                                   "    <dealloc>free</dealloc>\n"
+                                   "  </memory>\n"
+                                   "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
+                                   "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
             settings0.library.load(doc);
@@ -72,6 +70,7 @@ private:
         TEST_CASE(copyConstructor2); // ticket #4458
         TEST_CASE(copyConstructor3); // defaulted/deleted
         TEST_CASE(copyConstructor4); // base class with private constructor
+        TEST_CASE(copyConstructor5); // multiple inheritance
         TEST_CASE(noOperatorEq); // class with memory management should have operator eq
         TEST_CASE(noDestructor); // class with memory management should have destructor
 
@@ -900,6 +899,30 @@ private:
                              "class Base : private noncopyable {};\n"
                              "\n"
                              "class Foo : public Base {\n"
+                             "public:\n"
+                             "    Foo() : m_ptr(new int) {}\n"
+                             "    ~Foo() { delete m_ptr; }\n"
+                             "private:\n"
+                             "    int* m_ptr;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void copyConstructor5() {
+        checkCopyConstructor("class Copyable {};\n"
+                             "\n"
+                             "class Foo : public Copyable, public UnknownType {\n"
+                             "public:\n"
+                             "    Foo() : m_ptr(new int) {}\n"
+                             "    ~Foo() { delete m_ptr; }\n"
+                             "private:\n"
+                             "    int* m_ptr;\n"
+                             "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkCopyConstructor("class Copyable {};\n"
+                             "\n"
+                             "class Foo : public UnknownType, public Copyable {\n"
                              "public:\n"
                              "    Foo() : m_ptr(new int) {}\n"
                              "    ~Foo() { delete m_ptr; }\n"
@@ -6785,7 +6808,7 @@ private:
     }
 
 
-    void checkSelfInitialization(const char code []) {
+    void checkSelfInitialization(const char code[]) {
         // Clear the error log
         errout.str("");
 
@@ -6859,21 +6882,21 @@ private:
         checkSelfInitialization("struct Foo : Bar {\n"
                                 "    int i;\n"
                                 "    Foo(int i)\n"
-                                "        : Bar(""), i(i) {}\n"
+                                "        : Bar(\"\"), i(i) {}\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
 
         checkSelfInitialization("struct Foo : std::Bar {\n" // #6073
                                 "    int i;\n"
                                 "    Foo(int i)\n"
-                                "        : std::Bar(""), i(i) {}\n"
+                                "        : std::Bar(\"\"), i(i) {}\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
 
         checkSelfInitialization("struct Foo : std::Bar {\n" // #6073
                                 "    int i;\n"
                                 "    Foo(int i)\n"
-                                "        : std::Bar(""), i{i} {}\n"
+                                "        : std::Bar(\"\"), i{i} {}\n"
                                 "};");
         ASSERT_EQUALS("", errout.str());
     }
@@ -6927,17 +6950,34 @@ private:
                                  "    virtual int f() = 0;\n"
                                  "};\n"
                                  "class A : B {\n"
-                                 "    int f();\n"
+                                 "    int f();\n" // <- not explicitly virtual
                                  "    A() {f();}\n"
                                  "};\n"
                                  "int A::f() { return 1; }");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:5]: (style) Virtual function 'f' is called from constructor 'A()' at line 6. Dynamic binding is not used.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  "{\n"
                                  "    A() { A::f(); }\n"
                                  "    virtual void f() {}\n"
                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("class A : B {\n"
+                                 "    int f() final { return 1; }\n"
+                                 "    A() { f(); }\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("class B {\n"
+                                 "public:"
+                                 "    virtual void f() {}\n"
+                                 "};\n"
+                                 "class A : B {\n"
+                                 "public:"
+                                 "    void f() override final {}\n"
+                                 "    A() { f(); }\n"
+                                 "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -7428,6 +7468,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         ctu({"class C { C(); }; C::C(){}", "class C { C(); }; C::C(){}"});
+        ASSERT_EQUALS("", errout.str());
+
+        ctu({"class A::C { C() { std::cout << 0; } };", "class B::C { C() { std::cout << 1; } };"});
         ASSERT_EQUALS("", errout.str());
     }
 

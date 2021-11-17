@@ -23,7 +23,6 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <sstream>
 
 #include "../cli/filelister.h"
 #include "../lib/pathmatch.h"
@@ -59,18 +58,14 @@ static void getDeps(const std::string &filename, std::vector<std::string> &depfi
     if (filename == "externals/z3_version.h")
         return;
 
-    static const std::vector<std::string> externalfolders{"externals",
-        "externals/picojson",
-        "externals/simplecpp",
-        "externals/tinyxml2"
-    };
+    static const std::vector<std::string> externalfolders{"externals", "externals/picojson", "externals/simplecpp", "externals/tinyxml2" };
 
     // Is the dependency already included?
     if (std::find(depfiles.begin(), depfiles.end(), filename) != depfiles.end())
         return;
 
     std::ifstream f(filename.c_str());
-    if (! f.is_open()) {
+    if (!f.is_open()) {
         /*
          * Recursively search for includes in other directories.
          * Files are searched according to the following priority:
@@ -131,19 +126,22 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
     }
 }
 
-static void getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
+static std::string getCppFiles(std::vector<std::string> &files, const std::string &path, bool recursive)
 {
     std::map<std::string,size_t> filemap;
     const std::set<std::string> extra;
     const std::vector<std::string> masks;
     const PathMatch matcher(masks);
-    FileLister::addFiles(filemap, path, extra, recursive, matcher);
+    std::string err = FileLister::addFiles(filemap, path, extra, recursive, matcher);
+    if (!err.empty())
+        return err;
 
     // add *.cpp files to the "files" vector..
     for (const std::pair<const std::string&, size_t> file : filemap) {
         if (file.first.find(".cpp") != std::string::npos)
             files.push_back(file.first);
     }
+    return "";
 }
 
 
@@ -161,19 +159,39 @@ int main(int argc, char **argv)
 
     // Get files..
     std::vector<std::string> libfiles;
-    getCppFiles(libfiles, "lib/", false);
+    std::string err = getCppFiles(libfiles, "lib/", false);
+    if (!err.empty()) {
+        std::cerr << err << std::endl;
+        return EXIT_FAILURE;
+    }
 
     std::vector<std::string> extfiles;
-    getCppFiles(extfiles, "externals/", true);
+    err = getCppFiles(extfiles, "externals/", true);
+    if (!err.empty()) {
+        std::cerr << err << std::endl;
+        return EXIT_FAILURE;
+    }
 
     std::vector<std::string> clifiles;
-    getCppFiles(clifiles, "cli/", false);
+    err = getCppFiles(clifiles, "cli/", false);
+    if (!err.empty()) {
+        std::cerr << err << std::endl;
+        return EXIT_FAILURE;
+    }
 
     std::vector<std::string> testfiles;
-    getCppFiles(testfiles, "test/", false);
+    err = getCppFiles(testfiles, "test/", false);
+    if (!err.empty()) {
+        std::cerr << err << std::endl;
+        return EXIT_FAILURE;
+    }
 
     std::vector<std::string> toolsfiles;
-    getCppFiles(toolsfiles, "tools/", false);
+    err = getCppFiles(toolsfiles, "tools/", false);
+    if (!err.empty()) {
+        std::cerr << err << std::endl;
+        return EXIT_FAILURE;
+    }
 
     if (libfiles.empty() && clifiles.empty() && testfiles.empty()) {
         std::cerr << "No files found. Are you in the correct directory?" << std::endl;

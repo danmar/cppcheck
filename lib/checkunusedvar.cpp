@@ -73,6 +73,7 @@ static bool isRaiiClass(const ValueType *valueType, bool cpp, bool defaultReturn
             return true;
         return defaultReturn;
 
+    case ValueType::Type::SMART_POINTER:
     case ValueType::Type::CONTAINER:
     case ValueType::Type::ITERATOR:
     case ValueType::Type::VOID:
@@ -115,8 +116,7 @@ public:
             _read(read),
             _write(write),
             _modified(modified),
-            _allocateMemory(allocateMemory) {
-        }
+            _allocateMemory(allocateMemory) {}
 
         /** variable is used.. set both read+write */
         void use() {
@@ -938,11 +938,16 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 }
                 // Consider allocating memory separately because allocating/freeing alone does not constitute using the variable
                 else if (var && var->mType == Variables::pointer &&
-                         Token::Match(start, "%name% = new|malloc|calloc|kmalloc|kzalloc|kcalloc|strdup|strndup|vmalloc|g_new0|g_try_new|g_new|g_malloc|g_malloc0|g_try_malloc|g_try_malloc0|g_strdup|g_strndup|g_strdup_printf")) {
-                    bool allocate = true;
+                         Token::Match(start, "%name% =") &&
+                         findAllocFuncCallToken(start->next()->astOperand2(), mSettings->library)) {
 
-                    if (start->strAt(2) == "new") {
-                        const Token *type = start->tokAt(3);
+                    const Token *allocFuncCallToken = findAllocFuncCallToken(start->next()->astOperand2(), mSettings->library);
+                    const Library::AllocFunc *allocFunc = mSettings->library.getAllocFuncInfo(allocFuncCallToken);
+
+                    bool allocateMemory = !allocFunc || Library::ismemory(allocFunc->groupId);
+
+                    if (allocFuncCallToken->str() == "new") {
+                        const Token *type = allocFuncCallToken->next();
 
                         // skip nothrow
                         if (mTokenizer->isCPP() && (Token::simpleMatch(type, "( nothrow )") ||
@@ -953,11 +958,11 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                         if (!type->isStandardType()) {
                             const Variable *variable = start->variable();
                             if (!variable || !isRecordTypeWithoutSideEffects(variable->type()))
-                                allocate = false;
+                                allocateMemory = false;
                         }
                     }
 
-                    if (allocate)
+                    if (allocateMemory)
                         variables.allocateMemory(varid1, tok);
                     else
                         variables.write(varid1, tok);
@@ -1451,14 +1456,17 @@ void CheckUnusedVar::checkStructMemberUsage()
                 continue;
 
             // Check if the struct member variable is used anywhere in the file
-            std::string tmp(". " + var.name());
-            if (Token::findsimplematch(mTokenizer->tokens(), tmp.c_str(), tmp.size()))
-                continue;
-            tmp = (":: " + var.name());
-            if (Token::findsimplematch(mTokenizer->tokens(), tmp.c_str(), tmp.size()))
-                continue;
-
-            unusedStructMemberError(var.nameToken(), scope.className, var.name(), scope.type == Scope::eUnion);
+            bool use = false;
+            for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                if (tok->variable() != &var)
+                    continue;
+                if (tok != var.nameToken()) {
+                    use = true;
+                    break;
+                }
+            }
+            if (!use)
+                unusedStructMemberError(var.nameToken(), scope.className, var.name(), scope.type == Scope::eUnion);
         }
     }
 }
@@ -1474,7 +1482,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
     // a type that has no side effects (no constructors and no members with constructors)
     /** @todo false negative: check constructors for side effects */
     const std::pair<std::map<const Type *,bool>::iterator,bool> found=mIsRecordTypeWithoutSideEffectsMap.insert(
-                std::pair<const Type *,bool>(type,false)); //Initialize with side effects for possible recursions
+        std::pair<const Type *,bool>(type,false));         //Initialize with side effects for possible recursions
     bool & withoutSideEffects = found.first->second;
     if (!found.second)
         return withoutSideEffects;
@@ -1516,7 +1524,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
                     }
                     const Function* initValueFunc = valueToken->function();
                     if (initValueFunc && !isFunctionWithoutSideEffects(*initValueFunc, valueToken,
-                    std::list<const Function*> {})) {
+                                                                       std::list<const Function*> {})) {
                         return withoutSideEffects = false;
                     }
                 }
@@ -1570,7 +1578,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
     // a type that has no variables and no constructor
 
     const std::pair<std::map<const Type *,bool>::iterator,bool> found=mIsEmptyTypeMap.insert(
-                std::pair<const Type *,bool>(type,false));
+        std::pair<const Type *,bool>(type,false));
     bool & emptyType=found.first->second;
     if (!found.second)
         return emptyType;
@@ -1592,7 +1600,7 @@ bool CheckUnusedVar::isEmptyType(const Type* type)
 }
 
 bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const Token* functionUsageToken,
-        std::list<const Function*> checkedFuncs)
+                                                  std::list<const Function*> checkedFuncs)
 {
     // no body to analyze
     if (!func.hasBody()) {

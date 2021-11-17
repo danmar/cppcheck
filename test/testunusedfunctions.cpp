@@ -22,13 +22,11 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <ostream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {
 public:
-    TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {
-    }
+    TestUnusedFunctions() : TestFixture("TestUnusedFunctions") {}
 
 private:
     Settings settings;
@@ -47,6 +45,9 @@ private:
         TEST_CASE(template2);
         TEST_CASE(template3);
         TEST_CASE(template4); // #9805
+        TEST_CASE(template5);
+        TEST_CASE(template6); // #10475 crash
+        TEST_CASE(template7); // #9766 crash
         TEST_CASE(throwIsNotAFunction);
         TEST_CASE(unusedError);
         TEST_CASE(unusedMain);
@@ -250,6 +251,32 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void template5() { // #9220
+        check("void f(){}\n"
+              "\n"
+              "typedef void(*Filter)();\n"
+              "\n"
+              "template <Filter fun>\n"
+              "void g() { fun(); }\n"
+              "\n"
+              "int main() { g<f>(); return 0;}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template6() { // #10475
+        check("template<template<typename...> class Ref, typename... Args>\n"
+              "struct Foo<Ref<Args...>, Ref> : std::true_type {};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void template7()
+    { // #9766
+        check("void f() {\n"
+              "    std::array<std::array<double,3>,3> array;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
+    }
+
     void throwIsNotAFunction() {
         check("struct A {void f() const throw () {}}; int main() {A a; a.f();}");
         ASSERT_EQUALS("", errout.str());
@@ -349,8 +376,7 @@ private:
 
         // Don't crash on wrong syntax
         check("int x __attribute__((constructor));\n"
-              "int x __attribute__((destructor));");
-        ASSERT_EQUALS("", errout.str());
+              "int y __attribute__((destructor));");
     }
 
     void initializer_list() {

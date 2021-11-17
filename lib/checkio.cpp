@@ -106,9 +106,9 @@ struct Filepointer {
     nonneg int op_indent;
     enum class AppendMode { UNKNOWN_AM, APPEND, APPEND_EX };
     AppendMode append_mode;
+    std::string filename;
     explicit Filepointer(OpenMode mode_ = OpenMode::UNKNOWN_OM)
-        : mode(mode_), mode_indent(0), lastOperation(Operation::NONE), op_indent(0), append_mode(AppendMode::UNKNOWN_AM) {
-    }
+        : mode(mode_), mode_indent(0), lastOperation(Operation::NONE), op_indent(0), append_mode(AppendMode::UNKNOWN_AM) {}
 };
 
 namespace {
@@ -174,6 +174,7 @@ void CheckIO::checkFileUsage()
             } else if (Token::Match(tok, "%name% (") && tok->previous() && (!tok->previous()->isName() || Token::Match(tok->previous(), "return|throw"))) {
                 std::string mode;
                 const Token* fileTok = nullptr;
+                const Token* fileNameTok = nullptr;
                 Filepointer::Operation operation = Filepointer::Operation::NONE;
 
                 if ((tok->str() == "fopen" || tok->str() == "freopen" || tok->str() == "tmpfile" ||
@@ -187,6 +188,8 @@ void CheckIO::checkFileUsage()
                         mode = "wb+";
                     fileTok = tok->tokAt(-2);
                     operation = Filepointer::Operation::OPEN;
+                    if (Token::Match(tok, "fopen ( %str% ,"))
+                        fileNameTok = tok->tokAt(2);
                 } else if (windows && Token::Match(tok, "fopen_s|freopen_s|_wfopen_s|_wfreopen_s ( & %name%")) {
                     const Token* modeTok = tok->tokAt(2)->nextArgument()->nextArgument();
                     if (modeTok && modeTok->tokType() == Token::eString)
@@ -266,10 +269,21 @@ void CheckIO::checkFileUsage()
                 if (filepointers.find(fileTok->varId()) == filepointers.end()) { // function call indicates: Its a File
                     filepointers.insert(std::make_pair(fileTok->varId(), Filepointer(OpenMode::UNKNOWN_OM)));
                 }
+
                 Filepointer& f = filepointers[fileTok->varId()];
 
                 switch (operation) {
                 case Filepointer::Operation::OPEN:
+                    if (fileNameTok) {
+                        for (std::map<int, Filepointer>::const_iterator it = filepointers.cbegin(); it != filepointers.cend(); ++it) {
+                            const Filepointer &fptr = it->second;
+                            if (fptr.filename == fileNameTok->str() && (fptr.mode == OpenMode::RW_MODE || fptr.mode == OpenMode::WRITE_MODE))
+                                incompatibleFileOpenError(tok, fileNameTok->str());
+                        }
+
+                        f.filename = fileNameTok->str();
+                    }
+
                     f.mode = getMode(mode);
                     if (mode.find('a') != std::string::npos) {
                         if (f.mode == OpenMode::RW_MODE)
@@ -368,6 +382,12 @@ void CheckIO::seekOnAppendedFileError(const Token *tok)
 {
     reportError(tok, Severity::warning,
                 "seekOnAppendedFile", "Repositioning operation performed on a file opened in append mode has no effect.", CWE398, Certainty::normal);
+}
+
+void CheckIO::incompatibleFileOpenError(const Token *tok, const std::string &filename)
+{
+    reportError(tok, Severity::warning,
+                "incompatibleFileOpen", "The file '" + filename + "' is opened for read and write access at the same time on different streams", CWE664, Certainty::normal);
 }
 
 
@@ -473,7 +493,7 @@ static bool findFormat(nonneg int arg, const Token *firstArg,
         *formatArgTok = argTok->nextArgument();
         if (!argTok->values().empty()) {
             std::list<ValueFlow::Value>::const_iterator value = std::find_if(
-                        argTok->values().begin(), argTok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
+                argTok->values().begin(), argTok->values().end(), std::mem_fn(&ValueFlow::Value::isTokValue));
             if (value != argTok->values().end() && value->isTokValue() && value->tokvalue &&
                 value->tokvalue->tokType() == Token::eString) {
                 *formatStringTok = value->tokvalue;
@@ -953,6 +973,10 @@ void CheckIO::checkFormatString(const Token * const tok,
                         std::string specifier;
                         bool done = false;
                         while (!done) {
+                            if (i == formatString.end()) {
+                                done = true;
+                                break;
+                            }
                             switch (*i) {
                             case 's':
                                 if (argListTok->tokType() != Token::eString &&
@@ -1193,7 +1217,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                 break;
                             case 'p':
                                 if (argInfo.typeToken->tokType() == Token::eString)
-                                    ;// string literals are passed as pointers to literal start, okay
+                                    ; // string literals are passed as pointers to literal start, okay
                                 else if (argInfo.isKnownType() && !argInfo.isArrayOrPointer())
                                     invalidPrintfArgTypeError_p(tok, numFormat, &argInfo);
                                 done = true;
@@ -1222,7 +1246,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                             case 'h': // Can be 'hh' (signed char or unsigned char) or 'h' (short int or unsigned short int)
                             case 'l': { // Can be 'll' (long long int or unsigned long long int) or 'l' (long int or unsigned long int)
                                 // If the next character is the same (which makes 'hh' or 'll') then expect another alphabetical character
-                                if (i != formatString.end() && (i + 1) != formatString.end() && *(i + 1) == *i) {
+                                if ((i + 1) != formatString.end() && *(i + 1) == *i) {
                                     if ((i + 2) != formatString.end() && !isalpha(*(i + 2))) {
                                         std::string modifier;
                                         modifier += *i;
@@ -1234,17 +1258,13 @@ void CheckIO::checkFormatString(const Token * const tok,
                                         specifier += *i++;
                                     }
                                 } else {
-                                    if (i != formatString.end()) {
-                                        if ((i + 1) != formatString.end() && !isalpha(*(i + 1))) {
-                                            std::string modifier;
-                                            modifier += *i;
-                                            invalidLengthModifierError(tok, numFormat, modifier);
-                                            done = true;
-                                        } else {
-                                            specifier = *i++;
-                                        }
-                                    } else {
+                                    if ((i + 1) != formatString.end() && !isalpha(*(i + 1))) {
+                                        std::string modifier;
+                                        modifier += *i;
+                                        invalidLengthModifierError(tok, numFormat, modifier);
                                         done = true;
+                                    } else {
+                                        specifier = *i++;
                                     }
                                 }
                             }
@@ -1681,9 +1701,9 @@ bool CheckIO::ArgumentInfo::isLibraryType(const Settings *settings) const
 }
 
 void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
-        const std::string &functionName,
-        nonneg int numFormat,
-        nonneg int numFunction)
+                                             const std::string &functionName,
+                                             nonneg int numFormat,
+                                             nonneg int numFunction)
 {
     const Severity::SeverityType severity = numFormat > numFunction ? Severity::error : Severity::warning;
     if (severity != Severity::error && !mSettings->severity.isEnabled(Severity::warning))
@@ -1703,7 +1723,7 @@ void CheckIO::wrongPrintfScanfArgumentsError(const Token* tok,
 }
 
 void CheckIO::wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
-        nonneg int index, nonneg int numFunction)
+                                                          nonneg int index, nonneg int numFunction)
 {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
@@ -1762,7 +1782,7 @@ void CheckIO::invalidScanfArgTypeError_int(const Token* tok, nonneg int numForma
         else
             errmsg << "intmax_t";
     } else if (specifier[0] == 'z') {
-        if (specifier[1] == 'd')
+        if (specifier[1] == 'd' || specifier[1] == 'i')
             errmsg << "ssize_t";
         else
             errmsg << "size_t";
@@ -1855,7 +1875,7 @@ static void printfFormatType(std::ostream& os, const std::string& specifier, boo
         else
             os << "intmax_t";
     } else if (specifier[0] == 'z') {
-        if (specifier[1] == 'd')
+        if (specifier[1] == 'd' || specifier[1] == 'i')
             os << "ssize_t";
         else
             os << "size_t";

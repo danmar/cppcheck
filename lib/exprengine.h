@@ -29,7 +29,6 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <cstdint>
 
 class ErrorLogger;
 class Tokenizer;
@@ -39,9 +38,9 @@ class Token;
 class Variable;
 
 #if defined(__GNUC__) && defined (__SIZEOF_INT128__)
-typedef __int128_t   int128_t;
+typedef __int128_t int128_t;
 #else
-typedef long long    int128_t;
+typedef long long int128_t;
 #ifdef _MSC_VER
 #pragma message(__FILE__ "(" _CRT_STRINGIZE(__LINE__) ")" ": warning: TODO No 128-bit integer type is available => Limited analysis of large integers...")
 #else
@@ -75,8 +74,7 @@ namespace ExprEngine {
     public:
         explicit DataBase(const std::string &currentFunction, const Settings *settings)
             : currentFunction(currentFunction)
-            , settings(settings) {
-        }
+            , settings(settings) {}
         virtual std::string getNewSymbolName() = 0;
         const std::string currentFunction;
         const Settings * const settings;
@@ -126,7 +124,7 @@ namespace ExprEngine {
         ValueType type;
     };
 
-    class UninitValue: public Value {
+    class UninitValue : public Value {
     public:
         UninitValue() : Value("?", ValueType::UninitValue) {}
         bool isEqual(const DataBase *dataBase, int value) const OVERRIDE {
@@ -145,8 +143,7 @@ namespace ExprEngine {
             : Value(name, ValueType::IntRange)
             , minValue(minValue)
             , maxValue(maxValue)
-            , loopScope(nullptr) {
-        }
+            , loopScope(nullptr) {}
         std::string getRange() const OVERRIDE {
             if (minValue == maxValue)
                 return str(minValue);
@@ -166,8 +163,7 @@ namespace ExprEngine {
         FloatRange(const std::string &name, long double minValue, long double maxValue)
             : Value(name, ValueType::FloatRange)
             , minValue(minValue)
-            , maxValue(maxValue) {
-        }
+            , maxValue(maxValue) {}
 
         std::string getRange() const OVERRIDE {
             return std::to_string(minValue) + ":" + std::to_string(maxValue);
@@ -193,7 +189,7 @@ namespace ExprEngine {
     };
 
     // Array or pointer
-    class ArrayValue: public Value {
+    class ArrayValue : public Value {
     public:
         enum { MAXSIZE = 0x7fffffff };
 
@@ -220,7 +216,7 @@ namespace ExprEngine {
         std::vector<ValuePtr> size;
     };
 
-    class StringLiteralValue: public Value {
+    class StringLiteralValue : public Value {
     public:
         StringLiteralValue(const std::string &name, const std::string &s) : Value(name, ValueType::StringLiteralValue), string(s) {}
 
@@ -234,7 +230,7 @@ namespace ExprEngine {
         const std::string string;
     };
 
-    class StructValue: public Value {
+    class StructValue : public Value {
     public:
         explicit StructValue(const std::string &name) : Value(name, ValueType::StructValue) {}
 
@@ -260,7 +256,7 @@ namespace ExprEngine {
         std::map<std::string, ValuePtr> member;
     };
 
-    class AddressOfValue: public Value {
+    class AddressOfValue : public Value {
     public:
         AddressOfValue(const std::string &name, int varId)
             : Value(name, ValueType::AddressOfValue)
@@ -280,8 +276,7 @@ namespace ExprEngine {
             : Value(getName(binop, op1, op2), ValueType::BinOpResult)
             , binop(binop)
             , op1(op1)
-            , op2(op2) {
-        }
+            , op2(op2) {}
 
         bool isEqual(const DataBase *dataBase, int value) const OVERRIDE;
         bool isGreaterThan(const DataBase *dataBase, int value) const OVERRIDE;
@@ -307,8 +302,7 @@ namespace ExprEngine {
             : Value(name, ValueType::IntegerTruncation)
             , inputValue(inputValue)
             , bits(bits)
-            , sign(sign) {
-        }
+            , sign(sign) {}
 
         std::string getSymbolicExpression() const OVERRIDE;
 
@@ -317,7 +311,7 @@ namespace ExprEngine {
         char sign;
     };
 
-    class FunctionCallArgumentValues: public Value {
+    class FunctionCallArgumentValues : public Value {
     public:
         explicit FunctionCallArgumentValues(const std::vector<ExprEngine::ValuePtr> &argValues)
             : Value("argValues", ValueType::FunctionCallArgumentValues)
@@ -338,7 +332,7 @@ namespace ExprEngine {
         }
     };
 
-    typedef std::function<void(const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> Callback;
+    typedef std::function<void (const Token *, const ExprEngine::Value &, ExprEngine::DataBase *)> Callback;
 
     /** Execute all functions */
     void CPPCHECKLIB executeAllFunctions(ErrorLogger *errorLogger, const Tokenizer *tokenizer, const Settings *settings, const std::vector<Callback> &callbacks, std::ostream &report);

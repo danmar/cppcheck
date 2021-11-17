@@ -48,6 +48,7 @@ void PyMem_Malloc_memleak()
 
 void PyMem_Malloc_mismatchAllocDealloc()
 {
+    // cppcheck-suppress unusedAllocatedMemory
     char * pBuf1 = PyMem_Malloc(10);
     // cppcheck-suppress mismatchAllocDealloc
     free(pBuf1);

@@ -21,6 +21,8 @@
 #include "errortypes.h"
 #include "utils.h"
 
+#include <simplecpp.h>
+
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
@@ -355,40 +357,11 @@ unsigned int MathLib::encodeMultiChar(const std::string& str)
     return retval;
 }
 
-static bool isoctal(int c)
-{
-    return c>='0' && c<='7';
-}
-
-MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
-{
-    if (str.empty())
-        return 0; // <- only possible in unit testing
-
-    // '\xF6'
-    if (str.size() == 4 && str.compare(0,2,"\\x")==0 && std::isxdigit(str[2]) && std::isxdigit(str[3])) {
-        return std::strtoul(str.substr(2).c_str(), nullptr, 16);
-    }
-
-    // '\123'
-    if (str.size() == 4 && str[0] == '\\' && isoctal(str[1]) && isoctal(str[2]) && isoctal(str[3])) {
-        return (char)std::strtoul(str.substr(1).c_str(), nullptr, 8);
-    }
-
-    // C99 6.4.4.4
-    // The value of an integer character constant containing more than one character (e.g., 'ab'),
-    // or containing a character or escape sequence that does not map to a single-byte execution character,
-    // is implementation-defined.
-    // clang and gcc seem to use the following encoding: 'AB' as (('A' << 8) | 'B')
-    const std::string& normStr = normalizeCharacterLiteral(str);
-    return encodeMultiChar(normStr);
-}
-
 std::string MathLib::normalizeCharacterLiteral(const std::string& iLiteral)
 {
     std::string normalizedLiteral;
     const std::string::size_type iLiteralLen = iLiteral.size();
-    for (std::string::size_type idx = 0; idx < iLiteralLen ; ++idx) {
+    for (std::string::size_type idx = 0; idx < iLiteralLen; ++idx) {
         if (iLiteral[idx] != '\\') {
             normalizedLiteral.push_back(iLiteral[idx]);
             continue;
@@ -532,9 +505,8 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             return static_cast<bigint>(doubleval);
     }
 
-    if (isCharLiteral(str)) {
-        return characterLiteralToLongNumber(getCharLiteral(str));
-    }
+    if (isCharLiteral(str))
+        return simplecpp::characterLiteralToLL(str);
 
     try {
         const biguint ret = std::stoull(str, nullptr, 10);
@@ -561,7 +533,7 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
     int distance;
     if (std::string::npos == decimalsep) {
         distance = to - it;
-    } else  if (decimalsep > (to - str.begin()))
+    } else if (decimalsep > (to - str.begin()))
         return 0.; // error handling??
     else
         distance = int(decimalsep)-(from - str.begin());
@@ -596,14 +568,19 @@ static double floatHexToDoubleNumber(const std::string& str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
-    if (isCharLiteral(str))
-        return characterLiteralToLongNumber(getCharLiteral(str));
+    if (isCharLiteral(str)) {
+        try {
+            return simplecpp::characterLiteralToLL(str);
+        } catch (const std::exception& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: characterLiteralToLL(" + str + ") => " + e.what());
+        }
+    }
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
     // nullcheck
     if (isNullValue(str))
         return 0.0;
-#ifdef __clang__
+#ifdef _LIBCPP_VERSION
     if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
         // TODO : handle locale
         return std::strtod(str.c_str(), nullptr);
@@ -1153,7 +1130,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     }
 
     if (first == second)
-        return "0.0" ;
+        return "0.0";
 
     double d1 = toDoubleNumber(first);
     double d2 = toDoubleNumber(second);

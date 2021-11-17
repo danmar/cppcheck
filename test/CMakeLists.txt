@@ -1,10 +1,4 @@
 if (BUILD_TESTS)
-    include_directories(${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/cli/)
-    if(USE_BUNDLED_TINYXML2)
-        include_directories(SYSTEM ${PROJECT_SOURCE_DIR}/externals/tinyxml2)
-    endif()
-    include_directories(${PROJECT_SOURCE_DIR}/externals/simplecpp/)
-
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
     list(APPEND testrunner_SOURCES ${hdrs} ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:cli_objs> $<TARGET_OBJECTS:simplecpp_objs>)
@@ -13,6 +7,11 @@ if (BUILD_TESTS)
     endif()
 
     add_executable(testrunner ${testrunner_SOURCES})
+    target_include_directories(testrunner PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/cli/)
+    if(USE_BUNDLED_TINYXML2)
+        target_include_directories(testrunner PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2)
+    endif()
+    target_include_directories(testrunner PRIVATE ${PROJECT_SOURCE_DIR}/externals/simplecpp/)
     if (HAVE_RULES)
         target_link_libraries(testrunner ${PCRE_LIBRARY})
     endif()
@@ -20,7 +19,11 @@ if (BUILD_TESTS)
         target_link_libraries(testrunner ${Z3_LIBRARIES})
     endif()
     if (WIN32 AND NOT BORLAND)
-        target_link_libraries(testrunner Shlwapi.lib)
+        if(NOT MINGW)
+            target_link_libraries(testrunner Shlwapi.lib)
+        else()
+            target_link_libraries(testrunner shlwapi)
+        endif()
     endif()
     if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
         target_link_libraries(testrunner tinyxml2)
@@ -30,11 +33,8 @@ if (BUILD_TESTS)
         target_precompile_headers(testrunner PRIVATE precompiled.h)
     endif()
 
-    add_custom_target(copy_cfg ALL
-        ${CMAKE_COMMAND} -E copy_directory "${PROJECT_SOURCE_DIR}/cfg"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/cfg"
-        COMMENT "Copying cfg files")
     add_dependencies(testrunner copy_cfg)
+    add_dependencies(testrunner copy_addons)
 
     if (LIBXML2_XMLLINT_EXECUTABLE)
         # TODO: get rid of the copy
@@ -55,7 +55,8 @@ if (BUILD_TESTS)
         include(ProcessorCount)
         ProcessorCount(N)
         set(CTEST_PARALLEL_LEVEL ${N} CACHE STRING "CTest parallel level")
-        add_custom_target(check ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${CTEST_PARALLEL_LEVEL} -C ${CMAKE_CFG_INTDIR} --timeout 90
+        set(CTEST_TIMEOUT 90 CACHE STRING "CTest timeout")
+        add_custom_target(check ${CMAKE_CTEST_COMMAND} --output-on-failure -j ${CTEST_PARALLEL_LEVEL} -C ${CMAKE_CFG_INTDIR} --timeout ${CTEST_TIMEOUT}
                 DEPENDS testrunner cppcheck)
 
         set(SKIP_TESTS "" CACHE STRING "A list of tests to skip")

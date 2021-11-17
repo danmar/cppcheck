@@ -28,8 +28,7 @@
 
 class TestStl : public TestFixture {
 public:
-    TestStl() : TestFixture("TestStl") {
-    }
+    TestStl() : TestFixture("TestStl") {}
 
 private:
     Settings settings;
@@ -41,6 +40,7 @@ private:
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(outOfBounds);
+        TEST_CASE(outOfBoundsSymbolic);
         TEST_CASE(outOfBoundsIndexExpression);
         TEST_CASE(outOfBoundsIterator);
 
@@ -69,6 +69,9 @@ private:
         TEST_CASE(iterator23);
         TEST_CASE(iterator24);
         TEST_CASE(iterator25); // #9742
+        TEST_CASE(iterator26); // #9176
+        TEST_CASE(iterator27); // #10378
+        TEST_CASE(iterator28); // #10450
         TEST_CASE(iteratorExpression);
         TEST_CASE(iteratorSameExpression);
         TEST_CASE(mismatchingContainerIterator);
@@ -353,7 +356,7 @@ private:
                     "    if(v.at(b?42:0)) {}\n"
                     "}\n");
         ASSERT_EQUALS(
-            "test.cpp:3:error:Out of bounds access in expression 'v.at(b?42:0)' because 'v' is empty and 'at' may be non-zero.\n",
+            "test.cpp:3:error:Out of bounds access in expression 'v.at(b?42:0)' because 'v' is empty and 'b?42:0' may be non-zero.\n",
             errout.str());
 
         checkNormal("void f(std::vector<int> v, bool b){\n"
@@ -361,7 +364,7 @@ private:
                     "        if(v.at(b?42:0)) {}\n"
                     "}\n");
         ASSERT_EQUALS(
-            "test.cpp:3:warning:Either the condition 'v.size()==1' is redundant or v size can be 1. Expression 'v.at' cause access out of bounds.\n"
+            "test.cpp:3:warning:Either the condition 'v.size()==1' is redundant or v size can be 1. Expression 'v.at(b?42:0)' cause access out of bounds.\n"
             "test.cpp:2:note:condition 'v.size()==1'\n"
             "test.cpp:3:note:Access out of bounds\n",
             errout.str());
@@ -381,6 +384,86 @@ private:
               "}\n", true);
         ASSERT_EQUALS("", errout.str());
 
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<T> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s = { { { &ArrS } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<std::vector<T>> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s = { { { { &ArrS } } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  T t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s { { &ArrS } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<T> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s { { { &ArrS } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n"
+              "  std::vector<int>* v;\n"
+              "};\n"
+              "struct S {\n"
+              "  std::vector<std::vector<T>> t;\n"
+              "};\n"
+              "long g(S& s);\n"
+              "int f() {\n"
+              "  std::vector<int> ArrS;\n"
+              "  S s { { { { &ArrS } } } };\n"
+              "  g(s);\n"
+              "  return ArrS[0];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
         checkNormal("extern void Bar(const double, const double);\n"
                     "void f(std::vector<double> &r, const double ) {\n"
                     "    std::vector<double> result;\n"
@@ -396,6 +479,184 @@ private:
                     "    Bar(0.34, result[1]);\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(size_t entries) {\n"
+                    "    std::vector<uint8_t> v;\n"
+                    "    if (v.size() < entries + 2)\n"
+                    "        v.resize(entries + 2);\n"
+                    "    v[0] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(size_t entries) {\n"
+                    "    std::vector<uint8_t> v;\n"
+                    "    if (v.size() < entries)\n"
+                    "        v.resize(entries);\n"
+                    "    v[0] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:5:error:Out of bounds access in expression 'v[0]' because 'v' is empty.\n", errout.str());
+
+        checkNormal("void f(size_t entries) {\n"
+                    "    if (entries < 2) return;\n"
+                    "    std::vector<uint8_t> v;\n"
+                    "    if (v.size() < entries)\n"
+                    "        v.resize(entries);\n"
+                    "    v[0] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(size_t entries) {\n"
+                    "    if (entries == 0) return;\n"
+                    "    std::vector<uint8_t> v;\n"
+                    "    if (v.size() < entries)\n"
+                    "        v.resize(entries);\n"
+                    "    v[0] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void foo(std::vector<int>* PArr, int n) {\n"
+                    " std::vector<int> Arr;\n"
+                    " if (!PArr)\n"
+                    "   PArr = &Arr;\n"
+                    " PArr->resize(n);\n"
+                    " for (int i = 0; i < n; ++i)\n"
+                    "   (*PArr)[i] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("int f() {\n"
+                    "    std::vector<int> v;\n"
+                    "    std::vector<int> * pv = &v;\n"
+                    "    return (*pv).at(42);\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression '(*pv).at(42)' because '*pv' is empty.\n",
+                      errout.str());
+
+        checkNormal("std::string f(const char* DirName) {\n"
+                    "  if (DirName == nullptr)\n"
+                    "      return {};\n"
+                    "  std::string Name{ DirName };\n"
+                    "  if (!Name.empty() && Name.back() != '\\\\')\n"
+                    "    Name += '\\\\';\n"
+                    "  return Name;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("bool f(bool b) {\n"
+                    "  std::vector<int> v;\n"
+                    "  if (b)\n"
+                    "    v.push_back(0);\n"
+                    "  for(auto i:v)\n"
+                    "    if (v[i] > 0)\n"
+                    "      return true;\n"
+                    "  return false;\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:6:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+
+        checkNormal("std::vector<int> range(int n);\n"
+                    "bool f(bool b) {\n"
+                    "  std::vector<int> v;\n"
+                    "  if (b)\n"
+                    "    v.push_back(1);\n"
+                    "  assert(range(v.size()).size() == v.size());\n"
+                    "  for(auto i:range(v.size()))\n"
+                    "    if (v[i] > 0)\n"
+                    "      return true;\n"
+                    "  return false;\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:8:style:Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
+
+        checkNormal("bool g();\n"
+                    "int f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const auto n = (int)v.size();\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        if (v[i] > 0)\n"
+                    "            return i;\n"
+                    "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("bool g();\n"
+                    "int f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const auto n = static_cast<int>(v.size());\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        if (v[i] > 0)\n"
+                    "            return i;\n"
+                    "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("bool g();\n"
+                    "void f(int x) {\n"
+                    "    std::vector<int> v;\n"
+                    "    if (g())\n"
+                    "        v.emplace_back(x);\n"
+                    "    const int n = v.size();\n"
+                    "    h(n);\n"
+                    "    for (int i = 0; i < n; ++i)\n"
+                    "        h(v[i]);\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void foo(const std::vector<int> &v) {\n"
+                    "    if(v.size() >=1 && v[0] == 4 && v[1] == 2){}\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:2:warning:Either the condition 'v.size()>=1' is redundant or v size can be 1. Expression 'v[1]' cause access out of bounds.\n"
+                      "test.cpp:2:note:condition 'v.size()>=1'\n"
+                      "test.cpp:2:note:Access out of bounds\n", errout.str());
+
+        checkNormal("int f(int x, int y) {\n"
+                    "    std::vector<int> a = {0,1,2};\n"
+                    "    if(x<2)\n"
+                    "        y = a[x] + 1;\n"
+                    "    else\n"
+                    "        y = a[x];\n"
+                    "    return y;\n"
+                    "}\n");
+        ASSERT_EQUALS(
+            "test.cpp:6:warning:Either the condition 'x<2' is redundant or 'x' can have the value greater or equal to 3. Expression 'a[x]' cause access out of bounds.\n"
+            "test.cpp:3:note:condition 'x<2'\n"
+            "test.cpp:6:note:Access out of bounds\n",
+            errout.str());
+
+        checkNormal("int f(std::vector<int> v) {\n"
+                    "    if (v.size() > 3)\n"
+                    "        return v[v.size() - 3];\n"
+                    "    return 0;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(std::vector<int> v) {\n"
+                    "    v[v.size() - 1];\n"
+                    "    if (v.size() == 1) {}\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(int n) {\n"
+                    "    std::vector<int> v = {1, 2, 3, 4};\n"
+                    "    const int i = qMin(n, v.size());\n"
+                    "    if (i > 1)\n"
+                    "        v[i] = 1;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void outOfBoundsSymbolic()
+    {
+        check("void foo(std::string textline, int col) {\n"
+              "    if(col > textline.size())\n"
+              "        return false;\n"
+              "    int x = textline[col];\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4]: (warning) Either the condition 'col>textline.size()' is redundant or 'col' can have the value textline.size(). Expression 'textline[col]' cause access out of bounds.\n",
+            errout.str());
     }
 
     void outOfBoundsIndexExpression() {
@@ -1212,27 +1473,81 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void iterator26() { // #9176
+        check(
+            "#include <map>\n"
+            "int main()\n"
+            "{"
+            "  std::map<char const*, int> m{ {\"a\", 1} };\n"
+            "  if (auto iter = m.find(\"x\"); iter != m.end()) {\n"
+            "    return iter->second;\n"
+            "  }\n"
+            "  return 0;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator27() {
+        // #10378
+        check("struct A {\n"
+              "    int a;\n"
+              "    int b;\n"
+              "};\n"
+              "int f(std::map<int, A> m) {\n"
+              "    auto it =  m.find( 1 );\n"
+              "    const int a( it == m.cend() ? 0 : it->second.a );\n"
+              "    const int b( it == m.cend() ? 0 : it->second.b );\n"
+              "    return a + b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void iterator28()
+    {
+        // #10450
+        check("struct S {\n"
+              "    struct Private {\n"
+              "        std::list<int> l;\n"
+              "    };\n"
+              "    std::unique_ptr<Private> p;\n"
+              "    int foo();\n"
+              "};\n"
+              "int S::foo() {\n"
+              "    for(auto iter = p->l.begin(); iter != p->l.end(); ++iter) {\n"
+              "        if(*iter == 1) {\n"
+              "            p->l.erase(iter);\n"
+              "            return 1;\n"
+              "        }\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void iteratorExpression() {
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
               "void foo() {\n"
               "    (void)std::find(f().begin(), g().end(), 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Iterators to containers from different expressions 'f()' and 'g()' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Iterators of different containers 'f()' and 'g()' are used together.\n",
+                      errout.str());
 
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
               "void foo() {\n"
               "    if(f().begin() == g().end()) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Iterators to containers from different expressions 'f()' and 'g()' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Iterators of different containers 'f()' and 'g()' are used together.\n",
+                      errout.str());
 
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
               "void foo() {\n"
               "    auto size = f().end() - g().begin();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Iterators to containers from different expressions 'f()' and 'g()' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Iterators of different containers 'f()' and 'g()' are used together.\n",
+                      errout.str());
 
         check("struct A {\n"
               "    std::vector<int>& f();\n"
@@ -1278,7 +1593,7 @@ private:
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
               "void foo() {\n"
-              "    auto it = f().end();\n"
+              "    auto it = f().end() - 1;\n"
               "    f().begin() - it\n"
               "    f().begin()+1 - it\n"
               "    f().begin() - (it + 1)\n"
@@ -1298,7 +1613,7 @@ private:
               "    (void)std::find(begin(f()), end(f()) - 1, 0);\n"
               "    (void)std::find(begin(f()) + 1, end(f()) - 1, 0);\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Dereference of an invalid iterator: f().end()+1\n", errout.str());
 
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
@@ -1308,7 +1623,9 @@ private:
               "    if(f().begin()+1 == f().end()) {}\n"
               "    if(f().begin()+1 == f().end()+1) {}\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (error) Dereference of an invalid iterator: f().end()+1\n"
+                      "[test.cpp:7]: (error) Dereference of an invalid iterator: f().end()+1\n",
+                      errout.str());
 
         check("template<int N>\n"
               "std::vector<int>& f();\n"
@@ -1394,6 +1711,26 @@ private:
               "            break;\n"
               "        }\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10012
+        check("struct a {\n"
+              "    int b;\n"
+              "    int end() { return b; }\n"
+              "};\n"
+              "void f(a c, a d) {\n"
+              "    if (c.end() == d.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10467
+        check("void f(std::array<std::vector<int>, N>& A) {\n"
+              "  for (auto& a : A) {\n"
+              "    auto it = std::find_if(a.begin(), a.end(), \n"
+              "                           [](auto i) { return i == 0; });\n"
+              "    if (it != a.end()) {}\n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1506,8 +1843,9 @@ private:
               "       foo[ii] = 0;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n"
-                      "[test.cpp:6]: (error) When ii==foo.size(), foo[ii] is out of bounds.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty and 'ii' may be non-zero.\n",
+            errout.str());
 
         check("void foo(std::vector<int> foo) {\n"
               "    for (unsigned int ii = 0; ii <= foo.size(); ++ii) {\n"
@@ -1610,7 +1948,9 @@ private:
                   "        }\n"
                   "    }\n"
                   "}");
-            ASSERT_EQUALS("[test.cpp:11]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty.\n", errout.str());
+            ASSERT_EQUALS(
+                "[test.cpp:11]: (error) Out of bounds access in expression 'foo[ii]' because 'foo' is empty and 'ii' may be non-zero.\n",
+                errout.str());
         }
 
         {
@@ -2395,7 +2735,7 @@ private:
     }
 
     template<size_t n, typename T>
-    static size_t getArraylength(const T(&)[n]) {
+    static size_t getArraylength(const T (&)[n]) {
         return n;
     }
 
@@ -2594,28 +2934,21 @@ private:
         // ok (array-like pointer)
         check("void f(std::set<int> *s)\n"
               "{\n"
-              "    if (s[0].find(12) != s.end()) { }\n"
+              "    if (s[0].find(12) != s->end()) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         // ok (array)
         check("void f(std::set<int> s [10])\n"
               "{\n"
-              "    if (s[0].find(123) != s.end()) { }\n"
+              "    if (s[0].find(123) != s->end()) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
         // ok (undefined length array)
         check("void f(std::set<int> s [])\n"
               "{\n"
-              "    if (s[0].find(123) != s.end()) { }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // ok (vector)
-        check("void f(std::vector<std::set<int> > s)\n"
-              "{\n"
-              "    if (s[0].find(123) != s.end()) { }\n"
+              "    if (s[0].find(123) != s->end()) { }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -2831,10 +3164,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         code =  "void f()\n"
-                "{\n"
-                "    std::list<int> x;\n"
-                "    if (x.size() >= 1) {}\n"
-                "}";
+               "{\n"
+               "    std::list<int> x;\n"
+               "    if (x.size() >= 1) {}\n"
+               "}";
         check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
         check(code);
@@ -2898,10 +3231,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         code ="void f()\n"
-              "{\n"
-              "    std::list<int> x;\n"
-              "    fun(!x.size());\n"
-              "}";
+               "{\n"
+               "    std::list<int> x;\n"
+               "    fun(!x.size());\n"
+               "}";
         check(code, false, Standards::CPP03);
         ASSERT_EQUALS("[test.cpp:4]: (performance) Possible inefficient checking for 'x' emptiness.\n", errout.str());
         check(code);
@@ -3753,6 +4086,12 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition '(i+1)!=s.end()' is redundant or there is possible dereference of an invalid iterator: i+2.\n", errout.str());
 
+        check("void f(int v, std::map<int, int> &items) {\n"
+              "    for (auto it = items.begin(); it != items.end();)\n"
+              "        (it->first == v) ? it = items.erase(it) : ++it;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(std::string s) {\n"
               "    for (std::string::const_iterator i = s.begin(); i != s.end(); ++i) {\n"
               "        if (i != s.end() && (i + 1) != s.end() && *(i + 1) == *i) {\n"
@@ -3763,6 +4102,21 @@ private:
               "            }\n"
               "        }\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int>::iterator it, const std::vector<int>& vector) {\n"
+              "    if (!(it != vector.end() && it != vector.begin()))\n"
+              "        throw std::out_of_range();\n"
+              "    if (it != vector.end() && *it == 0)\n"
+              "        return -1;\n"
+              "    return *it;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(std::vector<int> &vect) {\n"
+              "    const int &v = *vect.emplace(vect.end());\n"
+              "    return v;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4494,7 +4848,7 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS(
-            "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:12] -> [test.cpp:2] -> [test.cpp:9]: (error) Using iterator to local container 'v' that may be invalid.\n",
+            "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:12] -> [test.cpp:9]: (error) Using iterator to member container 'v' that may be invalid.\n",
             errout.str());
 
         check("void foo(std::vector<int>& v) {\n"
@@ -4509,6 +4863,33 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:1] -> [test.cpp:2] -> [test.cpp:3] -> [test.cpp:7] -> [test.cpp:1] -> [test.cpp:4]: (error) Using iterator to local container 'v' that may be invalid.\n",
             errout.str());
+
+        // #10264
+        check("void f(std::vector<std::string>& x) {\n"
+              "  struct I {\n"
+              "    std::vector<std::string> *px{};\n"
+              "  };\n"
+              "  I i = { &x };\n"
+              "  x.clear();\n"
+              "  Parse(i);\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  std::string x;\n"
+              "  struct V {\n"
+              "    std::string* pStr{};\n"
+              "  };\n"
+              "  struct I {\n"
+              "    std::vector<V> v;\n"
+              "  };\n"
+              "  I b[] = {{{{ &x }}}};\n"
+              "  x = \"Arial\";\n"
+              "  I cb[1];\n"
+              "  for (long i = 0; i < 1; ++i)\n"
+              "    cb[i] = b[i];\n"
+              "}\n",true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
@@ -4535,6 +4916,20 @@ private:
               true);
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::any_of algorithm instead of a raw loop.\n", errout.str());
 
+        check("struct A {\n"
+              "  std::vector<int> v;\n"
+              "  void add(int i) {\n"
+              "    v.push_back(i);\n"
+              "  } \n"
+              "  void f() {\n"
+              "    for(auto i:v)\n"
+              "      add(i);\n"
+              "  }\n"
+              "};\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:7] -> [test.cpp:8]: (error) Calling 'add' while iterating the container is invalid.\n",
+            errout.str());
     }
 
     void findInsert() {
@@ -4772,6 +5167,41 @@ private:
             check(code, true, Standards::CPP17);
             ASSERT_EQUALS("[test.cpp:3]: (performance) Searching before insertion is not necessary.\n", errout.str());
         }
+
+        { // #10558
+            check("void foo() {\n"
+                  "   std::map<int, int> x;\n"
+                  "   int data = 0;\n"
+                  "   for(int i=0; i<10; ++i) {\n"
+                  "      data += 123;\n"
+                  "      if(x.find(5) == x.end())\n"
+                  "         x[5] = data;\n"
+                  "   }\n"
+                  "}", false, Standards::CPP03);
+            ASSERT_EQUALS("", errout.str());
+
+            check("void foo() {\n"
+                  "   std::map<int, int> x;\n"
+                  "   int data = 0;\n"
+                  "   for(int i=0; i<10; ++i) {\n"
+                  "      data += 123;\n"
+                  "      if(x.find(5) == x.end())\n"
+                  "         x[5] = data;\n"
+                  "   }\n"
+                  "}", false, Standards::CPP11);
+            ASSERT_EQUALS("[test.cpp:7]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.emplace(5, data);'.\n", errout.str());
+
+            check("void foo() {\n"
+                  "   std::map<int, int> x;\n"
+                  "   int data = 0;\n"
+                  "   for(int i=0; i<10; ++i) {\n"
+                  "      data += 123;\n"
+                  "      if(x.find(5) == x.end())\n"
+                  "         x[5] = data;\n"
+                  "   }\n"
+                  "}");
+            ASSERT_EQUALS("[test.cpp:7]: (performance) Searching before insertion is not necessary. Instead of 'x[5]=data' consider using 'x.try_emplace(5, data);'.\n", errout.str());
+        }
     }
 
     void checkKnownEmptyContainer() {
@@ -4853,6 +5283,17 @@ private:
               "}",
               true);
         ASSERT_EQUALS("[test.cpp:7]: (style) Iterating over container 'arr' that is always empty.\n", errout.str());
+
+        check("struct S {\n"
+              "    std::vector<int> v;\n"
+              "};\n"
+              "void foo(S& s) {\n"
+              "    s.v.clear();\n"
+              "    bar(s);\n"
+              "    std::sort(s.v.begin(), s.v.end());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkMutexes() {
@@ -5027,6 +5468,22 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void foo() { int f = 0; auto g(f); g = g; }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct foobar {\n"
+              "    int foo;\n"
+              "    std::shared_mutex foo_mtx;\n"
+              "    int bar;\n"
+              "    std::shared_mutex bar_mtx;\n"
+              "};\n"
+              "void f() {\n"
+              "    foobar xyz;\n"
+              "    {\n"
+              "        std::shared_lock shared_foo_lock(xyz.foo_mtx, std::defer_lock);\n"
+              "        std::shared_lock shared_bar_lock(xyz.bar_mtx, std::defer_lock);\n"
+              "        std::scoped_lock shared_multi_lock(shared_foo_lock, shared_bar_lock);\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

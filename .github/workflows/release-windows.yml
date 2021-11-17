@@ -30,9 +30,9 @@ jobs:
 
       - name: Install PCRE
         run: |
-          curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-8.44.zip -o pcre-8.44.zip
-          7z x pcre-8.44.zip
-          cd pcre-8.44
+          curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/8.45.zip -o pcre-8.45.zip
+          7z x pcre-8.45.zip
+          cd pcre-8.45
           cmake . -G "Visual Studio 16 2019" -A x64
           msbuild -m PCRE.sln /p:Configuration=Release /p:Platform=x64
           dir
@@ -53,7 +53,6 @@ jobs:
         with:
           version: '5.15.2'
           modules: 'qtcharts qthelp'
-          mirror: 'http://mirrors.ocf.berkeley.edu/qt/'
 
       - name: Create .qm
         run: |
@@ -70,6 +69,8 @@ jobs:
           cd gui
           qmake HAVE_QCHART=yes
           nmake release
+        env:
+          CL: /MP
 
       - name: Deploy app
         run: |
@@ -80,11 +81,27 @@ jobs:
       - name: Build CLI x64 release configuration using MSBuild
         run: msbuild -m cppcheck.sln /t:cli /p:Configuration=Release-PCRE /p:Platform=x64
 
+      - name: Collect files
+        run: |
+          move Build\gui win_installer\files
+          mkdir win_installer\files\addons
+          copy addons\*.* win_installer\files\addons
+          mkdir win_installer\files\cfg
+          copy cfg\*.cfg win_installer\files\cfg
+          mkdir win_installer\files\platforms
+          copy platforms\*.xml win_installer\files\platforms
+          copy bin\cppcheck.exe win_installer\files
+          copy bin\cppcheck-core.dll win_installer\files
+          copy externals\z3\bin\libz3.dll win_installer\files
+          mkdir win_installer\files\help
+          xcopy /s gui\help win_installer\files\help
+          del win_installer\files\translations\*.qm
+          move gui\*.qm win_installer\files\translations
+
+
       - name: Build Installer
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
-          mkdir bin
-          xcopy /S Build\gui bin
           cd win_installer
           REM Read ProductVersion
           for /f "tokens=4 delims= " %%a in ('find "ProductVersion" productInfo.wxi') do set PRODUCTVER=%%a
@@ -101,4 +118,4 @@ jobs:
       - uses: actions/upload-artifact@v2
         with:
           name: deploy
-          path: Build\gui
+          path: win_installer\files

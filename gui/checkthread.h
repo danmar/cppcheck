@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,9 +31,9 @@ class ThreadResult;
 /// @{
 
 /**
-* @brief Thread to run cppcheck
-*
-*/
+ * @brief Thread to run cppcheck
+ *
+ */
 class CheckThread : public QThread {
     Q_OBJECT
 public:
@@ -41,16 +41,16 @@ public:
     virtual ~CheckThread();
 
     /**
-    * @brief Set settings for cppcheck
-    *
-    * @param settings settings for cppcheck
-    */
+     * @brief Set settings for cppcheck
+     *
+     * @param settings settings for cppcheck
+     */
     void check(const Settings &settings);
 
     /**
-    * @brief Run whole program analysis
-    * @param files    All files
-    */
+     * @brief Run whole program analysis
+     * @param files    All files
+     */
     void analyseWholeProgram(const QStringList &files);
 
     void setAddonsAndTools(const QStringList &addonsAndTools) {
@@ -70,9 +70,9 @@ public:
     }
 
     /**
-    * @brief method that is run in a thread
-    *
-    */
+     * @brief method that is run in a thread
+     *
+     */
     void run();
 
     void stop();
@@ -92,21 +92,21 @@ public:
 signals:
 
     /**
-    * @brief cpp checking is done
-    *
-    */
+     * @brief cpp checking is done
+     *
+     */
     void done();
 
     void fileChecked(const QString &file);
 protected:
 
     /**
-    * @brief States for the check thread.
-    * Whole purpose of these states is to allow stopping of the checking. When
-    * stopping we say for the thread (Stopping) that stop when current check
-    * has been completed. Thread must be stopped cleanly, just terminating thread
-    * likely causes unpredictable side-effects.
-    */
+     * @brief States for the check thread.
+     * Whole purpose of these states is to allow stopping of the checking. When
+     * stopping we say for the thread (Stopping) that stop when current check
+     * has been completed. Thread must be stopped cleanly, just terminating thread
+     * likely causes unpredictable side-effects.
+     */
     enum State {
         Running, /**< The thread is checking. */
         Stopping, /**< The thread will stop after current work. */
@@ -115,14 +115,14 @@ protected:
     };
 
     /**
-    * @brief Thread's current execution state.
-    */
+     * @brief Thread's current execution state.
+     */
     State mState;
 
     ThreadResult &mResult;
     /**
-    * @brief Cppcheck itself
-    */
+     * @brief Cppcheck itself
+     */
     CppCheck mCppcheck;
 
 private:

@@ -29,8 +29,7 @@
 
 class TestLeakAutoVar : public TestFixture {
 public:
-    TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {
-    }
+    TestLeakAutoVar() : TestFixture("TestLeakAutoVar") {}
 
 private:
     Settings settings;
@@ -48,13 +47,14 @@ private:
         settings.library.setalloc("fopen", id, -1);
         settings.library.setrealloc("freopen", id, -1, 3);
         settings.library.setdealloc("fclose", id, 1);
-        settings.library.smartPointers.insert("std::shared_ptr");
-        settings.library.smartPointers.insert("std::unique_ptr");
+        settings.library.smartPointers["std::shared_ptr"];
+        settings.library.smartPointers["std::unique_ptr"];
+        settings.library.smartPointers["std::unique_ptr"].unique = true;
 
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
-        "<def>\n"
-        "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
-        "</def>";
+                               "<def>\n"
+                               "  <podtype name=\"uint8_t\" sign=\"u\" size=\"1\"/>\n"
+                               "</def>";
         tinyxml2::XMLDocument doc;
         doc.Parse(xmldata, sizeof(xmldata));
         settings.library.load(doc);
@@ -217,20 +217,20 @@ private:
         c.runChecks(&tokenizer, &settings, this);
     }
 
-    void check(const char code[], Settings & settings) {
+    void check(const char code[], Settings & settings_) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
-        Tokenizer tokenizer(&settings, this);
+        Tokenizer tokenizer(&settings_, this);
         std::istringstream istr(code);
         tokenizer.tokenize(istr, "test.cpp");
 
         // Check for leaks..
         CheckLeakAutoVar c;
-        settings.checkLibrary = true;
-        settings.severity.enable(Severity::information);
-        c.runChecks(&tokenizer, &settings, this);
+        settings_.checkLibrary = true;
+        settings_.severity.enable(Severity::information);
+        c.runChecks(&tokenizer, &settings_, this);
     }
 
     void assign1() {
@@ -429,13 +429,7 @@ private:
     void assign21() { // #10186
         check("void f(int **x) {\n"
               "    void *p = malloc(10);\n"
-              "    *x = p;\n"
-              "}", true);
-        ASSERT_EQUALS("", errout.str());
-
-        check("void f(struct str *d) {\n"
-              "    void *p = malloc(10);\n"
-              "    d->a = p;\n"
+              "    *x = (int*)p;\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }
@@ -1129,7 +1123,7 @@ private:
               "   } while(!done);\n"
               "   return;"
               "}"
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1157,7 +1151,7 @@ private:
         check("void do_wordexp(FILE *f) {\n"
               "  free(getword(f));\n"
               "  fclose(f);\n"
-              "}", /*cpp=*/false);
+              "}", /*cpp=*/ false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2212,7 +2206,7 @@ private:
               "  mList.push_back(std::shared_ptr<int>(pt));\n"
               "}\n",
               true
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2247,8 +2241,7 @@ REGISTER_TEST(TestLeakAutoVar)
 
 class TestLeakAutoVarRecursiveCountLimit : public TestFixture {
 public:
-    TestLeakAutoVarRecursiveCountLimit() : TestFixture("TestLeakAutoVarRecursiveCountLimit") {
-    }
+    TestLeakAutoVarRecursiveCountLimit() : TestFixture("TestLeakAutoVarRecursiveCountLimit") {}
 
 private:
     Settings settings;
@@ -2307,10 +2300,9 @@ private:
 
 REGISTER_TEST(TestLeakAutoVarRecursiveCountLimit)
 
-class TestLeakAutoVarStrcpy: public TestFixture {
+class TestLeakAutoVarStrcpy : public TestFixture {
 public:
-    TestLeakAutoVarStrcpy() : TestFixture("TestLeakAutoVarStrcpy") {
-    }
+    TestLeakAutoVarStrcpy() : TestFixture("TestLeakAutoVarStrcpy") {}
 
 private:
     Settings settings;
@@ -2360,8 +2352,7 @@ REGISTER_TEST(TestLeakAutoVarStrcpy)
 
 class TestLeakAutoVarWindows : public TestFixture {
 public:
-    TestLeakAutoVarWindows() : TestFixture("TestLeakAutoVarWindows") {
-    }
+    TestLeakAutoVarWindows() : TestFixture("TestLeakAutoVarWindows") {}
 
 private:
     Settings settings;

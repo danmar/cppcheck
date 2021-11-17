@@ -1,6 +1,6 @@
 ---
 title: Cppcheck manual
-subtitle: Version 2.4
+subtitle: Version 2.6
 author: Cppcheck team
 lang: en
 documentclass: report
@@ -24,9 +24,10 @@ The checks in Cppcheck are not perfect. There are bugs that should be found, tha
 ## About static analysis
 
 The kinds of bugs that you can find with static analysis are:
- * undefined behavior
- * using dangerous code patterns
- * coding style
+
+- Undefined behavior
+- Using dangerous code patterns
+- Coding style
 
 There are many bugs that you can not find with static analysis. Static analysis tools do not have human knowledge about
 what your program is intended to do. If the output from your program is valid but unexpected then in most cases this is
@@ -34,10 +35,11 @@ not detected by static analysis tools. For instance, if your small program write
 it is unlikely that any tool will complain about that.
 
 Static analysis should be used as a complement in your quality assurance. It does not replace any of;
- * careful design
- * testing
- * dynamic analysis
- * fuzzing
+
+- Careful design
+- Testing
+- Dynamic analysis
+- Fuzzing
 
 # Getting started
 
@@ -228,6 +230,25 @@ Example code with template specialisation:
 You can pass `-D__cppcheck__` when checking this code.
 
 
+# Cppcheck build folder
+
+Using a Cppcheck build folder is not mandatory but it is recommended.
+
+Cppcheck save analyzer information in that folder.
+
+The advantages are;
+
+- It speeds up the analysis as it makes incremental analysis possible. Only changed files are analyzed when you recheck.
+- Whole program analysis also when multiple threads are used.
+
+On the command line you configure that through `--cppcheck-build-dir=path`. Example:
+
+    mkdir b
+    cppcheck --cppcheck-build-dir=b src # <- All files are analyzed
+    cppcheck --cppcheck-build-dir=b src # <- Faster! Results of unchanged files are reused
+
+In the GUI it is configured in the project settings.
+
 # Importing a project
 
 You can import some project files and build configurations into Cppcheck.
@@ -404,6 +425,17 @@ The available options are:
 - c++14: C++ code is C++14 compatible
 - c++17: C++ code is C++17 compatible
 - c++20: C++ code is C++20 compatible (default)
+
+# Cppcheck build dir
+
+It's a good idea to use a Cppcheck build dir. On the command line use `--cppcheck-build-dir`. In
+the GUI, the build dir is configured in the project options.
+
+Rechecking code will be much faster. Cppcheck does not analyse unchanged code. The old warnings are
+loaded from the build dir and reported again.
+
+Whole program analysis does not work when multiple threads are used; unless you use a cppcheck
+build dir. For instance, the unusedFunction warnings require whole program analysis.
 
 # Suppressions
 
@@ -851,7 +883,7 @@ Cppcheck is distributed with a few addons which are listed below.
 
 This standard is proprietary, and open source tools are not allowed to distribute the Misra rule texts. Therefore Cppcheck is not allowed to write the rule texts directly. Cppcheck is allowed to distribute the rules and display the id of each violated rule (for example, [c2012-21.3]). The corresponding rule text can also be written however you need to provide that. To get the rule texts, please buy the PDF from MISRA (https://www.misra.org.uk). If you copy the rule texts from "Appendix A - Summary of guidelines" in the PDF and write those in a text file, then by using that text file Cppcheck can write the proper warning messages. To see how the text file can be formatted, take a look at the files listed here: https://github.com/danmar/cppcheck/blob/main/addons/test/misra/. You can use the option `--rule-texts` to specify your rules text file.
 
-The full list of supported rules is available on [Cppcheck](http://cppcheck.sourceforge.net/misra.php) home page.
+The full list of supported rules is available on [Cppcheck](https://cppcheck.sourceforge.io/misra.php) home page.
 
 ### y2038.py
 
@@ -901,7 +933,7 @@ You can create and use your own .cfg files for your projects. Use `--check-libra
 
 You can use the `Library Editor` in the `Cppcheck GUI` to edit configuration files. It is available in the `View` menu.
 
-The .cfg file format is documented in the `Reference: Cppcheck .cfg format` (http://cppcheck.sf.net/reference-cfg-format.pdf) document.
+The .cfg file format is documented in the `Reference: Cppcheck .cfg format` (https://cppcheck.sf.net/reference-cfg-format.pdf) document.
 
 # HTML Report
 

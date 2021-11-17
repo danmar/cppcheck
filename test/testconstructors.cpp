@@ -25,8 +25,7 @@
 
 class TestConstructors : public TestFixture {
 public:
-    TestConstructors() : TestFixture("TestConstructors") {
-    }
+    TestConstructors() : TestFixture("TestConstructors") {}
 
 private:
     Settings settings;
@@ -44,6 +43,20 @@ private:
 
         // Check class constructors..
         CheckClass checkClass(&tokenizer, &settings, this);
+        checkClass.constructors();
+    }
+
+    void check(const char code[], const Settings &s) {
+        // Clear the error buffer..
+        errout.str("");
+
+        // Tokenize..
+        Tokenizer tokenizer(&s, this);
+        std::istringstream istr(code);
+        tokenizer.tokenize(istr, "test.cpp");
+
+        // Check class constructors..
+        CheckClass checkClass(&tokenizer, &s, this);
         checkClass.constructors();
     }
 
@@ -65,6 +78,7 @@ private:
         TEST_CASE(simple12); // ticket #4620
         TEST_CASE(simple13); // #5498 - no constructor, c++11 assignments
         TEST_CASE(simple14); // #6253 template base
+        TEST_CASE(simple15); // #8942 multiple arguments, decltype
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -94,6 +108,7 @@ private:
         TEST_CASE(initvar_2constructors);       // BUG 2270353
         TEST_CASE(initvar_constvar);
         TEST_CASE(initvar_staticvar);
+        TEST_CASE(initvar_brace_init);
         TEST_CASE(initvar_union);
         TEST_CASE(initvar_delegate);       // ticket #4302
         TEST_CASE(initvar_delegate2);
@@ -148,6 +163,7 @@ private:
         TEST_CASE(uninitVar30); // ticket #6417
         TEST_CASE(uninitVar31); // ticket #8271
         TEST_CASE(uninitVar32); // ticket #8835
+        TEST_CASE(uninitVar33); // ticket #10295
         TEST_CASE(uninitVarEnum1);
         TEST_CASE(uninitVarEnum2); // ticket #8146
         TEST_CASE(uninitVarStream);
@@ -175,6 +191,7 @@ private:
         TEST_CASE(privateCtor2);           // If constructor is private..
         TEST_CASE(function);               // Function is not variable
         TEST_CASE(uninitVarPublished);     // Borland C++: Variables in the published section are auto-initialized
+        TEST_CASE(uninitVarInheritClassInit); // Borland C++: if class inherits from TObject, all variables are initialized
         TEST_CASE(uninitOperator);         // No FP about uninitialized 'operator[]'
         TEST_CASE(uninitFunction1);        // No FP when initialized in function
         TEST_CASE(uninitFunction2);        // No FP when initialized in function
@@ -470,6 +487,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void simple15() { // #8942
+        check("class A\n"
+              "{\n"
+              "public:\n"
+              "  int member;\n"
+              "};\n"
+              "class B\n"
+              "{\n"
+              "public:\n"
+              "  B(const decltype(A::member)& x, const decltype(A::member)& y) : x(x), y(y) {}\n"
+              "private:\n"
+              "  const decltype(A::member)& x;\n"
+              "  const decltype(A::member)& y;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void noConstructor1() {
         // There are nonstatic member variables - constructor is needed
         check("class Fred\n"
@@ -566,7 +600,7 @@ private:
               "public:\n"
               "    A(wxWindow *parent,\n"
               "      wxWindowID id = 1,\n"
-              "      const wxString &title = wxT(""),\n"
+              "      const wxString &title = wxT(" "),\n"
               "      const wxPoint& pos = wxDefaultPosition,\n"
               "      const wxSize& size = wxDefaultSize,\n"
               "      long style = wxDIALOG_NO_PARENT | wxMINIMIZE_BOX | wxMAXIMIZE_BOX | wxCLOSE_BOX);\n"
@@ -1008,6 +1042,19 @@ private:
               "public:\n"
               "    Fred() { }\n"
               "    static void *p;\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void initvar_brace_init() { // #10142
+        check("class C\n"
+              "{\n"
+              "public:\n"
+              "  C() {}\n"
+              "\n"
+              "private:\n"
+              "  std::map<int, double> * values_{};\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2524,6 +2571,18 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Foo::member' is not initialized in the constructor.\n", errout.str());
     }
 
+    void uninitVar33() { // ticket #10295
+        check("namespace app {\n"
+              "    class B {\n"
+              "    public:\n"
+              "        B(void);\n"
+              "        int x;\n"
+              "    };\n"
+              "};\n"
+              "app::B::B(void){}");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable 'B::x' is not initialized in the constructor.\n", errout.str());
+    }
+
     void uninitVarArray1() {
         check("class John\n"
               "{\n"
@@ -3147,6 +3206,20 @@ private:
               "public:\n"
               "    Fred() { }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitVarInheritClassInit() {
+        Settings s;
+        s.libraries.emplace_back("vcl");
+
+        check("class Fred: public TObject\n"
+              "{\n"
+              "public:\n"
+              "    Fred() { }\n"
+              "private:\n"
+              "    int x;\n"
+              "};", s);
         ASSERT_EQUALS("", errout.str());
     }
 

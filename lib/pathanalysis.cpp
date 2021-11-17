@@ -35,7 +35,7 @@ std::pair<bool, bool> PathAnalysis::checkCond(const Token * tok, bool& known)
     });
     // If all possible values are the same, then assume all paths have the same value
     if (it != tok->values().end() && std::all_of(it, tok->values().end(), [&](const ValueFlow::Value& v) {
-    if (v.isIntValue())
+        if (v.isIntValue())
             return v.intvalue == it->intvalue;
         return true;
     })) {
@@ -161,7 +161,7 @@ void PathAnalysis::forward(const std::function<Progress(const Info&)>& f) const
 
 bool reaches(const Token * start, const Token * dest, const Library& library, ErrorPath* errorPath)
 {
-    PathAnalysis::Info info = PathAnalysis{start, library} .forwardFind([&](const PathAnalysis::Info& i) {
+    PathAnalysis::Info info = PathAnalysis{start, library}.forwardFind([&](const PathAnalysis::Info& i) {
         return (i.tok == dest);
     });
     if (!info.tok)

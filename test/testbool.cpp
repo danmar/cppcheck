@@ -25,8 +25,7 @@
 
 class TestBool : public TestFixture {
 public:
-    TestBool() : TestFixture("TestBool") {
-    }
+    TestBool() : TestFixture("TestBool") {}
 
 private:
     Settings settings;
@@ -152,7 +151,7 @@ private:
               "  const int *rmat = n < 4 ? " /* OK */
               "                       ctx->q_intra_matrix :"
               "                       ctx->q_chroma_intra_matrix;\n"
-              "}", /*experimental=*/false, "test.c");
+              "}", /*experimental=*/ false, "test.c");
         ASSERT_EQUALS("[test.c:3]: (error) Boolean value assigned to pointer.\n", errout.str());
 
         // ticket #6588 (c++ mode)
@@ -171,7 +170,7 @@ private:
               "  char* m1 = compare(a, b) < 0\n"
               "      ? (compare(b, c) < 0 ? b : (compare(a, c) < 0 ? c : a))\n"
               "      : (compare(a, c) < 0 ? a : (compare(b, c) < 0 ? c : b));\n"
-              "}", /*experimental=*/false, "test.c");
+              "}", /*experimental=*/ false, "test.c");
         ASSERT_EQUALS("", errout.str());
 
         // #7381
@@ -296,7 +295,7 @@ private:
               "    if ((5 && x) < 0)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
 
         check("void f(int x) {\n"
@@ -309,7 +308,7 @@ private:
               "    if ((5 && x) > 1)\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
 
 
@@ -323,7 +322,7 @@ private:
               "    if (0 > (5 && x))\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
 
         check("void f(int x) {\n"
@@ -336,7 +335,7 @@ private:
               "    if (1 < (5 && x))\n"
               "        a++;\n"
               "}"
-             );
+              );
         ASSERT_EQUALS("[test.cpp:2]: (warning) Comparison of a boolean expression with an integer.\n", errout.str());
 
         check("void f(bool x ) {\n"
@@ -811,6 +810,26 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'a>0' is used in bitwise operation. Did you mean '&&'?\n", errout.str());
 
+        check("void f(bool a, int b) {\n"
+              "    if(a | b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+
+        check("void f(int a, bool b) {\n"
+              "    if(a | b) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'b' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+
+        check("int f(bool a, int b) {\n"
+              "    return a | b;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(bool a, int b) {\n"
+              "    return a | b;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style, inconclusive) Boolean expression 'a' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+
         check("void f(int a, int b) {\n"
               "    if(a & b) {}\n"
               "}");
@@ -824,6 +843,12 @@ private:
         check("void f(bool b) {\n" // #9405
               "    class C { void foo(bool &b) {} };\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f();\n"
+              "bool g() {\n"
+              "  return f() | f();\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

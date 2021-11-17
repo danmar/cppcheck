@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "resultstree.h"
+
 #include <QApplication>
-#include <QWidget>
 #include <QDebug>
-#include <QString>
-#include <QStringList>
 #include <QList>
 #include <QMap>
 #include <QVariant>
@@ -35,12 +34,11 @@
 #include <QClipboard>
 #include <QDesktopServices>
 #include <QUrl>
-#include <QContextMenuEvent>
-#include <QModelIndex>
+#include <QKeyEvent>
+#include <QSettings>
 #include "common.h"
 #include "erroritem.h"
 #include "applicationlist.h"
-#include "resultstree.h"
 #include "report.h"
 #include "application.h"
 #include "projectfile.h"
@@ -100,8 +98,7 @@ ResultsTree::ResultsTree(QWidget * parent) :
 }
 
 ResultsTree::~ResultsTree()
-{
-}
+{}
 
 void ResultsTree::keyPressEvent(QKeyEvent *event)
 {
@@ -140,7 +137,7 @@ QStandardItem *ResultsTree::createCheckboxItem(bool checked)
 QStandardItem *ResultsTree::createLineNumberItem(const QString &linenumber)
 {
     QStandardItem *item = new QStandardItem();
-    item->setData(QVariant(linenumber.toULongLong()), Qt::DisplayRole);
+    item->setData(QVariant(linenumber.toInt()), Qt::DisplayRole);
     item->setToolTip(linenumber);
     item->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
     item->setEditable(false);
@@ -200,10 +197,10 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     //file item as a parent
     QStandardItem* fileItem = ensureFileItem(loc.file, item.file0, hide);
     QStandardItem* stditem = addBacktraceFiles(fileItem,
-                             line,
-                             hide,
-                             severityToIcon(line.severity),
-                             false);
+                                               line,
+                                               hide,
+                                               severityToIcon(line.severity),
+                                               false);
 
     if (!stditem)
         return false;
@@ -230,7 +227,7 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     stditem->setData(QVariant(data));
 
     //Add backtrace files as children
-    if (item.errorPath.size() > 1U) {
+    if (item.errorPath.size() > 1) {
         for (int i = 0; i < item.errorPath.size(); i++) {
             const QErrorPathItem &e = item.errorPath[i];
             line.file = e.file;
@@ -271,10 +268,10 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
 }
 
 QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
-        const ErrorLine &item,
-        const bool hide,
-        const QString &icon,
-        bool childOfMessage)
+                                              const ErrorLine &item,
+                                              const bool hide,
+                                              const QString &icon,
+                                              bool childOfMessage)
 {
     if (!parent) {
         return nullptr;
@@ -778,9 +775,6 @@ void ResultsTree::startApplication(QStandardItem *target, int application)
         //Replace (file) with filename
         QString file = data[FILENAME].toString();
         file = QDir::toNativeSeparators(file);
-#ifdef Q_OS_WIN
-        file.replace(QString("\\"), QString("\\\\"));
-#endif
         qDebug() << "Opening file: " << file;
 
         QFileInfo info(file);
@@ -866,8 +860,8 @@ QString ResultsTree::askFileDir(const QString &file)
     msgbox.exec();
 
     QString dir = QFileDialog::getExistingDirectory(this, title,
-                  getPath(SETTINGS_LAST_SOURCE_PATH),
-                  QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
+                                                    getPath(SETTINGS_LAST_SOURCE_PATH),
+                                                    QFileDialog::ShowDirsOnly | QFileDialog::DontResolveSymlinks);
 
     if (dir.isEmpty())
         return QString();
@@ -1320,7 +1314,7 @@ void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) con
 
         QErrorPathItem e;
         e.file = stripPath(child_data[FILENAME].toString(), true);
-        e.line = child_data[LINE].toUInt();
+        e.line = child_data[LINE].toInt();
         e.info = child_data[MESSAGE].toString();
         item->errorPath << e;
     }

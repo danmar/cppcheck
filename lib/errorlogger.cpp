@@ -18,6 +18,7 @@
 
 #include "errorlogger.h"
 
+#include "color.h"
 #include "cppcheck.h"
 #include "mathlib.h"
 #include "path.h"
@@ -25,6 +26,7 @@
 #include "tokenlist.h"
 #include "utils.h"
 
+#include <string>
 #include <tinyxml2.h>
 #include <array>
 #include <cassert>
@@ -32,7 +34,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
-#include <functional> // std::hash
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg), type(type)
@@ -68,8 +69,7 @@ static std::size_t calculateWarningHash(const TokenList *tokenList, const std::s
 
 ErrorMessage::ErrorMessage()
     : incomplete(false), severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
-{
-}
+{}
 
 ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, Certainty::CertaintyLevel certainty) :
     callStack(callStack), // locations for this error message
@@ -179,9 +179,9 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
     : incomplete(false),
-      severity(Severity::none),
-      cwe(0U),
-      certainty(Certainty::normal)
+    severity(Severity::none),
+    cwe(0U),
+    certainty(Certainty::normal)
 {
     const char * const unknown = "<UNKNOWN>";
 
@@ -217,7 +217,7 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const char *info = strinfo ? strinfo : "";
             const int line = strline ? std::atoi(strline) : 0;
             const int column = strcolumn ? std::atoi(strcolumn) : 0;
-            callStack.emplace_back(file, info, line, column);
+            callStack.emplace_front(file, info, line, column);
         }
     }
 }
@@ -256,6 +256,8 @@ Suppressions::ErrorMessage ErrorMessage::toSuppressionsErrorMessage() const
     if (!callStack.empty()) {
         ret.setFileName(callStack.back().getfile(false));
         ret.lineNumber = callStack.back().line;
+    } else {
+        ret.lineNumber = Suppressions::Suppression::NO_LINE;
     }
     ret.certainty = certainty;
     ret.symbolNames = mSymbolNames;
@@ -271,6 +273,7 @@ std::string ErrorMessage::serialize() const
     oss << Severity::toString(severity).length() << " " << Severity::toString(severity);
     oss << MathLib::toString(cwe.id).length() << " " << MathLib::toString(cwe.id);
     oss << MathLib::toString(hash).length() << " " << MathLib::toString(hash);
+    oss << file0.size() << " " << file0;
     if (certainty == Certainty::inconclusive) {
         const std::string text("inconclusive");
         oss << text.length() << " " << text;
@@ -297,9 +300,9 @@ bool ErrorMessage::deserialize(const std::string &data)
     certainty = Certainty::normal;
     callStack.clear();
     std::istringstream iss(data);
-    std::array<std::string, 6> results;
+    std::array<std::string, 7> results;
     std::size_t elem = 0;
-    while (iss.good() && elem < 6) {
+    while (iss.good() && elem < 7) {
         unsigned int len = 0;
         if (!(iss >> len))
             return false;
@@ -319,15 +322,16 @@ bool ErrorMessage::deserialize(const std::string &data)
         results[elem++] = temp;
     }
 
-    if (elem != 6)
+    if (elem != 7)
         throw InternalError(nullptr, "Internal Error: Deserialization of error message failed");
 
     id = results[0];
     severity = Severity::fromString(results[1]);
     std::istringstream(results[2]) >> cwe.id;
     std::istringstream(results[3]) >> hash;
-    mShortMessage = results[4];
-    mVerboseMessage = results[5];
+    std::istringstream(results[4]) >> file0;
+    mShortMessage = results[5];
+    mVerboseMessage = results[6];
 
     unsigned int stackSize = 0;
     if (!(iss >> stackSize))
@@ -439,10 +443,11 @@ std::string ErrorMessage::toXML() const
     if (certainty == Certainty::inconclusive)
         printer.PushAttribute("inconclusive", "true");
 
+    if (!file0.empty())
+        printer.PushAttribute("file0", file0.c_str());
+
     for (std::list<FileLocation>::const_reverse_iterator it = callStack.rbegin(); it != callStack.rend(); ++it) {
         printer.OpenElement("location", false);
-        if (!file0.empty() && (*it).getfile() != file0)
-            printer.PushAttribute("file0", Path::toNativeSeparators(file0).c_str());
         printer.PushAttribute("file", (*it).getfile().c_str());
         printer.PushAttribute("line", std::max((*it).line,0));
         printer.PushAttribute("column", (*it).column);
@@ -468,7 +473,14 @@ std::string ErrorMessage::toXML() const
     return printer.CStr();
 }
 
-void ErrorMessage::findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
+/**
+ * Replace all occurrences of searchFor with replaceWith in the
+ * given source.
+ * @param source The string to modify
+ * @param searchFor What should be searched for
+ * @param replaceWith What will replace the found item
+ */
+static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith)
 {
     std::string::size_type index = 0;
     while ((index = source.find(searchFor, index)) != std::string::npos) {
@@ -492,6 +504,18 @@ static std::string readCode(const std::string &file, int linenr, int column, con
     while ((pos = line.find('\t', pos)) != std::string::npos)
         line[pos] = ' ';
     return line + endl + std::string((column>0 ? column-1 : column), ' ') + '^';
+}
+
+static void replaceColors(std::string& source)
+{
+    findAndReplace(source, "{reset}", ::toString(Color::Reset));
+    findAndReplace(source, "{bold}", ::toString(Color::Bold));
+    findAndReplace(source, "{dim}", ::toString(Color::Dim));
+    findAndReplace(source, "{red}", ::toString(Color::FgRed));
+    findAndReplace(source, "{green}", ::toString(Color::FgGreen));
+    findAndReplace(source, "{blue}", ::toString(Color::FgBlue));
+    findAndReplace(source, "{magenta}", ::toString(Color::FgMagenta));
+    findAndReplace(source, "{default}", ::toString(Color::FgDefault));
 }
 
 std::string ErrorMessage::toString(bool verbose, const std::string &templateFormat, const std::string &templateLocation) const
@@ -522,13 +546,16 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
     findAndReplace(result, "\\r", "\r");
     findAndReplace(result, "\\t", "\t");
 
+    replaceColors(result);
     findAndReplace(result, "{id}", id);
-    if (result.find("{inconclusive:") != std::string::npos) {
-        const std::string::size_type pos1 = result.find("{inconclusive:");
+
+    std::string::size_type pos1 = result.find("{inconclusive:");
+    while (pos1 != std::string::npos) {
         const std::string::size_type pos2 = result.find('}', pos1+1);
         const std::string replaceFrom = result.substr(pos1,pos2-pos1+1);
         const std::string replaceWith = (certainty == Certainty::inconclusive) ? result.substr(pos1+14, pos2-pos1-14) : std::string();
         findAndReplace(result, replaceFrom, replaceWith);
+        pos1 = result.find("{inconclusive:", pos1);
     }
     findAndReplace(result, "{severity}", Severity::toString(severity));
     findAndReplace(result, "{cwe}", MathLib::toString(cwe.id));
@@ -565,6 +592,7 @@ std::string ErrorMessage::toString(bool verbose, const std::string &templateForm
             findAndReplace(text, "\\r", "\r");
             findAndReplace(text, "\\t", "\t");
 
+            replaceColors(text);
             findAndReplace(text, "{file}", fileLocation.getfile());
             findAndReplace(text, "{line}", MathLib::toString(fileLocation.line));
             findAndReplace(text, "{column}", MathLib::toString(fileLocation.column));
@@ -633,13 +661,11 @@ std::string ErrorLogger::callStackToString(const std::list<ErrorMessage::FileLoc
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* tokenList)
     : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
-{
-}
+{}
 
 ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList)
     : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(info)
-{
-}
+{}
 
 std::string ErrorMessage::FileLocation::getfile(bool convert) const
 {
@@ -722,9 +748,9 @@ std::string ErrorLogger::plistHeader(const std::string &version, const std::vect
          << " <array>\r\n";
     for (const std::string & file : files)
         ostr << "  <string>" << ErrorLogger::toxml(file) << "</string>\r\n";
-    ostr       << " </array>\r\n"
-               << " <key>diagnostics</key>\r\n"
-               << " <array>\r\n";
+    ostr << " </array>\r\n"
+         << " <key>diagnostics</key>\r\n"
+         << " <array>\r\n";
     return ostr.str();
 }
 

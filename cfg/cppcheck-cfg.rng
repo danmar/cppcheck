@@ -110,6 +110,21 @@
             </element>
           </optional>
           <optional>
+            <element name="container">
+              <optional>
+                <attribute name="action">
+                  <ref name="CONTAINER-ACTION"/>
+                </attribute>
+              </optional>
+              <optional>
+                <attribute name="yields">
+                  <ref name="CONTAINER-YIELDS"/>
+                </attribute>
+              </optional>
+              <empty/>
+            </element>            
+          </optional>
+          <optional>
             <element name="pure"><empty/></element>
           </optional>
           <optional>
@@ -161,6 +176,23 @@
               </optional>
               <optional>
                 <attribute name="secure"><ref name="DATA-BOOL"/></attribute>
+              </optional>
+              <empty/>
+            </element>
+          </optional>
+          <optional>
+            <element name="not-overlapping-data">
+              <optional>
+                <attribute name="ptr1-arg"><data type="positiveInteger"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="ptr2-arg"><data type="positiveInteger"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="size-arg"><data type="positiveInteger"/></attribute>
+              </optional>
+              <optional>
+                <attribute name="strlen-arg"><data type="positiveInteger"/></attribute>
               </optional>
               <empty/>
             </element>
@@ -385,6 +417,9 @@
           <attribute name="hasInitializerListConstructor"><ref name="DATA-BOOL"/></attribute>
         </optional>
         <optional>
+          <attribute name="view"><ref name="DATA-BOOL"/></attribute>
+        </optional>
+        <optional>
           <attribute name="itEndPattern"><text/></attribute>
         </optional>
         <zeroOrMore>
@@ -470,6 +505,11 @@
 
       <element name="smart-pointer">
         <attribute name="class-name"><ref name="DATA-EXTNAME"/></attribute>
+        <optional>
+          <element name="unique">
+            <empty/>
+          </element>
+        </optional>
       </element>
 
       <element name="type-checks">

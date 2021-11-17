@@ -31,7 +31,6 @@
 #include <cstring>
 #include <fstream>
 #include <utility>
-#include <sstream>
 
 
 ImportProject::ImportProject()
@@ -198,21 +197,27 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
 
     const std::string fileFilter = settings ? settings->fileFilter : std::string();
 
-    if (endsWith(filename, ".json", 5)) {
+    if (endsWith(filename, ".json")) {
         importCompileCommands(fin);
+        setRelativePaths(filename);
         return ImportProject::Type::COMPILE_DB;
-    } else if (endsWith(filename, ".sln", 4)) {
+    } else if (endsWith(filename, ".sln")) {
         importSln(fin, mPath, fileFilter);
+        setRelativePaths(filename);
         return ImportProject::Type::VS_SLN;
-    } else if (endsWith(filename, ".vcxproj", 8)) {
+    } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         importVcxproj(filename, variables, emptyString, fileFilter);
+        setRelativePaths(filename);
         return ImportProject::Type::VS_VCXPROJ;
-    } else if (endsWith(filename, ".bpr", 4)) {
+    } else if (endsWith(filename, ".bpr")) {
         importBcb6Prj(filename);
+        setRelativePaths(filename);
         return ImportProject::Type::BORLAND;
-    } else if (settings && endsWith(filename, ".cppcheck", 9)) {
-        return importCppcheckGuiProject(fin, settings) ? ImportProject::Type::CPPCHECK_GUI : ImportProject::Type::MISSING;
+    } else if (settings && endsWith(filename, ".cppcheck")) {
+        const bool success = importCppcheckGuiProject(fin, settings);
+        setRelativePaths(filename);
+        return success ? ImportProject::Type::CPPCHECK_GUI : ImportProject::Type::MISSING;
     }
     return ImportProject::Type::UNKNOWN;
 }
@@ -289,7 +294,7 @@ void ImportProject::FileSettings::parseCommand(std::string command)
             defs += fval;
             if (defval.size() >= 3 && defval.compare(0,2,"=\"")==0 && defval.back()=='\"')
                 defval = "=" + unescape(defval.substr(2, defval.size() - 3));
-            else if (defval.size() >= 5 && defval.compare(0,3,"=\\\"")==0 && endsWith(defval,"\\\"",2))
+            else if (defval.size() >= 5 && defval.compare(0, 3, "=\\\"") == 0 && endsWith(defval, "\\\""))
                 defval = "=\"" + unescape(defval.substr(3, defval.size() - 5)) + "\"";
             if (!defval.empty())
                 defs += defval;
@@ -310,7 +315,7 @@ void ImportProject::FileSettings::parseCommand(std::string command)
                 std::string stddef;
                 if (standard == "c++98" || standard == "gnu++98" || standard == "c++03" || standard == "gnu++03") {
                     stddef = "199711L";
-                } else if (standard == "c++11" || standard == "gnu++11"|| standard == "c++0x" || standard == "gnu++0x") {
+                } else if (standard == "c++11" || standard == "gnu++11" || standard == "c++0x" || standard == "gnu++0x") {
                     stddef = "201103L";
                 } else if (standard == "c++14" || standard == "gnu++14" || standard == "c++1y" || standard == "gnu++1y") {
                     stddef = "201402L";
@@ -399,18 +404,18 @@ void ImportProject::importCompileCommands(std::istream &istr)
 
         std::ostringstream comm;
         if (obj.find("arguments") != obj.end()) {
-            if (obj[ "arguments" ].is< picojson::array >()) {
-                for (const picojson::value& arg : obj[ "arguments" ].get< picojson::array >()) {
-                    if (arg.is< std::string >()) {
-                        comm << arg.get< std::string >() << " ";
+            if (obj["arguments"].is<picojson::array>()) {
+                for (const picojson::value& arg : obj["arguments"].get<picojson::array>()) {
+                    if (arg.is<std::string>()) {
+                        comm << arg.get<std::string>() << " ";
                     }
                 }
             } else {
                 return;
             }
         } else if (obj.find("command") != obj.end()) {
-            if (obj[ "command" ].is< std::string >()) {
-                comm << obj[ "command" ].get< std::string >();
+            if (obj["command"].is<std::string>()) {
+                comm << obj["command"].get<std::string>();
             }
         } else {
             return;
@@ -1239,5 +1244,17 @@ void ImportProject::selectOneVsConfig(Settings::PlatformType platform)
 
 std::list<std::string> ImportProject::getVSConfigs()
 {
-    return std::list<std::string> (mAllVSConfigs.begin(), mAllVSConfigs.end());
+    return std::list<std::string>(mAllVSConfigs.begin(), mAllVSConfigs.end());
+}
+
+void ImportProject::setRelativePaths(const std::string &filename)
+{
+    if (Path::isAbsolute(filename))
+        return;
+    const std::vector<std::string> basePaths{Path::fromNativeSeparators(Path::getCurrentPath())};
+    for (auto &fs: fileSettings) {
+        fs.filename = Path::getRelativePath(fs.filename, basePaths);
+        for (auto &includePath: fs.includePaths)
+            includePath = Path::getRelativePath(includePath, basePaths);
+    }
 }

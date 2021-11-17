@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,14 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
+#include "threadhandler.h"
+
 #include <QFileInfo>
-#include <QStringList>
 #include <QDebug>
+#include <QSettings>
 #include "common.h"
 #include "settings.h"
 #include "checkthread.h"
-#include "threadhandler.h"
 #include "resultsview.h"
 
 ThreadHandler::ThreadHandler(QObject *parent) :
@@ -92,8 +92,15 @@ void ThreadHandler::check(const Settings &settings)
         mRunningThreadCount = mResults.getFileCount();
     }
 
+    QStringList addonsAndTools = mAddonsAndTools;
+    for (const std::string& addon: settings.addons) {
+        QString s = QString::fromStdString(addon);
+        if (!addonsAndTools.contains(s))
+            addonsAndTools << s;
+    }
+
     for (int i = 0; i < mRunningThreadCount; i++) {
-        mThreads[i]->setAddonsAndTools(mAddonsAndTools);
+        mThreads[i]->setAddonsAndTools(addonsAndTools);
         mThreads[i]->setSuppressions(mSuppressions);
         mThreads[i]->setClangIncludePaths(mClangIncludePaths);
         mThreads[i]->setDataDir(mDataDir);
@@ -198,7 +205,7 @@ void ThreadHandler::initialize(ResultsView *view)
             this, &ThreadHandler::bughuntingReportLine);
 }
 
-void ThreadHandler::loadSettings(QSettings &settings)
+void ThreadHandler::loadSettings(const QSettings &settings)
 {
     setThreadCount(settings.value(SETTINGS_CHECK_THREADS, 1).toInt());
 }

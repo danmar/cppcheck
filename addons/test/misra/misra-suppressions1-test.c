@@ -6,11 +6,11 @@
 // If it is changed update suppressions.txt with the new line number
 #include <stdio.h> //21.6
 
-extern int misra_5_2_var_hides_var______31x;
+extern int misra_5_2_var_hides_var______31x;//8.4
 static int misra_5_2_var_hides_var______31y;//5.2
 static int misra_5_2_function_hides_var_31x;
-void misra_5_2_function_hides_var_31y(void) {}//5.2
-void foo(void)
+static void misra_5_2_function_hides_var_31y(void) {}//5.2
+static void foo(void)
 {
   int i;
   switch(misra_5_2_func1()) //16.4 16.6

@@ -25,11 +25,11 @@
 #include "check.h"
 #include "config.h"
 #include "ctu.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
 #include "valueflow.h"
 
-#include <cstddef>
 #include <list>
 #include <map>
 #include <string>
@@ -60,13 +60,11 @@ class CPPCHECKLIB CheckBufferOverrun : public Check {
 public:
 
     /** This constructor is used when registering the CheckClass */
-    CheckBufferOverrun() : Check(myName()) {
-    }
+    CheckBufferOverrun() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
@@ -76,16 +74,18 @@ public:
         checkBufferOverrun.arrayIndexThenCheck();
         checkBufferOverrun.stringNotZeroTerminated();
         checkBufferOverrun.objectIndex();
+        checkBufferOverrun.argumentSize();
     }
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckBufferOverrun c(nullptr, settings, errorLogger);
-        c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
+        c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
         c.pointerArithmeticError(nullptr, nullptr, nullptr);
-        c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<const ValueFlow::Value *>());
+        c.negativeIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
         c.arrayIndexThenCheckError(nullptr, "i");
-        c.bufferOverflowError(nullptr, nullptr);
+        c.bufferOverflowError(nullptr, nullptr, Certainty::normal);
         c.objectIndexError(nullptr, nullptr, true);
+        c.argumentSizeError(nullptr, "function", 1, "buffer", nullptr, nullptr);
     }
 
     /** @brief Parse current TU and extract file info */
@@ -97,20 +97,27 @@ public:
 private:
 
     void arrayIndex();
-    void arrayIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
-    void negativeIndexError(const Token *tok, const std::vector<Dimension> &dimensions, const std::vector<const ValueFlow::Value *> &indexes);
+    void arrayIndexError(const Token* tok,
+                         const std::vector<Dimension>& dimensions,
+                         const std::vector<ValueFlow::Value>& indexes);
+    void negativeIndexError(const Token* tok,
+                            const std::vector<Dimension>& dimensions,
+                            const std::vector<ValueFlow::Value>& indexes);
 
     void pointerArithmetic();
     void pointerArithmeticError(const Token *tok, const Token *indexToken, const ValueFlow::Value *indexValue);
 
     void bufferOverflow();
-    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value);
+    void bufferOverflowError(const Token *tok, const ValueFlow::Value *value, const Certainty::CertaintyLevel& certainty);
 
     void arrayIndexThenCheck();
     void arrayIndexThenCheckError(const Token *tok, const std::string &indexName);
 
     void stringNotZeroTerminated();
     void terminateStrncpyError(const Token *tok, const std::string &varname);
+
+    void argumentSize();
+    void argumentSizeError(const Token *tok, const std::string &functionName, nonneg int paramIndex, const std::string &paramExpression, const Variable *paramVar, const Variable *functionArg);
 
     void objectIndex();
     void objectIndexError(const Token *tok, const ValueFlow::Value *v, bool known);
@@ -151,7 +158,8 @@ private:
                "- Buffer overflow\n"
                "- Dangerous usage of strncat()\n"
                "- Using array index before checking it\n"
-               "- Partial string write that leads to buffer that is not zero terminated.\n";
+               "- Partial string write that leads to buffer that is not zero terminated.\n"
+               "- Check for large enough arrays being passed to functions\n";
     }
 };
 /// @}

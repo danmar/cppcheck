@@ -24,14 +24,12 @@
 #include "tokenize.h"
 
 #include <list>
-#include <ostream>
 #include <string>
 
 
 class TestMemleak : private TestFixture {
 public:
-    TestMemleak() : TestFixture("TestMemleak") {
-    }
+    TestMemleak() : TestFixture("TestMemleak") {}
 
 private:
     Settings settings;
@@ -117,8 +115,7 @@ REGISTER_TEST(TestMemleak)
 
 class TestMemleakInFunction : public TestFixture {
 public:
-    TestMemleakInFunction() : TestFixture("TestMemleakInFunction") {
-    }
+    TestMemleakInFunction() : TestFixture("TestMemleakInFunction") {}
 
 private:
     Settings settings0;
@@ -461,8 +458,7 @@ REGISTER_TEST(TestMemleakInFunction)
 
 class TestMemleakInClass : public TestFixture {
 public:
-    TestMemleakInClass() : TestFixture("TestMemleakInClass") {
-    }
+    TestMemleakInClass() : TestFixture("TestMemleakInClass") {}
 
 private:
     Settings settings;
@@ -1638,8 +1634,7 @@ REGISTER_TEST(TestMemleakInClass)
 
 class TestMemleakStructMember : public TestFixture {
 public:
-    TestMemleakStructMember() : TestFixture("TestMemleakStructMember") {
-    }
+    TestMemleakStructMember() : TestFixture("TestMemleakStructMember") {}
 
 private:
     Settings settings;
@@ -2120,8 +2115,7 @@ REGISTER_TEST(TestMemleakStructMember)
 
 class TestMemleakNoVar : public TestFixture {
 public:
-    TestMemleakNoVar() : TestFixture("TestMemleakNoVar") {
-    }
+    TestMemleakNoVar() : TestFixture("TestMemleakNoVar") {}
 
 private:
     Settings settings;
@@ -2172,6 +2166,11 @@ private:
         check("char *x() {\n"
               "    char *ret = strcpy(malloc(10), \"abc\");\n"
               "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("char *x() {\n"
+              "    return strcpy(malloc(10), \"abc\");\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 

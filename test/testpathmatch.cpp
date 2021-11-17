@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,8 +30,7 @@ public:
         , emptyMatcher(std::vector<std::string>())
         , srcMatcher(std::vector<std::string>(1, "src/"))
         , fooCppMatcher(std::vector<std::string>(1, "foo.cpp"))
-        , srcFooCppMatcher(std::vector<std::string>(1, "src/foo.cpp")) {
-    }
+        , srcFooCppMatcher(std::vector<std::string>(1, "src/foo.cpp")) {}
 
 private:
     const PathMatch emptyMatcher;

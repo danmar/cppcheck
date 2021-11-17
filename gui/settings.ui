@@ -320,7 +320,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_4">
          <property name="title">
-          <string>Misra addon</string>
+          <string>MISRA addon</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_7">
           <item>
@@ -328,7 +328,7 @@
             <item>
              <widget class="QLabel" name="label_4">
               <property name="text">
-               <string>Misra rule texts file</string>
+               <string>MISRA rule texts file</string>
               </property>
              </widget>
             </item>

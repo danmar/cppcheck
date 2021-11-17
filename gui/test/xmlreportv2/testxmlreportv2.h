@@ -19,7 +19,7 @@
 #include <QtTest/QtTest>
 #include <QObject>
 
-class TestXmlReportV2: public QObject {
+class TestXmlReportV2 : public QObject {
     Q_OBJECT
 
 private slots:

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QTextStream>
-#include <QInputDialog>
 #include <QMessageBox>
 
 // TODO: get/compare functions from header
@@ -80,10 +79,10 @@ void LibraryDialog::openCfg()
     QString selectedFilter;
     const QString filter(tr("Library files (*.cfg)"));
     const QString selectedFile = QFileDialog::getOpenFileName(this,
-                                 tr("Open library file"),
-                                 datadir,
-                                 filter,
-                                 &selectedFilter);
+                                                              tr("Open library file"),
+                                                              datadir,
+                                                              filter,
+                                                              &selectedFilter);
 
     if (selectedFile.isEmpty())
         return;
@@ -120,8 +119,8 @@ void LibraryDialog::openCfg()
     mUi->functions->clear();
     for (CppcheckLibraryData::Function &function : mData.functions) {
         mUi->functions->addItem(new FunctionListItem(mUi->functions,
-                                &function,
-                                false));
+                                                     &function,
+                                                     false));
     }
     mUi->sortFunctions->setEnabled(!mData.functions.empty());
     mUi->filter->setEnabled(!mData.functions.empty());
@@ -153,9 +152,9 @@ void LibraryDialog::saveCfgAs()
     const QString filter(tr("Library files (*.cfg)"));
     const QString path = Path::getPathFromFilename(mFileName.toStdString()).c_str();
     QString selectedFile = QFileDialog::getSaveFileName(this,
-                           tr("Save the library as"),
-                           path,
-                           filter);
+                                                        tr("Save the library as"),
+                                                        path,
+                                                        filter);
     if (selectedFile.isEmpty())
         return;
 
@@ -261,8 +260,8 @@ void LibraryDialog::sortFunctions(bool sort)
         mUi->functions->clear();
         for (CppcheckLibraryData::Function &function : mData.functions) {
             mUi->functions->addItem(new FunctionListItem(mUi->functions,
-                                    &function,
-                                    selfunction == &function));
+                                                         &function,
+                                                         selfunction == &function));
         }
         if (!mUi->filter->text().isEmpty())
             filterFunctions(mUi->filter->text());

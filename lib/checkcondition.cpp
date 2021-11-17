@@ -29,13 +29,12 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
+#include "checkother.h" // comparisonNonZeroExpressionLessThanZero and testIfNonZeroExpressionIsPositive
+
 #include <algorithm>
-#include <cstddef>
 #include <limits>
 #include <list>
-#include <ostream>
 #include <set>
-#include <stack>
 #include <utility>
 
 // CWE ids used
@@ -442,15 +441,15 @@ void CheckCondition::duplicateCondition()
         if (scope.type != Scope::eIf)
             continue;
 
-        const Token *cond1 = scope.classDef->next()->astOperand2();
+        const Token* tok2 = scope.classDef->next();
+        if (!tok2)
+            continue;
+        const Token* cond1 = tok2->astOperand2();
         if (!cond1)
             continue;
         if (cond1->hasKnownIntValue())
             continue;
 
-        const Token *tok2 = scope.classDef->next();
-        if (!tok2)
-            continue;
         tok2 = tok2->link();
         if (!Token::simpleMatch(tok2, ") {"))
             continue;
@@ -597,7 +596,7 @@ void CheckCondition::multiCondition2()
         bool nonlocal = false; // nonlocal variable used in condition
         std::set<int> vars; // variables used in condition
         visitAstNodes(condTok,
-        [&](const Token *cond) {
+                      [&](const Token *cond) {
             if (Token::Match(cond, "%name% (")) {
                 functionCall = true;
                 nonConstFunctionCall = isNonConstFunctionCall(cond, mSettings->library);
@@ -629,7 +628,7 @@ void CheckCondition::multiCondition2()
 
         std::vector<const Variable*> varsInCond;
         visitAstNodes(condTok,
-        [&varsInCond](const Token *cond) {
+                      [&varsInCond](const Token *cond) {
             if (cond->variable()) {
                 const Variable *var = cond->variable();
                 if (std::find(varsInCond.begin(), varsInCond.end(), var) == varsInCond.end())
@@ -655,6 +654,8 @@ void CheckCondition::multiCondition2()
             const Token * const endToken = tok->scope()->bodyEnd;
 
             for (; tok && tok != endToken; tok = tok->next()) {
+                if (isExpressionChangedAt(cond1, tok, 0, false, mSettings, mTokenizer->isCPP()))
+                    break;
                 if (Token::Match(tok, "if|return")) {
                     const Token * condStartToken = tok->str() == "if" ? tok->next() : tok;
                     const Token * condEndToken = tok->str() == "if" ? condStartToken->link() : Token::findsimplematch(condStartToken, ";");
@@ -716,7 +717,8 @@ void CheckCondition::multiCondition2()
                         });
                     }
                 }
-                if (Token::Match(tok, "%name% (") && isVariablesChanged(tok, tok->linkAt(1), true, varsInCond, mSettings, mTokenizer->isCPP())) {
+                if (Token::Match(tok, "%name% (") &&
+                    isVariablesChanged(tok, tok->linkAt(1), 0, varsInCond, mSettings, mTokenizer->isCPP())) {
                     break;
                 }
                 if (Token::Match(tok, "%type% (") && nonlocal && isNonConstFunctionCall(tok, mSettings->library)) // non const function call -> bailout if there are nonlocal variables
@@ -885,22 +887,22 @@ static std::string invertOperatorForOperandSwap(std::string s)
     return s;
 }
 
-template <typename T>
+template<typename T>
 static bool checkIntRelation(const std::string &op, const T value1, const T value2)
 {
     return (op == "==" && value1 == value2) ||
            (op == "!=" && value1 != value2) ||
-           (op == ">"  && value1 >  value2) ||
+           (op == ">" && value1 >  value2) ||
            (op == ">=" && value1 >= value2) ||
-           (op == "<"  && value1 <  value2) ||
+           (op == "<" && value1 <  value2) ||
            (op == "<=" && value1 <= value2);
 }
 
 static bool checkFloatRelation(const std::string &op, const double value1, const double value2)
 {
-    return (op == ">"  && value1 >  value2) ||
+    return (op == ">" && value1 >  value2) ||
            (op == ">=" && value1 >= value2) ||
-           (op == "<"  && value1 <  value2) ||
+           (op == "<" && value1 <  value2) ||
            (op == "<=" && value1 <= value2);
 }
 
@@ -1172,7 +1174,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             const double d2 = (isfloat) ? MathLib::toDoubleNumber(value2) : 0;
             const MathLib::bigint i1 = (isfloat) ? 0 : MathLib::toLongNumber(value1);
             const MathLib::bigint i2 = (isfloat) ? 0 : MathLib::toLongNumber(value2);
-            const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1)||(std::numeric_limits<MathLib::bigint>::max()==i2);
+            const bool useUnsignedInt = (std::numeric_limits<MathLib::bigint>::max()==i1) || (std::numeric_limits<MathLib::bigint>::max()==i2);
             const MathLib::biguint u1 = (useUnsignedInt) ? MathLib::toLongNumber(value1) : 0;
             const MathLib::biguint u2 = (useUnsignedInt) ? MathLib::toLongNumber(value2) : 0;
             // evaluate if expression is always true/false
@@ -1428,6 +1430,15 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (isConstVarExpression(tok, "[|(|&|+|-|*|/|%|^|>>|<<"))
                 continue;
+
+            // there are specific warnings about nonzero expressions (pointer/unsigned)
+            // do not write alwaysTrueFalse for these comparisons.
+            {
+                const ValueFlow::Value *zeroValue = nullptr;
+                const Token *nonZeroExpr = nullptr;
+                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr) || CheckOther::testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr))
+                    continue;
+            }
 
             const bool constIfWhileExpression =
                 tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") && !tok->astTop()->astOperand1()->isConstexpr() &&
@@ -1700,4 +1711,147 @@ void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const
 
     reportError(
         errors, Severity::style, "duplicateConditionalAssign", msg, CWE398, Certainty::normal);
+}
+
+
+void CheckCondition::checkAssignmentInCondition()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->str() != "=")
+                continue;
+            if (!tok->astParent())
+                continue;
+
+            // Is this assignment of container/iterator?
+            if (!tok->valueType())
+                continue;
+            if (tok->valueType()->pointer > 0)
+                continue;
+            if (tok->valueType()->type != ValueType::Type::CONTAINER && tok->valueType()->type != ValueType::Type::ITERATOR)
+                continue;
+
+            // warn if this is a conditional expression..
+            if (Token::Match(tok->astParent()->previous(), "if|while ("))
+                assignmentInCondition(tok);
+            else if (Token::Match(tok->astParent(), "%oror%|&&"))
+                assignmentInCondition(tok);
+            else if (Token::simpleMatch(tok->astParent(), "?") && tok == tok->astParent()->astOperand1())
+                assignmentInCondition(tok);
+        }
+    }
+}
+
+void CheckCondition::assignmentInCondition(const Token *eq)
+{
+    std::string expr = eq ? eq->expressionString() : "x=y";
+
+    reportError(
+        eq,
+        Severity::style,
+        "assignmentInCondition",
+        "Suspicious assignment in condition. Condition '" + expr + "' is always true.",
+        CWE571,
+        Certainty::normal);
+}
+
+void CheckCondition::checkCompareValueOutOfTypeRange()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    if (mSettings->platformType == cppcheck::Platform::PlatformType::Native ||
+        mSettings->platformType == cppcheck::Platform::PlatformType::Unspecified)
+        return;
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope * scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (!tok->isComparisonOp() || !tok->isBinaryOp())
+                continue;
+
+            for (int i = 0; i < 2; ++i) {
+                const Token * const valueTok = (i == 0) ? tok->astOperand1() : tok->astOperand2();
+                const Token * const typeTok = valueTok->astSibling();
+                if (!valueTok->hasKnownIntValue() || !typeTok->valueType() || typeTok->valueType()->pointer)
+                    continue;
+                if (valueTok->getKnownIntValue() < 0 && valueTok->valueType() && valueTok->valueType()->sign != ValueType::Sign::SIGNED)
+                    continue;
+                int bits = 0;
+                switch (typeTok->valueType()->type) {
+                case ValueType::Type::BOOL:
+                    bits = 1;
+                    break;
+                case ValueType::Type::CHAR:
+                    bits = mSettings->char_bit;
+                    break;
+                case ValueType::Type::SHORT:
+                    bits = mSettings->short_bit;
+                    break;
+                case ValueType::Type::INT:
+                    bits = mSettings->int_bit;
+                    break;
+                case ValueType::Type::LONG:
+                    bits = mSettings->long_bit;
+                    break;
+                case ValueType::Type::LONGLONG:
+                    bits = mSettings->long_long_bit;
+                    break;
+                default:
+                    break;
+                }
+                if (bits == 0 || bits >= 64)
+                    continue;
+
+                const auto typeMinValue = (typeTok->valueType()->sign == ValueType::Sign::UNSIGNED) ? 0 : (-(1LL << (bits-1)));
+                const auto unsignedTypeMaxValue = (1LL << bits) - 1LL;
+                long long typeMaxValue;
+                if (typeTok->valueType()->sign != ValueType::Sign::SIGNED)
+                    typeMaxValue = unsignedTypeMaxValue;
+                else if (bits >= mSettings->int_bit && (!valueTok->valueType() || valueTok->valueType()->sign != ValueType::Sign::SIGNED))
+                    typeMaxValue = unsignedTypeMaxValue;
+                else
+                    typeMaxValue = unsignedTypeMaxValue / 2;
+
+                bool result;
+                if (tok->str() == "==")
+                    result = false;
+                else if (tok->str() == "!=")
+                    result = true;
+                else if (tok->str()[0] == '>' && i == 0)
+                    // num > var
+                    result = (valueTok->getKnownIntValue() > 0);
+                else if (tok->str()[0] == '>' && i == 1)
+                    // var > num
+                    result = (valueTok->getKnownIntValue() < 0);
+                else if (tok->str()[0] == '<' && i == 0)
+                    // num < var
+                    result = (valueTok->getKnownIntValue() < 0);
+                else if (tok->str()[0] == '<' && i == 1)
+                    // var < num
+                    result = (valueTok->getKnownIntValue() > 0);
+
+                if (valueTok->getKnownIntValue() < typeMinValue) {
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+                }
+                else if (valueTok->getKnownIntValue() > typeMaxValue)
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+            }
+        }
+    }
+}
+
+void CheckCondition::compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result)
+{
+    reportError(
+        comparison,
+        Severity::style,
+        "compareValueOutOfTypeRangeError",
+        "Comparing expression of type '" + type + "' against value " + std::to_string(value) + ". Condition is always " + (result ? "true" : "false") + ".",
+        CWE398,
+        Certainty::normal);
 }

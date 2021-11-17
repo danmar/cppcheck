@@ -28,8 +28,7 @@
 
 class TestAstUtils : public TestFixture {
 public:
-    TestAstUtils() : TestFixture("TestAstUtils") {
-    }
+    TestAstUtils() : TestFixture("TestAstUtils") {}
 
 private:
 
@@ -242,6 +241,12 @@ private:
         inconclusive = false;
         ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
         ASSERT_EQUALS(true, inconclusive);
+
+        code = "int f(int x) {\n"
+               "return int(x);\n"
+               "}\n";
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        TODO_ASSERT_EQUALS(false, true, inconclusive);
     }
 
     bool nextAfterAstRightmostLeaf(const char code[], const char parentPattern[], const char rightPattern[]) {
@@ -291,8 +296,8 @@ private:
         ASSERT(Result::False == isUsedAsBool("void f() { int i; for (i;;) {} }", "i ; ; )"));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; for (int j=0; i; ++j) {} }", "i ; ++"));
         ASSERT(Result::False == isUsedAsBool("void f() { int i; if (i == 2) {} }", "i =="));
-        ASSERT(Result::True == isUsedAsBool("void f() { int i; if (i == true) {} }", "i =="));
-        ASSERT(Result::True == isUsedAsBool("void f() { int i,j; if (i == (j&&f())) {} }", "i =="));
+        ASSERT(Result::False == isUsedAsBool("void f() { int i; if (i == true) {} }", "i =="));
+        ASSERT(Result::False == isUsedAsBool("void f() { int i,j; if (i == (j&&f())) {} }", "i =="));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; if (!i == 0) {} }", "i =="));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; if (!i) {} }", "i )"));
         ASSERT(Result::True == isUsedAsBool("void f() { int i; if (!!i) {} }", "i )"));

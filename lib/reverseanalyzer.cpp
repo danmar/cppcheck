@@ -9,7 +9,6 @@
 #include "valueptr.h"
 
 #include <algorithm>
-#include <functional>
 
 struct ReverseTraversal {
     ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
@@ -19,7 +18,7 @@ struct ReverseTraversal {
     const Settings* settings;
 
     std::pair<bool, bool> evalCond(const Token* tok) {
-        std::vector<int> result = analyzer->evaluate(tok);
+        std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
             return x == 1;
@@ -44,6 +43,11 @@ struct ReverseTraversal {
     bool updateRecursive(Token* start) {
         bool continueB = true;
         visitAstNodes(start, [&](Token* tok) {
+            const Token* parent = tok->astParent();
+            while (Token::simpleMatch(parent, ":"))
+                parent = parent->astParent();
+            if (isUnevaluated(tok) || isDeadCode(tok, parent))
+                return ChildrenToVisit::none;
             continueB &= update(tok);
             if (continueB)
                 return ChildrenToVisit::op1_and_op2;
@@ -75,9 +79,11 @@ struct ReverseTraversal {
         return result;
     }
 
-    Token* isDeadCode(Token* tok) {
+    Token* isDeadCode(Token* tok, const Token* end = nullptr) {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
+            if (tok == end)
+                break;
             Token* parent = tok->astParent();
             if (Token::simpleMatch(parent, ":")) {
                 if (astIsLHS(tok))
@@ -96,12 +102,6 @@ struct ReverseTraversal {
                 continue;
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
-
-            if (!checkThen && !checkElse) {
-                Analyzer::Action action = analyzeRecursive(condTok);
-                if (action.isRead() || action.isModified())
-                    return parent;
-            }
 
             if (parent->str() == "?") {
                 if (checkElse && opSide == 1)
@@ -126,7 +126,12 @@ struct ReverseTraversal {
                 throw InternalError(tok, "Cyclic reverse analysis.");
             i = tok->index();
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
-                                 tok->scope()->type == Scope::ScopeType::eLambda))) {
+                                                       tok->scope()->type == Scope::ScopeType::eLambda))) {
+                const Function* f = tok->scope()->function;
+                if (f && f->isConstructor()) {
+                    if (const Token* initList = f->constructorMemberInitialization())
+                        traverse(tok->previous(), tok->tokAt(initList->index() - tok->index()));
+                }
                 break;
             }
             if (Token::Match(tok, "return|break|continue"))
@@ -162,7 +167,7 @@ struct ReverseTraversal {
                     Analyzer::Action lhsAction =
                         analyzer->analyze(assignTok->astOperand1(), Analyzer::Direction::Reverse);
                     // Assignment from
-                    if (rhsAction.isRead() && !lhsAction.isInvalid()) {
+                    if (rhsAction.isRead() && !lhsAction.isInvalid() && assignTok->astOperand1()->exprId() > 0) {
                         const std::string info = "Assignment from '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand1(), info);
                         if (a) {
@@ -172,7 +177,9 @@ struct ReverseTraversal {
                                                     settings);
                         }
                         // Assignment to
-                    } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownValue()) {
+                    } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownIntValue() &&
+                               assignTok->astOperand2()->exprId() > 0 &&
+                               isConstExpression(assignTok->astOperand2(), settings->library, true, true)) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {
@@ -186,8 +193,7 @@ struct ReverseTraversal {
                 }
                 if (!continueB)
                     break;
-                Analyzer::Action a = valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
-                if (a.isModified())
+                if (!updateRecursive(assignTop->astOperand2()))
                     break;
                 tok = previousBeforeAstLeftmostLeaf(assignTop)->next();
                 continue;
@@ -220,9 +226,9 @@ struct ReverseTraversal {
                 if (thenAction.isModified() && inLoop)
                     break;
                 else if (thenAction.isModified() && !elseAction.isModified())
-                    analyzer->assume(condTok, hasElse, condTok);
+                    analyzer->assume(condTok, hasElse);
                 else if (elseAction.isModified() && !thenAction.isModified())
-                    analyzer->assume(condTok, !hasElse, condTok);
+                    analyzer->assume(condTok, !hasElse);
                 // Bail if one of the branches are read to avoid FPs due to over constraints
                 else if (thenAction.isIdempotent() || elseAction.isIdempotent() || thenAction.isRead() ||
                          elseAction.isRead())
@@ -260,6 +266,15 @@ struct ReverseTraversal {
             }
             if (Token* parent = isDeadCode(tok)) {
                 tok = parent;
+                continue;
+            }
+            if (tok->str() == "case") {
+                const Scope* scope = tok->scope();
+                while (scope && scope->type != Scope::eSwitch)
+                    scope = scope->nestedIn;
+                if (!scope || scope->type != Scope::eSwitch)
+                    break;
+                tok = tok->tokAt(scope->bodyStart->index() - tok->index() - 1);
                 continue;
             }
             if (!update(tok))

@@ -20,17 +20,15 @@
 #include "pathmatch.h"
 #include "testsuite.h"
 
-#include <cstddef>
 #include <fstream>
 #include <map>
 #include <string>
 #include <vector>
 
-class TestFileLister: public TestFixture {
+class TestFileLister : public TestFixture {
 public:
     TestFileLister()
-        :TestFixture("TestFileLister") {
-    }
+        : TestFixture("TestFileLister") {}
 
 private:
     void run() OVERRIDE {
@@ -56,7 +54,8 @@ private:
         std::map<std::string, std::size_t> files;
         std::vector<std::string> masks;
         PathMatch matcher(masks);
-        FileLister::recursiveAddFiles(files, ".", matcher);
+        std::string err = FileLister::recursiveAddFiles(files, ".", matcher);
+        ASSERT(err.empty());
 
         // In case there are leading "./"..
         for (std::map<std::string, std::size_t>::iterator i = files.begin(); i != files.end();) {

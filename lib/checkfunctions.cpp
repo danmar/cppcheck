@@ -30,10 +30,7 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <cmath>
-#include <cstddef>
 #include <iomanip>
-#include <ostream>
 #include <vector>
 
 //---------------------------------------------------------------------------
@@ -207,7 +204,13 @@ void CheckFunctions::checkIgnoredReturnValue()
             if (tok->varId() || !Token::Match(tok, "%name% (") || tok->isKeyword())
                 continue;
 
-            if (tok->next()->astParent())
+            const Token *parent = tok->next()->astParent();
+            while (Token::Match(parent, "%cop%")) {
+                if (Token::Match(parent, "<<|>>") && !parent->astParent())
+                    break;
+                parent = parent->astParent();
+            }
+            if (parent)
                 continue;
 
             if (!tok->scope()->isExecutable()) {
@@ -242,6 +245,125 @@ void CheckFunctions::ignoredReturnErrorCode(const Token* tok, const std::string&
                 "$symbol:" + function + "\nError code from the return value of function $symbol() is not used.", CWE252, Certainty::normal);
 }
 
+//---------------------------------------------------------------------------
+// Check for ignored return values.
+//---------------------------------------------------------------------------
+static const Token *checkMissingReturnScope(const Token *tok, const Library &library);
+
+void CheckFunctions::checkMissingReturn()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        const Function *function = scope->function;
+        if (!function || !function->hasBody())
+            continue;
+        if (function->name() == "main" && !(mSettings->standards.c < Standards::C99 && mTokenizer->isC()))
+            continue;
+        if (function->type != Function::Type::eFunction && function->type != Function::Type::eOperatorEqual)
+            continue;
+        if (Token::Match(function->retDef, "%name% (") && function->retDef->isUpperCaseName())
+            continue;
+        if (Function::returnsVoid(function, true))
+            continue;
+        const Token *errorToken = checkMissingReturnScope(scope->bodyEnd, mSettings->library);
+        if (errorToken)
+            missingReturnError(errorToken);
+    }
+}
+
+static bool isForwardJump(const Token *gotoToken)
+{
+    if (!Token::Match(gotoToken, "goto %name% ;"))
+        return false;
+    for (const Token *prev = gotoToken; gotoToken; gotoToken = gotoToken->previous()) {
+        if (Token::Match(prev, "%name% :") && prev->str() == gotoToken->next()->str())
+            return true;
+        if (prev->str() == "{" && prev->scope()->type == Scope::eFunction)
+            return false;
+    }
+    return false;
+}
+
+static const Token *checkMissingReturnScope(const Token *tok, const Library &library)
+{
+    const Token *lastStatement = nullptr;
+    while ((tok = tok->previous()) != nullptr) {
+        if (tok->str() == ")")
+            tok = tok->link();
+        if (tok->str() == "{")
+            return lastStatement ? lastStatement : tok->next();
+        if (tok->str() == "}") {
+            for (const Token *prev = tok->link()->previous(); prev && prev->scope() == tok->scope() && !Token::Match(prev, "[;{}]"); prev = prev->previous()) {
+                if (prev->isKeyword() && Token::Match(prev, "return|throw"))
+                    return nullptr;
+                if (prev->str() == "goto" && !isForwardJump(prev))
+                    return nullptr;
+            }
+            if (tok->scope()->type == Scope::ScopeType::eSwitch) {
+                // find reachable break / !default
+                bool hasDefault = false;
+                bool reachable = false;
+                for (const Token *switchToken = tok->link()->next(); switchToken != tok; switchToken = switchToken->next()) {
+                    if (reachable && Token::simpleMatch(switchToken, "break ;")) {
+                        if (Token::simpleMatch(switchToken->previous(), "}") && !checkMissingReturnScope(switchToken->previous(), library))
+                            reachable = false;
+                        else
+                            return switchToken;
+                    }
+                    if (switchToken->isKeyword() && Token::Match(switchToken, "return|throw"))
+                        reachable = false;
+                    if (Token::Match(switchToken, "%name% (") && library.isnoreturn(switchToken))
+                        reachable = false;
+                    if (Token::Match(switchToken, "case|default"))
+                        reachable = true;
+                    if (Token::simpleMatch(switchToken, "default :"))
+                        hasDefault = true;
+                    else if (switchToken->str() == "{" && (switchToken->scope()->isLoopScope() || switchToken->scope()->type == Scope::ScopeType::eSwitch))
+                        switchToken = switchToken->link();
+                }
+                if (!hasDefault)
+                    return tok->link();
+            } else if (tok->scope()->type == Scope::ScopeType::eIf) {
+                const Token *condition = tok->scope()->classDef->next()->astOperand2();
+                if (condition && condition->hasKnownIntValue() && condition->getKnownIntValue() == 1)
+                    return checkMissingReturnScope(tok, library);
+                return tok;
+            } else if (tok->scope()->type == Scope::ScopeType::eElse) {
+                const Token *errorToken = checkMissingReturnScope(tok, library);
+                if (errorToken)
+                    return errorToken;
+                tok = tok->link();
+                if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
+                    return checkMissingReturnScope(tok->tokAt(-2), library);
+                return tok;
+            }
+            // FIXME
+            return nullptr;
+        }
+        if (tok->isKeyword() && Token::Match(tok, "return|throw"))
+            return nullptr;
+        if (tok->str() == "goto" && !isForwardJump(tok))
+            return nullptr;
+        if (Token::Match(tok, "%name% (") && !library.isnotnoreturn(tok)) {
+            const Token *start = tok;
+            while (Token::Match(start->tokAt(-2), "%name% :: %name%"))
+                start = start->tokAt(-2);
+            if (Token::Match(start->previous(), "[;{}] %name% ::|("))
+                return nullptr;
+        }
+        if (Token::Match(tok, "[;{}] %name% :"))
+            return tok;
+        if (Token::Match(tok, "; !!}") && !lastStatement)
+            lastStatement = tok->next();
+    }
+    return nullptr;
+}
+
+void CheckFunctions::missingReturnError(const Token* tok)
+{
+    reportError(tok, Severity::error, "missingReturn",
+                "Found a exit path from function with non-void return type that has missing return statement", CWE758, Certainty::normal);
+}
 //---------------------------------------------------------------------------
 // Detect passing wrong values to <cmath> functions like atan(0, x);
 //---------------------------------------------------------------------------
@@ -463,4 +585,44 @@ void CheckFunctions::checkLibraryMatchFunctions()
                     "checkLibraryFunction",
                     "--check-library: There is no matching configuration for function " + functionName + "()");
     }
+}
+
+// Check for problems to compiler apply (Named) Return Value Optimization for local variable
+// Technically we have different guarantees between standard versions
+// details: https://en.cppreference.com/w/cpp/language/copy_elision
+void CheckFunctions::returnLocalStdMove()
+{
+    if (!mTokenizer->isCPP() || mSettings->standards.cpp < Standards::CPP11)
+        return;
+
+    if (!mSettings->severity.isEnabled(Severity::performance))
+        return;
+
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        // Expect return by-value
+        if (Function::returnsReference(scope->function, true))
+            continue;
+        const auto rets = Function::findReturns(scope->function);
+        for (const Token* ret : rets) {
+            if (!Token::simpleMatch(ret->tokAt(-3), "std :: move ("))
+                continue;
+            const Token* retval = ret->astOperand2();
+            // NRVO
+            if (retval->variable() && retval->variable()->isLocal() && !retval->variable()->isVolatile())
+                copyElisionError(retval);
+            // RVO
+            if (Token::Match(retval, "(|{") && !retval->isCast())
+                copyElisionError(retval);
+        }
+    }
+}
+
+void CheckFunctions::copyElisionError(const Token *tok)
+{
+    reportError(tok,
+                Severity::performance,
+                "returnStdMoveLocal",
+                "Using std::move for returning object by-value from function will affect copy elision optimization."
+                " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local");
 }

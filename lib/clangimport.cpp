@@ -28,6 +28,7 @@
 #include <memory>
 #include <stack>
 #include <vector>
+#include <cctype>
 
 static const std::string AccessSpecDecl = "AccessSpecDecl";
 static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
@@ -186,10 +187,6 @@ static std::vector<std::string> splitString(const std::string &line)
     return ret;
 }
 
-static bool contains(const std::vector<std::string> &haystack, const std::string &needle)
-{
-    return std::find(haystack.begin(), haystack.end(), needle) != haystack.end();
-}
 
 namespace clangimport {
     struct Data {
@@ -1575,7 +1572,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
         const std::string nodeType = line.substr(pos1+1, pos2 - pos1 - 1);
         const std::string ext = line.substr(pos2);
 
-        if (pos1 == 1 && endsWith(nodeType, "Decl", 4)) {
+        if (pos1 == 1 && endsWith(nodeType, "Decl")) {
             if (!tree.empty())
                 tree[0]->createTokens1(tokenList);
             tree.clear();

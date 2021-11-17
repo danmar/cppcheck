@@ -25,7 +25,6 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <cstddef>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -102,7 +101,7 @@ void CheckSizeof::sizeofForArrayParameterError(const Token *tok)
                 "     }\n"
                 "returns 4 (in 32-bit systems) or 8 (in 64-bit systems) instead of 100 (the "
                 "size of the array in bytes).", CWE467, Certainty::normal
-               );
+                );
 }
 
 void CheckSizeof::checkSizeofForPointerSize()
@@ -404,7 +403,7 @@ void CheckSizeof::sizeofVoid()
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "sizeof ( )")) { // "sizeof(void)" gets simplified to sizeof ( )
+        if (Token::simpleMatch(tok, "sizeof ( void )")) {
             sizeofVoidError(tok);
         } else if (Token::simpleMatch(tok, "sizeof (") && tok->next()->astOperand2()) {
             const ValueType *vt = tok->next()->astOperand2()->valueType();

@@ -26,8 +26,7 @@
 
 class TestType : public TestFixture {
 public:
-    TestType() : TestFixture("TestType") {
-    }
+    TestType() : TestFixture("TestType") {}
 
 private:
 
@@ -70,7 +69,7 @@ private:
         // unsigned types getting promoted to int sizeof(int) = 4 bytes
         // and unsigned types having already a size of 4 bytes
         {
-            const std::string types[] = {"unsigned char", /*[unsigned]*/"char", "bool", "unsigned short", "unsigned int", "unsigned long"};
+            const std::string types[] = {"unsigned char", /*[unsigned]*/ "char", "bool", "unsigned short", "unsigned int", "unsigned long"};
             for (const std::string& type : types) {
                 check((type + " f(" + type +" x) { return x << 31; }").c_str(), &settings);
                 ASSERT_EQUALS("", errout.str());
@@ -85,7 +84,7 @@ private:
         // signed types getting promoted to int sizeof(int) = 4 bytes
         // and signed types having already a size of 4 bytes
         {
-            const std::string types[] = {"signed char", "signed short", /*[signed]*/"short", "wchar_t", /*[signed]*/"int", "signed int", /*[signed]*/"long", "signed long"};
+            const std::string types[] = {"signed char", "signed short", /*[signed]*/ "short", "wchar_t", /*[signed]*/ "int", "signed int", /*[signed]*/ "long", "signed long"};
             for (const std::string& type : types) {
                 // c++11
                 check((type + " f(" + type +" x) { return x << 33; }").c_str(), &settings);
@@ -142,6 +141,9 @@ private:
             check("signed long long f(signed long long x) { return x << 62; }",&settings);
             ASSERT_EQUALS("", errout.str());
         }
+
+        check("void f() { int x; x = 1 >> 64; }", &settings);
+        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 64 bits is undefined behaviour\n", errout.str());
 
         check("void foo() {\n"
               "  QList<int> someList;\n"
@@ -255,6 +257,8 @@ private:
     }
 
     void signConversion() {
+        Settings settings;
+        settings.platform(Settings::Unix64);
         check("x = -4 * (unsigned)y;");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
@@ -264,7 +268,7 @@ private:
         check("unsigned int dostuff(int x) {\n" // x is signed
               "  if (x==0) {}\n"
               "  return (x-1)*sizeof(int);\n"
-              "}");
+              "}", &settings);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed

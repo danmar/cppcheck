@@ -21,15 +21,13 @@
 #include <stdexcept>
 
 #include <QXmlStreamReader>
-#include <QXmlStreamWriter>
 #include <QVariant>
 
 const unsigned int CppcheckLibraryData::Function::Arg::ANY = ~0U;
 const unsigned int CppcheckLibraryData::Function::Arg::VARIADIC = ~1U;
 
 CppcheckLibraryData::CppcheckLibraryData()
-{
-}
+{}
 
 static std::string unhandledElement(const QXmlStreamReader &xmlReader)
 {

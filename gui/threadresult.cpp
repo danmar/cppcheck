@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "threadresult.h"
+
 #include <QFile>
-#include <QString>
-#include <QMutexLocker>
-#include <QList>
-#include <QStringList>
-#include <QDebug>
 #include "common.h"
 #include "erroritem.h"
 #include "errorlogger.h"
-#include "threadresult.h"
 
 ThreadResult::ThreadResult() : QObject(), ErrorLogger(), mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
 {
@@ -37,7 +33,7 @@ ThreadResult::~ThreadResult()
     //dtor
 }
 
-void ThreadResult::reportOut(const std::string &outmsg)
+void ThreadResult::reportOut(const std::string &outmsg, Color)
 {
     emit log(QString::fromStdString(outmsg));
 }
@@ -47,7 +43,7 @@ void ThreadResult::fileChecked(const QString &file)
     QMutexLocker locker(&mutex);
 
     mProgress += QFile(file).size();
-    mFilesChecked ++;
+    mFilesChecked++;
 
     if (mMaxProgress > 0) {
         const int value = static_cast<int>(PROGRESS_MAX * mProgress / mMaxProgress);

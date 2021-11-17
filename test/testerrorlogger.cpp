@@ -22,14 +22,14 @@
 #include "suppressions.h"
 #include "testsuite.h"
 
+#include <tinyxml2.h>
 #include <list>
 #include <string>
 
 
 class TestErrorLogger : public TestFixture {
 public:
-    TestErrorLogger() : TestFixture("TestErrorLogger"), fooCpp5("foo.cpp", 5, 1), barCpp8("bar.cpp", 8, 1) {
-    }
+    TestErrorLogger() : TestFixture("TestErrorLogger"), fooCpp5("foo.cpp", 5, 1), barCpp8("bar.cpp", 8, 1) {}
 
 private:
     const ErrorMessage::FileLocation fooCpp5;
@@ -49,6 +49,7 @@ private:
         TEST_CASE(ToXmlV2);
         TEST_CASE(ToXmlV2Locations);
         TEST_CASE(ToXmlV2Encoding);
+        TEST_CASE(FromXmlV2);
 
         // Inconclusive results in xml reports..
         TEST_CASE(InconclusiveXml);
@@ -231,6 +232,38 @@ private:
         }
     }
 
+    void FromXmlV2() const {
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<error id=\"errorId\""
+                               " severity=\"error\""
+                               " cwe=\"123\""
+                               " inconclusive=\"true\""
+                               " msg=\"Programming error.\""
+                               " verbose=\"Verbose error\""
+                               " hash=\"456\""
+                               ">\n"
+                               "  <location file=\"bar.cpp\" line=\"8\" column=\"1\"/>\n"
+                               "  <location file=\"foo.cpp\" line=\"5\" column=\"2\"/>\n"
+                               "</error>";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        ErrorMessage msg(doc.FirstChildElement());
+        ASSERT_EQUALS("errorId", msg.id);
+        ASSERT_EQUALS(Severity::error, msg.severity);
+        ASSERT_EQUALS(123u, msg.cwe.id);
+        ASSERT_EQUALS(Certainty::inconclusive, msg.certainty);
+        ASSERT_EQUALS("Programming error.", msg.shortMessage());
+        ASSERT_EQUALS("Verbose error", msg.verboseMessage());
+        ASSERT_EQUALS(456u, msg.hash);
+        ASSERT_EQUALS(2u, msg.callStack.size());
+        ASSERT_EQUALS("foo.cpp", msg.callStack.front().getfile());
+        ASSERT_EQUALS(5, msg.callStack.front().line);
+        ASSERT_EQUALS(2u, msg.callStack.front().column);
+        ASSERT_EQUALS("bar.cpp", msg.callStack.back().getfile());
+        ASSERT_EQUALS(8, msg.callStack.back().line);
+        ASSERT_EQUALS(1u, msg.callStack.back().column);
+    }
+
     void InconclusiveXml() const {
         // Location
         std::list<ErrorMessage::FileLocation> locs(1, fooCpp5);
@@ -249,10 +282,12 @@ private:
         // Inconclusive error message
         std::list<ErrorMessage::FileLocation> locs;
         ErrorMessage msg(locs, emptyString, Severity::error, "Programming error", "errorId", Certainty::inconclusive);
+        msg.file0 = "test.cpp";
         ASSERT_EQUALS("7 errorId"
                       "5 error"
                       "1 0"
                       "1 0"
+                      "8 test.cpp"
                       "12 inconclusive"
                       "17 Programming error"
                       "17 Programming error"
@@ -262,6 +297,7 @@ private:
         msg2.deserialize(msg.serialize());
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
+        ASSERT_EQUALS("test.cpp", msg2.file0);
         ASSERT_EQUALS(Certainty::inconclusive, msg2.certainty);
         ASSERT_EQUALS("Programming error", msg2.shortMessage());
         ASSERT_EQUALS("Programming error", msg2.verboseMessage());
@@ -275,11 +311,13 @@ private:
     void SerializeSanitize() const {
         std::list<ErrorMessage::FileLocation> locs;
         ErrorMessage msg(locs, emptyString, Severity::error, std::string("Illegal character in \"foo\001bar\""), "errorId", Certainty::normal);
+        msg.file0 = "1.c";
 
         ASSERT_EQUALS("7 errorId"
                       "5 error"
                       "1 0"
                       "1 0"
+                      "3 1.c"
                       "33 Illegal character in \"foo\\001bar\""
                       "33 Illegal character in \"foo\\001bar\""
                       "0 ", msg.serialize());
@@ -288,6 +326,7 @@ private:
         msg2.deserialize(msg.serialize());
         ASSERT_EQUALS("errorId", msg2.id);
         ASSERT_EQUALS(Severity::error, msg2.severity);
+        ASSERT_EQUALS("1.c", msg2.file0);
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.shortMessage());
         ASSERT_EQUALS("Illegal character in \"foo\\001bar\"", msg2.verboseMessage());
     }

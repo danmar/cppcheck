@@ -25,8 +25,7 @@
 
 class TestBoost : public TestFixture {
 public:
-    TestBoost() : TestFixture("TestBoost") {
-    }
+    TestBoost() : TestFixture("TestBoost") {}
 
 private:
     Settings settings;

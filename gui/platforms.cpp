@@ -29,6 +29,7 @@ void Platforms::add(const QString &title, Settings::PlatformType platform)
     Platform plat;
     plat.mTitle = title;
     plat.mType = platform;
+    plat.mActMainWindow = nullptr;
     mPlatforms << plat;
 }
 

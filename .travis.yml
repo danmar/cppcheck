@@ -45,21 +45,6 @@ matrix:
       compiler: clang
       script:
         - make -j$(nproc) -s
-# run extra tests
-        - tools/generate_and_run_more_tests.sh
-# check for missing CWE entries
-        - make checkCWEEntries
-# check cfg files
-        - make checkcfg
-# Validate Result XML
-        - make validateXML
-# check htmlreport stuff
-        - python2 htmlreport/test_htmlreport.py
-        - python3 htmlreport/test_htmlreport.py
-        - cd htmlreport
-        - PYTHON=python2 ./check.sh
-        - PYTHON=python3 ./check.sh
-        - cd ../
 # check if DESTDIR works  TODO: actually execute this
         - mkdir install_test
         - echo $CXXFLAGS
@@ -71,15 +56,7 @@ matrix:
         - make -s MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck -j$(nproc)
         - sudo make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck install
 # check if it actually works:
-        - /usr/bin/cppcheck ./cli
-# check if showtime=top5 works
-        - ./tools/test_showtimetop5.sh
-# check matchcompiler
-        - python2 tools/test_matchcompiler.py
-        - python3 tools/test_matchcompiler.py
-# check --dump
-        - ${CPPCHECK} test/testpreprocessor.cpp --dump
-        - xmllint --noout test/testpreprocessor.cpp.dump
+        - /usr/bin/cppcheck -j$(nproc) ./cli
 # check addons/misc.py
         - cd addons/test
         - ${CPPCHECK} --dump misc-test.cpp
@@ -96,7 +73,8 @@ matrix:
         - cd addons/test
         # We'll force C89 standard to enable an additional verification for
         # rules 5.4 and 5.5 which have standard-dependent options.
-        - ${CPPCHECK} --dump --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.c
+        - ${CPPCHECK} --dump -DDUMMY --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.c
+        - ${CPPCHECK} --dump -DDUMMY --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.h
         - python3 ../misra.py -verify misra/misra-test.c.dump
         - ${CPPCHECK} --dump misra/misra-test.cpp
         - python3 ../misra.py -verify misra/misra-test.cpp.dump
@@ -120,29 +98,9 @@ matrix:
         - python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
         - cd ../..
 
-# bug hunting
-    - name: "bug hunting"
-      compiler: gcc
-      script:
-        - make clean
-        - make USE_Z3=yes -j$(nproc) all
-        - ./testrunner TestExprEngine
-        # FIXME: this is slowish
-        #- python3 test/bug-hunting/cve.py
-        #- git clone https://github.com/regehr/itc-benchmarks.git ~/itc
-        #- python3 test/bug-hunting/itc.py
-        - mkdir ~/juliet
-        - curl https://samate.nist.gov/SARD/testsuites/juliet/Juliet_Test_Suite_v1.3_for_C_Cpp.zip -o ~/juliet/juliet.zip
-        - cd ~/juliet
-        - unzip -qq ~/juliet/juliet.zip
-        - cd -
-        - python3 test/bug-hunting/juliet.py
-
 script:
 # fail the entire job as soon as one of the subcommands exits non-zero to save time and resources
   - set -e
-# Determine CPU count. As of January 2019 it seems to be 2 - so use this for job count in suitable calls to make or cppcheck
-  - cat /proc/cpuinfo
 # check with TEST_MATHLIB_VALUE enabled
   - touch lib/mathlib.cpp test/testmathlib.cpp
   - echo $CXXFLAGS
@@ -151,6 +109,3 @@ script:
 # compile cppcheck, default build
   - echo $CXXFLAGS
   - make -s check -j$(nproc)
-# Testing addons (disabled 2020-11-24 because Travis fails, TODO try to enable these)
-#  - PYTHONPATH=./addons python -m pytest addons/test/test-*.py
-#  - PYTHONPATH=./addons python3 -m pytest addons/test/test-*.py

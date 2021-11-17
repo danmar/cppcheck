@@ -16,17 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
-#include <QString>
+#include "checkthread.h"
+
 #include <QDebug>
 #include <QDir>
 #include <QFile>
-#include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QProcess>
 #include <QSettings>
-#include "checkthread.h"
 #include "erroritem.h"
 #include "threadresult.h"
 #include "cppcheck.h"
@@ -245,12 +241,12 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             if (addon == CLANG_ANALYZER) {
                 /*
-                // Using clang
-                args.insert(0,"--analyze");
-                args.insert(1, "-Xanalyzer");
-                args.insert(2, "-analyzer-output=text");
-                args << fileName;
-                */
+                   // Using clang
+                   args.insert(0,"--analyze");
+                   args.insert(1, "-Xanalyzer");
+                   args.insert(2, "-analyzer-output=text");
+                   args << fileName;
+                 */
                 // Using clang-tidy
                 args.insert(0,"-checks=-*,clang-analyzer-*");
                 args.insert(1, fileName);

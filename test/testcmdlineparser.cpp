@@ -27,7 +27,6 @@
 
 #include <list>
 #include <set>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -35,8 +34,7 @@ class TestCmdlineParser : public TestFixture {
 public:
     TestCmdlineParser()
         : TestFixture("TestCmdlineParser")
-        , defParser(&settings) {
-    }
+        , defParser(&settings) {}
 
 private:
     Settings settings;
@@ -828,7 +826,7 @@ private:
         const char * const argv[] = {"cppcheck", "--template", "gcc", "file.cpp"};
         settings.templateFormat.clear();
         ASSERT(defParser.parseFromArgs(4, argv));
-        ASSERT_EQUALS("{file}:{line}:{column}: warning: {message} [{id}]\\n{code}", settings.templateFormat);
+        ASSERT_EQUALS("{bold}{file}:{line}:{column}: {magenta}warning:{default} {message} [{id}]{reset}\\n{code}", settings.templateFormat);
     }
 
     void templatesVs() {
@@ -976,7 +974,7 @@ private:
             ASSERT_EQUALS("src/", parser.getIgnoredPaths()[0]);
             ASSERT_EQUALS("module/", parser.getIgnoredPaths()[1]);
         }
-    */
+     */
     void ignorepaths4() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "src", "-i", "module", "file.cpp"};
@@ -995,7 +993,7 @@ private:
             ASSERT_EQUALS(1, parser.getIgnoredPaths().size());
             ASSERT_EQUALS("foo.cpp", parser.getIgnoredPaths()[0]);
         }
-    */
+     */
     void ignorefilepaths2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc/foo.cpp", "file.cpp"};

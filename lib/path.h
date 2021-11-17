@@ -47,10 +47,10 @@ public:
     static std::string toNativeSeparators(std::string path);
 
     /**
-      * Convert path to use internal path separators.
-      * @param path Path string to convert.
-      * @return converted path.
-      */
+     * Convert path to use internal path separators.
+     * @param path Path string to convert.
+     * @return converted path.
+     */
     static std::string fromNativeSeparators(std::string path);
 
     /**
@@ -84,17 +84,17 @@ public:
     static std::string removeQuotationMarks(std::string path);
 
     /**
-      * @brief Get an extension of the filename.
-      * @param path Path containing filename.
-      * @return Filename extension (containing the dot, e.g. ".h" or ".CPP").
-      */
+     * @brief Get an extension of the filename.
+     * @param path Path containing filename.
+     * @return Filename extension (containing the dot, e.g. ".h" or ".CPP").
+     */
     static std::string getFilenameExtension(const std::string &path);
 
     /**
-      * @brief Get an extension of the filename in lower case.
-      * @param path Path containing filename.
-      * @return Filename extension (containing the dot, e.g. ".h").
-      */
+     * @brief Get an extension of the filename in lower case.
+     * @param path Path containing filename.
+     * @return Filename extension (containing the dot, e.g. ".h").
+     */
     static std::string getFilenameExtensionInLowerCase(const std::string &path);
 
     /**
@@ -111,18 +111,18 @@ public:
     static bool isAbsolute(const std::string& path);
 
     /**
-      * @brief Create a relative path from an absolute one, if absolute path is inside the basePaths.
-      * @param absolutePath Path to be made relative.
-      * @param basePaths Paths to which it may be made relative.
-      * @return relative path, if possible. Otherwise absolutePath is returned unchanged
-      */
+     * @brief Create a relative path from an absolute one, if absolute path is inside the basePaths.
+     * @param absolutePath Path to be made relative.
+     * @param basePaths Paths to which it may be made relative.
+     * @return relative path, if possible. Otherwise absolutePath is returned unchanged
+     */
     static std::string getRelativePath(const std::string& absolutePath, const std::vector<std::string>& basePaths);
 
     /**
-      * @brief Get an absolute file path from a relative one.
-      * @param filePath File path to be made absolute.
-      * @return absolute path, if possible. Otherwise an empty path is returned
-      */
+     * @brief Get an absolute file path from a relative one.
+     * @param filePath File path to be made absolute.
+     * @return absolute path, if possible. Otherwise an empty path is returned
+     */
     static std::string getAbsoluteFilePath(const std::string& filePath);
 
     /**
@@ -174,10 +174,10 @@ public:
     static std::string stripDirectoryPart(const std::string &file);
 
     /**
-      * @brief Checks if a File exists
-      * @param file Path to be checked if it is a File
-      * @return true if given path is a File
-      */
+     * @brief Checks if a File exists
+     * @param file Path to be checked if it is a File
+     * @return true if given path is a File
+     */
     static bool fileExists(const std::string &file);
 };
 

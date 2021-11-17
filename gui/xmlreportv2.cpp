@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QString>
-#include <QList>
+#include "xmlreportv2.h"
+
 #include <QDir>
 #include <QXmlStreamWriter>
 #include <QDebug>
 #include "report.h"
 #include "erroritem.h"
 #include "xmlreport.h"
-#include "xmlreportv2.h"
 #include "cppcheck.h"
 
 static const QString ResultElementName = "results";
@@ -53,8 +51,7 @@ XmlReportV2::XmlReportV2(const QString &filename) :
     XmlReport(filename),
     mXmlReader(nullptr),
     mXmlWriter(nullptr)
-{
-}
+{}
 
 XmlReportV2::~XmlReportV2()
 {
@@ -102,13 +99,13 @@ void XmlReportV2::writeFooter()
 void XmlReportV2::writeError(const ErrorItem &error)
 {
     /*
-    Error example from the core program in xml
-    <error id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"
+       Error example from the core program in xml
+       <error id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"
               verbose="Mismatching allocation and deallocation: k">
-      <location file="..\..\test\test.cxx" line="16"/>
-      <location file="..\..\test\test.cxx" line="32"/>
-    </error>
-    */
+       <location file="..\..\test\test.cxx" line="16"/>
+       <location file="..\..\test\test.cxx" line="32"/>
+       </error>
+     */
 
     mXmlWriter->writeStartElement(ErrorElementName);
     mXmlWriter->writeAttribute(IdAttribute, error.errorId);
@@ -125,6 +122,8 @@ void XmlReportV2::writeError(const ErrorItem &error)
         mXmlWriter->writeAttribute(CWEAttribute, QString::number(error.cwe));
     if (error.hash > 0)
         mXmlWriter->writeAttribute(HashAttribute, QString::number(error.hash));
+    if (!error.file0.isEmpty())
+        mXmlWriter->writeAttribute(IncludedFromFilenameAttribute, quoteMessage(error.file0));
     if (!error.sinceDate.isEmpty())
         mXmlWriter->writeAttribute(SinceDateAttribute, error.sinceDate);
     if (!error.tags.isEmpty())
@@ -134,9 +133,6 @@ void XmlReportV2::writeError(const ErrorItem &error)
         mXmlWriter->writeStartElement(LocationElementName);
 
         QString file = QDir::toNativeSeparators(error.errorPath[i].file);
-        if (!error.file0.isEmpty() && file != error.file0) {
-            mXmlWriter->writeAttribute(IncludedFromFilenameAttribute, quoteMessage(error.file0));
-        }
         mXmlWriter->writeAttribute(FilenameAttribute, XmlReport::quoteMessage(file));
         mXmlWriter->writeAttribute(LineAttribute, QString::number(error.errorPath[i].line));
         if (error.errorPath[i].column > 0)
@@ -195,13 +191,13 @@ QList<ErrorItem> XmlReportV2::read()
 ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
 {
     /*
-    Error example from the core program in xml
-    <error id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"
+       Error example from the core program in xml
+       <error id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: k"
               verbose="Mismatching allocation and deallocation: k">
-      <location file="..\..\test\test.cxx" line="16"/>
-      <location file="..\..\test\test.cxx" line="32"/>
-    </error>
-    */
+       <location file="..\..\test\test.cxx" line="16"/>
+       <location file="..\..\test\test.cxx" line="32"/>
+       </error>
+     */
 
     ErrorItem item;
 
@@ -220,6 +216,8 @@ ErrorItem XmlReportV2::readError(QXmlStreamReader *reader)
             item.cwe = attribs.value(QString(), CWEAttribute).toInt();
         if (attribs.hasAttribute(QString(), HashAttribute))
             item.hash = attribs.value(QString(), HashAttribute).toULongLong();
+        if (attribs.hasAttribute(QString(), IncludedFromFilenameAttribute))
+            item.file0 = attribs.value(QString(), IncludedFromFilenameAttribute).toString();
         if (attribs.hasAttribute(QString(), SinceDateAttribute))
             item.sinceDate = attribs.value(QString(), SinceDateAttribute).toString();
         if (attribs.hasAttribute(QString(), TagsAttribute))
