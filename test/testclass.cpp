@@ -219,13 +219,13 @@ private:
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
 
-        TEST_CASE(checkThisUseAfterFree);
+        TEST_CASE(thisUseAfterFree);
 
         TEST_CASE(unsafeClassRefMember);
 
         TEST_CASE(ctuOneDefinitionRule);
 
-        TEST_CASE(getFileInfo);
+        TEST_CASE(testGetFileInfo);
     }
 
 #define checkCopyCtorAndEqOperator(code) checkCopyCtorAndEqOperator_(code, __FILE__, __LINE__)
@@ -2749,21 +2749,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkNoMemset(const char code[]) {
+
+#define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkNoMemset_(const char* file, int line, const char code[]) {
         Settings settings;
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::portability);
-        checkNoMemset(code,settings);
+        checkNoMemset_(file, line, code, settings);
     }
 
-    void checkNoMemset(const char code[], const Settings &settings) {
+    void checkNoMemset_(const char* file, int line, const char code[], const Settings &settings) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -3345,15 +3347,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void checkThisSubtraction(const char code[]) {
+#define checkThisSubtraction(code) checkThisSubtraction_(code, __FILE__, __LINE__)
+    void checkThisSubtraction_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
@@ -3378,7 +3380,8 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], Settings *s = nullptr, bool inconclusive = true) {
+#define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkConst_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -3390,10 +3393,10 @@ private:
         // Tokenize..
         Tokenizer tokenizer(s, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, s, this);
-        checkClass.checkConst();
+        (checkClass.checkConst)();
     }
 
     void const1() {
@@ -6566,7 +6569,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkInitializerListOrder(const char code[]) {
+#define checkInitializerListOrder(code) checkInitializerListOrder_(code, __FILE__, __LINE__)
+    void checkInitializerListOrder_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
@@ -6576,7 +6580,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, &settings0, this);
         checkClass.initializerListOrder();
@@ -6600,7 +6604,8 @@ private:
                       "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n", errout.str());
     }
 
-    void checkInitializationListUsage(const char code[]) {
+#define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
+    void checkInitializationListUsage_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
@@ -6611,7 +6616,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.initializationListUsage();
@@ -6815,17 +6820,18 @@ private:
     }
 
 
-    void checkSelfInitialization(const char code[]) {
+#define checkSelfInitialization(code) checkSelfInitialization_(code, __FILE__, __LINE__)
+    void checkSelfInitialization_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, &settings0, this);
-        checkClass.checkSelfInitialization();
+        (checkClass.checkSelfInitialization)();
     }
 
     void selfInitialization() {
@@ -6908,7 +6914,9 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkVirtualFunctionCall(const char code[], Settings *s = nullptr, bool inconclusive = true) {
+
+#define checkVirtualFunctionCall(...) checkVirtualFunctionCall_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkVirtualFunctionCall_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -6923,7 +6931,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(s, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, s, this);
         checkClass.checkVirtualFunctionCallInConstructor();
@@ -7182,7 +7190,9 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkOverride(const char code[]) {
+
+#define checkOverride(code) checkOverride_(code, __FILE__, __LINE__)
+    void checkOverride_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -7191,11 +7201,11 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkOverride();
+        (checkClass.checkOverride)();
     }
 
     void override1() {
@@ -7264,7 +7274,9 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkUnsafeClassRefMember(const char code[]) {
+
+#define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
+    void checkUnsafeClassRefMember_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -7274,11 +7286,11 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkUnsafeClassRefMember();
+        (checkClass.checkUnsafeClassRefMember)();
     }
 
     void unsafeClassRefMember() {
@@ -7286,21 +7298,23 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unsafe class: The const reference member 'C::s' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n", errout.str());
     }
 
-    void checkThisUseAfterFree(const char code[]) {
+
+#define checkThisUseAfterFree(code) checkThisUseAfterFree_(code, __FILE__, __LINE__)
+    void checkThisUseAfterFree_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
-        checkClass.checkThisUseAfterFree();
+        (checkClass.checkThisUseAfterFree)();
     }
 
-    void checkThisUseAfterFree() {
+    void thisUseAfterFree() {
         setMultiline();
 
         // Calling method..
@@ -7481,24 +7495,26 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void getFileInfo(const char code[]) {
+
+#define getFileInfo(code) getFileInfo_(code, __FILE__, __LINE__)
+    void getFileInfo_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
 
-        Check::FileInfo * fileInfo = checkClass.getFileInfo(&tokenizer, &settings1);
+        Check::FileInfo * fileInfo = (checkClass.getFileInfo)(&tokenizer, &settings1);
 
         delete fileInfo;
     }
 
-    void getFileInfo() {
+    void testGetFileInfo() {
         getFileInfo("void foo() { union { struct { }; }; }"); // don't crash
         getFileInfo("struct sometype { sometype(); }; sometype::sometype() = delete;"); // don't crash
     }

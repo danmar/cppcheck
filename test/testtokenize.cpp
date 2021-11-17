@@ -443,7 +443,8 @@ private:
         TEST_CASE(simplifyIfSwitchForInit4);
     }
 
-    std::string tokenizeAndStringify(const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
+#define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
         settings1.debugwarnings = true;
@@ -453,7 +454,7 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename)) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
 
         // filter out ValueFlow messages..
         const std::string debugwarnings = errout.str();
@@ -471,7 +472,8 @@ private:
             return "";
     }
 
-    std::string tokenizeAndStringifyWindows(const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
+#define tokenizeAndStringifyWindows(...) tokenizeAndStringifyWindows_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeAndStringifyWindows_(const char* file, int linenr, const char code[], bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
         settings_windows.debugwarnings = true;
@@ -481,7 +483,7 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings_windows, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename)) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
 
         // filter out ValueFlow messages..
         const std::string debugwarnings = errout.str();
@@ -499,19 +501,20 @@ private:
             return "";
     }
 
-    std::string tokenizeAndStringify(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
+    std::string tokenizeAndStringify_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
         errout.str("");
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename)) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
         if (!tokenizer.tokens())
             return "";
         return tokenizer.tokens()->stringifyList(false, true, false, true, false, nullptr, nullptr);
     }
 
-    std::string tokenizeDebugListing(const char code[], const char filename[] = "test.cpp") {
+#define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeDebugListing_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         errout.str("");
 
         settings2.standards.c = Standards::C89;
@@ -519,7 +522,7 @@ private:
 
         Tokenizer tokenizer(&settings2, this);
         std::istringstream istr(code);
-        ASSERT(tokenizer.tokenize(istr, filename)) {};
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // result..
         return tokenizer.tokens()->stringifyList(true,true,true,true,false);
