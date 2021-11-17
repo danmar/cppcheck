@@ -6242,7 +6242,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         } else if (const Library::Container *container = settings->library.detectContainer(type)) {
             valuetype->type = ValueType::Type::CONTAINER;
             valuetype->container = container;
-            while (Token::Match(type, "%name%|::|<")) {
+            while (Token::Match(type, "%type%|::|<")) {
                 if (type->str() == "<" && type->link()) {
                     if (container->type_templateArgNo >= 0) {
                         const Token *templateType = type->next();

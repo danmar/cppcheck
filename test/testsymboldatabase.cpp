@@ -137,6 +137,7 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedStdDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesManyScopes);
         TEST_CASE(test_isVariableDeclarationIdentifiesPointers);
+        TEST_CASE(test_isVariableDeclarationIdentifiesPointers2);
         TEST_CASE(test_isVariableDeclarationDoesNotIdentifyConstness);
         TEST_CASE(test_isVariableDeclarationIdentifiesFirstOfManyVariables);
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedPointerDeclaration);
@@ -653,6 +654,18 @@ private:
         ASSERT(true == v3.isPointer());
         ASSERT(true == v3.isConst());
         ASSERT(false == v3.isReference());
+    }
+
+    void test_isVariableDeclarationIdentifiesPointers2() {
+
+        GET_SYMBOL_DB("void slurpInManifest() {\n"
+                      "  std::string tmpiostring(*tI);\n"
+                      "  if(tmpiostring==\"infoonly\"){}\n"
+                      "}");
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "tmpiostring ==");
+        ASSERT(tok->variable());
+        ASSERT(!tok->variable()->isPointer());
     }
 
     void test_isVariableDeclarationDoesNotIdentifyConstness() {
