@@ -4795,7 +4795,7 @@ private:
         ASSERT(functok->function()->name() == "foo2");
     }
 
-    void symboldatabase96() { // #10126 
+    void symboldatabase96() { // #10126
         GET_SYMBOL_DB("struct A\n"
                       "{\n"
                       "    int i, j;\n"
