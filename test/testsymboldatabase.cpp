@@ -4796,8 +4796,7 @@ private:
     }
 
     void symboldatabase96() { // #10126
-        GET_SYMBOL_DB("struct A\n"
-                      "{\n"
+        GET_SYMBOL_DB("struct A {\n"
                       "    int i, j;\n"
                       "};\n"
                       "std::map<int, A> m{ { 0, A{0,0} }, {0, A{0,0} } };\n");
