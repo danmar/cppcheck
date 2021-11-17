@@ -391,6 +391,7 @@ private:
         TEST_CASE(simplifyOperatorName7); // ticket #4619
         TEST_CASE(simplifyOperatorName8); // ticket #5706
         TEST_CASE(simplifyOperatorName9); // ticket #5709 - comma operator not properly tokenized
+        TEST_CASE(simplifyOperatorName31); // #6342
 
         TEST_CASE(simplifyNullArray);
 
@@ -6101,6 +6102,17 @@ private:
     void simplifyOperatorName9() { // Ticket #5709
         const char code[] = "struct R { R operator, ( R b ) ; } ;";
         ASSERT_EQUALS(code, tokenizeAndStringify(code));
+    }
+
+    void simplifyOperatorName31() { // #6342
+      const char code[] = "template <typename T>\n"
+        "struct B {\n"
+        "    typedef T A[3];\n"
+        "    operator A& () { return x_; }\n"
+        "    A x_;\n"
+        "};";
+      ASSERT_EQUALS("template < typename T >\nstruct B {\n\noperatorT ( & ( ) ) [ 3 ] { return x_ ; }\nT x_ [ 3 ] ;\n} ;", tokenizeAndStringify(code));
+      ASSERT_EQUALS("", errout.str());
     }
 
     void simplifyNullArray() {
