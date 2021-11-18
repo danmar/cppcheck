@@ -4759,6 +4759,16 @@ private:
               "    out_row[c] = vector<V, 2>(1,2);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const uint8_t* d, const uint8_t L) {\n" // #10092
+              "    for (uint8_t i = 0U; i < L; ++i)\n"
+              "        g(d[i]);\n"
+              "}\n"
+              "void h() {\n"
+              "    const uint8_t u = 4;\n"
+              "    f(&u, N);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
