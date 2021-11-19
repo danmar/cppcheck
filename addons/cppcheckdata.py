@@ -608,13 +608,13 @@ class Variable:
         self.access = element.get('access')
         self.scopeId = element.get('scope')
         self.scope = None
-        self.isArgument = element.get('isArgument') == 'true'
+        self.isArgument = (self.access and self.access == 'Argument')
         self.isArray = element.get('isArray') == 'true'
         self.isClass = element.get('isClass') == 'true'
         self.isConst = element.get('isConst') == 'true'
-        self.isGlobal = element.get('access') == 'Global'
+        self.isGlobal = (self.access and self.access == 'Global')
         self.isExtern = element.get('isExtern') == 'true'
-        self.isLocal = element.get('isLocal') == 'true'
+        self.isLocal = (self.access and self.access == 'Local')
         self.isPointer = element.get('isPointer') == 'true'
         self.isReference = element.get('isReference') == 'true'
         self.isStatic = element.get('isStatic') == 'true'
