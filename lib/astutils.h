@@ -151,6 +151,7 @@ bool extractForLoopValues(const Token *forToken,
                           long long * const lastValue);
 
 bool precedes(const Token * tok1, const Token * tok2);
+bool succedes(const Token * tok1, const Token * tok2);
 
 bool exprDependsOnThis(const Token* expr, bool onVar = true, nonneg int depth = 0);
 
@@ -208,6 +209,7 @@ bool isReturnScope(const Token* const endToken,
 
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);
+Token * getTokenArgumentFunction(Token * tok, int& argn);
 
 std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr);
 

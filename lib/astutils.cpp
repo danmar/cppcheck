@@ -53,10 +53,10 @@ void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
 
         if (c == ChildrenToVisit::done)
             break;
-        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
-            tokens.push(tok->astOperand1());
         if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2)
             tokens.push(tok->astOperand2());
+        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
+            tokens.push(tok->astOperand1());
     }
 }
 
@@ -734,11 +734,25 @@ static bool isInLoopCondition(const Token * tok)
 /// If tok2 comes after tok1
 bool precedes(const Token * tok1, const Token * tok2)
 {
+    if (tok1 == tok2)
+        return false;
     if (!tok1)
         return false;
     if (!tok2)
         return true;
     return tok1->index() < tok2->index();
+}
+
+/// If tok1 comes after tok2
+bool succedes(const Token * tok1, const Token * tok2)
+{
+    if (tok1 == tok2)
+        return false;
+    if (!tok1)
+        return false;
+    if (!tok2)
+        return true;
+    return tok1->index() > tok2->index();
 }
 
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
@@ -1865,11 +1879,12 @@ bool isScopeBracket(const Token* tok)
     return false;
 }
 
-const Token * getTokenArgumentFunction(const Token * tok, int& argn)
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+T * getTokenArgumentFunctionImpl(T * tok, int& argn)
 {
     argn = -1;
     {
-        const Token *parent = tok->astParent();
+        T *parent = tok->astParent();
         if (parent && parent->isUnaryOp("&"))
             parent = parent->astParent();
         while (parent && parent->isCast())
@@ -1891,7 +1906,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
             return nullptr;
     }
 
-    const Token* argtok = tok;
+    T* argtok = tok;
     while (argtok && argtok->astParent() && (!Token::Match(argtok->astParent(), ",|(|{") || argtok->astParent()->isCast())) {
         argtok = argtok->astParent();
     }
@@ -1933,6 +1948,16 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     if (!Token::Match(tok, "%name%|(|{"))
         return nullptr;
     return tok;
+}
+
+const Token * getTokenArgumentFunction(const Token * tok, int& argn)
+{
+    return getTokenArgumentFunctionImpl(tok, argn);
+}
+
+Token * getTokenArgumentFunction(Token * tok, int& argn)
+{
+    return getTokenArgumentFunctionImpl(tok, argn);
 }
 
 std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)
