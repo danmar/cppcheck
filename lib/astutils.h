@@ -64,6 +64,7 @@ bool astHasToken(const Token* root, const Token * tok);
 
 bool astHasVar(const Token * tok, nonneg int varid);
 
+bool astIsPrimitive(const Token* tok);
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */
@@ -81,6 +82,7 @@ bool astIsBool(const Token *tok);
 bool astIsPointer(const Token *tok);
 
 bool astIsSmartPointer(const Token* tok);
+bool astIsUniqueSmartPointer(const Token* tok);
 
 bool astIsIterator(const Token *tok);
 
@@ -123,6 +125,12 @@ bool astIsRHS(const Token* tok);
 
 Token* getCondTok(Token* tok);
 const Token* getCondTok(const Token* tok);
+
+Token* getInitTok(Token* tok);
+const Token* getInitTok(const Token* tok);
+
+Token* getStepTok(Token* tok);
+const Token* getStepTok(const Token* tok);
 
 Token* getCondTokFromEnd(Token* endBlock);
 const Token* getCondTokFromEnd(const Token* endBlock);

@@ -81,6 +81,9 @@ private:
     Suppressions::ErrorMessage errorMessage(const std::string &errorId) const {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
+        ret.hash = 0;
+        ret.lineNumber = 0;
+        ret.certainty = Certainty::CertaintyLevel::normal;
         return ret;
     }
 

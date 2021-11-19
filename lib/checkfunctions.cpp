@@ -303,9 +303,13 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 // find reachable break / !default
                 bool hasDefault = false;
                 bool reachable = false;
-                for (const Token *switchToken = tok->link(); switchToken != tok; switchToken = switchToken->next()) {
-                    if (reachable && Token::simpleMatch(switchToken, "break ;"))
-                        return switchToken;
+                for (const Token *switchToken = tok->link()->next(); switchToken != tok; switchToken = switchToken->next()) {
+                    if (reachable && Token::simpleMatch(switchToken, "break ;")) {
+                        if (Token::simpleMatch(switchToken->previous(), "}") && !checkMissingReturnScope(switchToken->previous(), library))
+                            reachable = false;
+                        else
+                            return switchToken;
+                    }
                     if (switchToken->isKeyword() && Token::Match(switchToken, "return|throw"))
                         reachable = false;
                     if (Token::Match(switchToken, "%name% (") && library.isnoreturn(switchToken))
@@ -314,7 +318,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                         reachable = true;
                     if (Token::simpleMatch(switchToken, "default :"))
                         hasDefault = true;
-                    else if (switchToken->str() == "{" && switchToken->scope()->isLoopScope())
+                    else if (switchToken->str() == "{" && (switchToken->scope()->isLoopScope() || switchToken->scope()->type == Scope::ScopeType::eSwitch))
                         switchToken = switchToken->link();
                 }
                 if (!hasDefault)

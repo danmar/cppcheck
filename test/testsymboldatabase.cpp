@@ -137,6 +137,7 @@ private:
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedStdDeclaration);
         TEST_CASE(test_isVariableDeclarationIdentifiesManyScopes);
         TEST_CASE(test_isVariableDeclarationIdentifiesPointers);
+        TEST_CASE(test_isVariableDeclarationIdentifiesPointers2);
         TEST_CASE(test_isVariableDeclarationDoesNotIdentifyConstness);
         TEST_CASE(test_isVariableDeclarationIdentifiesFirstOfManyVariables);
         TEST_CASE(test_isVariableDeclarationIdentifiesScopedPointerDeclaration);
@@ -352,6 +353,7 @@ private:
         TEST_CASE(symboldatabase93); // alignas attribute
         TEST_CASE(symboldatabase94); // structured bindings
         TEST_CASE(symboldatabase95); // #10295
+        TEST_CASE(symboldatabase96); // #10126
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -653,6 +655,18 @@ private:
         ASSERT(true == v3.isPointer());
         ASSERT(true == v3.isConst());
         ASSERT(false == v3.isReference());
+    }
+
+    void test_isVariableDeclarationIdentifiesPointers2() {
+
+        GET_SYMBOL_DB("void slurpInManifest() {\n"
+                      "  std::string tmpiostring(*tI);\n"
+                      "  if(tmpiostring==\"infoonly\"){}\n"
+                      "}");
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "tmpiostring ==");
+        ASSERT(tok->variable());
+        ASSERT(!tok->variable()->isPointer());
     }
 
     void test_isVariableDeclarationDoesNotIdentifyConstness() {
@@ -4792,6 +4806,14 @@ private:
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "foo2");
+    }
+
+    void symboldatabase96() { // #10126
+        GET_SYMBOL_DB("struct A {\n"
+                      "    int i, j;\n"
+                      "};\n"
+                      "std::map<int, A> m{ { 0, A{0,0} }, {0, A{0,0} } };\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {

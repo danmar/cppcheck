@@ -76,9 +76,15 @@ Settings::Settings()
     certainty.setEnabled(Certainty::normal, true);
 }
 
-void Settings::loadCppcheckCfg(const std::string &filename)
+void Settings::loadCppcheckCfg(const std::string &executable)
 {
-    std::ifstream fin(filename);
+    std::string fileName = Path::getPathFromFilename(executable) + "cppcheck.cfg";
+#ifdef FILESDIR
+    if (Path::fileExists(FILESDIR "/cppcheck.cfg"))
+        fileName = FILESDIR "/cppcheck.cfg";
+#endif
+
+    std::ifstream fin(fileName);
     if (!fin.is_open())
         return;
     picojson::value json;
@@ -90,7 +96,7 @@ void Settings::loadCppcheckCfg(const std::string &filename)
         for (const picojson::value &v : obj["addons"].get<picojson::array>()) {
             const std::string &s = v.get<std::string>();
             if (!Path::isAbsolute(s))
-                addons.push_back(Path::getPathFromFilename(filename) + s);
+                addons.push_back(Path::getPathFromFilename(fileName) + s);
             else
                 addons.push_back(s);
         }
@@ -109,7 +115,7 @@ std::string Settings::addEnabled(const std::string &str)
         std::string::size_type pos = 0;
         while ((pos = str.find(',', pos)) != std::string::npos) {
             if (pos == prevPos)
-                return std::string("cppcheck: --enable parameter is empty");
+                return std::string("--enable parameter is empty");
             const std::string errmsg(addEnabled(str.substr(prevPos, pos - prevPos)));
             if (!errmsg.empty())
                 return errmsg;
@@ -117,7 +123,7 @@ std::string Settings::addEnabled(const std::string &str)
             prevPos = pos;
         }
         if (prevPos >= str.length())
-            return std::string("cppcheck: --enable parameter is empty");
+            return std::string("--enable parameter is empty");
         return addEnabled(str.substr(prevPos));
     }
 

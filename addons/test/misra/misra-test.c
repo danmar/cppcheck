@@ -65,6 +65,16 @@ static _Noreturn void misra_1_4_func(void) // 1.4
     printf_s("hello"); // 1.4
 }
 
+static void misra_2_2(int x) {
+    int a;
+    a = x + 0; // 2.2
+    a = 0 + x; // 2.2
+    a = x * 0; // 2.2
+    a = 0 * x; // 2.2
+    a = x * 1; // 2.2
+    a = 1 * x; // 2.2
+    (void)a;
+}
 
 /* // */   // 3.1
 /* /* */   // 3.1
@@ -1412,6 +1422,16 @@ static void misra_15_6(void) {
   { (void)0; } // no-warning
 
   do {} while (x<0); // no-warning
+}
+
+static void misra_15_6_fp(void)
+{
+    uint8_t value = 0U;
+    do // Test
+    {
+        value++;
+    }
+    while (value < 2U);
 }
 
 #if defined(M_20_9) && M_20_9 > 1 // no-warning (#10380)

@@ -45,6 +45,8 @@ public:
      * Constructor
      */
     CppCheckExecutor();
+    CppCheckExecutor(const CppCheckExecutor &) = delete;
+    void operator=(const CppCheckExecutor&) = delete;
 
     /**
      * Destructor

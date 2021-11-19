@@ -1433,6 +1433,23 @@ class MisraChecker:
                                  'wcrtomb_s', 'mbsrtowcs_s', 'wcsrtombs_s'):
                     self.reportError(token, 1, 4)
 
+    def misra_2_2(self, cfg):
+        for token in cfg.tokenlist:
+            if (token.str in '+-') and token.astOperand2:
+                if simpleMatch(token.astOperand1, '0'):
+                    self.reportError(token.astOperand1, 2, 2)
+                elif simpleMatch(token.astOperand2, '0'):
+                    self.reportError(token.astOperand2, 2, 2)
+            if token.str == '*' and token.astOperand2:
+                if simpleMatch(token.astOperand2, '0'):
+                    self.reportError(token.astOperand1, 2, 2)
+                elif simpleMatch(token.astOperand1, '0'):
+                    self.reportError(token.astOperand2, 2, 2)
+                elif simpleMatch(token.astOperand1, '1'):
+                    self.reportError(token.astOperand1, 2, 2)
+                elif simpleMatch(token.astOperand2, '1'):
+                    self.reportError(token.astOperand2, 2, 2)
+
     def misra_2_3(self, dumpfile, typedefInfo):
         self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
 
@@ -2832,14 +2849,41 @@ class MisraChecker:
         state = 0
         indent = 0
         tok1 = None
+        def tokAt(tok,i):
+            while i < 0 and tok:
+                tok = tok.previous
+                if tok.str.startswith('//') or tok.str.startswith('/*'):
+                    continue
+                i += 1
+            while i > 0 and tok:
+                tok = tok.next
+                if tok.str.startswith('//') or tok.str.startswith('/*'):
+                    continue
+                i -= 1
+            return tok
+
+        def strtokens(tok, i1, i2):
+            tok1 = tokAt(tok, i1)
+            tok2 = tokAt(tok, i2)
+            tok = tok1
+            s = ''
+            while tok != tok2:
+                if tok.str.startswith('//') or tok.str.startswith('/*'):
+                    tok = tok.next
+                    continue
+                s += ' ' + tok.str
+                tok = tok.next
+            s += ' ' + tok.str
+            return s[1:]
+
         for token in rawTokens:
             if token.str in ['if', 'for', 'while']:
-                if simpleMatch(token.previous, '# if'):
+                if strtokens(token,-1,0) == '# if':
                     continue
-                if simpleMatch(token.previous, "} while"):
+                if strtokens(token,-1,0) == "} while":
                     # is there a 'do { .. } while'?
-                    start = rawlink(token.previous)
-                    if start and simpleMatch(start.previous, 'do {'):
+                    start = rawlink(tokAt(token,-1))
+                    if start and strtokens(start, -1, 0) == 'do {':
                         continue
                 if state == 2:
                     self.reportError(tok1, 15, 6)
@@ -2847,9 +2891,9 @@ class MisraChecker:
                 indent = 0
                 tok1 = token
             elif token.str == 'else':
-                if simpleMatch(token.previous, '# else'):
+                if strtokens(token,-1,0) == '# else':
                     continue
-                if simpleMatch(token, 'else if'):
+                if strtokens(token,0,1) == 'else if':
                     continue
                 if state == 2:
                     self.reportError(tok1, 15, 6)
@@ -4200,6 +4244,7 @@ class MisraChecker:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
             self.executeCheck(104, self.misra_1_4, cfg)
+            self.executeCheck(202, self.misra_2_2, cfg)
             self.executeCheck(203, self.misra_2_3, dumpfile, cfg.typedefInfo)
             self.executeCheck(204, self.misra_2_4, dumpfile, cfg)
             self.executeCheck(205, self.misra_2_5, dumpfile, cfg)

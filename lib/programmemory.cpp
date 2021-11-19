@@ -3,11 +3,13 @@
 #include "astutils.h"
 #include "calculate.h"
 #include "errortypes.h"
+#include "infer.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueflow.h"
+#include "valueptr.h"
 #include <algorithm>
 #include <cassert>
 #include <cmath>
@@ -215,11 +217,9 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
                 programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
         }
     } else if (tok->exprId() > 0) {
-        if (then && !astIsPointer(tok) && !astIsBool(tok))
-            return;
         if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
-        pm.setIntValue(tok->exprId(), then);
+        pm.setIntValue(tok->exprId(), 0, then);
         const Token* containerTok = settings->library.getContainerFromYield(tok, Library::Container::Yield::EMPTY);
         if (containerTok)
             pm.setContainerSizeValue(containerTok->exprId(), 0, then);
@@ -637,14 +637,18 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         if (!lhs.isUninitValue() && !rhs.isUninitValue())
             return evaluate(expr->str(), lhs, rhs);
         if (expr->isComparisonOp()) {
-            if (rhs.isIntValue() && !rhs.isImpossible()) {
-                ValueFlow::Value v = inferCondition(expr->str(), expr->astOperand1(), rhs.intvalue);
-                if (v.isKnown())
-                    return v;
-            } else if (lhs.isIntValue() && !lhs.isImpossible()) {
-                ValueFlow::Value v = inferCondition(expr->str(), lhs.intvalue, expr->astOperand2());
-                if (v.isKnown())
-                    return v;
+            if (rhs.isIntValue()) {
+                std::vector<ValueFlow::Value> result =
+                    infer(makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
+                if (result.empty())
+                    return unknown;
+                return result.front();
+            } else if (lhs.isIntValue()) {
+                std::vector<ValueFlow::Value> result =
+                    infer(makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
+                if (result.empty())
+                    return unknown;
+                return result.front();
             }
         }
     }
@@ -674,7 +678,12 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
             return execute(expr->astOperand1(), pm);
     }
     if (expr->exprId() > 0 && pm.hasValue(expr->exprId())) {
-        return pm.values.at(expr->exprId());
+        ValueFlow::Value result = pm.values.at(expr->exprId());
+        if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr)) {
+            result.intvalue = !result.intvalue;
+            result.setKnown();
+        }
+        return result;
     }
 
     return unknown;
@@ -683,8 +692,9 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
 void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result, bool* error)
 {
     ValueFlow::Value v = execute(expr, *programMemory);
-    if (!v.isIntValue() || v.isImpossible())
-        *error = true;
-    else
+    if (!v.isIntValue() || v.isImpossible()) {
+        if (error)
+            *error = true;
+    } else if (result)
         *result = v.intvalue;
 }

@@ -93,8 +93,8 @@ struct ForwardTraversal {
         return evalCond(tok, ctx).second;
     }
 
-    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-    Progress traverseTok(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, T** out = nullptr) {
+    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+    Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
         if (Token::Match(tok, "asm|goto|setjmp|longjmp"))
             return Break(Analyzer::Terminate::Bail);
         else if (Token::simpleMatch(tok, "continue")) {
@@ -134,8 +134,8 @@ struct ForwardTraversal {
         return Progress::Continue;
     }
 
-    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-    Progress traverseRecursive(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, unsigned int recursion=0) {
+    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+    Progress traverseRecursive(T* tok, F f, bool traverseUnknown, unsigned int recursion=0) {
         if (!tok)
             return Progress::Continue;
         if (recursion > 10000)
@@ -206,7 +206,7 @@ struct ForwardTraversal {
     }
 
     Progress updateTok(Token* tok, Token** out = nullptr) {
-        std::function<Progress(Token*)> f = [this](Token* tok2) {
+        auto f = [this](Token* tok2) {
             return update(tok2);
         };
         return traverseTok(tok, f, false, out);
@@ -214,14 +214,14 @@ struct ForwardTraversal {
 
     Progress updateRecursive(Token* tok) {
         forked = false;
-        std::function<Progress(Token*)> f = [this](Token* tok2) {
+        auto f = [this](Token* tok2) {
             return update(tok2);
         };
         return traverseRecursive(tok, f, false);
     }
 
-    template<class T>
-    T* findRange(T* start, const Token* end, std::function<bool(Analyzer::Action)> pred) {
+    template<class T, class F>
+    T* findRange(T* start, const Token* end, F pred) {
         for (T* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
             if (pred(action))
@@ -232,7 +232,7 @@ struct ForwardTraversal {
 
     Analyzer::Action analyzeRecursive(const Token* start) {
         Analyzer::Action result = Analyzer::Action::None;
-        std::function<Progress(const Token*)> f = [&](const Token* tok) {
+        auto f = [&](const Token* tok) {
             result = analyzer->analyze(tok, Analyzer::Direction::Forward);
             if (result.isModified() || result.isInconclusive())
                 return Break();
@@ -782,34 +782,6 @@ struct ForwardTraversal {
             parent = parent->astParent();
         }
         return parent && (parent->str() == ":" || parent->astOperand2() == tok);
-    }
-
-    static Token* getInitTok(Token* tok) {
-        if (!tok)
-            return nullptr;
-        if (Token::Match(tok, "%name% ("))
-            return getInitTok(tok->next());
-        if (tok->str() !=  "(")
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2(), ";"))
-            return nullptr;
-        if (Token::simpleMatch(tok->astOperand2()->astOperand1(), ";"))
-            return nullptr;
-        return tok->astOperand2()->astOperand1();
-    }
-
-    static Token* getStepTok(Token* tok) {
-        if (!tok)
-            return nullptr;
-        if (Token::Match(tok, "%name% ("))
-            return getStepTok(tok->next());
-        if (tok->str() != "(")
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2(), ";"))
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2()->astOperand2(), ";"))
-            return nullptr;
-        return tok->astOperand2()->astOperand2()->astOperand2();
     }
 
     static Token* getStepTokFromEnd(Token* tok) {

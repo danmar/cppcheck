@@ -3129,6 +3129,22 @@ private:
               "    int *p = s->a + 100;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 's->a+100' is out of bounds.\n", errout.str());
+
+        check("template <class T> class Vector\n"
+              "{\n"
+              "public:\n"
+              "    void test() const;\n"
+              "    T* data();\n"
+              "};\n"
+              "template <class T>\n"
+              "void Vector<T>::test() const\n"
+              "{\n"
+              "    const T* PDat = data();\n"
+              "    const T* P2 = PDat + 1;\n"
+              "    const T* P1 = P2 - 1;\n"
+              "}\n"
+              "Vector<std::array<long, 2>> Foo;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pointer_out_of_bounds_4() {
@@ -4719,6 +4735,28 @@ private:
               "int bar() {\n"
               "    int single_value = 0;\n"
               "    return foo(1, &single_value);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const char* app, size_t applen) {\n" // #10137
+              "    char* tmp_de = NULL;\n"
+              "    char** str = &tmp_de;\n"
+              "    char* tmp = (char*)realloc(*str, applen + 1);\n"
+              "    if (tmp) {\n"
+              "        *str = tmp;\n"
+              "        memcpy(*str, app, applen);\n"
+              "        (*str)[applen] = '\\0';\n"
+              "    }\n"
+              "    free(*str);\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T, unsigned N>\n"
+              "using vector = Eigen::Matrix<T, N, 1>;\n"
+              "template <typename V>\n"
+              "void scharr(image2d<vector<V, 2>>& out) {\n"
+              "    vector<V, 2>* out_row = &out(r, 0);\n"
+              "    out_row[c] = vector<V, 2>(1,2);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -256,6 +256,8 @@ Suppressions::ErrorMessage ErrorMessage::toSuppressionsErrorMessage() const
     if (!callStack.empty()) {
         ret.setFileName(callStack.back().getfile(false));
         ret.lineNumber = callStack.back().line;
+    } else {
+        ret.lineNumber = Suppressions::Suppression::NO_LINE;
     }
     ret.certainty = certainty;
     ret.symbolNames = mSymbolNames;

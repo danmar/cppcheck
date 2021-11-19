@@ -2423,7 +2423,7 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
                 continue;
             if (callstack.back()->function()->isPure())
                 pureVirtualFunctionCallInConstructorError(scope->function, callstack, callstack.back()->str());
-            else
+            else if (!callstack.back()->function()->hasFinalSpecifier())
                 virtualFunctionCallInConstructorError(scope->function, callstack, callstack.back()->str());
         }
     }
