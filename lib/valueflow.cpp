@@ -2115,7 +2115,8 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    Action isGlobalModified(const Token* tok) const {
+    Action isGlobalModified(const Token* tok) const
+    {
         if (tok->function()) {
             if (!tok->function()->isConstexpr() && !isConstFunctionCall(tok, getSettings()->library))
                 return Action::Invalid;

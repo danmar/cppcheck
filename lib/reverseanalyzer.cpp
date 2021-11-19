@@ -44,7 +44,7 @@ struct ReverseTraversal {
     {
         int argn = -1;
         if (Token* ftok = getTokenArgumentFunction(tok, argn)) {
-            while(!Token::Match(ftok, "(|{")) {
+            while (!Token::Match(ftok, "(|{")) {
                 if (!ftok)
                     break;
                 if (ftok->link())
@@ -63,7 +63,7 @@ struct ReverseTraversal {
             return nullptr;
         Token* parent = tok;
         Token* top = tok;
-        while((parent = getParentFunction(parent)))
+        while ((parent = getParentFunction(parent)))
             top = parent;
         return top;
     }

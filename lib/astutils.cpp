@@ -744,7 +744,7 @@ bool precedes(const Token * tok1, const Token * tok2)
 }
 
 /// If tok1 comes after tok2
-bool succedes(const Token * tok1, const Token * tok2)
+bool succedes(const Token* tok1, const Token* tok2)
 {
     if (tok1 == tok2)
         return false;
@@ -1880,11 +1880,11 @@ bool isScopeBracket(const Token* tok)
 }
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-T * getTokenArgumentFunctionImpl(T * tok, int& argn)
+T* getTokenArgumentFunctionImpl(T* tok, int& argn)
 {
     argn = -1;
     {
-        T *parent = tok->astParent();
+        T* parent = tok->astParent();
         if (parent && parent->isUnaryOp("&"))
             parent = parent->astParent();
         while (parent && parent->isCast())
@@ -1950,13 +1950,11 @@ T * getTokenArgumentFunctionImpl(T * tok, int& argn)
     return tok;
 }
 
-const Token * getTokenArgumentFunction(const Token * tok, int& argn)
-{
+const Token* getTokenArgumentFunction(const Token* tok, int& argn) {
     return getTokenArgumentFunctionImpl(tok, argn);
 }
 
-Token * getTokenArgumentFunction(Token * tok, int& argn)
-{
+Token* getTokenArgumentFunction(Token* tok, int& argn) {
     return getTokenArgumentFunctionImpl(tok, argn);
 }
 
