@@ -2615,6 +2615,10 @@ private:
               "    panels.erase(it);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { void f(); int i; };\n"
+              "void call_f(S& s) { (s.*(&S::f))(); }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
