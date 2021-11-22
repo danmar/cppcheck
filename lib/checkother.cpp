@@ -1466,6 +1466,20 @@ void CheckOther::checkConstVariable()
             if (changeStructData)
                 continue;
         }
+        // Calling non-const method using non-const reference
+        if (var->isReference()) {
+            bool callNonConstMethod = false;
+            for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
+                if (tok->variable() == var && Token::Match(tok, "%var% . * ( & %name% ::")) {
+                    const Token *ftok = tok->linkAt(3)->previous();
+                    if (!ftok->function() || !ftok->function()->isConst())
+                        callNonConstMethod = true;
+                    break;
+                }
+            }
+            if (callNonConstMethod)
+                continue;
+        }
 
         constVariableError(var, function);
     }

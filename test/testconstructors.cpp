@@ -1986,6 +1986,23 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:11]: (warning) Member variable 'Foo::mMember' is not initialized in the constructor.\n", errout.str());
 
+        // constructor outside namespace with using, #4792
+        check("namespace Output\n"
+              "{\n"
+              "    class Foo\n"
+              "    {\n"
+              "    public:\n"
+              "        Foo();\n"
+              "    private:\n"
+              "        bool mMember;\n"
+              "    };\n"
+              "}\n"
+              "using namespace Output;"
+              "Foo::Foo()\n"
+              "{\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:11]: (warning) Member variable 'Foo::mMember' is not initialized in the constructor.\n", errout.str());
+
         // constructor in separate namespace
         check("namespace Output\n"
               "{\n"
