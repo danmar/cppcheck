@@ -42,12 +42,19 @@ def get_cppcheck(cppcheck_path, work_path):
             try:
                 os.chdir(cppcheck_path)
                 try:
+                    subprocess.check_call(['git', 'fetch'])
+                    localrev = subprocess.check_output(['git', 'rev-parse', 'main'])
+                    origrev = subprocess.check_output(['git', 'rev-parse', 'origin/main'])
+                    if localrev == origrev:
+                        print('Already up to date. Continuing with %s.' % localrev.decode().rstrip())
+                        time.sleep(2)
+                        return True
                     subprocess.check_call(['git', 'checkout', '-f', 'main'])
                 except subprocess.CalledProcessError:
                     subprocess.check_call(['git', 'checkout', '-f', 'master'])
-                    subprocess.check_call(['git', 'pull'])
+                    subprocess.check_call(['git', 'merge'])
                     subprocess.check_call(['git', 'checkout', 'origin/main', '-b', 'main'])
-                subprocess.check_call(['git', 'pull'])
+                subprocess.check_call(['git', 'merge'])
             except:
                 print('Failed to update Cppcheck sources! Retrying..')
                 time.sleep(10)
