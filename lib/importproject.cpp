@@ -195,19 +195,20 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     if (!mPath.empty() && !endsWith(mPath,'/'))
         mPath += '/';
 
-    const std::string fileFilter = settings ? settings->fileFilter : std::string();
+    const std::vector<std::string> fileFilters =
+        settings ? settings->fileFilters : std::vector<std::string>();
 
     if (endsWith(filename, ".json")) {
         importCompileCommands(fin);
         setRelativePaths(filename);
         return ImportProject::Type::COMPILE_DB;
     } else if (endsWith(filename, ".sln")) {
-        importSln(fin, mPath, fileFilter);
+        importSln(fin, mPath, fileFilters);
         setRelativePaths(filename);
         return ImportProject::Type::VS_SLN;
     } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
-        importVcxproj(filename, variables, emptyString, fileFilter);
+        importVcxproj(filename, variables, emptyString, fileFilters);
         setRelativePaths(filename);
         return ImportProject::Type::VS_VCXPROJ;
     } else if (endsWith(filename, ".bpr")) {
@@ -447,7 +448,7 @@ void ImportProject::importCompileCommands(std::istream &istr)
     }
 }
 
-void ImportProject::importSln(std::istream &istr, const std::string &path, const std::string &fileFilter)
+void ImportProject::importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters)
 {
     std::map<std::string,std::string,cppcheck::stricmp> variables;
     variables["SolutionDir"] = path;
@@ -465,7 +466,7 @@ void ImportProject::importSln(std::istream &istr, const std::string &path, const
         std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
         if (!Path::isAbsolute(vcxproj))
             vcxproj = path + vcxproj;
-        importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString, fileFilter);
+        importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString, fileFilters);
     }
 }
 
@@ -658,7 +659,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
     }
 }
 
-void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::string &fileFilter)
+void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters)
 {
     variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
 
@@ -718,7 +719,7 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
     for (const std::string &c : compileList) {
         const std::string cfilename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
-        if (!fileFilter.empty() && !matchglob(fileFilter, cfilename))
+        if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
             continue;
 
         for (const ProjectConfiguration &p : projectConfigurationList) {
