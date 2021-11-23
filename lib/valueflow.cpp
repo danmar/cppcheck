@@ -5009,6 +5009,8 @@ struct ConditionHandler {
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
                 if (Token::Match(tok, "if|while|for ("))
                     continue;
+                if (Token::Match(tok, ":|;|,"))
+                    continue;
 
                 const Token* top = tok->astTop();
                 if (!top)
