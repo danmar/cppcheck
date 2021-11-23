@@ -2556,7 +2556,7 @@ private:
               "};\n"
               "A* f(A* t) {\n"
               "    if (t->b() == 0) {\n"
-              "        return nullptr;\n"
+              "        return t;\n"
               "    }\n"
               "    return t->a();\n"
               "}\n"
