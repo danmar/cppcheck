@@ -125,6 +125,7 @@ private:
         TEST_CASE(nullpointer83); // #9870
         TEST_CASE(nullpointer84); // #9873
         TEST_CASE(nullpointer85); // #10210
+        TEST_CASE(nullpointer86);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2545,6 +2546,25 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:5] -> [test.cpp:4]: (warning) Either the condition 'm_notebook' is redundant or there is possible null pointer dereference: m_notebook.\n",
             errout.str());
+    }
+
+    void nullpointer86()
+    {
+        check("struct A {\n"
+              "    A* a() const;\n"
+              "    int b() const;\n"
+              "};\n"
+              "A* f(A* t) {\n"
+              "    if (t->b() == 0) {\n"
+              "        return nullptr;\n"
+              "    }\n"
+              "    return t->a();\n"
+              "}\n"
+              "void g(A* t) {\n"
+              "    t = f(t->a());\n"
+              "    if (!t->a()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

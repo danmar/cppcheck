@@ -332,7 +332,7 @@ struct ReverseTraversal {
 
     static Token* assignExpr(Token* tok) {
         if (Token::Match(tok, ")|}"))
-            tok = tok->previous();
+            tok = tok->link();
         while (tok->astParent() && (astIsRHS(tok) || !tok->astParent()->isBinaryOp())) {
             if (tok->astParent()->isAssignmentOp())
                 return tok->astParent();
