@@ -1658,6 +1658,15 @@ private:
               "    if(f().begin(1) == f().end()) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo(const uint8_t* data, const uint32_t dataLength) {\n"
+            "    const uint32_t minimumLength = sizeof(uint16_t) + sizeof(uint16_t);\n"
+            "    if (dataLength >= minimumLength) {\n"
+            "        char* payload = new char[dataLength - minimumLength];\n"
+            "        std::copy(&data[minimumLength], &data[dataLength], payload);\n"
+            "    }\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iteratorSameExpression() {
@@ -1741,6 +1750,15 @@ private:
               "    if (it != a.end()) {}\n"
               "  }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10604
+        check("struct S {\n"
+            "    std::vector<int> v;\n"
+            "};\n"
+            "void f(S& s, int m) {\n"
+            "    s.v.erase(s.v.begin() + m);\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

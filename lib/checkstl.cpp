@@ -697,14 +697,44 @@ static const Token * getIteratorExpression(const Token * tok)
     return nullptr;
 }
 
+static const Token* getAddressContainer(const Token* tok)
+{
+    if (Token::simpleMatch(tok, "[") && tok->astOperand1())
+        return tok->astOperand1();
+    return tok;
+}
+
+static bool isSameIteratorContainerExpression(const Token* tok1, const Token * tok2, const Library& library, ValueFlow::Value::LifetimeKind kind = ValueFlow::Value::LifetimeKind::Iterator)
+{
+    if (isSameExpression(true, false, tok1, tok2, library, false, false))
+        return true;
+    if (kind == ValueFlow::Value::LifetimeKind::Address) {
+        return isSameExpression(true, false, getAddressContainer(tok1), getAddressContainer(tok2), library, false, false);
+    }
+    return false;
+}
+
+static ValueFlow::Value getLifetimeIteratorValue(const Token* tok)
+{
+    std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok);
+    auto it = std::find_if(values.begin(), values.end(), [](const ValueFlow::Value& v) {
+        return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
+    });
+    if (it != values.end())
+        return *it;
+    if (values.size() == 1)
+        return values.front();
+    return ValueFlow::Value{};
+}
+
 bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
 {
     if (!tok1)
         return false;
     if (!tok2)
         return false;
-    ValueFlow::Value val1 = getLifetimeObjValue(tok1);
-    ValueFlow::Value val2 = getLifetimeObjValue(tok2);
+    ValueFlow::Value val1 = getLifetimeIteratorValue(tok1);
+    ValueFlow::Value val2 = getLifetimeIteratorValue(tok2);
     if (val1.tokvalue && val2.tokvalue && val1.lifetimeKind == val2.lifetimeKind) {
         if (val1.lifetimeKind == ValueFlow::Value::LifetimeKind::Lambda)
             return false;
@@ -715,7 +745,7 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
                 (!astIsContainer(val1.tokvalue) || !astIsContainer(val2.tokvalue)))
                 return false;
         }
-        if (isSameExpression(true, false, val1.tokvalue, val2.tokvalue, mSettings->library, false, false))
+        if (isSameIteratorContainerExpression(val1.tokvalue, val2.tokvalue, mSettings->library, val1.lifetimeKind))
             return false;
         if (val1.tokvalue->expressionString() == val2.tokvalue->expressionString())
             iteratorsError(tok1, val1.tokvalue, val1.tokvalue->expressionString());
@@ -731,7 +761,7 @@ bool CheckStl::checkIteratorPair(const Token* tok1, const Token* tok2)
     }
     const Token* iter1 = getIteratorExpression(tok1);
     const Token* iter2 = getIteratorExpression(tok2);
-    if (iter1 && iter2 && !isSameExpression(true, false, iter1, iter2, mSettings->library, false, false)) {
+    if (iter1 && iter2 && !isSameIteratorContainerExpression(iter1, iter2, mSettings->library)) {
         mismatchingContainerExpressionError(iter1, iter2);
         return true;
     }
@@ -808,9 +838,11 @@ void CheckStl::mismatchingContainerIterator()
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!astIsContainer(tok))
                 continue;
-            if (!Token::Match(tok, "%var% . %name% ( !!)"))
+            if (!astIsLHS(tok))
                 continue;
-            const Token * const ftok = tok->tokAt(2);
+            if (!Token::Match(tok->astParent(), " . %name% ( !!)"))
+                continue;
+            const Token * const ftok = tok->astParent()->next();
             const std::vector<const Token *> args = getArguments(ftok);
 
             const Library::Container * c = tok->valueType()->container;
@@ -831,20 +863,14 @@ void CheckStl::mismatchingContainerIterator()
                 continue;
             }
 
-            ValueFlow::Value val = getLifetimeObjValue(iterTok);
+            ValueFlow::Value val = getLifetimeIteratorValue(iterTok);
             if (!val.tokvalue)
                 continue;
             if (val.lifetimeKind != ValueFlow::Value::LifetimeKind::Iterator)
                 continue;
-            for (const LifetimeToken& lt:getLifetimeTokens(tok)) {
-                if (lt.inconclusive)
-                    continue;
-                const Token* contTok = lt.token;
-                if (isSameExpression(true, false, contTok, val.tokvalue, mSettings->library, false, false))
-                    continue;
-                mismatchingContainerIteratorError(tok, iterTok);
-            }
-
+            if (isSameIteratorContainerExpression(tok, val.tokvalue, mSettings->library))
+                continue;
+            mismatchingContainerIteratorError(tok, iterTok);
         }
     }
 }
