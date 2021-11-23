@@ -6700,7 +6700,7 @@ private:
     }
 
     void checkSuspiciousComparison() {
-        checkP("void f(int a, int b) {\n" 
+        checkP("void f(int a, int b) {\n"
                "  a > b;\n"
                "}");
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '>'\n", errout.str());
