@@ -843,7 +843,7 @@ void CheckStl::mismatchingContainerIterator()
                 continue;
             if (!astIsLHS(tok))
                 continue;
-            if (!Token::Match(tok->astParent(), " . %name% ( !!)"))
+            if (!Token::Match(tok->astParent(), ". %name% ( !!)"))
                 continue;
             const Token* const ftok = tok->astParent()->next();
             const std::vector<const Token *> args = getArguments(ftok);
