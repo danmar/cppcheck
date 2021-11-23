@@ -704,7 +704,10 @@ static const Token* getAddressContainer(const Token* tok)
     return tok;
 }
 
-static bool isSameIteratorContainerExpression(const Token* tok1, const Token * tok2, const Library& library, ValueFlow::Value::LifetimeKind kind = ValueFlow::Value::LifetimeKind::Iterator)
+static bool isSameIteratorContainerExpression(const Token* tok1,
+                                              const Token* tok2,
+                                              const Library& library,
+                                              ValueFlow::Value::LifetimeKind kind = ValueFlow::Value::LifetimeKind::Iterator)
 {
     if (isSameExpression(true, false, tok1, tok2, library, false, false))
         return true;
@@ -842,7 +845,7 @@ void CheckStl::mismatchingContainerIterator()
                 continue;
             if (!Token::Match(tok->astParent(), " . %name% ( !!)"))
                 continue;
-            const Token * const ftok = tok->astParent()->next();
+            const Token* const ftok = tok->astParent()->next();
             const std::vector<const Token *> args = getArguments(ftok);
 
             const Library::Container * c = tok->valueType()->container;
