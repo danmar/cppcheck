@@ -70,7 +70,7 @@ struct ReverseTraversal {
         if (!tok)
             return nullptr;
         if (!tok->astParent())
-            return nullptr;
+            return tok;
         Token* parent = tok;
         Token* top = tok;
         while ((parent = getParentFunction(parent)))
