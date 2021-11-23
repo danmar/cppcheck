@@ -3800,15 +3800,14 @@ void SymbolDatabase::printXml(std::ostream &out) const
         out << " scope=\""          << var->scope() << '\"';
         if (var->valueType())
             out << " constness=\""      << var->valueType()->constness << '\"';
-        out << " isArgument=\""     << var->isArgument() << '\"';
         out << " isArray=\""        << var->isArray() << '\"';
         out << " isClass=\""        << var->isClass() << '\"';
         out << " isConst=\""        << var->isConst() << '\"';
         out << " isExtern=\""       << var->isExtern() << '\"';
-        out << " isLocal=\""        << var->isLocal() << '\"';
         out << " isPointer=\""      << var->isPointer() << '\"';
         out << " isReference=\""    << var->isReference() << '\"';
         out << " isStatic=\""       << var->isStatic() << '\"';
+        out << " isVolatile=\""     << var->isVolatile() << '\"';
         out << "/>" << std::endl;
     }
     out << "  </variables>" << std::endl;
@@ -6242,7 +6241,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         } else if (const Library::Container *container = settings->library.detectContainer(type)) {
             valuetype->type = ValueType::Type::CONTAINER;
             valuetype->container = container;
-            while (Token::Match(type, "%name%|::|<")) {
+            while (Token::Match(type, "%type%|::|<")) {
                 if (type->str() == "<" && type->link()) {
                     if (container->type_templateArgNo >= 0) {
                         const Token *templateType = type->next();

@@ -1433,6 +1433,23 @@ class MisraChecker:
                                  'wcrtomb_s', 'mbsrtowcs_s', 'wcsrtombs_s'):
                     self.reportError(token, 1, 4)
 
+    def misra_2_2(self, cfg):
+        for token in cfg.tokenlist:
+            if (token.str in '+-') and token.astOperand2:
+                if simpleMatch(token.astOperand1, '0'):
+                    self.reportError(token.astOperand1, 2, 2)
+                elif simpleMatch(token.astOperand2, '0'):
+                    self.reportError(token.astOperand2, 2, 2)
+            if token.str == '*' and token.astOperand2:
+                if simpleMatch(token.astOperand2, '0'):
+                    self.reportError(token.astOperand1, 2, 2)
+                elif simpleMatch(token.astOperand1, '0'):
+                    self.reportError(token.astOperand2, 2, 2)
+                elif simpleMatch(token.astOperand1, '1'):
+                    self.reportError(token.astOperand1, 2, 2)
+                elif simpleMatch(token.astOperand2, '1'):
+                    self.reportError(token.astOperand2, 2, 2)
+
     def misra_2_3(self, dumpfile, typedefInfo):
         self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
 
@@ -4227,6 +4244,7 @@ class MisraChecker:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
             self.executeCheck(104, self.misra_1_4, cfg)
+            self.executeCheck(202, self.misra_2_2, cfg)
             self.executeCheck(203, self.misra_2_3, dumpfile, cfg.typedefInfo)
             self.executeCheck(204, self.misra_2_4, dumpfile, cfg)
             self.executeCheck(205, self.misra_2_5, dumpfile, cfg)

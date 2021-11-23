@@ -653,6 +653,15 @@ private:
                     "    }\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void g(const char *, ...) { exit(1); }\n" // #10025
+                    "void f(const char c[]) {\n"
+                    "    std::vector<int> v = get();\n"
+                    "    if (v.empty())\n"
+                    "        g(\"\", c[0]);\n"
+                    "    return h(&v[0], v.size()); \n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsSymbolic()
