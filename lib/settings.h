@@ -193,8 +193,8 @@ public:
         Default value is 0. */
     int exitCode;
 
-    /** @brief --file-filter for analyzing special files */
-    std::string fileFilter;
+    /** @brief List of --file-filter for analyzing special files */
+    std::vector<std::string> fileFilters;
 
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool force;
