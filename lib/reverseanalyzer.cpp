@@ -42,11 +42,17 @@ struct ReverseTraversal {
 
     Token* getParentFunction(Token* tok)
     {
+        if (!tok)
+            return nullptr;
+        if (!tok->astParent())
+            return nullptr;
         int argn = -1;
         if (Token* ftok = getTokenArgumentFunction(tok, argn)) {
             while (!Token::Match(ftok, "(|{")) {
                 if (!ftok)
-                    break;
+                    return nullptr;
+                if (ftok->index() >= tok->index())
+                    return nullptr;
                 if (ftok->link())
                     ftok = ftok->link();
                 else
@@ -62,6 +68,8 @@ struct ReverseTraversal {
     Token* getTopFunction(Token* tok)
     {
         if (!tok)
+            return nullptr;
+        if (!tok->astParent())
             return nullptr;
         Token* parent = tok;
         Token* top = tok;
