@@ -4444,6 +4444,22 @@ private:
         ASSERT(value.isKnown());
         ASSERT_EQUALS(1, value.intvalue);
 
+        code = "bool f() {\n"
+               "  const int s = int{};"
+               "  return s == 0;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        TODO_ASSERT_EQUALS(true, false, value.isKnown());
+        TODO_ASSERT_EQUALS(1, 0, value.intvalue);
+
+        code = "bool f() {\n"
+               "  const int s = int();"
+               "  return s == 0;\n" // <- known value
+               "}";
+        value = valueOfTok(code, "==");
+        TODO_ASSERT_EQUALS(true, false, value.isKnown());
+        TODO_ASSERT_EQUALS(1, 0, value.intvalue);
+
         // calculation with known result
         code = "int f(int x) { a = x & 0; }"; // <- & is 0
         value = valueOfTok(code, "&");
@@ -6075,6 +6091,13 @@ private:
                "    diff = (buf-b);\n"
                "}\n";
         valueOfTok(code, "diff");
+
+        code = "void foo() {\n" // #10462
+               "  std::tuple<float, float, float, float> t4(5.2f, 3.1f, 2.4f, 9.1f), t5(4, 6, 9, 27);\n"
+               "  t4 = t5;\n"
+               "  ASSERT(!(t4 < t5) && t4 <= t5);\n"
+               "}";
+        valueOfTok(code, "<=");
     }
 
     void valueFlowHang() {
