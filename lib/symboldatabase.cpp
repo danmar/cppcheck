@@ -5817,9 +5817,9 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                               Token::Match(parent->tokAt(-1), "%var% ="))) {
             Token *var1Tok = parent->strAt(-2) == ";" ? parent->tokAt(-3) : parent->tokAt(-1);
             Token *autoTok = nullptr;
-            if (Token::Match(var1Tok->tokAt(-2), ";|{|}|(|const auto"))
+            if (Token::Match(var1Tok->tokAt(-2), ";|{|}|(|const|constexpr auto"))
                 autoTok = var1Tok->previous();
-            else if (Token::Match(var1Tok->tokAt(-3), ";|{|}|(|const auto *"))
+            else if (Token::Match(var1Tok->tokAt(-3), ";|{|}|(|const|constexpr auto *"))
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
                 ValueType vt(*vt2);
@@ -5827,7 +5827,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     vt.constness &= ~(1 << vt.pointer);
                 if (autoTok->strAt(1) == "*" && vt.pointer)
                     vt.pointer--;
-                if (autoTok->strAt(-1) == "const")
+                if (Token::Match(autoTok->tokAt(-1), "const|constexpr"))
                     vt.constness |= 1;
                 setValueType(autoTok, vt);
                 setAutoTokenProperties(autoTok);
