@@ -234,6 +234,11 @@ private:
               "  assert(sizeof(struct { int a[x++]; })==sizeof(int));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n" // #9790
+              "  assert(kad_bucket_hash(&(kad_guid) { .bytes = { 0 } }, & (kad_guid){.bytes = { 0 }}) == -1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

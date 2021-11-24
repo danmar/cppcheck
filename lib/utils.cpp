@@ -112,3 +112,9 @@ bool matchglob(const std::string& pattern, const std::string& name)
         n++;
     }
 }
+
+bool matchglobs(const std::vector<std::string> &patterns, const std::string &name) {
+    return std::any_of(begin(patterns), end(patterns), [&name](const std::string &pattern) {
+        return matchglob(pattern, name);
+    });
+}
