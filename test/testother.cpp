@@ -6415,6 +6415,14 @@ private:
               "    return i >= 0;\n"
               "}\n", &settings1);
         ASSERT_EQUALS("", errout.str());
+
+        // #10612
+        check("void f(void) {\n"
+              "   const uint32_t x = 0;\n"
+              "   constexpr const auto y = 0xFFFFU;\n"
+              "   if (y < x) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Checking if unsigned expression 'y' is less than zero.\n", errout.str());
     }
 
     void checkSignOfPointer() {
