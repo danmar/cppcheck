@@ -646,6 +646,14 @@ private:
                     "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNormal("void f(std::vector<int>& v, int i) {\n"
+                    "    if (i > -1) {\n"
+                    "        v.erase(v.begin() + i);\n"
+                    "        if (v.empty()) {}\n"
+                    "    }\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         checkNormal("void g(const char *, ...) { exit(1); }\n" // #10025
                     "void f(const char c[]) {\n"
                     "    std::vector<int> v = get();\n"

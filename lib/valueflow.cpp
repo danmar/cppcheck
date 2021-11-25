@@ -2115,6 +2115,23 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
+    Action isGlobalModified(const Token* tok) const
+    {
+        if (tok->function()) {
+            if (!tok->function()->isConstexpr() && !isConstFunctionCall(tok, getSettings()->library))
+                return Action::Invalid;
+        } else if (getSettings()->library.getFunction(tok)) {
+            // Assume library function doesn't modify user-global variables
+            return Action::None;
+            // Function cast does not modify global variables
+        } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
+            return Action::None;
+        } else if (Token::Match(tok, "%name% (")) {
+            return Action::Invalid;
+        }
+        return Action::None;
+    }
+
     static const std::string& getAssign(const Token* tok, Direction d)
     {
         if (d == Direction::Forward)
@@ -2245,6 +2262,11 @@ struct ValueFlowAnalyzer : Analyzer {
 
     Action analyzeMatch(const Token* tok, Direction d) const {
         const Token* parent = tok->astParent();
+        if (d == Direction::Reverse && isGlobal() && !dependsOnThis() && Token::Match(parent, ". %name% (")) {
+            Action a = isGlobalModified(parent->next());
+            if (a != Action::None)
+                return a;
+        }
         if ((astIsPointer(tok) || astIsSmartPointer(tok)) &&
             (Token::Match(parent, "*|[") || (parent && parent->originalName() == "->")) && getIndirect(tok) <= 0)
             return Action::Read;
@@ -2328,18 +2350,7 @@ struct ValueFlowAnalyzer : Analyzer {
         // bailout: global non-const variables
         if (isGlobal() && !dependsOnThis() && Token::Match(tok, "%name% (") &&
             !Token::simpleMatch(tok->linkAt(1), ") {")) {
-            if (tok->function()) {
-                if (!tok->function()->isConstexpr() && !isConstFunctionCall(tok, getSettings()->library))
-                    return Action::Invalid;
-            } else if (getSettings()->library.getFunction(tok)) {
-                // Assume library function doesn't modify user-global variables
-                return Action::None;
-                // Function cast does not modify global variables
-            } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
-                return Action::None;
-            } else {
-                return Action::Invalid;
-            }
+            return isGlobalModified(tok);
         }
         return Action::None;
     }
@@ -4997,6 +5008,8 @@ struct ConditionHandler {
         for (const Scope *scope : symboldatabase->functionScopes) {
             for (Token *tok = const_cast<Token *>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
                 if (Token::Match(tok, "if|while|for ("))
+                    continue;
+                if (Token::Match(tok, ":|;|,"))
                     continue;
 
                 const Token* top = tok->astTop();
