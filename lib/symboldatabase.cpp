@@ -5698,6 +5698,7 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var)
     valuetype.typeScope = var.typeScope();
     if (var.valueType()) {
         valuetype.container = var.valueType()->container;
+        valuetype.containerTypeToken = var.valueType()->containerTypeToken;
     }
     valuetype.smartPointerType = var.smartPointerType();
     if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings)) {
@@ -6548,22 +6549,14 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     const Token *typeStartToken = tok->astOperand1();
                     while (typeStartToken && typeStartToken->str() == "::")
                         typeStartToken = typeStartToken->astOperand1();
-                    if (const Library::Container *c = mSettings->library.detectContainer(typeStartToken)) {
+                    if (mSettings->library.detectContainer(typeStartToken) || mSettings->library.detectSmartPointer(typeStartToken)) {
                         ValueType vt;
-                        vt.pointer = 0;
-                        vt.container = c;
-                        vt.type = ValueType::Type::CONTAINER;
-                        setValueType(tok, vt);
-                        continue;
+                        if (parsedecl(typeStartToken, &vt, mDefaultSignedness, mSettings)) {
+                            setValueType(tok, vt);
+                            continue;
+                        }
                     }
-                    if (const Library::SmartPointer* sp = mSettings->library.detectSmartPointer(typeStartToken)) {
-                        ValueType vt;
-                        vt.type = ValueType::Type::SMART_POINTER;
-                        vt.smartPointer = sp;
-                        setValueType(tok, vt);
-                        continue;
-                    }
-
+                    
                     const std::string e = tok->astOperand1()->expressionString();
 
                     if ((e == "std::make_shared" || e == "std::make_unique") && Token::Match(tok->astOperand1(), ":: %name% < %name%")) {
