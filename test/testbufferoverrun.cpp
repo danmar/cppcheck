@@ -27,11 +27,10 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
 #include <list>
+#include <simplecpp.h>
 #include <string>
-
+#include <tinyxml2.h>
 
 class TestBufferOverrun : public TestFixture {
 public:
@@ -69,7 +68,8 @@ private:
         checkBufferOverrun.runChecks(&tokenizer, &settings, this);
     }
 
-    void checkP(const char code[], const char *filename = "test.cpp") {
+    void checkP(const char code[], const char* filename = "test.cpp")
+    {
         // Clear the error buffer..
         errout.str("");
 
@@ -1709,22 +1709,24 @@ private:
     void array_index_60()
     {
         checkP("#define CKR(B) if (!(B)) { return -1; }\n"
-            "int f(int i) {\n"
-            "  const int A[3] = {};\n"
-            "  CKR(i < 3);\n"
-            "  if (i > 0)\n"
-            "      i = A[i];\n"
-            "  return i;\n"
-            "}\n");
+               "int f(int i) {\n"
+               "  const int A[3] = {};\n"
+               "  CKR(i < 3);\n"
+               "  if (i > 0)\n"
+               "      i = A[i];\n"
+               "  return i;\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
 
         checkP("#define ASSERT(expression, action) if (expression) {action;}\n"
-            "int array[5];\n"
-            "void func (int index) {\n"
-            "    ASSERT(index > 5, return);\n"
-            "    array[index]++;\n"
-            "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (warning) Either the condition 'index>5' is redundant or the array 'array[5]' is accessed at index 5, which is out of bounds.\n", errout.str());
+               "int array[5];\n"
+               "void func (int index) {\n"
+               "    ASSERT(index > 5, return);\n"
+               "    array[index]++;\n"
+               "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:5]: (warning) Either the condition 'index>5' is redundant or the array 'array[5]' is accessed at index 5, which is out of bounds.\n",
+            errout.str());
     }
 
     void array_index_multidim() {
