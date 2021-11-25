@@ -344,9 +344,15 @@ void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const
 void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const std::string& containerName)
 {
     std::list<const Token*> callstack = { tok, containerTok };
-    reportError(callstack, Severity::error, "iterators3",
-                "$symbol:" + containerName + "\n"
-                "Same iterator is used with containers '" + containerName + "' that are temporaries or defined in different scopes.", CWE664, Certainty::normal);
+    reportError(callstack,
+                Severity::error,
+                "iterators3",
+                "$symbol:" + containerName +
+                "\n"
+                "Same iterator is used with containers '" +
+                containerName + "' that are temporaries or defined in different scopes.",
+                CWE664,
+                Certainty::normal);
 }
 
 // Error message used when dereferencing an iterator that has been erased..

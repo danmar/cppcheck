@@ -1295,7 +1295,9 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n",
+            errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1346,14 +1348,15 @@ private:
             errout.str());
 
         check("std::set<int> g() {\n"
-            "    static const std::set<int> s = {1};\n"
-            "    return s;\n"
-            "}\n"
-            "void f() {\n"
-            "    if (g().find(2) == g().end()) {}\n"
-            "}\n");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:6]: (error) Same iterator is used with containers 'g()' that are temporaries or defined in different scopes.\n", errout.str());
-
+              "    static const std::set<int> s = {1};\n"
+              "    return s;\n"
+              "}\n"
+              "void f() {\n"
+              "    if (g().find(2) == g().end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:6]: (error) Same iterator is used with containers 'g()' that are temporaries or defined in different scopes.\n",
+            errout.str());
     }
 
     void iterator20() {
