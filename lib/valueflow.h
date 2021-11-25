@@ -98,6 +98,7 @@ namespace ValueFlow {
             varId(0U),
             safe(false),
             conditional(false),
+            macro(false),
             defaultArg(false),
             indirect(0),
             path(0),
@@ -345,6 +346,9 @@ namespace ValueFlow {
 
         /** Conditional value */
         bool conditional;
+
+        /** Value is is from an expanded macro */
+        bool macro;
 
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;

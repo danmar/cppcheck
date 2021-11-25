@@ -5224,8 +5224,12 @@ struct ConditionHandler {
             if (!top)
                 return;
 
-            if (top->previous()->isExpandedMacro())
-                return;
+            if (top->previous()->isExpandedMacro()) {
+                for (std::list<ValueFlow::Value>* values : {&thenValues, &elseValues}) {
+                    for (ValueFlow::Value& v : *values)
+                        v.macro = true;
+                }
+            }
 
             if (!Token::Match(top->previous(), "if|while|for ("))
                 return;
@@ -7545,6 +7549,7 @@ ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     varId(0),
     safe(false),
     conditional(false),
+    macro(false),
     defaultArg(false),
     indirect(0),
     path(0),

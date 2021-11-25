@@ -22,10 +22,12 @@
 #include "config.h"
 #include "ctu.h"
 #include "library.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <simplecpp.h>
 #include <tinyxml2.h>
 #include <list>
 #include <string>
@@ -65,6 +67,44 @@ private:
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.runChecks(&tokenizer, &settings, this);
+    }
+
+    void checkP(const char code[], const char *filename = "test.cpp") {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings* settings = &settings0;
+        settings->severity.enable(Severity::style);
+        settings->severity.enable(Severity::warning);
+        settings->severity.enable(Severity::portability);
+        settings->severity.enable(Severity::performance);
+        settings->standards.c = Standards::CLatest;
+        settings->standards.cpp = Standards::CPPLatest;
+        settings->certainty.enable(Certainty::inconclusive);
+        settings->certainty.disable(Certainty::experimental);
+
+        // Raw tokens..
+        std::vector<std::string> files(1, filename);
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        Preprocessor preprocessor(*settings, nullptr);
+        preprocessor.setDirectives(tokens1);
+
+        // Tokenizer..
+        Tokenizer tokenizer(settings, this);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.simplifyTokens1("");
+        tokenizer.setPreprocessor(&preprocessor);
+
+        // Check for buffer overruns..
+        CheckBufferOverrun checkBufferOverrun(&tokenizer, settings, this);
+        checkBufferOverrun.runChecks(&tokenizer, settings, this);
     }
 
     void run() OVERRIDE {
@@ -136,6 +176,7 @@ private:
         TEST_CASE(array_index_57); // #10023
         TEST_CASE(array_index_58); // #7524
         TEST_CASE(array_index_59); // #10413
+        TEST_CASE(array_index_60); // #10617, #9824
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1663,6 +1704,27 @@ private:
               "  return a[b];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_60()
+    {
+        checkP("#define CKR(B) if (!(B)) { return -1; }\n"
+            "int f(int i) {\n"
+            "  const int A[3] = {};\n"
+            "  CKR(i < 3);\n"
+            "  if (i > 0)\n"
+            "      i = A[i];\n"
+            "  return i;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkP("#define ASSERT(expression, action) if (expression) {action;}\n"
+            "int array[5];\n"
+            "void func (int index) {\n"
+            "    ASSERT(index > 5, return);\n"
+            "    array[index]++;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:5]: (warning) Either the condition 'index>5' is redundant or the array 'array[5]' is accessed at index 5, which is out of bounds.\n", errout.str());
     }
 
     void array_index_multidim() {
