@@ -6549,14 +6549,15 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                     const Token *typeStartToken = tok->astOperand1();
                     while (typeStartToken && typeStartToken->str() == "::")
                         typeStartToken = typeStartToken->astOperand1();
-                    if (mSettings->library.detectContainer(typeStartToken) || mSettings->library.detectSmartPointer(typeStartToken)) {
+                    if (mSettings->library.detectContainer(typeStartToken) ||
+                        mSettings->library.detectSmartPointer(typeStartToken)) {
                         ValueType vt;
                         if (parsedecl(typeStartToken, &vt, mDefaultSignedness, mSettings)) {
                             setValueType(tok, vt);
                             continue;
                         }
                     }
-                    
+
                     const std::string e = tok->astOperand1()->expressionString();
 
                     if ((e == "std::make_shared" || e == "std::make_unique") && Token::Match(tok->astOperand1(), ":: %name% < %name%")) {

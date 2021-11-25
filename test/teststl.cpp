@@ -4920,12 +4920,15 @@ private:
 
         // #9836
         check("void f() {\n"
-            "    auto v = std::vector<std::vector<std::string> >{ std::vector<std::string>{ \"hello\" } };\n"
-            "    auto p = &(v.at(0).at(0));\n"
-            "    v.clear();\n"
-            "    std::cout << *p << std::endl;\n"
-            "}\n",true);
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:5]: (error) Using pointer to local variable 'v' that may be invalid.\n", errout.str());
+              "    auto v = std::vector<std::vector<std::string> >{ std::vector<std::string>{ \"hello\" } };\n"
+              "    auto p = &(v.at(0).at(0));\n"
+              "    v.clear();\n"
+              "    std::cout << *p << std::endl;\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:5]: (error) Using pointer to local variable 'v' that may be invalid.\n",
+            errout.str());
     }
 
     void invalidContainerLoop() {
