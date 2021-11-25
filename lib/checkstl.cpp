@@ -346,7 +346,7 @@ void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const
     std::list<const Token*> callstack = { tok, containerTok };
     reportError(callstack, Severity::error, "iterators3",
                 "$symbol:" + containerName + "\n"
-                "Same iterator is used with containers '" + containerName + "' that are defined in different scopes.", CWE664, Certainty::normal);
+                "Same iterator is used with containers '" + containerName + "' that are temporaries or defined in different scopes.", CWE664, Certainty::normal);
 }
 
 // Error message used when dereferencing an iterator that has been erased..
@@ -709,8 +709,11 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
                                               const Library& library,
                                               ValueFlow::Value::LifetimeKind kind = ValueFlow::Value::LifetimeKind::Iterator)
 {
-    if (isSameExpression(true, false, tok1, tok2, library, false, false))
+    if (isSameExpression(true, false, tok1, tok2, library, false, false)) {
+        if (astIsContainerOwned(tok1) && isTemporary(true, tok1, &library))
+            return false;
         return true;
+    }
     if (kind == ValueFlow::Value::LifetimeKind::Address) {
         return isSameExpression(true, false, getAddressContainer(tok1), getAddressContainer(tok2), library, false, false);
     }
