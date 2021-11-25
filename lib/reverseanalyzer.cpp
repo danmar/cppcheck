@@ -54,7 +54,7 @@ struct ReverseTraversal {
                 if (ftok->index() >= tok->index())
                     return nullptr;
                 if (ftok->link())
-                    ftok = ftok->link();
+                    ftok = ftok->link()->next();
                 else
                     ftok = ftok->next();
             }
