@@ -2247,9 +2247,8 @@ private:
               "auto f() {\n"
               "    return g().begin();\n"
               "}");
-        ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:3]: (error) Returning iterator that will be invalid when returning.\n",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Returning iterator that will be invalid when returning.\n",
+                      errout.str());
 
         check("std::vector<int> f();\n"
               "auto f() {\n"
@@ -3294,15 +3293,17 @@ private:
 
     void danglingLifetimeClassMemberFunctions()
     {
-          check("struct S {\n"
-            "    S(int i) : i(i) {}\n"
-            "    int i;\n"
-            "    int* ptr() { return &i; }\n"
-            "};\n"
-            "int* fun(int i) { \n"
-            "    return S(i).ptr();\n"
-            "}\n");
-            ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4] -> [test.cpp:7] -> [test.cpp:7]: (error) Returning pointer that will be invalid when returning.\n", errout.str());
+        check("struct S {\n"
+              "    S(int i) : i(i) {}\n"
+              "    int i;\n"
+              "    int* ptr() { return &i; }\n"
+              "};\n"
+              "int* fun(int i) { \n"
+              "    return S(i).ptr();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:7] -> [test.cpp:7]: (error) Returning pointer that will be invalid when returning.\n",
+            errout.str());
     }
 
     void invalidLifetime() {

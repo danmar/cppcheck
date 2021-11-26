@@ -3750,11 +3750,13 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         if (n > 1 && Token::typeStr(args[n - 2]) == Token::typeStr(args[n - 1]) &&
             (((astIsIterator(args[n - 2]) && astIsIterator(args[n - 1])) ||
               (astIsPointer(args[n - 2]) && astIsPointer(args[n - 1]))))) {
-            LifetimeStore{args.back(), "Added to container '" + memtok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}.byDerefCopy(
-                memtok, tokenlist, errorLogger, settings);
+            LifetimeStore{
+                args.back(), "Added to container '" + memtok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}
+            .byDerefCopy(memtok, tokenlist, errorLogger, settings);
         } else if (!args.empty() && isLifetimeBorrowed(args.back(), settings)) {
-            LifetimeStore{args.back(), "Added to container '" + memtok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}.byVal(
-                memtok, tokenlist, errorLogger, settings);
+            LifetimeStore{
+                args.back(), "Added to container '" + memtok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}
+            .byVal(memtok, tokenlist, errorLogger, settings);
         }
     } else if (tok->function()) {
         const Function *f = tok->function();
@@ -3779,7 +3781,9 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                 if (!v.tokvalue)
                     continue;
                 if (exprDependsOnThis(v.tokvalue) && memtok) {
-                    LifetimeStore ls = LifetimeStore{memtok, "Passed to member function '" + tok->expressionString() + "'.", ValueFlow::Value::LifetimeKind::Object};
+                    LifetimeStore ls = LifetimeStore{memtok,
+                                                     "Passed to member function '" + tok->expressionString() + "'.",
+                                                     ValueFlow::Value::LifetimeKind::Object};
                     ls.inconclusive = inconclusive;
                     ls.forward = false;
                     ls.errorPath = v.errorPath;

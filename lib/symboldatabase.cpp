@@ -5274,7 +5274,7 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
 
     // check for member function
     else if (Token::Match(tok->tokAt(-2), "!!this .")) {
-        const Token *tok1 = tok->previous()->astOperand1();
+        const Token* tok1 = tok->previous()->astOperand1();
         if (tok1 && tok1->valueType() && tok1->valueType()->typeScope) {
             return tok1->valueType()->typeScope->findFunction(tok, tok1->valueType()->constness == 1);
         } else if (Token::Match(tok1, "%var% .")) {
