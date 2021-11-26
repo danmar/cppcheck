@@ -5820,12 +5820,13 @@ private:
         ASSERT_EQUALS(true, tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
 
         code = "std::vector<int> f() {\n"
-              "    std::vector<int> v;\n"
-              "    v.reserve(1);\n"
-              "    v[1] = 42;\n"
-              "    return v;\n"
-              "}\n";
-        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v [", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+               "    std::vector<int> v;\n"
+               "    v.reserve(1);\n"
+               "    v[1] = 42;\n"
+               "    return v;\n"
+               "}\n";
+        ASSERT_EQUALS(
+            "", isKnownContainerSizeValue(tokenValues(code, "v [", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
     }
 
     void valueFlowDynamicBufferSize() {
