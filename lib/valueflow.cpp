@@ -6833,12 +6833,12 @@ static bool isContainerSizeChanged(const Token* tok, const Settings* settings, i
         case Library::Container::Action::CHANGE:
         case Library::Container::Action::INSERT:
         case Library::Container::Action::ERASE:
-        case Library::Container::Action::CHANGE_INTERNAL:
             return true;
         case Library::Container::Action::NO_ACTION: // might be unknown action
             return yield == Library::Container::Yield::NO_YIELD;
         case Library::Container::Action::FIND:
         case Library::Container::Action::CHANGE_CONTENT:
+        case Library::Container::Action::CHANGE_INTERNAL:
             break;
         }
     }
