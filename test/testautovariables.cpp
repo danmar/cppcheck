@@ -3304,6 +3304,25 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:7] -> [test.cpp:7]: (error) Returning pointer that will be invalid when returning.\n",
             errout.str());
+
+      check("struct Fred\n"
+            "{\n"
+            "    int x[2];\n"
+            "    Fred() {\n"
+            "        x[0] = 0x41;\n"
+            "        x[1] = 0x42;\n"
+            "    }\n"
+            "    const int *get_x() {\n"
+            "        return x;\n"
+            "    }\n"
+            "};\n"
+            "static const int *foo() {\n"
+            "    Fred fred;\n"
+            "    return fred.get_x();\n"
+            "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:9] -> [test.cpp:14] -> [test.cpp:13] -> [test.cpp:14]: (error) Returning pointer to local variable 'fred' that will be invalid when returning.\n",
+            errout.str());
     }
 
     void invalidLifetime() {
