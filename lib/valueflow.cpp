@@ -3706,6 +3706,9 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
 {
     if (!Token::Match(tok, "%name% ("))
         return;
+    Token* memtok = nullptr;
+    if (Token::Match(tok->astParent(), ". %name% (") && astIsRHS(tok))
+        memtok = tok->astParent()->astOperand1();
     int returnContainer = settings->library.returnValueContainer(tok);
     if (returnContainer >= 0) {
         std::vector<const Token *> args = getArguments(tok);
@@ -3740,19 +3743,18 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
             LifetimeStore{argtok, "Passed to '" + tok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}.byVal(
                 tok->next(), tokenlist, errorLogger, settings);
         }
-    } else if (Token::Match(tok->tokAt(-2), "%var% . push_back|push_front|insert|push|assign") &&
-               astIsContainer(tok->tokAt(-2))) {
-        Token *vartok = tok->tokAt(-2);
+    } else if (memtok && Token::Match(tok->astParent(), ". push_back|push_front|insert|push|assign") &&
+               astIsContainer(memtok)) {
         std::vector<const Token *> args = getArguments(tok);
         std::size_t n = args.size();
         if (n > 1 && Token::typeStr(args[n - 2]) == Token::typeStr(args[n - 1]) &&
             (((astIsIterator(args[n - 2]) && astIsIterator(args[n - 1])) ||
               (astIsPointer(args[n - 2]) && astIsPointer(args[n - 1]))))) {
-            LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}.byDerefCopy(
-                vartok, tokenlist, errorLogger, settings);
+            LifetimeStore{args.back(), "Added to container '" + memtok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}.byDerefCopy(
+                memtok, tokenlist, errorLogger, settings);
         } else if (!args.empty() && isLifetimeBorrowed(args.back(), settings)) {
-            LifetimeStore{args.back(), "Added to container '" + vartok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}.byVal(
-                vartok, tokenlist, errorLogger, settings);
+            LifetimeStore{args.back(), "Added to container '" + memtok->str() + "'.", ValueFlow::Value::LifetimeKind::Object}.byVal(
+                memtok, tokenlist, errorLogger, settings);
         }
     } else if (tok->function()) {
         const Function *f = tok->function();
@@ -3776,6 +3778,15 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                     continue;
                 if (!v.tokvalue)
                     continue;
+                if (exprDependsOnThis(v.tokvalue) && memtok) {
+                    LifetimeStore ls = LifetimeStore{memtok, "Passed to member function '" + tok->expressionString() + "'.", ValueFlow::Value::LifetimeKind::Object};
+                    ls.inconclusive = inconclusive;
+                    ls.forward = false;
+                    ls.errorPath = v.errorPath;
+                    ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
+                    update |= ls.byRef(tok->next(), tokenlist, errorLogger, settings);
+                    continue;
+                }
                 const Variable *var = v.tokvalue->variable();
                 LifetimeStore ls = LifetimeStore::fromFunctionArg(f, tok, var, tokenlist, errorLogger);
                 if (!ls.argtok)
