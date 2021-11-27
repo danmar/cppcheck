@@ -48,12 +48,12 @@ def try_retry(fun, fargs=(), max_tries=5):
             raise e
         except BaseException as e:
             if i < max_tries - 1:
-                print(f"{type(e).__name__} in {fun.__name__}: {str(e)}")
-                print(f"Trying {fun.__name__} again in {sleep_duration} seconds")
+                print("{} in {}: {}".format(type(e).__name__, fun.__name__, str(e)))
+                print("Trying {} again in {} seconds".format(fun.__name__, sleep_duration))
                 time.sleep(sleep_duration)
                 sleep_duration *= 2.0
             else:
-                print(f"Last try for {fun.__name__}")
+                print("Maximum number of tries reached for {}".format(fun.__name__))
                 raise e
 
 
@@ -61,15 +61,15 @@ def clone_cppcheck(repo_path):
     repo_git_dir = os.path.join(repo_path, '.git')
     if os.path.exists(repo_git_dir):
         return
-    # A shallow git clone (depth = 1) is enough for building and scanning. 
-    # Do not checkout until fetch_cppcheck_version. 
+    # A shallow git clone (depth = 1) is enough for building and scanning.
+    # Do not checkout until fetch_cppcheck_version.
     subprocess.check_call(['git', 'clone', '--depth=1', '--no-checkout', CPPCHECK_REPO_URL, repo_path])
     # Checkout an empty branch to allow "git worktree add" for main later on
     os.chdir(repo_path)
     try:
         # git >= 2.27
         subprocess.check_call(['git', 'switch', '--orphan', 'empty'])
-    except CalledProcessError:
+    except subprocess.CalledProcessError:
         subprocess.check_call(['git', 'checkout','--orphan', 'empty'])
 
 

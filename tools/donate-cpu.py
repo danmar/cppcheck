@@ -159,12 +159,14 @@ while True:
             print('Failed to update Cppcheck, retry later')
             sys.exit(1)
         print('Compiling Cppcheck-{}..'.format(ver))
-        if ver == 'main' and not compile_cppcheck(current_cppcheck_dir, jobs):
-            print('Failed to compile Cppcheck-{}, retry later'.format(ver))
-            sys.exit(1)
-        elif not compile_version(current_cppcheck_dir, jobs):
-            print('Failed to compile Cppcheck-{}, retry later'.format(ver))
-            sys.exit(1)
+        if ver == 'main':
+            if not compile_cppcheck(current_cppcheck_dir, jobs):
+                print('Failed to compile Cppcheck-{}, retry later'.format(ver))
+                sys.exit(1)
+        else:
+            if not compile_version(current_cppcheck_dir, jobs):
+                print('Failed to compile Cppcheck-{}, retry later'.format(ver))
+                sys.exit(1)
     if package_url:
         package = package_url
     else:
