@@ -3601,18 +3601,26 @@ struct LifetimeStore {
         if (argtok->values().empty()) {
             ErrorPath er;
             er.emplace_back(argtok, message);
-            const Variable *var = getLifetimeVariable(argtok, er);
-            if (var && var->isArgument()) {
+            for (const LifetimeToken& lt : getLifetimeTokens(argtok)) {
+                if (!settings->certainty.isEnabled(Certainty::inconclusive) && lt.inconclusive)
+                    continue;
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::LIFETIME;
-                value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
-                value.tokvalue = var->nameToken();
+                value.tokvalue = lt.token;
                 value.errorPath = er;
                 value.lifetimeKind = type;
-                value.setInconclusive(inconclusive);
+                value.setInconclusive(inconclusive || lt.inconclusive);
+                const Variable *var = lt.token->variable();
+                if (var && var->isArgument()) {
+                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
+                } else if (exprDependsOnThis(lt.token)) {
+                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::Class;
+                } else {
+                    continue;
+                }
                 // Don't add the value a second time
                 if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
-                    return false;
+                    continue;;
                 setTokenValue(tok, value, tokenlist->getSettings());
                 update = true;
             }
@@ -3780,7 +3788,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                     continue;
                 if (!v.tokvalue)
                     continue;
-                if (exprDependsOnThis(v.tokvalue) && memtok) {
+                if (memtok && (v.lifetimeScope == ValueFlow::Value::LifetimeScope::Class || exprDependsOnThis(v.tokvalue))) {
                     LifetimeStore ls = LifetimeStore{memtok,
                                                      "Passed to member function '" + tok->expressionString() + "'.",
                                                      ValueFlow::Value::LifetimeKind::Object};
@@ -4012,7 +4020,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                     return false;
                 if (varids.count(var->declarationId()) > 0)
                     return false;
-                if (!var->isLocal() && !var->isArgument())
+                if (!var->isLocal() && !var->isArgument() && !exprDependsOnThis(varTok))
                     return false;
                 const Scope *scope = var->scope();
                 if (!scope)
@@ -4170,7 +4178,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowLifetimeConstructor(tok->next(), tokenlist, errorLogger, settings);
         }
         // Check function calls
-        else if (Token::Match(tok, "%name% (")) {
+        else if (Token::Match(tok, "%name% (") && !Token::Match(tok->next()->link(), ") {")) {
             valueFlowLifetimeFunction(tok, tokenlist, errorLogger, settings);
         }
         // Unique pointer lifetimes

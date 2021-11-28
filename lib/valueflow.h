@@ -376,7 +376,7 @@ namespace ValueFlow {
             Address
         } lifetimeKind;
 
-        enum class LifetimeScope { Local, Argument, SubFunction } lifetimeScope;
+        enum class LifetimeScope { Local, Argument, SubFunction, Class } lifetimeScope;
 
         static const char* toString(MoveKind moveKind);
         static const char* toString(LifetimeKind lifetimeKind);
