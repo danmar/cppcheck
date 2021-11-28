@@ -1360,8 +1360,8 @@ private:
               "public:\n"
               "    A() : b(new B()), c(new C(b)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
-                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n", errout.str());
 
         check("struct B { };\n"
               "struct C\n"
@@ -1380,8 +1380,8 @@ private:
               "       c = new C(b);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
-                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n", errout.str());
     }
 
     void class22() { // ticket #3012 - false positive
@@ -2520,6 +2520,26 @@ private:
               "void f() {\n"
               "  makeThing();\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10631
+        check("struct Thing {\n"
+            "    Thing();\n"
+            "};\n"
+            "std::vector<Thing*> g_things;\n"
+            "Thing* makeThing() {\n"
+            "    Thing* n = new Thing();\n"
+            "    return n;\n"
+            "}\n"
+            "Thing::Thing() {\n"
+            "    g_things.push_back(this);\n"
+            "}\n"
+            "void f() {\n"
+            "    makeThing();\n"
+            "    for(Thing* t : g_things) {\n"
+            "        delete t;\n"
+            "    }\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };
