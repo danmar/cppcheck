@@ -2088,7 +2088,9 @@ private:
               "    if (!y) {}\n"
               "  }\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:13] -> [test.cpp:9]: (warning) Either the condition '!y' is redundant or there is possible null pointer dereference: x->g().\n",
+            errout.str());
     }
 
     void nullpointer65() {
