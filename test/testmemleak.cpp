@@ -39,18 +39,19 @@ private:
         TEST_CASE(open);
     }
 
-    CheckMemoryLeak::AllocType functionReturnType(const char code[]) {
+#define functionReturnType(code) functionReturnType_(code, __FILE__, __LINE__)
+    CheckMemoryLeak::AllocType functionReturnType_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         const CheckMemoryLeak c(&tokenizer, this, &settings);
 
-        return c.functionReturnType(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
+        return (c.functionReturnType)(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
     }
 
     void testFunctionReturnType() {
@@ -98,7 +99,7 @@ private:
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         // there is no allocation
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
@@ -122,7 +123,8 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void check(const char code[]) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -131,7 +133,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, settings, this);
@@ -467,18 +469,18 @@ private:
      * Tokenize and execute leak check for given code
      * @param code Source code
      */
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.check();
+        (checkMemoryLeak.check)();
     }
 
     void run() OVERRIDE {
@@ -1360,8 +1362,10 @@ private:
               "public:\n"
               "    A() : b(new B()), c(new C(b)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
-                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                           "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
+                           "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n",
+                           errout.str());
 
         check("struct B { };\n"
               "struct C\n"
@@ -1380,8 +1384,10 @@ private:
               "       c = new C(b);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
-                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                           "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
+                           "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n",
+                           errout.str());
     }
 
     void class22() { // ticket #3012 - false positive
@@ -1639,18 +1645,18 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[], bool isCPP = true) {
+    void check_(const char* file, int line, const char code[], bool isCPP = true) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, isCPP ? "test.cpp" : "test.c");
+        ASSERT_LOC(tokenizer.tokenize(istr, isCPP ? "test.cpp" : "test.c"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakStructMember checkMemoryLeakStructMember(&tokenizer, &settings, this);
-        checkMemoryLeakStructMember.check();
+        (checkMemoryLeakStructMember.check)();
     }
 
     void run() OVERRIDE {
@@ -2120,18 +2126,18 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);
-        checkMemoryLeakNoVar.check();
+        (checkMemoryLeakNoVar.check)();
     }
 
     void run() OVERRIDE {
@@ -2520,6 +2526,26 @@ private:
               "void f() {\n"
               "  makeThing();\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10631
+        check("struct Thing {\n"
+              "    Thing();\n"
+              "};\n"
+              "std::vector<Thing*> g_things;\n"
+              "Thing* makeThing() {\n"
+              "    Thing* n = new Thing();\n"
+              "    return n;\n"
+              "}\n"
+              "Thing::Thing() {\n"
+              "    g_things.push_back(this);\n"
+              "}\n"
+              "void f() {\n"
+              "    makeThing();\n"
+              "    for(Thing* t : g_things) {\n"
+              "        delete t;\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

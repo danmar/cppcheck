@@ -69,8 +69,8 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseSetVariablePointers();
     setValueTypeInTokenList(false);
     createSymbolDatabaseSetTypePointers();
-    createSymbolDatabaseSetSmartPointerType();
     createSymbolDatabaseSetFunctionPointers(true);
+    createSymbolDatabaseSetSmartPointerType();
     setValueTypeInTokenList(false);
     createSymbolDatabaseEnums();
     createSymbolDatabaseEscapeFunctions();

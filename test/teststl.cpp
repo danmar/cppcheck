@@ -174,7 +174,8 @@ private:
         TEST_CASE(checkMutexes);
     }
 
-    void check(const char code[], const bool inconclusive=false, const Standards::cppstd_t cppstandard=Standards::CPPLatest) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const bool inconclusive = false, const Standards::cppstd_t cppstandard = Standards::CPPLatest) {
         // Clear the error buffer..
         errout.str("");
 
@@ -188,22 +189,23 @@ private:
 
         CheckStl checkStl(&tokenizer, &settings, this);
 
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         checkStl.runChecks(&tokenizer, &settings, this);
     }
 
-    void check(const std::string &code, const bool inconclusive=false) {
-        check(code.c_str(), inconclusive);
+    void check_(const char* file, int line, const std::string& code, const bool inconclusive = false) {
+        check_(file, line, code.c_str(), inconclusive);
     }
 
-    void checkNormal(const char code[]) {
+#define checkNormal(code) checkNormal_(code, __FILE__, __LINE__)
+    void checkNormal_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckStl checkStl(&tokenizer, &settings, this);
