@@ -61,6 +61,7 @@ private:
         TEST_CASE(structmember15); // #3088 - #pragma pack(1)
         TEST_CASE(structmember_sizeof);
         TEST_CASE(structmember16); // #10485
+        TEST_CASE(structmember17);
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1572,6 +1573,35 @@ private:
                                "  char E[N];\n" // <- not used
                                "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::E' is never used.\n", errout.str());
+    }
+
+    void structmember17() {
+        checkStructMemberUsage("struct S {\n"
+                               "  int a;\n" // <- used
+                               "  int b;\n" // <- used
+                               "  int c;\n" // <- used
+                               "  int d;\n" // <- used
+                               "  int e[2];\n" // <- used
+                               "  int f;\n" // <- used
+                               "  int g;\n" // <- used
+                               "  int h;\n" // <- used
+                               "};\n"
+                               "struct S2 {\n"
+                               " struct S s;\n"
+                               "};\n"
+                               "void f() {\n"
+                               "S s;\n"
+                               "&s->a = 42;\n"
+                               "(&s)->b = 42;\n"
+                               "((&s))->c = 42;\n"
+                               "(((&s)))->d = 42;\n"
+                               "(((s))).e[1] = 42;\n"
+                               "((((&(((s)))))))->f = 42;\n"
+                               "S s2[2];\n"
+                               "s2.s.g = 42;\n"
+                               "(((((s2)))).s).h = 42;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
