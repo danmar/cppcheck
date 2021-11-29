@@ -3389,6 +3389,14 @@ private:
                       "[test.cpp:5]: (error) Null pointer dereference\n"
                       "[test.cpp:6]: (error) Null pointer dereference\n"
                       "[test.cpp:7]: (error) Null pointer dereference\n", errout.str());
+
+        check("std::string f() {\n" // #9827
+              "  char* p = NULL;\n"
+              "  const int rc = ::g(p);\n"
+              "  std::string s(p);\n"
+              "  return s;\n"
+              "}\n", /*inconclusive*/ true);
+        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (warning, inconclusive) Possible null pointer dereference: p\n", errout.str());
     }
 
     void nullpointerStdStream() {
