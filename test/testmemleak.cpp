@@ -1914,7 +1914,7 @@ private:
               "}", false);
         ASSERT_EQUALS("", errout.str());
     }
-        
+
     void function5() {
         check("struct s f() {\n" // #10381
               "    struct s s1;\n"

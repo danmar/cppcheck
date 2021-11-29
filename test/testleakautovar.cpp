@@ -474,7 +474,7 @@ private:
         check("void f(Bar& b) {\n" // #7622
               "    char* data = new char[10];\n"
               "    b = Bar(*new Foo(data));\n"
-              "}", true);
+              "}", /*cpp*/ true);
         ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function Foo() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 
