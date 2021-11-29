@@ -175,12 +175,13 @@ private:
         return ret;
     }
 
-    std::string expr(const char code[], const std::string &binop) {
+#define expr(code, binop) expr_(code, binop, __FILE__, __LINE__)
+    std::string expr_(const char code[], const std::string &binop, const char* file, int line) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         std::string ret;
         ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             if (tok->str() != binop)
@@ -197,7 +198,8 @@ private:
         return ret;
     }
 
-    std::string functionCallContractExpr(const char code[], const Settings &s) {
+#define functionCallContractExpr(...) functionCallContractExpr_(code, s, __FILE__, __LINE__)
+    std::string functionCallContractExpr_(const char code[], const Settings &s, const char* file, int line) {
         Settings settings;
         settings.bugHunting = true;
         settings.debugBugHunting = true;
@@ -205,7 +207,7 @@ private:
         settings.platform(cppcheck::Platform::Unix64);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         std::vector<ExprEngine::Callback> callbacks;
         std::ostringstream trace;
         ExprEngine::executeAllFunctions(this, &tokenizer, &settings, callbacks, trace);
@@ -217,20 +219,21 @@ private:
         return TestExprEngine::cleanupExpr(ret.substr(pos1, pos2+1-pos1));
     }
 
-    std::string getRange(const char code[], const std::string &str, int linenr = 0) {
+#define getRange(...) getRange_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string getRange_(const char* file, int line, const char code[], const std::string &str, int linenr = 0) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
         settings.library.smartPointers["std::shared_ptr"];
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         std::string ret;
         ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             (void)dataBase;
             if ((linenr == 0 || linenr == tok->linenr()) && tok->expressionString() == str) {
                 if (!ret.empty())
                     ret += ",";
-                ret += value.getRange();
+                ret += (value.getRange)();
             }
         };
         std::vector<ExprEngine::Callback> callbacks;
@@ -240,7 +243,8 @@ private:
         return ret;
     }
 
-    std::string trackExecution(const char code[], Settings *settings = nullptr) {
+#define trackExecution(...) trackExecution_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string trackExecution_(const char* file, int line, const char code[], Settings *settings = nullptr) {
         Settings s;
         if (!settings)
             settings = &s;
@@ -250,7 +254,7 @@ private:
         settings->library.smartPointers["std::shared_ptr"];
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         std::vector<ExprEngine::Callback> callbacks;
         std::ostringstream ret;
         ExprEngine::executeAllFunctions(this, &tokenizer, settings, callbacks, ret);

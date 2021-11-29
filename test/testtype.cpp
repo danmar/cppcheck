@@ -40,7 +40,8 @@ private:
         TEST_CASE(checkFloatToIntegerOverflow);
     }
 
-    void check(const char code[], Settings* settings = nullptr, const char filename[] = "test.cpp", const std::string& standard = "c++11") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], Settings* settings = nullptr, const char filename[] = "test.cpp", const std::string& standard = "c++11") {
         // Clear the error buffer..
         errout.str("");
 
@@ -55,7 +56,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check..
         CheckType checkType(&tokenizer, settings, this);

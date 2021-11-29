@@ -41,14 +41,15 @@ private:
         TEST_CASE(bitop);
     }
 
-    void check(const char code[]) {
+#define check(code) check_(code, __FILE__, __LINE__)
+    void check_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check char variable usage..
         CheckOther checkOther(&tokenizer, &settings, this);
