@@ -470,6 +470,12 @@ private:
               "    TestType *tt = new TestType();\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: tt\n", errout.str());
+
+        check("void f(Bar& b) {\n" // #7622
+              "    char* data = new char[10];\n"
+              "    b = Bar(*new Foo(data));\n"
+              "}", true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function Foo() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 
     void realloc1() {

@@ -859,10 +859,17 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     int argNr = 1;
     for (const Token *funcArg = tokFirstArg; funcArg; funcArg = funcArg->nextArgument()) {
         const Token* arg = funcArg;
-        if (mTokenizer->isCPP() && arg->str() == "new") {
-            arg = arg->next();
-            if (Token::simpleMatch(arg, "( std :: nothrow )"))
-                arg = arg->tokAt(5);
+        if (mTokenizer->isCPP()) {
+            int tokAdvance = 0;
+            if (arg->str() == "new")
+                tokAdvance = 1;
+            else if (Token::simpleMatch(arg, "* new"))
+                tokAdvance = 2;
+            if (tokAdvance > 0) {
+                arg = arg->tokAt(tokAdvance);
+                if (Token::simpleMatch(arg, "( std :: nothrow )"))
+                    arg = arg->tokAt(5);
+            }
         }
 
         // Skip casts
