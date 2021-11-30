@@ -79,6 +79,7 @@ private:
         TEST_CASE(testautovar_extern);
         TEST_CASE(testautovar_reassigned);
         TEST_CASE(testinvaliddealloc);
+        TEST_CASE(testinvaliddealloc_string);
         TEST_CASE(testinvaliddealloc_C);
         TEST_CASE(testassign1);  // Ticket #1819
         TEST_CASE(testassign2);  // Ticket #2765
@@ -627,6 +628,11 @@ private:
                       "[test.cpp:9]: (error) Deallocation of an auto-variable results in undefined behaviour.\n"
                       "[test.cpp:11]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
 
+        check("void func1(char * ptr) {\n"
+              "    free(ptr);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void func1() {\n"
               "    char* tmp1[256];\n"
               "    init(tmp1);\n"
@@ -756,6 +762,26 @@ private:
               "};\n"
               "Array arr;\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testinvaliddealloc_string() {
+        // #7341
+        check("void f() {\n"
+              "    char *ptr = \"a\";\n"
+              "    free(\"a\");\n"
+              "    delete \"a\";\n"
+              "    free(ptr);\n"
+              "    delete ptr;\n"
+              "    char * p = malloc(1000);\n"
+              "    p = \"abc\";\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an string literal results in undefined behaviour.\n"
+                      "[test.cpp:4]: (error) Deallocation of an string literal results in undefined behaviour.\n"
+                      "[test.cpp:5]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
+                      "[test.cpp:6]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
+                      "[test.cpp:9]: (error) Deallocation of an pointer pointing to a string literal (\"abc\") results in undefined behaviour.\n",
+                      errout.str());
     }
 
     void testinvaliddealloc_C() {
