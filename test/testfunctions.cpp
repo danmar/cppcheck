@@ -95,7 +95,8 @@ private:
         TEST_CASE(returnLocalStdMove5);
     }
 
-    void check(const char code[], const char filename[]="test.cpp", const Settings* settings_=nullptr) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp", const Settings* settings_ = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -105,7 +106,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings_, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         CheckFunctions checkFunctions(&tokenizer, settings_, this);
         checkFunctions.runChecks(&tokenizer, settings_, this);

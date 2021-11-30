@@ -39,7 +39,8 @@ public:
 private:
     Settings settings0;
 
-    void check(const char code[], const char filename[] = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -48,17 +49,17 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun;
         checkBufferOverrun.runChecks(&tokenizer, &settings0, this);
     }
 
-    void check(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Clear the error buffer..
         errout.str("");
@@ -3449,6 +3450,20 @@ private:
               "  cache[i][0xFFFF] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int **a = malloc(2 * sizeof(int*));\n"
+              "  for (int i = 0; i < 3; i++)\n"
+              "    a[i] = NULL;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[2]' accessed at index 2, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
+              "  int **a = new int*[2];\n"
+              "  for (int i = 0; i < 3; i++)\n"
+              "    a[i] = NULL;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[2]' accessed at index 2, which is out of bounds.\n", "", errout.str());
     }
 
     // statically allocated buffer
@@ -4525,22 +4540,23 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 'arr+20' is out of bounds.\n", errout.str());
     }
 
-    void ctu(const char code[]) {
+#define ctu(code) ctu_(code, __FILE__, __LINE__)
+    void ctu_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckBufferOverrun check(&tokenizer, &settings0, this);
-        fileInfo.push_back(check.getFileInfo(&tokenizer, &settings0));
-        check.analyseWholeProgram(ctu, fileInfo, settings0, *this);
+        CheckBufferOverrun checkBO(&tokenizer, &settings0, this);
+        fileInfo.push_back(checkBO.getFileInfo(&tokenizer, &settings0));
+        checkBO.analyseWholeProgram(ctu, fileInfo, settings0, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();

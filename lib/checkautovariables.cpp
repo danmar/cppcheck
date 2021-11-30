@@ -266,16 +266,16 @@ void CheckAutoVariables::autoVariables()
                 errorAutoVariableAssignment(tok->next(), false);
             }
             // Invalid pointer deallocation
-            else if ((Token::Match(tok, "%name% ( %var% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
-                     (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var% !!["))) {
-                tok = Token::findmatch(tok->next(), "%var%");
-                if (isArrayVar(tok))
+            else if ((Token::Match(tok, "%name% ( %var%|%str% ) ;") && mSettings->library.getDeallocFuncInfo(tok)) ||
+                     (mTokenizer->isCPP() && Token::Match(tok, "delete [| ]| (| %var%|%str% !!["))) {
+                tok = Token::findmatch(tok->next(), "%var%|%str%");
+                if (isArrayVar(tok) || tok->tokType() == Token::eString)
                     errorInvalidDeallocation(tok, nullptr);
                 else if (tok->variable() && tok->variable()->isPointer()) {
                     for (const ValueFlow::Value &v : tok->values()) {
                         if (!(v.isTokValue()))
                             continue;
-                        if (isArrayVar(v.tokvalue)) {
+                        if (isArrayVar(v.tokvalue) || v.tokvalue->tokType() == Token::eString) {
                             errorInvalidDeallocation(tok, &v);
                             break;
                         }
@@ -653,7 +653,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                             continue;
                         if ((tokvalue->variable() && !isEscapedReference(tokvalue->variable()) &&
                              isInScope(tokvalue->variable()->nameToken(), scope)) ||
-                            isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
+                            isDeadTemporary(mTokenizer->isCPP(), tokvalue, nullptr, &mSettings->library)) {
                             errorReturnDanglingLifetime(tok, &val);
                             break;
                         }
@@ -804,7 +804,11 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueF
     const Variable *var = val ? val->tokvalue->variable() : (tok ? tok->variable() : nullptr);
 
     std::string type = "auto-variable";
-    if (var) {
+    if (tok && tok->tokType() == Token::eString)
+        type = "string literal";
+    else if (val && val->tokvalue->tokType() == Token::eString)
+        type = "pointer pointing to a string literal";
+    else if (var) {
         if (var->isGlobal())
             type = "global variable";
         else if (var->isStatic())

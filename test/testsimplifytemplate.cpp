@@ -261,7 +261,7 @@ private:
         TEST_CASE(templateAlias5);
 
         // Test TemplateSimplifier::instantiateMatch
-        TEST_CASE(instantiateMatch);
+        TEST_CASE(instantiateMatchTest);
         TEST_CASE(templateParameterWithoutName); // #8602 Template default parameter without name yields syntax error
 
         TEST_CASE(templateTypeDeduction1); // #8962
@@ -302,7 +302,8 @@ private:
         TEST_CASE(explicitBool2);
     }
 
-    std::string tok(const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
+#define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tok_(const char* file, int line, const char code[], bool debugwarnings = false, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings.debugwarnings = debugwarnings;
@@ -310,7 +311,7 @@ private:
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, true);
     }
@@ -5614,16 +5615,17 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    bool instantiateMatch(const char code[], const std::size_t numberOfArguments, const char patternAfter[]) {
+#define instantiateMatch(code, numberOfArguments, patternAfter) instantiateMatch_(code, numberOfArguments, patternAfter, __FILE__, __LINE__)
+    bool instantiateMatch_(const char code[], const std::size_t numberOfArguments, const char patternAfter[], const char* file, int line) {
         Tokenizer tokenizer(&settings, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp", "");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp", ""), file, line);
 
-        return TemplateSimplifier::instantiateMatch(tokenizer.tokens(), numberOfArguments, false, patternAfter);
+        return (TemplateSimplifier::instantiateMatch)(tokenizer.tokens(), numberOfArguments, false, patternAfter);
     }
 
-    void instantiateMatch() {
+    void instantiateMatchTest() {
         // Ticket #8175
         ASSERT_EQUALS(false,
                       instantiateMatch("ConvertHelper < From, To > c ;",

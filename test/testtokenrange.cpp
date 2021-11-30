@@ -104,7 +104,7 @@ private:
         Settings settings;
         Tokenizer tokenizer{ &settings, nullptr };
         std::istringstream sample("void a(){} void main(){ if(true){a();} }");
-        tokenizer.tokenize(sample, "test.cpp");
+        ASSERT(tokenizer.tokenize(sample, "test.cpp"));
 
         const SymbolDatabase* sd = tokenizer.getSymbolDatabase();
         const Scope& scope = *std::next(sd->scopeList.begin(), 3); //The scope of the if block

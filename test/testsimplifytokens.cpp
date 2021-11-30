@@ -370,14 +370,15 @@ private:
         TEST_CASE(simplifyVarDeclInitLists);
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
+#define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tok_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings0.platform(type);
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -385,14 +386,15 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
-    std::string tokWithWindows(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
+#define tokWithWindows(...) tokWithWindows_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokWithWindows_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings_windows.platform(type);
         Tokenizer tokenizer(&settings_windows, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -400,44 +402,47 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
-    std::string tok(const char code[], const char filename[], bool simplify = true) {
+    std::string tok_(const char* file, int line, const char code[], const char filename[], bool simplify = true) {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
         if (simplify)
             tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-    std::string tokWithNewlines(const char code[]) {
+#define tokWithNewlines(code) tokWithNewlines_(code, __FILE__, __LINE__)
+    std::string tokWithNewlines_(const char code[], const char* file, int line) {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false);
     }
 
-    std::string tokWithStdLib(const char code[]) {
+#define tokWithStdLib(code) tokWithStdLib_(code, __FILE__, __LINE__)
+    std::string tokWithStdLib_(const char code[], const char* file, int line) {
         errout.str("");
 
         Tokenizer tokenizer(&settings_std, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
+#define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
         settings1.debugwarnings = true;
@@ -447,7 +452,7 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
         if (simplify)
             tokenizer.simplifyTokenList2();
 
@@ -467,12 +472,13 @@ private:
             return "";
     }
 
-    std::string tokenizeDebugListing(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
+#define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeDebugListing_(const char* file, int line, const char code[], bool simplify = false, const char filename[] = "test.cpp") {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -1999,7 +2005,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -2011,7 +2017,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -2023,7 +2029,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -2035,7 +2041,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -2047,7 +2053,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -3101,14 +3107,14 @@ private:
         }
     }
 
-
-    std::string simplifyIfAndWhileAssign(const char code[]) {
+#define simplifyIfAndWhileAssign(code) simplifyIfAndWhileAssign_(code, __FILE__, __LINE__)
+    std::string simplifyIfAndWhileAssign_(const char code[], const char* file, int line) {
         // tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        tokenizer.simplifyIfAndWhileAssign();
+        (tokenizer.simplifyIfAndWhileAssign)();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
@@ -3195,7 +3201,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr("{ while (!(m = q->push<Message>(x))) {} }");
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
         tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS("{ m = q . push < Message > ( x ) ; while ( ! m ) { m = q . push < Message > ( x ) ; } }", tokenizer.tokens()->stringifyList(nullptr, false));
@@ -4445,7 +4451,7 @@ private:
     void duplicateDefinition() { // #3565 - wrongly detects duplicate definition
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr("{ x ; return a not_eq x; }");
-        tokenizer.tokenize(istr, "test.c");
+        ASSERT(tokenizer.tokenize(istr, "test.c"));
         Token *x_token = tokenizer.list.front()->tokAt(5);
         ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token));
     }
@@ -5234,14 +5240,15 @@ private:
                           "}"));
     }
 
-    std::string simplifyKnownVariables(const char code[]) {
+#define simplifyKnownVariables(code) simplifyKnownVariables_(code, __FILE__, __LINE__)
+    std::string simplifyKnownVariables_(const char code[], const char* file, int line) {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        tokenizer.simplifyKnownVariables();
+        (tokenizer.simplifyKnownVariables)();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }

@@ -103,11 +103,14 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getAllocationType(const Token *tok2,
             const Token *typeTok = tok2->next();
             while (Token::Match(typeTok, "%name% :: %name%"))
                 typeTok = typeTok->tokAt(2);
+            const Scope* classScope = nullptr;
             if (typeTok->type() && typeTok->type()->isClassType()) {
-                const Scope *classScope = typeTok->type()->classScope;
-                if (classScope && classScope->numConstructors > 0)
-                    return No;
+                classScope = typeTok->type()->classScope;
+            } else if (typeTok->function() && typeTok->function()->isConstructor()) {
+                classScope = typeTok->function()->nestedIn;
             }
+            if (classScope && classScope->numConstructors > 0)
+                return No;
             return New;
         }
 

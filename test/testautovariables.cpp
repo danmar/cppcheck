@@ -30,7 +30,8 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[], bool inconclusive = false, const char* filename = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool inconclusive = false, const char* filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -39,7 +40,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         CheckAutoVariables checkAutoVariables;
         checkAutoVariables.runChecks(&tokenizer, &settings, this);
@@ -78,6 +79,7 @@ private:
         TEST_CASE(testautovar_extern);
         TEST_CASE(testautovar_reassigned);
         TEST_CASE(testinvaliddealloc);
+        TEST_CASE(testinvaliddealloc_string);
         TEST_CASE(testinvaliddealloc_C);
         TEST_CASE(testassign1);  // Ticket #1819
         TEST_CASE(testassign2);  // Ticket #2765
@@ -151,6 +153,7 @@ private:
         TEST_CASE(danglingLifetimeImplicitConversion);
         TEST_CASE(danglingTemporaryLifetime);
         TEST_CASE(danglingLifetimeBorrowedMembers);
+        TEST_CASE(danglingLifetimeClassMemberFunctions);
         TEST_CASE(invalidLifetime);
         TEST_CASE(deadPointer);
         TEST_CASE(splitNamespaceAuto); // crash #10473
@@ -625,6 +628,11 @@ private:
                       "[test.cpp:9]: (error) Deallocation of an auto-variable results in undefined behaviour.\n"
                       "[test.cpp:11]: (error) Deallocation of an auto-variable results in undefined behaviour.\n", errout.str());
 
+        check("void func1(char * ptr) {\n"
+              "    free(ptr);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void func1() {\n"
               "    char* tmp1[256];\n"
               "    init(tmp1);\n"
@@ -754,6 +762,26 @@ private:
               "};\n"
               "Array arr;\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testinvaliddealloc_string() {
+        // #7341
+        check("void f() {\n"
+              "    char *ptr = \"a\";\n"
+              "    free(\"a\");\n"
+              "    delete \"a\";\n"
+              "    free(ptr);\n"
+              "    delete ptr;\n"
+              "    char * p = malloc(1000);\n"
+              "    p = \"abc\";\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an string literal results in undefined behaviour.\n"
+                      "[test.cpp:4]: (error) Deallocation of an string literal results in undefined behaviour.\n"
+                      "[test.cpp:5]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
+                      "[test.cpp:6]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
+                      "[test.cpp:9]: (error) Deallocation of an pointer pointing to a string literal (\"abc\") results in undefined behaviour.\n",
+                      errout.str());
     }
 
     void testinvaliddealloc_C() {
@@ -2246,10 +2274,8 @@ private:
               "auto f() {\n"
               "    return g().begin();\n"
               "}");
-        TODO_ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:3]: (error) Returning iterator that will be invalid when returning.\n",
-            "",
-            errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Returning iterator that will be invalid when returning.\n",
+                      errout.str());
 
         check("std::vector<int> f();\n"
               "auto f() {\n"
@@ -3291,6 +3317,41 @@ private:
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5] -> [test.cpp:6]: (error) Using pointer that is a temporary.\n",
                       errout.str());
     }
+
+    void danglingLifetimeClassMemberFunctions()
+    {
+        check("struct S {\n"
+              "    S(int i) : i(i) {}\n"
+              "    int i;\n"
+              "    int* ptr() { return &i; }\n"
+              "};\n"
+              "int* fun(int i) { \n"
+              "    return S(i).ptr();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:7] -> [test.cpp:7]: (error) Returning pointer that will be invalid when returning.\n",
+            errout.str());
+
+        check("struct Fred\n"
+              "{\n"
+              "    int x[2];\n"
+              "    Fred() {\n"
+              "        x[0] = 0x41;\n"
+              "        x[1] = 0x42;\n"
+              "    }\n"
+              "    const int *get_x() {\n"
+              "        return x;\n"
+              "    }\n"
+              "};\n"
+              "static const int *foo() {\n"
+              "    Fred fred;\n"
+              "    return fred.get_x();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:9] -> [test.cpp:14] -> [test.cpp:13] -> [test.cpp:14]: (error) Returning pointer to local variable 'fred' that will be invalid when returning.\n",
+            errout.str());
+    }
+
     void invalidLifetime() {
         check("void foo(int a) {\n"
               "    std::function<void()> f;\n"
