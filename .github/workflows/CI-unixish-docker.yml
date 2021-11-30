@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["ubuntu:16.04"]
+        image: ["gcc:4.6"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-20.04
@@ -18,13 +18,10 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - name: Install prerequisites for ubuntu 16.04
-        if: matrix.image == 'ubuntu:16.04'
+      - name: Install prerequisites for gcc:4.6
+        if: matrix.image == 'gcc:4.6'
         run: |
-          apt-get update
-          apt-get install -y gcc-4.6
-          # set compiler for subsequent steps
-          echo "CXX=gcc-4.6" >> $GITHUB_ENV
+          #echo "CXX=gcc-4.6" >> $GITHUB_ENV
 
       - uses: actions/checkout@v2
 
