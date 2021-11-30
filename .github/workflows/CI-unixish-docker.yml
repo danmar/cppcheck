@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        image: ["ubuntu:12.04"]
+        image: ["ubuntu:16.04"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-20.04
@@ -18,23 +18,13 @@ jobs:
       image: ${{ matrix.image }}
 
     steps:
-      - name: Install prerequisites for ubuntu 12.04
-        if: matrix.image == 'ubuntu:12.04'
+      - name: Install prerequisites for ubuntu 16.04
+        if: matrix.image == 'ubuntu:16.04'
         run: |
-          # set up EOL repositories
-          echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise main restricted universe multiverse' > /etc/apt/sources.list
-          echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise-updates main restricted universe multiverse' >> /etc/apt/sources.list
-          echo 'deb http://old-releases.ubuntu.com/ubuntu/ precise-security main restricted universe multiverse' >> /etc/apt/sources.list
           apt-get update
-          apt-get install -y binutils
-          strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
-          # add PPA to be able to install newer toolchains
-          apt-get install -y python-software-properties
-          add-apt-repository ppa:ubuntu-toolchain-r/test
-          apt-get update
-          # install to satisfy GLBCXX requirement of bin/node used by GitHub action - also gives us GCC 4.6
-          apt-get install -y libstdc++6-4.6-dev
-          strings /lib/x86_64-linux-gnu/libc.so.6 | grep GLIBC
+          apt-get install -y gcc-4.6
+          # set compiler for subsequent steps
+          echo "CXX=gcc-4.6" >> $GITHUB_ENV
 
       - uses: actions/checkout@v2
 
