@@ -130,7 +130,7 @@ private:
     void invalidPrintfArgTypeError_sint(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_float(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidLengthModifierError(const Token* tok, nonneg int numFormat, const std::string& modifier);
-    void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, char c);
+    void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, const std::string& specifier);
     static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
     static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
 
@@ -157,8 +157,8 @@ private:
         c.invalidPrintfArgTypeError_sint(nullptr,  1, "i", nullptr);
         c.invalidPrintfArgTypeError_float(nullptr,  1, "f", nullptr);
         c.invalidLengthModifierError(nullptr,  1, "I");
-        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, 's');
-        c.invalidScanfFormatWidthError(nullptr,  99, -1, nullptr, 's');
+        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, "s");
+        c.invalidScanfFormatWidthError(nullptr,  99, -1, nullptr, "s");
         c.wrongPrintfScanfPosixParameterPositionError(nullptr,  "printf", 2, 1);
     }
 

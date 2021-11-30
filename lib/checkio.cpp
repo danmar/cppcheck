@@ -645,16 +645,13 @@ void CheckIO::checkFormatString(const Token * const tok,
                 }
                 ++i;
             }
+            auto bracketBeg = formatString.end();
             if (i != formatString.end() && *i == '[') {
+                bracketBeg = i;
                 while (i != formatString.end()) {
-                    if (*i == ']') {
-                        if (!skip) {
-                            numFormat++;
-                            if (argListTok)
-                                argListTok = argListTok->nextArgument();
-                        }
+                    if (*i == ']')
                         break;
-                    }
+
                     ++i;
                 }
                 if (scanf_s && !skip) {
@@ -663,7 +660,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                         argListTok = argListTok->nextArgument();
                     }
                 }
-                _continue = true;
             }
             if (i == formatString.end())
                 break;
@@ -684,29 +680,30 @@ void CheckIO::checkFormatString(const Token * const tok,
                 // Perform type checks
                 ArgumentInfo argInfo(argListTok, mSettings, mTokenizer->isCPP());
 
-                if (argInfo.typeToken && !argInfo.isLibraryType(mSettings)) {
+                if ((argInfo.typeToken && !argInfo.isLibraryType(mSettings)) || *i == ']') {
                     if (scan) {
                         std::string specifier;
                         bool done = false;
                         while (!done) {
                             switch (*i) {
                             case 's':
-                                specifier += *i;
+                            case ']': // charset
+                                specifier += (*i == 's' || bracketBeg == formatString.end()) ? std::string{ 's' } : std::string{ bracketBeg, i + 1 };
                                 if (argInfo.variableInfo && argInfo.isKnownType() && argInfo.variableInfo->isArray() && (argInfo.variableInfo->dimensions().size() == 1) && argInfo.variableInfo->dimensions()[0].known) {
                                     if (!width.empty()) {
                                         const int numWidth = std::atoi(width.c_str());
                                         if (numWidth != (argInfo.variableInfo->dimension(0) - 1))
-                                            invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, 's');
+                                            invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, specifier);
                                     }
                                 }
-                                if (argListTok && argListTok->tokType() != Token::eString &&
+                                if (argListTok && argListTok->tokType() != Token::eString && argInfo.typeToken &&
                                     argInfo.isKnownType() && argInfo.isArrayOrPointer() &&
                                     (!Token::Match(argInfo.typeToken, "char|wchar_t") ||
                                      argInfo.typeToken->strAt(-1) == "const")) {
                                     if (!(argInfo.isArrayOrPointer() && argInfo.element && !argInfo.typeToken->isStandardType()))
                                         invalidScanfArgTypeError_s(tok, numFormat, specifier, &argInfo);
                                 }
-                                if (scanf_s) {
+                                if (scanf_s && argInfo.typeToken) {
                                     numSecure++;
                                     if (argListTok) {
                                         argListTok = argListTok->nextArgument();
@@ -719,7 +716,7 @@ void CheckIO::checkFormatString(const Token * const tok,
                                     if (!width.empty()) {
                                         const int numWidth = std::atoi(width.c_str());
                                         if (numWidth > argInfo.variableInfo->dimension(0))
-                                            invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, 'c');
+                                            invalidScanfFormatWidthError(tok, numFormat, numWidth, argInfo.variableInfo, std::string(1, *i));
                                     }
                                 }
                                 if (scanf_s) {
@@ -1995,7 +1992,7 @@ void CheckIO::invalidLengthModifierError(const Token* tok, nonneg int numFormat,
     reportError(tok, Severity::warning, "invalidLengthModifierError", errmsg.str(), CWE704, Certainty::normal);
 }
 
-void CheckIO::invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, char c)
+void CheckIO::invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, const std::string& specifier)
 {
     MathLib::bigint arrlen = 0;
     std::string varname;
@@ -2014,7 +2011,7 @@ void CheckIO::invalidScanfFormatWidthError(const Token* tok, nonneg int numForma
         reportError(tok, Severity::warning, "invalidScanfFormatWidth_smaller", errmsg.str(), CWE(0U), Certainty::inconclusive);
     } else {
         errmsg << "Width " << width << " given in format string (no. " << numFormat << ") is larger than destination buffer '"
-               << varname << "[" << arrlen << "]', use %" << (c == 'c' ? arrlen : (arrlen - 1)) << c << " to prevent overflowing it.";
+               << varname << "[" << arrlen << "]', use %" << (specifier == "c" ? arrlen : (arrlen - 1)) << specifier << " to prevent overflowing it.";
         reportError(tok, Severity::error, "invalidScanfFormatWidth", errmsg.str(), CWE687, Certainty::normal);
     }
 }
