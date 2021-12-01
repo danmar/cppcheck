@@ -2101,6 +2101,18 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[2]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("int f() {\n" // #9126
+              "    int i, c;\n"
+              "    char* words[100] = {0};\n"
+              "    g(words);\n"
+              "    for (i = c = 0; (i < N) && (c < 1); i++) {\n"
+              "        if (words[i][0] == '|')\n"
+              "            c++;\n"
+              "     }\n"
+              "    return c;\n"
+              "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_for_continue() {
