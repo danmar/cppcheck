@@ -1929,7 +1929,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("struct nc_rpc nc_rpc_getconfig() {\n" // #13082
+        check("struct nc_rpc nc_rpc_getconfig() {\n" // #10382
               "    struct nc_rpc rpc;\n"
               "    rpc->filter = malloc(1);\n"
               "    return (nc_rpc)rpc;\n"

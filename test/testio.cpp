@@ -50,6 +50,7 @@ private:
         TEST_CASE(testScanf2);
         TEST_CASE(testScanf3); // #3494
         TEST_CASE(testScanf4); // #ticket 2553
+        TEST_CASE(testScanf5); // #10632
 
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
@@ -772,6 +773,15 @@ private:
               "  scanf (\"%70s\",str);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Width 70 given in format string (no. 1) is larger than destination buffer 'str[8]', use %7s to prevent overflowing it.\n", errout.str());
+    }
+
+    void testScanf5() { // #10632
+        check("char s1[42], s2[42];\n"
+              "void test() {\n"
+              "    scanf(\"%42s%42[a-z]\", s1, s2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Width 42 given in format string (no. 1) is larger than destination buffer 's1[42]', use %41s to prevent overflowing it.\n"
+                      "[test.cpp:3]: (error) Width 42 given in format string (no. 2) is larger than destination buffer 's2[42]', use %41[a-z] to prevent overflowing it.\n", errout.str());
     }
 
 
