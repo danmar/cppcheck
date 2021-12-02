@@ -1172,6 +1172,52 @@ void SymbolDatabase::fixVarId(VarIdMap & varIds, const Token * vartok, Token * m
         membertok->varId(memberId->second);
 }
 
+const Token *SymbolDatabase::setMemberVariable(VarIdMap &varIds, const Token *tok, Token *tok2)
+{
+    // Locate "]"
+    while (tok2 && tok2->str() == "[")
+        tok2 = tok2->link()->next();
+
+    Token *membertok = nullptr;
+    if (Token::Match(tok2, ". %name%"))
+        membertok = tok2->next();
+    else if (Token::Match(tok2, ") . %name%") && tok->strAt(-1) == "(")
+        membertok = tok2->tokAt(2);
+
+    if (membertok) {
+        const Variable *var = tok->variable();
+        if (var->typeScope()) {
+            const Variable *membervar = var->typeScope()->getVariable(membertok->str());
+            if (membervar) {
+                membertok->variable(membervar);
+                if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
+                    fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
+            }
+        } else if (const ::Type *type = var->smartPointerType()) {
+            const Scope *classScope = type->classScope;
+            const Variable *membervar = classScope ? classScope->getVariable(membertok->str()) : nullptr;
+            if (membervar) {
+                membertok->variable(membervar);
+                if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
+                    fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
+            }
+        } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
+            if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
+                const Type * type2 = var->typeStartToken()->tokAt(4)->type();
+                if (type2 && type2->classScope && type2->classScope->definedType) {
+                    const Variable *membervar = type2->classScope->getVariable(membertok->str());
+                    if (membervar) {
+                        membertok->variable(membervar);
+                        if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
+                            fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
+                    }
+                }
+            }
+        }
+    }
+
+    return membertok;
+}
 void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 {
     VarIdMap varIds;
@@ -1188,47 +1234,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
             Token::Match(tok, "%name% [|.")) {
 
             Token *tok2 = tok->next();
-            // Locate "]"
-            while (tok2 && tok2->str() == "[")
-                tok2 = tok2->link()->next();
-
-            Token *membertok = nullptr;
-            if (Token::Match(tok2, ". %name%"))
-                membertok = tok2->next();
-            else if (Token::Match(tok2, ") . %name%") && tok->strAt(-1) == "(")
-                membertok = tok2->tokAt(2);
-
-            if (membertok) {
-                const Variable *var = tok->variable();
-                if (var->typeScope()) {
-                    const Variable *membervar = var->typeScope()->getVariable(membertok->str());
-                    if (membervar) {
-                        membertok->variable(membervar);
-                        if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
-                            fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
-                    }
-                } else if (const ::Type *type = var->smartPointerType()) {
-                    const Scope *classScope = type->classScope;
-                    const Variable *membervar = classScope ? classScope->getVariable(membertok->str()) : nullptr;
-                    if (membervar) {
-                        membertok->variable(membervar);
-                        if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
-                            fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
-                    }
-                } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
-                    if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
-                        const Type * type2 = var->typeStartToken()->tokAt(4)->type();
-                        if (type2 && type2->classScope && type2->classScope->definedType) {
-                            const Variable *membervar = type2->classScope->getVariable(membertok->str());
-                            if (membervar) {
-                                membertok->variable(membervar);
-                                if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
-                                    fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
-                            }
-                        }
-                    }
-                }
-            }
+            setMemberVariable(varIds, tok, tok2);
         }
 
         // check for function returning record type

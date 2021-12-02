@@ -1474,6 +1474,7 @@ private:
     typedef std::map<unsigned int, unsigned int> MemberIdMap;
     typedef std::map<unsigned int, MemberIdMap> VarIdMap;
 
+    const Token *setMemberVariable(VarIdMap &varIds, const Token *tok, Token *tok2);
     void fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar);
 
     /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
