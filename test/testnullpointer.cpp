@@ -126,6 +126,8 @@ private:
         TEST_CASE(nullpointer84); // #9873
         TEST_CASE(nullpointer85); // #10210
         TEST_CASE(nullpointer86);
+        TEST_CASE(nullpointer87); // #9291
+        TEST_CASE(nullpointer88); // #9949
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2566,6 +2568,53 @@ private:
               "    t = f(t->a());\n"
               "    if (!t->a()) {}\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer87() // #9291
+    {
+        check("int f(bool b, int* x) {\n"
+              "    if (b && x == nullptr)\n"
+              "        return 0;\n"
+              "    else if (!b && x == nullptr)\n"
+              "        return 1;\n"
+              "    else if (!b && x != nullptr)\n"
+              "        return *x;\n"
+              "    else\n"
+              "        return *x + 1;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:6] -> [test.cpp:9]: (warning) Either the condition 'x!=nullptr' is redundant or there is possible null pointer dereference: x.\n", errout.str());
+
+        check("void f(int n, int* p) {\n"
+              "    int* r = nullptr;\n"
+              "    if (n < 0)\n"
+              "        return;\n"
+              "    if (n == 0)\n"
+              "        r = p;\n"
+              "    else if (n > 0)\n"
+              "        r = p + 1;\n"
+              "    *r;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer88() // #9949
+    {
+        check("struct S { char **ppc; };\n"
+              "int alloc(struct S* s) {\n"
+              "    char** ppc = malloc(4096);\n"
+              "    if (ppc != NULL) {\n"
+              "        s->ppc = ppc;\n"
+              "        return 1;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n"
+              "void f() {\n"
+              "    struct S* s = malloc(sizeof(struct S));\n"
+              "    s->ppc = NULL;\n"
+              "    if (alloc(s))\n"
+              "        s->ppc[0] = \"\";\n"
+              "}\n", /*inconclusive*/ false, "test.c");
         ASSERT_EQUALS("", errout.str());
     }
 
