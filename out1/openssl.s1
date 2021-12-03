@@ -1,0 +1,4 @@
+valid_code call:[BIO_printf] noreturn:[BIO_printf]
+valid_code_do_crypt call:[EVP_CIPHER_CTX_free,EVP_CIPHER_CTX_new,EVP_EncryptFinal_ex,EVP_EncryptInit_ex,EVP_EncryptUpdate,EVP_aes_256_cbc,fclose,fopen,fwrite,strlen]
+invalidPrintfArgType_test call:[BIO_printf] noreturn:[BIO_printf]
+EVP_CIPHER_CTX_new_test call:[EVP_CIPHER_CTX_new,printf] noreturn:[printf]

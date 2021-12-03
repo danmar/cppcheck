@@ -1,0 +1,153 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3781967071">
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;digit&apos; can be reduced." verbose="The scope of the variable &apos;digit&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-19872\qppmhandler.cpp" line="70" column="10"/>
+            <symbol>digit</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;end&apos; can be reduced." verbose="The scope of the variable &apos;end&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-19872\qppmhandler.cpp" line="170" column="20"/>
+            <symbol>end</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;p&apos; can be reduced." verbose="The scope of the variable &apos;p&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-19872\qppmhandler.cpp" line="228" column="16"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;n&apos; can be reduced." verbose="The scope of the variable &apos;n&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-19872\qppmhandler.cpp" line="229" column="13"/>
+            <symbol>n</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;b&apos; can be reduced." verbose="The scope of the variable &apos;b&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-19872\qppmhandler.cpp" line="235" column="21"/>
+            <symbol>b</symbol>
+        </error>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp:56:13" my-argnr="1" my-argname="d" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp" line="62" col="15" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp:97:13" my-argnr="1" my-argname="device" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp" line="100" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp:56:13" my-argnr="1" my-argname="d" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp" line="62" col="15" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp:97:13" my-argnr="1" my-argname="device" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-19872/qppmhandler.cpp" line="100" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="discard_pbm_line" lineNumber="56"/>
+    <functiondecl functionName="read_pbm_int" lineNumber="66"/>
+    <functiondecl functionName="read_pbm_header" lineNumber="97"/>
+    <functiondecl functionName="scale_pbm_color" lineNumber="124"/>
+    <functiondecl functionName="read_pbm_body" lineNumber="129"/>
+    <functiondecl functionName="write_pbm_image" lineNumber="291"/>
+    <functioncall functionName="Error"/>
+    <functioncall functionName="Format_ARGB32"/>
+    <functioncall functionName="Format_Grayscale8"/>
+    <functioncall functionName="Format_Indexed8"/>
+    <functioncall functionName="Format_Invalid"/>
+    <functioncall functionName="Format_Mono"/>
+    <functioncall functionName="Format_RGB32"/>
+    <functioncall functionName="QByteArray"/>
+    <functioncall functionName="QImage"/>
+    <functioncall functionName="QPpmHandler"/>
+    <functioncall functionName="QRgb"/>
+    <functioncall functionName="QSize"/>
+    <functioncall functionName="QVariant"/>
+    <functioncall functionName="ReadHeader"/>
+    <functioncall functionName="Ready"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="b"/>
+    <functioncall functionName="bpl"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="buf"/>
+    <functioncall functionName="buf16"/>
+    <functioncall functionName="buf24"/>
+    <functioncall functionName="buflen"/>
+    <functioncall functionName="bv"/>
+    <functioncall functionName="bytesPerLine"/>
+    <functioncall functionName="c"/>
+    <functioncall functionName="canRead"/>
+    <functioncall functionName="color"/>
+    <functioncall functionName="colorCount"/>
+    <functioncall functionName="colorTable"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="constScanLine"/>
+    <functioncall functionName="const_cast"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="convertToFormat"/>
+    <functioncall functionName="d"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="depth"/>
+    <functioncall functionName="detach"/>
+    <functioncall functionName="device"/>
+    <functioncall functionName="digit"/>
+    <functioncall functionName="discard_pbm_line"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="format"/>
+    <functioncall functionName="fromRgba64"/>
+    <functioncall functionName="g"/>
+    <functioncall functionName="getChar"/>
+    <functioncall functionName="gray"/>
+    <functioncall functionName="gv"/>
+    <functioncall functionName="h"/>
+    <functioncall functionName="hasAlphaChannel"/>
+    <functioncall functionName="head"/>
+    <functioncall functionName="height"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="image"/>
+    <functioncall functionName="insert"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="isNull"/>
+    <functioncall functionName="isdigit"/>
+    <functioncall functionName="isspace"/>
+    <functioncall functionName="left"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="line"/>
+    <functioncall functionName="mcc"/>
+    <functioncall functionName="mx"/>
+    <functioncall functionName="number"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="pbm_bpl"/>
+    <functioncall functionName="peek"/>
+    <functioncall functionName="qBlue"/>
+    <functioncall functionName="qGray"/>
+    <functioncall functionName="qGreen"/>
+    <functioncall functionName="qRed"/>
+    <functioncall functionName="qRgb"/>
+    <functioncall functionName="qWarning"/>
+    <functioncall functionName="r"/>
+    <functioncall functionName="raw"/>
+    <functioncall functionName="read"/>
+    <functioncall functionName="readHeader"/>
+    <functioncall functionName="readLine"/>
+    <functioncall functionName="read_pbm_body"/>
+    <functioncall functionName="read_pbm_header"/>
+    <functioncall functionName="read_pbm_int"/>
+    <functioncall functionName="reinterpret_cast"/>
+    <functioncall functionName="res"/>
+    <functioncall functionName="rgb"/>
+    <functioncall functionName="rv"/>
+    <functioncall functionName="scale_pbm_color"/>
+    <functioncall functionName="scanLine"/>
+    <functioncall functionName="setColor"/>
+    <functioncall functionName="setColorCount"/>
+    <functioncall functionName="setFormat"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="sourceFormat"/>
+    <functioncall functionName="sourceImage"/>
+    <functioncall functionName="state"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="subType"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="toArgb32"/>
+    <functioncall functionName="toByteArray"/>
+    <functioncall functionName="toLower"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="uchar"/>
+    <functioncall functionName="uint"/>
+    <functioncall functionName="w"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="width"/>
+    <functioncall functionName="write"/>
+    <functioncall functionName="write_pbm_image"/>
+    <functioncall functionName="y"/>
+  </FileInfo>
+</analyzerinfo>

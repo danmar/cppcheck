@@ -1,0 +1,159 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2599555926">
+        <error id="missingOverride" severity="style" msg="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="106" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="286" column="18" info="Virtual function in base class"/>
+            <symbol>bughuntingReport</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="107" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="256" column="18" info="Virtual function in base class"/>
+            <symbol>reportOut</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="108" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="264" column="18" info="Virtual function in base class"/>
+            <symbol>reportErr</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;run&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;run&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testoptions.cpp" line="28" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="51" column="18" info="Virtual function in base class"/>
+            <symbol>run</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="29" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="30" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="31" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="33" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="34" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="35" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="36" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="37" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="38" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="39" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="67" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="80" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="TestOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="21" col="1" hash="3255471746726992532"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="29" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="30" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="31" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="33" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="34" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="35" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="36" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="37" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="38" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="39" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="67" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="80" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="TestOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testoptions.cpp" line="21" col="1" hash="1554525967642885892"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="run" lineNumber="28"/>
+    <functiondecl functionName="which_test" lineNumber="43"/>
+    <functiondecl functionName="which_test_method" lineNumber="50"/>
+    <functiondecl functionName="no_test_method" lineNumber="57"/>
+    <functiondecl functionName="not_quiet" lineNumber="64"/>
+    <functiondecl functionName="quiet" lineNumber="71"/>
+    <functiondecl functionName="not_help" lineNumber="77"/>
+    <functiondecl functionName="help" lineNumber="84"/>
+    <functiondecl functionName="help_long" lineNumber="91"/>
+    <functiondecl functionName="multiple_testcases" lineNumber="97"/>
+    <functiondecl functionName="multiple_testcases_ignore_duplicates" lineNumber="104"/>
+    <functiondecl functionName="invalid_switches" lineNumber="111"/>
+    <functiondecl functionName="run" lineNumber="28"/>
+    <functiondecl functionName="which_test" lineNumber="43"/>
+    <functiondecl functionName="which_test_method" lineNumber="50"/>
+    <functiondecl functionName="no_test_method" lineNumber="57"/>
+    <functiondecl functionName="not_quiet" lineNumber="64"/>
+    <functiondecl functionName="quiet" lineNumber="71"/>
+    <functiondecl functionName="not_help" lineNumber="77"/>
+    <functiondecl functionName="help" lineNumber="84"/>
+    <functiondecl functionName="help_long" lineNumber="91"/>
+    <functiondecl functionName="multiple_testcases" lineNumber="97"/>
+    <functiondecl functionName="multiple_testcases_ignore_duplicates" lineNumber="104"/>
+    <functiondecl functionName="invalid_switches" lineNumber="111"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="ErrorMessage"/>
+    <functioncall functionName="FileLocation"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="NO_LINE"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="Suppression"/>
+    <functioncall functionName="TestFixture"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="args"/>
+    <functioncall functionName="argv"/>
+    <functioncall functionName="assertEquals"/>
+    <functioncall functionName="assertEqualsFailed"/>
+    <functioncall functionName="assert_"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="column"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="emptyString"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorId"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="fileIndex"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="find_first_of"/>
+    <functioncall functionName="hash"/>
+    <functioncall functionName="help"/>
+    <functioncall functionName="help_long"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="info"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="invalid_switches"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="line"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="linenr"/>
+    <functioncall functionName="mFileName"/>
+    <functioncall functionName="mInfo"/>
+    <functioncall functionName="mOrigFileName"/>
+    <functioncall functionName="matched"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="multiple_testcases"/>
+    <functioncall functionName="multiple_testcases_ignore_duplicates"/>
+    <functioncall functionName="no_test_method"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="not_help"/>
+    <functioncall functionName="not_quiet"/>
+    <functioncall functionName="options"/>
+    <functioncall functionName="other"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="plistFooter"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="prepareTest"/>
+    <functioncall functionName="quiet"/>
+    <functioncall functionName="reportErr"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="setVerbose"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="stage"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="symbolName"/>
+    <functioncall functionName="thisAndNextLine"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="v"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="which_test"/>
+    <functioncall functionName="which_test_method"/>
+    <functioncall functionName="while"/>
+  </FileInfo>
+</analyzerinfo>

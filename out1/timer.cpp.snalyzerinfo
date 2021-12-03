@@ -1,0 +1,10 @@
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+more_second_sec call:[seconds] noreturn:[seconds]
+showResults call:[begin,data,end,seconds,sort]
+addResults
+Timer call:[clock] noreturn:[clock]
+Timer call:[stop] noreturn:[stop]
+stop call:[addResults,clock] noreturn:[addResults]

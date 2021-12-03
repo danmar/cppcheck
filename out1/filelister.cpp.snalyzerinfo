@@ -1,0 +1,24 @@
+recursiveAddFiles call:[recursiveAddFiles] noreturn:[recursiveAddFiles]
+acceptFile call:[acceptFile] noreturn:[acceptFile]
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+addFiles2 call:[acceptFile,addFiles2,c_str,closedir,empty,isDirectory,length,match,opendir,readdir_r,reserve,sizeof,stat,strcmp,to_string] noreturn:[closedir,to_string]
+recursiveAddFiles call:[addFiles] noreturn:[addFiles]
+addFiles call:[addFiles2,empty,end,endsWith,erase] noreturn:[addFiles2,erase]
+isDirectory call:[c_str,return,stat] noreturn:[return]
+fileExists call:[c_str,return,stat] noreturn:[return]

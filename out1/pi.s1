@@ -1,0 +1,10 @@
+pi_next_lrcp
+pi_next_rlcp
+pi_next_rpcl call:[int_ceildiv,int_floordivpow2,int_min] noreturn:[int_min]
+pi_next_pcrl call:[int_ceildiv,int_floordivpow2,int_min] noreturn:[int_min]
+pi_next_cprl call:[int_ceildiv,int_floordivpow2,int_min] noreturn:[int_min]
+pi_create_decode call:[int_ceildiv,int_ceildivpow2,int_floordivpow2,int_max,int_min,opj_calloc,pi_destroy,sizeof]
+pi_initialise_encode call:[int_ceildiv,int_ceildivpow2,int_floordivpow2,int_max,int_min,opj_calloc,opj_malloc,pi_destroy,sizeof] noreturn:[int_min]
+pi_destroy call:[opj_free] noreturn:[opj_free]
+pi_next call:[pi_next_cprl,pi_next_lrcp,pi_next_pcrl,pi_next_rlcp,pi_next_rpcl]
+pi_create_encode call:[strncpy]

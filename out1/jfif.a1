@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3093461246">
+        <error id="syntaxError" severity="error" msg="Code &apos;std::ostream&apos; is invalid C code. Use --std or --language to configure the language." verbose="Code &apos;std::ostream&apos; is invalid C code. Use --std or --language to configure the language." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-19888/jfif.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\color.h" line="41" column="13"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Code &apos;std::string&apos; is invalid C code. Use --std or --language to configure the language." verbose="Code &apos;std::string&apos; is invalid C code. Use --std or --language to configure the language." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-19888/jfif.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\color.h" line="43" column="1"/>
+        </error>
+</analyzerinfo>

@@ -1,0 +1,66 @@
+getInputSize
+getOutputSize
+getDomainMin
+getDomainMax
+getRangeMin
+getRangeMax
+getHasRange
+copy call:[IdentityFunction] noreturn:[IdentityFunction]
+getType
+isOk
+copy call:[SampledFunction] noreturn:[SampledFunction]
+getType
+isOk
+getSampleSize
+getEncodeMin
+getEncodeMax
+getDecodeMin
+getDecodeMax
+getSamples
+copy call:[ExponentialFunction] noreturn:[ExponentialFunction]
+getType
+isOk
+getC0
+getC1
+getE
+copy call:[StitchingFunction] noreturn:[StitchingFunction]
+getType
+isOk
+getNumFuncs
+getFunc
+getBounds
+getEncode
+getScale
+copy call:[PostScriptFunction] noreturn:[PostScriptFunction]
+getType
+isOk
+getCodeString
+Function
+Function
+parse call:[ExponentialFunction,IdentityFunction,PostScriptFunction,SampledFunction,StitchingFunction,error,free,getDict,getInt,isDict,isInt,isName,isOk,isStream,lookup,streamGetDict] noreturn:[ExponentialFunction,IdentityFunction,PostScriptFunction,SampledFunction,StitchingFunction,getDict,streamGetDict]
+init call:[arrayGet,arrayGetLength,error,free,getNum,isArray,isNum,lookup] noreturn:[free]
+IdentityFunction
+IdentityFunction
+transform
+SampledFunction call:[arrayGet,arrayGetLength,close,error,free,getChar,getInt,getNum,getStream,gmallocn,init,isArray,isInt,isNum,isStream,lookup,pow,reset,sizeof,transform] noreturn:[free,getChar]
+SampledFunction call:[gfree] noreturn:[gfree]
+SampledFunction call:[gmallocn,memcpy,sizeof] noreturn:[gmallocn]
+transform
+ExponentialFunction call:[arrayGet,arrayGetLength,error,free,getNum,init,isArray,isNum,lookup] noreturn:[free]
+ExponentialFunction
+ExponentialFunction call:[memcpy,sizeof] noreturn:[memcpy]
+transform call:[pow]
+StitchingFunction call:[arrayGet,arrayGetLength,error,free,getInputSize,getNum,getOutputSize,gmallocn,init,isArray,isNum,lookup,parse,sizeof] noreturn:[free]
+StitchingFunction call:[copy,gmallocn,memcpy,sizeof] noreturn:[copy]
+StitchingFunction call:[gfree] noreturn:[gfree]
+transform call:[transform] noreturn:[transform]
+PostScriptFunction call:[GList,GString,append,close,cmp,deleteGList,error,get,getLength,getStream,getToken,init,isStream,parseCode,reset,transform] noreturn:[append]
+PostScriptFunction call:[copy,gmallocn,memcpy,sizeof] noreturn:[memcpy]
+PostScriptFunction call:[gfree]
+transform call:[error,exec]
+parseCode global:[psOpNames] call:[addCode,addCodeD,addCodeI,atof,cmp,error,get,getCString,getLength,isdigit,parseCode,sizeof] noreturn:[addCode,addCodeD]
+addCode call:[greallocn,sizeof] noreturn:[greallocn]
+addCodeI call:[greallocn,sizeof] noreturn:[greallocn]
+addCodeD call:[greallocn,sizeof] noreturn:[greallocn]
+getToken call:[GString,append,getChar,isalnum,isdigit,isspace,lookChar] noreturn:[append]
+exec call:[atan2,ceil,cos,error,fabs,floor,log,log10,pow,sin,sqrt]

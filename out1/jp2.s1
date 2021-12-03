@@ -1,0 +1,4 @@
+IsJ2K call:[memcmp,return] noreturn:[return]
+IsJP2 call:[memcmp,return] noreturn:[return]
+RegisterJP2Image call:[AcquireMagickInfo,ConstantString,RegisterMagickInfo,return] noreturn:[ConstantString,return]
+UnregisterJP2Image call:[UnregisterMagickInfo] noreturn:[UnregisterMagickInfo]

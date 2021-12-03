@@ -1,0 +1,315 @@
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+setDirectives
+getDirectives
+setFile0
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+CWE
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+TestPreprocessor call:[enable] noreturn:[enable]
+expandMacros call:[DUI,TokenList,istr,p,preprocess,reportOutput,stringify,tokens2] noreturn:[reportOutput,stringify]
+run call:[Bug2190219,conditionalDefine,defdef,define_if1,define_if2,define_if3,define_if4,define_if5,define_if6,define_ifdef,define_ifndef1,define_ifndef2,define_part_of_func,dup_defines,elif,endfile,endifsemicolon,error1,error2,error3,error4,error5,error6,error7,error8,garbage,getConfigs1,getConfigs10,getConfigs11,getConfigs2,getConfigs3,getConfigs4,getConfigs5,getConfigs7,getConfigs7a,getConfigs7b,getConfigs7c,getConfigs7d,getConfigs7e,getConfigs8,getConfigsD1,getConfigsError,getConfigsU1,getConfigsU2,getConfigsU3,getConfigsU4,getConfigsU5,getConfigsU6,getConfigsU7,handle_error,if0,if1,if_cond1,if_cond10,if_cond11,if_cond12,if_cond13,if_cond14,if_cond2,if_cond3,if_cond4,if_cond5,if_cond6,if_cond8,if_cond9,if_macro_eq_macro,if_or_1,if_or_2,if_sizeof,ifdef_ifdefined,ifdefwithfile,ifndef_define,includeguard1,includeguard2,inline_suppression_for_missing_include,invalidElIf,invalid_define_1,invalid_define_2,invalid_ifs,macroInMacro1,macroInMacro2,macro_NULL,macro_incdec,macro_linenumbers,macro_nopar,macro_parameters,macro_simple1,macro_simple10,macro_simple11,macro_simple12,macro_simple13,macro_simple14,macro_simple15,macro_simple16,macro_simple17,macro_simple18,macro_simple2,macro_simple3,macro_simple4,macro_simple5,macro_simple6,macro_simple7,macro_simple8,macro_simple9,macro_switchCase,missing_doublequote,multi_character_character,newline_in_macro,pragma,pragma_asm_1,pragma_asm_2,predefine1,predefine2,predefine3,predefine4,predefine5,prepareTest,preprocessor_doublesharp,preprocessor_include_in_str,preprocessor_undef,redundant_config,setPlatformInfo,setVerbose,string1,string2,string3,stringify,stringify2,stringify3,stringify4,stringify5,testDirectiveIncludeComments,testDirectiveIncludeLocations,testDirectiveIncludeTypes,ticket_3675,ticket_3699,ticket_4922,undef_ifdef,va_args_1,va_args_3,va_args_4,va_args_5,validateCfg1,validateCfg2,while,wrongPathOnErrorDirective] noreturn:[Bug2190219,conditionalDefine,defdef,define_if1,define_if2,define_if3,define_if4,define_if5,define_if6,define_ifdef,define_ifndef1,define_ifndef2,define_part_of_func,dup_defines,elif,endfile,endifsemicolon,error1,error2,error3,error4,error5,error6,error7,error8,garbage,getConfigs1,getConfigs10,getConfigs11,getConfigs2,getConfigs3,getConfigs4,getConfigs5,getConfigs7,getConfigs7a,getConfigs7b,getConfigs7c,getConfigs7d,getConfigs7e,getConfigs8,getConfigsD1,getConfigsError,getConfigsU1,getConfigsU2,getConfigsU3,getConfigsU4,getConfigsU5,getConfigsU6,getConfigsU7,handle_error,if0,if1,if_cond1,if_cond10,if_cond11,if_cond12,if_cond13,if_cond14,if_cond2,if_cond3,if_cond4,if_cond5,if_cond6,if_cond8,if_cond9,if_macro_eq_macro,if_or_1,if_or_2,if_sizeof,ifdef_ifdefined,ifdefwithfile,ifndef_define,includeguard1,includeguard2,inline_suppression_for_missing_include,invalidElIf,invalid_define_1,invalid_define_2,invalid_ifs,macroInMacro1,macroInMacro2,macro_NULL,macro_incdec,macro_linenumbers,macro_nopar,macro_parameters,macro_simple1,macro_simple10,macro_simple11,macro_simple12,macro_simple13,macro_simple14,macro_simple15,macro_simple16,macro_simple17,macro_simple18,macro_simple2,macro_simple3,macro_simple4,macro_simple5,macro_simple6,macro_simple7,macro_simple8,macro_simple9,macro_switchCase,missing_doublequote,multi_character_character,newline_in_macro,pragma,pragma_asm_1,pragma_asm_2,predefine1,predefine2,predefine3,predefine4,predefine5,preprocessor_doublesharp,preprocessor_include_in_str,preprocessor_undef,redundant_config,setPlatformInfo,string1,string2,string3,stringify,stringify2,stringify3,stringify4,stringify5,testDirectiveIncludeComments,testDirectiveIncludeLocations,testDirectiveIncludeTypes,ticket_3675,ticket_3699,ticket_4922,undef_ifdef,va_args_1,va_args_3,va_args_4,va_args_5,validateCfg1,validateCfg2,while,wrongPathOnErrorDirective]
+preprocess global:[errout] call:[configs,find,getConfigs,getcode,istr,removeComments,setDirectives,simplifyPragmaAsm,str,string,tokens]
+getConfigsStr call:[getConfigs,insert,istr,preprocessor,removeComments,strncmp,tokens] noreturn:[insert]
+Bug2190219 call:[assertEquals,preprocess,size]
+error1 call:[assertEquals,getConfigsStr]
+error2 call:[assertEquals,getConfigsStr]
+error3 global:[errout] call:[assertEquals,code,getcode,preprocessor,str]
+error4 global:[errout] call:[assertEquals,code,getcode,preprocessor,str]
+error5 global:[errout] call:[assertEquals,code,getcode,preprocessor,str]
+error6 call:[assertEquals,getConfigsStr]
+error7 call:[assertEquals,getConfigsStr]
+error8 call:[assertEquals,getConfigsStr]
+setPlatformInfo call:[assertEquals,getcode,istr,platform,preprocessor,setPlatformInfo,tokens]
+includeguard1 call:[assertEquals,getConfigsStr]
+includeguard2 call:[assertEquals,getConfigsStr]
+ifdefwithfile call:[assertEquals,preprocess,size]
+if0 call:[assertEquals,getConfigsStr]
+if1 call:[assertEquals,getConfigsStr]
+elif call:[assertEquals,getConfigsStr]
+if_cond1 call:[getConfigsStr,todoAssertEquals] noreturn:[todoAssertEquals]
+if_cond2 call:[assertEquals,getConfigsStr,if_cond2b,if_cond2c,if_cond2d,if_cond2e] noreturn:[if_cond2e]
+if_cond2b call:[getConfigsStr,todoAssertEquals] noreturn:[todoAssertEquals]
+if_cond2c call:[getConfigsStr,todoAssertEquals] noreturn:[todoAssertEquals]
+if_cond2d call:[assertEquals,getConfigsStr]
+if_cond2e call:[assertEquals,getConfigsStr]
+if_cond3 call:[assertEquals,getConfigsStr]
+if_cond4 call:[assertEquals,getConfigsStr]
+if_cond5 call:[assertEquals,getConfigsStr]
+if_cond6 call:[assertEquals,getConfigsStr]
+if_cond8 call:[getConfigsStr,todoAssertEquals] noreturn:[todoAssertEquals]
+if_cond9 call:[assertEquals,getConfigsStr]
+if_cond10 call:[preprocess] noreturn:[preprocess]
+if_cond11 global:[errout] call:[assertEquals,preprocess,str]
+if_cond12 call:[assertEquals,getConfigsStr]
+if_cond13 call:[assertEquals,getConfigsStr]
+if_cond14 call:[assertEquals,getConfigsStr]
+if_or_1 call:[assertEquals,getConfigsStr]
+if_or_2 call:[getConfigsStr,todoAssertEquals] noreturn:[todoAssertEquals]
+if_macro_eq_macro call:[assertEquals,getConfigsStr]
+ticket_3675 call:[preprocess] noreturn:[preprocess]
+ticket_3699 call:[assertEquals,preprocess]
+ticket_4922 call:[preprocess] noreturn:[preprocess]
+macro_simple1 call:[assertEquals,expandMacros]
+macro_simple2 call:[assertEquals,expandMacros]
+macro_simple3 call:[assertEquals,expandMacros]
+macro_simple4 call:[assertEquals,expandMacros]
+macro_simple5 call:[assertEquals,expandMacros]
+macro_simple6 call:[assertEquals,expandMacros]
+macro_simple7 call:[assertEquals,expandMacros]
+macro_simple8 call:[assertEquals,expandMacros]
+macro_simple9 call:[assertEquals,expandMacros]
+macro_simple10 call:[assertEquals,expandMacros]
+macro_simple11 call:[assertEquals,expandMacros]
+macro_simple12 call:[assertEquals,expandMacros]
+macro_simple13 call:[assertEquals,expandMacros]
+macro_simple14 call:[assertEquals,expandMacros]
+macro_simple15 call:[assertEquals,expandMacros]
+macro_simple16 call:[assertEquals,expandMacros]
+macro_simple17 call:[assertEquals,expandMacros]
+macro_simple18 call:[assertEquals,expandMacros]
+macroInMacro1 call:[assertEquals,expandMacros]
+macroInMacro2 call:[assertEquals,expandMacros]
+macro_linenumbers call:[assertEquals,expandMacros]
+macro_nopar call:[assertEquals,expandMacros]
+macro_incdec call:[assertEquals,expandMacros]
+macro_switchCase call:[assertEquals,expandMacros]
+macro_NULL call:[assertEquals,expandMacros,todoAssertEquals] noreturn:[todoAssertEquals]
+string1 call:[assertEquals,preprocess,size]
+string2 call:[assertEquals,expandMacros]
+string3 call:[assertEquals,expandMacros]
+preprocessor_undef call:[assertEquals,expandMacros,getcode]
+defdef call:[assertEquals,expandMacros]
+preprocessor_doublesharp call:[assertEquals,expandMacros]
+preprocessor_include_in_str call:[assertEquals,preprocess,size]
+va_args_1 call:[assertEquals,expandMacros]
+va_args_3 call:[assertEquals,expandMacros]
+va_args_4 call:[assertEquals,expandMacros]
+va_args_5 call:[assertEquals,expandMacros]
+multi_character_character call:[assertEquals,preprocess,size]
+stringify call:[assertEquals,expandMacros]
+stringify2 call:[assertEquals,expandMacros]
+stringify3 call:[assertEquals,expandMacros]
+stringify4 call:[assertEquals,expandMacros]
+stringify5 call:[assertEquals,expandMacros]
+pragma call:[assertEquals,preprocess,size]
+pragma_asm_1 call:[assertEquals,preprocess,size]
+pragma_asm_2 call:[assertEquals,preprocess,size]
+endifsemicolon call:[assertEquals,expected,preprocess,size]
+handle_error global:[errout] call:[assertEquals,preprocess,str]
+missing_doublequote global:[errout] call:[actual,assertEquals,expandMacros,str]
+define_part_of_func global:[errout] call:[assertEquals,preprocess,size,str]
+conditionalDefine global:[errout] call:[assertEquals,preprocess,size,str]
+macro_parameters global:[errout] call:[assertEquals,preprocess,size,str]
+newline_in_macro global:[errout] call:[assertEquals,preprocess,size,str]
+ifdef_ifdefined call:[assertEquals,preprocess,size]
+define_if1 call:[assertEquals,getcode]
+define_if2 call:[assertEquals,getcode]
+define_if3 call:[assertEquals,getcode]
+define_if4 call:[assertEquals,getcode]
+define_if5 call:[assertEquals,getcode]
+define_if6 call:[assertEquals,find,getcode]
+define_ifdef call:[assertEquals,preprocess,size]
+define_ifndef1 call:[assertEquals,preprocess,size]
+define_ifndef2 call:[assertEquals,getcode]
+ifndef_define call:[assertEquals,preprocess,size]
+undef_ifdef call:[assertEquals,getcode]
+redundant_config call:[assertEquals,assert_,end,find,preprocess,size]
+endfile call:[assertEquals,preprocess,size]
+dup_defines call:[assertEquals,end,find,preprocess,size] noreturn:[assertEquals]
+invalid_define_1 call:[preprocess] noreturn:[preprocess]
+invalid_define_2 call:[preprocess] noreturn:[preprocess]
+inline_suppression_for_missing_include global:[errout] call:[assertEquals,fill,preprocess,preprocessor,src,str]
+predefine1 call:[assertEquals,getcode,src]
+predefine2 call:[assertEquals,getcode,src]
+predefine3 call:[assertEquals,getcode]
+predefine4 call:[assertEquals,getcode]
+predefine5 call:[assertEquals,getcode]
+invalidElIf call:[assertEquals,getcode]
+getConfigs1 call:[assertEquals,getConfigsStr]
+getConfigs2 call:[assertEquals,getConfigsStr]
+getConfigs3 call:[assertEquals,getConfigsStr]
+getConfigs4 call:[assertEquals,getConfigsStr]
+getConfigs5 call:[assertEquals,getConfigsStr]
+getConfigs7 call:[assertEquals,getConfigsStr]
+getConfigs7a call:[assertEquals,getConfigsStr]
+getConfigs7b call:[assertEquals,getConfigsStr]
+getConfigs7c call:[assertEquals,getConfigsStr]
+getConfigs7d call:[assertEquals,getConfigsStr]
+getConfigs7e call:[assertEquals,getConfigsStr]
+getConfigs8 call:[assertEquals,getConfigsStr]
+getConfigs10 call:[assertEquals,getConfigsStr]
+getConfigs11 call:[assertEquals,getConfigsStr]
+getConfigsError call:[assertEquals,getConfigsStr]
+getConfigsD1 call:[assertEquals,getConfigsStr]
+getConfigsU1 call:[assertEquals,getConfigsStr]
+getConfigsU2 call:[assertEquals,getConfigsStr]
+getConfigsU3 call:[assertEquals,getConfigsStr]
+getConfigsU4 call:[assertEquals,getConfigsStr]
+getConfigsU5 call:[assertEquals,getConfigsStr]
+getConfigsU6 call:[assertEquals,getConfigsStr]
+getConfigsU7 call:[assertEquals,getConfigsStr]
+validateCfg1 call:[assertEquals,files,front,macroUsage,macroUsageList,preprocessor,validateCfg]
+validateCfg2 global:[errout] call:[assertEquals,preprocess,str]
+if_sizeof call:[assertEquals,preprocess]
+invalid_ifs call:[preprocess] noreturn:[preprocess]
+garbage call:[preprocess] noreturn:[preprocess]
+wrongPathOnErrorDirective global:[errout] call:[assertEquals,code,getcode,preprocessor,str]
+testDirectiveIncludeTypes call:[assertEquals,dump,getcode,preprocessor,str]
+testDirectiveIncludeLocations call:[assertEquals,dump,getcode,preprocessor,str]
+testDirectiveIncludeComments call:[assertEquals,dump,getcode,preprocessor,str]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

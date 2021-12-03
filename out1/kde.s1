@@ -1,0 +1,2 @@
+valid_code call:[printf,readEntry]
+ignoredReturnValue call:[readEntry] noreturn:[readEntry]

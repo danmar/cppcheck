@@ -1,0 +1,382 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1299433939">
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;ValuePtr &lt; InferModel &gt;&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;ValuePtr &lt; InferModel &gt;&apos; has a constructor with 1 argument that is not explicit. Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\valueptr.h" line="46" column="5"/>
+            <symbol>ValuePtr &lt; InferModel &gt;</symbol>
+        </error>
+        <error id="useStlAlgorithm" severity="style" msg="Consider using std::any_of algorithm instead of a raw loop." verbose="Consider using std::any_of algorithm instead of a raw loop." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\utils.h" line="102" column="0"/>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp:189:29" call-funcname="compare" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp" line="217" col="30" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp:212:30" my-argnr="4"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="Interval" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp" line="24" col="1" hash="3209199182445981919"/>
+<class name="ValuePtr &lt; InferModel &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueptr.h" line="29" col="1" hash="9483898811474150812"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp:189:29" call-funcname="compare" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp" line="217" col="30" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp:212:30" my-argnr="4"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="Interval" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp" line="24" col="1" hash="3209199182445981919"/>
+<class name="ValuePtr &lt; InferModel &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueptr.h" line="29" col="1" hash="9483898811474150812"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp:189:29" call-funcname="compare" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp" line="217" col="30" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp:212:30" my-argnr="4"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="Interval" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/infer.cpp" line="24" col="1" hash="3209199182445981919"/>
+<class name="ValuePtr &lt; InferModel &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueptr.h" line="29" col="1" hash="3747619689765291118"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="str" lineNumber="30"/>
+    <functiondecl functionName="setMinValue" lineNumber="46"/>
+    <functiondecl functionName="setMaxValue" lineNumber="53"/>
+    <functiondecl functionName="isLessThan" lineNumber="60"/>
+    <functiondecl functionName="isGreaterThan" lineNumber="70"/>
+    <functiondecl functionName="isScalar" lineNumber="80"/>
+    <functiondecl functionName="empty" lineNumber="84"/>
+    <functiondecl functionName="isScalarOrEmpty" lineNumber="88"/>
+    <functiondecl functionName="getScalar" lineNumber="92"/>
+    <functiondecl functionName="getScalarRef" lineNumber="98"/>
+    <functiondecl functionName="fromInt" lineNumber="106"/>
+    <functiondecl functionName="fromValues" lineNumber="138"/>
+    <functiondecl functionName="merge" lineNumber="157"/>
+    <functiondecl functionName="equal" lineNumber="176"/>
+    <functiondecl functionName="compare" lineNumber="189"/>
+    <functiondecl functionName="compare" lineNumber="212"/>
+    <functiondecl functionName="toString" lineNumber="229"/>
+    <functiondecl functionName="addToErrorPath" lineNumber="233"/>
+    <functiondecl functionName="setValueKind" lineNumber="248"/>
+    <functiondecl functionName="inferNotEqual" lineNumber="266"/>
+    <functiondecl functionName="infer" lineNumber="273"/>
+    <functiondecl functionName="infer" lineNumber="348"/>
+    <functiondecl functionName="infer" lineNumber="356"/>
+    <functiondecl functionName="str" lineNumber="30"/>
+    <functiondecl functionName="setMinValue" lineNumber="46"/>
+    <functiondecl functionName="setMaxValue" lineNumber="53"/>
+    <functiondecl functionName="isLessThan" lineNumber="60"/>
+    <functiondecl functionName="isGreaterThan" lineNumber="70"/>
+    <functiondecl functionName="isScalar" lineNumber="80"/>
+    <functiondecl functionName="empty" lineNumber="84"/>
+    <functiondecl functionName="isScalarOrEmpty" lineNumber="88"/>
+    <functiondecl functionName="getScalar" lineNumber="92"/>
+    <functiondecl functionName="getScalarRef" lineNumber="98"/>
+    <functiondecl functionName="fromInt" lineNumber="106"/>
+    <functiondecl functionName="fromValues" lineNumber="138"/>
+    <functiondecl functionName="merge" lineNumber="157"/>
+    <functiondecl functionName="equal" lineNumber="176"/>
+    <functiondecl functionName="compare" lineNumber="189"/>
+    <functiondecl functionName="compare" lineNumber="212"/>
+    <functiondecl functionName="toString" lineNumber="229"/>
+    <functiondecl functionName="addToErrorPath" lineNumber="233"/>
+    <functiondecl functionName="setValueKind" lineNumber="248"/>
+    <functiondecl functionName="inferNotEqual" lineNumber="266"/>
+    <functiondecl functionName="infer" lineNumber="273"/>
+    <functiondecl functionName="infer" lineNumber="348"/>
+    <functiondecl functionName="infer" lineNumber="356"/>
+    <functiondecl functionName="str" lineNumber="30"/>
+    <functiondecl functionName="setMinValue" lineNumber="46"/>
+    <functiondecl functionName="setMaxValue" lineNumber="53"/>
+    <functiondecl functionName="isLessThan" lineNumber="60"/>
+    <functiondecl functionName="isGreaterThan" lineNumber="70"/>
+    <functiondecl functionName="isScalar" lineNumber="80"/>
+    <functiondecl functionName="empty" lineNumber="84"/>
+    <functiondecl functionName="isScalarOrEmpty" lineNumber="88"/>
+    <functiondecl functionName="getScalar" lineNumber="92"/>
+    <functiondecl functionName="getScalarRef" lineNumber="98"/>
+    <functiondecl functionName="fromInt" lineNumber="106"/>
+    <functiondecl functionName="fromValues" lineNumber="138"/>
+    <functiondecl functionName="merge" lineNumber="157"/>
+    <functiondecl functionName="equal" lineNumber="176"/>
+    <functiondecl functionName="compare" lineNumber="189"/>
+    <functiondecl functionName="compare" lineNumber="212"/>
+    <functiondecl functionName="toString" lineNumber="229"/>
+    <functiondecl functionName="addToErrorPath" lineNumber="233"/>
+    <functiondecl functionName="setValueKind" lineNumber="248"/>
+    <functiondecl functionName="inferNotEqual" lineNumber="266"/>
+    <functiondecl functionName="infer" lineNumber="273"/>
+    <functiondecl functionName="infer" lineNumber="348"/>
+    <functiondecl functionName="infer" lineNumber="356"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="Address"/>
+    <functioncall functionName="Argument"/>
+    <functioncall functionName="BAILOUT"/>
+    <functioncall functionName="BREAK"/>
+    <functioncall functionName="BUFFER_SIZE"/>
+    <functioncall functionName="CONTAINER_SIZE"/>
+    <functioncall functionName="ChildrenToVisit"/>
+    <functioncall functionName="ForwardedVariable"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INT"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="ITERATOR_END"/>
+    <functioncall functionName="ITERATOR_START"/>
+    <functioncall functionName="Impossible"/>
+    <functioncall functionName="Inconclusive"/>
+    <functioncall functionName="InferModel"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="Iterator"/>
+    <functioncall functionName="Known"/>
+    <functioncall functionName="KnownAndToken"/>
+    <functioncall functionName="LIFETIME"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="Lambda"/>
+    <functioncall functionName="LifetimeToken"/>
+    <functioncall functionName="Local"/>
+    <functioncall functionName="Lower"/>
+    <functioncall functionName="MOVED"/>
+    <functioncall functionName="MovedVariable"/>
+    <functioncall functionName="N"/>
+    <functioncall functionName="NONE"/>
+    <functioncall functionName="NonMovedVariable"/>
+    <functioncall functionName="Object"/>
+    <functioncall functionName="Point"/>
+    <functioncall functionName="Possible"/>
+    <functioncall functionName="READ"/>
+    <functioncall functionName="RETURN"/>
+    <functioncall functionName="Reassign"/>
+    <functioncall functionName="ReferenceToken"/>
+    <functioncall functionName="Result"/>
+    <functioncall functionName="SYMBOLIC"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="SubFunction"/>
+    <functioncall functionName="SubObject"/>
+    <functioncall functionName="T"/>
+    <functioncall functionName="TOK"/>
+    <functioncall functionName="Token"/>
+    <functioncall functionName="U"/>
+    <functioncall functionName="UNINIT"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="UnusedValue"/>
+    <functioncall functionName="Upper"/>
+    <functioncall functionName="Value"/>
+    <functioncall functionName="ValueFlow"/>
+    <functioncall functionName="ValuePtr &lt; InferModel &gt;"/>
+    <functioncall functionName="WRITE"/>
+    <functioncall functionName="_1"/>
+    <functioncall functionName="abs"/>
+    <functioncall functionName="addToErrorPath"/>
+    <functioncall functionName="addressOf"/>
+    <functioncall functionName="all_of"/>
+    <functioncall functionName="any_of"/>
+    <functioncall functionName="apply"/>
+    <functioncall functionName="assert"/>
+    <functioncall functionName="b"/>
+    <functioncall functionName="back"/>
+    <functioncall functionName="back_inserter"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="bind"/>
+    <functioncall functionName="bool"/>
+    <functioncall functionName="bound"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="calculate"/>
+    <functioncall functionName="class"/>
+    <functioncall functionName="compare"/>
+    <functioncall functionName="condition"/>
+    <functioncall functionName="conditional"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="copy_if"/>
+    <functioncall functionName="cpp"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="decltype"/>
+    <functioncall functionName="decreaseRange"/>
+    <functioncall functionName="defaultArg"/>
+    <functioncall functionName="done"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="encodeMultiChar"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endlen"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="equal"/>
+    <functioncall functionName="equalValue"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorPath"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="float"/>
+    <functioncall functionName="floatValue"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="fromInt"/>
+    <functioncall functionName="fromValues"/>
+    <functioncall functionName="front"/>
+    <functioncall functionName="get"/>
+    <functioncall functionName="getCompareValue"/>
+    <functioncall functionName="getScalar"/>
+    <functioncall functionName="getScalarRef"/>
+    <functioncall functionName="getStringCharLiteral"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="indirect"/>
+    <functioncall functionName="infer"/>
+    <functioncall functionName="inferNotEqual"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="insert"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="intvalue"/>
+    <functioncall functionName="invertBound"/>
+    <functioncall functionName="isCharLiteral"/>
+    <functioncall functionName="isEqual"/>
+    <functioncall functionName="isFloat"/>
+    <functioncall functionName="isGreaterThan"/>
+    <functioncall functionName="isImpossible"/>
+    <functioncall functionName="isInconclusive"/>
+    <functioncall functionName="isKnown"/>
+    <functioncall functionName="isLessThan"/>
+    <functioncall functionName="isLifetimeValue"/>
+    <functioncall functionName="isMovedValue"/>
+    <functioncall functionName="isPossible"/>
+    <functioncall functionName="isPrefixStringCharLiteral"/>
+    <functioncall functionName="isScalar"/>
+    <functioncall functionName="isScalarOrEmpty"/>
+    <functioncall functionName="isStringCharLiteral"/>
+    <functioncall functionName="isStringLiteral"/>
+    <functioncall functionName="isSymbolicValue"/>
+    <functioncall functionName="isUninitValue"/>
+    <functioncall functionName="isZero"/>
+    <functioncall functionName="is_arithmetic"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="lhs"/>
+    <functioncall functionName="lhsValues"/>
+    <functioncall functionName="library"/>
+    <functioncall functionName="lifetimeKind"/>
+    <functioncall functionName="lifetimeScope"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="mClone"/>
+    <functioncall functionName="mCpp"/>
+    <functioncall functionName="mDoubleValue"/>
+    <functioncall functionName="mIntValue"/>
+    <functioncall functionName="mLibrary"/>
+    <functioncall functionName="mPtr"/>
+    <functioncall functionName="mValueFlowKnown"/>
+    <functioncall functionName="mWhat"/>
+    <functioncall functionName="macro"/>
+    <functioncall functionName="match"/>
+    <functioncall functionName="maxRef"/>
+    <functioncall functionName="maxValue"/>
+    <functioncall functionName="maxvalue"/>
+    <functioncall functionName="merge"/>
+    <functioncall functionName="min"/>
+    <functioncall functionName="minRef"/>
+    <functioncall functionName="minValue"/>
+    <functioncall functionName="minvalue"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="model"/>
+    <functioncall functionName="move"/>
+    <functioncall functionName="moveKind"/>
+    <functioncall functionName="noexcept"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="notMatch"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="op"/>
+    <functioncall functionName="op1"/>
+    <functioncall functionName="op1_and_op2"/>
+    <functioncall functionName="op2"/>
+    <functioncall functionName="operatorbool"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="pred"/>
+    <functioncall functionName="predicate"/>
+    <functioncall functionName="push_back"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="ref"/>
+    <functioncall functionName="refs"/>
+    <functioncall functionName="release"/>
+    <functioncall functionName="remove_if"/>
+    <functioncall functionName="reset"/>
+    <functioncall functionName="result"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rhs"/>
+    <functioncall functionName="rhsValues"/>
+    <functioncall functionName="s"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="sameToken"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="setImpossible"/>
+    <functioncall functionName="setInconclusive"/>
+    <functioncall functionName="setKnown"/>
+    <functioncall functionName="setMaxValue"/>
+    <functioncall functionName="setMinValue"/>
+    <functioncall functionName="setPossible"/>
+    <functioncall functionName="setValueKind"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="subexpressions"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="suffixes"/>
+    <functioncall functionName="swap"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="to_string"/>
+    <functioncall functionName="token"/>
+    <functioncall functionName="tokvalue"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="v"/>
+    <functioncall functionName="val"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="valueKind"/>
+    <functioncall functionName="valueType"/>
+    <functioncall functionName="values"/>
+    <functioncall functionName="varId"/>
+    <functioncall functionName="varvalue"/>
+    <functioncall functionName="vector"/>
+    <functioncall functionName="visitValue"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="wideintvalue"/>
+    <functioncall functionName="wrap"/>
+    <functioncall functionName="x"/>
+    <functioncall functionName="y"/>
+    <functioncall functionName="yield"/>
+    <functioncall functionName="z"/>
+  </FileInfo>
+</analyzerinfo>

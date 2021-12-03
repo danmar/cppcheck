@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3917582852">
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;stdstr&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;stdstr&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong5.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong5.cc" line="15" column="5"/>
+            <symbol>stdstr</symbol>
+        </error>
+  <FileInfo check="Class">
+<class name="Test" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong5.cc" line="8" col="1" hash="17314181283867815403"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="main" lineNumber="20"/>
+    <functioncall functionName="Test"/>
+    <functioncall functionName="free"/>
+    <functioncall functionName="pI"/>
+  </FileInfo>
+</analyzerinfo>

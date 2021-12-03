@@ -1,0 +1,17 @@
+alias
+buffer_overflow
+dead_pointer
+division_by_zero
+float_to_int call:[return]
+negative_size
+no_return
+null_pointer
+pointer_arithmetic
+pointer_to_u8 call:[return]
+pointer_subtraction
+pointer_comparison
+shift_overrun
+shift_negative
+int_overflow
+string_literal
+uninit

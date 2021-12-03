@@ -1,0 +1,4 @@
+validCode call:[fprintf,printf,sqlite3_close,sqlite3_errmsg,sqlite3_free,sqlite3_malloc,sqlite3_msize,sqlite3_open] noreturn:[sqlite3_close,sqlite3_free]
+memleak_sqlite3_malloc call:[sqlite3_malloc]
+resourceLeak_sqlite3_open call:[sqlite3_open] noreturn:[sqlite3_open]
+ignoredReturnValue call:[sqlite3_malloc,sqlite3_malloc64,sqlite3_msize] noreturn:[sqlite3_msize]

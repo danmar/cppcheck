@@ -1,0 +1,2 @@
+f call:[malloc,realloc]
+main call:[f]

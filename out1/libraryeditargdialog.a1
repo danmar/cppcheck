@@ -1,0 +1,113 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2889968325">
+  <FileInfo check="Class">
+<class name="CppcheckLibraryData::Container" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="32" col="5" hash="2005264129650127191"/>
+<class name="CppcheckLibraryData::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="50" col="9" hash="9305761117681135359"/>
+<class name="CppcheckLibraryData::Define" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="60" col="5" hash="9762528397553776282"/>
+<class name="CppcheckLibraryData::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="65" col="5" hash="7709077768247235740"/>
+<class name="CppcheckLibraryData::Function::ReturnValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="76" col="9" hash="2941624480534084580"/>
+<class name="CppcheckLibraryData::Function::Arg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="89" col="9" hash="10560061904865885360"/>
+<class name="CppcheckLibraryData::Function::Arg::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="104" col="13" hash="1441677657335109401"/>
+<class name="CppcheckLibraryData::Function::Arg::Iterator" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="110" col="13" hash="5612367683987642184"/>
+<class name="CppcheckLibraryData::MemoryResource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="135" col="5" hash="510420658595555990"/>
+<class name="CppcheckLibraryData::MemoryResource::Alloc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="137" col="9" hash="3724875746971234360"/>
+<class name="CppcheckLibraryData::MemoryResource::Dealloc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="152" col="9" hash="13156322318479987015"/>
+<class name="CppcheckLibraryData::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="166" col="5" hash="9641437974410206362"/>
+<class name="CppcheckLibraryData::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="173" col="5" hash="7995025389799641861"/>
+<class name="CppcheckLibraryData::Reflection" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="182" col="5" hash="12071517381403192149"/>
+<class name="CppcheckLibraryData::Reflection::Call" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="183" col="9" hash="7919669940825108656"/>
+<class name="CppcheckLibraryData::Markup" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="195" col="5" hash="16509753476748642895"/>
+<class name="CppcheckLibraryData::Markup::CodeBlocks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="196" col="9" hash="12360601708972750268"/>
+<class name="CppcheckLibraryData::Markup::Exporter" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="207" col="9" hash="16565149977285752714"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="getArg" lineNumber="63"/>
+    <functiondecl functionName="minsizeChanged" lineNumber="92"/>
+    <functioncall functionName="Alloc"/>
+    <functioncall functionName="Arg"/>
+    <functioncall functionName="Call"/>
+    <functioncall functionName="CodeBlocks"/>
+    <functioncall functionName="Container"/>
+    <functioncall functionName="Dealloc"/>
+    <functioncall functionName="Exporter"/>
+    <functioncall functionName="False"/>
+    <functioncall functionName="Function"/>
+    <functioncall functionName="Iterator"/>
+    <functioncall functionName="LibraryEditArgDialog"/>
+    <functioncall functionName="MinSize"/>
+    <functioncall functionName="QDialog"/>
+    <functioncall functionName="QList"/>
+    <functioncall functionName="QPair"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="ReturnValue"/>
+    <functioncall functionName="True"/>
+    <functioncall functionName="Unknown"/>
+    <functioncall functionName="access_arrayLike"/>
+    <functioncall functionName="addItems"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="container"/>
+    <functioncall functionName="containers"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="currentIndex"/>
+    <functioncall functionName="currentText"/>
+    <functioncall functionName="defines"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="formatstr"/>
+    <functioncall functionName="functions"/>
+    <functioncall functionName="gccConst"/>
+    <functioncall functionName="gccPure"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="indexOf"/>
+    <functioncall functionName="init"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="isChecked"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="isNull"/>
+    <functioncall functionName="isRealloc"/>
+    <functioncall functionName="items"/>
+    <functioncall functionName="leakignore"/>
+    <functioncall functionName="mMinSizes"/>
+    <functioncall functionName="mUi"/>
+    <functioncall functionName="markups"/>
+    <functioncall functionName="memoryresource"/>
+    <functioncall functionName="minsize1"/>
+    <functioncall functionName="minsize2"/>
+    <functioncall functionName="minsizes"/>
+    <functioncall functionName="noreturn"/>
+    <functioncall functionName="notbool"/>
+    <functioncall functionName="notnull"/>
+    <functioncall functionName="notuninit"/>
+    <functioncall functionName="nr"/>
+    <functioncall functionName="number"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="platformTypes"/>
+    <functioncall functionName="podtypes"/>
+    <functioncall functionName="reallocArg"/>
+    <functioncall functionName="reflections"/>
+    <functioncall functionName="setChecked"/>
+    <functioncall functionName="setCurrentIndex"/>
+    <functioncall functionName="setEnabled"/>
+    <functioncall functionName="setText"/>
+    <functioncall functionName="setValue"/>
+    <functioncall functionName="setupUi"/>
+    <functioncall functionName="size_templateParameter"/>
+    <functioncall functionName="smartPointers"/>
+    <functioncall functionName="struct"/>
+    <functioncall functionName="strz"/>
+    <functioncall functionName="swap"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="toInt"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="typeChecks"/>
+    <functioncall functionName="undefines"/>
+    <functioncall functionName="useretval"/>
+    <functioncall functionName="valid"/>
+    <functioncall functionName="value"/>
+  </FileInfo>
+</analyzerinfo>

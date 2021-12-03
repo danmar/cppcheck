@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2869784427">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="validCode" lineNumber="12"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="20"/>
+    <functioncall functionName="CAIRO_STATUS_READ_ERROR"/>
+    <functioncall functionName="cairo1"/>
+    <functioncall functionName="cairo_create"/>
+    <functioncall functionName="cairo_destroy"/>
+    <functioncall functionName="cairo_line_to"/>
+    <functioncall functionName="cairo_move_to"/>
+    <functioncall functionName="cairo_status_to_string"/>
+    <functioncall functionName="target"/>
+  </FileInfo>
+</analyzerinfo>

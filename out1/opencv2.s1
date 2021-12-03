@@ -1,0 +1,3 @@
+validCode call:[cvStr,fastFree,fastMalloc,imread,imshow,namedWindow,printf,waitKey] noreturn:[fastFree]
+ignoredReturnValue call:[imread] noreturn:[imread]
+memleak call:[fastMalloc]

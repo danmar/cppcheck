@@ -1,0 +1,665 @@
+CWE
+Check
+Check call:[instances,remove] noreturn:[remove]
+name
+FileInfo
+FileInfo
+toString call:[string] noreturn:[string]
+getFileInfo
+loadFileInfoFromXml
+analyseWholeProgram
+reportError call:[CWE,reportError] noreturn:[reportError]
+reportError call:[callstack,reportError] noreturn:[reportError]
+reportError call:[CWE,reportError] noreturn:[reportError]
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+FwdAnalysis
+Result
+Result
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+isClass call:[setFlag] noreturn:[setFlag]
+isFunction call:[setFlag] noreturn:[setFlag]
+isVariable call:[setFlag] noreturn:[setFlag]
+isAlias call:[setFlag] noreturn:[setFlag]
+isSpecialization call:[setFlag] noreturn:[setFlag]
+isPartialSpecialization call:[setFlag] noreturn:[setFlag]
+isForwardDeclaration call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+getFlag call:[return] noreturn:[return]
+setFlag
+operator==
+token
+token
+scope
+name
+fullName
+nameToken
+paramEnd
+paramEnd
+isClass call:[getFlag] noreturn:[getFlag]
+isFunction call:[getFlag] noreturn:[getFlag]
+isVariable call:[getFlag] noreturn:[getFlag]
+isAlias call:[getFlag] noreturn:[getFlag]
+isSpecialization call:[getFlag] noreturn:[getFlag]
+isPartialSpecialization call:[getFlag] noreturn:[getFlag]
+isForwardDeclaration call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isSameFamily call:[return]
+ScopeInfo2
+TokenImpl
+str call:[update_property_info] noreturn:[update_property_info]
+str
+tokAt call:[tokAt]
+linkAt call:[linkAt]
+simpleMatch call:[simpleMatch] noreturn:[simpleMatch]
+valueType
+argumentType call:[Match,astParent] noreturn:[astParent]
+tokType
+tokType call:[setFlag] noreturn:[setFlag]
+isKeyword
+isName call:[getFlag] noreturn:[getFlag]
+isNameOnly
+isLiteral call:[getFlag] noreturn:[getFlag]
+isNumber
+isEnumerator
+isOp call:[isAssignmentOp,isConstOp,return] noreturn:[return]
+isConstOp call:[isArithmeticalOp,return] noreturn:[return]
+isExtendedOp call:[isConstOp]
+isArithmeticalOp
+isComparisonOp
+isAssignmentOp
+isBoolean
+isIncDecOp
+isBinaryOp call:[astOperand1,astOperand2]
+isUnaryOp call:[astOperand1,astOperand2]
+flags
+flags
+isUnsigned call:[getFlag] noreturn:[getFlag]
+isUnsigned call:[setFlag] noreturn:[setFlag]
+isSigned call:[getFlag] noreturn:[getFlag]
+isSigned call:[setFlag] noreturn:[setFlag]
+isPointerCompare call:[getFlag] noreturn:[getFlag]
+isPointerCompare call:[setFlag] noreturn:[setFlag]
+isLong call:[getFlag] noreturn:[getFlag]
+isLong call:[setFlag] noreturn:[setFlag]
+isStandardType call:[getFlag] noreturn:[getFlag]
+isStandardType call:[setFlag] noreturn:[setFlag]
+isExpandedMacro call:[getFlag] noreturn:[getFlag]
+isExpandedMacro call:[setFlag] noreturn:[setFlag]
+isCast call:[getFlag] noreturn:[getFlag]
+isCast call:[setFlag] noreturn:[setFlag]
+isAttributeConstructor call:[getFlag] noreturn:[getFlag]
+isAttributeConstructor call:[setFlag] noreturn:[setFlag]
+isAttributeDestructor call:[getFlag] noreturn:[getFlag]
+isAttributeDestructor call:[setFlag] noreturn:[setFlag]
+isAttributeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeUnused call:[setFlag] noreturn:[setFlag]
+isAttributeUsed call:[getFlag] noreturn:[getFlag]
+isAttributeUsed call:[setFlag] noreturn:[setFlag]
+isAttributePure call:[getFlag] noreturn:[getFlag]
+isAttributePure call:[setFlag] noreturn:[setFlag]
+isAttributeConst call:[getFlag] noreturn:[getFlag]
+isAttributeConst call:[setFlag] noreturn:[setFlag]
+isAttributeNoreturn call:[getFlag] noreturn:[getFlag]
+isAttributeNoreturn call:[setFlag] noreturn:[setFlag]
+isAttributeNothrow call:[getFlag] noreturn:[getFlag]
+isAttributeNothrow call:[setFlag] noreturn:[setFlag]
+isAttributePacked call:[getFlag] noreturn:[getFlag]
+isAttributePacked call:[setFlag] noreturn:[setFlag]
+isAttributeNodiscard call:[getFlag] noreturn:[getFlag]
+isAttributeNodiscard call:[setFlag] noreturn:[setFlag]
+isAttributeMaybeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeMaybeUnused call:[setFlag] noreturn:[setFlag]
+setCppcheckAttribute call:[setCppcheckAttribute] noreturn:[setCppcheckAttribute]
+getCppcheckAttribute call:[getCppcheckAttribute] noreturn:[getCppcheckAttribute]
+hasCppcheckAttributes
+isControlFlowKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[setFlag] noreturn:[setFlag]
+isComplex call:[getFlag] noreturn:[getFlag]
+isComplex call:[setFlag] noreturn:[setFlag]
+isEnumType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[setFlag] noreturn:[setFlag]
+isAtAddress call:[getFlag] noreturn:[getFlag]
+isAtAddress call:[setFlag] noreturn:[setFlag]
+isIncompleteVar call:[getFlag] noreturn:[getFlag]
+isIncompleteVar call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+isExternC call:[getFlag] noreturn:[getFlag]
+isExternC call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclComma call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclComma call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclEq call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclEq call:[setFlag] noreturn:[setFlag]
+isImplicitInt call:[getFlag] noreturn:[getFlag]
+isImplicitInt call:[setFlag] noreturn:[setFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isInline call:[setFlag] noreturn:[setFlag]
+isTemplate call:[getFlag] noreturn:[getFlag]
+isTemplate call:[setFlag] noreturn:[setFlag]
+isBitfield
+bits
+templateSimplifierPointers
+templateSimplifierPointer call:[insert] noreturn:[insert]
+setBits
+isUtf8 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf16 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf32 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isCChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isCMultiChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isTemplateArg call:[getFlag] noreturn:[getFlag]
+isTemplateArg call:[setFlag] noreturn:[setFlag]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findmatch call:[findmatch]
+findmatch call:[findmatch]
+fileIndex
+fileIndex
+linenr
+linenr
+column
+column
+next
+previous
+varId
+varId call:[isStandardType,tokType,update_property_info] noreturn:[isStandardType,update_property_info]
+exprId
+exprId
+forDebug
+forDebugVarId call:[forDebug]
+forDebugExprId call:[forDebug]
+forPrintOut call:[forDebug]
+link call:[update_property_info] noreturn:[update_property_info]
+link
+scope
+scope
+function
+variable call:[tokType] noreturn:[tokType]
+variable
+type
+enumerator
+enumerator call:[tokType] noreturn:[tokType]
+progressValue
+originalName global:[emptyString]
+values
+originalName call:[string] noreturn:[string]
+getKnownIntValue call:[front]
+removeValues call:[remove_if] noreturn:[remove_if]
+index
+next
+previous
+getFlag call:[return] noreturn:[return]
+setFlag
+astOperand1
+astOperand1
+astOperand2
+astOperand2
+astParent
+astParent
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astTop
+astTop
+clearAst
+clearValueFlow
+astString call:[astString] noreturn:[astString]
+setCpp11init
+isCpp11init
+setSettings
+getSettings
+isC
+isCPP
+front
+front
+back
+back
+getFiles
+find call:[find] noreturn:[find]
+end call:[end] noreturn:[end]
+map
+getVarId
+setTimerResults
+isC call:[isC] noreturn:[isC]
+isCPP call:[isCPP] noreturn:[isCPP]
+setPreprocessor
+getPreprocessor
+codeWithTemplates
+setSettings call:[setSettings] noreturn:[setSettings]
+getSymbolDatabase
+varIdCount
+tokens call:[front] noreturn:[front]
+isMaxTime
+getSettings
+newVarId
+TestGarbage
+run call:[cliCode,enumTrailingComma,fill,final_class_x,garbageAST,garbageCode1,garbageCode10,garbageCode100,garbageCode101,garbageCode102,garbageCode103,garbageCode104,garbageCode105,garbageCode106,garbageCode107,garbageCode108,garbageCode109,garbageCode110,garbageCode111,garbageCode112,garbageCode114,garbageCode115,garbageCode116,garbageCode117,garbageCode118,garbageCode119,garbageCode12,garbageCode120,garbageCode121,garbageCode122,garbageCode123,garbageCode125,garbageCode126,garbageCode127,garbageCode128,garbageCode129,garbageCode13,garbageCode130,garbageCode131,garbageCode132,garbageCode133,garbageCode134,garbageCode135,garbageCode136,garbageCode137,garbageCode138,garbageCode139,garbageCode140,garbageCode141,garbageCode142,garbageCode143,garbageCode144,garbageCode146,garbageCode147,garbageCode148,garbageCode149,garbageCode15,garbageCode150,garbageCode151,garbageCode152,garbageCode153,garbageCode154,garbageCode156,garbageCode157,garbageCode158,garbageCode159,garbageCode16,garbageCode160,garbageCode161,garbageCode162,garbageCode163,garbageCode164,garbageCode165,garbageCode167,garbageCode168,garbageCode169,garbageCode17,garbageCode170,garbageCode171,garbageCode172,garbageCode173,garbageCode174,garbageCode175,garbageCode176,garbageCode18,garbageCode181,garbageCode182,garbageCode183,garbageCode184,garbageCode185,garbageCode186,garbageCode187,garbageCode188,garbageCode189,garbageCode190,garbageCode191,garbageCode192,garbageCode193,garbageCode194,garbageCode195,garbageCode196,garbageCode197,garbageCode198,garbageCode199,garbageCode2,garbageCode20,garbageCode200,garbageCode201,garbageCode202,garbageCode203,garbageCode204,garbageCode205,garbageCode206,garbageCode207,garbageCode208,garbageCode209,garbageCode21,garbageCode210,garbageCode211,garbageCode212,garbageCode213,garbageCode214,garbageCode215,garbageCode216,garbageCode217,garbageCode22,garbageCode23,garbageCode24,garbageCode25,garbageCode26,garbageCode27,garbageCode28,garbageCode3,garbageCode30,garbageCode31,garbageCode33,garbageCode34,garbageCode35,garbageCode36,garbageCode37,garbageCode38,garbageCode4,garbageCode40,garbageCode41,garbageCode42,garbageCode43,garbageCode44,garbageCode45,garbageCode46,garbageCode47,garbageCode48,garbageCode49,garbageCode5,garbageCode51,garbageCode53,garbageCode54,garbageCode55,garbageCode56,garbageCode57,garbageCode58,garbageCode59,garbageCode6,garbageCode60,garbageCode61,garbageCode63,garbageCode64,garbageCode65,garbageCode66,garbageCode68,garbageCode69,garbageCode7,garbageCode70,garbageCode71,garbageCode72,garbageCode73,garbageCode74,garbageCode76,garbageCode77,garbageCode78,garbageCode79,garbageCode8,garbageCode80,garbageCode81,garbageCode82,garbageCode83,garbageCode84,garbageCode85,garbageCode86,garbageCode87,garbageCode88,garbageCode9,garbageCode90,garbageCode91,garbageCode92,garbageCode94,garbageCode95,garbageCode96,garbageCode97,garbageCode98,garbageCode99,garbageCodeFuzzerClientMode1,garbageSymbolDatabase,garbageValueFlow,nonGarbageCode1,prepareTest,setVerbose,syntaxErrorCase,syntaxErrorFirstToken,syntaxErrorFuzzerCliType1,syntaxErrorLastToken,syntax_case_default,templateSimplifierCrashes,while,wrong_syntax1,wrong_syntax2,wrong_syntax3,wrong_syntax4,wrong_syntax_anonymous_struct,wrong_syntax_class_x_y,wrong_syntax_if_macro] noreturn:[cliCode,enumTrailingComma,final_class_x,garbageAST,garbageCode1,garbageCode10,garbageCode100,garbageCode101,garbageCode102,garbageCode103,garbageCode104,garbageCode105,garbageCode106,garbageCode107,garbageCode108,garbageCode109,garbageCode110,garbageCode111,garbageCode112,garbageCode114,garbageCode115,garbageCode116,garbageCode117,garbageCode118,garbageCode119,garbageCode12,garbageCode120,garbageCode121,garbageCode122,garbageCode123,garbageCode125,garbageCode126,garbageCode127,garbageCode128,garbageCode129,garbageCode13,garbageCode130,garbageCode131,garbageCode132,garbageCode133,garbageCode134,garbageCode135,garbageCode136,garbageCode137,garbageCode138,garbageCode139,garbageCode140,garbageCode141,garbageCode142,garbageCode143,garbageCode144,garbageCode146,garbageCode147,garbageCode148,garbageCode149,garbageCode15,garbageCode150,garbageCode151,garbageCode152,garbageCode153,garbageCode154,garbageCode156,garbageCode157,garbageCode158,garbageCode159,garbageCode16,garbageCode160,garbageCode161,garbageCode162,garbageCode163,garbageCode164,garbageCode165,garbageCode167,garbageCode168,garbageCode169,garbageCode17,garbageCode170,garbageCode171,garbageCode172,garbageCode173,garbageCode174,garbageCode175,garbageCode176,garbageCode18,garbageCode181,garbageCode182,garbageCode183,garbageCode184,garbageCode185,garbageCode186,garbageCode187,garbageCode188,garbageCode189,garbageCode190,garbageCode191,garbageCode192,garbageCode193,garbageCode194,garbageCode195,garbageCode196,garbageCode197,garbageCode198,garbageCode199,garbageCode2,garbageCode20,garbageCode200,garbageCode201,garbageCode202,garbageCode203,garbageCode204,garbageCode205,garbageCode206,garbageCode207,garbageCode208,garbageCode209,garbageCode21,garbageCode210,garbageCode211,garbageCode212,garbageCode213,garbageCode214,garbageCode215,garbageCode216,garbageCode217,garbageCode22,garbageCode23,garbageCode24,garbageCode25,garbageCode26,garbageCode27,garbageCode28,garbageCode3,garbageCode30,garbageCode31,garbageCode33,garbageCode34,garbageCode35,garbageCode36,garbageCode37,garbageCode38,garbageCode4,garbageCode40,garbageCode41,garbageCode42,garbageCode43,garbageCode44,garbageCode45,garbageCode46,garbageCode47,garbageCode48,garbageCode49,garbageCode5,garbageCode51,garbageCode53,garbageCode54,garbageCode55,garbageCode56,garbageCode57,garbageCode58,garbageCode59,garbageCode6,garbageCode60,garbageCode61,garbageCode63,garbageCode64,garbageCode65,garbageCode66,garbageCode68,garbageCode69,garbageCode7,garbageCode70,garbageCode71,garbageCode72,garbageCode73,garbageCode74,garbageCode76,garbageCode77,garbageCode78,garbageCode79,garbageCode8,garbageCode80,garbageCode81,garbageCode82,garbageCode83,garbageCode84,garbageCode85,garbageCode86,garbageCode87,garbageCode88,garbageCode9,garbageCode90,garbageCode91,garbageCode92,garbageCode94,garbageCode95,garbageCode96,garbageCode97,garbageCode98,garbageCode99,garbageCodeFuzzerClientMode1,garbageSymbolDatabase,garbageValueFlow,nonGarbageCode1,syntaxErrorCase,syntaxErrorFirstToken,syntaxErrorFuzzerCliType1,syntaxErrorLastToken,syntax_case_default,templateSimplifierCrashes,while,wrong_syntax1,wrong_syntax2,wrong_syntax3,wrong_syntax4,wrong_syntax_anonymous_struct,wrong_syntax_class_x_y,wrong_syntax_if_macro]
+checkCode call:[checkCodeInternal_] noreturn:[checkCodeInternal_]
+checkCodeInternal_ global:[errout] call:[assert_,begin,end,instances,istr,runChecks,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[runChecks,stringifyList]
+getSyntaxError_ call:[assert_,istr,linenr,toString,tokenize,tokenizer] noreturn:[assert_]
+final_class_x global:[errout] call:[assertEquals,assert_,istr,str,tokenize,tokenizer]
+wrong_syntax1 global:[errout] call:[assertEquals,assertThrowFail,checkCode,str,while] noreturn:[assertThrowFail,while]
+wrong_syntax2 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+wrong_syntax3 call:[assertEquals,assertThrowFail,assert_,istr,linenr,tokenize,tokenizer] noreturn:[assertThrowFail]
+wrong_syntax4 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+wrong_syntax_if_macro call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+wrong_syntax_class_x_y global:[errout] call:[assertEquals,assert_,istr,str,tokenize,tokenizer]
+wrong_syntax_anonymous_struct call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+syntax_case_default call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode1 call:[checkCode] noreturn:[checkCode]
+garbageCode2 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode3 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode4 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode5 call:[checkCode] noreturn:[checkCode]
+garbageCode6 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode7 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode8 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode9 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode10 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode12 call:[checkCode] noreturn:[checkCode]
+garbageCode13 call:[checkCode] noreturn:[checkCode]
+garbageCode15 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode16 call:[checkCode] noreturn:[checkCode]
+garbageCode17 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode18 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode20 call:[assertEquals,checkCode]
+garbageCode21 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode22 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode23 global:[errout] call:[assertEquals,checkCode,str]
+garbageCode24 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode25 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode26 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode27 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode28 call:[checkCode] noreturn:[checkCode]
+garbageCode30 call:[checkCode] noreturn:[checkCode]
+garbageCode31 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode33 call:[checkCode] noreturn:[checkCode]
+garbageCode34 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode35 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode36 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode37 call:[checkCode] noreturn:[checkCode]
+garbageCode38 call:[checkCode] noreturn:[checkCode]
+garbageCode40 call:[checkCode] noreturn:[checkCode]
+garbageCode41 call:[checkCode] noreturn:[checkCode]
+garbageCode42 call:[checkCode] noreturn:[checkCode]
+garbageCode43 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode44 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode45 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode46 call:[checkCode] noreturn:[checkCode]
+garbageCode47 call:[checkCode] noreturn:[checkCode]
+garbageCode48 call:[checkCode] noreturn:[checkCode]
+garbageCode49 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode51 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode53 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode54 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode55 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode56 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode57 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode58 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode59 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode60 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode61 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode63 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode64 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode65 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode66 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode68 call:[checkCode] noreturn:[checkCode]
+garbageCode69 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode70 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode71 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode72 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode73 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode74 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode76 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode77 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode78 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode79 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode80 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode81 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode82 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode83 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode84 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode85 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode86 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode87 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode88 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode90 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode91 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode92 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode94 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode95 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode96 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode97 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode98 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode99 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode100 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode101 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode102 call:[checkCode] noreturn:[checkCode]
+garbageCode103 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode104 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode105 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode106 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode107 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode108 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode109 call:[checkCode] noreturn:[checkCode]
+garbageCode110 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode111 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode112 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode114 call:[checkCode] noreturn:[checkCode]
+garbageCode115 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode116 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode117 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode118 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode119 call:[checkCode] noreturn:[checkCode]
+garbageCode120 global:[errout] call:[assertEquals,checkCode,str]
+garbageCode121 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode122 call:[checkCode] noreturn:[checkCode]
+garbageCode123 call:[checkCode] noreturn:[checkCode]
+garbageCode125 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode126 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode127 call:[checkCode] noreturn:[checkCode]
+garbageCode128 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode129 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode130 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode131 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode132 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode133 call:[assertEquals,assertThrowFail,checkCode,getSyntaxError_,while] noreturn:[assertThrowFail]
+garbageCode134 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,checkCode]
+garbageCode135 call:[checkCode] noreturn:[checkCode]
+garbageCode136 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode137 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode138 call:[checkCode] noreturn:[checkCode]
+garbageCode139 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode140 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode141 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode142 call:[checkCode] noreturn:[checkCode]
+garbageCode143 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode144 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode146 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode147 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode148 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode149 call:[checkCode] noreturn:[checkCode]
+garbageCode150 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode151 call:[checkCode] noreturn:[checkCode]
+garbageCode152 call:[checkCode] noreturn:[checkCode]
+garbageCode153 call:[assertThrow,checkCode,while] noreturn:[assertThrow,checkCode,while]
+garbageCode154 call:[checkCode] noreturn:[checkCode]
+garbageCode156 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode157 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode158 call:[checkCode] noreturn:[checkCode]
+garbageCode159 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode160 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCodeFuzzerClientMode1 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageValueFlow call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,checkCode]
+garbageSymbolDatabase call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,checkCode]
+garbageAST call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+templateSimplifierCrashes call:[assertEquals,checkCode]
+garbageCode161 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode162 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode163 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode164 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode165 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode167 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode168 call:[checkCode] noreturn:[checkCode]
+garbageCode169 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode170 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode171 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode172 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode173 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode174 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode175 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode176 call:[checkCode] noreturn:[checkCode]
+garbageCode181 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode182 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode183 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode184 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode185 call:[checkCode] noreturn:[checkCode]
+garbageCode186 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode187 call:[assertThrowFail,checkCode,inp,while] noreturn:[assertThrowFail,checkCode]
+garbageCode188 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode189 call:[checkCode] noreturn:[checkCode]
+garbageCode190 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode191 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,checkCode]
+garbageCode192 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode193 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode194 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode195 call:[checkCode] noreturn:[checkCode]
+garbageCode196 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode197 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode198 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode199 call:[checkCode] noreturn:[checkCode]
+garbageCode200 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode201 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode202 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode203 call:[checkCode] noreturn:[checkCode]
+garbageCode204 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode205 call:[checkCode] noreturn:[checkCode]
+garbageCode206 call:[assertEquals,getSyntaxError_]
+garbageCode207 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode208 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode209 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode210 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode211 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode212 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode213 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode214 call:[checkCode] noreturn:[checkCode]
+garbageCode215 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+garbageCode216 call:[checkCode] noreturn:[checkCode]
+garbageCode217 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+syntaxErrorFirstToken call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+syntaxErrorLastToken call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+syntaxErrorCase call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+syntaxErrorFuzzerCliType1 call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+cliCode call:[assertNoThrowFail,checkCode,while] noreturn:[assertNoThrowFail,checkCode,while]
+enumTrailingComma call:[assertThrowFail,checkCode,while] noreturn:[assertThrowFail,while]
+nonGarbageCode1 call:[checkCode] noreturn:[checkCode]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

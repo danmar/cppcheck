@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2366100124">
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="ShowTypes" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/showtypes.h" line="38" col="1" hash="8122263643592455466"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="SeverityToShowType" lineNumber="37"/>
+    <functiondecl functionName="ShowTypeToSeverity" lineNumber="59"/>
+    <functiondecl functionName="VariantToShowType" lineNumber="86"/>
+    <functiondecl functionName="load" lineNumber="95"/>
+    <functiondecl functionName="save" lineNumber="106"/>
+    <functiondecl functionName="isShown" lineNumber="117"/>
+    <functiondecl functionName="isShown" lineNumber="122"/>
+    <functiondecl functionName="show" lineNumber="127"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="SeverityToShowType"/>
+    <functioncall functionName="ShowErrors"/>
+    <functioncall functionName="ShowInformation"/>
+    <functioncall functionName="ShowNone"/>
+    <functioncall functionName="ShowPerformance"/>
+    <functioncall functionName="ShowPortability"/>
+    <functioncall functionName="ShowStyle"/>
+    <functioncall functionName="ShowType"/>
+    <functioncall functionName="ShowTypes"/>
+    <functioncall functionName="ShowWarnings"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="category"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="isShown"/>
+    <functioncall functionName="load"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="save"/>
+    <functioncall functionName="setValue"/>
+    <functioncall functionName="severity"/>
+    <functioncall functionName="showing"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="toBool"/>
+    <functioncall functionName="toInt"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="warning"/>
+  </FileInfo>
+</analyzerinfo>

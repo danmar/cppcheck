@@ -1,0 +1,30 @@
+Container
+Function
+ReturnValue
+empty call:[isNull]
+Arg
+Iterator
+isEmpty call:[isEmpty] noreturn:[isEmpty]
+Alloc
+Dealloc
+Call
+CodeBlocks
+clear call:[clear] noreturn:[clear]
+swap call:[swap] noreturn:[swap]
+acceptFile call:[acceptFile] noreturn:[acceptFile]
+FunctionListItem call:[flags,setFlags,setSelected,setText] noreturn:[setSelected]
+LibraryDialog call:[selectFunction,setEnabled,setupUi] noreturn:[selectFunction]
+LibraryDialog
+currentFunction call:[count,first,selectedItems]
+openCfg call:[FunctionListItem,addItem,arg,clear,empty,exec,file,filter,getDataDir,getOpenFileName,isEmpty,isNull,msg,open,setEnabled,swap,tr] noreturn:[addItem]
+saveCfg call:[arg,exec,file,isNull,msg,open,setEnabled,toString,tr,ts] noreturn:[exec,setEnabled]
+saveCfgAs call:[c_str,endsWith,filter,getPathFromFilename,getSaveFileName,isEmpty,saveCfg,toStdString,tr] noreturn:[saveCfg]
+addFunction call:[FunctionListItem,addItem,append,back,empty,exec,functionName,isEmpty,numberOfArguments,setEnabled] noreturn:[append,setEnabled]
+editFunctionName call:[QRegExp,exactMatch,setEnabled,setText,text] noreturn:[setEnabled]
+selectFunction call:[clear,currentFunction,setChecked,setCurrentIndex,setEnabled,setPlainText,updateArguments]
+sortFunctions call:[FunctionListItem,addItem,clear,currentFunction,filterFunctions,isEmpty,sortItems,text] noreturn:[addItem,filterFunctions,sortItems]
+filterFunctions call:[QString,findItems,isEmpty,setHidden,startsWith,text] noreturn:[setHidden]
+changeFunction call:[currentFunction,currentIndex,isChecked,setEnabled,toPlainText] noreturn:[setEnabled]
+editArg call:[count,currentFunction,d,exec,first,getArg,getArgText,row,selectedItems,setEnabled,setText] noreturn:[setEnabled,setText]
+getArgText call:[QString,isEmpty,number,s] noreturn:[number]
+updateArguments call:[addItem,clear,getArgText] noreturn:[addItem]

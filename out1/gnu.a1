@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2421552840">
+        <error id="syntaxError" severity="error" msg="syntax error: &lt;)" verbose="syntax error: &lt;)" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/gnu.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\gnu.c" line="24" column="28"/>
+        </error>
+</analyzerinfo>

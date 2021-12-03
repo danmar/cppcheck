@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3114457709">
+        <error id="syntaxError" severity="error" msg="Code &apos;template&lt;...&apos; is invalid C code. Use --std or --language to configure the language." verbose="Code &apos;template&lt;...&apos; is invalid C code. Use --std or --language to configure the language." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-1010315/dsdiff.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\utils.h" line="33" column="5"/>
+        </error>
+</analyzerinfo>

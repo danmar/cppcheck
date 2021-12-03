@@ -1,0 +1,64 @@
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+RedirectOutputError call:[flush,rdbuf] noreturn:[rdbuf]
+RedirectOutputError global:[errout,output] call:[rdbuf,str] noreturn:[str]
+getOutput call:[str] noreturn:[str]
+clearOutput call:[str] noreturn:[str]
+getErrout call:[str] noreturn:[str]
+clearErrout call:[str] noreturn:[str]
+operator()
+theInstance
+addTest call:[insert] noreturn:[insert]
+tests
+TestFixture call:[addTest,theInstance] noreturn:[addTest]
+prepareTest call:[clear,empty,fflush,putchar] noreturn:[fflush]
+getLocationStr call:[string,to_string]
+writestr call:[begin,empty,end,isprint,str] noreturn:[str]
+assert_ call:[getLocationStr]
+assertEqualsFailed call:[empty,getLocationStr,writestr]
+assertEquals call:[assertEqualsFailed] noreturn:[assertEqualsFailed]
+deleteLineNumber call:[at,erase,find,find_first_not_of,find_first_of,result]
+assertEqualsWithoutLineNumbers call:[assertEquals,deleteLineNumber] noreturn:[assertEquals]
+assertEquals call:[assertEquals,string] noreturn:[assertEquals]
+assertEquals call:[assertEquals,string] noreturn:[assertEquals]
+assertEquals call:[assertEquals,string] noreturn:[assertEquals]
+assertEquals call:[assertEquals,str] noreturn:[assertEquals]
+assertEqualsDouble call:[assertEquals,str] noreturn:[assertEquals]
+todoAssertEquals call:[assertEquals,getLocationStr,writestr]
+todoAssertEquals call:[string,todoAssertEquals] noreturn:[todoAssertEquals]
+todoAssertEquals call:[str,todoAssertEquals] noreturn:[todoAssertEquals]
+assertThrow call:[getLocationStr]
+assertThrowFail call:[getLocationStr]
+assertNoThrowFail call:[getLocationStr]
+complainMissingLib call:[insert] noreturn:[insert]
+printHelp
+run call:[run,while] noreturn:[run]
+processOptions call:[exe,quiet] noreturn:[exe]
+runTests call:[empty,erase,find,flush,processOptions,run,str,substr,tests,theInstance,which_test] noreturn:[erase,run]
+reportOut global:[output]
+reportErr global:[errout] call:[errormessage,find,str,toString]

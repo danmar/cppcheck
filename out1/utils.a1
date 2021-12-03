@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1779642487">
+        <error id="useStlAlgorithm" severity="style" msg="Consider using std::any_of algorithm instead of a raw loop." verbose="Consider using std::any_of algorithm instead of a raw loop." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\utils.h" line="102" column="0"/>
+        </error>
+  <FileInfo check="Class">
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="caseInsensitiveStringCompare" lineNumber="26"/>
+    <functiondecl functionName="isValidGlobPattern" lineNumber="39"/>
+    <functiondecl functionName="matchglob" lineNumber="52"/>
+    <functiondecl functionName="matchglobs" lineNumber="116"/>
+    <functioncall functionName="N"/>
+    <functioncall functionName="T"/>
+    <functioncall functionName="any_of"/>
+    <functioncall functionName="back"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="class"/>
+    <functioncall functionName="compare"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endlen"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="getStringCharLiteral"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="isCharLiteral"/>
+    <functioncall functionName="isPrefixStringCharLiteral"/>
+    <functioncall functionName="isStringCharLiteral"/>
+    <functioncall functionName="isStringLiteral"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="make_pair"/>
+    <functioncall functionName="matchglob"/>
+    <functioncall functionName="n"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="pattern"/>
+    <functioncall functionName="patterns"/>
+    <functioncall functionName="pop"/>
+    <functioncall functionName="push"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="suffixes"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="top"/>
+    <functioncall functionName="toupper"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="x"/>
+  </FileInfo>
+</analyzerinfo>

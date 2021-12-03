@@ -1,0 +1,51 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3771936886">
+        <error id="nullPointerRedundantCheck" severity="warning" msg="Either the condition &apos;!buf&apos; is redundant or there is possible null pointer dereference: buf." verbose="Either the condition &apos;!buf&apos; is redundant or there is possible null pointer dereference: buf." cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/boost.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\boost.cpp" line="70" column="6" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\boost.cpp" line="68" column="9" info="Assuming that condition &apos;!buf&apos; is not redundant"/>
+            <symbol>buf</symbol>
+        </error>
+        <error id="nullPointerRedundantCheck" severity="warning" msg="Either the condition &apos;!buf&apos; is redundant or there is possible null pointer dereference: buf." verbose="Either the condition &apos;!buf&apos; is redundant or there is possible null pointer dereference: buf." cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/boost.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\boost.cpp" line="77" column="6" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\boost.cpp" line="75" column="9" info="Assuming that condition &apos;!buf&apos; is not redundant"/>
+            <symbol>buf</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="boost_forceinline_test" lineNumber="17"/>
+    <functiondecl functionName="boost_noinline_test" lineNumber="20"/>
+    <functiondecl functionName="boost_noreturn_test" lineNumber="23"/>
+    <functiondecl functionName="print_hello" lineNumber="26"/>
+    <functiondecl functionName="valid_code" lineNumber="31"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="42"/>
+    <functiondecl functionName="uninitvar" lineNumber="56"/>
+    <functiondecl functionName="throwexception" lineNumber="66"/>
+    <functiondecl functionName="throwexception2" lineNumber="73"/>
+    <functiondecl functionName="macros" lineNumber="80"/>
+    <functioncall functionName="BOOST_LIKELY"/>
+    <functioncall functionName="BOOST_PP_REPEAT"/>
+    <functioncall functionName="BOOST_SCOPED_ENUM_DECLARE_BEGIN"/>
+    <functioncall functionName="BOOST_SCOPED_ENUM_DECLARE_END"/>
+    <functioncall functionName="BOOST_THROW_EXCEPTION"/>
+    <functioncall functionName="BOOST_UNLIKELY"/>
+    <functioncall functionName="DECL"/>
+    <functioncall functionName="bad_alloc"/>
+    <functioncall functionName="bind"/>
+    <functioncall functionName="buf"/>
+    <functioncall functionName="endian_reverse"/>
+    <functioncall functionName="endian_reverse_inplace"/>
+    <functioncall functionName="future_errc"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="int1"/>
+    <functioncall functionName="intUninit1"/>
+    <functioncall functionName="intUninit2"/>
+    <functioncall functionName="iround"/>
+    <functioncall functionName="llround"/>
+    <functioncall functionName="lround"/>
+    <functioncall functionName="no_state"/>
+    <functioncall functionName="print_hello"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="round"/>
+    <functioncall functionName="throw_exception"/>
+    <functioncall functionName="void"/>
+  </FileInfo>
+</analyzerinfo>

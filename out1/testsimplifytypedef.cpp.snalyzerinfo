@@ -1,0 +1,582 @@
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+CWE
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+FwdAnalysis
+Result
+Result
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+isClass call:[setFlag] noreturn:[setFlag]
+isFunction call:[setFlag] noreturn:[setFlag]
+isVariable call:[setFlag] noreturn:[setFlag]
+isAlias call:[setFlag] noreturn:[setFlag]
+isSpecialization call:[setFlag] noreturn:[setFlag]
+isPartialSpecialization call:[setFlag] noreturn:[setFlag]
+isForwardDeclaration call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+getFlag call:[return] noreturn:[return]
+setFlag
+operator==
+token
+token
+scope
+name
+fullName
+nameToken
+paramEnd
+paramEnd
+isClass call:[getFlag] noreturn:[getFlag]
+isFunction call:[getFlag] noreturn:[getFlag]
+isVariable call:[getFlag] noreturn:[getFlag]
+isAlias call:[getFlag] noreturn:[getFlag]
+isSpecialization call:[getFlag] noreturn:[getFlag]
+isPartialSpecialization call:[getFlag] noreturn:[getFlag]
+isForwardDeclaration call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isSameFamily call:[return]
+ScopeInfo2
+TokenImpl
+str call:[update_property_info] noreturn:[update_property_info]
+str
+tokAt call:[tokAt]
+linkAt call:[linkAt]
+simpleMatch call:[simpleMatch] noreturn:[simpleMatch]
+valueType
+argumentType call:[Match,astParent] noreturn:[astParent]
+tokType
+tokType call:[setFlag] noreturn:[setFlag]
+isKeyword
+isName call:[getFlag] noreturn:[getFlag]
+isNameOnly
+isLiteral call:[getFlag] noreturn:[getFlag]
+isNumber
+isEnumerator
+isOp call:[isAssignmentOp,isConstOp,return] noreturn:[return]
+isConstOp call:[isArithmeticalOp,return] noreturn:[return]
+isExtendedOp call:[isConstOp]
+isArithmeticalOp
+isComparisonOp
+isAssignmentOp
+isBoolean
+isIncDecOp
+isBinaryOp call:[astOperand1,astOperand2]
+isUnaryOp call:[astOperand1,astOperand2]
+flags
+flags
+isUnsigned call:[getFlag] noreturn:[getFlag]
+isUnsigned call:[setFlag] noreturn:[setFlag]
+isSigned call:[getFlag] noreturn:[getFlag]
+isSigned call:[setFlag] noreturn:[setFlag]
+isPointerCompare call:[getFlag] noreturn:[getFlag]
+isPointerCompare call:[setFlag] noreturn:[setFlag]
+isLong call:[getFlag] noreturn:[getFlag]
+isLong call:[setFlag] noreturn:[setFlag]
+isStandardType call:[getFlag] noreturn:[getFlag]
+isStandardType call:[setFlag] noreturn:[setFlag]
+isExpandedMacro call:[getFlag] noreturn:[getFlag]
+isExpandedMacro call:[setFlag] noreturn:[setFlag]
+isCast call:[getFlag] noreturn:[getFlag]
+isCast call:[setFlag] noreturn:[setFlag]
+isAttributeConstructor call:[getFlag] noreturn:[getFlag]
+isAttributeConstructor call:[setFlag] noreturn:[setFlag]
+isAttributeDestructor call:[getFlag] noreturn:[getFlag]
+isAttributeDestructor call:[setFlag] noreturn:[setFlag]
+isAttributeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeUnused call:[setFlag] noreturn:[setFlag]
+isAttributeUsed call:[getFlag] noreturn:[getFlag]
+isAttributeUsed call:[setFlag] noreturn:[setFlag]
+isAttributePure call:[getFlag] noreturn:[getFlag]
+isAttributePure call:[setFlag] noreturn:[setFlag]
+isAttributeConst call:[getFlag] noreturn:[getFlag]
+isAttributeConst call:[setFlag] noreturn:[setFlag]
+isAttributeNoreturn call:[getFlag] noreturn:[getFlag]
+isAttributeNoreturn call:[setFlag] noreturn:[setFlag]
+isAttributeNothrow call:[getFlag] noreturn:[getFlag]
+isAttributeNothrow call:[setFlag] noreturn:[setFlag]
+isAttributePacked call:[getFlag] noreturn:[getFlag]
+isAttributePacked call:[setFlag] noreturn:[setFlag]
+isAttributeNodiscard call:[getFlag] noreturn:[getFlag]
+isAttributeNodiscard call:[setFlag] noreturn:[setFlag]
+isAttributeMaybeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeMaybeUnused call:[setFlag] noreturn:[setFlag]
+setCppcheckAttribute call:[setCppcheckAttribute] noreturn:[setCppcheckAttribute]
+getCppcheckAttribute call:[getCppcheckAttribute] noreturn:[getCppcheckAttribute]
+hasCppcheckAttributes
+isControlFlowKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[setFlag] noreturn:[setFlag]
+isComplex call:[getFlag] noreturn:[getFlag]
+isComplex call:[setFlag] noreturn:[setFlag]
+isEnumType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[setFlag] noreturn:[setFlag]
+isAtAddress call:[getFlag] noreturn:[getFlag]
+isAtAddress call:[setFlag] noreturn:[setFlag]
+isIncompleteVar call:[getFlag] noreturn:[getFlag]
+isIncompleteVar call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+isExternC call:[getFlag] noreturn:[getFlag]
+isExternC call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclComma call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclComma call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclEq call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclEq call:[setFlag] noreturn:[setFlag]
+isImplicitInt call:[getFlag] noreturn:[getFlag]
+isImplicitInt call:[setFlag] noreturn:[setFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isInline call:[setFlag] noreturn:[setFlag]
+isTemplate call:[getFlag] noreturn:[getFlag]
+isTemplate call:[setFlag] noreturn:[setFlag]
+isBitfield
+bits
+templateSimplifierPointers
+templateSimplifierPointer call:[insert] noreturn:[insert]
+setBits
+isUtf8 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf16 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf32 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isCChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isCMultiChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isTemplateArg call:[getFlag] noreturn:[getFlag]
+isTemplateArg call:[setFlag] noreturn:[setFlag]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findmatch call:[findmatch]
+findmatch call:[findmatch]
+fileIndex
+fileIndex
+linenr
+linenr
+column
+column
+next
+previous
+varId
+varId call:[isStandardType,tokType,update_property_info] noreturn:[isStandardType,update_property_info]
+exprId
+exprId
+forDebug
+forDebugVarId call:[forDebug]
+forDebugExprId call:[forDebug]
+forPrintOut call:[forDebug]
+link call:[update_property_info] noreturn:[update_property_info]
+link
+scope
+scope
+function
+variable call:[tokType] noreturn:[tokType]
+variable
+type
+enumerator
+enumerator call:[tokType] noreturn:[tokType]
+progressValue
+originalName global:[emptyString]
+values
+originalName call:[string] noreturn:[string]
+getKnownIntValue call:[front]
+removeValues call:[remove_if] noreturn:[remove_if]
+index
+next
+previous
+getFlag call:[return] noreturn:[return]
+setFlag
+astOperand1
+astOperand1
+astOperand2
+astOperand2
+astParent
+astParent
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astTop
+astTop
+clearAst
+clearValueFlow
+astString call:[astString] noreturn:[astString]
+setCpp11init
+isCpp11init
+setSettings
+getSettings
+isC
+isCPP
+front
+front
+back
+back
+getFiles
+find call:[find] noreturn:[find]
+end call:[end] noreturn:[end]
+map
+getVarId
+setTimerResults
+isC call:[isC] noreturn:[isC]
+isCPP call:[isCPP] noreturn:[isCPP]
+setPreprocessor
+getPreprocessor
+codeWithTemplates
+setSettings call:[setSettings] noreturn:[setSettings]
+getSymbolDatabase
+varIdCount
+tokens call:[front] noreturn:[front]
+isMaxTime
+getSettings
+newVarId
+TestSimplifyTypedef
+run call:[enable,prepareTest,setVerbose,simplifyTypedef1,simplifyTypedef10,simplifyTypedef100,simplifyTypedef101,simplifyTypedef102,simplifyTypedef103,simplifyTypedef104,simplifyTypedef105,simplifyTypedef106,simplifyTypedef107,simplifyTypedef108,simplifyTypedef109,simplifyTypedef11,simplifyTypedef110,simplifyTypedef111,simplifyTypedef112,simplifyTypedef113,simplifyTypedef114,simplifyTypedef115,simplifyTypedef116,simplifyTypedef117,simplifyTypedef118,simplifyTypedef119,simplifyTypedef12,simplifyTypedef120,simplifyTypedef121,simplifyTypedef122,simplifyTypedef123,simplifyTypedef124,simplifyTypedef125,simplifyTypedef126,simplifyTypedef127,simplifyTypedef128,simplifyTypedef129,simplifyTypedef13,simplifyTypedef130,simplifyTypedef131,simplifyTypedef132,simplifyTypedef133,simplifyTypedef134,simplifyTypedef135,simplifyTypedef136,simplifyTypedef137,simplifyTypedef138,simplifyTypedef14,simplifyTypedef15,simplifyTypedef16,simplifyTypedef17,simplifyTypedef18,simplifyTypedef19,simplifyTypedef2,simplifyTypedef20,simplifyTypedef21,simplifyTypedef22,simplifyTypedef23,simplifyTypedef24,simplifyTypedef25,simplifyTypedef26,simplifyTypedef27,simplifyTypedef28,simplifyTypedef29,simplifyTypedef3,simplifyTypedef30,simplifyTypedef31,simplifyTypedef32,simplifyTypedef33,simplifyTypedef34,simplifyTypedef35,simplifyTypedef36,simplifyTypedef37,simplifyTypedef38,simplifyTypedef4,simplifyTypedef43,simplifyTypedef44,simplifyTypedef45,simplifyTypedef46,simplifyTypedef47,simplifyTypedef48,simplifyTypedef49,simplifyTypedef5,simplifyTypedef50,simplifyTypedef51,simplifyTypedef52,simplifyTypedef54,simplifyTypedef55,simplifyTypedef56,simplifyTypedef57,simplifyTypedef58,simplifyTypedef59,simplifyTypedef6,simplifyTypedef60,simplifyTypedef61,simplifyTypedef62,simplifyTypedef63,simplifyTypedef64,simplifyTypedef65,simplifyTypedef66,simplifyTypedef67,simplifyTypedef68,simplifyTypedef69,simplifyTypedef7,simplifyTypedef70,simplifyTypedef71,simplifyTypedef72,simplifyTypedef73,simplifyTypedef74,simplifyTypedef75,simplifyTypedef76,simplifyTypedef77,simplifyTypedef78,simplifyTypedef79,simplifyTypedef8,simplifyTypedef80,simplifyTypedef81,simplifyTypedef82,simplifyTypedef83,simplifyTypedef84,simplifyTypedef85,simplifyTypedef86,simplifyTypedef87,simplifyTypedef88,simplifyTypedef89,simplifyTypedef9,simplifyTypedef90,simplifyTypedef91,simplifyTypedef92,simplifyTypedef93,simplifyTypedef94,simplifyTypedef95,simplifyTypedef96,simplifyTypedef97,simplifyTypedef99,simplifyTypedefFunction1,simplifyTypedefFunction10,simplifyTypedefFunction2,simplifyTypedefFunction3,simplifyTypedefFunction4,simplifyTypedefFunction5,simplifyTypedefFunction6,simplifyTypedefFunction7,simplifyTypedefFunction8,simplifyTypedefFunction9,simplifyTypedefMacro,simplifyTypedefShadow,while] noreturn:[simplifyTypedef1,simplifyTypedef10,simplifyTypedef100,simplifyTypedef101,simplifyTypedef102,simplifyTypedef103,simplifyTypedef104,simplifyTypedef105,simplifyTypedef106,simplifyTypedef107,simplifyTypedef108,simplifyTypedef109,simplifyTypedef11,simplifyTypedef110,simplifyTypedef111,simplifyTypedef112,simplifyTypedef113,simplifyTypedef114,simplifyTypedef115,simplifyTypedef116,simplifyTypedef117,simplifyTypedef118,simplifyTypedef119,simplifyTypedef12,simplifyTypedef120,simplifyTypedef121,simplifyTypedef122,simplifyTypedef123,simplifyTypedef124,simplifyTypedef125,simplifyTypedef126,simplifyTypedef127,simplifyTypedef128,simplifyTypedef129,simplifyTypedef13,simplifyTypedef130,simplifyTypedef131,simplifyTypedef132,simplifyTypedef133,simplifyTypedef134,simplifyTypedef135,simplifyTypedef136,simplifyTypedef137,simplifyTypedef138,simplifyTypedef14,simplifyTypedef15,simplifyTypedef16,simplifyTypedef17,simplifyTypedef18,simplifyTypedef19,simplifyTypedef2,simplifyTypedef20,simplifyTypedef21,simplifyTypedef22,simplifyTypedef23,simplifyTypedef24,simplifyTypedef25,simplifyTypedef26,simplifyTypedef27,simplifyTypedef28,simplifyTypedef29,simplifyTypedef3,simplifyTypedef30,simplifyTypedef31,simplifyTypedef32,simplifyTypedef33,simplifyTypedef34,simplifyTypedef35,simplifyTypedef36,simplifyTypedef37,simplifyTypedef38,simplifyTypedef4,simplifyTypedef43,simplifyTypedef44,simplifyTypedef45,simplifyTypedef46,simplifyTypedef47,simplifyTypedef48,simplifyTypedef49,simplifyTypedef5,simplifyTypedef50,simplifyTypedef51,simplifyTypedef52,simplifyTypedef54,simplifyTypedef55,simplifyTypedef56,simplifyTypedef57,simplifyTypedef58,simplifyTypedef59,simplifyTypedef6,simplifyTypedef60,simplifyTypedef61,simplifyTypedef62,simplifyTypedef63,simplifyTypedef64,simplifyTypedef65,simplifyTypedef66,simplifyTypedef67,simplifyTypedef68,simplifyTypedef69,simplifyTypedef7,simplifyTypedef70,simplifyTypedef71,simplifyTypedef72,simplifyTypedef73,simplifyTypedef74,simplifyTypedef75,simplifyTypedef76,simplifyTypedef77,simplifyTypedef78,simplifyTypedef79,simplifyTypedef8,simplifyTypedef80,simplifyTypedef81,simplifyTypedef82,simplifyTypedef83,simplifyTypedef84,simplifyTypedef85,simplifyTypedef86,simplifyTypedef87,simplifyTypedef88,simplifyTypedef89,simplifyTypedef9,simplifyTypedef90,simplifyTypedef91,simplifyTypedef92,simplifyTypedef93,simplifyTypedef94,simplifyTypedef95,simplifyTypedef96,simplifyTypedef97,simplifyTypedef99,simplifyTypedefFunction1,simplifyTypedefFunction10,simplifyTypedefFunction2,simplifyTypedefFunction3,simplifyTypedefFunction4,simplifyTypedefFunction5,simplifyTypedefFunction6,simplifyTypedefFunction7,simplifyTypedefFunction8,simplifyTypedefFunction9,simplifyTypedefMacro,simplifyTypedefShadow,while]
+tok_ global:[errout] call:[assert_,enable,istr,platform,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+simplifyTypedef global:[errout] call:[createLinks,createTokens,istr,simplifyTypedef,str,stringifyList,tokenizer,tokens] noreturn:[stringifyList]
+simplifyTypedefP global:[errout] call:[DUI,createLinks,createTokens,files,istr,move,preprocess,simplifyTypedef,str,stringifyList,tokenizer,tokens,tokens1,tokens2] noreturn:[stringifyList]
+checkSimplifyTypedef_ global:[errout] call:[assert_,enable,istr,str,tokenize,tokenizer] noreturn:[assert_]
+simplifyTypedef1 call:[assertEquals,tok_]
+simplifyTypedef2 call:[assertEquals,tok_]
+simplifyTypedef3 call:[assertEquals,tok_]
+simplifyTypedef4 call:[assertEquals,tok_]
+simplifyTypedef5 call:[assertEquals,tok_]
+simplifyTypedef6 call:[assertEquals,tok_]
+simplifyTypedef7 call:[assertEquals,tok_]
+simplifyTypedef8 call:[assertEquals,tok_]
+simplifyTypedef9 call:[assertEquals,tok_]
+simplifyTypedef10 call:[assertEquals,tok_]
+simplifyTypedef11 call:[assertEquals,tok_]
+simplifyTypedef12 call:[assertEquals,tok_]
+simplifyTypedef13 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef14 call:[assertThrow,tok_,while] noreturn:[assertThrow,tok_,while]
+simplifyTypedef15 call:[assertEquals,tok_]
+simplifyTypedef16 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef17 call:[assertEquals,tok_]
+simplifyTypedef18 call:[assertEquals,tok_]
+simplifyTypedef19 call:[assertEquals,tok_]
+simplifyTypedef20 call:[assertEquals,tok_]
+simplifyTypedef21 call:[assertEquals,simplifyTypedef]
+simplifyTypedef22 call:[assertEquals,tok_]
+simplifyTypedef23 call:[assertEquals,tok_]
+simplifyTypedef24 call:[assertEquals,tok_]
+simplifyTypedef25 call:[assertEquals,simplifyTypedef]
+simplifyTypedef26 call:[assertEquals,tok_]
+simplifyTypedef27 call:[assertEquals,tok_]
+simplifyTypedef28 call:[assertEquals,tok_]
+simplifyTypedef29 call:[assertEquals,tok_]
+simplifyTypedef30 call:[assertEquals,tok_]
+simplifyTypedef31 call:[assertEquals,tok_]
+simplifyTypedef32 call:[assertEquals,tok_]
+simplifyTypedef33 call:[assertEquals,tok_]
+simplifyTypedef34 call:[assertEquals,tok_]
+simplifyTypedef35 global:[errout] call:[assertEquals,assertEqualsWithoutLineNumbers,str,tok_] noreturn:[assertEqualsWithoutLineNumbers]
+simplifyTypedef36 call:[assertEquals,tok_]
+simplifyTypedef37 call:[assertEquals,tok_]
+simplifyTypedef38 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef43 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef44 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef45 global:[errout] call:[assertEquals,checkSimplifyTypedef_,str]
+simplifyTypedef46 call:[assertEquals,tok_]
+simplifyTypedef47 call:[assertEquals,tok_]
+simplifyTypedef48 call:[assertEquals,tok_]
+simplifyTypedef49 call:[assertEquals,tok_]
+simplifyTypedef50 call:[assertEquals,tok_]
+simplifyTypedef51 call:[assertEquals,tok_]
+simplifyTypedef52 global:[errout] call:[assertEquals,assertThrowFail,checkSimplifyTypedef_,str,tok_,while] noreturn:[assertThrowFail,while]
+simplifyTypedef54 global:[errout] call:[assertEquals,checkSimplifyTypedef_,str]
+simplifyTypedef55 global:[errout] call:[assertEquals,checkSimplifyTypedef_,str,tok_]
+simplifyTypedef56 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef57 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef58 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef59 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef60 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef61 global:[errout] call:[assertEquals,checkSimplifyTypedef_,str]
+simplifyTypedef62 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef63 global:[errout] call:[actual,assertEquals,str,tok_]
+simplifyTypedef64 global:[errout] call:[actual,assertEquals,str,tok_]
+simplifyTypedef65 global:[errout] call:[actual,assertEquals,str,tok_]
+simplifyTypedef66 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef67 global:[errout] call:[assertEquals,assertEqualsWithoutLineNumbers,str,tok_] noreturn:[assertEqualsWithoutLineNumbers]
+simplifyTypedef68 global:[errout] call:[actual,assertEquals,str,tok_]
+simplifyTypedef69 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef70 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef71 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef72 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef73 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef74 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef75 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef76 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef77 call:[assertEquals,tok_]
+simplifyTypedef78 call:[assertEquals,tok_]
+simplifyTypedef79 call:[assertEquals,tok_]
+simplifyTypedef80 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef81 call:[assertThrowFail,checkSimplifyTypedef_,while] noreturn:[assertThrowFail,while]
+simplifyTypedef82 global:[errout] call:[assertEqualsWithoutLineNumbers,checkSimplifyTypedef_,str] noreturn:[assertEqualsWithoutLineNumbers]
+simplifyTypedef83 call:[assertEquals,tok_]
+simplifyTypedef84 call:[assertThrowFail,checkSimplifyTypedef_,while] noreturn:[assertThrowFail,while]
+simplifyTypedef85 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef86 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef87 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef88 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef89 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef90 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef91 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef92 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef93 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef94 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef95 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef96 call:[assertThrowFail,tok_,while] noreturn:[assertThrowFail,while]
+simplifyTypedef97 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef99 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef100 global:[errout] call:[assertEqualsWithoutLineNumbers,str,tok_] noreturn:[assertEqualsWithoutLineNumbers]
+simplifyTypedef101 call:[assertThrowFail,tok_,while] noreturn:[assertThrowFail,while]
+simplifyTypedef102 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef103 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef104 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef105 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef106 call:[assertThrowFail,tok_,while] noreturn:[assertThrowFail,while]
+simplifyTypedef107 call:[assertThrowFail,tok_,while] noreturn:[assertThrowFail,while]
+simplifyTypedef108 call:[assertEquals,tok_]
+simplifyTypedef109 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef110 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef111 call:[assertEquals,tok_]
+simplifyTypedef112 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef113 call:[assertEquals,tok_]
+simplifyTypedef114 call:[assertEquals,tok_]
+simplifyTypedef115 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef116 global:[errout] call:[assertEquals,assertEqualsWithoutLineNumbers,str,tok_] noreturn:[assertEqualsWithoutLineNumbers]
+simplifyTypedef117 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef118 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef119 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef120 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef121 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef122 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef123 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedef124 global:[errout] call:[assertEquals,assertEqualsWithoutLineNumbers,checkSimplifyTypedef_,str]
+simplifyTypedef125 call:[assertEquals,tok_]
+simplifyTypedef126 call:[assertEquals,tok_]
+simplifyTypedef127 call:[assertEquals,tok_]
+simplifyTypedef128 call:[assertEquals,tok_]
+simplifyTypedef129 call:[assertEquals,todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+simplifyTypedef130 call:[assertEquals,tok_]
+simplifyTypedef131 call:[assertEquals,tok_]
+simplifyTypedef132 call:[assertEquals,tok_]
+simplifyTypedef133 call:[assertEquals,tok_]
+simplifyTypedef134 call:[assertEquals,tok_]
+simplifyTypedef135 call:[assertEquals,tok_]
+simplifyTypedef136 call:[assertEquals,tok_]
+simplifyTypedef137 global:[errout] call:[assertEquals,str,todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+simplifyTypedef138 call:[assertEquals,tok_]
+simplifyTypedefFunction1 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedefFunction2 call:[assertEquals,tok_]
+simplifyTypedefFunction3 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedefFunction4 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedefFunction5 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedefFunction6 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedefFunction7 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedefFunction8 global:[errout] call:[checkSimplifyTypedef_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+simplifyTypedefFunction9 global:[errout] call:[assertEquals,str,tok_]
+simplifyTypedefFunction10 call:[assertEquals,tok_]
+simplifyTypedefShadow call:[assertEquals,tok_]
+simplifyTypedefMacro call:[assertEquals,simplifyTypedefP]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

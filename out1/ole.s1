@@ -1,0 +1,16 @@
+ole_init global:[ole_sign] call:[feof,fread,free,fseek,ftell,fwrite,getlong,getshort,getulong,malloc,memcpy,ole_close,ole_finish,ole_readdir,realloc,strncmp,tmpfile] noreturn:[fseek,fwrite,getlong,ole_close]
+rightOleType call:[return] noreturn:[return]
+getOleType call:[return]
+ole_readdir call:[free,getOleType,getlong,getshort,getulong,malloc,realloc,return,rightOleType,sizeof,strcmp] noreturn:[getlong]
+ole_open call:[ftell]
+calcFileBlockOffset
+ole_read call:[calcFileBlockOffset,fread,fseek] noreturn:[fseek]
+ole_eof call:[return] noreturn:[return]
+ole_finish call:[free,ole_close] noreturn:[free,ole_close]
+ole_close call:[free] noreturn:[free]
+ole_seek call:[calcFileBlockOffset,fseek]
+ole_tell
+set_ole_func
+my_fread call:[fread] noreturn:[fread]
+my_fseek call:[fseek] noreturn:[fseek]
+set_std_func

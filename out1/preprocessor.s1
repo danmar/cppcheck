@@ -1,0 +1,202 @@
+setDirectives
+getDirectives
+setFile0
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+acceptFile call:[acceptFile] noreturn:[acceptFile]
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+sameline call:[sameline] noreturn:[sameline]
+trim call:[find_first_not_of,find_last_not_of,substr] noreturn:[substr]
+Directive
+Preprocessor
+Preprocessor
+BadInlineSuppression
+parseInlineSuppressionCommentToken call:[BadInlineSuppression,cppchecksuppress,empty,find_first_not_of,parseComment,parseMultiSuppressComment,push_back,size,str,substr] noreturn:[push_back]
+addinlineSuppressions call:[addSuppression,cfront,compare,empty,file,parseInlineSuppressionCommentToken,relativeFilename,sameline,simplifyPath,size,str,substr] noreturn:[addSuppression,substr]
+inlineSuppressions call:[addinlineSuppressions,begin,end,error,file] noreturn:[addinlineSuppressions,error]
+setDirectives global:[emptyString] call:[begin,cfront,clear,directive,empty,end,file,push_back,reserve,size,str] noreturn:[push_back,str]
+readcondition call:[empty,end,find,insert,sameline,str] noreturn:[insert,str]
+hasDefine call:[empty,find,size]
+cfg call:[begin,configs2,empty,end,hasDefine]
+isUndefined call:[end,find,size,substr]
+getConfigsElseIsFalse call:[any_of,cbegin,cend,hasDefine] noreturn:[any_of,hasDefine]
+gotoEndIf call:[compare,sameline,str]
+getConfigs call:[back,cfg,cfront,clear,compare,configs,empty,end,erase,find,getConfigsElseIsFalse,gotoEndIf,insert,isUndefined,pop_back,push_back,readcondition,sameline,size,str,string,substr,swap] noreturn:[cfg,clear,erase,insert,pop_back,readcondition,str]
+getConfigs call:[begin,cfront,configurationExcluded,end,getConfigs] noreturn:[getConfigs]
+preprocess call:[end,find,getConfigs,getcode,tokens1] noreturn:[getcode]
+removeSpaceNearNL call:[append,size]
+preprocessWhitespaces call:[begin,end,removeSpaceNearNL,replace] noreturn:[removeSpaceNearNL]
+preprocess call:[back_inserter,cbegin,cend,copy,empty,getConfigs,stringify,tokens1] noreturn:[stringify]
+splitcfg call:[empty,find,push_back,size,substr]
+createDUI global:[emptyString] call:[empty,find,find_first_of,getCPP,isCPP,push_back,splitcfg] noreturn:[getCPP,push_back,splitcfg]
+hasErrors call:[begin,end]
+handleErrors call:[empty,reportOutput]
+loadFiles global:[emptyString] call:[createDUI,handleErrors,hasErrors,load] noreturn:[hasErrors]
+removeComments call:[removeComments] noreturn:[removeComments]
+setPlatformInfo
+preprocess call:[TokenList,createDUI,handleErrors,preprocess,removeComments,tokens2,validateCfg] noreturn:[TokenList]
+getcode call:[cfront,empty,file,preprocess,str] noreturn:[str]
+getcode call:[clear,find,getcode,hasErrors,inlineSuppressions,istr,removeComments,reportOutput,setDirectives,simplifyPath,tokens1] noreturn:[clear]
+reportOutput global:[emptyString] call:[compare,error,file,find_first_of,missingInclude,substr] noreturn:[error,missingInclude]
+error call:[ErrorMessage,empty,fromNativeSeparators,getRelativePath,loc,push_back,reportErr] noreturn:[getRelativePath,push_back,reportErr]
+missingInclude call:[empty,errmsg,fromNativeSeparators,isSuppressed,push_back,reportInfo,setFileName,setfile,toNativeSeparators] noreturn:[push_back,reportInfo]
+validateCfg global:[emptyString] call:[any_of,cbegin,cend,file,find,isEnabled,macroName,splitcfg,substr,validateCfgError] noreturn:[validateCfgError]
+validateCfgError call:[errmsg,loc,push_back,reportInfo] noreturn:[reportInfo]
+getErrorMessages global:[emptyString] call:[error,missingInclude,preprocessor,settings2,validateCfgError] noreturn:[error]
+dump call:[empty,file,toxml]
+crc32 global:[crc32Table]
+calculateChecksum call:[begin,cfront,crc32,end,str] noreturn:[crc32,str]
+simplifyPragmaAsm call:[simplifyPragmaAsmPrivate] noreturn:[simplifyPragmaAsmPrivate]
+simplifyPragmaAsmPrivate call:[deleteToken,front,nextSkipComments,previousSkipComments,sameline,setstr,str] noreturn:[deleteToken]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

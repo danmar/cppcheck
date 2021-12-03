@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2932117768">
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="Severity" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="58" col="1" hash="8743160539661815160"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="toString" lineNumber="21"/>
+    <functiondecl functionName="fromString" lineNumber="43"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="severity"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="warning"/>
+  </FileInfo>
+</analyzerinfo>

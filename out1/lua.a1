@@ -1,0 +1,17 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="242376379">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="validCode" lineNumber="13"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="21"/>
+    <functioncall functionName="L"/>
+    <functioncall functionName="a"/>
+    <functioncall functionName="lua_gettop"/>
+    <functioncall functionName="lua_isboolean"/>
+    <functioncall functionName="lua_isnil"/>
+    <functioncall functionName="lua_pop"/>
+    <functioncall functionName="lua_pushnil"/>
+    <functioncall functionName="lua_tonumber"/>
+    <functioncall functionName="lua_tostring"/>
+    <functioncall functionName="printf"/>
+  </FileInfo>
+</analyzerinfo>

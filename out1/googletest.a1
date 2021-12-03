@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1269023431">
+        <error id="syntaxError" severity="error" msg="syntax error" verbose="syntax error" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/googletest.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\googletest.cpp" line="18" column="5"/>
+        </error>
+</analyzerinfo>

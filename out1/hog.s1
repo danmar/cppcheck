@@ -1,0 +1,43 @@
+SimilarRects
+operator() call:[abs]
+MaskGenerator
+initializeMask
+HOGDescriptor
+HOGDescriptor
+HOGDescriptor call:[load] noreturn:[load]
+HOGDescriptor call:[copyTo] noreturn:[copyTo]
+HOGDescriptor
+numPartsWithin call:[CV_Assert,return]
+numPartsWithin call:[Size,numPartsWithin] noreturn:[Size]
+getBlockHistogramSize call:[CV_Assert,Size,area,empty,return]
+getDescriptorSize call:[CV_Assert,return]
+getWinSigma
+checkDetectorSize call:[getDescriptorSize,size]
+setSVMDetector call:[CV_Assert,checkDetectorSize,convertTo,copyTo,detector_reordered,getBlockHistogramSize,getDescriptorSize,getMat,numPartsWithin,size] noreturn:[copyTo]
+read call:[CV_Assert,begin,empty,isMap,isSeq,setSVMDetector] noreturn:[setSVMDetector]
+write call:[empty,getWinSigma]
+load call:[empty,fs,getFirstTopLevelNode,read] noreturn:[read]
+save call:[empty,fs,getDefaultObjectName,write] noreturn:[write]
+copyTo call:[setSVMDetector]
+BlockData
+HOGCache
+HOGCache
+HOGCache call:[init] noreturn:[init]
+init call:[Point,Size,assert,cacheSize,computeGradient,create,cvFloor,data,di,dj,exp,getWinSigma,resize,weights] noreturn:[Point,exp,weights]
+getBlock call:[CV_Assert,assert,blockCacheFlags,cacheIdx,memset,normalizeBlockHistogram,ptr,row,sizeof]
+normalizeBlockHistogram call:[min,sqrt]
+windowsInImage call:[Size] noreturn:[Size]
+getWindow call:[Rect] noreturn:[Rect]
+gcd call:[swap] noreturn:[swap]
+HOGInvoker
+operator() call:[Mat,Rect,Size,cvCeil,cvRound,detect,empty,lock,max,maxSz,ptr,push_back,resize,size,smallerImg,smallerImgBuf,sz,type,unlock] noreturn:[Mat,push_back,resize,unlock]
+getDefaultPeopleDetector call:[sizeof]
+getDaimlerPeopleDetector call:[sizeof]
+HOGConfInvoker
+operator() call:[CV_INSTRUMENT_REGION,Mat,Rect,Size,cvCeil,cvRound,detectROI,lock,maxSz,ptr,push_back,resize,size,smallerImg,smallerImgBuf,sz,type,unlock] noreturn:[Mat,push_back,resize,unlock]
+groupRectangles call:[CV_Assert,CV_INSTRUMENT_REGION,SimilarRects,clear,empty,foundWeights,max,numInClass,partition,push_back,rrects,size] noreturn:[push_back]
+isInstance
+release call:[delete]
+read call:[fn,read]
+write call:[String,fs,write] noreturn:[write]
+clone call:[HOGDescriptor] noreturn:[HOGDescriptor]

@@ -1,0 +1,26 @@
+setFileName
+getFileName
+clear call:[QString,clear,setPlainText] noreturn:[setPlainText]
+LineNumberArea
+sizeHint call:[QSize,lineNumberAreaWidth] noreturn:[QSize]
+paintEvent call:[lineNumberAreaPaintEvent] noreturn:[lineNumberAreaPaintEvent]
+CodeEditorStyle
+isSystemTheme
+Highlighter call:[QRegularExpression,append,setBackground,setFontWeight,setForeground] noreturn:[QRegularExpression,append]
+setSymbols call:[QRegularExpression,append] noreturn:[append]
+setStyle call:[applyFormat,setBackground,setFontWeight,setForeground] noreturn:[applyFormat]
+highlightBlock call:[capturedLength,capturedStart,globalMatch,hasNext,indexOf,length,match,next,previousBlockState,setCurrentBlockState,setFormat] noreturn:[capturedLength,indexOf,setFormat]
+applyFormat
+CodeEditor call:[Highlighter,LineNumberArea,QKeySequence,QShortcut,SIGNAL,SLOT,activated,blockCountChanged,connect,copy,document,font,generateStyleString,selectAll,setFont,setObjectName,setStyleHint,setStyleSheet,updateLineNumberArea,updateLineNumberAreaWidth,updateRequest] noreturn:[updateLineNumberAreaWidth]
+CodeEditor
+getPos call:[size] noreturn:[size]
+setStyle call:[generateStyleString,highlightErrorLine,rehighlight,setStyle,setStyleSheet] noreturn:[highlightErrorLine]
+setError call:[centerCursor,getPos,highlightErrorLine,setPlainText,setPosition,setSymbols,setTextCursor,textCursor] noreturn:[highlightErrorLine]
+setError call:[centerCursor,getPos,highlightErrorLine,setPosition,setSymbols,setTextCursor,textCursor,toPlainText] noreturn:[highlightErrorLine]
+lineNumberAreaWidth call:[QLatin1Char,blockCount,fontMetrics,qMax,width]
+updateLineNumberAreaWidth call:[lineNumberAreaWidth,setViewportMargins] noreturn:[setViewportMargins]
+updateLineNumberArea call:[contains,height,rect,scroll,update,updateLineNumberAreaWidth,viewport,width,y] noreturn:[scroll,update,updateLineNumberAreaWidth]
+resizeEvent call:[QRect,contentsRect,height,left,lineNumberAreaWidth,resizeEvent,setGeometry,top] noreturn:[setGeometry]
+highlightErrorLine call:[QTextCursor,append,clearSelection,document,setBackground,setExtraSelections,setPosition,setProperty] noreturn:[setExtraSelections,setPosition]
+lineNumberAreaPaintEvent call:[blockBoundingGeometry,blockBoundingRect,blockNumber,bottom,contentOffset,drawText,fillRect,firstVisibleBlock,fontMetrics,height,isValid,isVisible,next,number,painter,rect,setPen,top,translated,width] noreturn:[drawText]
+generateStyleString call:[QString,arg,blue,green,red]

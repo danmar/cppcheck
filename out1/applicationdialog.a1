@@ -1,0 +1,62 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="4154819106">
+  <FileInfo check="Class">
+<class name="ApplicationDialog" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/applicationdialog.h" line="38" col="1" hash="12674693194606241679"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="ApplicationDialog" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/applicationdialog.h" line="38" col="1" hash="18131226173313470116"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="browse" lineNumber="54"/>
+    <functiondecl functionName="ok" lineNumber="74"/>
+    <functiondecl functionName="browse" lineNumber="54"/>
+    <functiondecl functionName="ok" lineNumber="74"/>
+    <functioncall functionName="Application"/>
+    <functioncall functionName="ApplicationDialog"/>
+    <functioncall functionName="Ok"/>
+    <functioncall functionName="QDialog"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="Warning"/>
+    <functioncall functionName="accept"/>
+    <functioncall functionName="accepted"/>
+    <functioncall functionName="adjustSize"/>
+    <functioncall functionName="app"/>
+    <functioncall functionName="browse"/>
+    <functioncall functionName="clicked"/>
+    <functioncall functionName="connect"/>
+    <functioncall functionName="exec"/>
+    <functioncall functionName="filter"/>
+    <functioncall functionName="fromNativeSeparators"/>
+    <functioncall functionName="getName"/>
+    <functioncall functionName="getOpenFileName"/>
+    <functioncall functionName="getParameters"/>
+    <functioncall functionName="getPath"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="mApplication"/>
+    <functioncall functionName="mButtonBrowse"/>
+    <functioncall functionName="mButtons"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="ok"/>
+    <functioncall functionName="parameters"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="reject"/>
+    <functioncall functionName="rejected"/>
+    <functioncall functionName="selectedFile"/>
+    <functioncall functionName="setName"/>
+    <functioncall functionName="setParameters"/>
+    <functioncall functionName="setPath"/>
+    <functioncall functionName="setText"/>
+    <functioncall functionName="setWindowTitle"/>
+    <functioncall functionName="setupUi"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="title"/>
+    <functioncall functionName="toNativeSeparators"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="true"/>
+  </FileInfo>
+</analyzerinfo>

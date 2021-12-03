@@ -1,0 +1,1 @@
+bash: cppcheck: command not found

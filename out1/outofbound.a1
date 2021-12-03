@@ -1,0 +1,114 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1584942548">
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;s[5]&apos; accessed at index 5, which is out of bounds." verbose="Array &apos;s[5]&apos; accessed at index 5, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="14" column="13" info="Array index out of bounds"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;p[3]&apos; accessed at index 3, which is out of bounds." verbose="Array &apos;p[3]&apos; accessed at index 3, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="19" column="6" info="Array index out of bounds"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;p[4]&apos; accessed at index 4, which is out of bounds." verbose="Array &apos;p[4]&apos; accessed at index 4, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="48" column="6" info="Array index out of bounds"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;a.c[3]&apos; accessed at index 3, which is out of bounds." verbose="Array &apos;a.c[3]&apos; accessed at index 3, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="59" column="8" info="Array index out of bounds"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;x[5]&apos; accessed at index 5, which is out of bounds." verbose="Array &apos;x[5]&apos; accessed at index 5, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="66" column="10" info="Array index out of bounds"/>
+        </error>
+        <error id="arrayIndexOutOfBoundsCond" severity="warning" msg="Either the condition &apos;a==2&apos; is redundant or the array &apos;x[2]&apos; is accessed at index 2, which is out of bounds." verbose="Either the condition &apos;a==2&apos; is redundant or the array &apos;x[2]&apos; is accessed at index 2, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="81" column="17" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="80" column="11" info="Assuming that condition &apos;a==2&apos; is not redundant"/>
+        </error>
+        <error id="negativeIndex" severity="warning" msg="Either the condition &apos;a&lt;0&apos; is redundant or the array &apos;x[2]&apos; is accessed at index -1, which is out of bounds." verbose="Either the condition &apos;a&lt;0&apos; is redundant or the array &apos;x[2]&apos; is accessed at index -1, which is out of bounds." cwe="786" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="89" column="17" info="Negative array index"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="88" column="11" info="Assuming that condition &apos;a&lt;0&apos; is not redundant"/>
+        </error>
+        <error id="objectIndex" severity="error" msg="The address of local variable &apos;a&apos; is accessed at non-zero index." verbose="The address of local variable &apos;a&apos; is accessed at non-zero index." cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="34" column="6"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="32" column="9" info="Address of variable taken here."/>
+        </error>
+        <error id="objectIndex" severity="error" msg="The address of local variable &apos;c&apos; is accessed at non-zero index." verbose="The address of local variable &apos;c&apos; is accessed at non-zero index." cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="41" column="6"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="39" column="54" info="Address of variable taken here."/>
+        </error>
+        <error id="objectIndex" severity="error" msg="The address of local variable &apos;c&apos; is accessed at non-zero index." verbose="The address of local variable &apos;c&apos; is accessed at non-zero index." cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="42" column="6"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="39" column="54" info="Address of variable taken here."/>
+        </error>
+        <error id="memleak" severity="error" msg="Memory leak: p" verbose="Memory leak: p" cwe="401" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="20" column="1"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="memleak" severity="error" msg="Memory leak: p" verbose="Memory leak: p" cwe="401" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="49" column="1"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;x&apos; can be reduced." verbose="The scope of the variable &apos;x&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="79" column="9"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;x&apos; can be reduced." verbose="The scope of the variable &apos;x&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="87" column="9"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="constVariable" severity="style" msg="Variable &apos;x&apos; can be declared with const" verbose="Variable &apos;x&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="79" column="9" info="Variable &apos;x&apos; can be declared with const"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="constVariable" severity="style" msg="Variable &apos;x&apos; can be declared with const" verbose="Variable &apos;x&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="87" column="9" info="Variable &apos;x&apos; can be declared with const"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: a" verbose="Uninitialized variable: a" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="40" column="12"/>
+            <symbol>a</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: a" verbose="Uninitialized variable: a" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="33" column="12"/>
+            <symbol>a</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: a" verbose="Uninitialized variable: a" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="41" column="12"/>
+            <symbol>a</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: a" verbose="Uninitialized variable: a" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="42" column="12"/>
+            <symbol>a</symbol>
+        </error>
+        <error id="unassignedVariable" severity="style" msg="Variable &apos;a&apos; is not assigned a value." verbose="Variable &apos;a&apos; is not assigned a value." cwe="665" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="39" column="24"/>
+            <symbol>a</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;a.c[3]&apos; is assigned a value that is never used." verbose="Variable &apos;a.c[3]&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="59" column="12"/>
+            <symbol>a.c[3]</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;x[5]&apos; is assigned a value that is never used." verbose="Variable &apos;x[5]&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/clang/outofbound.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\clang\outofbound.c" line="66" column="14"/>
+            <symbol>x[5]</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="f1" lineNumber="11"/>
+    <functiondecl functionName="f2" lineNumber="17"/>
+    <functiondecl functionName="f3" lineNumber="30"/>
+    <functiondecl functionName="f4" lineNumber="37"/>
+    <functiondecl functionName="f5" lineNumber="45"/>
+    <functiondecl functionName="f6" lineNumber="51"/>
+    <functiondecl functionName="f7" lineNumber="57"/>
+    <functiondecl functionName="vla" lineNumber="62"/>
+    <functiondecl functionName="alloca_region" lineNumber="70"/>
+    <functiondecl functionName="symbolic_index" lineNumber="78"/>
+    <functiondecl functionName="symbolic_index2" lineNumber="86"/>
+    <functiondecl functionName="overflow_binary_search" lineNumber="94"/>
+    <functioncall functionName="__builtin_alloca"/>
+    <functioncall functionName="a"/>
+    <functioncall functionName="c"/>
+    <functioncall functionName="calloc"/>
+    <functioncall functionName="eee"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="malloc"/>
+    <functioncall functionName="sizeof"/>
+  </FileInfo>
+</analyzerinfo>

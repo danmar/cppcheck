@@ -1,0 +1,909 @@
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+CWE
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+FwdAnalysis
+Result
+Result
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+isClass call:[setFlag] noreturn:[setFlag]
+isFunction call:[setFlag] noreturn:[setFlag]
+isVariable call:[setFlag] noreturn:[setFlag]
+isAlias call:[setFlag] noreturn:[setFlag]
+isSpecialization call:[setFlag] noreturn:[setFlag]
+isPartialSpecialization call:[setFlag] noreturn:[setFlag]
+isForwardDeclaration call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+getFlag call:[return] noreturn:[return]
+setFlag
+operator==
+token
+token
+scope
+name
+fullName
+nameToken
+paramEnd
+paramEnd
+isClass call:[getFlag] noreturn:[getFlag]
+isFunction call:[getFlag] noreturn:[getFlag]
+isVariable call:[getFlag] noreturn:[getFlag]
+isAlias call:[getFlag] noreturn:[getFlag]
+isSpecialization call:[getFlag] noreturn:[getFlag]
+isPartialSpecialization call:[getFlag] noreturn:[getFlag]
+isForwardDeclaration call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isSameFamily call:[return]
+ScopeInfo2
+TokenImpl
+str call:[update_property_info] noreturn:[update_property_info]
+str
+tokAt call:[tokAt]
+linkAt call:[linkAt]
+simpleMatch call:[simpleMatch] noreturn:[simpleMatch]
+valueType
+argumentType call:[Match,astParent] noreturn:[astParent]
+tokType
+tokType call:[setFlag] noreturn:[setFlag]
+isKeyword
+isName call:[getFlag] noreturn:[getFlag]
+isNameOnly
+isLiteral call:[getFlag] noreturn:[getFlag]
+isNumber
+isEnumerator
+isOp call:[isAssignmentOp,isConstOp,return] noreturn:[return]
+isConstOp call:[isArithmeticalOp,return] noreturn:[return]
+isExtendedOp call:[isConstOp]
+isArithmeticalOp
+isComparisonOp
+isAssignmentOp
+isBoolean
+isIncDecOp
+isBinaryOp call:[astOperand1,astOperand2]
+isUnaryOp call:[astOperand1,astOperand2]
+flags
+flags
+isUnsigned call:[getFlag] noreturn:[getFlag]
+isUnsigned call:[setFlag] noreturn:[setFlag]
+isSigned call:[getFlag] noreturn:[getFlag]
+isSigned call:[setFlag] noreturn:[setFlag]
+isPointerCompare call:[getFlag] noreturn:[getFlag]
+isPointerCompare call:[setFlag] noreturn:[setFlag]
+isLong call:[getFlag] noreturn:[getFlag]
+isLong call:[setFlag] noreturn:[setFlag]
+isStandardType call:[getFlag] noreturn:[getFlag]
+isStandardType call:[setFlag] noreturn:[setFlag]
+isExpandedMacro call:[getFlag] noreturn:[getFlag]
+isExpandedMacro call:[setFlag] noreturn:[setFlag]
+isCast call:[getFlag] noreturn:[getFlag]
+isCast call:[setFlag] noreturn:[setFlag]
+isAttributeConstructor call:[getFlag] noreturn:[getFlag]
+isAttributeConstructor call:[setFlag] noreturn:[setFlag]
+isAttributeDestructor call:[getFlag] noreturn:[getFlag]
+isAttributeDestructor call:[setFlag] noreturn:[setFlag]
+isAttributeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeUnused call:[setFlag] noreturn:[setFlag]
+isAttributeUsed call:[getFlag] noreturn:[getFlag]
+isAttributeUsed call:[setFlag] noreturn:[setFlag]
+isAttributePure call:[getFlag] noreturn:[getFlag]
+isAttributePure call:[setFlag] noreturn:[setFlag]
+isAttributeConst call:[getFlag] noreturn:[getFlag]
+isAttributeConst call:[setFlag] noreturn:[setFlag]
+isAttributeNoreturn call:[getFlag] noreturn:[getFlag]
+isAttributeNoreturn call:[setFlag] noreturn:[setFlag]
+isAttributeNothrow call:[getFlag] noreturn:[getFlag]
+isAttributeNothrow call:[setFlag] noreturn:[setFlag]
+isAttributePacked call:[getFlag] noreturn:[getFlag]
+isAttributePacked call:[setFlag] noreturn:[setFlag]
+isAttributeNodiscard call:[getFlag] noreturn:[getFlag]
+isAttributeNodiscard call:[setFlag] noreturn:[setFlag]
+isAttributeMaybeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeMaybeUnused call:[setFlag] noreturn:[setFlag]
+setCppcheckAttribute call:[setCppcheckAttribute] noreturn:[setCppcheckAttribute]
+getCppcheckAttribute call:[getCppcheckAttribute] noreturn:[getCppcheckAttribute]
+hasCppcheckAttributes
+isControlFlowKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[setFlag] noreturn:[setFlag]
+isComplex call:[getFlag] noreturn:[getFlag]
+isComplex call:[setFlag] noreturn:[setFlag]
+isEnumType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[setFlag] noreturn:[setFlag]
+isAtAddress call:[getFlag] noreturn:[getFlag]
+isAtAddress call:[setFlag] noreturn:[setFlag]
+isIncompleteVar call:[getFlag] noreturn:[getFlag]
+isIncompleteVar call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+isExternC call:[getFlag] noreturn:[getFlag]
+isExternC call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclComma call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclComma call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclEq call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclEq call:[setFlag] noreturn:[setFlag]
+isImplicitInt call:[getFlag] noreturn:[getFlag]
+isImplicitInt call:[setFlag] noreturn:[setFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isInline call:[setFlag] noreturn:[setFlag]
+isTemplate call:[getFlag] noreturn:[getFlag]
+isTemplate call:[setFlag] noreturn:[setFlag]
+isBitfield
+bits
+templateSimplifierPointers
+templateSimplifierPointer call:[insert] noreturn:[insert]
+setBits
+isUtf8 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf16 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf32 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isCChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isCMultiChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isTemplateArg call:[getFlag] noreturn:[getFlag]
+isTemplateArg call:[setFlag] noreturn:[setFlag]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findmatch call:[findmatch]
+findmatch call:[findmatch]
+fileIndex
+fileIndex
+linenr
+linenr
+column
+column
+next
+previous
+varId
+varId call:[isStandardType,tokType,update_property_info] noreturn:[isStandardType,update_property_info]
+exprId
+exprId
+forDebug
+forDebugVarId call:[forDebug]
+forDebugExprId call:[forDebug]
+forPrintOut call:[forDebug]
+link call:[update_property_info] noreturn:[update_property_info]
+link
+scope
+scope
+function
+variable call:[tokType] noreturn:[tokType]
+variable
+type
+enumerator
+enumerator call:[tokType] noreturn:[tokType]
+progressValue
+originalName global:[emptyString]
+values
+originalName call:[string] noreturn:[string]
+getKnownIntValue call:[front]
+removeValues call:[remove_if] noreturn:[remove_if]
+index
+next
+previous
+getFlag call:[return] noreturn:[return]
+setFlag
+astOperand1
+astOperand1
+astOperand2
+astOperand2
+astParent
+astParent
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astTop
+astTop
+clearAst
+clearValueFlow
+astString call:[astString] noreturn:[astString]
+setCpp11init
+isCpp11init
+Dimension
+BaseInfo
+operator<
+FriendInfo
+Type call:[next,str,tokAt] noreturn:[next]
+type global:[emptyString] call:[str]
+isTypeAlias call:[str]
+Enumerator
+getFlag call:[return] noreturn:[return]
+setFlag
+Variable call:[evaluate] noreturn:[evaluate]
+nameToken
+typeStartToken
+typeEndToken
+name global:[emptyString] call:[str] noreturn:[str]
+declarationId call:[varId] noreturn:[varId]
+index
+isPublic
+isProtected
+isPrivate
+isGlobal
+isNamespace
+isArgument
+isLocal call:[isExtern,return] noreturn:[isExtern]
+isMutable call:[getFlag] noreturn:[getFlag]
+isVolatile call:[getFlag] noreturn:[getFlag]
+isStatic call:[getFlag] noreturn:[getFlag]
+isExtern call:[getFlag] noreturn:[getFlag]
+isConst call:[getFlag] noreturn:[getFlag]
+isThrow
+isClass call:[getFlag] noreturn:[getFlag]
+isArray call:[getFlag] noreturn:[getFlag]
+isPointer call:[getFlag] noreturn:[getFlag]
+isPointerToArray call:[getFlag,isPointer] noreturn:[getFlag]
+isArrayOrPointer call:[getFlag] noreturn:[getFlag]
+isReference call:[getFlag] noreturn:[getFlag]
+isRValueReference call:[getFlag] noreturn:[getFlag]
+hasDefault call:[getFlag] noreturn:[getFlag]
+isInit call:[getFlag] noreturn:[getFlag]
+type
+typeScope
+scope
+dimensions
+dimension
+dimensionKnown
+isStlType call:[getFlag] noreturn:[getFlag]
+isStlStringType call:[getFlag] noreturn:[getFlag]
+isSmartPointer call:[getFlag] noreturn:[getFlag]
+isStlType call:[isStlType,strAt] noreturn:[strAt]
+isStlType call:[end,find,isStlType,strAt] noreturn:[end]
+isFloatingType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[isEnumType,type] noreturn:[isEnumType]
+isMaybeUnused call:[getFlag] noreturn:[getFlag]
+valueType
+accessControl
+type
+getFlag call:[return] noreturn:[return]
+setFlag
+name call:[str] noreturn:[str]
+argCount call:[size] noreturn:[size]
+minArgCount call:[size]
+initializedArgCount
+isLambda
+isConstructor
+isDestructor
+isAttributeConstructor call:[isAttributeConstructor] noreturn:[isAttributeConstructor]
+isAttributeDestructor call:[isAttributeDestructor] noreturn:[isAttributeDestructor]
+isAttributePure call:[isAttributePure] noreturn:[isAttributePure]
+isAttributeConst call:[isAttributeConst] noreturn:[isAttributeConst]
+isAttributeNoreturn call:[isAttributeNoreturn] noreturn:[isAttributeNoreturn]
+isAttributeNothrow call:[isAttributeNothrow] noreturn:[isAttributeNothrow]
+isAttributeNodiscard call:[isAttributeNodiscard] noreturn:[isAttributeNodiscard]
+hasBody call:[getFlag] noreturn:[getFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isConst call:[getFlag] noreturn:[getFlag]
+hasVirtualSpecifier call:[getFlag] noreturn:[getFlag]
+isPure call:[getFlag] noreturn:[getFlag]
+isStatic call:[getFlag] noreturn:[getFlag]
+isStaticLocal call:[getFlag] noreturn:[getFlag]
+isExtern call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isExplicit call:[getFlag] noreturn:[getFlag]
+isDefault call:[getFlag] noreturn:[getFlag]
+isDelete call:[getFlag] noreturn:[getFlag]
+isNoExcept call:[getFlag] noreturn:[getFlag]
+isThrow call:[getFlag] noreturn:[getFlag]
+hasOverrideSpecifier call:[getFlag] noreturn:[getFlag]
+hasFinalSpecifier call:[getFlag] noreturn:[getFlag]
+isOperator call:[getFlag] noreturn:[getFlag]
+hasLvalRefQualifier call:[getFlag] noreturn:[getFlag]
+hasRvalRefQualifier call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isVolatile call:[getFlag] noreturn:[getFlag]
+hasTrailingReturnType call:[getFlag] noreturn:[getFlag]
+hasBody call:[setFlag] noreturn:[setFlag]
+isInlineKeyword call:[getFlag] noreturn:[getFlag]
+isEscapeFunction call:[getFlag] noreturn:[getFlag]
+isEscapeFunction call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+returnDefEnd call:[findmatch,hasTrailingReturnType] noreturn:[findmatch]
+isInline call:[setFlag] noreturn:[setFlag]
+isConst call:[setFlag] noreturn:[setFlag]
+hasVirtualSpecifier call:[setFlag] noreturn:[setFlag]
+isPure call:[setFlag] noreturn:[setFlag]
+isStatic call:[setFlag] noreturn:[setFlag]
+isStaticLocal call:[setFlag] noreturn:[setFlag]
+isExtern call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+isExplicit call:[setFlag] noreturn:[setFlag]
+isDefault call:[setFlag] noreturn:[setFlag]
+isDelete call:[setFlag] noreturn:[setFlag]
+isNoExcept call:[setFlag] noreturn:[setFlag]
+isThrow call:[setFlag] noreturn:[setFlag]
+isOperator call:[setFlag] noreturn:[setFlag]
+hasLvalRefQualifier call:[setFlag] noreturn:[setFlag]
+hasRvalRefQualifier call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isVolatile call:[setFlag] noreturn:[setFlag]
+hasTrailingReturnType call:[setFlag] noreturn:[setFlag]
+isInlineKeyword call:[setFlag] noreturn:[setFlag]
+setBodyStartEnd call:[link,push_back] noreturn:[push_back]
+isAnonymous call:[compare,isdigit,size] noreturn:[isdigit]
+findEnumerator call:[str]
+isNestedIn
+nestedInFunction
+isClassOrStruct call:[return] noreturn:[return]
+isClassOrStructOrUnion call:[return] noreturn:[return]
+isExecutable
+isLoopScope
+isLocal call:[return] noreturn:[return]
+findRecordInNestedList call:[findRecordInNestedList]
+findType call:[findType]
+addFunction call:[back,insert,make_pair,push_back,str] noreturn:[insert]
+ValueType
+ValueType
+ValueType
+ValueType
+isPrimitive call:[return] noreturn:[return]
+isIntegral call:[return] noreturn:[return]
+isFloat call:[return] noreturn:[return]
+isEnum
+findType call:[findType]
+findScope call:[findScope]
+isVarId call:[size] noreturn:[size]
+getVariableFromVarId call:[at] noreturn:[at]
+variableList
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+setSettings
+getSettings
+isC
+isCPP
+front
+front
+back
+back
+getFiles
+find call:[find] noreturn:[find]
+end call:[end] noreturn:[end]
+map
+getVarId
+setTimerResults
+isC call:[isC] noreturn:[isC]
+isCPP call:[isCPP] noreturn:[isCPP]
+setPreprocessor
+getPreprocessor
+codeWithTemplates
+setSettings call:[setSettings] noreturn:[setSettings]
+getSymbolDatabase
+varIdCount
+tokens call:[front] noreturn:[front]
+isMaxTime
+getSettings
+newVarId
+givenACodeSampleToTokenize call:[createTokens,iss,tokenize] noreturn:[createTokens,tokenize]
+tokens call:[tokens] noreturn:[tokens]
+SimpleSuppressor
+reportOut call:[reportOut] noreturn:[reportOut]
+reportErr call:[empty,isSuppressed,reportErr,toSuppressionsErrorMessage] noreturn:[reportErr]
+TestSymbolDatabase
+reset
+getSymbolDB_inner global:[errout] call:[getSymbolDatabase,istr,str,tokenize]
+findFunctionScopeByToken call:[begin,end]
+findFunctionByName call:[isExecutable,str]
+run call:[Cpp11InitInInitList,VariableValueType1,VariableValueType2,VariableValueType3,VariableValueType4,VariableValueType5,VariableValueTypeReferences,array,arrayMemberVar1,arrayMemberVar2,arrayMemberVar3,auto1,auto10,auto11,auto12,auto13,auto14,auto15,auto2,auto3,auto4,auto5,auto6,auto7,auto8,auto9,c_str,checkTypeStartEndToken1,checkTypeStartEndToken2,checkTypeStartEndToken3,circularDependencies,classWithFriend,complainMissingLib,complexFunctionArrayPtr,constexprFunction,constructorInitialization,createSymbolDatabaseFindAllScopes1,createSymbolDatabaseFindAllScopes2,createSymbolDatabaseFindAllScopes3,enum1,enum2,enum3,enum4,enum5,enum6,enum7,enum8,enum9,executableScopeWithUnknownFunction,findFunction1,findFunction10,findFunction11,findFunction12,findFunction13,findFunction14,findFunction15,findFunction16,findFunction17,findFunction18,findFunction19,findFunction2,findFunction20,findFunction21,findFunction22,findFunction23,findFunction24,findFunction25,findFunction26,findFunction27,findFunction28,findFunction29,findFunction3,findFunction30,findFunction31,findFunction32,findFunction33,findFunction34,findFunction35,findFunction36,findFunction37,findFunction38,findFunction39,findFunction4,findFunction40,findFunction41,findFunction42,findFunction43,findFunction5,findFunction6,findFunction7,findFunction8,findFunction9,findFunctionContainer,findFunctionExternC,findFunctionGlobalScope,findVariableType1,findVariableType2,findVariableType3,findVariableTypeExternC,functionArgs1,functionArgs10,functionArgs11,functionArgs12,functionArgs13,functionArgs14,functionArgs15,functionArgs16,functionArgs17,functionArgs18,functionArgs2,functionArgs4,functionArgs5,functionArgs6,functionArgs7,functionArgs8,functionArgs9,functionDeclarationTemplate,functionDeclarations,functionDeclarations2,functionImplicitlyVirtual,functionIsInlineKeyword,functionLinkage,functionPrototype,functionReturnsReference,functionStatic,getVariableFromVarIdBoundsCheck,hasClassFunction,hasClassFunctionReturningFunctionPointer,hasClassFunction_trailingReturnType,hasGlobalVariables1,hasGlobalVariables2,hasGlobalVariables3,hasInlineClassFunction,hasInlineClassFunctionReturningFunctionPointer,hasInlineClassFunction_trailingReturnType,hasInlineClassOperatorTemplate,hasMissingInlineClassFunction,hasMissingInlineClassFunctionReturningFunctionPointer,hasRegularFunction,hasRegularFunctionReturningFunctionPointer,hasRegularFunction_trailingReturnType,hasSubClassConstructor,incomplete_type,isFunction1,isFunction2,isImplicitlyVirtual,isPure,isVariableDeclarationDoesNotIdentifyCase,isVariableDeclarationDoesNotIdentifyCppCast,isVariableDeclarationDoesNotIdentifyTemplateClass,isVariableDeclarationIdentifiesNestedTemplateVariable,isVariableDeclarationIdentifiesReference,isVariableDeclarationIdentifiesTemplatedArrayVariable,isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable,isVariableDeclarationIdentifiesTemplatedPointerVariable,isVariableDeclarationIdentifiesTemplatedVariable,isVariableDeclarationIdentifiesTemplatedVariableIterator,isVariableDeclarationIf,isVariableDeclarationPointerConst,isVariableDeclarationRValueRef,isVariableDecltype,isVariableMultiplePointersAndQualifiers,isVariablePointerToConstPointer,isVariablePointerToConstVolatilePointer,isVariablePointerToVolatilePointer,isVariableStlType,lambda,lambda2,lambda3,load,memberFunctionOfUnknownClassMacro1,memberFunctionOfUnknownClassMacro2,memberFunctionOfUnknownClassMacro3,methodWithRedundantScope,namespaces1,namespaces2,namespaces3,namespaces4,noReturnType,nodiscardAttributeFunction,noexceptFunction1,noexceptFunction2,noexceptFunction3,noexceptFunction4,noreturnAttributeFunction,nothrowAttributeFunction,nothrowDeclspecFunction,overloadedFunction1,parseFunctionCorrect,parseFunctionDeclarationCorrect,platform,pointerToMemberFunction,prepareTest,rangeBasedFor,setVerbose,sizeOfType,staticMemberVar,stlarray1,stlarray2,symboldatabase1,symboldatabase10,symboldatabase11,symboldatabase12,symboldatabase13,symboldatabase14,symboldatabase17,symboldatabase19,symboldatabase2,symboldatabase20,symboldatabase21,symboldatabase22,symboldatabase23,symboldatabase24,symboldatabase25,symboldatabase26,symboldatabase27,symboldatabase28,symboldatabase29,symboldatabase3,symboldatabase30,symboldatabase31,symboldatabase32,symboldatabase33,symboldatabase34,symboldatabase35,symboldatabase36,symboldatabase37,symboldatabase38,symboldatabase4,symboldatabase40,symboldatabase41,symboldatabase42,symboldatabase43,symboldatabase44,symboldatabase45,symboldatabase46,symboldatabase47,symboldatabase48,symboldatabase49,symboldatabase5,symboldatabase50,symboldatabase51,symboldatabase52,symboldatabase53,symboldatabase54,symboldatabase55,symboldatabase56,symboldatabase57,symboldatabase58,symboldatabase59,symboldatabase6,symboldatabase60,symboldatabase61,symboldatabase62,symboldatabase63,symboldatabase64,symboldatabase65,symboldatabase66,symboldatabase67,symboldatabase68,symboldatabase69,symboldatabase7,symboldatabase70,symboldatabase71,symboldatabase72,symboldatabase74,symboldatabase75,symboldatabase76,symboldatabase77,symboldatabase78,symboldatabase79,symboldatabase8,symboldatabase80,symboldatabase81,symboldatabase82,symboldatabase83,symboldatabase84,symboldatabase85,symboldatabase86,symboldatabase87,symboldatabase88,symboldatabase89,symboldatabase9,symboldatabase90,symboldatabase91,symboldatabase92,symboldatabase93,symboldatabase94,symboldatabase95,symboldatabase96,testConstructors,test_isVariableDeclarationCanHandleNull,test_isVariableDeclarationDoesNotIdentifyConstness,test_isVariableDeclarationIdentifiesArray,test_isVariableDeclarationIdentifiesCpp11Initialization,test_isVariableDeclarationIdentifiesDeclarationWithIndirection,test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection,test_isVariableDeclarationIdentifiesFirstOfManyVariables,test_isVariableDeclarationIdentifiesInitialization,test_isVariableDeclarationIdentifiesManyScopes,test_isVariableDeclarationIdentifiesOfArrayPointers,test_isVariableDeclarationIdentifiesPointerArray,test_isVariableDeclarationIdentifiesPointers,test_isVariableDeclarationIdentifiesPointers2,test_isVariableDeclarationIdentifiesScopedDeclaration,test_isVariableDeclarationIdentifiesScopedPointerDeclaration,test_isVariableDeclarationIdentifiesScopedStdDeclaration,test_isVariableDeclarationIdentifiesSimpleDeclaration,test_isVariableDeclarationIdentifiesStdDeclaration,throwFunction1,throwFunction2,tryCatch1,unionWithConstructor,valueTypeMatchParameter,valuetype,varTypesFloating,varTypesIntegral,varTypesOther,variableConstexpr,variableVolatile,variadic1,variadic2,variadic3,while] noreturn:[Cpp11InitInInitList,VariableValueType1,VariableValueType2,VariableValueType3,VariableValueType4,VariableValueType5,VariableValueTypeReferences,array,arrayMemberVar1,arrayMemberVar2,arrayMemberVar3,auto1,auto10,auto11,auto12,auto13,auto14,auto15,auto2,auto3,auto4,auto5,auto6,auto7,auto8,auto9,checkTypeStartEndToken1,checkTypeStartEndToken2,checkTypeStartEndToken3,circularDependencies,classWithFriend,complexFunctionArrayPtr,constexprFunction,constructorInitialization,createSymbolDatabaseFindAllScopes1,createSymbolDatabaseFindAllScopes2,createSymbolDatabaseFindAllScopes3,enum1,enum2,enum3,enum4,enum5,enum6,enum7,enum8,enum9,executableScopeWithUnknownFunction,findFunction1,findFunction10,findFunction11,findFunction12,findFunction13,findFunction14,findFunction15,findFunction16,findFunction17,findFunction18,findFunction19,findFunction2,findFunction20,findFunction21,findFunction22,findFunction23,findFunction24,findFunction25,findFunction26,findFunction27,findFunction28,findFunction29,findFunction3,findFunction30,findFunction31,findFunction32,findFunction33,findFunction34,findFunction35,findFunction36,findFunction37,findFunction38,findFunction39,findFunction4,findFunction40,findFunction41,findFunction42,findFunction43,findFunction5,findFunction6,findFunction7,findFunction8,findFunction9,findFunctionContainer,findFunctionExternC,findFunctionGlobalScope,findVariableType1,findVariableType2,findVariableType3,findVariableTypeExternC,functionArgs1,functionArgs10,functionArgs11,functionArgs12,functionArgs13,functionArgs14,functionArgs15,functionArgs16,functionArgs17,functionArgs18,functionArgs2,functionArgs4,functionArgs5,functionArgs6,functionArgs7,functionArgs8,functionArgs9,functionDeclarationTemplate,functionDeclarations,functionDeclarations2,functionImplicitlyVirtual,functionIsInlineKeyword,functionLinkage,functionPrototype,functionReturnsReference,functionStatic,getVariableFromVarIdBoundsCheck,hasClassFunction,hasClassFunctionReturningFunctionPointer,hasClassFunction_trailingReturnType,hasGlobalVariables1,hasGlobalVariables2,hasGlobalVariables3,hasInlineClassFunction,hasInlineClassFunctionReturningFunctionPointer,hasInlineClassFunction_trailingReturnType,hasInlineClassOperatorTemplate,hasMissingInlineClassFunction,hasMissingInlineClassFunctionReturningFunctionPointer,hasRegularFunction,hasRegularFunctionReturningFunctionPointer,hasRegularFunction_trailingReturnType,hasSubClassConstructor,incomplete_type,isFunction1,isFunction2,isImplicitlyVirtual,isPure,isVariableDeclarationDoesNotIdentifyCase,isVariableDeclarationDoesNotIdentifyCppCast,isVariableDeclarationDoesNotIdentifyTemplateClass,isVariableDeclarationIdentifiesNestedTemplateVariable,isVariableDeclarationIdentifiesReference,isVariableDeclarationIdentifiesTemplatedArrayVariable,isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable,isVariableDeclarationIdentifiesTemplatedPointerVariable,isVariableDeclarationIdentifiesTemplatedVariable,isVariableDeclarationIdentifiesTemplatedVariableIterator,isVariableDeclarationIf,isVariableDeclarationPointerConst,isVariableDeclarationRValueRef,isVariableDecltype,isVariableMultiplePointersAndQualifiers,isVariablePointerToConstPointer,isVariablePointerToConstVolatilePointer,isVariablePointerToVolatilePointer,isVariableStlType,lambda,lambda2,lambda3,memberFunctionOfUnknownClassMacro1,memberFunctionOfUnknownClassMacro2,memberFunctionOfUnknownClassMacro3,methodWithRedundantScope,namespaces1,namespaces2,namespaces3,namespaces4,noReturnType,nodiscardAttributeFunction,noexceptFunction1,noexceptFunction2,noexceptFunction3,noexceptFunction4,noreturnAttributeFunction,nothrowAttributeFunction,nothrowDeclspecFunction,overloadedFunction1,parseFunctionCorrect,parseFunctionDeclarationCorrect,pointerToMemberFunction,rangeBasedFor,sizeOfType,staticMemberVar,stlarray1,stlarray2,symboldatabase1,symboldatabase10,symboldatabase11,symboldatabase12,symboldatabase13,symboldatabase14,symboldatabase17,symboldatabase19,symboldatabase2,symboldatabase20,symboldatabase21,symboldatabase22,symboldatabase23,symboldatabase24,symboldatabase25,symboldatabase26,symboldatabase27,symboldatabase28,symboldatabase29,symboldatabase3,symboldatabase30,symboldatabase31,symboldatabase32,symboldatabase33,symboldatabase34,symboldatabase35,symboldatabase36,symboldatabase37,symboldatabase38,symboldatabase4,symboldatabase40,symboldatabase41,symboldatabase42,symboldatabase43,symboldatabase44,symboldatabase45,symboldatabase46,symboldatabase47,symboldatabase48,symboldatabase49,symboldatabase5,symboldatabase50,symboldatabase51,symboldatabase52,symboldatabase53,symboldatabase54,symboldatabase55,symboldatabase56,symboldatabase57,symboldatabase58,symboldatabase59,symboldatabase6,symboldatabase60,symboldatabase61,symboldatabase62,symboldatabase63,symboldatabase64,symboldatabase65,symboldatabase66,symboldatabase67,symboldatabase68,symboldatabase69,symboldatabase7,symboldatabase70,symboldatabase71,symboldatabase72,symboldatabase74,symboldatabase75,symboldatabase76,symboldatabase77,symboldatabase78,symboldatabase79,symboldatabase8,symboldatabase80,symboldatabase81,symboldatabase82,symboldatabase83,symboldatabase84,symboldatabase85,symboldatabase86,symboldatabase87,symboldatabase88,symboldatabase89,symboldatabase9,symboldatabase90,symboldatabase91,symboldatabase92,symboldatabase93,symboldatabase94,symboldatabase95,symboldatabase96,testConstructors,test_isVariableDeclarationCanHandleNull,test_isVariableDeclarationDoesNotIdentifyConstness,test_isVariableDeclarationIdentifiesArray,test_isVariableDeclarationIdentifiesCpp11Initialization,test_isVariableDeclarationIdentifiesDeclarationWithIndirection,test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection,test_isVariableDeclarationIdentifiesFirstOfManyVariables,test_isVariableDeclarationIdentifiesInitialization,test_isVariableDeclarationIdentifiesManyScopes,test_isVariableDeclarationIdentifiesOfArrayPointers,test_isVariableDeclarationIdentifiesPointerArray,test_isVariableDeclarationIdentifiesPointers,test_isVariableDeclarationIdentifiesPointers2,test_isVariableDeclarationIdentifiesScopedDeclaration,test_isVariableDeclarationIdentifiesScopedPointerDeclaration,test_isVariableDeclarationIdentifiesScopedStdDeclaration,test_isVariableDeclarationIdentifiesSimpleDeclaration,test_isVariableDeclarationIdentifiesStdDeclaration,throwFunction1,throwFunction2,tryCatch1,unionWithConstructor,valueTypeMatchParameter,valuetype,varTypesFloating,varTypesIntegral,varTypesOther,variableConstexpr,variableVolatile,variadic1,variadic2,variadic3,while]
+array call:[assertEquals,assert_,dimension,dimensions,getSymbolDB_inner,getVariableFromVarId,isArray,size,tokenizer,variableList,while]
+stlarray1 call:[assertEquals,assert_,dimension,dimensions,getSymbolDB_inner,getVariableFromVarId,isArray,size,tokenizer,variableList,while]
+stlarray2 call:[assertEquals,assert_,dimension,dimensions,getSymbolDB_inner,getVariableFromVarId,isArray,size,tokenizer,variableList,while]
+test_isVariableDeclarationCanHandleNull call:[assertEquals,assert_,isVariableDeclaration,reset,v] noreturn:[v]
+test_isVariableDeclarationIdentifiesSimpleDeclaration call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,simpleDeclaration,str,tokens,v]
+test_isVariableDeclarationIdentifiesInitialization call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,simpleDeclaration,str,tokens,v]
+test_isVariableDeclarationIdentifiesCpp11Initialization call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,simpleDeclaration,str,tokens,v]
+test_isVariableDeclarationIdentifiesScopedDeclaration call:[ScopedDeclaration,assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesStdDeclaration call:[StdDeclaration,assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesScopedStdDeclaration call:[StdDeclaration,assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesManyScopes call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,manyScopes,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesPointers call:[assertEquals,assert_,constpointer,isArray,isConst,isPointer,isReference,isVariableDeclaration,next,pointer,pointerconst,previous,reset,str,tokAt,tokens,v1,v2,v3]
+test_isVariableDeclarationIdentifiesPointers2 call:[assert_,findsimplematch,getSymbolDB_inner,isPointer,tokenizer,tokens,variable,while]
+test_isVariableDeclarationDoesNotIdentifyConstness call:[assertEquals,assert_,constness,isVariableDeclaration,reset,tokens]
+test_isVariableDeclarationIdentifiesFirstOfManyVariables call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,multipleDeclaration,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesScopedPointerDeclaration call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,manyScopes,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesDeclarationWithIndirection call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,pointerToPointer,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,pointerToPointer,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesArray call:[arr,assertEquals,assert_,isArray,isPointer,isPointerArray,isReference,isVariableDeclaration,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesPointerArray call:[arr,assertEquals,assert_,isArray,isPointer,isPointerArray,isPointerToArray,isReference,isVariableDeclaration,previous,reset,str,tokens,v]
+test_isVariableDeclarationIdentifiesOfArrayPointers call:[arr,assertEquals,assert_,isArray,isPointer,isPointerArray,isPointerToArray,isReference,isVariableDeclaration,previous,reset,str,tokens,v]
+isVariableDeclarationIdentifiesTemplatedPointerVariable call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,str,tokens,v,var]
+isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,str,tokens,v,var]
+isVariableDeclarationIdentifiesTemplatedArrayVariable call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,str,tokens,v,var]
+isVariableDeclarationIdentifiesTemplatedVariable call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,str,tokens,v,var]
+isVariableDeclarationIdentifiesTemplatedVariableIterator call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,str,tokens,v,var]
+isVariableDeclarationIdentifiesNestedTemplateVariable call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,str,tokens,v,var]
+isVariableDeclarationIdentifiesReference call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,tokens,v1,v2,v3,var1,var2,var3]
+isVariableDeclarationDoesNotIdentifyTemplateClass call:[assertEquals,isVariableDeclaration,reset,tokens,var]
+isVariableDeclarationDoesNotIdentifyCppCast call:[assertEquals,isVariableDeclaration,reset,tokens,var]
+isVariableDeclarationPointerConst call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,next,previous,reset,tokens,v,var]
+isVariableDeclarationRValueRef call:[assertEquals,assert_,isArray,isPointer,isRValueReference,isReference,isVariableDeclaration,previous,reset,scope,tokAt,tokens,v,var]
+isVariableDeclarationDoesNotIdentifyCase call:[assertEquals,getSymbolDB_inner,getVariableFromVarId,name,str,tokenizer,typeStartToken,while]
+isVariableDeclarationIf call:[assert_,findsimplematch,getSymbolDB_inner,tokenizer,tokens,varId,variable,while]
+VariableValueType1 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,isIntegral,name,tokenizer,valueType,while]
+VariableValueType2 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,isIntegral,name,tokenizer,valueType,while]
+VariableValueType3 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,name,todoAssertEquals,tokenizer,valueType,while]
+VariableValueType4 call:[assert_,getSymbolDB_inner,getVariableFromVarId,tokenizer,valueType,while]
+VariableValueType5 call:[assert_,getSymbolDB_inner,getVariableFromVarId,tokenizer,valueType,while]
+VariableValueTypeReferences call:[assert_,getSymbolDB_inner,getVariableFromVarId,tokenizer,valueType,while]
+findVariableType1 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,name,tokenizer,type,while]
+findVariableType2 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,name,tokenizer,type,while]
+findVariableType3 call:[assert_,findsimplematch,getSymbolDB_inner,tokenizer,tokens,type,variable,while]
+findVariableTypeExternC call:[assert_,findsimplematch,getSymbolDB_inner,str,tokenizer,tokens,valueType,variable,while]
+rangeBasedFor call:[assertEquals,assert_,back,getSymbolDB_inner,getVariableFromVarId,isLocal,isReference,size,tokenizer,variableList,while]
+isVariableStlType call:[assertEquals,back,code,createTokens,front,isStlStringType,isStlType,isVariableDeclaration,link,list,reset,tokAt,v]
+isVariablePointerToConstPointer call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,tokens,v,var]
+isVariablePointerToVolatilePointer call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,tokens,v,var]
+isVariablePointerToConstVolatilePointer call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,previous,reset,tokens,v,var]
+isVariableMultiplePointersAndQualifiers call:[assertEquals,assert_,isArray,isPointer,isReference,isVariableDeclaration,next,previous,reset,tokens,v,var]
+variableVolatile call:[assert_,findsimplematch,getSymbolDB_inner,isVolatile,tokenizer,tokens,variable,while]
+variableConstexpr call:[assert_,findsimplematch,getSymbolDB_inner,isConst,isStatic,tokenizer,tokens,valueType,variable,while]
+isVariableDecltype call:[assertEquals,assert_,findsimplematch,front,getSymbolDB_inner,name,size,str,tokenizer,tokens,valueType,variable,while]
+arrayMemberVar1 call:[assert_,findsimplematch,getSymbolDB_inner,next,simpleMatch,tokenizer,tokens,typeStartToken,varId,variable,while]
+arrayMemberVar2 call:[assert_,findsimplematch,getSymbolDB_inner,next,simpleMatch,tokenizer,tokens,typeStartToken,varId,variable,while]
+arrayMemberVar3 call:[assert_,findsimplematch,getSymbolDB_inner,next,simpleMatch,tokenizer,tokens,typeStartToken,varId,variable,while]
+staticMemberVar call:[assert_,getSymbolDB_inner,getVariableFromVarId,isConst,isPrivate,isStatic,size,tokenizer,variableList,while]
+getVariableFromVarIdBoundsCheck call:[assertThrowFail,assert_,getSymbolDB_inner,getVariableFromVarId,size,tokenizer,variableList,while] noreturn:[assertThrowFail,while]
+hasRegularFunction call:[assert_,findFunctionByName,findFunctionScopeByToken,front,getSymbolDB_inner,hasBody,next,size,str,tokenizer,tokens,while]
+hasRegularFunction_trailingReturnType call:[assert_,findFunctionByName,findFunctionScopeByToken,front,getSymbolDB_inner,hasBody,next,size,str,tokAt,tokenizer,tokens,while]
+hasInlineClassFunction call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findScopeByName,findsimplematch,getFunction,getSymbolDB_inner,hasBody,isInline,previous,size,str,tokenizer,tokens,while]
+hasInlineClassFunction_trailingReturnType call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findScopeByName,findsimplematch,getFunction,getSymbolDB_inner,hasBody,isInline,size,str,tokAt,tokenizer,tokens,while]
+hasMissingInlineClassFunction call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findsimplematch,getSymbolDB_inner,hasBody,size,str,tokenizer,tokens,while]
+hasInlineClassOperatorTemplate call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findScopeByName,findsimplematch,getFunction,getSymbolDB_inner,hasBody,isInline,size,str,tokAt,tokenizer,tokens,while]
+hasClassFunction call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findScopeByName,findsimplematch,getSymbolDB_inner,hasBody,isInline,linkAt,size,str,tokenizer,tokens,while]
+hasClassFunction_trailingReturnType call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findScopeByName,findsimplematch,getSymbolDB_inner,hasBody,isInline,linkAt,size,str,tokenizer,tokens,while]
+hasRegularFunctionReturningFunctionPointer call:[assert_,findFunctionByName,findFunctionScopeByToken,findsimplematch,front,getSymbolDB_inner,hasBody,size,str,tokenizer,tokens,while]
+hasInlineClassFunctionReturningFunctionPointer call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findsimplematch,getSymbolDB_inner,hasBody,isInline,size,str,tokenizer,tokens,while]
+hasMissingInlineClassFunctionReturningFunctionPointer call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findsimplematch,getSymbolDB_inner,hasBody,size,str,tokenizer,tokens,while]
+hasClassFunctionReturningFunctionPointer call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findsimplematch,getSymbolDB_inner,hasBody,isInline,linkAt,size,str,tokenizer,tokens,while]
+methodWithRedundantScope call:[assert_,back,findFunctionByName,findFunctionScopeByToken,findsimplematch,getSymbolDB_inner,hasBody,isInline,size,str,tokenizer,tokens,while]
+complexFunctionArrayPtr global:[errout] call:[assertEquals,assert_,dimensions,getSymbolDB_inner,getVariableFromVarId,size,str,tokenizer,variableList,while]
+pointerToMemberFunction global:[errout] call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,name,size,str,tokenizer,variableList,while]
+hasSubClassConstructor call:[assertEquals,assert_,begin,end,getSymbolDB_inner,hasBody,str,tokenizer,while]
+testConstructors call:[assert_,function,getSymbolDB_inner,isExplicit,tokAt,tokenizer,tokens,while]
+functionDeclarationTemplate call:[assert_,back,findFunctionByName,front,getSymbolDB_inner,hasBody,size,str,tokenizer,while]
+functionDeclarations call:[assert_,back,findFunctionByName,front,getSymbolDB_inner,getVariableFromVarId,hasBody,size,str,strAt,tokenizer,while]
+functionDeclarations2 call:[assert_,c_str,complainMissingLib,front,getSymbolDB_inner,hasBody,load,next,previous,size,str,tokenizer,valueType,while]
+constexprFunction call:[assert_,c_str,complainMissingLib,front,getSymbolDB_inner,hasBody,isConstexpr,load,size,str,tokenizer,while]
+constructorInitialization call:[assert_,empty,front,getSymbolDB_inner,size,tokenizer,while]
+memberFunctionOfUnknownClassMacro1 global:[errout] call:[assert_,empty,findScopeByName,front,getSymbolDB_inner,str,tokenizer,while]
+memberFunctionOfUnknownClassMacro2 global:[errout] call:[assert_,empty,findScopeByName,front,getSymbolDB_inner,str,tokenizer,while]
+memberFunctionOfUnknownClassMacro3 global:[errout] call:[assert_,empty,findScopeByName,front,getSymbolDB_inner,str,tokenizer,while]
+functionLinkage global:[errout] call:[assert_,empty,findsimplematch,function,getSymbolDB_inner,isExtern,isStaticLocal,str,tokenizer,tokens,while]
+classWithFriend call:[assert_,findScopeByName,front,getSymbolDB_inner,size,str,tokenizer,while]
+parseFunctionCorrect call:[assertEquals,assert_,back,findFunctionByName,getSymbolDB_inner,size,tokenizer,while]
+parseFunctionDeclarationCorrect call:[assertEquals,assert_,findScopeByName,getSymbolDB_inner,linenr,tokenizer,while]
+Cpp11InitInInitList call:[assertEquals,assert_,front,getSymbolDB_inner,linenr,tokenizer,while]
+hasGlobalVariables1 call:[assert_,begin,getSymbolDB_inner,name,size,str,tokenizer,typeStartToken,while]
+hasGlobalVariables2 call:[assert_,begin,getSymbolDB_inner,name,size,str,tokenizer,typeStartToken,while]
+hasGlobalVariables3 call:[assert_,begin,getSymbolDB_inner,name,size,str,tokenizer,typeStartToken,while]
+checkTypeStartEndToken1 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,size,str,tokenizer,typeEndToken,typeStartToken,variableList,while]
+checkTypeStartEndToken2 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,str,tokenizer,typeStartToken,while]
+checkTypeStartEndToken3 call:[argCount,assertEquals,assert_,front,getArgumentVar,getSymbolDB_inner,initializedArgCount,minArgCount,size,str,tokenizer,typeEndToken,typeStartToken,while]
+check_ global:[errout] call:[assert_,createSymbolDatabase,istr,str,tokenize,tokenizer]
+functionArgs1 global:[errout] call:[assertEquals,assert_,back,findScopeByName,front,getSymbolDB_inner,getVariableFromVarId,hasDefault,index,initializedArgCount,isArgument,isClass,isConst,isPointer,isReference,name,nameToken,size,str,tokenizer,variableList,while]
+functionArgs2 call:[assertEquals,assert_,dimension,dimensions,getSymbolDB_inner,getVariableFromVarId,nameToken,size,str,tokenizer,while]
+functionArgs4 call:[assertEquals,assert_,back,dimension,dimensions,front,getSymbolDB_inner,name,size,tokenizer,while]
+functionArgs5 call:[assertEquals,assert_,findsimplematch,front,function,getSymbolDB_inner,isEnumType,size,tokenizer,tokens,type,while]
+functionArgs6 call:[assertEquals,assert_,findsimplematch,front,function,getSymbolDB_inner,isEnumType,size,tokenizer,tokens,type,while]
+functionArgs7 call:[assertEquals,assert_,findsimplematch,front,function,getSymbolDB_inner,linenr,size,tokenizer,tokens,type,while]
+functionArgs8 call:[assertEquals,assert_,findsimplematch,front,function,getSymbolDB_inner,isStructType,linenr,size,tokenizer,tokens,type,while]
+functionArgs9 call:[assertEquals,assert_,findsimplematch,front,function,getSymbolDB_inner,isEnumType,size,tokenizer,tokens,type,while]
+functionArgs10 call:[assertEquals,assert_,begin,getSymbolDB_inner,size,tokenizer,while]
+functionArgs11 call:[assertEquals,assert_,begin,getSymbolDB_inner,size,tokenizer,while]
+functionArgs12 call:[assertEquals,assert_,findsimplematch,front,function,getSymbolDB_inner,isEnumType,size,tokenizer,tokens,type,while]
+functionArgs13 call:[assertEquals,assert_,findsimplematch,front,function,getSymbolDB_inner,isEnumType,isStructType,name,size,tokenizer,tokens,type,while]
+functionArgs14 call:[argCount,assertEquals,assert_,function,getSymbolDB_inner,initializedArgCount,minArgCount,next,tokenizer,tokens,while]
+functionArgs15 call:[argCount,assertEquals,assert_,back,front,getSymbolDB_inner,initializedArgCount,minArgCount,name,size,tokenizer,while]
+functionArgs16 call:[argCount,assertEquals,assert_,front,getArgumentVar,getSymbolDB_inner,isPointer,isReference,name,tokenizer,while]
+functionArgs17 call:[argCount,assertEquals,assert_,front,getSymbolDB_inner,tokenizer,while]
+functionArgs18 call:[argCount,assertEquals,assert_,front,getSymbolDB_inner,tokenizer,while]
+functionImplicitlyVirtual call:[assertEquals,assert_,back,getSymbolDB_inner,isImplicitlyVirtual,size,tokenizer,while]
+functionIsInlineKeyword call:[assert_,back,getSymbolDB_inner,isInlineKeyword,tokenizer,while]
+functionStatic call:[assert_,back,getSymbolDB_inner,isStatic,tokenizer,while]
+functionReturnsReference call:[assertEquals,assert_,back,begin,getSymbolDB_inner,returnsReference,size,tokenizer,while]
+namespaces1 call:[assertEquals,assert_,front,getSymbolDB_inner,hasBody,isClassOrStruct,size,tokenizer,while]
+namespaces2 call:[assertEquals,assert_,front,getSymbolDB_inner,hasBody,isClassOrStruct,size,str,tokenizer,while]
+namespaces3 call:[assertEquals,assert_,back,front,getSymbolDB_inner,size,tokenizer,while]
+namespaces4 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,linenr,name,tokenizer,type,while]
+tryCatch1 global:[errout] call:[assertEquals,assert_,getSymbolDB_inner,size,str,tokenizer,variableList,while]
+symboldatabase1 global:[errout] call:[assertEquals,check_,str]
+symboldatabase2 global:[errout] call:[assertEquals,check_,str]
+symboldatabase3 global:[errout] call:[assertEquals,check_,str]
+symboldatabase4 global:[errout] call:[assertEquals,check_,str]
+symboldatabase5 call:[assertThrowFail,check_,while] noreturn:[assertThrowFail,while]
+symboldatabase6 global:[errout] call:[assertEquals,check_,str]
+symboldatabase7 global:[errout] call:[assertEquals,check_,str]
+symboldatabase8 global:[errout] call:[assertEquals,check_,str]
+symboldatabase9 global:[errout] call:[assertEquals,check_,str]
+symboldatabase10 global:[errout] call:[assertEquals,check_,str]
+symboldatabase11 global:[errout] call:[assertEquals,check_,str]
+symboldatabase12 global:[errout] call:[assertEquals,check_,str]
+symboldatabase13 global:[errout] call:[assertEquals,check_,str]
+symboldatabase14 call:[assertThrowFail,check_,while] noreturn:[assertThrowFail,while]
+symboldatabase17 global:[errout] call:[assertEquals,check_,str]
+symboldatabase19 global:[errout] call:[assertEqualsWithoutLineNumbers,check_,str] noreturn:[assertEqualsWithoutLineNumbers]
+symboldatabase20 call:[assertThrowFail,check_,while] noreturn:[assertThrowFail,while]
+symboldatabase21 global:[errout] call:[assertEquals,check_,str]
+symboldatabase22 global:[errout] call:[assertEquals,check_,str]
+symboldatabase23 call:[assertEquals,assert_,back,front,getSymbolDB_inner,isClass,name,size,string,tokenizer,while]
+symboldatabase24 call:[assertEquals,assert_,getSymbolDB_inner,isClassOrStruct,linenr,size,tokenizer,while] noreturn:[linenr]
+symboldatabase25 global:[errout] call:[assertEquals,assert_,getSymbolDB_inner,size,str,tokenizer,variableList,while]
+symboldatabase26 global:[errout] call:[assertEquals,assert_,getSymbolDB_inner,size,str,tokenizer,variableList,while]
+symboldatabase27 global:[errout] call:[assertEquals,check_,str]
+symboldatabase28 call:[assert_,getSymbolDB_inner,getVariableFromVarId,tokenizer,typeScope,while]
+symboldatabase29 global:[errout] call:[assertEquals,check_,str]
+symboldatabase30 call:[assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase31 call:[assert_,begin,getSymbolDB_inner,name,size,tokenizer,while]
+symboldatabase32 call:[assert_,findScopeByName,getFunction,getSymbolDB_inner,tokenizer,while]
+symboldatabase33 call:[assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase34 global:[errout] call:[assertEquals,check_,str]
+symboldatabase35 global:[errout] call:[assertEquals,check_,str]
+symboldatabase36 global:[errout] call:[assertEquals,check_,str]
+symboldatabase37 call:[assert_,begin,getSymbolDB_inner,getVariableFromVarId,name,size,tokenizer,type,variableList,while]
+symboldatabase38 call:[check_] noreturn:[check_]
+symboldatabase40 global:[errout] call:[assertEquals,check_,str]
+symboldatabase41 call:[assert_,findScopeByName,front,getSymbolDB_inner,hasBody,size,tokenizer,while]
+symboldatabase42 call:[assertEquals,assert_,findScopeByName,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase43 global:[errout] call:[assertEquals,check_,str]
+symboldatabase44 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,size,tokenizer,variableList,while]
+symboldatabase45 call:[assertEquals,assert_,begin,getSymbolDB_inner,getVariableFromVarId,size,tokenizer,variableList,while]
+symboldatabase46 call:[assertEquals,assert_,begin,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase47 call:[assert_,empty,front,getSymbolDB_inner,tokenizer,while]
+symboldatabase48 call:[assertEquals,assert_,empty,findsimplematch,front,function,getSymbolDB_inner,linenr,next,tokenizer,tokens,while]
+symboldatabase49 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,tokenizer,tokens,variable,while]
+symboldatabase50 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,isConstructor,tokenizer,tokens,while]
+symboldatabase51 call:[assert_,findFunctionByName,front,getSymbolDB_inner,tokenizer,while]
+symboldatabase52 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,size,tokenizer,variableList,while]
+symboldatabase53 call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,isClass,tokenizer,while]
+symboldatabase54 call:[assertEquals,assert_,front,getSymbolDB_inner,hasOverrideSpecifier,size,tokenizer,while]
+symboldatabase55 call:[assertEquals,assert_,front,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase56 call:[assertEquals,assert_,back,begin,front,getSymbolDB_inner,hasBody,size,tokenizer,while]
+symboldatabase57 call:[assert_,begin,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase58 call:[assert_,begin,getSymbolDB_inner,name,size,tokenizer,while]
+symboldatabase59 call:[assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase60 call:[assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase61 call:[assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase62 call:[assert_,findFunctionByName,findScopeByName,getSymbolDB_inner,hasBody,size,tokenizer,while]
+symboldatabase63 call:[assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase64 call:[assert_,findsimplematch,function,getSymbolDB_inner,linenr,next,size,tokenizer,tokens,while]
+symboldatabase65 global:[errout] call:[assertEquals,check_,str]
+symboldatabase66 call:[assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase67 call:[assert_,front,getSymbolDB_inner,hasOverrideSpecifier,isConst,isNoExcept,tokenizer,while]
+symboldatabase68 call:[assert_,findsimplematch,function,getSymbolDB_inner,hasFinalSpecifier,hasOverrideSpecifier,hasVirtualSpecifier,isConst,isNoExcept,linenr,tokenizer,tokens,while]
+symboldatabase69 call:[assert_,findsimplematch,function,getSymbolDB_inner,isConst,isVolatile,linenr,tokenizer,tokens,while]
+symboldatabase70 call:[assert_,getSymbolDB_inner,size,tokenizer,variableList,while]
+symboldatabase71 call:[assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase72 call:[assert_,findsimplematch,function,getSymbolDB_inner,linenr,size,tokenizer,tokens,while]
+symboldatabase74 call:[assertEquals,assert_,getSymbolDB_inner,hasFinalSpecifier,size,tokenizer,while]
+symboldatabase75 call:[assertEquals,assert_,getSymbolDB_inner,hasBody,hasLvalRefQualifier,hasRvalRefQualifier,hasTrailingReturnType,isConst,size,tokenizer,while]
+symboldatabase76 call:[assertEquals,assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase77 call:[assertEquals,assert_,getSymbolDB_inner,size,tokenizer,while]
+symboldatabase78 global:[errout] call:[assertEquals,assert_,getSymbolDB_inner,str,tokenizer,while]
+symboldatabase79 call:[assert_,back,front,getSymbolDB_inner,isDefault,size,tokenizer,while]
+symboldatabase80 call:[assert_,findScopeByName,front,getSymbolDB_inner,hasBody,name,size,tokenizer,while]
+symboldatabase81 call:[assert_,findScopeByName,front,getSymbolDB_inner,hasBody,name,size,tokenizer,while]
+symboldatabase82 call:[assertEquals,assert_,getSymbolDB_inner,isConstructor,size,tokenizer,while]
+symboldatabase83 global:[errout] call:[assertEquals,assert_,findScopeByName,front,getSymbolDB_inner,hasBody,isConstructor,isDefault,isNoExcept,name,size,str,tokenizer,while]
+symboldatabase84 global:[errout] call:[assertEquals,assert_,findScopeByName,front,getSymbolDB_inner,hasBody,isConstructor,isDefault,isNoExcept,name,size,str,tokenizer,while]
+symboldatabase85 call:[assertEquals,assert_,findsimplematch,getSymbolDB_inner,long,next,scope,tokenizer,tokens,variable,while]
+symboldatabase86 call:[assert_,back,front,getSymbolDB_inner,hasBody,isDefault,size,tokenizer,while]
+symboldatabase87 call:[assert_,findsimplematch,getSymbolDB_inner,tokenizer,tokens,variable,while]
+symboldatabase88 global:[errout] call:[assertEquals,check_,str]
+symboldatabase89 call:[assert_,findsimplematch,getSymbolDB_inner,next,str,tokenizer,tokens,valueType,variable,while]
+symboldatabase90 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,name,str,tokenizer,tokens,while]
+symboldatabase91 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,name,str,tokenizer,tokens,while]
+symboldatabase92 global:[errout] call:[assertEquals,assert_,getSymbolDB_inner,str,tokenizer,while]
+symboldatabase93 call:[assert_,findScopeByName,getSymbolDB_inner,tokenizer,while]
+symboldatabase94 call:[assert_,getSymbolDB_inner,getVariableFromVarId,tokenizer,while]
+symboldatabase95 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,name,str,tokenizer,tokens,while]
+symboldatabase96 global:[errout] call:[assertEquals,assert_,getSymbolDB_inner,str,tokenizer,while]
+createSymbolDatabaseFindAllScopes1 call:[assertEquals,assert_,back,getSymbolDB_inner,size,tokenizer,while]
+createSymbolDatabaseFindAllScopes2 call:[assertEquals,assert_,back,findsimplematch,getSymbolDB_inner,size,tokenizer,tokens,variable,while]
+createSymbolDatabaseFindAllScopes3 call:[assertEquals,assert_,front,getSymbolDB_inner,pop_front,size,tokenizer,while]
+enum1 call:[assert_,back,getSymbolDB_inner,getVariableFromVarId,isEnumType,tokenizer,while]
+enum2 call:[assert_,back,getSymbolDB_inner,getVariableFromVarId,isEnumType,tokenizer,while]
+enum3 call:[assert_,back,findEnumerator,getSymbolDB_inner,tokenizer,while]
+enum4 call:[assertEquals,assert_,begin,enumerator,getSymbolDB_inner,size,str,tokType,tokenizer,while]
+enum5 call:[assertEquals,assert_,begin,dimension,dimensions,getSymbolDB_inner,getVariableFromVarId,isArray,size,tokenizer,variableList,while]
+enum6 call:[assert_,findsimplematch,function,getSymbolDB_inner,name,str,tokenizer,tokens,while]
+enum7 call:[assertEquals,assert_,dimension,dimensions,getSymbolDB_inner,getVariableFromVarId,isArray,size,tokenizer,variableList,while]
+enum8 call:[assertEquals,assert_,back,findEnumerator,getSymbolDB_inner,tokenizer,while]
+enum9 call:[assertEquals,assert_,back,findEnumerator,getSymbolDB_inner,tokenizer,while]
+sizeOfType call:[assert_,findsimplematch,getSymbolDB_inner,sizeOfType,tokenizer,tokens,while] noreturn:[sizeOfType]
+isImplicitlyVirtual call:[assertEquals,assert_,empty,findScopeByName,front,getSymbolDB_inner,isImplicitlyVirtual,size,todoAssertEquals,tokenizer,while] noreturn:[todoAssertEquals]
+isPure call:[assert_,back,begin,getSymbolDB_inner,isPure,size,tokenizer,while]
+isFunction1 call:[assert_,findScopeByName,getSymbolDB_inner,getVariableFromVarId,str,tokenizer,typeStartToken,while]
+isFunction2 call:[assert_,back,findScopeByName,findsimplematch,getSymbolDB_inner,isFunction,tokenizer,tokens,while]
+findFunction1 global:[errout] call:[Match,assertEquals,assert_,findFunction,findScopeByName,getSymbolDB_inner,linenr,linkAt,next,simpleMatch,str,tokenizer,varId,while]
+findFunction2 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,str,tokenizer,tokens,while]
+findFunction3 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokAt,tokenizer,tokens,while]
+findFunction4 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction5 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunction6 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,tokenizer,tokens,while]
+findFunction7 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokAt,tokenizer,tokens,while]
+findFunction8 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokAt,tokenizer,tokens,while]
+findFunction9 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction10 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction11 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction12 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction13 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction14 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction15 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction16 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction17 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction18 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction19 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction20 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+findFunction21 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,isConst,tokAt,tokenizer,tokens,while]
+findFunction22 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,isConst,next,tokenizer,tokens,while]
+findFunction23 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,isConst,next,tokenizer,tokens,while]
+findFunction24 call:[assert_,findsimplematch,function,getSymbolDB_inner,next,tokenizer,tokens,while]
+findFunction25 call:[assert_,findsimplematch,function,getSymbolDB_inner,next,tokenizer,tokens,while]
+findFunction26 call:[assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunction27 call:[assert_,findsimplematch,function,getSymbolDB_inner,tokenizer,tokens,while]
+findFunction28 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunction29 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunction30 call:[assert_,findsimplematch,function,getSymbolDB_inner,tokenizer,tokens,while]
+findFunction31 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunction32 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunction33 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunction34 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunction35 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunction36 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,name,str,tokenizer,tokens,while]
+findFunction37 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,name,str,tokenizer,tokens,while]
+findFunction38 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,name,str,tokenizer,tokens,while]
+findFunction39 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,name,str,tokenizer,tokens,while]
+findFunction40 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,name,str,tokenizer,tokens,while]
+findFunction41 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,name,str,tokenizer,tokens,while]
+findFunction42 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,name,str,tokenizer,tokens,while]
+findFunction43 global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,name,str,tokenizer,tokens,while]
+findFunctionContainer call:[assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+findFunctionExternC call:[assert_,findsimplematch,function,getSymbolDB_inner,tokenizer,tokens,while]
+findFunctionGlobalScope call:[assert_,findsimplematch,function,getSymbolDB_inner,tokenizer,tokens,while]
+overloadedFunction1 call:[assert_,findsimplematch,function,getSymbolDB_inner,tokAt,tokenizer,tokens,while]
+valueTypeMatchParameter call:[assertEquals,matchParameter,vt_char_pointer,vt_char_pointer2,vt_const_float_pointer,vt_const_int,vt_int,vt_int_pointer,vt_long_long,vt_void_pointer]
+noexceptFunction1 global:[errout] call:[assertEquals,assert_,findFunctionByName,front,getSymbolDB_inner,isNoExcept,str,tokenizer,while] noreturn:[while]
+noexceptFunction2 global:[errout] call:[assertEquals,assert_,findFunctionByName,front,getSymbolDB_inner,isNoExcept,str,tokenizer,while] noreturn:[while]
+noexceptFunction3 global:[errout] call:[assertEquals,assert_,findFunctionByName,findScopeByName,getSymbolDB_inner,isNoExcept,str,tokenizer,while] noreturn:[while]
+noexceptFunction4 global:[errout] call:[assertEquals,assert_,findFunctionByName,findScopeByName,getSymbolDB_inner,isNoExcept,str,tokenizer,while] noreturn:[while]
+throwFunction1 global:[errout] call:[assertEquals,assert_,findFunctionByName,front,getSymbolDB_inner,isThrow,str,tokenizer,while] noreturn:[while]
+throwFunction2 global:[errout] call:[assertEquals,assert_,findFunctionByName,findScopeByName,getSymbolDB_inner,isThrow,str,tokenizer,while] noreturn:[while]
+nothrowAttributeFunction global:[errout] call:[assertEquals,assert_,findFunctionByName,front,getSymbolDB_inner,isAttributeNothrow,str,tokenizer,while]
+nothrowDeclspecFunction global:[errout] call:[assertEquals,assert_,findFunctionByName,front,getSymbolDB_inner,isAttributeNothrow,str,tokenizer,while]
+noreturnAttributeFunction global:[errout] call:[assertEquals,assert_,findFunctionByName,front,getSymbolDB_inner,isAttributeNoreturn,str,tokenizer,while]
+nodiscardAttributeFunction global:[errout] call:[assertEquals,assert_,findFunctionByName,front,getSymbolDB_inner,isAttributeNodiscard,str,tokenizer,while]
+varTypesIntegral call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,isFloatingType,nameToken,str,tokenizer,while]
+varTypesFloating call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,isArrayOrPointer,isFloatingType,nameToken,str,tokenizer,while]
+varTypesOther call:[assertEquals,assert_,getSymbolDB_inner,getVariableFromVarId,isFloatingType,nameToken,str,tokenizer,while]
+functionPrototype global:[errout] call:[assertEquals,check_,str]
+lambda call:[assertEquals,assert_,begin,getSymbolDB_inner,size,tokenizer,while]
+lambda2 call:[assertEquals,assert_,begin,getSymbolDB_inner,size,tokenizer,while]
+lambda3 call:[assertEquals,assert_,begin,getSymbolDB_inner,size,tokenizer,while]
+circularDependencies call:[check_] noreturn:[check_]
+executableScopeWithUnknownFunction call:[assertEquals,assert_,begin,getSymbolDB_inner,hasBody,size,tokenizer,while]
+typeOf_ call:[assert_,back,istr,previous,simpleMatch,str,string,strlen,tokenize,tokenizer,valueType] noreturn:[string]
+valuetype call:[Parse,ValueType,assertEquals,fromLibraryType,load,platformString,sizeof,str,typeOf_,while]
+variadic1 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+variadic2 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokAt,tokenizer,tokens,while]
+variadic3 call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,tokenizer,tokens,while]
+noReturnType call:[assertEquals,assert_,getSymbolDB_inner,size,str,tokenizer,while]
+auto1 call:[assert_,getSymbolDB_inner,getVariableFromVarId,isConst,isPointer,isStandardType,next,tokenizer,tokens,while]
+auto2 call:[assert_,findsimplematch,getSymbolDB_inner,isPointer,name,next,str,tokenizer,tokens,type,typeStartToken,valueType,variable,while]
+auto3 call:[assert_,findsimplematch,getSymbolDB_inner,isPointer,name,next,tokenizer,tokens,type,valueType,variable,while]
+auto4 call:[assert_,findsimplematch,getSymbolDB_inner,isConst,isPointer,isReference,name,next,str,tokenizer,tokens,type,typeStartToken,valueType,variable,while]
+auto5 call:[assert_,findsimplematch,getSymbolDB_inner,isConst,isPointer,isReference,name,next,str,tokenizer,tokens,type,typeStartToken,valueType,variable,while]
+auto6 call:[assert_,getSymbolDB_inner,tokenizer,while] noreturn:[while]
+auto7 call:[assertEquals,assert_,findsimplematch,getSymbolDB_inner,next,todoAssertEquals,tokenizer,tokens,valueType,while]
+auto8 call:[assertEquals,assert_,findsimplematch,getSymbolDB_inner,tokenizer,tokens,valueType,while]
+auto9 call:[assert_,getSymbolDB_inner,tokenizer,while] noreturn:[while]
+auto10 call:[assertEquals,assert_,findsimplematch,getSymbolDB_inner,tokenizer,tokens,valueType,while]
+auto11 call:[assert_,findsimplematch,getSymbolDB_inner,isConst,tokenizer,tokens,variable,while]
+auto12 call:[assert_,findsimplematch,getSymbolDB_inner,tokenizer,tokens,valueType,while]
+auto13 call:[assert_,findsimplematch,getSymbolDB_inner,next,tokenizer,tokens,valueType,variable,while]
+auto14 call:[assert_,findsimplematch,getSymbolDB_inner,tokenizer,tokens,valueType,while]
+auto15 call:[assertEquals,assert_,getSymbolDB_inner,size,tokenizer,valueType,variableList,while]
+unionWithConstructor global:[errout] call:[assertEquals,assert_,findsimplematch,function,getSymbolDB_inner,linenr,str,tokenizer,tokens,while]
+incomplete_type global:[errout] call:[assertEquals,assert_,getSymbolDB_inner,str,tokenizer,while]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

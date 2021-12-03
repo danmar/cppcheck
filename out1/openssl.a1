@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3171123395">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="valid_code" lineNumber="14"/>
+    <functiondecl functionName="valid_code_do_crypt" lineNumber="20"/>
+    <functiondecl functionName="invalidPrintfArgType_test" lineNumber="56"/>
+    <functiondecl functionName="EVP_CIPHER_CTX_new_test" lineNumber="62"/>
+    <functioncall functionName="BIO_printf"/>
+    <functioncall functionName="EVP_CIPHER_CTX_free"/>
+    <functioncall functionName="EVP_CIPHER_CTX_new"/>
+    <functioncall functionName="EVP_EncryptFinal_ex"/>
+    <functioncall functionName="EVP_EncryptInit_ex"/>
+    <functioncall functionName="EVP_EncryptUpdate"/>
+    <functioncall functionName="EVP_aes_256_cbc"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="bio"/>
+    <functioncall functionName="ctx"/>
+    <functioncall functionName="fclose"/>
+    <functioncall functionName="fopen"/>
+    <functioncall functionName="fwrite"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="intext"/>
+    <functioncall functionName="iv"/>
+    <functioncall functionName="key"/>
+    <functioncall functionName="out"/>
+    <functioncall functionName="outbuf"/>
+    <functioncall functionName="outfile"/>
+    <functioncall functionName="outlen"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="strlen"/>
+    <functioncall functionName="tmplen"/>
+  </FileInfo>
+</analyzerinfo>

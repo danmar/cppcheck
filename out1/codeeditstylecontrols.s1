@@ -1,0 +1,12 @@
+SelectColorButton
+SelectFontWeightCombo
+SelectColorButton call:[SIGNAL,SLOT,changeColor,clicked,connect,updateColor] noreturn:[connect]
+updateColor call:[QString,arg,blue,green,red,setObjectName,setStyleSheet] noreturn:[setStyleSheet]
+changeColor call:[colorChanged,exec,pDlg,selectedColor,setColor,setModal] noreturn:[colorChanged]
+setColor call:[updateColor] noreturn:[updateColor]
+getColor
+SelectFontWeightCombo call:[QVariant,SIGNAL,SLOT,addItem,changeWeight,connect,currentIndexChanged,tr,updateWeight] noreturn:[connect]
+updateWeight call:[QVariant,findData,setCurrentIndex] noreturn:[setCurrentIndex]
+changeWeight call:[itemData,setWeight,toInt,weightChanged] noreturn:[weightChanged]
+setWeight call:[updateWeight] noreturn:[updateWeight]
+getWeight

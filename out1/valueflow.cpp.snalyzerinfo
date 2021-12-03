@@ -1,0 +1,988 @@
+CWE
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+FwdAnalysis
+Result
+Result
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+Action
+Action
+set
+get call:[return] noreturn:[return]
+isRead call:[get] noreturn:[get]
+isWrite call:[get] noreturn:[get]
+isInvalid call:[get] noreturn:[get]
+isInconclusive call:[get] noreturn:[get]
+isNone
+isModified call:[isInvalid,isWrite] noreturn:[isInvalid]
+isIdempotent call:[get] noreturn:[get]
+isIncremental call:[get] noreturn:[get]
+isSymbolicMatch call:[get] noreturn:[get]
+isInternal call:[get] noreturn:[get]
+matches call:[get] noreturn:[get]
+operator|= call:[set]
+operator|
+operator==
+operator!=
+Result
+update
+evaluate call:[evaluate] noreturn:[evaluate]
+forkScope
+Analyzer
+isEqual
+isEqual
+isEqual call:[isEqual] noreturn:[isEqual]
+isZero call:[T]
+Check
+Check call:[instances,remove] noreturn:[remove]
+name
+FileInfo
+FileInfo
+toString call:[string] noreturn:[string]
+getFileInfo
+loadFileInfoFromXml
+analyseWholeProgram
+reportError call:[CWE,reportError] noreturn:[reportError]
+reportError call:[callstack,reportError] noreturn:[reportError]
+reportError call:[CWE,reportError] noreturn:[reportError]
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+Location
+UnsafeUsage
+CallBase
+CallBase
+NestedCall
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+VariableValue
+CheckUninitVar
+CheckUninitVar
+runChecks call:[check,checkUninitVar,valueFlowUninit] noreturn:[valueFlowUninit]
+uninitvarError call:[uninitvarError] noreturn:[uninitvarError]
+uninitvarError call:[uninitdataError,uninitvarError] noreturn:[uninitdataError,uninitvarError]
+getErrorMessages call:[c,uninitStructMemberError,uninitdataError,uninitstringError,uninitvarError] noreturn:[uninitStructMemberError]
+myName
+classInfo
+InferModel
+acceptFile call:[acceptFile] noreturn:[acceptFile]
+isClass call:[setFlag] noreturn:[setFlag]
+isFunction call:[setFlag] noreturn:[setFlag]
+isVariable call:[setFlag] noreturn:[setFlag]
+isAlias call:[setFlag] noreturn:[setFlag]
+isSpecialization call:[setFlag] noreturn:[setFlag]
+isPartialSpecialization call:[setFlag] noreturn:[setFlag]
+isForwardDeclaration call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+getFlag call:[return] noreturn:[return]
+setFlag
+operator==
+token
+token
+scope
+name
+fullName
+nameToken
+paramEnd
+paramEnd
+isClass call:[getFlag] noreturn:[getFlag]
+isFunction call:[getFlag] noreturn:[getFlag]
+isVariable call:[getFlag] noreturn:[getFlag]
+isAlias call:[getFlag] noreturn:[getFlag]
+isSpecialization call:[getFlag] noreturn:[getFlag]
+isPartialSpecialization call:[getFlag] noreturn:[getFlag]
+isForwardDeclaration call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isSameFamily call:[return]
+ScopeInfo2
+TokenImpl
+str call:[update_property_info] noreturn:[update_property_info]
+str
+tokAt call:[tokAt]
+linkAt call:[linkAt]
+simpleMatch call:[simpleMatch] noreturn:[simpleMatch]
+valueType
+argumentType call:[Match,astParent] noreturn:[astParent]
+tokType
+tokType call:[setFlag] noreturn:[setFlag]
+isKeyword
+isName call:[getFlag] noreturn:[getFlag]
+isNameOnly
+isLiteral call:[getFlag] noreturn:[getFlag]
+isNumber
+isEnumerator
+isOp call:[isAssignmentOp,isConstOp,return] noreturn:[return]
+isConstOp call:[isArithmeticalOp,return] noreturn:[return]
+isExtendedOp call:[isConstOp]
+isArithmeticalOp
+isComparisonOp
+isAssignmentOp
+isBoolean
+isIncDecOp
+isBinaryOp call:[astOperand1,astOperand2]
+isUnaryOp call:[astOperand1,astOperand2]
+flags
+flags
+isUnsigned call:[getFlag] noreturn:[getFlag]
+isUnsigned call:[setFlag] noreturn:[setFlag]
+isSigned call:[getFlag] noreturn:[getFlag]
+isSigned call:[setFlag] noreturn:[setFlag]
+isPointerCompare call:[getFlag] noreturn:[getFlag]
+isPointerCompare call:[setFlag] noreturn:[setFlag]
+isLong call:[getFlag] noreturn:[getFlag]
+isLong call:[setFlag] noreturn:[setFlag]
+isStandardType call:[getFlag] noreturn:[getFlag]
+isStandardType call:[setFlag] noreturn:[setFlag]
+isExpandedMacro call:[getFlag] noreturn:[getFlag]
+isExpandedMacro call:[setFlag] noreturn:[setFlag]
+isCast call:[getFlag] noreturn:[getFlag]
+isCast call:[setFlag] noreturn:[setFlag]
+isAttributeConstructor call:[getFlag] noreturn:[getFlag]
+isAttributeConstructor call:[setFlag] noreturn:[setFlag]
+isAttributeDestructor call:[getFlag] noreturn:[getFlag]
+isAttributeDestructor call:[setFlag] noreturn:[setFlag]
+isAttributeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeUnused call:[setFlag] noreturn:[setFlag]
+isAttributeUsed call:[getFlag] noreturn:[getFlag]
+isAttributeUsed call:[setFlag] noreturn:[setFlag]
+isAttributePure call:[getFlag] noreturn:[getFlag]
+isAttributePure call:[setFlag] noreturn:[setFlag]
+isAttributeConst call:[getFlag] noreturn:[getFlag]
+isAttributeConst call:[setFlag] noreturn:[setFlag]
+isAttributeNoreturn call:[getFlag] noreturn:[getFlag]
+isAttributeNoreturn call:[setFlag] noreturn:[setFlag]
+isAttributeNothrow call:[getFlag] noreturn:[getFlag]
+isAttributeNothrow call:[setFlag] noreturn:[setFlag]
+isAttributePacked call:[getFlag] noreturn:[getFlag]
+isAttributePacked call:[setFlag] noreturn:[setFlag]
+isAttributeNodiscard call:[getFlag] noreturn:[getFlag]
+isAttributeNodiscard call:[setFlag] noreturn:[setFlag]
+isAttributeMaybeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeMaybeUnused call:[setFlag] noreturn:[setFlag]
+setCppcheckAttribute call:[setCppcheckAttribute] noreturn:[setCppcheckAttribute]
+getCppcheckAttribute call:[getCppcheckAttribute] noreturn:[getCppcheckAttribute]
+hasCppcheckAttributes
+isControlFlowKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[setFlag] noreturn:[setFlag]
+isComplex call:[getFlag] noreturn:[getFlag]
+isComplex call:[setFlag] noreturn:[setFlag]
+isEnumType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[setFlag] noreturn:[setFlag]
+isAtAddress call:[getFlag] noreturn:[getFlag]
+isAtAddress call:[setFlag] noreturn:[setFlag]
+isIncompleteVar call:[getFlag] noreturn:[getFlag]
+isIncompleteVar call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+isExternC call:[getFlag] noreturn:[getFlag]
+isExternC call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclComma call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclComma call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclEq call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclEq call:[setFlag] noreturn:[setFlag]
+isImplicitInt call:[getFlag] noreturn:[getFlag]
+isImplicitInt call:[setFlag] noreturn:[setFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isInline call:[setFlag] noreturn:[setFlag]
+isTemplate call:[getFlag] noreturn:[getFlag]
+isTemplate call:[setFlag] noreturn:[setFlag]
+isBitfield
+bits
+templateSimplifierPointers
+templateSimplifierPointer call:[insert] noreturn:[insert]
+setBits
+isUtf8 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf16 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf32 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isCChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isCMultiChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isTemplateArg call:[getFlag] noreturn:[getFlag]
+isTemplateArg call:[setFlag] noreturn:[setFlag]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findmatch call:[findmatch]
+findmatch call:[findmatch]
+fileIndex
+fileIndex
+linenr
+linenr
+column
+column
+next
+previous
+varId
+varId call:[isStandardType,tokType,update_property_info] noreturn:[isStandardType,update_property_info]
+exprId
+exprId
+forDebug
+forDebugVarId call:[forDebug]
+forDebugExprId call:[forDebug]
+forPrintOut call:[forDebug]
+link call:[update_property_info] noreturn:[update_property_info]
+link
+scope
+scope
+function
+variable call:[tokType] noreturn:[tokType]
+variable
+type
+enumerator
+enumerator call:[tokType] noreturn:[tokType]
+progressValue
+originalName global:[emptyString]
+values
+originalName call:[string] noreturn:[string]
+getKnownIntValue call:[front]
+removeValues call:[remove_if] noreturn:[remove_if]
+index
+next
+previous
+getFlag call:[return] noreturn:[return]
+setFlag
+astOperand1
+astOperand1
+astOperand2
+astOperand2
+astParent
+astParent
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astTop
+astTop
+clearAst
+clearValueFlow
+astString call:[astString] noreturn:[astString]
+setCpp11init
+isCpp11init
+Dimension
+BaseInfo
+operator<
+FriendInfo
+Type call:[next,str,tokAt] noreturn:[next]
+type global:[emptyString] call:[str]
+isTypeAlias call:[str]
+Enumerator
+getFlag call:[return] noreturn:[return]
+setFlag
+Variable call:[evaluate] noreturn:[evaluate]
+nameToken
+typeStartToken
+typeEndToken
+name global:[emptyString] call:[str] noreturn:[str]
+declarationId call:[varId] noreturn:[varId]
+index
+isPublic
+isProtected
+isPrivate
+isGlobal
+isNamespace
+isArgument
+isLocal call:[isExtern,return] noreturn:[isExtern]
+isMutable call:[getFlag] noreturn:[getFlag]
+isVolatile call:[getFlag] noreturn:[getFlag]
+isStatic call:[getFlag] noreturn:[getFlag]
+isExtern call:[getFlag] noreturn:[getFlag]
+isConst call:[getFlag] noreturn:[getFlag]
+isThrow
+isClass call:[getFlag] noreturn:[getFlag]
+isArray call:[getFlag] noreturn:[getFlag]
+isPointer call:[getFlag] noreturn:[getFlag]
+isPointerToArray call:[getFlag,isPointer] noreturn:[getFlag]
+isArrayOrPointer call:[getFlag] noreturn:[getFlag]
+isReference call:[getFlag] noreturn:[getFlag]
+isRValueReference call:[getFlag] noreturn:[getFlag]
+hasDefault call:[getFlag] noreturn:[getFlag]
+isInit call:[getFlag] noreturn:[getFlag]
+type
+typeScope
+scope
+dimensions
+dimension
+dimensionKnown
+isStlType call:[getFlag] noreturn:[getFlag]
+isStlStringType call:[getFlag] noreturn:[getFlag]
+isSmartPointer call:[getFlag] noreturn:[getFlag]
+isStlType call:[isStlType,strAt] noreturn:[strAt]
+isStlType call:[end,find,isStlType,strAt] noreturn:[end]
+isFloatingType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[isEnumType,type] noreturn:[isEnumType]
+isMaybeUnused call:[getFlag] noreturn:[getFlag]
+valueType
+accessControl
+type
+getFlag call:[return] noreturn:[return]
+setFlag
+name call:[str] noreturn:[str]
+argCount call:[size] noreturn:[size]
+minArgCount call:[size]
+initializedArgCount
+isLambda
+isConstructor
+isDestructor
+isAttributeConstructor call:[isAttributeConstructor] noreturn:[isAttributeConstructor]
+isAttributeDestructor call:[isAttributeDestructor] noreturn:[isAttributeDestructor]
+isAttributePure call:[isAttributePure] noreturn:[isAttributePure]
+isAttributeConst call:[isAttributeConst] noreturn:[isAttributeConst]
+isAttributeNoreturn call:[isAttributeNoreturn] noreturn:[isAttributeNoreturn]
+isAttributeNothrow call:[isAttributeNothrow] noreturn:[isAttributeNothrow]
+isAttributeNodiscard call:[isAttributeNodiscard] noreturn:[isAttributeNodiscard]
+hasBody call:[getFlag] noreturn:[getFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isConst call:[getFlag] noreturn:[getFlag]
+hasVirtualSpecifier call:[getFlag] noreturn:[getFlag]
+isPure call:[getFlag] noreturn:[getFlag]
+isStatic call:[getFlag] noreturn:[getFlag]
+isStaticLocal call:[getFlag] noreturn:[getFlag]
+isExtern call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isExplicit call:[getFlag] noreturn:[getFlag]
+isDefault call:[getFlag] noreturn:[getFlag]
+isDelete call:[getFlag] noreturn:[getFlag]
+isNoExcept call:[getFlag] noreturn:[getFlag]
+isThrow call:[getFlag] noreturn:[getFlag]
+hasOverrideSpecifier call:[getFlag] noreturn:[getFlag]
+hasFinalSpecifier call:[getFlag] noreturn:[getFlag]
+isOperator call:[getFlag] noreturn:[getFlag]
+hasLvalRefQualifier call:[getFlag] noreturn:[getFlag]
+hasRvalRefQualifier call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isVolatile call:[getFlag] noreturn:[getFlag]
+hasTrailingReturnType call:[getFlag] noreturn:[getFlag]
+hasBody call:[setFlag] noreturn:[setFlag]
+isInlineKeyword call:[getFlag] noreturn:[getFlag]
+isEscapeFunction call:[getFlag] noreturn:[getFlag]
+isEscapeFunction call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+returnDefEnd call:[findmatch,hasTrailingReturnType] noreturn:[findmatch]
+isInline call:[setFlag] noreturn:[setFlag]
+isConst call:[setFlag] noreturn:[setFlag]
+hasVirtualSpecifier call:[setFlag] noreturn:[setFlag]
+isPure call:[setFlag] noreturn:[setFlag]
+isStatic call:[setFlag] noreturn:[setFlag]
+isStaticLocal call:[setFlag] noreturn:[setFlag]
+isExtern call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+isExplicit call:[setFlag] noreturn:[setFlag]
+isDefault call:[setFlag] noreturn:[setFlag]
+isDelete call:[setFlag] noreturn:[setFlag]
+isNoExcept call:[setFlag] noreturn:[setFlag]
+isThrow call:[setFlag] noreturn:[setFlag]
+isOperator call:[setFlag] noreturn:[setFlag]
+hasLvalRefQualifier call:[setFlag] noreturn:[setFlag]
+hasRvalRefQualifier call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isVolatile call:[setFlag] noreturn:[setFlag]
+hasTrailingReturnType call:[setFlag] noreturn:[setFlag]
+isInlineKeyword call:[setFlag] noreturn:[setFlag]
+setBodyStartEnd call:[link,push_back] noreturn:[push_back]
+isAnonymous call:[compare,isdigit,size] noreturn:[isdigit]
+findEnumerator call:[str]
+isNestedIn
+nestedInFunction
+isClassOrStruct call:[return] noreturn:[return]
+isClassOrStructOrUnion call:[return] noreturn:[return]
+isExecutable
+isLoopScope
+isLocal call:[return] noreturn:[return]
+findRecordInNestedList call:[findRecordInNestedList]
+findType call:[findType]
+addFunction call:[back,insert,make_pair,push_back,str] noreturn:[insert]
+ValueType
+ValueType
+ValueType
+ValueType
+isPrimitive call:[return] noreturn:[return]
+isIntegral call:[return] noreturn:[return]
+isFloat call:[return] noreturn:[return]
+isEnum
+findType call:[findType]
+findScope call:[findScope]
+isVarId call:[size] noreturn:[size]
+getVariableFromVarId call:[at] noreturn:[at]
+variableList
+setSettings
+getSettings
+isC
+isCPP
+front
+front
+back
+back
+getFiles
+bailoutInternal call:[FileLocation,callstack,errmsg,find,getSourceFilePath,reportErr,stripDirectoryPart,toString] noreturn:[reportErr]
+changeKnownToPossible call:[changeKnownToPossible] noreturn:[changeKnownToPossible]
+removeImpossible call:[isImpossible,remove_if] noreturn:[isImpossible,remove_if]
+lowerToPossible call:[changeKnownToPossible,removeImpossible] noreturn:[removeImpossible]
+changePossibleToKnown call:[isPossible,setKnown] noreturn:[setKnown]
+setValueUpperBound
+setValueBound call:[Match,setValueUpperBound] noreturn:[setValueUpperBound]
+setConditionalValues call:[Match,setValueBound,simpleMatch,strlen,swap] noreturn:[setValueBound,swap]
+isSaturated call:[max,min] noreturn:[min]
+parseCompareInt call:[astOperand1,astOperand2,clear,empty,evaluate,front,hasKnownIntValue,isComparisonOp,isSaturated,setConditionalValues] noreturn:[astOperand1,astOperand2,clear]
+parseCompareInt call:[front,hasKnownIntValue,parseCompareInt,values] noreturn:[parseCompareInt]
+isEscapeScope call:[empty,findmatch,getSettings,isScopeNoReturn,link,scope,simpleMatch]
+castValue call:[isFloatValue,max,min]
+isNumeric call:[isFloatValue,isIntValue] noreturn:[isFloatValue]
+combineValueProperties call:[empty,isImpossible,isInconclusive,isIteratorValue,isKnown,isSymbolicValue,setImpossible,setInconclusive,setKnown,setPossible] noreturn:[setImpossible,setInconclusive,setKnown,setPossible]
+getCastTypeStartToken call:[Match,astIsPrimitive,astOperand1,astOperand2,isBinaryOp,next,str,tokAt,tokType] noreturn:[astOperand1,next,tokAt]
+isComputableValue call:[Match,isComparisonOp,isFloatValue,isImpossible,isIntValue,isIteratorValue,isTokValue,tokType]
+isCompatibleValueTypes call:[count,end,find]
+isCompatibleValues call:[exprId,isCompatibleValueTypes,isImpossible,isIntValue,isKnown,isSymbolicValue]
+truncateImplicitConversion call:[astIsIntegral,astOperand1,astOperand2,castValue,getSizeOf,isBinaryOp,isConstOp,isFloatValue,isIntValue,max,valueType]
+setTokenValue call:[Match,addValue,astIsFloat,astIsIterator,astIsPointer,astIsRHS,astIsUnsigned,astOperand1,astOperand2,astParent,begin,calculate,changeKnownToPossible,clear,combineValueProperties,cond,contains,empty,end,find,front,getCastTypeStartToken,getFunction,getSizeOf,getStrLength,getYield,hasKnownValue,invertBound,isArithmeticalOp,isBinaryOp,isCast,isComparisonOp,isCompatibleValues,isComputableValue,isContainerSizeValue,isFloatValue,isImpossible,isInconclusive,isIntValue,isIteratorValue,isKnown,isLifetimeBorrowed,isLifetimeValue,isSymbolicValue,isTokValue,isUnaryOp,isUninitValue,long,next,originalName,parseDecl,previous,result,setInconclusive,setTokenValue,setTokenValueCast,simpleMatch,size,sizeof,str,strAt,strValue,toLongNumber,tokAt,tokType,truncateImplicitConversion,v,valueType,values,varId,visitAstNodes] noreturn:[calculate,clear,invertBound,next,setTokenValue,setTokenValueCast,truncateImplicitConversion,varId]
+setTokenValueCast call:[castValue,isFloat,isImpossible,isIntValue,isNumeric,setTokenValue,signedCharMax,signedCharMin] noreturn:[setTokenValue]
+getSizeOfType call:[parseDecl]
+getSizeOf
+valueFlowSetConstantValue call:[Match,astOperand2,astParent,dimension,dimensionKnown,dimensions,empty,enumerator,getSizeOf,getSizeOfType,getStrSize,isArray,isCChar,isCMultiChar,isEnum,isEnumType,isFloat,isInt,isLiteral,isLong,isNumber,isTemplateArg,isUtf16,isUtf32,isUtf8,linkAt,next,parseDecl,setKnown,setTokenValue,simpleMatch,size,str,toDoubleNumber,toLongNumber,tokAt,tokType,type,typeEndToken,typeStartToken,value,valueType,varId,variable] noreturn:[dimension,getSizeOf,getSizeOfType,linkAt,next,setKnown,setTokenValue,tokAt]
+valueFlowNumber call:[Match,front,getSettings,isCPP,isName,isTemplateArg,next,setKnown,setTokenValue,str,value,valueFlowSetConstantValue,varId] noreturn:[setKnown,setTokenValue,valueFlowSetConstantValue]
+valueFlowString call:[front,getSettings,next,setKnown,setTokenValue,tokType] noreturn:[setTokenValue]
+valueFlowArray call:[Match,astOperand1,astOperand2,astParent,end,find,front,getSettings,isArray,isPointer,link,next,setKnown,setTokenValue,simpleMatch,tokAt,varId,variable] noreturn:[setTokenValue]
+isNonZero call:[front,hasKnownIntValue,values]
+getOtherOperand call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+valueFlowArrayBool call:[Match,astIsBool,astParent,begin,end,find_if,front,getOtherOperand,getSettings,hasKnownIntValue,isArgument,isArray,isKnown,isNonZero,isStlType,mem_fn,next,previous,setKnown,setTokenValue,values,variable] noreturn:[isKnown,setKnown,setTokenValue]
+valueFlowPointerAlias call:[astOperand1,astOperand2,astParent,front,getSettings,isPointer,isUnaryOp,next,setTokenValue,simpleMatch,str,variable] noreturn:[astOperand1,astOperand2,setTokenValue]
+valueFlowBitAnd call:[Value,astOperand1,astOperand2,front,getSettings,hasKnownValue,isInt,next,setTokenValue,str,toLongNumber] noreturn:[setTokenValue,toLongNumber]
+valueFlowSameExpressions call:[Match,Value,astIsIntegral,astOperand1,astOperand2,front,getSettings,hasKnownIntValue,isCPP,isKnown,isLiteral,isSameExpression,next,setKnown,setTokenValue] noreturn:[setKnown,setTokenValue]
+getExpressionRange call:[astOperand1,astOperand2,front,getExpressionRange,hasKnownIntValue,str,valueType,values]
+valueFlowRightShift call:[astOperand1,astOperand2,front,getExpressionRange,getSettings,hasKnownValue,isIntegral,next,setKnown,setTokenValue,str,val,valueType,values] noreturn:[setTokenValue]
+minUnsignedValue call:[Match,astIsUnsigned,astOperand1,astOperand2,calculate < std :: vector < long long > >,empty,front,hasKnownIntValue,isConstOp,minUnsignedValue,str,values] noreturn:[calculate < std :: vector < long long > >]
+valueFlowImpossibleValues call:[Match,astIsContainerOwned,astIsPointer,astIsUnsigned,astOperand1,astOperand2,empty,front,hasKnownIntValue,isCPP,linkAt,minUnsignedValue,next,setImpossible,setTokenValue,simpleMatch,tokAt,valueType,values] noreturn:[setTokenValue]
+valueFlowEnumValue call:[astOperand2,front,hasKnownIntValue,previous,valueFlowConstantFoldAST,values]
+valueFlowGlobalConstVar call:[Match,astOperand2,end,find,front,hasKnownIntValue,isArgument,isConst,isIntegral,isVolatile,nameToken,next,setTokenValue,valueType,values,variable] noreturn:[front,setTokenValue]
+valueFlowGlobalStaticVar call:[Match,astOperand1,astOperand2,astParent,end,erase,find,front,hasKnownIntValue,isAssignmentOp,isCPP,isConst,isIntegral,isLikelyStreamRead,isStatic,nameToken,next,setTokenValue,tokAt,valueType,values,variable] noreturn:[erase,front,setTokenValue]
+isConditionKnown call:[Match,astParent,str] noreturn:[Match,astParent]
+invertAssign call:[end,find]
+removeAssign call:[begin,end]
+calculateAssign call:[back,empty,removeAssign]
+assignValueIfMutable
+assignValueIfMutable
+evalAssignment call:[assignValueIfMutable,calculateAssign,isFloatValue,isIntValue,isSymbolicValue] noreturn:[assignValueIfMutable]
+begin
+end
+MakeSingleRange
+Iterator
+operator*
+operator.
+operator++
+operator==
+operator!=
+SelectValueFromVarIdMapRange
+begin call:[Iterator,begin] noreturn:[Iterator]
+end call:[Iterator,end] noreturn:[Iterator]
+isAliasOf call:[Match,astHasVar,isAliasOf,isInconclusive,isLifetimeValue,isLocalLifetimeValue,isNonValue,isPointer,varId]
+bifurcateVariableChanged call:[Match,astOperand2,astParent,bifurcate,declarationId,findVariableChanged,isGlobal,isPointer,next]
+bifurcate call:[Match,astOperand1,astOperand2,bifurcate,bifurcateVariableChanged,count,declEndToken,declarationId,hasKnownIntValue,isArgument,isConst,strAt,tokAt,varId,variable] noreturn:[bifurcate,tokAt]
+ValueFlowAnalyzer
+ValueFlowAnalyzer
+internalMatch
+getValueType
+getIndirect call:[getValue]
+isGlobal
+dependsOnThis
+isVariable
+invalid
+isCPP call:[isCPP] noreturn:[isCPP]
+getSettings call:[getSettings] noreturn:[getSettings]
+isUnknownDependent
+getSymbols call:[exprId,isImpossible,isSymbolicValue,match,values]
+analyzeCondition call:[Match,analyze,analyzeCondition,any_of,astOperand1,astOperand2,begin,empty,end,evaluate,getArguments,getSymbols,hasKnownIntValue,isCPP,isLikelyStream,isLiteral,isRead,isUnknownDependent,previous,push_back,tokAt] noreturn:[push_back]
+isModified call:[Match,astIsIntegral,astIsLHS,astOperand2,astParent,empty,equalTo,evaluate,front,getIndirect,getSettings,getValue,isCPP,isImpossible,isVariableChanged,isVariableChangedByFunctionCall,simpleMatch]
+isAliasModified call:[Match,getSettings,isCPP,isVariableChanged,valueType]
+isThisModified call:[getSettings,isCPP,isThisChanged]
+isGlobalModified call:[Match,astIsPrimitive,function,getFunction,getSettings,isConstFunctionCall,isConstexpr,next,tokType]
+getAssign call:[invertAssign,str] noreturn:[invertAssign,str]
+isWritable call:[Match,astIsLHS,astOperand2,astParent,equalValue,evalAssignment,getAssign,getKnownValue,getValue,hasKnownValue,isAssignmentOp,isFloatValue,isImpossible,isIntValue,isSymbolicValue,str]
+writeValue call:[assert,astOperand2,astParent,clear,emplace_back,evalAssignment,getAssign,getKnownValue,info,infoString,isAssignmentOp,opName,str,tokType] noreturn:[clear,emplace_back]
+useSymbolicValues
+findMatch call:[findAstNode,match] noreturn:[findAstNode,match]
+isSameSymbolicValue call:[Match,begin,empty,end,evaluate,findMatch,front,getValue,insert,isImpossible,isIntValue,isKnown,isSymbolicValue,match,setImpossible,useSymbolicValues,values] noreturn:[setImpossible]
+analyzeMatch call:[Match,astIsPointer,astIsSmartPointer,astParent,dependsOnThis,getIndirect,isGlobal,isGlobalModified,isModified,isWritable,next,originalName] noreturn:[isModified]
+analyzeToken call:[Match,analyzeMatch,assert,astIsLHS,astOperand1,astParent,isAlias,isAliasModified,isInconclusive,isLocalLifetimeValue,isModified,isSameSymbolicValue,isUnaryOp,match,values]
+analyze call:[Match,analyzeToken,begin,dependsOnThis,end,exprDependsOnThis,followAllReferences,internalMatch,invalid,isGlobal,isGlobalModified,isThisModified,isVariable,linkAt,none_of,push_back,simpleMatch,size] noreturn:[isGlobalModified,isThisModified,push_back]
+evaluate call:[Match,conditionIsFalse,conditionIsTrue,execute,exprId,findValue,front,get,getContainerEmptyValue,getProgramState,hasKnownIntValue,isContainerSizeValue,isKnown,push_back,values] noreturn:[isContainerSizeValue,push_back]
+assume call:[Match,addErrorPath,addState,assume,astParent,getProgramState,link,linkAt,makeConditional,next,previous,removeModifiedVars,simpleMatch,tokAt] noreturn:[Match,addErrorPath,addState,linkAt,makeConditional]
+internalUpdate call:[assert] noreturn:[assert]
+update call:[astParent,getSettings,getValue,internalUpdate,isInconclusive,isInternal,isRead,isSameSymbolicValue,isSymbolicMatch,isWrite,lowerToInconclusive,setTokenValue,writeValue] noreturn:[internalUpdate,isSameSymbolicValue,lowerToInconclusive,setTokenValue,writeValue]
+reanalyze
+SingleValueFlowAnalyzer
+SingleValueFlowAnalyzer
+getVars
+getAliasedVars
+getValue
+getValue
+makeConditional
+useSymbolicValues call:[isLifetimeValue,isUninitValue]
+addErrorPath call:[emplace_back] noreturn:[emplace_back]
+isAlias call:[MakeSingleRange,get,getAliasedVars,getVars,isAliasOf,isLifetimeValue,ref,varId]
+isGlobal call:[getVars,isArgument,isConst,isLocal]
+lowerToPossible call:[changeKnownToPossible,isImpossible]
+lowerToInconclusive call:[isImpossible,setInconclusive]
+isConditional call:[isImpossible,isKnown] noreturn:[isImpossible]
+stopOnCondition call:[analyzeCondition,isConditional,isImpossible,isKnown,isNonValue,isSymbolicValue,isUnknownDependent] noreturn:[isUnknownDependent]
+updateScope call:[begin,bifurcate,end,getCondTokFromEnd,getSettings,getVars,inserter,isConditional,isImpossible,isKnown,isLifetimeValue,scope,transform] noreturn:[bifurcate,isLifetimeValue]
+reanalyze call:[emplace_back,makeAnalyzer] noreturn:[makeAnalyzer]
+ExpressionAnalyzer
+ExpressionAnalyzer call:[assert,exprDependsOnThis,exprId,isSymbolicValue,setupExprVarIds] noreturn:[setupExprVarIds]
+getValueType call:[valueType] noreturn:[valueType]
+nonLocal call:[isArgument,isExtern,isLocal,isPointer,isReference,isStatic] noreturn:[isExtern]
+setupExprVarIds call:[Match,astIsPointer,astIsSmartPointer,astOperand1,astOperand2,astParent,function,isCPP,isGlobalData,isKnown,isLocal,isLocalLifetimeValue,isName,isReference,isSymbolicValue,isUnaryOp,nameToken,next,nonLocal,previous,setupExprVarIds,simpleMatch,str,values,varId,variable,visitAstNodes] noreturn:[nonLocal,setupExprVarIds,visitAstNodes]
+invalid
+getProgramState call:[exprId]
+match call:[exprId] noreturn:[exprId]
+dependsOnThis
+isGlobal
+isVariable call:[varId]
+OppositeExpressionAnalyzer
+OppositeExpressionAnalyzer
+match call:[getSettings,isCPP,isOppositeCond] noreturn:[isOppositeCond]
+SubExpressionAnalyzer
+SubExpressionAnalyzer
+isAlias call:[astParent,exprId,isAlias,submatch] noreturn:[isAlias]
+match call:[astOperand1,exprId,submatch] noreturn:[submatch]
+internalMatch call:[astIsLHS,astParent,exprId,submatch]
+internalUpdate call:[make_pair,push_back] noreturn:[push_back]
+reanalyze
+MemberExpressionAnalyzer
+MemberExpressionAnalyzer
+submatch call:[Match,next,str]
+valueFlowForwardExpression call:[a,update,valueFlowGenericForward] noreturn:[update]
+parseBinaryIntOp call:[astOperand1,astOperand2,exprId,front,hasKnownIntValue,values] noreturn:[astOperand1,astOperand2]
+solveExprValue call:[Match,isIntValue,isIteratorValue,isSymbolicValue,parseBinaryIntOp,size,solveExprValue,str] noreturn:[solveExprValue]
+makeAnalyzer call:[ExpressionAnalyzer,solveExprValue] noreturn:[ExpressionAnalyzer]
+valueFlowForward call:[makeAnalyzer,update,valueFlowGenericForward] noreturn:[update]
+valueFlowForward call:[makeAnalyzer,update,valueFlowGenericForward] noreturn:[update]
+valueFlowReverse call:[a,valueFlowGenericReverse] noreturn:[valueFlowGenericReverse]
+valueFlowReverse call:[push_back,valueFlowReverse] noreturn:[push_back,valueFlowReverse]
+lifetimeType call:[astIsPointer]
+lifetimeMessage call:[emplace_back,find,isArgument,isGlobal,isLocal,lifetimeType,name,nameToken,replace,variable] noreturn:[emplace_back,replace]
+getLifetimeObjValues call:[back_inserter,begin,copy_if,end,isInconclusive,isLocalLifetimeValue,isSubFunctionLifetimeValue,values]
+getLifetimeObjValue call:[front,getLifetimeObjValues,size] noreturn:[front]
+getLifetimeTokens call:[Match,astIsContainer,astIsPointer,astIsUniqueSmartPointer,astOperand1,astOperand2,astParent,begin,declEndToken,declarationId,emplace_back,end,expressionString,findReturns,function,getArgumentPos,getArguments,getLibraryContainer,getLifetimeTokens,getYield,insert,isArgument,isArray,isConst,isGlobal,isLocalLifetimeValue,isRValueReference,isReference,isStatic,isTemporary,isUnaryOp,move,nameToken,originalName,pred,previous,returnsReference,setAddressOf,setInconclusive,simpleMatch,size,str,tokAt,values,varId,variable] noreturn:[astOperand1,astOperand2,getLifetimeTokens,insert,setAddressOf]
+getLifetimeTokens call:[getLifetimeTokens,move] noreturn:[getLifetimeTokens]
+hasLifetimeToken call:[exprId,getLifetimeTokens]
+getLifetimeToken call:[begin,end,front,getLifetimeTokens,insert,size]
+getLifetimeVariable call:[getLifetimeToken,variable] noreturn:[variable]
+getLifetimeVariable call:[getLifetimeVariable] noreturn:[getLifetimeVariable]
+isNotLifetimeValue call:[isLifetimeValue] noreturn:[isLifetimeValue]
+isLifetimeOwned
+isLifetimeOwned call:[isLifetimeOwned]
+isLifetimeBorrowed call:[isIntegral,str]
+skipCVRefs call:[Match,next] noreturn:[next]
+isNotEqual call:[next,skipCVRefs,str] noreturn:[next]
+isNotEqual call:[back,createTokens,front,isNotEqual,istr,make_pair,tokenList] noreturn:[isNotEqual]
+isNotEqual call:[empty,isNotEqual] noreturn:[isNotEqual]
+isDifferentType call:[isNotEqual,typeDecl,typeOf,valueType]
+getParentValueTypes call:[Match,astIsContainer,astOperand1,astParent,function,getArgumentVars,getTokenArgumentFunction,move,parseDecl,push_back,tokAt,valueType] noreturn:[push_back]
+isLifetimeBorrowed call:[Match,astIsContainer,astParent,isDifferentType,isLifetimeBorrowed,isLifetimeOwned,parseDecl,previous,simpleMatch,str,tokAt,valueType]
+getEndOfVarScope call:[isArgument,isGlobal,isLocal,isNamespace,precedes,scope,size,typeStartToken] noreturn:[scope]
+valueFlowForwardLifetime call:[Match,astOperand1,astOperand2,astParent,astTop,empty,exprId,getEndOfVarScope,getLHSVariables,getSettings,isCast,isLifetimeBorrowed,isScopeBracket,link,nameToken,next,nextAfterAstRightmostLeaf,previous,remove_if,scope,setTokenValue,simpleMatch,str,valueFlowForward,valueFlowForwardExpression,valueFlowForwardLifetime,valueFlowLifetimeConstructor,valueFlowLifetimeFunction,values,variable] noreturn:[astParent,setTokenValue,valueFlowForward,valueFlowForwardLifetime]
+LifetimeStore
+LifetimeStore
+forEach call:[f,valueFlowForwardLifetime] noreturn:[valueFlowForwardLifetime]
+fromFunctionArg call:[bailoutInternal,expressionString,getArgumentPos,getArguments,getSettings,isArgument,size,str,to_string] noreturn:[bailoutInternal]
+byRef call:[begin,emplace_back,end,find,forwardLifetime,getLifetimeTokens,getSettings,insert,isEnabled,move,pred,setInconclusive,setTokenValue,values] noreturn:[forwardLifetime]
+byRef call:[byRef] noreturn:[byRef]
+byVal call:[begin,emplace_back,empty,end,find,forwardLifetime,getLifetimeTokens,getLifetimeVariable,getSettings,insert,isArgument,isEnabled,isInconclusive,isLifetimeValue,move,nameToken,pred,setInconclusive,setTokenValue,values] noreturn:[forwardLifetime]
+byVal call:[byVal] noreturn:[byVal]
+byDerefCopy call:[begin,byVal,declEndToken,declarationId,end,getLifetimeVariable,insert,isEnabled,isLifetimeValue,previous,values,varId]
+byDerefCopy call:[byDerefCopy] noreturn:[byDerefCopy]
+forwardLifetime call:[valueFlowForwardLifetime] noreturn:[valueFlowForwardLifetime]
+valueFlowLifetimeFunction call:[Match,astIsContainer,astIsIterator,astIsPointer,astIsRHS,astOperand1,astParent,back,byDerefCopy,byRef,byVal,emplace_back,emplace_front,empty,exprDependsOnThis,expressionString,findReturns,fromFunctionArg,function,getArgIteratorInfo,getArguments,getFunction,getLifetimeVariable,isArgument,isArgumentLifetimeValue,isCPP,isConst,isLifetimeBorrowed,isLifetimeValue,isRValueReference,isReference,isVariableChanged,lifetimeType,next,previous,returnValueContainer,returnsReference,setTokenValue,size,str,tokAt,typeStr,valueFlowForwardLifetime,valueFlowLifetimeConstructor,valueType,values,variable] noreturn:[astOperand1,byDerefCopy,byRef,byVal,valueFlowForwardLifetime]
+valueFlowLifetimeConstructor call:[Match,begin,byRef,byVal,empty,end,forEach,getArguments,isClassType,isRValueReference,isReference,isStructType,name,valueType] noreturn:[byRef,byVal,forEach]
+hasInitList call:[astIsContainer,astIsPointer,getLibraryContainer]
+valueFlowLifetimeConstructor call:[Match,astIsContainer,astIsContainerOwned,astIsContainerView,astIsIterator,astParent,byDerefCopy,byRef,byVal,forEach,front,function,getArguments,hasInitList,previous,simpleMatch,size,typeOf,valueFlowLifetimeConstructor] noreturn:[astParent,byDerefCopy,byRef,byVal,forEach,valueFlowLifetimeConstructor]
+Lambda call:[Match,astOperand1,expressionString,findsimplematch,getCaptures,isUnaryOp,link,make_pair,next,originalName,simpleMatch,variable] noreturn:[findsimplematch,make_pair,next]
+getCaptures call:[getArguments] noreturn:[getArguments]
+isLambda
+isDecayedPointer call:[astIsPointer,astParent,isConstOp,simpleMatch] noreturn:[astIsPointer]
+isConvertedToView call:[any_of,begin,end,getParentValueTypes] noreturn:[any_of]
+valueFlowLifetime call:[Match,any_of,astIsContainer,astIsContainerOwned,astIsContainerView,astIsIterator,astIsLHS,astIsPointer,astIsUniqueSmartPointer,astOperand1,astParent,astParentSkipParens,back,begin,bool,byRef,byVal,captureVariable,count,declarationId,emplace_back,end,followAllReferences,front,getLifetimeTokens,getLifetimeVariable,getSettings,insert,isArgument,isArray,isConvertedToView,isDecayedPointer,isEnabled,isKnown,isLambda,isLifetimeValue,isLocal,isNestedIn,isStlType,isSymbolicValue,isUnaryOp,lam,link,mem_fn,move,nameToken,next,originalName,parseDecl,pred,push_back,scope,setInconclusive,setTokenValue,simpleMatch,tokAt,valueFlowForwardLifetime,valueFlowLifetimeConstructor,valueFlowLifetimeFunction,valueType,values,varId,variable] noreturn:[byRef,captureVariable,insert,pred,push_back,valueFlowForwardLifetime,valueFlowLifetimeConstructor,valueFlowLifetimeFunction]
+isStdMoveOrStdForwarded call:[Match,link,simpleMatch,str,strAt,tokAt,valueType]
+isOpenParenthesisMemberFunctionCallOfVarId global:[emptyString] call:[Match,next,originalName,tokAt]
+findOpenParentesisOfMove call:[previous,str] noreturn:[previous]
+findEndOfFunctionCallForParameter call:[astParent,isOp,nextAfterAstRightmostLeaf,str] noreturn:[astParent,nextAfterAstRightmostLeaf]
+valueFlowAfterMove global:[emptyString] call:[Match,astOperand1,astParent,constructorMemberInitialization,emplace_back,expressionString,findEndOfFunctionCallForParameter,findOpenParentesisOfMove,isArgument,isCPP,isLocal,isOpenParenthesisMemberFunctionCallOfVarId,isStdMoveOrStdForwarded,next,originalName,push_back,scope,setKnown,setTokenValue,str,valueFlowForward,varId,variable] noreturn:[astParent,emplace_back,valueFlowForward]
+findIncompleteVar call:[isIncompleteVar,next]
+makeConditionValue call:[emplace_back,expressionString,setKnown,v] noreturn:[emplace_back]
+getConditions call:[astFlatten,back_inserter,begin,copy_if,end,exprId,hasKnownIntValue,str] noreturn:[copy_if]
+valueFlowConditionExpressions call:[a1,a2,astIsBool,astOperand2,bailoutInternal,exprId,findIncompleteVar,getConditions,hasKnownIntValue,isCPP,isComparisonOp,isConstExpression,isEscapeScope,isIncompleteVar,link,makeConditionValue,next,simpleMatch,str,tokAt,tokType,valueFlowGenericForward] noreturn:[bailoutInternal,valueFlowGenericForward]
+isTruncated call:[getSizeOf,isFloat,isIntegral]
+setSymbolic call:[assert,exprId]
+makeSymbolic call:[setKnown,setSymbolic]
+valueFlowSymbolic call:[any_of,astOperand1,astOperand2,astParent,begin,emplace_back,end,exprId,expressionString,getLHSVariables,getSettings,hasKnownIntValue,isArgument,isCPP,isConstExpression,isDifferentType,isLocal,isStatic,isTruncated,makeSymbolic,next,nextAfterAstRightmostLeaf,simpleMatch,valueFlowForward,valueType] noreturn:[isArgument,isStatic,valueFlowForward]
+valueFlowSymbolicIdentity call:[Match,astIsIntegral,astIsLHS,astOperand1,astOperand2,back_inserter,begin,copy_if,end,exprId,front,getSettings,hasKnownIntValue,insert,isSymbolicValue,makeSymbolic,next,setTokenValue,values] noreturn:[astOperand1,astOperand2,setTokenValue]
+valueFlowSymbolicAbs call:[Match,astOperand2,emplace_back,getSettings,hasKnownIntValue,inferCondition,isKnown,makeSymbolic,next,setImpossible,setKnown,setTokenValue,str] noreturn:[setImpossible,setKnown,setTokenValue]
+SymbolicInferModel call:[assert,exprId] noreturn:[assert]
+match call:[exprId,isSymbolicValue] noreturn:[exprId]
+yield call:[result,setKnown]
+valueFlowSymbolicInfer call:[Match,astIsFloat,astOperand1,astOperand2,empty,exprId,getSettings,hasKnownIntValue,infer,next,setTokenValue,str,values] noreturn:[infer,setTokenValue]
+valueFlowForwardAssign call:[Match,all_of,any_of,astParent,begin,emplace_back,end,expressionString,front,getEndOfVarScope,infoString,isCPP,isImpossible,isIntValue,isPointer,isSmartPointer,isStatic,isSymbolicValue,isTokValue,lowerToPossible,mem_fn,next,nextAfterAstRightmostLeaf,remove_if,simpleMatch,size,typeStartToken,valueFlowForward,valueFlowForwardLifetime] noreturn:[emplace_back,isSmartPointer,lowerToPossible,remove_if,valueFlowForward]
+valueFlowForwardAssign call:[nameToken,valueFlowForwardAssign] noreturn:[valueFlowForwardAssign]
+truncateValues call:[getSizeOf,isFloatValue,isImpossible,isIntValue,isIntegral,remove_if] noreturn:[remove_if]
+isVariableInit call:[astOperand1,astOperand2,isBinaryOp,nameToken,return,simpleMatch,str,valueType,variable] noreturn:[simpleMatch]
+valueFlowAfterAssign call:[astIsContainer,astOperand1,astOperand2,astParent,count,emplace_back,empty,end,exprId,expressionString,find,front,getLHSVariables,hasKnownValue,insert,isKnown,isReference,isSymbolicValue,isUnaryOp,isUninitValue,isVariableInit,nameToken,next,nextAfterAstRightmostLeaf,remove_if,size,str,truncateValues,valueFlowForward,valueFlowForwardAssign,valueType,values,variable] noreturn:[exprId,insert,isUninitValue,remove_if,valueFlowForward]
+getVariables call:[push_back,variable,visitAstNodes] noreturn:[push_back]
+valueFlowAfterSwap call:[astFlatten,astOperand2,getVariables,next,simpleMatch,size,swap,valueFlowForwardAssign,values] noreturn:[swap]
+valueFlowSetConditionToKnown call:[Match,changePossibleToKnown,empty,isConditionKnown] noreturn:[changePossibleToKnown]
+isBreakScope call:[findmatch,link,simpleMatch] noreturn:[findmatch]
+asImpossible call:[invertRange,setImpossible]
+insertImpossible call:[back_inserter,begin,end,transform] noreturn:[transform]
+insertNegateKnown call:[isContainerSizeValue,isIntValue,push_back,setKnown] noreturn:[push_back]
+Condition
+traverseCondition call:[Match,astParent,astTop,empty,exprId,f,getSettings,hasKnownIntValue,isCPP,isConstExpression,next,parse,previous] noreturn:[f]
+beforeCondition call:[Match,astIsLHS,astIsRHS,astOperand2,astParent,astTop,bailoutInternal,begin,empty,end,exprId,expressionString,findExpression,hasKnownIntValue,insert,isCPP,isExpandedMacro,isExpressionChanged,isIntValue,link,next,previous,previousBeforeAstLeftmostLeaf,remove_if,reverse,simpleMatch,traverseCondition,valueType] noreturn:[astIsLHS,astParent,bailoutInternal,insert,previous,previousBeforeAstLeftmostLeaf,reverse,traverseCondition]
+afterCondition call:[Match,all_of,astIsBool,astIsFloat,astIsLHS,astIsRHS,astOperand1,astOperand2,astParent,astTop,back_inserter,bailoutInternal,begin,changeKnownToPossible,changePossibleToKnown,copy_if,count,empty,end,execute,expressionString,forward,getInitTok,getStepTok,insert,insertImpossible,insertNegateKnown,isBreakScope,isCPP,isConditionKnown,isExpandedMacro,isFloatValue,isGlobal,isImpossible,isIntValue,isModified,isReturnScope,isVariableChanged,link,linkAt,mem_fn,next,op,previous,push_back,remove_if,simpleMatch,str,swap,tokAt,traverseCondition,valueFlowSetConditionToKnown,valueType,varId,variable] noreturn:[astOperand2,astParent,bailoutInternal,changeKnownToPossible,changePossibleToKnown,copy_if,forward,insert,insertImpossible,insertNegateKnown,isBreakScope,isFloatValue,isImpossible,isReturnScope,next,push_back,remove_if,str,swap,tokAt,traverseCondition,valueFlowSetConditionToKnown]
+ConditionHandler
+valueFlowCondition call:[afterCondition,beforeCondition] noreturn:[afterCondition]
+forward call:[next,valueFlowForward] noreturn:[valueFlowForward]
+forward call:[valueFlowForward] noreturn:[valueFlowForward]
+reverse call:[valueFlowReverse] noreturn:[valueFlowReverse]
+parse call:[Match,astOperand1,astOperand2,astParent,emplace_back,hasKnownIntValue,parseCompareInt,previous,push_back,simpleMatch,str] noreturn:[astOperand1]
+match call:[isIntValue] noreturn:[isIntValue]
+yield call:[result,setKnown]
+makeIntegralInferModel
+inferCondition call:[front,hasKnownIntValue,infer,isKnown,size,values] noreturn:[front]
+inferCondition call:[front,hasKnownIntValue,infer,isKnown,size,values] noreturn:[front]
+match call:[getType] noreturn:[getType]
+yield call:[getType,result,setKnown]
+getType
+getType
+valueFlowInferCondition call:[Match,astIsIterator,astOperand1,astOperand2,astParent,front,hasKnownIntValue,infer,next,previous,setTokenValue,size,str,values,variable] noreturn:[setTokenValue]
+parse call:[Match,astOperand1,astOperand2,exprId,hasKnownIntValue,hasKnownSymbolicValue,isLiteral,push_back,setConditionalValues,setSymbolic] noreturn:[push_back]
+valueFlowForLoop2 call:[astOperand1,astOperand2,execute,hasValue,next,startMemory,str,swap,varId,visitAstNodes] noreturn:[execute,swap]
+valueFlowForLoopSimplify call:[Match,Value,astOperand1,astOperand2,astParent,astTop,bailoutInternal,conditionIsFalse,conditionIsTrue,findmatch,getProgramMemory,isCPP,isVariableChanged,link,linkAt,next,programMemory,setTokenValue,simpleMatch,str,value1,varId] noreturn:[astParent,bailoutInternal,linkAt,setTokenValue]
+valueFlowForLoopSimplifyAfter call:[back,emplace_back,infoString,isLocal,linkAt,name,next,scope,valueFlowForward,varId,variable] noreturn:[valueFlowForward]
+valueFlowForLoop call:[asImpossible,astOperand2,back,begin,emplace_back,end,extractForLoopValues,findmatch,isIntValue,isModified,link,next,pop_front,push_back,simpleMatch,valueFlowForLoop2,valueFlowForLoopSimplify,valueFlowForLoopSimplifyAfter,valueFlowForward] noreturn:[pop_front,valueFlowForLoopSimplify,valueFlowForLoopSimplifyAfter,valueFlowForward]
+MultiValueFlowAnalyzer
+MultiValueFlowAnalyzer call:[declarationId]
+getVars
+getValue call:[end,find,varId]
+getValue call:[end,find,varId]
+makeConditional
+addErrorPath call:[emplace_back] noreturn:[emplace_back]
+isAlias call:[SelectValueFromVarIdMapRange,getVars,isAliasOf,varId]
+isGlobal
+lowerToPossible call:[changeKnownToPossible,isImpossible] noreturn:[changeKnownToPossible]
+lowerToInconclusive call:[isImpossible,setInconclusive] noreturn:[setInconclusive]
+isConditional call:[isImpossible] noreturn:[isImpossible]
+stopOnCondition call:[isConditional] noreturn:[isConditional]
+updateScope call:[all_of,begin,bifurcate,bind,end,getCondTokFromEnd,getSettings,getVars,inserter,isConditional,isImpossible,isKnown,isLifetimeValue,scope,transform] noreturn:[bifurcate]
+match call:[count,varId]
+getProgramState
+forkScope call:[astParent,astTop,count,getCondTokFromEnd,getProgramState,getSettings,getVariableFromVarId,isImpossible,isVarId,previous,programMemoryParseCondition,replace,scope,setPossible,simpleMatch,valueFlowForLoop2] noreturn:[getVariableFromVarId,programMemoryParseCondition,replace]
+productParams call:[args,back,back_inserter,begin,copy,empty,end,f,for_each,front,next,push_back,size] noreturn:[copy,f,for_each,front,push_back]
+valueFlowInjectParameter call:[a,bailoutInternal,name,productParams,valueFlowGenericForward] noreturn:[bailoutInternal,name,valueFlowGenericForward]
+valueFlowInjectParameter call:[declarationId,isClass,isConst,isReference,nameToken,next,valueFlowForward] noreturn:[valueFlowForward]
+valueFlowSwitchVariable call:[Match,Value,back,bailoutInternal,begin,emplace_back,end,info,info2,isArgument,isConst,isLocal,isName,link,name,next,previous,scope,setKnown,simpleMatch,str,toLongNumber,tokAt,valueFlowReverse,variable] noreturn:[bailoutInternal,emplace_back,next,setKnown,valueFlowReverse]
+getFunctionArgumentValues call:[Match,argvalues,emplace_back,empty,removeImpossible,values] noreturn:[emplace_back]
+valueFlowLibraryFunction call:[Match,astOperand1,atoi,c_str,compare,createAst,createMutualLinks,createTokens,deleteNext,empty,execute,find,front,getArguments,getFunctionArgumentValues,isInconclusive,isPossible,istr,next,pop,previous,productParams,push,setInconclusive,setKnown,setPossible,setTokenValue,str,tokenList,top,value,valueFlowConstantFoldAST,varId] noreturn:[deleteNext,pop,productParams,push,setPossible,setTokenValue,varId]
+begin
+end
+MakeIteratorRange
+valueFlowSubFunction call:[MakeIteratorRange,Match,argvalues,emplace_back,empty,expressionString,front,function,getArgumentVar,getArguments,getFunctionArgumentValues,getOrdinalText,infoString,isCPP,isLifetimeValue,isLocalLifetimeValue,isPointer,isSubFunctionLifetimeValue,isUninitValue,isVariableUsage,lowerToPossible,name,next,rbegin,remove_if,rend,returnValue,size,toString,valueFlowInjectParameter,valueFlowLibraryFunction,variable] noreturn:[isSubFunctionLifetimeValue,valueFlowInjectParameter,valueFlowLibraryFunction]
+valueFlowFunctionDefaultParameter call:[Match,argCount,changeKnownToPossible,empty,getArgumentVar,hasDefault,isCPP,isPossible,minArgCount,nameToken,push_back,tokAt,v,valueFlowInjectParameter,values] noreturn:[push_back,valueFlowInjectParameter]
+isKnown call:[hasKnownIntValue] noreturn:[hasKnownIntValue]
+valueFlowFunctionReturn call:[Match,astOperand1,astOperand2,astParent,back,bailoutInternal,clear,declarationId,empty,execute,findsimplematch,front,function,getArgumentVar,getSettings,hasKnownValue,hasVirtualSpecifier,isKnown,next,previous,push_back,setIntValue,setKnown,setPossible,setTokenValue,simpleMatch,size,str,typeStartToken,v,values] noreturn:[astOperand1,astParent,bailoutInternal,setIntValue,setKnown,setPossible,setTokenValue]
+needsInitialization call:[isPointer,isPrimitive,isUnionType,type,valueType]
+addToErrorPath call:[back_inserter,begin,copy_if,end,insert] noreturn:[copy_if]
+valueFlowUninit call:[Match,addToErrorPath,analyzer,findsimplematch,front,insert,isCPP,isExecutable,isExtern,isInit,isLocal,isPublic,isReference,isStandardType,isStatic,isThrow,make_pair,nameToken,needsInitialization,next,push_back,scope,setKnown,setTokenValue,str,type,typeScope,valueFlowForward,valueFlowGenericForward,varId,variable] noreturn:[addToErrorPath,next,push_back,setTokenValue,valueFlowForward]
+isContainerSizeChangedByFunction call:[Match,astParent,declarationId,function,getArgumentVar,getTokenArgumentFunction,getYield,hasVirtualSpecifier,isConst,isContainerSizeChanged,isReference,isUnaryOp,isVariableChangedByFunctionCall,nameToken,return,simpleMatch,strAt,valueType] noreturn:[isContainerSizeChanged,return]
+ContainerExpressionAnalyzer
+ContainerExpressionAnalyzer
+match call:[astIsIterator,exprId,isAliasOf]
+isWritable call:[Match,any_of,astIsIterator,astIsLHS,astOperand2,astParent,begin,end,getAction,getArguments,getValue,isContainerSizeValue,isKnown,simpleMatch,size,strAt,tokAt,tokType,valueType,values] noreturn:[isContainerSizeValue]
+writeValue call:[Match,astOperand2,astParent,getAction,getStrLength,isContainerSizeValue,isKnown,simpleMatch,strAt,tokType,valueType,values] noreturn:[getStrLength]
+isModified call:[Match,astIsContainer,astIsIterator,astIsLHS,astParent,getSettings,isCPP,isContainerSizeChanged,isLikelyStreamRead]
+valueFlowContainerForward call:[a,getSettings,valueFlowGenericForward] noreturn:[valueFlowGenericForward]
+valueFlowContainerForwardRecursive call:[a,getSettings,valueFlowGenericForward] noreturn:[valueFlowGenericForward]
+valueFlowContainerForward call:[nestedInFunction,scope,valueFlowContainerForward] noreturn:[valueFlowContainerForward]
+valueFlowContainerReverse call:[a,valueFlowGenericReverse] noreturn:[valueFlowGenericReverse]
+isContainerSizeChanged call:[Match,getAction,getYield,isContainerSizeChangedByFunction,strAt,valueType]
+isContainerSizeChanged call:[isContainerSizeChanged,next,varId]
+valueFlowSmartPointer call:[Match,astIsLHS,astIsSmartPointer,astOperand1,astOperand2,astParent,empty,exprId,front,getArguments,getVariables,isExecutable,isNumber,isSmartPointer,makeSymbolic,mem_fn,nameToken,next,originalName,previous,push_back,removeValues,scope,setKnown,setTokenValue,simpleMatch,str,tokAt,v,valueFlowForwardAssign,values,variable] noreturn:[astParent,setTokenValue,valueFlowForwardAssign]
+valueFlowIterators call:[Match,astIsContainer,astParent,front,getYield,isExecutable,next,scope,setKnown,setTokenValue,strAt,tokAt,v,valueType] noreturn:[setTokenValue]
+getIteratorValues call:[isIteratorValue,remove_if] noreturn:[isIteratorValue]
+parse call:[Match,assumeCondition,astOperand1,astOperand2,empty,getIteratorValues,setPossible,values] noreturn:[assumeCondition,astOperand1,astOperand2]
+valueFlowIteratorInfer call:[front,getIteratorValues,isExecutable,isImpossible,isIteratorEndValue,isIteratorStartValue,next,remove_if,scope,setPossible,setTokenValue,values] noreturn:[setTokenValue]
+getContainerValues call:[back_inserter,begin,copy_if,end,mem_fn,values] noreturn:[copy_if]
+makeContainerSizeValue call:[setKnown,value] noreturn:[setKnown]
+makeContainerSizeValue call:[front,hasKnownIntValue,makeContainerSizeValue,values]
+getInitListSize call:[astIsContainer,astIsGenericChar,astIsIntegral,astIsPointer,empty,getArguments,getContainerValues,isIteratorPair,makeContainerSizeValue,size,valueType] noreturn:[getContainerValues]
+valueFlowContainerSize call:[Match,astIsContainer,astOperand1,astOperand2,astTop,at,back,count,declarationId,dimensions,exprId,front,getAction,getInitListSize,getStrLength,hasKnownIntValue,hasKnownValue,isLocal,isPointer,isReference,isStatic,isVariableChanged,link,linkAt,nameToken,next,previous,setKnown,setTokenValue,simpleMatch,size,strAt,tokAt,value,valueFlowContainerForward,valueType,values,varId,variableList] noreturn:[getInitListSize,isVariableChanged,setKnown,setTokenValue,valueFlowContainerForward]
+forward call:[next,update,valueFlowContainerForward] noreturn:[update]
+forward call:[update,valueFlowContainerForwardRecursive] noreturn:[update]
+reverse call:[valueFlowContainerReverse] noreturn:[valueFlowContainerReverse]
+parse call:[Match,astIsContainer,astOperand1,astOperand2,astParent,emplace_back,getContainerFromYield,getStrLength,move,parseCompareInt,push_back,str,value] noreturn:[astOperand1,astOperand2,astParent]
+valueFlowDynamicBufferSize call:[Match,astOperand1,astOperand2,back,emplace_back,getAllocFuncInfo,getArguments,getKnownIntValue,getReallocFuncInfo,getStrLength,hasKnownIntValue,hasKnownValue,isCast,isTokValue,next,previous,setKnown,size,strAt,toString,tokAt,tokType,value,valueFlowForward,values,variable] noreturn:[astOperand1,getKnownIntValue,getReallocFuncInfo,valueFlowForward]
+getMinMaxValues call:[isIntegral]
+getMinMaxValues call:[createTokens,front,getMinMaxValues,istr,parseDecl,simplifyPlatformTypes,simplifyStdType,typeTokens] noreturn:[getMinMaxValues]
+valueFlowSafeFunctions call:[back,emplace_back,empty,getCppcheckAttribute,getMinMaxValues,isSafe,name,nameToken,next,string,toString,valueFlowContainerForward,valueFlowForward,valueType] noreturn:[valueFlowContainerForward,valueFlowForward]
+valueFlowUnknownFunctionReturn call:[Value,astOperand1,astParent,empty,end,find,front,getMinMaxValues,isName,next,previous,returnValueType,setTokenValue,str,unknownReturnValues] noreturn:[setTokenValue]
+Value call:[emplace_back,expressionString] noreturn:[emplace_back]
+assumeCondition call:[emplace_back,expressionString] noreturn:[emplace_back]
+infoString call:[InternalError,expressionString,str,toString] noreturn:[InternalError,toString]
+toString
+toString
+sameToken call:[exprId] noreturn:[exprId]
+toString
+toString
+valueFlowConstantFoldAST call:[astOperand1,astOperand2,empty,front,hasKnownValue,valueFlowConstantFoldAST,valueFlowSetConstantValue,values] noreturn:[valueFlowSetConstantValue]
+getTotalValues call:[front,next,size,values] noreturn:[size]
+setValues call:[clearValueFlow,front,getTotalValues,isCPP,next,valueFlowAfterAssign,valueFlowAfterMove,valueFlowAfterSwap,valueFlowArray,valueFlowArrayBool,valueFlowBitAnd,valueFlowCondition,valueFlowConditionExpressions,valueFlowContainerSize,valueFlowDynamicBufferSize,valueFlowEnumValue,valueFlowForLoop,valueFlowFunctionDefaultParameter,valueFlowFunctionReturn,valueFlowGlobalConstVar,valueFlowGlobalStaticVar,valueFlowImpossibleValues,valueFlowInferCondition,valueFlowIteratorInfer,valueFlowIterators,valueFlowLifetime,valueFlowNumber,valueFlowPointerAlias,valueFlowRightShift,valueFlowSafeFunctions,valueFlowSameExpressions,valueFlowSmartPointer,valueFlowString,valueFlowSubFunction,valueFlowSwitchVariable,valueFlowSymbolic,valueFlowSymbolicAbs,valueFlowSymbolicIdentity,valueFlowSymbolicInfer,valueFlowUninit,valueFlowUnknownFunctionReturn] noreturn:[clearValueFlow,valueFlowCondition,valueFlowDynamicBufferSize]
+unknown
+eitherTheConditionIsRedundant call:[Match,expressionString,next,str]
+findValue call:[isEnabled,isInconclusive,pred]
+isOutOfBoundsImpl call:[any_of,begin,end,getMaxValue,inferCondition,isArgument,isKnown,isPossible,isSymbolicValue,values,variable]
+isOutOfBounds call:[empty,isOutOfBoundsImpl] noreturn:[isOutOfBoundsImpl]
+ValuePtr < InferModel >
+ValuePtr < InferModel >
+ValuePtr < InferModel > call:[get,mClone,reset] noreturn:[reset]
+ValuePtr < InferModel >
+release call:[release] noreturn:[release]
+get call:[get] noreturn:[get]
+get call:[get] noreturn:[get]
+operator* call:[get] noreturn:[get]
+operator* call:[get] noreturn:[get]
+operator. call:[get] noreturn:[get]
+operator. call:[get] noreturn:[get]
+swap call:[swap] noreturn:[swap]
+operator= call:[swap]
+operatorbool
+ValuePtr < InferModel >
+ValuePtr < Analyzer >
+ValuePtr < Analyzer >
+ValuePtr < Analyzer > call:[get,mClone,reset] noreturn:[reset]
+ValuePtr < Analyzer >
+release call:[release] noreturn:[release]
+get call:[get] noreturn:[get]
+get call:[get] noreturn:[get]
+operator* call:[get] noreturn:[get]
+operator* call:[get] noreturn:[get]
+operator. call:[get] noreturn:[get]
+operator. call:[get] noreturn:[get]
+swap call:[swap] noreturn:[swap]
+operator= call:[swap]
+operatorbool
+ValuePtr < Analyzer >
+ValuePtr < ConditionHandler >
+ValuePtr < ConditionHandler >
+ValuePtr < ConditionHandler > call:[get,mClone,reset] noreturn:[reset]
+ValuePtr < ConditionHandler >
+release call:[release] noreturn:[release]
+get call:[get] noreturn:[get]
+get call:[get] noreturn:[get]
+operator* call:[get] noreturn:[get]
+operator* call:[get] noreturn:[get]
+operator. call:[get] noreturn:[get]
+operator. call:[get] noreturn:[get]
+swap call:[swap] noreturn:[swap]
+operator= call:[swap]
+operatorbool
+ValuePtr < ConditionHandler >
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+calculate < std :: vector < long long > > call:[calculate < std :: vector < long long > , std :: vector < long long > >] noreturn:[calculate < std :: vector < long long > , std :: vector < long long > >]
+apply call:[ConditionHandler] noreturn:[ConditionHandler]
+apply call:[Analyzer] noreturn:[Analyzer]
+apply call:[InferModel] noreturn:[InferModel]
+calculate < std :: vector < long long > , std :: vector < long long > > call:[InternalError,encodeMultiChar,isEqual,isZero,long,sizeof,wrap] noreturn:[InternalError,wrap]

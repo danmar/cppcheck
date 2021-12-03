@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="231040833">
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;buf[9]&apos; accessed at index 11, which is out of bounds." verbose="Array &apos;buf[9]&apos; accessed at index 11, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/x-flow/buffer01.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\x-flow\buffer01.cpp" line="9" column="12" info="Array index out of bounds"/>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="f" lineNumber="5"/>
+    <functiondecl functionName="main" lineNumber="13"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="malloc"/>
+  </FileInfo>
+</analyzerinfo>

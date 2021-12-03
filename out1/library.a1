@@ -1,0 +1,1364 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3765133199">
+        <error id="useStlAlgorithm" severity="style" msg="Consider using std::any_of algorithm instead of a raw loop." verbose="Consider using std::any_of algorithm instead of a raw loop." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\utils.h" line="102" column="0"/>
+        </error>
+        <error id="useStlAlgorithm" severity="style" msg="Consider using std::find_if algorithm instead of a raw loop." verbose="Consider using std::find_if algorithm instead of a raw loop." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\symboldatabase.h" line="1068" column="0"/>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:1274:10" call-funcname="setFlag" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="479" col="16" call-argexpr="b" call-argvaluetype="0" call-argvalue="0">
+  <path file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\token.h" line="827" col="28" info="Calling function &apos;isStandardType&apos;, 1st argument &apos;false&apos; value is 0"/>
+</function-call><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:729:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="748" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="826" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:478:10" call-funcname="isStandardType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="827" col="27" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="1007" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:639:17" call-funcname="getFunctionName" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1016" col="48" call-argexpr="&amp;error" call-argvaluetype="7" call-argvalue="1"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="371" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:370:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="379" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:378:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="384" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:383:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="392" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:391:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="407" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:406:41" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="414" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:413:49" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:276:17" call-funcname="simpleMatch" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="273" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:272:17" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:727:25" call-funcname="findsimplematch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="744" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:743:19" my-argnr="4"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:750:19" my-argnr="3"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h:692:10" call-funcname="evaluate" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="236" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h:224:5" my-argnr="8"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="932" col="32" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:388:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="954" col="32" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:389:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1036" col="33" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:375:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1049" col="33" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:376:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1066" col="34" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:87:22" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1073" col="34" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:90:22" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1080" col="34" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:93:22" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:87:22" call-funcname="getAllocFuncInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1087" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:96:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:90:22" call-funcname="getDeallocFuncInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1094" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:99:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:93:22" call-funcname="getReallocFuncInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1101" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:102:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1108" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h:282:5" call-funcname="numberOfArguments" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1220" col="26" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:190:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1240" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:186:21" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1288" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:166:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1299" col="85" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:167:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1310" col="25" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:168:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1315" col="25" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:169:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1320" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:177:31" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1328" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:193:19" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1338" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:195:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1346" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:196:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1354" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:197:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1362" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:198:34" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1370" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:363:21" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1381" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:411:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1395" col="33" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:418:31" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:480:25" call-funcname="detectSmartPointer" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1596" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:479:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="Standards" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/standards.h" line="34" col="1" hash="17043851307251082023"/>
+<class name="Library" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="51" col="1" hash="1552737319522267617"/>
+<class name="Library::Error" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="59" col="5" hash="12286307183496921675"/>
+<class name="Library::AllocFunc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="75" col="5" hash="10775169490966942164"/>
+<class name="Library::NonOverlappingData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="171" col="5" hash="10150418528887826577"/>
+<class name="Library::WarnInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="179" col="5" hash="11288615153331524748"/>
+<class name="Library::Container" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="205" col="5" hash="5925531928461974300"/>
+<class name="Library::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="245" col="9" hash="15300938604767074657"/>
+<class name="Library::ArgumentChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="282" col="5" hash="12750571595020437426"/>
+<class name="Library::ArgumentChecks::IteratorInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="304" col="9" hash="5808938552945039590"/>
+<class name="Library::ArgumentChecks::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="315" col="9" hash="7462947863318927415"/>
+<class name="Library::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="335" col="5" hash="10946023400099646984"/>
+<class name="Library::InvalidArgValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="396" col="5" hash="3434550972527386128"/>
+<class name="Library::SmartPointer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="473" col="5" hash="8397110513034780634"/>
+<class name="Library::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="482" col="5" hash="3603579986792226113"/>
+<class name="Library::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="492" col="5" hash="10212310188441517679"/>
+<class name="Library::Platform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="521" col="5" hash="4619885331303444484"/>
+<class name="Library::ExportedFunctions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="558" col="5" hash="5594972995536624256"/>
+<class name="Library::CodeBlock" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="577" col="5" hash="17600443670251453574"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="TokensFrontBack" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="52" col="1" hash="17620348941246977134"/>
+<class name="ScopeInfo2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="58" col="1" hash="15052730997986221754"/>
+<class name="TokenImpl::CppcheckAttributes" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="114" col="5" hash="2601846839105023242"/>
+<class name="Token::stringifyOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="874" col="5" hash="4923686271509485484"/>
+<class name="Dimension" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="59" col="1" hash="398277024802510523"/>
+<class name="Type::BaseInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="77" col="5" hash="7054315987882691616"/>
+<class name="Type::FriendInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="93" col="5" hash="13090720111502007646"/>
+<class name="Enumerator" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="163" col="1" hash="2182902561369759268"/>
+<class name="Scope::UsingInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="1016" col="5" hash="4585749679347444720"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:581:14" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="582" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:584:14" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="585" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp:36:33" my-argnr="1" my-argname="names" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="39" col="40" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:203:10" my-argnr="1" my-argname="end" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1127" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1208" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:368:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1440" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:200:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1450" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:201:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1464" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp:36:33" my-argnr="1" my-argname="names" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="39" col="40" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:203:10" my-argnr="1" my-argname="end" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1127" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1208" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:368:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1440" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:200:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1450" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:201:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1464" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:1274:10" call-funcname="setFlag" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="479" col="16" call-argexpr="b" call-argvaluetype="0" call-argvalue="0">
+  <path file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\token.h" line="827" col="28" info="Calling function &apos;isStandardType&apos;, 1st argument &apos;false&apos; value is 0"/>
+</function-call><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:729:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="748" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="826" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:478:10" call-funcname="isStandardType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="827" col="27" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="1007" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:639:17" call-funcname="getFunctionName" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1016" col="48" call-argexpr="&amp;error" call-argvaluetype="7" call-argvalue="1"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="371" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:370:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="379" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:378:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="384" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:383:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="392" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:391:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="407" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:406:41" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="414" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:413:49" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:276:17" call-funcname="simpleMatch" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="273" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:272:17" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:727:25" call-funcname="findsimplematch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="744" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:743:19" my-argnr="4"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:750:19" my-argnr="3"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h:692:10" call-funcname="evaluate" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="236" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h:224:5" my-argnr="8"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="932" col="32" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:388:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="954" col="32" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:389:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1036" col="33" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:375:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1049" col="33" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:376:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1066" col="34" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:87:22" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1073" col="34" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:90:22" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1080" col="34" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:93:22" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:87:22" call-funcname="getAllocFuncInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1087" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:96:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:90:22" call-funcname="getDeallocFuncInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1094" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:99:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:93:22" call-funcname="getReallocFuncInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1101" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:102:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1108" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h:282:5" call-funcname="numberOfArguments" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1220" col="26" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:190:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1240" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:186:21" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1288" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:166:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1299" col="85" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:167:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1310" col="25" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:168:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1315" col="25" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:169:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1320" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:177:31" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1328" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:193:19" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1338" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:195:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1346" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:196:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1354" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:197:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1362" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:198:34" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1370" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:363:21" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1381" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:411:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1395" col="33" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:418:31" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:480:25" call-funcname="detectSmartPointer" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1596" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:479:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="Standards" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/standards.h" line="34" col="1" hash="17043851307251082023"/>
+<class name="Library" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="51" col="1" hash="1552737319522267617"/>
+<class name="Library::Error" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="59" col="5" hash="12286307183496921675"/>
+<class name="Library::AllocFunc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="75" col="5" hash="10775169490966942164"/>
+<class name="Library::NonOverlappingData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="171" col="5" hash="10150418528887826577"/>
+<class name="Library::WarnInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="179" col="5" hash="11288615153331524748"/>
+<class name="Library::Container" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="205" col="5" hash="5925531928461974300"/>
+<class name="Library::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="245" col="9" hash="15300938604767074657"/>
+<class name="Library::ArgumentChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="282" col="5" hash="12750571595020437426"/>
+<class name="Library::ArgumentChecks::IteratorInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="304" col="9" hash="5808938552945039590"/>
+<class name="Library::ArgumentChecks::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="315" col="9" hash="7462947863318927415"/>
+<class name="Library::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="335" col="5" hash="10946023400099646984"/>
+<class name="Library::InvalidArgValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="396" col="5" hash="3434550972527386128"/>
+<class name="Library::SmartPointer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="473" col="5" hash="8397110513034780634"/>
+<class name="Library::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="482" col="5" hash="3603579986792226113"/>
+<class name="Library::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="492" col="5" hash="10212310188441517679"/>
+<class name="Library::Platform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="521" col="5" hash="4619885331303444484"/>
+<class name="Library::ExportedFunctions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="558" col="5" hash="5594972995536624256"/>
+<class name="Library::CodeBlock" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="577" col="5" hash="17600443670251453574"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="TokensFrontBack" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="52" col="1" hash="17620348941246977134"/>
+<class name="ScopeInfo2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="58" col="1" hash="15052730997986221754"/>
+<class name="TokenImpl::CppcheckAttributes" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="114" col="5" hash="2601846839105023242"/>
+<class name="Token::stringifyOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="874" col="5" hash="4923686271509485484"/>
+<class name="Dimension" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="59" col="1" hash="398277024802510523"/>
+<class name="Type::BaseInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="77" col="5" hash="7054315987882691616"/>
+<class name="Type::FriendInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="93" col="5" hash="13090720111502007646"/>
+<class name="Enumerator" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="163" col="1" hash="2182902561369759268"/>
+<class name="Scope::UsingInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="1016" col="5" hash="4585749679347444720"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:581:14" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="582" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:584:14" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="585" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp:36:33" my-argnr="1" my-argname="names" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="39" col="40" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:203:10" my-argnr="1" my-argname="end" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1127" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1208" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:368:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1440" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:200:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1450" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:201:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1464" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp:36:33" my-argnr="1" my-argname="names" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="39" col="40" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:203:10" my-argnr="1" my-argname="end" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1127" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1208" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:368:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1440" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:200:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1450" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:201:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1464" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:1274:10" call-funcname="setFlag" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="479" col="16" call-argexpr="b" call-argvaluetype="0" call-argvalue="0">
+  <path file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\token.h" line="827" col="28" info="Calling function &apos;isStandardType&apos;, 1st argument &apos;false&apos; value is 0"/>
+</function-call><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:729:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="748" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="826" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:478:10" call-funcname="isStandardType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="827" col="27" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="1007" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:639:17" call-funcname="getFunctionName" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1016" col="48" call-argexpr="&amp;error" call-argvaluetype="7" call-argvalue="1"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="371" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:370:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="379" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:378:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="384" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:383:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="392" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:391:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="407" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:406:41" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="414" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:413:49" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:276:17" call-funcname="simpleMatch" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="273" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:272:17" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:727:25" call-funcname="findsimplematch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="744" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:743:19" my-argnr="4"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:750:19" my-argnr="3"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h:692:10" call-funcname="evaluate" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="236" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h:224:5" my-argnr="8"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="932" col="32" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:388:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="954" col="32" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:389:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1036" col="33" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:375:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1049" col="33" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:376:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1066" col="34" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:87:22" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1073" col="34" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:90:22" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1080" col="34" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:93:22" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:87:22" call-funcname="getAllocFuncInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1087" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:96:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:90:22" call-funcname="getDeallocFuncInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1094" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:99:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:93:22" call-funcname="getReallocFuncInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1101" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:102:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1108" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h:282:5" call-funcname="numberOfArguments" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1220" col="26" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:190:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1240" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:186:21" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1288" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:166:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1299" col="85" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:167:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1310" col="25" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:168:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:544:17" call-funcname="getFunctionName" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1315" col="25" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:169:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1320" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:177:31" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1328" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:193:19" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1338" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:195:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1346" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:196:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1354" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:197:9" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1362" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:198:34" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1370" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:363:21" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" call-funcname="isNotLibraryFunction" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1381" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:411:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1395" col="33" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:418:31" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:480:25" call-funcname="detectSmartPointer" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1596" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:479:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="Standards" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/standards.h" line="34" col="1" hash="17043851307251082023"/>
+<class name="Library" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="51" col="1" hash="1552737319522267617"/>
+<class name="Library::Error" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="59" col="5" hash="12286307183496921675"/>
+<class name="Library::AllocFunc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="75" col="5" hash="10775169490966942164"/>
+<class name="Library::NonOverlappingData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="171" col="5" hash="10150418528887826577"/>
+<class name="Library::WarnInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="179" col="5" hash="11288615153331524748"/>
+<class name="Library::Container" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="205" col="5" hash="5925531928461974300"/>
+<class name="Library::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="245" col="9" hash="15300938604767074657"/>
+<class name="Library::ArgumentChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="282" col="5" hash="12750571595020437426"/>
+<class name="Library::ArgumentChecks::IteratorInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="304" col="9" hash="5808938552945039590"/>
+<class name="Library::ArgumentChecks::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="315" col="9" hash="7462947863318927415"/>
+<class name="Library::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="335" col="5" hash="10946023400099646984"/>
+<class name="Library::InvalidArgValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="396" col="5" hash="3434550972527386128"/>
+<class name="Library::SmartPointer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="473" col="5" hash="8397110513034780634"/>
+<class name="Library::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="482" col="5" hash="3603579986792226113"/>
+<class name="Library::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="492" col="5" hash="10212310188441517679"/>
+<class name="Library::Platform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="521" col="5" hash="4619885331303444484"/>
+<class name="Library::ExportedFunctions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="558" col="5" hash="5594972995536624256"/>
+<class name="Library::CodeBlock" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="577" col="5" hash="17600443670251453574"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="TokensFrontBack" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="52" col="1" hash="17620348941246977134"/>
+<class name="ScopeInfo2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="58" col="1" hash="15052730997986221754"/>
+<class name="TokenImpl::CppcheckAttributes" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="114" col="5" hash="2601846839105023242"/>
+<class name="Token::stringifyOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="874" col="5" hash="4923686271509485484"/>
+<class name="Dimension" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="59" col="1" hash="398277024802510523"/>
+<class name="Type::BaseInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="77" col="5" hash="7054315987882691616"/>
+<class name="Type::FriendInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="93" col="5" hash="13090720111502007646"/>
+<class name="Enumerator" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="163" col="1" hash="2182902561369759268"/>
+<class name="Scope::UsingInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/symboldatabase.h" line="1016" col="5" hash="4585749679347444720"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:581:14" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="582" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:584:14" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="585" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp:36:33" my-argnr="1" my-argname="names" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="39" col="40" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:203:10" my-argnr="1" my-argname="end" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1127" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1208" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:368:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1440" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:200:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1450" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:201:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1464" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp:36:33" my-argnr="1" my-argname="names" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="39" col="40" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:203:10" my-argnr="1" my-argname="end" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1127" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:189:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1208" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:368:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1440" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:200:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1450" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:201:10" my-argnr="1" my-argname="ftok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.cpp" line="1464" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="getnames" lineNumber="36"/>
+    <functiondecl functionName="gettokenlistfromvalid" lineNumber="47"/>
+    <functiondecl functionName="load" lineNumber="62"/>
+    <functiondecl functionName="yieldFrom" lineNumber="138"/>
+    <functiondecl functionName="actionFrom" lineNumber="161"/>
+    <functiondecl functionName="loadxmldata" lineNumber="187"/>
+    <functiondecl functionName="load" lineNumber="193"/>
+    <functiondecl functionName="loadFunction" lineNumber="643"/>
+    <functiondecl functionName="getInvalidArgValues" lineNumber="880"/>
+    <functiondecl functionName="isIntArgValid" lineNumber="930"/>
+    <functiondecl functionName="isFloatArgValid" lineNumber="952"/>
+    <functiondecl functionName="getFunctionName" lineNumber="970"/>
+    <functiondecl functionName="getFunctionName" lineNumber="1007"/>
+    <functiondecl functionName="isnullargbad" lineNumber="1034"/>
+    <functiondecl functionName="isuninitargbad" lineNumber="1047"/>
+    <functiondecl functionName="getAllocFuncInfo" lineNumber="1064"/>
+    <functiondecl functionName="getDeallocFuncInfo" lineNumber="1071"/>
+    <functiondecl functionName="getReallocFuncInfo" lineNumber="1078"/>
+    <functiondecl functionName="getAllocId" lineNumber="1085"/>
+    <functiondecl functionName="getDeallocId" lineNumber="1092"/>
+    <functiondecl functionName="getReallocId" lineNumber="1099"/>
+    <functiondecl functionName="getarg" lineNumber="1106"/>
+    <functiondecl functionName="isScopeNoReturn" lineNumber="1122"/>
+    <functiondecl functionName="detectContainer" lineNumber="1161"/>
+    <functiondecl functionName="isContainerYield" lineNumber="1186"/>
+    <functiondecl functionName="isNotLibraryFunction" lineNumber="1206"/>
+    <functiondecl functionName="matchArguments" lineNumber="1218"/>
+    <functiondecl functionName="getWarnInfo" lineNumber="1238"/>
+    <functiondecl functionName="isCompliantValidationExpression" lineNumber="1248"/>
+    <functiondecl functionName="formatstr_function" lineNumber="1286"/>
+    <functiondecl functionName="formatstr_argno" lineNumber="1297"/>
+    <functiondecl functionName="formatstr_scan" lineNumber="1308"/>
+    <functiondecl functionName="formatstr_secure" lineNumber="1313"/>
+    <functiondecl functionName="getNonOverlappingData" lineNumber="1318"/>
+    <functiondecl functionName="getUseRetValType" lineNumber="1326"/>
+    <functiondecl functionName="returnValue" lineNumber="1336"/>
+    <functiondecl functionName="returnValueType" lineNumber="1344"/>
+    <functiondecl functionName="returnValueContainer" lineNumber="1352"/>
+    <functiondecl functionName="unknownReturnValues" lineNumber="1360"/>
+    <functiondecl functionName="getFunction" lineNumber="1368"/>
+    <functiondecl functionName="hasminsize" lineNumber="1379"/>
+    <functiondecl functionName="getArgDirection" lineNumber="1393"/>
+    <functiondecl functionName="ignorefunction" lineNumber="1410"/>
+    <functiondecl functionName="isUse" lineNumber="1417"/>
+    <functiondecl functionName="isLeakIgnore" lineNumber="1424"/>
+    <functiondecl functionName="isFunctionConst" lineNumber="1431"/>
+    <functiondecl functionName="isFunctionConst" lineNumber="1438"/>
+    <functiondecl functionName="isnoreturn" lineNumber="1448"/>
+    <functiondecl functionName="isnotnoreturn" lineNumber="1462"/>
+    <functiondecl functionName="markupFile" lineNumber="1476"/>
+    <functiondecl functionName="processMarkupAfterCode" lineNumber="1481"/>
+    <functiondecl functionName="reportErrors" lineNumber="1487"/>
+    <functiondecl functionName="isexecutableblock" lineNumber="1493"/>
+    <functiondecl functionName="blockstartoffset" lineNumber="1499"/>
+    <functiondecl functionName="blockstart" lineNumber="1511"/>
+    <functiondecl functionName="blockend" lineNumber="1522"/>
+    <functiondecl functionName="iskeyword" lineNumber="1533"/>
+    <functiondecl functionName="isimporter" lineNumber="1540"/>
+    <functiondecl functionName="getContainerFromYield" lineNumber="1547"/>
+    <functiondecl functionName="getContainerFromAction" lineNumber="1571"/>
+    <functiondecl functionName="isSmartPointer" lineNumber="1594"/>
+    <functiondecl functionName="detectSmartPointer" lineNumber="1599"/>
+    <functiondecl functionName="getLibraryContainer" lineNumber="1612"/>
+    <functiondecl functionName="getTypeCheck" lineNumber="1632"/>
+    <functiondecl functionName="getnames" lineNumber="36"/>
+    <functiondecl functionName="gettokenlistfromvalid" lineNumber="47"/>
+    <functiondecl functionName="load" lineNumber="62"/>
+    <functiondecl functionName="yieldFrom" lineNumber="138"/>
+    <functiondecl functionName="actionFrom" lineNumber="161"/>
+    <functiondecl functionName="loadxmldata" lineNumber="187"/>
+    <functiondecl functionName="load" lineNumber="193"/>
+    <functiondecl functionName="loadFunction" lineNumber="643"/>
+    <functiondecl functionName="getInvalidArgValues" lineNumber="880"/>
+    <functiondecl functionName="isIntArgValid" lineNumber="930"/>
+    <functiondecl functionName="isFloatArgValid" lineNumber="952"/>
+    <functiondecl functionName="getFunctionName" lineNumber="970"/>
+    <functiondecl functionName="getFunctionName" lineNumber="1007"/>
+    <functiondecl functionName="isnullargbad" lineNumber="1034"/>
+    <functiondecl functionName="isuninitargbad" lineNumber="1047"/>
+    <functiondecl functionName="getAllocFuncInfo" lineNumber="1064"/>
+    <functiondecl functionName="getDeallocFuncInfo" lineNumber="1071"/>
+    <functiondecl functionName="getReallocFuncInfo" lineNumber="1078"/>
+    <functiondecl functionName="getAllocId" lineNumber="1085"/>
+    <functiondecl functionName="getDeallocId" lineNumber="1092"/>
+    <functiondecl functionName="getReallocId" lineNumber="1099"/>
+    <functiondecl functionName="getarg" lineNumber="1106"/>
+    <functiondecl functionName="isScopeNoReturn" lineNumber="1122"/>
+    <functiondecl functionName="detectContainer" lineNumber="1161"/>
+    <functiondecl functionName="isContainerYield" lineNumber="1186"/>
+    <functiondecl functionName="isNotLibraryFunction" lineNumber="1206"/>
+    <functiondecl functionName="matchArguments" lineNumber="1218"/>
+    <functiondecl functionName="getWarnInfo" lineNumber="1238"/>
+    <functiondecl functionName="isCompliantValidationExpression" lineNumber="1248"/>
+    <functiondecl functionName="formatstr_function" lineNumber="1286"/>
+    <functiondecl functionName="formatstr_argno" lineNumber="1297"/>
+    <functiondecl functionName="formatstr_scan" lineNumber="1308"/>
+    <functiondecl functionName="formatstr_secure" lineNumber="1313"/>
+    <functiondecl functionName="getNonOverlappingData" lineNumber="1318"/>
+    <functiondecl functionName="getUseRetValType" lineNumber="1326"/>
+    <functiondecl functionName="returnValue" lineNumber="1336"/>
+    <functiondecl functionName="returnValueType" lineNumber="1344"/>
+    <functiondecl functionName="returnValueContainer" lineNumber="1352"/>
+    <functiondecl functionName="unknownReturnValues" lineNumber="1360"/>
+    <functiondecl functionName="getFunction" lineNumber="1368"/>
+    <functiondecl functionName="hasminsize" lineNumber="1379"/>
+    <functiondecl functionName="getArgDirection" lineNumber="1393"/>
+    <functiondecl functionName="ignorefunction" lineNumber="1410"/>
+    <functiondecl functionName="isUse" lineNumber="1417"/>
+    <functiondecl functionName="isLeakIgnore" lineNumber="1424"/>
+    <functiondecl functionName="isFunctionConst" lineNumber="1431"/>
+    <functiondecl functionName="isFunctionConst" lineNumber="1438"/>
+    <functiondecl functionName="isnoreturn" lineNumber="1448"/>
+    <functiondecl functionName="isnotnoreturn" lineNumber="1462"/>
+    <functiondecl functionName="markupFile" lineNumber="1476"/>
+    <functiondecl functionName="processMarkupAfterCode" lineNumber="1481"/>
+    <functiondecl functionName="reportErrors" lineNumber="1487"/>
+    <functiondecl functionName="isexecutableblock" lineNumber="1493"/>
+    <functiondecl functionName="blockstartoffset" lineNumber="1499"/>
+    <functiondecl functionName="blockstart" lineNumber="1511"/>
+    <functiondecl functionName="blockend" lineNumber="1522"/>
+    <functiondecl functionName="iskeyword" lineNumber="1533"/>
+    <functiondecl functionName="isimporter" lineNumber="1540"/>
+    <functiondecl functionName="getContainerFromYield" lineNumber="1547"/>
+    <functiondecl functionName="getContainerFromAction" lineNumber="1571"/>
+    <functiondecl functionName="isSmartPointer" lineNumber="1594"/>
+    <functiondecl functionName="detectSmartPointer" lineNumber="1599"/>
+    <functiondecl functionName="getLibraryContainer" lineNumber="1612"/>
+    <functiondecl functionName="getTypeCheck" lineNumber="1632"/>
+    <functiondecl functionName="getnames" lineNumber="36"/>
+    <functiondecl functionName="gettokenlistfromvalid" lineNumber="47"/>
+    <functiondecl functionName="load" lineNumber="62"/>
+    <functiondecl functionName="yieldFrom" lineNumber="138"/>
+    <functiondecl functionName="actionFrom" lineNumber="161"/>
+    <functiondecl functionName="loadxmldata" lineNumber="187"/>
+    <functiondecl functionName="load" lineNumber="193"/>
+    <functiondecl functionName="loadFunction" lineNumber="643"/>
+    <functiondecl functionName="getInvalidArgValues" lineNumber="880"/>
+    <functiondecl functionName="isIntArgValid" lineNumber="930"/>
+    <functiondecl functionName="isFloatArgValid" lineNumber="952"/>
+    <functiondecl functionName="getFunctionName" lineNumber="970"/>
+    <functiondecl functionName="getFunctionName" lineNumber="1007"/>
+    <functiondecl functionName="isnullargbad" lineNumber="1034"/>
+    <functiondecl functionName="isuninitargbad" lineNumber="1047"/>
+    <functiondecl functionName="getAllocFuncInfo" lineNumber="1064"/>
+    <functiondecl functionName="getDeallocFuncInfo" lineNumber="1071"/>
+    <functiondecl functionName="getReallocFuncInfo" lineNumber="1078"/>
+    <functiondecl functionName="getAllocId" lineNumber="1085"/>
+    <functiondecl functionName="getDeallocId" lineNumber="1092"/>
+    <functiondecl functionName="getReallocId" lineNumber="1099"/>
+    <functiondecl functionName="getarg" lineNumber="1106"/>
+    <functiondecl functionName="isScopeNoReturn" lineNumber="1122"/>
+    <functiondecl functionName="detectContainer" lineNumber="1161"/>
+    <functiondecl functionName="isContainerYield" lineNumber="1186"/>
+    <functiondecl functionName="isNotLibraryFunction" lineNumber="1206"/>
+    <functiondecl functionName="matchArguments" lineNumber="1218"/>
+    <functiondecl functionName="getWarnInfo" lineNumber="1238"/>
+    <functiondecl functionName="isCompliantValidationExpression" lineNumber="1248"/>
+    <functiondecl functionName="formatstr_function" lineNumber="1286"/>
+    <functiondecl functionName="formatstr_argno" lineNumber="1297"/>
+    <functiondecl functionName="formatstr_scan" lineNumber="1308"/>
+    <functiondecl functionName="formatstr_secure" lineNumber="1313"/>
+    <functiondecl functionName="getNonOverlappingData" lineNumber="1318"/>
+    <functiondecl functionName="getUseRetValType" lineNumber="1326"/>
+    <functiondecl functionName="returnValue" lineNumber="1336"/>
+    <functiondecl functionName="returnValueType" lineNumber="1344"/>
+    <functiondecl functionName="returnValueContainer" lineNumber="1352"/>
+    <functiondecl functionName="unknownReturnValues" lineNumber="1360"/>
+    <functiondecl functionName="getFunction" lineNumber="1368"/>
+    <functiondecl functionName="hasminsize" lineNumber="1379"/>
+    <functiondecl functionName="getArgDirection" lineNumber="1393"/>
+    <functiondecl functionName="ignorefunction" lineNumber="1410"/>
+    <functiondecl functionName="isUse" lineNumber="1417"/>
+    <functiondecl functionName="isLeakIgnore" lineNumber="1424"/>
+    <functiondecl functionName="isFunctionConst" lineNumber="1431"/>
+    <functiondecl functionName="isFunctionConst" lineNumber="1438"/>
+    <functiondecl functionName="isnoreturn" lineNumber="1448"/>
+    <functiondecl functionName="isnotnoreturn" lineNumber="1462"/>
+    <functiondecl functionName="markupFile" lineNumber="1476"/>
+    <functiondecl functionName="processMarkupAfterCode" lineNumber="1481"/>
+    <functiondecl functionName="reportErrors" lineNumber="1487"/>
+    <functiondecl functionName="isexecutableblock" lineNumber="1493"/>
+    <functiondecl functionName="blockstartoffset" lineNumber="1499"/>
+    <functiondecl functionName="blockstart" lineNumber="1511"/>
+    <functiondecl functionName="blockend" lineNumber="1522"/>
+    <functiondecl functionName="iskeyword" lineNumber="1533"/>
+    <functiondecl functionName="isimporter" lineNumber="1540"/>
+    <functiondecl functionName="getContainerFromYield" lineNumber="1547"/>
+    <functiondecl functionName="getContainerFromAction" lineNumber="1571"/>
+    <functiondecl functionName="isSmartPointer" lineNumber="1594"/>
+    <functiondecl functionName="detectSmartPointer" lineNumber="1599"/>
+    <functiondecl functionName="getLibraryContainer" lineNumber="1612"/>
+    <functiondecl functionName="getTypeCheck" lineNumber="1632"/>
+    <functioncall functionName="ARGVALUE"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="AT_INDEX"/>
+    <functioncall functionName="Address"/>
+    <functioncall functionName="AllocFunc"/>
+    <functioncall functionName="Argument"/>
+    <functioncall functionName="ArgumentChecks"/>
+    <functioncall functionName="Attribute"/>
+    <functioncall functionName="BAD_ATTRIBUTE_VALUE"/>
+    <functioncall functionName="BAD_XML"/>
+    <functioncall functionName="BAILOUT"/>
+    <functioncall functionName="BOOL"/>
+    <functioncall functionName="BREAK"/>
+    <functioncall functionName="BUFFER"/>
+    <functioncall functionName="BUFFER_NT"/>
+    <functioncall functionName="BUFFER_SIZE"/>
+    <functioncall functionName="BaseInfo"/>
+    <functioncall functionName="BoolAttribute"/>
+    <functioncall functionName="BoolValue"/>
+    <functioncall functionName="C11"/>
+    <functioncall functionName="C89"/>
+    <functioncall functionName="C99"/>
+    <functioncall functionName="CHANGE"/>
+    <functioncall functionName="CHANGE_CONTENT"/>
+    <functioncall functionName="CHANGE_INTERNAL"/>
+    <functioncall functionName="CHAR"/>
+    <functioncall functionName="CLEAR"/>
+    <functioncall functionName="CONTAINER"/>
+    <functioncall functionName="CONTAINER_SIZE"/>
+    <functioncall functionName="CPP03"/>
+    <functioncall functionName="CPP11"/>
+    <functioncall functionName="CPP11INIT"/>
+    <functioncall functionName="CPP14"/>
+    <functioncall functionName="CPP17"/>
+    <functioncall functionName="CPP20"/>
+    <functioncall functionName="CPPLatest"/>
+    <functioncall functionName="ChildrenToVisit"/>
+    <functioncall functionName="CodeBlock"/>
+    <functioncall functionName="Container"/>
+    <functioncall functionName="DEFAULT"/>
+    <functioncall functionName="DIR_IN"/>
+    <functioncall functionName="DIR_INOUT"/>
+    <functioncall functionName="DIR_OUT"/>
+    <functioncall functionName="DIR_UNKNOWN"/>
+    <functioncall functionName="DOUBLE"/>
+    <functioncall functionName="DUPLICATE_PLATFORM_TYPE"/>
+    <functioncall functionName="Dimension"/>
+    <functioncall functionName="EMPTY"/>
+    <functioncall functionName="END_ITERATOR"/>
+    <functioncall functionName="ERASE"/>
+    <functioncall functionName="ERROR_CODE"/>
+    <functioncall functionName="Enumerator"/>
+    <functioncall functionName="Error"/>
+    <functioncall functionName="ExportedFunctions"/>
+    <functioncall functionName="FALLBACK1"/>
+    <functioncall functionName="FALLBACK2"/>
+    <functioncall functionName="FILE_NOT_FOUND"/>
+    <functioncall functionName="FIND"/>
+    <functioncall functionName="False"/>
+    <functioncall functionName="FalseTrueMaybe"/>
+    <functioncall functionName="FindAttribute"/>
+    <functioncall functionName="FirstChildElement"/>
+    <functioncall functionName="ForwardedVariable"/>
+    <functioncall functionName="FriendInfo"/>
+    <functioncall functionName="Function"/>
+    <functioncall functionName="GetText"/>
+    <functioncall functionName="Global"/>
+    <functioncall functionName="HIGH"/>
+    <functioncall functionName="INSERT"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INT"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="ITEM"/>
+    <functioncall functionName="ITERATOR"/>
+    <functioncall functionName="ITERATOR_END"/>
+    <functioncall functionName="ITERATOR_START"/>
+    <functioncall functionName="Impossible"/>
+    <functioncall functionName="Inconclusive"/>
+    <functioncall functionName="InferModel"/>
+    <functioncall functionName="IntAttribute"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="InvalidArgValue"/>
+    <functioncall functionName="Iterator"/>
+    <functioncall functionName="Known"/>
+    <functioncall functionName="KnownAndToken"/>
+    <functioncall functionName="LIFETIME"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="LLONG_MAX"/>
+    <functioncall functionName="LLONG_MIN"/>
+    <functioncall functionName="LONG"/>
+    <functioncall functionName="LONGDOUBLE"/>
+    <functioncall functionName="LONGLONG"/>
+    <functioncall functionName="LOW"/>
+    <functioncall functionName="LValue"/>
+    <functioncall functionName="Lambda"/>
+    <functioncall functionName="Library"/>
+    <functioncall functionName="LifetimeToken"/>
+    <functioncall functionName="LoadFile"/>
+    <functioncall functionName="Local"/>
+    <functioncall functionName="Lower"/>
+    <functioncall functionName="MISSING_ATTRIBUTE"/>
+    <functioncall functionName="MOVED"/>
+    <functioncall functionName="MUL"/>
+    <functioncall functionName="Match"/>
+    <functioncall functionName="Maybe"/>
+    <functioncall functionName="MinSize"/>
+    <functioncall functionName="MovedVariable"/>
+    <functioncall functionName="N"/>
+    <functioncall functionName="NO"/>
+    <functioncall functionName="NOINIT"/>
+    <functioncall functionName="NOMATCH"/>
+    <functioncall functionName="NONE"/>
+    <functioncall functionName="NONSTD"/>
+    <functioncall functionName="NO_ACTION"/>
+    <functioncall functionName="NO_YIELD"/>
+    <functioncall functionName="Name"/>
+    <functioncall functionName="Namespace"/>
+    <functioncall functionName="NextSiblingElement"/>
+    <functioncall functionName="NonMovedVariable"/>
+    <functioncall functionName="NonOverlappingData"/>
+    <functioncall functionName="None"/>
+    <functioncall functionName="OK"/>
+    <functioncall functionName="Object"/>
+    <functioncall functionName="PLATFORM_TYPE_REDEFINED"/>
+    <functioncall functionName="POP"/>
+    <functioncall functionName="PUSH"/>
+    <functioncall functionName="Parse"/>
+    <functioncall functionName="Platform"/>
+    <functioncall functionName="PlatformType"/>
+    <functioncall functionName="PodType"/>
+    <functioncall functionName="Point"/>
+    <functioncall functionName="Possible"/>
+    <functioncall functionName="PrintError"/>
+    <functioncall functionName="Private"/>
+    <functioncall functionName="Protected"/>
+    <functioncall functionName="Public"/>
+    <functioncall functionName="READ"/>
+    <functioncall functionName="RECORD"/>
+    <functioncall functionName="RESIZE"/>
+    <functioncall functionName="RETURN"/>
+    <functioncall functionName="RValue"/>
+    <functioncall functionName="Reassign"/>
+    <functioncall functionName="ReferenceToken"/>
+    <functioncall functionName="Result"/>
+    <functioncall functionName="SAME"/>
+    <functioncall functionName="SHORT"/>
+    <functioncall functionName="SIGNED"/>
+    <functioncall functionName="SIZE"/>
+    <functioncall functionName="SIZEOF"/>
+    <functioncall functionName="SMART_POINTER"/>
+    <functioncall functionName="START_ITERATOR"/>
+    <functioncall functionName="STRLEN"/>
+    <functioncall functionName="SYMBOLIC"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="Scope"/>
+    <functioncall functionName="ScopeInfo2"/>
+    <functioncall functionName="SmartPointer"/>
+    <functioncall functionName="Standards"/>
+    <functioncall functionName="SubFunction"/>
+    <functioncall functionName="SubObject"/>
+    <functioncall functionName="T"/>
+    <functioncall functionName="TOK"/>
+    <functioncall functionName="Throw"/>
+    <functioncall functionName="Token"/>
+    <functioncall functionName="TokenAndName"/>
+    <functioncall functionName="TokenImpl"/>
+    <functioncall functionName="True"/>
+    <functioncall functionName="Type"/>
+    <functioncall functionName="TypeCheck"/>
+    <functioncall functionName="UNINIT"/>
+    <functioncall functionName="UNKNOWN"/>
+    <functioncall functionName="UNKNOWN_ELEMENT"/>
+    <functioncall functionName="UNKNOWN_INT"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="UNKNOWN_SIGN"/>
+    <functioncall functionName="UNKNOWN_TYPE"/>
+    <functioncall functionName="UNSIGNED"/>
+    <functioncall functionName="UNSUPPORTED_FORMAT"/>
+    <functioncall functionName="Unknown"/>
+    <functioncall functionName="UnusedValue"/>
+    <functioncall functionName="Upper"/>
+    <functioncall functionName="UsingInfo"/>
+    <functioncall functionName="VALUE"/>
+    <functioncall functionName="Value"/>
+    <functioncall functionName="ValueFlow"/>
+    <functioncall functionName="ValueType"/>
+    <functioncall functionName="Variable"/>
+    <functioncall functionName="WCHAR_T"/>
+    <functioncall functionName="WRITE"/>
+    <functioncall functionName="WarnInfo"/>
+    <functioncall functionName="XML_ERROR_FILE_NOT_FOUND"/>
+    <functioncall functionName="_1"/>
+    <functioncall functionName="a"/>
+    <functioncall functionName="abs"/>
+    <functioncall functionName="absolute_path"/>
+    <functioncall functionName="ac"/>
+    <functioncall functionName="acceptFile"/>
+    <functioncall functionName="access"/>
+    <functioncall functionName="access_"/>
+    <functioncall functionName="action"/>
+    <functioncall functionName="actionFrom"/>
+    <functioncall functionName="actionName"/>
+    <functioncall functionName="action_ptr"/>
+    <functioncall functionName="addBlock"/>
+    <functioncall functionName="addPrefix"/>
+    <functioncall functionName="addSuffix"/>
+    <functioncall functionName="addressOf"/>
+    <functioncall functionName="allocationId"/>
+    <functioncall functionName="alternatives"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="arg2"/>
+    <functioncall functionName="arg2attr"/>
+    <functioncall functionName="argDirLen"/>
+    <functioncall functionName="argDirection"/>
+    <functioncall functionName="argNrString"/>
+    <functioncall functionName="argString"/>
+    <functioncall functionName="argattr"/>
+    <functioncall functionName="argnode"/>
+    <functioncall functionName="argnodename"/>
+    <functioncall functionName="argnr"/>
+    <functioncall functionName="argumentChecks"/>
+    <functioncall functionName="argvalue"/>
+    <functioncall functionName="arrayLike_indexOp"/>
+    <functioncall functionName="assert"/>
+    <functioncall functionName="associative"/>
+    <functioncall functionName="astCanonicalType"/>
+    <functioncall functionName="astIsContainer"/>
+    <functioncall functionName="astIsPointer"/>
+    <functioncall functionName="astOperand1"/>
+    <functioncall functionName="astOperand2"/>
+    <functioncall functionName="astParent"/>
+    <functioncall functionName="astString"/>
+    <functioncall functionName="astTop"/>
+    <functioncall functionName="at"/>
+    <functioncall functionName="atoi"/>
+    <functioncall functionName="b"/>
+    <functioncall functionName="bVariadicArg"/>
+    <functioncall functionName="back"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="bind"/>
+    <functioncall functionName="bits"/>
+    <functioncall functionName="blockName"/>
+    <functioncall functionName="blocknode"/>
+    <functioncall functionName="blocknodename"/>
+    <functioncall functionName="bodyEnd"/>
+    <functioncall functionName="bodyEnd_"/>
+    <functioncall functionName="bool"/>
+    <functioncall functionName="bound"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="bufferSize"/>
+    <functioncall functionName="bugHunting"/>
+    <functioncall functionName="c"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="calloc"/>
+    <functioncall functionName="catch"/>
+    <functioncall functionName="cbegin"/>
+    <functioncall functionName="cend"/>
+    <functioncall functionName="cfgfolder"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="check"/>
+    <functioncall functionName="checkName"/>
+    <functioncall functionName="checkNode"/>
+    <functioncall functionName="checkTypeNode"/>
+    <functioncall functionName="class"/>
+    <functioncall functionName="classDef"/>
+    <functioncall functionName="classDef_"/>
+    <functioncall functionName="className"/>
+    <functioncall functionName="classScope"/>
+    <functioncall functionName="classScope_"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="compare"/>
+    <functioncall functionName="cond"/>
+    <functioncall functionName="condition"/>
+    <functioncall functionName="conditional"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="const_cast"/>
+    <functioncall functionName="constness"/>
+    <functioncall functionName="container"/>
+    <functioncall functionName="containerAction"/>
+    <functioncall functionName="containerNode"/>
+    <functioncall functionName="containerNodeName"/>
+    <functioncall functionName="containerTok"/>
+    <functioncall functionName="containerTypeToken"/>
+    <functioncall functionName="containerYield"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="cpp"/>
+    <functioncall functionName="cppstd"/>
+    <functioncall functionName="createTokens"/>
+    <functioncall functionName="cstd"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="decreaseRange"/>
+    <functioncall functionName="def"/>
+    <functioncall functionName="defaultArg"/>
+    <functioncall functionName="deleteNext"/>
+    <functioncall functionName="derivedFrom"/>
+    <functioncall functionName="detectSmartPointer"/>
+    <functioncall functionName="direction"/>
+    <functioncall functionName="doc"/>
+    <functioncall functionName="done"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="e"/>
+    <functioncall functionName="eArithmeticalOp"/>
+    <functioncall functionName="eAssignmentOp"/>
+    <functioncall functionName="eBitOp"/>
+    <functioncall functionName="eBoolean"/>
+    <functioncall functionName="eBracket"/>
+    <functioncall functionName="eCatch"/>
+    <functioncall functionName="eChar"/>
+    <functioncall functionName="eClass"/>
+    <functioncall functionName="eComparisonOp"/>
+    <functioncall functionName="eConstructor"/>
+    <functioncall functionName="eCopyConstructor"/>
+    <functioncall functionName="eDestructor"/>
+    <functioncall functionName="eDo"/>
+    <functioncall functionName="eEllipsis"/>
+    <functioncall functionName="eElse"/>
+    <functioncall functionName="eEnum"/>
+    <functioncall functionName="eEnumerator"/>
+    <functioncall functionName="eExtendedOp"/>
+    <functioncall functionName="eFor"/>
+    <functioncall functionName="eFunction"/>
+    <functioncall functionName="eGlobal"/>
+    <functioncall functionName="eIf"/>
+    <functioncall functionName="eIncDecOp"/>
+    <functioncall functionName="eKeyword"/>
+    <functioncall functionName="eLambda"/>
+    <functioncall functionName="eLiteral"/>
+    <functioncall functionName="eLogicalOp"/>
+    <functioncall functionName="eMoveConstructor"/>
+    <functioncall functionName="eName"/>
+    <functioncall functionName="eNamespace"/>
+    <functioncall functionName="eNone"/>
+    <functioncall functionName="eNumber"/>
+    <functioncall functionName="eOperatorEqual"/>
+    <functioncall functionName="eOther"/>
+    <functioncall functionName="eString"/>
+    <functioncall functionName="eStruct"/>
+    <functioncall functionName="eSwitch"/>
+    <functioncall functionName="eTry"/>
+    <functioncall functionName="eType"/>
+    <functioncall functionName="eUnconditional"/>
+    <functioncall functionName="eUnion"/>
+    <functioncall functionName="eVariable"/>
+    <functioncall functionName="eWhile"/>
+    <functioncall functionName="emplace_back"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="emptyString"/>
+    <functioncall functionName="ename"/>
+    <functioncall functionName="enclosingScope"/>
+    <functioncall functionName="enclosingScope_"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endPattern"/>
+    <functioncall functionName="end_"/>
+    <functioncall functionName="endlen"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="enumeratorList"/>
+    <functioncall functionName="eq"/>
+    <functioncall functionName="equalValue"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorPath"/>
+    <functioncall functionName="errorcode"/>
+    <functioncall functionName="evaluate"/>
+    <functioncall functionName="exename"/>
+    <functioncall functionName="exepath"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="exporter"/>
+    <functioncall functionName="expr"/>
+    <functioncall functionName="extension"/>
+    <functioncall functionName="extra"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="fAtAddress"/>
+    <functioncall functionName="fConstexpr"/>
+    <functioncall functionName="fExternC"/>
+    <functioncall functionName="fHasBody"/>
+    <functioncall functionName="fHasDefault"/>
+    <functioncall functionName="fHasFinalSpecifier"/>
+    <functioncall functionName="fHasLvalRefQual"/>
+    <functioncall functionName="fHasOverrideSpecifier"/>
+    <functioncall functionName="fHasRvalRefQual"/>
+    <functioncall functionName="fHasTrailingReturnType"/>
+    <functioncall functionName="fHasVirtualSpecifier"/>
+    <functioncall functionName="fIncompleteVar"/>
+    <functioncall functionName="fIsAlias"/>
+    <functioncall functionName="fIsArray"/>
+    <functioncall functionName="fIsAttributeConst"/>
+    <functioncall functionName="fIsAttributeConstructor"/>
+    <functioncall functionName="fIsAttributeDestructor"/>
+    <functioncall functionName="fIsAttributeMaybeUnused"/>
+    <functioncall functionName="fIsAttributeNodiscard"/>
+    <functioncall functionName="fIsAttributeNoreturn"/>
+    <functioncall functionName="fIsAttributeNothrow"/>
+    <functioncall functionName="fIsAttributePacked"/>
+    <functioncall functionName="fIsAttributePure"/>
+    <functioncall functionName="fIsAttributeUnused"/>
+    <functioncall functionName="fIsAttributeUsed"/>
+    <functioncall functionName="fIsCast"/>
+    <functioncall functionName="fIsClass"/>
+    <functioncall functionName="fIsComplex"/>
+    <functioncall functionName="fIsConst"/>
+    <functioncall functionName="fIsConstexpr"/>
+    <functioncall functionName="fIsControlFlowKeyword"/>
+    <functioncall functionName="fIsDefault"/>
+    <functioncall functionName="fIsDelete"/>
+    <functioncall functionName="fIsEnumType"/>
+    <functioncall functionName="fIsEscapeFunction"/>
+    <functioncall functionName="fIsExpandedMacro"/>
+    <functioncall functionName="fIsExplicit"/>
+    <functioncall functionName="fIsExtern"/>
+    <functioncall functionName="fIsFloatType"/>
+    <functioncall functionName="fIsForwardDeclaration"/>
+    <functioncall functionName="fIsFriend"/>
+    <functioncall functionName="fIsFunction"/>
+    <functioncall functionName="fIsImplicitInt"/>
+    <functioncall functionName="fIsInit"/>
+    <functioncall functionName="fIsInline"/>
+    <functioncall functionName="fIsInlineKeyword"/>
+    <functioncall functionName="fIsLiteral"/>
+    <functioncall functionName="fIsLong"/>
+    <functioncall functionName="fIsMaybeUnused"/>
+    <functioncall functionName="fIsMutable"/>
+    <functioncall functionName="fIsName"/>
+    <functioncall functionName="fIsNoExcept"/>
+    <functioncall functionName="fIsOperator"/>
+    <functioncall functionName="fIsOperatorKeyword"/>
+    <functioncall functionName="fIsPartialSpecialization"/>
+    <functioncall functionName="fIsPointer"/>
+    <functioncall functionName="fIsPointerCompare"/>
+    <functioncall functionName="fIsPure"/>
+    <functioncall functionName="fIsRValueRef"/>
+    <functioncall functionName="fIsReference"/>
+    <functioncall functionName="fIsSigned"/>
+    <functioncall functionName="fIsSmartPointer"/>
+    <functioncall functionName="fIsSpecialization"/>
+    <functioncall functionName="fIsSplitVarDeclComma"/>
+    <functioncall functionName="fIsSplitVarDeclEq"/>
+    <functioncall functionName="fIsStandardType"/>
+    <functioncall functionName="fIsStatic"/>
+    <functioncall functionName="fIsStaticLocal"/>
+    <functioncall functionName="fIsStlString"/>
+    <functioncall functionName="fIsStlType"/>
+    <functioncall functionName="fIsTemplate"/>
+    <functioncall functionName="fIsTemplateArg"/>
+    <functioncall functionName="fIsThrow"/>
+    <functioncall functionName="fIsUnsigned"/>
+    <functioncall functionName="fIsVariable"/>
+    <functioncall functionName="fIsVariadic"/>
+    <functioncall functionName="fIsVolatile"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="findRecordInNestedList"/>
+    <functioncall functionName="findScope"/>
+    <functioncall functionName="findType"/>
+    <functioncall functionName="findmatch"/>
+    <functioncall functionName="findsimplematch"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="flag"/>
+    <functioncall functionName="flag_"/>
+    <functioncall functionName="flags_"/>
+    <functioncall functionName="float"/>
+    <functioncall functionName="floatValue"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="forDebug"/>
+    <functioncall functionName="format"/>
+    <functioncall functionName="formatstr"/>
+    <functioncall functionName="formatstr_argno"/>
+    <functioncall functionName="formatstr_function"/>
+    <functioncall functionName="formatstr_scan"/>
+    <functioncall functionName="formatstr_secure"/>
+    <functioncall functionName="fromNativeSeparators"/>
+    <functioncall functionName="fromString"/>
+    <functioncall functionName="front"/>
+    <functioncall functionName="ftok"/>
+    <functioncall functionName="fullfilename"/>
+    <functioncall functionName="func"/>
+    <functioncall functionName="funcname"/>
+    <functioncall functionName="function"/>
+    <functioncall functionName="functionName"/>
+    <functioncall functionName="functionNode"/>
+    <functioncall functionName="functionname"/>
+    <functioncall functionName="functionnode"/>
+    <functioncall functionName="functionnodename"/>
+    <functioncall functionName="ge"/>
+    <functioncall functionName="getAbsoluteFilePath"/>
+    <functioncall functionName="getAction"/>
+    <functioncall functionName="getAllocDealloc"/>
+    <functioncall functionName="getAllocFuncInfo"/>
+    <functioncall functionName="getCppcheckAttribute"/>
+    <functioncall functionName="getDeallocFuncInfo"/>
+    <functioncall functionName="getFilenameExtension"/>
+    <functioncall functionName="getFilenameExtensionInLowerCase"/>
+    <functioncall functionName="getFlag"/>
+    <functioncall functionName="getFunction"/>
+    <functioncall functionName="getFunctionName"/>
+    <functioncall functionName="getLibraryContainer"/>
+    <functioncall functionName="getPathFromFilename"/>
+    <functioncall functionName="getReallocFuncInfo"/>
+    <functioncall functionName="getStringCharLiteral"/>
+    <functioncall functionName="getYield"/>
+    <functioncall functionName="getarg"/>
+    <functioncall functionName="getnames"/>
+    <functioncall functionName="gettokenlistfromvalid"/>
+    <functioncall functionName="groupId"/>
+    <functioncall functionName="gt"/>
+    <functioncall functionName="hasInitializerListConstructor"/>
+    <functioncall functionName="hasTrailingReturnType"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="ignore"/>
+    <functioncall functionName="importer"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="index"/>
+    <functioncall functionName="indexArg"/>
+    <functioncall functionName="indexOfFile"/>
+    <functioncall functionName="index_"/>
+    <functioncall functionName="indirect"/>
+    <functioncall functionName="indirectStr"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="inherits"/>
+    <functioncall functionName="initArgCount"/>
+    <functioncall functionName="insert"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="intvalue"/>
+    <functioncall functionName="invertBound"/>
+    <functioncall functionName="isArithmeticalOp"/>
+    <functioncall functionName="isAssignmentOp"/>
+    <functioncall functionName="isAttributeConst"/>
+    <functioncall functionName="isAttributeConstructor"/>
+    <functioncall functionName="isAttributeDestructor"/>
+    <functioncall functionName="isAttributeNodiscard"/>
+    <functioncall functionName="isAttributeNoreturn"/>
+    <functioncall functionName="isAttributeNothrow"/>
+    <functioncall functionName="isAttributePure"/>
+    <functioncall functionName="isBlock"/>
+    <functioncall functionName="isCharLiteral"/>
+    <functioncall functionName="isClassOrStruct"/>
+    <functioncall functionName="isCompliantValidationExpression"/>
+    <functioncall functionName="isConst"/>
+    <functioncall functionName="isConstOp"/>
+    <functioncall functionName="isEnumType"/>
+    <functioncall functionName="isExtern"/>
+    <functioncall functionName="isFloat"/>
+    <functioncall functionName="isFloatArgValid"/>
+    <functioncall functionName="isInt"/>
+    <functioncall functionName="isKnown"/>
+    <functioncall functionName="isLifetimeValue"/>
+    <functioncall functionName="isLocalLifetimeValue"/>
+    <functioncall functionName="isMovedValue"/>
+    <functioncall functionName="isName"/>
+    <functioncall functionName="isNotLibraryFunction"/>
+    <functioncall functionName="isNumber"/>
+    <functioncall functionName="isPointer"/>
+    <functioncall functionName="isPrefix"/>
+    <functioncall functionName="isPrefixStringCharLiteral"/>
+    <functioncall functionName="isStandardType"/>
+    <functioncall functionName="isStlType"/>
+    <functioncall functionName="isStringCharLiteral"/>
+    <functioncall functionName="isStringLiteral"/>
+    <functioncall functionName="isSuffix"/>
+    <functioncall functionName="isSymbolicValue"/>
+    <functioncall functionName="isUnaryOp"/>
+    <functioncall functionName="isUninitValue"/>
+    <functioncall functionName="isVirtual"/>
+    <functioncall functionName="is_arithmetic"/>
+    <functioncall functionName="isconst"/>
+    <functioncall functionName="isdigit"/>
+    <functioncall functionName="ismemory"/>
+    <functioncall functionName="isnoreturn"/>
+    <functioncall functionName="isnotnoreturn"/>
+    <functioncall functionName="ispure"/>
+    <functioncall functionName="isresource"/>
+    <functioncall functionName="istr"/>
+    <functioncall functionName="it"/>
+    <functioncall functionName="itEndPattern"/>
+    <functioncall functionName="iteratorInfo"/>
+    <functioncall functionName="keyword"/>
+    <functioncall functionName="known"/>
+    <functioncall functionName="last"/>
+    <functioncall functionName="lastTop"/>
+    <functioncall functionName="le"/>
+    <functioncall functionName="leakignore"/>
+    <functioncall functionName="len"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="library"/>
+    <functioncall functionName="librarynode"/>
+    <functioncall functionName="lifetimeKind"/>
+    <functioncall functionName="lifetimeScope"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="link"/>
+    <functioncall functionName="linkAt"/>
+    <functioncall functionName="linkToToken"/>
+    <functioncall functionName="load"/>
+    <functioncall functionName="loadFunction"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="lt"/>
+    <functioncall functionName="m"/>
+    <functioncall functionName="mAccess"/>
+    <functioncall functionName="mAlloc"/>
+    <functioncall functionName="mAllocId"/>
+    <functioncall functionName="mAstOperand1"/>
+    <functioncall functionName="mAstOperand2"/>
+    <functioncall functionName="mAstParent"/>
+    <functioncall functionName="mBits"/>
+    <functioncall functionName="mColumn"/>
+    <functioncall functionName="mConstPtr"/>
+    <functioncall functionName="mCpp"/>
+    <functioncall functionName="mCpp11init"/>
+    <functioncall functionName="mCppcheckAttributes"/>
+    <functioncall functionName="mDealloc"/>
+    <functioncall functionName="mDoubleValue"/>
+    <functioncall functionName="mEmptyValueList"/>
+    <functioncall functionName="mEnumerator"/>
+    <functioncall functionName="mExprId"/>
+    <functioncall functionName="mFileIndex"/>
+    <functioncall functionName="mFlags"/>
+    <functioncall functionName="mFunction"/>
+    <functioncall functionName="mIndex"/>
+    <functioncall functionName="mIntValue"/>
+    <functioncall functionName="mLibrary"/>
+    <functioncall functionName="mLineNumber"/>
+    <functioncall functionName="mLong"/>
+    <functioncall functionName="mNameToken"/>
+    <functioncall functionName="mOffset"/>
+    <functioncall functionName="mOriginalName"/>
+    <functioncall functionName="mPointer"/>
+    <functioncall functionName="mProgressValue"/>
+    <functioncall functionName="mPtrPtr"/>
+    <functioncall functionName="mRealloc"/>
+    <functioncall functionName="mScope"/>
+    <functioncall functionName="mScopeInfo"/>
+    <functioncall functionName="mSigned"/>
+    <functioncall functionName="mStr"/>
+    <functioncall functionName="mTemplateSimplifierPointers"/>
+    <functioncall functionName="mType"/>
+    <functioncall functionName="mTypeEndToken"/>
+    <functioncall functionName="mTypeStartToken"/>
+    <functioncall functionName="mUnsigned"/>
+    <functioncall functionName="mValueFlowKnown"/>
+    <functioncall functionName="mValueType"/>
+    <functioncall functionName="mValues"/>
+    <functioncall functionName="mVarId"/>
+    <functioncall functionName="mVariable"/>
+    <functioncall functionName="mWhat"/>
+    <functioncall functionName="macro"/>
+    <functioncall functionName="make_pair"/>
+    <functioncall functionName="malloc"/>
+    <functioncall functionName="markupnode"/>
+    <functioncall functionName="markupnodename"/>
+    <functioncall functionName="matchArguments"/>
+    <functioncall functionName="memoizedIsLiteral"/>
+    <functioncall functionName="memoizedIsName"/>
+    <functioncall functionName="memorynode"/>
+    <functioncall functionName="memorynodename"/>
+    <functioncall functionName="message"/>
+    <functioncall functionName="minsizes"/>
+    <functioncall functionName="minsizevalue"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="move"/>
+    <functioncall functionName="moveKind"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="nameEnd"/>
+    <functioncall functionName="nameStart"/>
+    <functioncall functionName="nameTok"/>
+    <functioncall functionName="name_"/>
+    <functioncall functionName="names"/>
+    <functioncall functionName="needInitialization"/>
+    <functioncall functionName="nestedIn"/>
+    <functioncall functionName="next"/>
+    <functioncall functionName="nextToken"/>
+    <functioncall functionName="node"/>
+    <functioncall functionName="nodeName"/>
+    <functioncall functionName="nodename"/>
+    <functioncall functionName="nonOverlappingData"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="notbool"/>
+    <functioncall functionName="notnull"/>
+    <functioncall functionName="notuninit"/>
+    <functioncall functionName="nr"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="num"/>
+    <functioncall functionName="numberOfArguments"/>
+    <functioncall functionName="o"/>
+    <functioncall functionName="offset"/>
+    <functioncall functionName="op1"/>
+    <functioncall functionName="op1_and_op2"/>
+    <functioncall functionName="op2"/>
+    <functioncall functionName="opLessAllowed"/>
+    <functioncall functionName="optional"/>
+    <functioncall functionName="originalTypeName"/>
+    <functioncall functionName="otn"/>
+    <functioncall functionName="outer"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="pattern"/>
+    <functioncall functionName="pattern_len"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="platform"/>
+    <functioncall functionName="platform_type"/>
+    <functioncall functionName="podType"/>
+    <functioncall functionName="pointer"/>
+    <functioncall functionName="pop_back"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="pos"/>
+    <functioncall functionName="pred"/>
+    <functioncall functionName="prefix"/>
+    <functioncall functionName="previous"/>
+    <functioncall functionName="previousToken"/>
+    <functioncall functionName="push_back"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="r"/>
+    <functioncall functionName="range"/>
+    <functioncall functionName="reallocArg"/>
+    <functioncall functionName="reason"/>
+    <functioncall functionName="ref"/>
+    <functioncall functionName="reflectionnode"/>
+    <functioncall functionName="remove_if"/>
+    <functioncall functionName="reserve"/>
+    <functioncall functionName="result"/>
+    <functioncall functionName="ret"/>
+    <functioncall functionName="retDef"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rhs"/>
+    <functioncall functionName="s"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="sameToken"/>
+    <functioncall functionName="scope"/>
+    <functioncall functionName="scope_"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="sep"/>
+    <functioncall functionName="setC"/>
+    <functioncall functionName="setCPP"/>
+    <functioncall functionName="setCppcheckAttribute"/>
+    <functioncall functionName="setEnd"/>
+    <functioncall functionName="setFlag"/>
+    <functioncall functionName="setOffset"/>
+    <functioncall functionName="setStart"/>
+    <functioncall functionName="settings"/>
+    <functioncall functionName="severity"/>
+    <functioncall functionName="short"/>
+    <functioncall functionName="sign"/>
+    <functioncall functionName="simpleMatch"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeOf"/>
+    <functioncall functionName="size_templateArgNo"/>
+    <functioncall functionName="smartPointer"/>
+    <functioncall functionName="smartPointerNode"/>
+    <functioncall functionName="smartPointerType"/>
+    <functioncall functionName="smartPointerTypeToken"/>
+    <functioncall functionName="start"/>
+    <functioncall functionName="startPattern"/>
+    <functioncall functionName="startScope"/>
+    <functioncall functionName="startTok"/>
+    <functioncall functionName="start_"/>
+    <functioncall functionName="state"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="stdAssociativeLike"/>
+    <functioncall functionName="stdStringLike"/>
+    <functioncall functionName="stdtype"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="strAt"/>
+    <functioncall functionName="strchr"/>
+    <functioncall functionName="strcmp"/>
+    <functioncall functionName="strdup"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="strlen"/>
+    <functioncall functionName="strncmp"/>
+    <functioncall functionName="strz"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="subexpressions"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="suffix"/>
+    <functioncall functionName="suffixes"/>
+    <functioncall functionName="suppress"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="temp"/>
+    <functioncall functionName="templateArg"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="toDoubleNumber"/>
+    <functioncall functionName="toLongNumber"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="tok"/>
+    <functioncall functionName="tokAt"/>
+    <functioncall functionName="tokType"/>
+    <functioncall functionName="token"/>
+    <functioncall functionName="tokenAndName"/>
+    <functioncall functionName="tokenList"/>
+    <functioncall functionName="tokvalue"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="typeEnd"/>
+    <functioncall functionName="typeName"/>
+    <functioncall functionName="typeScope"/>
+    <functioncall functionName="typeStart"/>
+    <functioncall functionName="type_"/>
+    <functioncall functionName="type_attribute"/>
+    <functioncall functionName="type_name"/>
+    <functioncall functionName="type_ptr"/>
+    <functioncall functionName="type_templateArgNo"/>
+    <functioncall functionName="typeattr"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="typenode"/>
+    <functioncall functionName="typenodename"/>
+    <functioncall functionName="typestr"/>
+    <functioncall functionName="unknownFunc"/>
+    <functioncall functionName="unknownReturnValues"/>
+    <functioncall functionName="unknown_elements"/>
+    <functioncall functionName="unstable"/>
+    <functioncall functionName="unstableErase"/>
+    <functioncall functionName="unstableInsert"/>
+    <functioncall functionName="unused"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="update_property_info"/>
+    <functioncall functionName="use"/>
+    <functioncall functionName="useretval"/>
+    <functioncall functionName="usingNamespaces"/>
+    <functioncall functionName="usingNamespaces_"/>
+    <functioncall functionName="v"/>
+    <functioncall functionName="val"/>
+    <functioncall functionName="valid"/>
+    <functioncall functionName="validExpr"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="valueKind"/>
+    <functioncall functionName="valueType"/>
+    <functioncall functionName="value_known"/>
+    <functioncall functionName="valueattr"/>
+    <functioncall functionName="values"/>
+    <functioncall functionName="varId"/>
+    <functioncall functionName="variadic"/>
+    <functioncall functionName="varvalue"/>
+    <functioncall functionName="vector"/>
+    <functioncall functionName="view"/>
+    <functioncall functionName="visitValue"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="wi"/>
+    <functioncall functionName="wideintvalue"/>
+    <functioncall functionName="x"/>
+    <functioncall functionName="xmldata"/>
+    <functioncall functionName="y"/>
+    <functioncall functionName="yield"/>
+    <functioncall functionName="yieldFrom"/>
+    <functioncall functionName="yieldName"/>
+    <functioncall functionName="yield_ptr"/>
+  </FileInfo>
+</analyzerinfo>

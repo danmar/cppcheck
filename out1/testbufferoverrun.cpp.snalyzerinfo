@@ -1,0 +1,773 @@
+CWE
+Check
+Check call:[instances,remove] noreturn:[remove]
+name
+FileInfo
+FileInfo
+toString call:[string] noreturn:[string]
+getFileInfo
+loadFileInfoFromXml
+analyseWholeProgram
+reportError call:[CWE,reportError] noreturn:[reportError]
+reportError call:[callstack,reportError] noreturn:[reportError]
+reportError call:[CWE,reportError] noreturn:[reportError]
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+FwdAnalysis
+Result
+Result
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+Location
+UnsafeUsage
+CallBase
+CallBase
+NestedCall
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+isClass call:[setFlag] noreturn:[setFlag]
+isFunction call:[setFlag] noreturn:[setFlag]
+isVariable call:[setFlag] noreturn:[setFlag]
+isAlias call:[setFlag] noreturn:[setFlag]
+isSpecialization call:[setFlag] noreturn:[setFlag]
+isPartialSpecialization call:[setFlag] noreturn:[setFlag]
+isForwardDeclaration call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+getFlag call:[return] noreturn:[return]
+setFlag
+operator==
+token
+token
+scope
+name
+fullName
+nameToken
+paramEnd
+paramEnd
+isClass call:[getFlag] noreturn:[getFlag]
+isFunction call:[getFlag] noreturn:[getFlag]
+isVariable call:[getFlag] noreturn:[getFlag]
+isAlias call:[getFlag] noreturn:[getFlag]
+isSpecialization call:[getFlag] noreturn:[getFlag]
+isPartialSpecialization call:[getFlag] noreturn:[getFlag]
+isForwardDeclaration call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isSameFamily call:[return]
+ScopeInfo2
+TokenImpl
+str call:[update_property_info] noreturn:[update_property_info]
+str
+tokAt call:[tokAt]
+linkAt call:[linkAt]
+simpleMatch call:[simpleMatch] noreturn:[simpleMatch]
+valueType
+argumentType call:[Match,astParent] noreturn:[astParent]
+tokType
+tokType call:[setFlag] noreturn:[setFlag]
+isKeyword
+isName call:[getFlag] noreturn:[getFlag]
+isNameOnly
+isLiteral call:[getFlag] noreturn:[getFlag]
+isNumber
+isEnumerator
+isOp call:[isAssignmentOp,isConstOp,return] noreturn:[return]
+isConstOp call:[isArithmeticalOp,return] noreturn:[return]
+isExtendedOp call:[isConstOp]
+isArithmeticalOp
+isComparisonOp
+isAssignmentOp
+isBoolean
+isIncDecOp
+isBinaryOp call:[astOperand1,astOperand2]
+isUnaryOp call:[astOperand1,astOperand2]
+flags
+flags
+isUnsigned call:[getFlag] noreturn:[getFlag]
+isUnsigned call:[setFlag] noreturn:[setFlag]
+isSigned call:[getFlag] noreturn:[getFlag]
+isSigned call:[setFlag] noreturn:[setFlag]
+isPointerCompare call:[getFlag] noreturn:[getFlag]
+isPointerCompare call:[setFlag] noreturn:[setFlag]
+isLong call:[getFlag] noreturn:[getFlag]
+isLong call:[setFlag] noreturn:[setFlag]
+isStandardType call:[getFlag] noreturn:[getFlag]
+isStandardType call:[setFlag] noreturn:[setFlag]
+isExpandedMacro call:[getFlag] noreturn:[getFlag]
+isExpandedMacro call:[setFlag] noreturn:[setFlag]
+isCast call:[getFlag] noreturn:[getFlag]
+isCast call:[setFlag] noreturn:[setFlag]
+isAttributeConstructor call:[getFlag] noreturn:[getFlag]
+isAttributeConstructor call:[setFlag] noreturn:[setFlag]
+isAttributeDestructor call:[getFlag] noreturn:[getFlag]
+isAttributeDestructor call:[setFlag] noreturn:[setFlag]
+isAttributeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeUnused call:[setFlag] noreturn:[setFlag]
+isAttributeUsed call:[getFlag] noreturn:[getFlag]
+isAttributeUsed call:[setFlag] noreturn:[setFlag]
+isAttributePure call:[getFlag] noreturn:[getFlag]
+isAttributePure call:[setFlag] noreturn:[setFlag]
+isAttributeConst call:[getFlag] noreturn:[getFlag]
+isAttributeConst call:[setFlag] noreturn:[setFlag]
+isAttributeNoreturn call:[getFlag] noreturn:[getFlag]
+isAttributeNoreturn call:[setFlag] noreturn:[setFlag]
+isAttributeNothrow call:[getFlag] noreturn:[getFlag]
+isAttributeNothrow call:[setFlag] noreturn:[setFlag]
+isAttributePacked call:[getFlag] noreturn:[getFlag]
+isAttributePacked call:[setFlag] noreturn:[setFlag]
+isAttributeNodiscard call:[getFlag] noreturn:[getFlag]
+isAttributeNodiscard call:[setFlag] noreturn:[setFlag]
+isAttributeMaybeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeMaybeUnused call:[setFlag] noreturn:[setFlag]
+setCppcheckAttribute call:[setCppcheckAttribute] noreturn:[setCppcheckAttribute]
+getCppcheckAttribute call:[getCppcheckAttribute] noreturn:[getCppcheckAttribute]
+hasCppcheckAttributes
+isControlFlowKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[setFlag] noreturn:[setFlag]
+isComplex call:[getFlag] noreturn:[getFlag]
+isComplex call:[setFlag] noreturn:[setFlag]
+isEnumType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[setFlag] noreturn:[setFlag]
+isAtAddress call:[getFlag] noreturn:[getFlag]
+isAtAddress call:[setFlag] noreturn:[setFlag]
+isIncompleteVar call:[getFlag] noreturn:[getFlag]
+isIncompleteVar call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+isExternC call:[getFlag] noreturn:[getFlag]
+isExternC call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclComma call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclComma call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclEq call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclEq call:[setFlag] noreturn:[setFlag]
+isImplicitInt call:[getFlag] noreturn:[getFlag]
+isImplicitInt call:[setFlag] noreturn:[setFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isInline call:[setFlag] noreturn:[setFlag]
+isTemplate call:[getFlag] noreturn:[getFlag]
+isTemplate call:[setFlag] noreturn:[setFlag]
+isBitfield
+bits
+templateSimplifierPointers
+templateSimplifierPointer call:[insert] noreturn:[insert]
+setBits
+isUtf8 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf16 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf32 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isCChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isCMultiChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isTemplateArg call:[getFlag] noreturn:[getFlag]
+isTemplateArg call:[setFlag] noreturn:[setFlag]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findmatch call:[findmatch]
+findmatch call:[findmatch]
+fileIndex
+fileIndex
+linenr
+linenr
+column
+column
+next
+previous
+varId
+varId call:[isStandardType,tokType,update_property_info] noreturn:[isStandardType,update_property_info]
+exprId
+exprId
+forDebug
+forDebugVarId call:[forDebug]
+forDebugExprId call:[forDebug]
+forPrintOut call:[forDebug]
+link call:[update_property_info] noreturn:[update_property_info]
+link
+scope
+scope
+function
+variable call:[tokType] noreturn:[tokType]
+variable
+type
+enumerator
+enumerator call:[tokType] noreturn:[tokType]
+progressValue
+originalName global:[emptyString]
+values
+originalName call:[string] noreturn:[string]
+getKnownIntValue call:[front]
+removeValues call:[remove_if] noreturn:[remove_if]
+index
+next
+previous
+getFlag call:[return] noreturn:[return]
+setFlag
+astOperand1
+astOperand1
+astOperand2
+astOperand2
+astParent
+astParent
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astTop
+astTop
+clearAst
+clearValueFlow
+astString call:[astString] noreturn:[astString]
+setCpp11init
+isCpp11init
+Dimension
+BaseInfo
+operator<
+FriendInfo
+Type call:[next,str,tokAt] noreturn:[next]
+type global:[emptyString] call:[str]
+isTypeAlias call:[str]
+Enumerator
+getFlag call:[return] noreturn:[return]
+setFlag
+Variable call:[evaluate] noreturn:[evaluate]
+nameToken
+typeStartToken
+typeEndToken
+name global:[emptyString] call:[str] noreturn:[str]
+declarationId call:[varId] noreturn:[varId]
+index
+isPublic
+isProtected
+isPrivate
+isGlobal
+isNamespace
+isArgument
+isLocal call:[isExtern,return] noreturn:[isExtern]
+isMutable call:[getFlag] noreturn:[getFlag]
+isVolatile call:[getFlag] noreturn:[getFlag]
+isStatic call:[getFlag] noreturn:[getFlag]
+isExtern call:[getFlag] noreturn:[getFlag]
+isConst call:[getFlag] noreturn:[getFlag]
+isThrow
+isClass call:[getFlag] noreturn:[getFlag]
+isArray call:[getFlag] noreturn:[getFlag]
+isPointer call:[getFlag] noreturn:[getFlag]
+isPointerToArray call:[getFlag,isPointer] noreturn:[getFlag]
+isArrayOrPointer call:[getFlag] noreturn:[getFlag]
+isReference call:[getFlag] noreturn:[getFlag]
+isRValueReference call:[getFlag] noreturn:[getFlag]
+hasDefault call:[getFlag] noreturn:[getFlag]
+isInit call:[getFlag] noreturn:[getFlag]
+type
+typeScope
+scope
+dimensions
+dimension
+dimensionKnown
+isStlType call:[getFlag] noreturn:[getFlag]
+isStlStringType call:[getFlag] noreturn:[getFlag]
+isSmartPointer call:[getFlag] noreturn:[getFlag]
+isStlType call:[isStlType,strAt] noreturn:[strAt]
+isStlType call:[end,find,isStlType,strAt] noreturn:[end]
+isFloatingType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[isEnumType,type] noreturn:[isEnumType]
+isMaybeUnused call:[getFlag] noreturn:[getFlag]
+valueType
+accessControl
+type
+getFlag call:[return] noreturn:[return]
+setFlag
+name call:[str] noreturn:[str]
+argCount call:[size] noreturn:[size]
+minArgCount call:[size]
+initializedArgCount
+isLambda
+isConstructor
+isDestructor
+isAttributeConstructor call:[isAttributeConstructor] noreturn:[isAttributeConstructor]
+isAttributeDestructor call:[isAttributeDestructor] noreturn:[isAttributeDestructor]
+isAttributePure call:[isAttributePure] noreturn:[isAttributePure]
+isAttributeConst call:[isAttributeConst] noreturn:[isAttributeConst]
+isAttributeNoreturn call:[isAttributeNoreturn] noreturn:[isAttributeNoreturn]
+isAttributeNothrow call:[isAttributeNothrow] noreturn:[isAttributeNothrow]
+isAttributeNodiscard call:[isAttributeNodiscard] noreturn:[isAttributeNodiscard]
+hasBody call:[getFlag] noreturn:[getFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isConst call:[getFlag] noreturn:[getFlag]
+hasVirtualSpecifier call:[getFlag] noreturn:[getFlag]
+isPure call:[getFlag] noreturn:[getFlag]
+isStatic call:[getFlag] noreturn:[getFlag]
+isStaticLocal call:[getFlag] noreturn:[getFlag]
+isExtern call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isExplicit call:[getFlag] noreturn:[getFlag]
+isDefault call:[getFlag] noreturn:[getFlag]
+isDelete call:[getFlag] noreturn:[getFlag]
+isNoExcept call:[getFlag] noreturn:[getFlag]
+isThrow call:[getFlag] noreturn:[getFlag]
+hasOverrideSpecifier call:[getFlag] noreturn:[getFlag]
+hasFinalSpecifier call:[getFlag] noreturn:[getFlag]
+isOperator call:[getFlag] noreturn:[getFlag]
+hasLvalRefQualifier call:[getFlag] noreturn:[getFlag]
+hasRvalRefQualifier call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isVolatile call:[getFlag] noreturn:[getFlag]
+hasTrailingReturnType call:[getFlag] noreturn:[getFlag]
+hasBody call:[setFlag] noreturn:[setFlag]
+isInlineKeyword call:[getFlag] noreturn:[getFlag]
+isEscapeFunction call:[getFlag] noreturn:[getFlag]
+isEscapeFunction call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+returnDefEnd call:[findmatch,hasTrailingReturnType] noreturn:[findmatch]
+isInline call:[setFlag] noreturn:[setFlag]
+isConst call:[setFlag] noreturn:[setFlag]
+hasVirtualSpecifier call:[setFlag] noreturn:[setFlag]
+isPure call:[setFlag] noreturn:[setFlag]
+isStatic call:[setFlag] noreturn:[setFlag]
+isStaticLocal call:[setFlag] noreturn:[setFlag]
+isExtern call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+isExplicit call:[setFlag] noreturn:[setFlag]
+isDefault call:[setFlag] noreturn:[setFlag]
+isDelete call:[setFlag] noreturn:[setFlag]
+isNoExcept call:[setFlag] noreturn:[setFlag]
+isThrow call:[setFlag] noreturn:[setFlag]
+isOperator call:[setFlag] noreturn:[setFlag]
+hasLvalRefQualifier call:[setFlag] noreturn:[setFlag]
+hasRvalRefQualifier call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isVolatile call:[setFlag] noreturn:[setFlag]
+hasTrailingReturnType call:[setFlag] noreturn:[setFlag]
+isInlineKeyword call:[setFlag] noreturn:[setFlag]
+setBodyStartEnd call:[link,push_back] noreturn:[push_back]
+isAnonymous call:[compare,isdigit,size] noreturn:[isdigit]
+findEnumerator call:[str]
+isNestedIn
+nestedInFunction
+isClassOrStruct call:[return] noreturn:[return]
+isClassOrStructOrUnion call:[return] noreturn:[return]
+isExecutable
+isLoopScope
+isLocal call:[return] noreturn:[return]
+findRecordInNestedList call:[findRecordInNestedList]
+findType call:[findType]
+addFunction call:[back,insert,make_pair,push_back,str] noreturn:[insert]
+ValueType
+ValueType
+ValueType
+ValueType
+isPrimitive call:[return] noreturn:[return]
+isIntegral call:[return] noreturn:[return]
+isFloat call:[return] noreturn:[return]
+isEnum
+findType call:[findType]
+findScope call:[findScope]
+isVarId call:[size] noreturn:[size]
+getVariableFromVarId call:[at] noreturn:[at]
+variableList
+CheckBufferOverrun
+CheckBufferOverrun
+runChecks call:[argumentSize,arrayIndex,arrayIndexThenCheck,bufferOverflow,checkBufferOverrun,objectIndex,pointerArithmetic,stringNotZeroTerminated] noreturn:[argumentSize]
+getErrorMessages call:[argumentSizeError,arrayIndexError,arrayIndexThenCheckError,bufferOverflowError,c,negativeIndexError,objectIndexError,pointerArithmeticError] noreturn:[argumentSizeError]
+myName
+classInfo
+setDirectives
+getDirectives
+setFile0
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+setSettings
+getSettings
+isC
+isCPP
+front
+front
+back
+back
+getFiles
+find call:[find] noreturn:[find]
+end call:[end] noreturn:[end]
+map
+getVarId
+setTimerResults
+isC call:[isC] noreturn:[isC]
+isCPP call:[isCPP] noreturn:[isCPP]
+setPreprocessor
+getPreprocessor
+codeWithTemplates
+setSettings call:[setSettings] noreturn:[setSettings]
+getSymbolDatabase
+varIdCount
+tokens call:[front] noreturn:[front]
+isMaxTime
+getSettings
+newVarId
+TestBufferOverrun
+check_ global:[errout] call:[assert_,enable,istr,runChecks,str,tokenize,tokenizer] noreturn:[runChecks]
+check_ global:[errout] call:[assert_,checkBufferOverrun,istr,runChecks,str,tokenize,tokenizer] noreturn:[runChecks]
+checkP global:[errout] call:[DUI,checkBufferOverrun,createTokens,disable,enable,files,istr,move,preprocess,preprocessor,runChecks,setDirectives,setPreprocessor,simplifyTokens1,str,tokenizer,tokens1,tokens2] noreturn:[runChecks]
+run call:[alloc_alloca,alloc_malloc,alloc_new,alloc_string,arrayIndexEarlyReturn,arrayIndexThenCheck,array_index_1,array_index_11,array_index_12,array_index_13,array_index_14,array_index_15,array_index_16,array_index_17,array_index_18,array_index_19,array_index_2,array_index_20,array_index_21,array_index_22,array_index_23,array_index_24,array_index_25,array_index_26,array_index_27,array_index_28,array_index_29,array_index_3,array_index_30,array_index_31,array_index_32,array_index_33,array_index_34,array_index_35,array_index_36,array_index_37,array_index_38,array_index_39,array_index_4,array_index_40,array_index_41,array_index_42,array_index_43,array_index_44,array_index_45,array_index_46,array_index_47,array_index_48,array_index_49,array_index_50,array_index_51,array_index_52,array_index_53,array_index_54,array_index_55,array_index_56,array_index_57,array_index_58,array_index_59,array_index_6,array_index_60,array_index_7,array_index_bounds,array_index_calculation,array_index_cast,array_index_container,array_index_enum_array,array_index_extern,array_index_for,array_index_for_andand_oror,array_index_for_continue,array_index_for_decr,array_index_for_in_for,array_index_for_neq,array_index_for_question,array_index_for_varid0,array_index_function_parameter,array_index_multidim,array_index_negative1,array_index_negative2,array_index_negative3,array_index_same_struct_and_var_name,array_index_string_literal,array_index_switch_in_for,array_index_two_for_loops,array_index_valueflow,array_index_valueflow_pointer,array_index_varnames,array_index_vla_for,assign1,bufferNotZeroTerminated,buffer_overrun_10,buffer_overrun_11,buffer_overrun_15,buffer_overrun_16,buffer_overrun_18,buffer_overrun_19,buffer_overrun_21,buffer_overrun_24,buffer_overrun_26,buffer_overrun_27,buffer_overrun_29,buffer_overrun_2_struct,buffer_overrun_3,buffer_overrun_30,buffer_overrun_31,buffer_overrun_32,buffer_overrun_33,buffer_overrun_4,buffer_overrun_5,buffer_overrun_6,buffer_overrun_7,buffer_overrun_8,buffer_overrun_9,buffer_overrun_bailoutIfSwitch,buffer_overrun_errorpath,buffer_overrun_function_array_argument,buffer_overrun_readSizeFromCfg,c_str,checkBufferAllocatedWithStrlen,complainMissingLib,crash1,crash2,crash3,crash4,crash5,crash6,crash7,ctu_arithmetic,ctu_array,ctu_malloc,ctu_variable,enable,getErrorMessages,insecureCmdLineArgs,load,minsize_argvalue,minsize_mul,minsize_sizeof,minsize_strlen,negativeArraySize,negativeMemoryAllocationSizeError,noerr1,noerr2,noerr3,noerr4,objectIndex,pointerAddition1,pointer_out_of_bounds_1,pointer_out_of_bounds_2,pointer_out_of_bounds_3,pointer_out_of_bounds_4,pointer_out_of_bounds_sub,possible_buffer_overrun_1,prepareTest,recursive_long_time,scope,setVerbose,sizeof3,strcat1,terminateStrncpy1,terminateStrncpy2,terminateStrncpy3,terminateStrncpy4,unknownType,valueflow_string,varid1,varid2,while] noreturn:[alloc_alloca,alloc_malloc,alloc_new,alloc_string,arrayIndexEarlyReturn,arrayIndexThenCheck,array_index_1,array_index_11,array_index_12,array_index_13,array_index_14,array_index_15,array_index_16,array_index_17,array_index_18,array_index_19,array_index_2,array_index_20,array_index_21,array_index_22,array_index_23,array_index_24,array_index_25,array_index_26,array_index_27,array_index_28,array_index_29,array_index_3,array_index_30,array_index_31,array_index_32,array_index_33,array_index_34,array_index_35,array_index_36,array_index_37,array_index_38,array_index_39,array_index_4,array_index_40,array_index_41,array_index_42,array_index_43,array_index_44,array_index_45,array_index_46,array_index_47,array_index_48,array_index_49,array_index_50,array_index_51,array_index_52,array_index_53,array_index_54,array_index_55,array_index_56,array_index_57,array_index_58,array_index_59,array_index_6,array_index_60,array_index_7,array_index_bounds,array_index_calculation,array_index_cast,array_index_container,array_index_enum_array,array_index_extern,array_index_for,array_index_for_andand_oror,array_index_for_continue,array_index_for_decr,array_index_for_in_for,array_index_for_neq,array_index_for_question,array_index_for_varid0,array_index_function_parameter,array_index_multidim,array_index_negative1,array_index_negative2,array_index_negative3,array_index_same_struct_and_var_name,array_index_string_literal,array_index_switch_in_for,array_index_two_for_loops,array_index_valueflow,array_index_valueflow_pointer,array_index_varnames,array_index_vla_for,assign1,bufferNotZeroTerminated,buffer_overrun_10,buffer_overrun_11,buffer_overrun_15,buffer_overrun_16,buffer_overrun_18,buffer_overrun_19,buffer_overrun_21,buffer_overrun_24,buffer_overrun_26,buffer_overrun_27,buffer_overrun_29,buffer_overrun_2_struct,buffer_overrun_3,buffer_overrun_30,buffer_overrun_31,buffer_overrun_32,buffer_overrun_33,buffer_overrun_4,buffer_overrun_5,buffer_overrun_6,buffer_overrun_7,buffer_overrun_8,buffer_overrun_9,buffer_overrun_bailoutIfSwitch,buffer_overrun_errorpath,buffer_overrun_function_array_argument,buffer_overrun_readSizeFromCfg,checkBufferAllocatedWithStrlen,crash1,crash2,crash3,crash4,crash5,crash6,crash7,ctu_arithmetic,ctu_array,ctu_malloc,ctu_variable,getErrorMessages,insecureCmdLineArgs,minsize_argvalue,minsize_mul,minsize_sizeof,minsize_strlen,negativeArraySize,negativeMemoryAllocationSizeError,noerr1,noerr2,noerr3,noerr4,objectIndex,pointerAddition1,pointer_out_of_bounds_1,pointer_out_of_bounds_2,pointer_out_of_bounds_3,pointer_out_of_bounds_4,pointer_out_of_bounds_sub,possible_buffer_overrun_1,recursive_long_time,scope,sizeof3,strcat1,terminateStrncpy1,terminateStrncpy2,terminateStrncpy3,terminateStrncpy4,unknownType,valueflow_string,varid1,varid2,while]
+noerr1 global:[errout] call:[assertEquals,check_,str]
+noerr2 global:[errout] call:[assertEquals,check_,str]
+noerr3 global:[errout] call:[assertEquals,check_,str]
+noerr4 global:[errout] call:[assertEquals,check_,str]
+sizeof3 global:[errout] call:[assertEquals,check_,str]
+array_index_1 global:[errout] call:[assertEquals,check_,str]
+array_index_2 global:[errout] call:[check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+array_index_4 global:[errout] call:[assertEquals,check_,str]
+array_index_3 global:[errout] call:[assertEquals,check_,str]
+array_index_6 global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+array_index_7 global:[errout] call:[assertEquals,check_,str]
+array_index_11 global:[errout] call:[assertEquals,check_,str]
+array_index_12 global:[errout] call:[assertEquals,check_,str]
+array_index_13 global:[errout] call:[assertEquals,check_,str]
+array_index_14 global:[errout] call:[assertEquals,check_,str]
+array_index_15 global:[errout] call:[assertEquals,check_,str]
+array_index_16 global:[errout] call:[assertEquals,check_,str]
+array_index_17 global:[errout] call:[assertEquals,check_,str]
+array_index_18 global:[errout] call:[assertEquals,check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+array_index_19 global:[errout] call:[assertEquals,check_,str]
+array_index_20 global:[errout] call:[assertEquals,check_,str]
+array_index_21 global:[errout] call:[assertEquals,check_,str]
+array_index_22 global:[errout] call:[assertEquals,check_,str]
+array_index_23 global:[errout] call:[assertEquals,check_,str]
+array_index_24 global:[errout] call:[assertEquals,c_str,charMaxPlusOne,check_,str]
+array_index_25 global:[errout] call:[assertEquals,check_,str]
+array_index_26 global:[errout] call:[assertEquals,check_,str]
+array_index_27 global:[errout] call:[assertEquals,check_,str]
+array_index_28 global:[errout] call:[check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+array_index_29 global:[errout] call:[check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+array_index_30 global:[errout] call:[assertEquals,check_,str]
+array_index_31 global:[errout] call:[assertEquals,check_,str]
+array_index_32 global:[errout] call:[assertEquals,check_,str]
+array_index_33 global:[errout] call:[assertEquals,check_,str]
+array_index_34 global:[errout] call:[assertEquals,check_,str]
+array_index_35 global:[errout] call:[assertEquals,check_,str]
+array_index_36 global:[errout] call:[assertEquals,check_,str]
+array_index_37 global:[errout] call:[assertEquals,check_,str]
+array_index_38 global:[errout] call:[assertEquals,check_,str]
+array_index_39 global:[errout] call:[assertEquals,check_,str]
+array_index_40 global:[errout] call:[assertEquals,check_,str]
+array_index_41 global:[errout] call:[assertEquals,check_,str]
+array_index_42 global:[errout] call:[assertEquals,check_,str]
+array_index_43 global:[errout] call:[assertEquals,check_,str]
+array_index_44 global:[errout] call:[assertEquals,check_,str]
+array_index_45 global:[errout] call:[assertEquals,check_,str]
+array_index_46 global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+array_index_47 global:[errout] call:[assertEquals,check_,str]
+array_index_48 global:[errout] call:[assertEquals,check_,str]
+array_index_49 global:[errout] call:[assertEquals,check_,str]
+array_index_50 global:[errout] call:[assertEquals,check_,str]
+array_index_51 global:[errout] call:[assertEquals,check_,str]
+array_index_52 global:[errout] call:[assertEquals,check_,str]
+array_index_53 global:[errout] call:[assertEquals,check_,str]
+array_index_54 global:[errout] call:[assertEquals,check_,str]
+array_index_55 global:[errout] call:[assertEquals,check_,str]
+array_index_56 global:[errout] call:[assertEquals,check_,str]
+array_index_57 global:[errout] call:[assertEquals,check_,str]
+array_index_58 global:[errout] call:[assertEquals,check_,str]
+array_index_59 global:[errout] call:[assertEquals,check_,str]
+array_index_60 global:[errout] call:[assertEquals,checkP,str]
+array_index_multidim global:[errout] call:[assertEquals,check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+array_index_switch_in_for global:[errout] call:[assertEquals,check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+array_index_for_in_for global:[errout] call:[assertEquals,check_,str]
+array_index_bounds global:[errout] call:[assertEquals,check_,str]
+array_index_calculation global:[errout] call:[assertEquals,check_,str]
+array_index_negative1 global:[errout] call:[assertEquals,check_,str]
+array_index_negative2 global:[errout] call:[assertEquals,check_,str]
+array_index_negative3 global:[errout] call:[assertEquals,check_,str]
+array_index_for_decr global:[errout] call:[assertEquals,check_,str]
+array_index_varnames global:[errout] call:[assertEquals,check_,str]
+array_index_for_andand_oror global:[errout] call:[assertEquals,check_,str]
+array_index_for_continue global:[errout] call:[assertEquals,check_,str]
+array_index_for global:[errout] call:[assertEquals,check_,str]
+array_index_for_neq global:[errout] call:[assertEquals,check_,str]
+array_index_for_question global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+array_index_for_varid0 global:[errout] call:[assertEquals,check_,str]
+array_index_vla_for global:[errout] call:[assertEquals,check_,str]
+array_index_extern global:[errout] call:[assertEquals,check_,str]
+array_index_cast global:[errout] call:[assertEquals,check_,str] noreturn:[check_]
+array_index_string_literal global:[errout] call:[assertEquals,check_,str]
+array_index_same_struct_and_var_name global:[errout] call:[assertEquals,check_,str]
+array_index_valueflow global:[errout] call:[assertEquals,check_,str]
+array_index_valueflow_pointer global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+array_index_function_parameter global:[errout] call:[assertEquals,check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+array_index_enum_array global:[errout] call:[assertEquals,check_,str]
+array_index_container global:[errout] call:[assertEquals,check_,str]
+array_index_two_for_loops global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_2_struct global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_3 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_4 global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+buffer_overrun_5 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_6 global:[errout] call:[check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+buffer_overrun_7 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_8 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_9 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_10 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_11 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_15 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_16 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_18 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_19 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_21 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_24 global:[errout] call:[check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+buffer_overrun_26 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_27 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_29 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_30 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_31 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_32 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_33 global:[errout] call:[assertEquals,check_,str]
+buffer_overrun_errorpath global:[errout] call:[assertEquals,check_,setMultiline,str]
+buffer_overrun_bailoutIfSwitch global:[errout] call:[assertEquals,check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+buffer_overrun_function_array_argument global:[errout] call:[assertEquals,check_,setMultiline,str]
+possible_buffer_overrun_1 global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+buffer_overrun_readSizeFromCfg global:[errout] call:[Parse,assertEquals,check_,load,sizeof,str]
+valueflow_string global:[errout] call:[assertEquals,check_,str]
+pointer_out_of_bounds_1 global:[errout] call:[assertEquals,check_,str]
+pointer_out_of_bounds_2 global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+pointer_out_of_bounds_3 global:[errout] call:[assertEquals,check_,str]
+pointer_out_of_bounds_4 global:[errout] call:[assertEquals,check_,str]
+pointer_out_of_bounds_sub global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+strcat1 global:[errout] call:[check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+varid1 global:[errout] call:[assertEquals,check_,str]
+varid2 global:[errout] call:[assertEquals,check_,str]
+assign1 global:[errout] call:[assertEquals,check_,str]
+alloc_new global:[errout] call:[assertEquals,check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+alloc_malloc global:[errout] call:[assertEquals,check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+alloc_string global:[errout] call:[assertEquals,check_,str]
+alloc_alloca global:[errout] call:[check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+minsize_argvalue global:[errout] call:[Parse,assertEquals,check_,enable,load,sizeof,str,todoAssertEquals]
+minsize_sizeof global:[errout] call:[Parse,assertEquals,check_,load,sizeof,str] noreturn:[check_]
+minsize_strlen global:[errout] call:[Parse,assertEquals,check_,load,sizeof,str,todoAssertEquals]
+minsize_mul global:[errout] call:[Parse,assertEquals,check_,load,sizeof,str]
+unknownType global:[errout] call:[assertEquals,check_,str]
+terminateStrncpy1 global:[errout] call:[assertEquals,check_,str]
+terminateStrncpy2 global:[errout] call:[assertEquals,check_,str]
+terminateStrncpy3 global:[errout] call:[assertEquals,check_,str]
+terminateStrncpy4 global:[errout] call:[assertEquals,check_,str]
+recursive_long_time global:[errout] call:[assertEquals,check_,str]
+crash1 global:[errout] call:[assertEquals,check_,str]
+crash2 call:[check_] noreturn:[check_]
+crash3 call:[check_] noreturn:[check_]
+crash4 call:[check_] noreturn:[check_]
+crash5 call:[check_] noreturn:[check_]
+crash6 call:[check_] noreturn:[check_]
+crash7 call:[check_] noreturn:[check_]
+insecureCmdLineArgs global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+checkBufferAllocatedWithStrlen global:[errout] call:[assertEquals,check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+scope global:[errout] call:[assertEquals,check_,str]
+getErrorMessages call:[getErrorMessages] noreturn:[getErrorMessages]
+arrayIndexThenCheck global:[errout] call:[assertEquals,check_,str]
+arrayIndexEarlyReturn global:[errout] call:[assertEquals,check_,str]
+bufferNotZeroTerminated global:[errout] call:[assertEquals,check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+negativeMemoryAllocationSizeError global:[errout] call:[check_,str,todoAssertEquals] noreturn:[todoAssertEquals]
+negativeArraySize global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+pointerAddition1 global:[errout] call:[assertEquals,check_,str]
+ctu_ global:[errout] call:[analyseWholeProgram,assert_,back,checkBO,empty,getFileInfo,istr,pop_back,push_back,str,tokenize,tokenizer] noreturn:[pop_back]
+ctu_malloc global:[errout] call:[assertEquals,ctu_,str]
+ctu_array global:[errout] call:[assertEquals,ctu_,str,todoAssertEquals]
+ctu_variable global:[errout] call:[assertEquals,ctu_,str]
+ctu_arithmetic global:[errout] call:[assertEquals,ctu_,str]
+objectIndex global:[errout] call:[assertEquals,check_,str,todoAssertEquals]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

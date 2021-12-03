@@ -1,0 +1,4 @@
+XmlReport
+quoteMessage call:[quotedMessage,replace]
+unquoteMessage call:[quotedMessage,replace]
+determineVersion global:[ResultElementName,VersionAttribute] call:[QString,atEnd,attributes,hasAttribute,name,open,readNext,reader,setFileName,toInt,toString,value]

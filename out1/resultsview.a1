@@ -1,0 +1,360 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="4179514221">
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="GuiSeverity" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/erroritem.h" line="36" col="1" hash="16824455050042739439"/>
+<class name="ErrorLine" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/erroritem.h" line="110" col="1" hash="1731979487472973095"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.h:169:10" my-argnr="1" my-argname="settings" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.cpp" line="358" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.h:358:10" my-argnr="1" my-argname="item" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.cpp" line="540" col="31" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.h:361:10" my-argnr="1" my-argname="item" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.cpp" line="545" col="31" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.h:375:10" my-argnr="2" my-argname="event" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.cpp" line="575" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.h:169:10" my-argnr="1" my-argname="settings" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.cpp" line="358" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.h:358:10" my-argnr="1" my-argname="item" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.cpp" line="540" col="31" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.h:361:10" my-argnr="1" my-argname="item" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.cpp" line="545" col="31" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.h:375:10" my-argnr="2" my-argname="event" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/resultsview.cpp" line="575" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="initialize" lineNumber="79"/>
+    <functiondecl functionName="setAddedFunctionContracts" lineNumber="99"/>
+    <functiondecl functionName="setAddedVariableContracts" lineNumber="110"/>
+    <functiondecl functionName="clear" lineNumber="121"/>
+    <functiondecl functionName="clear" lineNumber="137"/>
+    <functiondecl functionName="clearRecheckFile" lineNumber="142"/>
+    <functiondecl functionName="clearContracts" lineNumber="147"/>
+    <functiondecl functionName="showContracts" lineNumber="157"/>
+    <functiondecl functionName="progress" lineNumber="163"/>
+    <functiondecl functionName="error" lineNumber="169"/>
+    <functiondecl functionName="filterResults" lineNumber="177"/>
+    <functiondecl functionName="saveStatistics" lineNumber="182"/>
+    <functiondecl functionName="updateFromOldReport" lineNumber="199"/>
+    <functiondecl functionName="save" lineNumber="204"/>
+    <functiondecl functionName="print" lineNumber="239"/>
+    <functiondecl functionName="printPreview" lineNumber="250"/>
+    <functiondecl functionName="print" lineNumber="258"/>
+    <functiondecl functionName="updateSettings" lineNumber="274"/>
+    <functiondecl functionName="updateStyleSetting" lineNumber="285"/>
+    <functiondecl functionName="setCheckDirectory" lineNumber="291"/>
+    <functiondecl functionName="getCheckDirectory" lineNumber="296"/>
+    <functiondecl functionName="checkingStarted" lineNumber="301"/>
+    <functiondecl functionName="checkingFinished" lineNumber="309"/>
+    <functiondecl functionName="hasVisibleResults" lineNumber="344"/>
+    <functiondecl functionName="hasResults" lineNumber="349"/>
+    <functiondecl functionName="saveSettings" lineNumber="354"/>
+    <functiondecl functionName="translate" lineNumber="362"/>
+    <functiondecl functionName="disableProgressbar" lineNumber="368"/>
+    <functiondecl functionName="readErrorsXml" lineNumber="373"/>
+    <functiondecl functionName="updateDetails" lineNumber="417"/>
+    <functiondecl functionName="log" lineNumber="482"/>
+    <functiondecl functionName="debugError" lineNumber="487"/>
+    <functiondecl functionName="bughuntingReportLine" lineNumber="492"/>
+    <functiondecl functionName="logClear" lineNumber="511"/>
+    <functiondecl functionName="logCopyEntry" lineNumber="516"/>
+    <functiondecl functionName="logCopyComplete" lineNumber="525"/>
+    <functiondecl functionName="contractDoubleClicked" lineNumber="538"/>
+    <functiondecl functionName="variableDoubleClicked" lineNumber="543"/>
+    <functiondecl functionName="editVariablesFilter" lineNumber="548"/>
+    <functiondecl functionName="on_mListLog_customContextMenuRequested" lineNumber="558"/>
+    <functiondecl functionName="eventFilter" lineNumber="573"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="Append"/>
+    <functioncall functionName="Bold"/>
+    <functioncall functionName="CSV"/>
+    <functioncall functionName="Critical"/>
+    <functioncall functionName="CsvReport"/>
+    <functioncall functionName="CustomContextMenu"/>
+    <functioncall functionName="ErrorItem"/>
+    <functioncall functionName="ErrorMessage"/>
+    <functioncall functionName="FileLocation"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="Information"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="MatchExactly"/>
+    <functioncall functionName="MatchRegExp"/>
+    <functioncall functionName="NO_LINE"/>
+    <functioncall functionName="Normal"/>
+    <functioncall functionName="Ok"/>
+    <functioncall functionName="QColor"/>
+    <functioncall functionName="QErrorPathItem"/>
+    <functioncall functionName="QFileInfo"/>
+    <functioncall functionName="QKeyEvent"/>
+    <functioncall functionName="QStandardItemModel"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QWidget"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="ResultsView"/>
+    <functioncall functionName="SIGNAL"/>
+    <functioncall functionName="SLOT"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="SeverityToShowType"/>
+    <functioncall functionName="ShowErrors"/>
+    <functioncall functionName="ShowInformation"/>
+    <functioncall functionName="ShowNone"/>
+    <functioncall functionName="ShowPerformance"/>
+    <functioncall functionName="ShowPortability"/>
+    <functioncall functionName="ShowStyle"/>
+    <functioncall functionName="ShowTypes"/>
+    <functioncall functionName="ShowWarnings"/>
+    <functioncall functionName="Suppression"/>
+    <functioncall functionName="TXT"/>
+    <functioncall functionName="Text"/>
+    <functioncall functionName="TxtReport"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="XMLV2"/>
+    <functioncall functionName="XmlReportV2"/>
+    <functioncall functionName="acceptFile"/>
+    <functioncall functionName="addAction"/>
+    <functioncall functionName="addErrorItem"/>
+    <functioncall functionName="addItem"/>
+    <functioncall functionName="addItems"/>
+    <functioncall functionName="added"/>
+    <functioncall functionName="addedContracts"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="black"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="canonicalPath"/>
+    <functioncall functionName="checkSelected"/>
+    <functioncall functionName="checkThreadHandler"/>
+    <functioncall functionName="child"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="clearRecheckFile"/>
+    <functioncall functionName="clipboard"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="collapseAll"/>
+    <functioncall functionName="collapseAllResults"/>
+    <functioncall functionName="column"/>
+    <functioncall functionName="connect"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="contains"/>
+    <functioncall functionName="contractDoubleClicked"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="create"/>
+    <functioncall functionName="currentDate"/>
+    <functioncall functionName="currentItem"/>
+    <functioncall functionName="currentMSecsSinceEpoch"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="darkBlue"/>
+    <functioncall functionName="darkGreen"/>
+    <functioncall functionName="darkMagenta"/>
+    <functioncall functionName="data"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="deleteFunctionContract"/>
+    <functioncall functionName="deleteVariableContract"/>
+    <functioncall functionName="description"/>
+    <functioncall functionName="determineVersion"/>
+    <functioncall functionName="dialog"/>
+    <functioncall functionName="dir"/>
+    <functioncall functionName="doc"/>
+    <functioncall functionName="editFunctionContract"/>
+    <functioncall functionName="editVariableContract"/>
+    <functioncall functionName="editVariablesFilter"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="emptyString"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorId"/>
+    <functioncall functionName="errors"/>
+    <functioncall functionName="event"/>
+    <functioncall functionName="eventFilter"/>
+    <functioncall functionName="exec"/>
+    <functioncall functionName="exists"/>
+    <functioncall functionName="expandAll"/>
+    <functioncall functionName="expandAllResults"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="extra"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="file0"/>
+    <functioncall functionName="fileIndex"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="filepath"/>
+    <functioncall functionName="filter"/>
+    <functioncall functionName="filterResults"/>
+    <functioncall functionName="findItems"/>
+    <functioncall functionName="find_first_of"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="foreach"/>
+    <functioncall functionName="formattedMsg"/>
+    <functioncall functionName="fromStdString"/>
+    <functioncall functionName="fromString"/>
+    <functioncall functionName="front"/>
+    <functioncall functionName="functionName"/>
+    <functioncall functionName="getCheckDirectory"/>
+    <functioncall functionName="getCount"/>
+    <functioncall functionName="getFileName"/>
+    <functioncall functionName="getFormattedReportText"/>
+    <functioncall functionName="getTools"/>
+    <functioncall functionName="globalPos"/>
+    <functioncall functionName="gotResults"/>
+    <functioncall functionName="gray"/>
+    <functioncall functionName="hasResults"/>
+    <functioncall functionName="hasVisibleResults"/>
+    <functioncall functionName="hash"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="in"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="index"/>
+    <functioncall functionName="indexOf"/>
+    <functioncall functionName="info"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="initialize"/>
+    <functioncall functionName="insert"/>
+    <functioncall functionName="installEventFilter"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="isHeader"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="item"/>
+    <functioncall functionName="itemDoubleClicked"/>
+    <functioncall functionName="itemFromIndex"/>
+    <functioncall functionName="key"/>
+    <functioncall functionName="line"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="list"/>
+    <functioncall functionName="loadSettings"/>
+    <functioncall functionName="logClear"/>
+    <functioncall functionName="logCopyComplete"/>
+    <functioncall functionName="logCopyEntry"/>
+    <functioncall functionName="logText"/>
+    <functioncall functionName="mEditVariablesFilter"/>
+    <functioncall functionName="mFileName"/>
+    <functioncall functionName="mInfo"/>
+    <functioncall functionName="mListAddedContracts"/>
+    <functioncall functionName="mListAddedVariables"/>
+    <functioncall functionName="mListMissingContracts"/>
+    <functioncall functionName="mListMissingVariables"/>
+    <functioncall functionName="mOrigFileName"/>
+    <functioncall functionName="mShowNoErrorsMessage"/>
+    <functioncall functionName="mShowSeverities"/>
+    <functioncall functionName="mStatistics"/>
+    <functioncall functionName="mTree"/>
+    <functioncall functionName="mapToGlobal"/>
+    <functioncall functionName="matched"/>
+    <functioncall functionName="message"/>
+    <functioncall functionName="mid"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="model"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="number"/>
+    <functioncall functionName="open"/>
+    <functioncall functionName="other"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="paintRequested"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="plistFooter"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="pos"/>
+    <functioncall functionName="prepend"/>
+    <functioncall functionName="print"/>
+    <functioncall functionName="printer"/>
+    <functioncall functionName="qobject_cast"/>
+    <functioncall functionName="read"/>
+    <functioncall functionName="readAll"/>
+    <functioncall functionName="red"/>
+    <functioncall functionName="refreshTree"/>
+    <functioncall functionName="relativePath"/>
+    <functioncall functionName="report"/>
+    <functioncall functionName="reportErr"/>
+    <functioncall functionName="restoreState"/>
+    <functioncall functionName="results"/>
+    <functioncall functionName="resultsHidden"/>
+    <functioncall functionName="retranslateUi"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="row"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="saveAllErrors"/>
+    <functioncall functionName="saveFullPath"/>
+    <functioncall functionName="saveResults"/>
+    <functioncall functionName="saveSettings"/>
+    <functioncall functionName="saveState"/>
+    <functioncall functionName="selectedItems"/>
+    <functioncall functionName="setCheckDirectory"/>
+    <functioncall functionName="setContextMenuPolicy"/>
+    <functioncall functionName="setEnabled"/>
+    <functioncall functionName="setError"/>
+    <functioncall functionName="setFileName"/>
+    <functioncall functionName="setFormat"/>
+    <functioncall functionName="setHidden"/>
+    <functioncall functionName="setIcon"/>
+    <functioncall functionName="setMaximum"/>
+    <functioncall functionName="setMinimum"/>
+    <functioncall functionName="setSortingEnabled"/>
+    <functioncall functionName="setStyle"/>
+    <functioncall functionName="setText"/>
+    <functioncall functionName="setValue"/>
+    <functioncall functionName="setVisible"/>
+    <functioncall functionName="setWindowTitle"/>
+    <functioncall functionName="settings"/>
+    <functioncall functionName="setupUi"/>
+    <functioncall functionName="severity"/>
+    <functioncall functionName="showClangResults"/>
+    <functioncall functionName="showCppcheckResults"/>
+    <functioncall functionName="showErrorId"/>
+    <functioncall functionName="showFullPath"/>
+    <functioncall functionName="showHiddenResults"/>
+    <functioncall functionName="showIdColumn"/>
+    <functioncall functionName="showInconclusive"/>
+    <functioncall functionName="showNoErrorsMessage"/>
+    <functioncall functionName="showResults"/>
+    <functioncall functionName="split"/>
+    <functioncall functionName="stage"/>
+    <functioncall functionName="startsWith"/>
+    <functioncall functionName="state"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="suppressIds"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="symbolName"/>
+    <functioncall functionName="symbols"/>
+    <functioncall functionName="target"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="textChanged"/>
+    <functioncall functionName="theStyle"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="thisAndNextLine"/>
+    <functioncall functionName="toBool"/>
+    <functioncall functionName="toByteArray"/>
+    <functioncall functionName="toInt"/>
+    <functioncall functionName="toMap"/>
+    <functioncall functionName="toNativeSeparators"/>
+    <functioncall functionName="toStdString"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="tool"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="translate"/>
+    <functioncall functionName="treeSelectionChanged"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="ts"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="updateDetails"/>
+    <functioncall functionName="updateFromOldReport"/>
+    <functioncall functionName="updateSettings"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="var"/>
+    <functioncall functionName="variableDoubleClicked"/>
+    <functioncall functionName="varname"/>
+    <functioncall functionName="visible"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="warning"/>
+  </FileInfo>
+</analyzerinfo>

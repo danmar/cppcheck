@@ -1,0 +1,40 @@
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+TestOptions
+run call:[help,help_long,invalid_switches,multiple_testcases,multiple_testcases_ignore_duplicates,no_test_method,not_help,not_quiet,prepareTest,quiet,setVerbose,which_test,which_test_method,while] noreturn:[help,help_long,invalid_switches,multiple_testcases,multiple_testcases_ignore_duplicates,no_test_method,not_help,not_quiet,quiet,which_test,which_test_method,while]
+which_test call:[args,assert_,sizeof,which_test]
+which_test_method call:[args,assert_,sizeof,which_test]
+no_test_method call:[args,assert_,sizeof,which_test]
+not_quiet call:[args,assertEquals,quiet,sizeof]
+quiet call:[args,assertEquals,quiet,sizeof]
+not_help call:[args,assertEquals,help,sizeof]
+help call:[args,assertEquals,help,sizeof]
+help_long call:[args,assertEquals,help,sizeof]
+multiple_testcases call:[args,assert_,sizeof,which_test]
+multiple_testcases_ignore_duplicates call:[args,assert_,sizeof,which_test]
+invalid_switches call:[args,assertEquals,assert_,quiet,sizeof,which_test]

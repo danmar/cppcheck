@@ -1,0 +1,3 @@
+CWE
+toString call:[InternalError] noreturn:[InternalError]
+fromString call:[empty]

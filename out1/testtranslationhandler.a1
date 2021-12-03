@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="662706841">
+  <FileInfo check="Class">
+<class name="TestTranslationHandler" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/translationhandler/testtranslationhandler.h" line="22" col="1" hash="3937586676058112196"/>
+<class name="TranslationInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/translationhandler.h" line="35" col="1" hash="7983788477814411061"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="construct" lineNumber="23"/>
+    <functioncall functionName="QCOMPARE"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QTEST_MAIN"/>
+    <functioncall functionName="TestTranslationHandler"/>
+    <functioncall functionName="TranslationInfo"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="getCurrentLanguage"/>
+    <functioncall functionName="getNames"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="size"/>
+  </FileInfo>
+</analyzerinfo>

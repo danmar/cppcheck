@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3109276878">
+        <error id="missingOverride" severity="style" msg="The function &apos;addResults&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;addResults&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\timer.h" line="62" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\timer.h" line="40" column="18" info="Virtual function in base class"/>
+            <symbol>addResults</symbol>
+        </error>
+  <FileInfo check="Class">
+<class name="TimerResultsData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.h" line="43" col="1" hash="7257645589623825125"/>
+<class name="TimerResults" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.h" line="57" col="1" hash="14154894693109724473"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="TimerResultsData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.h" line="43" col="1" hash="7257645589623825125"/>
+<class name="TimerResults" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.h" line="57" col="1" hash="13700816357041477881"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="more_second_sec" lineNumber="36"/>
+    <functiondecl functionName="showResults" lineNumber="42"/>
+    <functiondecl functionName="addResults" lineNumber="68"/>
+    <functiondecl functionName="stop" lineNumber="90"/>
+    <functiondecl functionName="more_second_sec" lineNumber="36"/>
+    <functiondecl functionName="showResults" lineNumber="42"/>
+    <functiondecl functionName="addResults" lineNumber="68"/>
+    <functiondecl functionName="stop" lineNumber="90"/>
+    <functioncall functionName="CLOCKS_PER_SEC"/>
+    <functioncall functionName="SHOWTIME_FILE"/>
+    <functioncall functionName="SHOWTIME_SUMMARY"/>
+    <functioncall functionName="SHOWTIME_TOP5"/>
+    <functioncall functionName="Timer"/>
+    <functioncall functionName="TimerResultsData"/>
+    <functioncall functionName="addResults"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="clock"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="data"/>
+    <functioncall functionName="dataElementType"/>
+    <functioncall functionName="diff"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="mClocks"/>
+    <functioncall functionName="mNumberOfResults"/>
+    <functioncall functionName="mShowTimeMode"/>
+    <functioncall functionName="mStart"/>
+    <functioncall functionName="mStopped"/>
+    <functioncall functionName="mStr"/>
+    <functioncall functionName="mTimerResults"/>
+    <functioncall functionName="more_second_sec"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="seconds"/>
+    <functioncall functionName="showtimeMode"/>
+    <functioncall functionName="sort"/>
+    <functioncall functionName="stop"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="timerResults"/>
+    <functioncall functionName="true"/>
+  </FileInfo>
+</analyzerinfo>

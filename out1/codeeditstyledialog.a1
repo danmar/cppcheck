@@ -1,0 +1,166 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3260622993">
+  <FileInfo check="Class">
+<class name="StyleEditDialog" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditstyledialog.h" line="30" col="1" hash="11698618546132617517"/>
+<class name="Highlighter::HighlightingRule" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.h" line="34" col="5" hash="10988520219070811355"/>
+<class name="LineNumberArea" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.h" line="119" col="1" hash="3466868084703521222"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="updateControls" lineNumber="195"/>
+    <functiondecl functionName="updateStyle" lineNumber="215"/>
+    <functiondecl functionName="getStyle" lineNumber="223"/>
+    <functiondecl functionName="resetStyle" lineNumber="228"/>
+    <functiondecl functionName="setStyleDefaultLight" lineNumber="235"/>
+    <functiondecl functionName="setStyleDefaultDark" lineNumber="242"/>
+    <functiondecl functionName="colorChangedWidgetFG" lineNumber="249"/>
+    <functiondecl functionName="colorChangedWidgetBG" lineNumber="255"/>
+    <functiondecl functionName="colorChangedHighlightBG" lineNumber="261"/>
+    <functiondecl functionName="colorChangedLineNumFG" lineNumber="267"/>
+    <functiondecl functionName="colorChangedLineNumBG" lineNumber="273"/>
+    <functiondecl functionName="colorChangedKeywordFG" lineNumber="279"/>
+    <functiondecl functionName="weightChangedKeyword" lineNumber="285"/>
+    <functiondecl functionName="colorChangedClassFG" lineNumber="291"/>
+    <functiondecl functionName="weightChangedClass" lineNumber="297"/>
+    <functiondecl functionName="colorChangedQuoteFG" lineNumber="303"/>
+    <functiondecl functionName="weightChangedQuote" lineNumber="309"/>
+    <functiondecl functionName="colorChangedCommentFG" lineNumber="315"/>
+    <functiondecl functionName="weightChangedComment" lineNumber="321"/>
+    <functiondecl functionName="colorChangedSymbolFG" lineNumber="327"/>
+    <functiondecl functionName="colorChangedSymbolBG" lineNumber="333"/>
+    <functiondecl functionName="weightChangedSymbol" lineNumber="339"/>
+    <functioncall functionName="Bold"/>
+    <functioncall functionName="CodeEditor"/>
+    <functioncall functionName="HighlightingRule"/>
+    <functioncall functionName="Normal"/>
+    <functioncall functionName="QColor"/>
+    <functioncall functionName="QDialog"/>
+    <functioncall functionName="QDialogButtonBox"/>
+    <functioncall functionName="QFormLayout"/>
+    <functioncall functionName="QHBoxLayout"/>
+    <functioncall functionName="QPushButton"/>
+    <functioncall functionName="QSize"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QStringList"/>
+    <functioncall functionName="QVBoxLayout"/>
+    <functioncall functionName="QWidget"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="SIGNAL"/>
+    <functioncall functionName="SLOT"/>
+    <functioncall functionName="SelectColorButton"/>
+    <functioncall functionName="SelectFontWeightCombo"/>
+    <functioncall functionName="StyleEditDialog"/>
+    <functioncall functionName="accept"/>
+    <functioncall functionName="accepted"/>
+    <functioncall functionName="addLayout"/>
+    <functioncall functionName="addRow"/>
+    <functioncall functionName="addStretch"/>
+    <functioncall functionName="addWidget"/>
+    <functioncall functionName="black"/>
+    <functioncall functionName="button"/>
+    <functioncall functionName="classColor"/>
+    <functioncall functionName="classWeight"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="clicked"/>
+    <functioncall functionName="colorChanged"/>
+    <functioncall functionName="colorChangedClassFG"/>
+    <functioncall functionName="colorChangedCommentFG"/>
+    <functioncall functionName="colorChangedHighlightBG"/>
+    <functioncall functionName="colorChangedKeywordFG"/>
+    <functioncall functionName="colorChangedLineNumBG"/>
+    <functioncall functionName="colorChangedLineNumFG"/>
+    <functioncall functionName="colorChangedQuoteFG"/>
+    <functioncall functionName="colorChangedSymbolBG"/>
+    <functioncall functionName="colorChangedSymbolFG"/>
+    <functioncall functionName="colorChangedWidgetBG"/>
+    <functioncall functionName="colorChangedWidgetFG"/>
+    <functioncall functionName="commentColor"/>
+    <functioncall functionName="commentWeight"/>
+    <functioncall functionName="connect"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="dBtnBox"/>
+    <functioncall functionName="darkBlue"/>
+    <functioncall functionName="darkGreen"/>
+    <functioncall functionName="darkMagenta"/>
+    <functioncall functionName="defaultStyleDark"/>
+    <functioncall functionName="defaultStyleLight"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="editor"/>
+    <functioncall functionName="event"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="flEditControls"/>
+    <functioncall functionName="fm"/>
+    <functioncall functionName="gray"/>
+    <functioncall functionName="hboxDefaultControls"/>
+    <functioncall functionName="hboxEdit"/>
+    <functioncall functionName="highlightBGColor"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="keywordColor"/>
+    <functioncall functionName="keywordWeight"/>
+    <functioncall functionName="lineNumBGColor"/>
+    <functioncall functionName="lineNumFGColor"/>
+    <functioncall functionName="lineNumberAreaPaintEvent"/>
+    <functioncall functionName="lineNumberAreaWidth"/>
+    <functioncall functionName="mBtnClassFG"/>
+    <functioncall functionName="mBtnCommentFG"/>
+    <functioncall functionName="mBtnDefaultDark"/>
+    <functioncall functionName="mBtnDefaultLight"/>
+    <functioncall functionName="mBtnHighlightBG"/>
+    <functioncall functionName="mBtnKeywordFG"/>
+    <functioncall functionName="mBtnLineNumBG"/>
+    <functioncall functionName="mBtnLineNumFG"/>
+    <functioncall functionName="mBtnQuoteFG"/>
+    <functioncall functionName="mBtnSymbolBG"/>
+    <functioncall functionName="mBtnSymbolFG"/>
+    <functioncall functionName="mBtnWidgetColorBG"/>
+    <functioncall functionName="mBtnWidgetColorFG"/>
+    <functioncall functionName="mCBClassWeight"/>
+    <functioncall functionName="mCBCommentWeight"/>
+    <functioncall functionName="mCBKeywordWeight"/>
+    <functioncall functionName="mCBQuoteWeight"/>
+    <functioncall functionName="mCBSymbolWeight"/>
+    <functioncall functionName="mErrLineNum"/>
+    <functioncall functionName="mErrSymbolsList"/>
+    <functioncall functionName="mSampleDocument"/>
+    <functioncall functionName="mSampleEditor"/>
+    <functioncall functionName="mStyleIncoming"/>
+    <functioncall functionName="mStyleOutgoing"/>
+    <functioncall functionName="newColor"/>
+    <functioncall functionName="newStyle"/>
+    <functioncall functionName="newWeight"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="quoteColor"/>
+    <functioncall functionName="quoteWeight"/>
+    <functioncall functionName="red"/>
+    <functioncall functionName="reject"/>
+    <functioncall functionName="rejected"/>
+    <functioncall functionName="resetStyle"/>
+    <functioncall functionName="sampleFont"/>
+    <functioncall functionName="setColor"/>
+    <functioncall functionName="setEnabled"/>
+    <functioncall functionName="setError"/>
+    <functioncall functionName="setMinimumWidth"/>
+    <functioncall functionName="setPlainText"/>
+    <functioncall functionName="setStyle"/>
+    <functioncall functionName="setStyleDefaultDark"/>
+    <functioncall functionName="setStyleDefaultLight"/>
+    <functioncall functionName="setWeight"/>
+    <functioncall functionName="symbolBGColor"/>
+    <functioncall functionName="symbolFGColor"/>
+    <functioncall functionName="symbolWeight"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="updateControls"/>
+    <functioncall functionName="updateStyle"/>
+    <functioncall functionName="weightChanged"/>
+    <functioncall functionName="weightChangedClass"/>
+    <functioncall functionName="weightChangedComment"/>
+    <functioncall functionName="weightChangedKeyword"/>
+    <functioncall functionName="weightChangedQuote"/>
+    <functioncall functionName="weightChangedSymbol"/>
+    <functioncall functionName="widgetBGColor"/>
+    <functioncall functionName="widgetFGColor"/>
+    <functioncall functionName="width"/>
+  </FileInfo>
+</analyzerinfo>

@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3230822834">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="validCode" lineNumber="14"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="34"/>
+    <functiondecl functionName="memleak" lineNumber="40"/>
+    <functioncall functionName="IMREAD_COLOR"/>
+    <functioncall functionName="WINDOW_AUTOSIZE"/>
+    <functioncall functionName="argStr"/>
+    <functioncall functionName="cvStr"/>
+    <functioncall functionName="data"/>
+    <functioncall functionName="fastFree"/>
+    <functioncall functionName="fastMalloc"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="image"/>
+    <functioncall functionName="imread"/>
+    <functioncall functionName="imshow"/>
+    <functioncall functionName="namedWindow"/>
+    <functioncall functionName="pBuf"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="waitKey"/>
+  </FileInfo>
+</analyzerinfo>

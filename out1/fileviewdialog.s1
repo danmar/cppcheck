@@ -1,0 +1,2 @@
+FileViewDialog call:[SIGNAL,SLOT,accept,accepted,connect,loadTextFile,setWindowTitle,setupUi] noreturn:[loadTextFile]
+loadTextFile call:[arg,close,exec,exists,file,isReadable,msg,msgbox,open,readAll,setPlainText,tr] noreturn:[setPlainText]

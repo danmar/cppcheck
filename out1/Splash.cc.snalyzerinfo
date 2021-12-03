@@ -1,0 +1,120 @@
+getBitmap
+setMinLineWidth
+getModRegion
+getClipRes
+setDebugMode
+setInShading
+div255 call:[return]
+clip255
+clearModRegion
+updateModX
+updateModY
+pipeInit call:[getColor,isStatic]
+pipeRun call:[clip255,div255,getColor,test,updateModX,updateModY] noreturn:[div255,getColor,updateModX]
+pipeRunSimpleMono1 call:[getTestCursor,testWithCursor,updateModX,updateModY]
+pipeRunSimpleMono8 call:[updateModX,updateModY]
+pipeRunSimpleRGB8 call:[updateModX,updateModY]
+pipeRunSimpleBGR8 call:[updateModX,updateModY]
+pipeRunShapeMono1 call:[div255,getTestCursor,testWithCursor,updateModX,updateModY] noreturn:[div255,updateModX]
+pipeRunShapeMono8 call:[div255,updateModX,updateModY] noreturn:[updateModX]
+pipeRunShapeRGB8 call:[div255,updateModX,updateModY] noreturn:[updateModX]
+pipeRunShapeBGR8 call:[div255,updateModX,updateModY] noreturn:[updateModX]
+pipeRunAAMono1 call:[div255,getTestCursor,testWithCursor,updateModX,updateModY] noreturn:[updateModX]
+pipeRunAAMono8 call:[div255,updateModX,updateModY] noreturn:[updateModX]
+pipeRunAARGB8 call:[div255,updateModX,updateModY] noreturn:[updateModX]
+pipeRunAABGR8 call:[div255,updateModX,updateModY] noreturn:[updateModX]
+transform
+Splash call:[SplashState,clearModRegion,gmalloc] noreturn:[gmalloc]
+Splash call:[SplashState,clearModRegion,gmalloc] noreturn:[gmalloc]
+Splash call:[gfree,restoreState] noreturn:[gfree,restoreState]
+getMatrix
+getStrokePattern
+getFillPattern
+getScreen
+getBlendFunc
+getStrokeAlpha
+getFillAlpha
+getLineWidth
+getLineCap
+getLineJoin
+getMiterLimit
+getFlatness
+getLineDash
+getLineDashLength
+getLineDashPhase
+getStrokeAdjust
+getClip
+getSoftMask
+getInNonIsolatedGroup
+getInKnockoutGroup
+setMatrix call:[memcpy,sizeof] noreturn:[memcpy]
+setStrokePattern call:[setStrokePattern] noreturn:[setStrokePattern]
+setFillPattern call:[setFillPattern] noreturn:[setFillPattern]
+setScreen call:[setScreen] noreturn:[setScreen]
+setBlendFunc
+setStrokeAlpha
+setFillAlpha
+setLineWidth
+setLineCap
+setLineJoin
+setMiterLimit
+setFlatness
+setLineDash call:[setLineDash] noreturn:[setLineDash]
+setStrokeAdjust
+clipResetToRect call:[clipResetToRect] noreturn:[clipResetToRect]
+clipToRect call:[clipToRect] noreturn:[clipToRect]
+clipToPath call:[clipToPath] noreturn:[clipToPath]
+setSoftMask call:[setSoftMask] noreturn:[setSoftMask]
+setInTransparencyGroup
+setTransfer call:[setTransfer] noreturn:[setTransfer]
+setOverprintMask
+setEnablePathSimplification
+saveState call:[copy]
+restoreState
+clear call:[memset,updateModX,updateModY] noreturn:[memset,updateModY]
+stroke call:[containsZeroLengthSubpaths,dumpPath,flattenPath,lineDashContainsZeroLengthDashes,makeDashedPath,printf,splashAbs,strokeNarrow,strokeWide] noreturn:[dumpPath,strokeNarrow,strokeWide]
+strokeNarrow call:[SplashXPath,drawStrokeSpan,getYMaxI,getYMinI,pipeInit,splashFloor,splashRound,testRect] noreturn:[drawStrokeSpan,splashFloor]
+drawStrokeSpan call:[clipSpanBinary,getXMaxI,getXMinI]
+strokeWide call:[fillWithPattern,makeStrokePath]
+flattenPath call:[SplashPath,close,flattenCurve,lineTo,moveTo] noreturn:[close]
+flattenCurve call:[lineTo,splashAvg,transform]
+makeDashedPath call:[SplashPath,close,lineTo,memmove,moveTo,sizeof,splashCeil,splashDist,splashFloor,while] noreturn:[SplashPath,close,lineTo]
+fill call:[dumpPath,fillWithPattern,printf] noreturn:[dumpPath,fillWithPattern]
+fillWithPattern call:[SplashXPath,SplashXPathScanner,clipSpan,clipSpanBinary,getSpan,getSpanBinary,getXMax,getXMaxI,getXMin,getXMinI,getYMax,getYMaxI,getYMin,getYMinI,pathAllOutside,pipeInit,splashRound,testRect,tweakFillPath] noreturn:[clipSpan,clipSpanBinary]
+tweakFillPath call:[SplashPath,addStrokeAdjustHint,close,getLength,lineTo,moveTo,splashAbs,splashSqrt] noreturn:[addStrokeAdjustHint]
+pathAllOutside call:[clampCoords,splashFloor,testRect,transform]
+fillChar call:[fillGlyph2,getGlyph,gfree,printf,splashFloor,transform] noreturn:[gfree,printf]
+fillGlyph call:[fillGlyph2,splashFloor,transform] noreturn:[fillGlyph2]
+fillGlyph2 call:[clipSpan,clipSpanBinary,getXMaxI,getXMinI,getYMaxI,getYMinI,memcpy,pipeInit,splashRound,testRect]
+getImageBounds call:[splashFloor,splashStrokeAdjust] noreturn:[splashStrokeAdjust]
+fillImageMask call:[arbitraryTransformMask,blitMask,getImageBounds,horizFlipImage,printf,scaleMask,splashAbs,splashCheckDet,testRect,upscaleMask,vertFlipImage] noreturn:[arbitraryTransformMask,printf,upscaleMask]
+upscaleMask call:[clipSpan,clipSpanBinary,getImageBounds,getXMaxI,getXMinI,getYMaxI,getYMinI,gfree,gmallocn,pipeInit,splashAbs,splashFloor,splashRound,testRect] noreturn:[clipSpan,clipSpanBinary,gfree,splashRound]
+arbitraryTransformMask call:[clipSpan,clipSpanBinary,pipeInit,scaleMask,splashAbs,splashFloor,splashRound,testRect] noreturn:[clipSpan,clipSpanBinary,splashRound]
+scaleMask call:[SplashBitmap,scaleMaskYdXd,scaleMaskYdXu,scaleMaskYuXd,scaleMaskYuXu,scaleMaskYuXuI] noreturn:[scaleMaskYdXd,scaleMaskYdXu,scaleMaskYuXd,scaleMaskYuXu,scaleMaskYuXuI]
+scaleMaskYdXd call:[gfree,gmalloc,gmallocn,memset,sizeof] noreturn:[gfree]
+scaleMaskYdXu call:[gfree,gmalloc,gmallocn,memset,sizeof] noreturn:[gfree]
+scaleMaskYuXd call:[gfree,gmalloc] noreturn:[gfree]
+scaleMaskYuXu call:[gfree,gmalloc,memcpy] noreturn:[gfree]
+scaleMaskYuXuI call:[gfree,gmalloc,memcpy,splashFloor] noreturn:[gfree]
+blitMask call:[clipSpan,clipSpanBinary,getXMaxI,getXMinI,getYMaxI,getYMinI,memcpy,pipeInit,splashRound] noreturn:[clipSpan,clipSpanBinary]
+drawImage call:[arbitraryTransformImage,blitImage,getImageBounds,horizFlipImage,printf,scaleImage,splashAbs,splashCheckDet,testRect,upscaleImage,vertFlipImage] noreturn:[arbitraryTransformImage,printf,upscaleImage]
+upscaleImage call:[clipSpan,clipSpanBinary,getImageBounds,getXMaxI,getXMinI,getYMaxI,getYMinI,gfree,gmallocn,gmallocn64,pipeInit,splashAbs,splashFloor,splashRound,testRect] noreturn:[clipSpan,clipSpanBinary,gfree,splashRound]
+arbitraryTransformImage call:[clipSpan,clipSpanBinary,div255,getPixel,gfree,gmallocn,memset,pipeInit,scaleImage,splashAbs,splashFloor,splashRound,testRect] noreturn:[clipSpan,clipSpanBinary,div255,splashRound]
+scaleImage call:[SplashBitmap,scaleImageYdXd,scaleImageYdXu,scaleImageYuXd,scaleImageYuXu,scaleImageYuXuI] noreturn:[scaleImageYdXd,scaleImageYdXu,scaleImageYuXd,scaleImageYuXu,scaleImageYuXuI]
+scaleImageYdXd call:[gfree,gmalloc,gmallocn,memset,sizeof] noreturn:[gfree,gmallocn,memset]
+scaleImageYdXu call:[gfree,gmalloc,gmallocn,memset,sizeof] noreturn:[gfree,gmallocn,memset]
+scaleImageYuXd call:[gfree,gmalloc,gmallocn] noreturn:[gfree,gmalloc]
+scaleImageYuXu call:[gfree,gmalloc,gmallocn,memcpy] noreturn:[gfree,gmalloc]
+scaleImageYuXuI call:[gfree,gmalloc,gmallocn,memcpy,splashFloor] noreturn:[gfree,gmalloc,memcpy]
+vertFlipImage call:[gfree,gmalloc,memcpy] noreturn:[gfree,memcpy]
+horizFlipImage call:[gfree,gmalloc,memcpy] noreturn:[gfree]
+blitImage call:[blitImageClipped,getNumPaths,getRowSize,getXMax,getXMin,getYMax,getYMin,pipeInit,splashCeil,splashFloor,splashRound] noreturn:[blitImageClipped]
+blitImageClipped call:[clipSpan,clipSpanBinary,memcpy,memset,pipeInit,splashRound] noreturn:[clipSpan,clipSpanBinary]
+composite call:[clipSpan,clipSpanBinary,getXMaxI,getXMinI,getYMaxI,getYMinI,gfree,gmallocn,memcpy,memset,pipeInit,splashRound] noreturn:[gfree]
+compositeBackground call:[div255,memset] noreturn:[div255,memset]
+blitTransparent call:[memcpy,memset] noreturn:[memcpy,memset]
+blitCorrectedAlpha call:[div255,memcpy] noreturn:[memcpy]
+makeStrokePath call:[SplashPath,addStrokeAdjustHint,atan2,close,cos,curveTo,flattenPath,lineTo,makeDashedPath,moveTo,sin,splashDist,splashSqrt] noreturn:[addStrokeAdjustHint,close,curveTo,lineTo,splashSqrt]
+limitRectToClipRect call:[getXMaxI,getXMinI,getYMaxI,getYMinI,testRect] noreturn:[testRect]
+dumpPath call:[printf] noreturn:[printf]
+dumpXPath call:[printf] noreturn:[printf]

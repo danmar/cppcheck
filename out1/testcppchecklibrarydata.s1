@@ -1,0 +1,28 @@
+Container
+Function
+ReturnValue
+empty call:[isNull]
+Arg
+Iterator
+isEmpty call:[isEmpty] noreturn:[isEmpty]
+Alloc
+Dealloc
+Call
+CodeBlocks
+clear call:[clear] noreturn:[clear]
+swap call:[swap] noreturn:[swap]
+init call:[clear] noreturn:[clear]
+xmlReaderError call:[QCOMPARE,isNull,loadCfgFile,qDebug]
+unhandledElement call:[QCOMPARE,isNull,loadCfgFile,qDebug]
+mandatoryAttributeMissing call:[QCOMPARE,isNull,loadCfgFile,qDebug]
+podtypeValid call:[QCOMPARE,clear,isEmpty,isNull,loadCfgFile,saveCfgFile,size,swap] noreturn:[QCOMPARE]
+typechecksValid call:[QCOMPARE,clear,isEmpty,isNull,loadCfgFile,saveCfgFile,size,swap] noreturn:[QCOMPARE]
+smartPointerValid call:[QCOMPARE,clear,isNull,loadCfgFile,saveCfgFile,size,swap] noreturn:[QCOMPARE]
+platformTypeValid call:[QCOMPARE,QStringList,clear,isEmpty,isNull,loadCfgFile,saveCfgFile,size,swap] noreturn:[QCOMPARE]
+memoryResourceValid call:[QCOMPARE,clear,isEmpty,isNull,loadCfgFile,saveCfgFile,size,swap] noreturn:[QCOMPARE]
+defineValid call:[QCOMPARE,clear,isEmpty,isNull,loadCfgFile,saveCfgFile,size,swap] noreturn:[QCOMPARE]
+undefineValid call:[QCOMPARE,clear,isEmpty,isNull,loadCfgFile,saveCfgFile,size,swap] noreturn:[QCOMPARE]
+reflectionValid call:[QCOMPARE,clear,isEmpty,isNull,loadCfgFile,saveCfgFile,size,swap] noreturn:[QCOMPARE]
+markupValid call:[QCOMPARE,QStringList,clear,isNull,loadCfgFile,saveCfgFile,size,swap] noreturn:[QCOMPARE]
+loadCfgFile call:[QVERIFY,close,file,open,remove] noreturn:[remove]
+saveCfgFile call:[QVERIFY,close,file,open,textStream,toString] noreturn:[close]

@@ -1,0 +1,3 @@
+func1
+valid_code call:[mem_fun]
+ignoredReturnValue call:[mem_fun] noreturn:[mem_fun]

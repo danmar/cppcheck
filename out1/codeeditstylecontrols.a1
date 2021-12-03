@@ -1,0 +1,72 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3144578140">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="updateColor" lineNumber="30"/>
+    <functiondecl functionName="changeColor" lineNumber="43"/>
+    <functiondecl functionName="setColor" lineNumber="54"/>
+    <functiondecl functionName="getColor" lineNumber="60"/>
+    <functiondecl functionName="updateWeight" lineNumber="92"/>
+    <functiondecl functionName="changeWeight" lineNumber="103"/>
+    <functiondecl functionName="setWeight" lineNumber="111"/>
+    <functiondecl functionName="getWeight" lineNumber="117"/>
+    <functioncall functionName="Black"/>
+    <functioncall functionName="Bold"/>
+    <functioncall functionName="DemiBold"/>
+    <functioncall functionName="ExtraBold"/>
+    <functioncall functionName="ExtraLight"/>
+    <functioncall functionName="Light"/>
+    <functioncall functionName="Medium"/>
+    <functioncall functionName="Normal"/>
+    <functioncall functionName="QColor"/>
+    <functioncall functionName="QComboBox"/>
+    <functioncall functionName="QPushButton"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QVariant"/>
+    <functioncall functionName="SIGNAL"/>
+    <functioncall functionName="SLOT"/>
+    <functioncall functionName="SelectColorButton"/>
+    <functioncall functionName="SelectFontWeightCombo"/>
+    <functioncall functionName="Thin"/>
+    <functioncall functionName="Weight"/>
+    <functioncall functionName="addItem"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="blue"/>
+    <functioncall functionName="btnColorStyle"/>
+    <functioncall functionName="changeColor"/>
+    <functioncall functionName="changeWeight"/>
+    <functioncall functionName="clicked"/>
+    <functioncall functionName="color"/>
+    <functioncall functionName="colorChanged"/>
+    <functioncall functionName="connect"/>
+    <functioncall functionName="currentIndexChanged"/>
+    <functioncall functionName="exec"/>
+    <functioncall functionName="findData"/>
+    <functioncall functionName="green"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="index"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="itemData"/>
+    <functioncall functionName="mColor"/>
+    <functioncall functionName="mWeight"/>
+    <functioncall functionName="nResult"/>
+    <functioncall functionName="pDlg"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="red"/>
+    <functioncall functionName="selectedColor"/>
+    <functioncall functionName="setColor"/>
+    <functioncall functionName="setCurrentIndex"/>
+    <functioncall functionName="setModal"/>
+    <functioncall functionName="setObjectName"/>
+    <functioncall functionName="setStyleSheet"/>
+    <functioncall functionName="setWeight"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="toInt"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="updateColor"/>
+    <functioncall functionName="updateWeight"/>
+    <functioncall functionName="weight"/>
+    <functioncall functionName="weightChanged"/>
+  </FileInfo>
+</analyzerinfo>

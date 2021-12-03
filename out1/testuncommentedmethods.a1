@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="375166711">
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;CPPCHECKLIB_EXPORT;_WIN32&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;CPPCHECKLIB_EXPORT;_WIN32&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;CPPCHECKLIB_IMPORT;_WIN32&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;CPPCHECKLIB_IMPORT;_WIN32&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;MAXTIME&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;MAXTIME&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;NONNEG&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;NONNEG&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;_DEBUG;_MSC_VER&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;_DEBUG;_MSC_VER&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;_MSC_VER;__CPPCHECK__;__GNUC__;__clang__&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;_MSC_VER;__CPPCHECK__;__GNUC__;__clang__&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;_WIN32&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;_WIN32&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;__CPPCHECK__&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;__CPPCHECK__&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;__CPPCHECK__;__GNUC__;__clang__&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;__CPPCHECK__;__GNUC__;__clang__&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;__GNUC__&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;__GNUC__&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;__SANITIZE_ADDRESS__&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;__SANITIZE_ADDRESS__&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;__clang__&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;__clang__&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+        <error id="syntaxError" severity="error" msg="Unmatched &apos;{&apos;. Configuration: &apos;__has_feature&apos;." verbose="Unmatched &apos;{&apos;. Configuration: &apos;__has_feature&apos;." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testuncommentedmethods.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testuncommentedmethods.cpp" line="27" column="49"/>
+        </error>
+</analyzerinfo>

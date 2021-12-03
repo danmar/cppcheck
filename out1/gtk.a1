@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3799908224">
+        <error id="syntaxError" severity="error" msg="syntax error" verbose="syntax error" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/gtk.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\gtk.c" line="21" column="5"/>
+        </error>
+</analyzerinfo>

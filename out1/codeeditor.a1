@@ -1,0 +1,219 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="580075907">
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.h:103:10" call-funcname="updateLineNumberAreaWidth" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.cpp" line="251" col="30" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.h:103:10" call-funcname="updateLineNumberAreaWidth" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.cpp" line="338" col="34" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/>  </FileInfo>
+  <FileInfo check="Class">
+<class name="Highlighter" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.h" line="12" col="1" hash="2114805339638923724"/>
+<class name="Highlighter::HighlightingRule" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.h" line="34" col="5" hash="10988520219070811355"/>
+<class name="LineNumberArea" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.h" line="119" col="1" hash="3466868084703521222"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.h:67:10" my-argnr="1" my-argname="event" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.cpp" line="371" col="22" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.h:67:10" my-argnr="1" my-argname="event" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/codeeditor.cpp" line="371" col="22" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="setSymbols" lineNumber="137"/>
+    <functiondecl functionName="setStyle" lineNumber="149"/>
+    <functiondecl functionName="highlightBlock" lineNumber="173"/>
+    <functiondecl functionName="applyFormat" lineNumber="205"/>
+    <functiondecl functionName="getPos" lineNumber="260"/>
+    <functiondecl functionName="setStyle" lineNumber="274"/>
+    <functiondecl functionName="setError" lineNumber="284"/>
+    <functiondecl functionName="setError" lineNumber="299"/>
+    <functiondecl functionName="lineNumberAreaWidth" lineNumber="312"/>
+    <functiondecl functionName="updateLineNumberAreaWidth" lineNumber="325"/>
+    <functiondecl functionName="updateLineNumberArea" lineNumber="330"/>
+    <functiondecl functionName="resizeEvent" lineNumber="341"/>
+    <functiondecl functionName="highlightErrorLine" lineNumber="348"/>
+    <functiondecl functionName="lineNumberAreaPaintEvent" lineNumber="368"/>
+    <functiondecl functionName="generateStyleString" lineNumber="393"/>
+    <functioncall functionName="AlignRight"/>
+    <functioncall functionName="Bold"/>
+    <functioncall functionName="Class"/>
+    <functioncall functionName="CodeEditor"/>
+    <functioncall functionName="Comment"/>
+    <functioncall functionName="ExtraSelection"/>
+    <functioncall functionName="FullWidthSelection"/>
+    <functioncall functionName="Highlighter"/>
+    <functioncall functionName="HighlightingRule"/>
+    <functioncall functionName="Key_A"/>
+    <functioncall functionName="Key_C"/>
+    <functioncall functionName="Keyword"/>
+    <functioncall functionName="LineNumberArea"/>
+    <functioncall functionName="Normal"/>
+    <functioncall functionName="QColor"/>
+    <functioncall functionName="QKeySequence"/>
+    <functioncall functionName="QLatin1Char"/>
+    <functioncall functionName="QPlainTextEdit"/>
+    <functioncall functionName="QRect"/>
+    <functioncall functionName="QRegularExpression"/>
+    <functioncall functionName="QShortcut"/>
+    <functioncall functionName="QSize"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QSyntaxHighlighter"/>
+    <functioncall functionName="QTextCursor"/>
+    <functioncall functionName="QWidget"/>
+    <functioncall functionName="Quote"/>
+    <functioncall functionName="SIGNAL"/>
+    <functioncall functionName="SLOT"/>
+    <functioncall functionName="Symbol"/>
+    <functioncall functionName="TypeWriter"/>
+    <functioncall functionName="activated"/>
+    <functioncall functionName="allText"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="applyFormat"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="bgcolor"/>
+    <functioncall functionName="black"/>
+    <functioncall functionName="block"/>
+    <functioncall functionName="blockBoundingGeometry"/>
+    <functioncall functionName="blockBoundingRect"/>
+    <functioncall functionName="blockCount"/>
+    <functioncall functionName="blockCountChanged"/>
+    <functioncall functionName="blockNumber"/>
+    <functioncall functionName="blue"/>
+    <functioncall functionName="bottom"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="capturedLength"/>
+    <functioncall functionName="capturedStart"/>
+    <functioncall functionName="centerCursor"/>
+    <functioncall functionName="classColor"/>
+    <functioncall functionName="classWeight"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="clearSelection"/>
+    <functioncall functionName="code"/>
+    <functioncall functionName="commentColor"/>
+    <functioncall functionName="commentLength"/>
+    <functioncall functionName="commentWeight"/>
+    <functioncall functionName="connect"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="contains"/>
+    <functioncall functionName="contentOffset"/>
+    <functioncall functionName="contentsRect"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="copy"/>
+    <functioncall functionName="copyText"/>
+    <functioncall functionName="darkBlue"/>
+    <functioncall functionName="darkGreen"/>
+    <functioncall functionName="darkMagenta"/>
+    <functioncall functionName="defaultStyleLight"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="document"/>
+    <functioncall functionName="drawText"/>
+    <functioncall functionName="dy"/>
+    <functioncall functionName="editor"/>
+    <functioncall functionName="errorLine"/>
+    <functioncall functionName="event"/>
+    <functioncall functionName="extraSelections"/>
+    <functioncall functionName="fgcolor"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="fillRect"/>
+    <functioncall functionName="firstVisibleBlock"/>
+    <functioncall functionName="font"/>
+    <functioncall functionName="fontMetrics"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="foreach"/>
+    <functioncall functionName="format"/>
+    <functioncall functionName="generateStyleString"/>
+    <functioncall functionName="getPos"/>
+    <functioncall functionName="globalMatch"/>
+    <functioncall functionName="gray"/>
+    <functioncall functionName="green"/>
+    <functioncall functionName="hasNext"/>
+    <functioncall functionName="height"/>
+    <functioncall functionName="highlightBGColor"/>
+    <functioncall functionName="highlightErrorLine"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="indexOf"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="isValid"/>
+    <functioncall functionName="isVisible"/>
+    <functioncall functionName="keywordColor"/>
+    <functioncall functionName="keywordPatterns"/>
+    <functioncall functionName="keywordWeight"/>
+    <functioncall functionName="left"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="lineNumBGColor"/>
+    <functioncall functionName="lineNumFGColor"/>
+    <functioncall functionName="lineNumberAreaPaintEvent"/>
+    <functioncall functionName="lineNumberAreaWidth"/>
+    <functioncall functionName="mClassFormat"/>
+    <functioncall functionName="mCommentStartExpression"/>
+    <functioncall functionName="mErrorPosition"/>
+    <functioncall functionName="mHighlightingRules"/>
+    <functioncall functionName="mHighlightingRulesWithSymbols"/>
+    <functioncall functionName="mKeywordFormat"/>
+    <functioncall functionName="mLineNumberArea"/>
+    <functioncall functionName="mMultiLineCommentFormat"/>
+    <functioncall functionName="mQuotationFormat"/>
+    <functioncall functionName="mSingleLineCommentFormat"/>
+    <functioncall functionName="mSymbolFormat"/>
+    <functioncall functionName="mWidgetStyle"/>
+    <functioncall functionName="match"/>
+    <functioncall functionName="newStyle"/>
+    <functioncall functionName="next"/>
+    <functioncall functionName="number"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="painter"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="pos"/>
+    <functioncall functionName="previousBlockState"/>
+    <functioncall functionName="qMax"/>
+    <functioncall functionName="quoteColor"/>
+    <functioncall functionName="quoteWeight"/>
+    <functioncall functionName="rect"/>
+    <functioncall functionName="red"/>
+    <functioncall functionName="rehighlight"/>
+    <functioncall functionName="resizeEvent"/>
+    <functioncall functionName="rule"/>
+    <functioncall functionName="ruleRole"/>
+    <functioncall functionName="scroll"/>
+    <functioncall functionName="selectAll"/>
+    <functioncall functionName="selection"/>
+    <functioncall functionName="setBackground"/>
+    <functioncall functionName="setCurrentBlockState"/>
+    <functioncall functionName="setExtraSelections"/>
+    <functioncall functionName="setFont"/>
+    <functioncall functionName="setFontWeight"/>
+    <functioncall functionName="setForeground"/>
+    <functioncall functionName="setFormat"/>
+    <functioncall functionName="setGeometry"/>
+    <functioncall functionName="setObjectName"/>
+    <functioncall functionName="setPen"/>
+    <functioncall functionName="setPlainText"/>
+    <functioncall functionName="setPosition"/>
+    <functioncall functionName="setProperty"/>
+    <functioncall functionName="setStyle"/>
+    <functioncall functionName="setStyleHint"/>
+    <functioncall functionName="setStyleSheet"/>
+    <functioncall functionName="setSymbols"/>
+    <functioncall functionName="setTextCursor"/>
+    <functioncall functionName="setViewportMargins"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="startIndex"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="symbolBGColor"/>
+    <functioncall functionName="symbolFGColor"/>
+    <functioncall functionName="symbolWeight"/>
+    <functioncall functionName="symbols"/>
+    <functioncall functionName="tc"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="textCursor"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="toPlainText"/>
+    <functioncall functionName="top"/>
+    <functioncall functionName="translated"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="update"/>
+    <functioncall functionName="updateLineNumberArea"/>
+    <functioncall functionName="updateLineNumberAreaWidth"/>
+    <functioncall functionName="updateRequest"/>
+    <functioncall functionName="viewport"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="widgetStyle"/>
+    <functioncall functionName="width"/>
+    <functioncall functionName="y"/>
+  </FileInfo>
+</analyzerinfo>

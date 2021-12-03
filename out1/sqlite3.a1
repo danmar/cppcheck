@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2936242874">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="validCode" lineNumber="13"/>
+    <functiondecl functionName="memleak_sqlite3_malloc" lineNumber="32"/>
+    <functiondecl functionName="resourceLeak_sqlite3_open" lineNumber="41"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="49"/>
+    <functioncall functionName="buf"/>
+    <functioncall functionName="db"/>
+    <functioncall functionName="fprintf"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="sqlite3_close"/>
+    <functioncall functionName="sqlite3_errmsg"/>
+    <functioncall functionName="sqlite3_free"/>
+    <functioncall functionName="sqlite3_malloc"/>
+    <functioncall functionName="sqlite3_malloc64"/>
+    <functioncall functionName="sqlite3_msize"/>
+    <functioncall functionName="sqlite3_open"/>
+    <functioncall functionName="stderr"/>
+  </FileInfo>
+</analyzerinfo>

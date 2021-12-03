@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="7002231">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="QString1" lineNumber="24"/>
+    <functiondecl functionName="QString2" lineNumber="32"/>
+    <functiondecl functionName="QString3" lineNumber="39"/>
+    <functiondecl functionName="QByteArray1" lineNumber="52"/>
+    <functiondecl functionName="QList1" lineNumber="72"/>
+    <functiondecl functionName="QList3" lineNumber="124"/>
+    <functiondecl functionName="QLinkedList1" lineNumber="137"/>
+    <functiondecl functionName="QLinkedList3" lineNumber="160"/>
+    <functiondecl functionName="QStringList1" lineNumber="173"/>
+    <functiondecl functionName="QStringList2" lineNumber="216"/>
+    <functiondecl functionName="QVector1" lineNumber="229"/>
+    <functiondecl functionName="QVector2" lineNumber="269"/>
+    <functiondecl functionName="duplicateExpression_QString_Compare" lineNumber="282"/>
+    <functiondecl functionName="QStack1" lineNumber="289"/>
+    <functiondecl functionName="QStack2" lineNumber="328"/>
+    <functiondecl functionName="QStack3" lineNumber="341"/>
+    <functiondecl functionName="MacroTest2_test" lineNumber="368"/>
+    <functiondecl functionName="validCode" lineNumber="381"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="417"/>
+    <functiondecl functionName="nullPointer" lineNumber="426"/>
+    <functioncall functionName="CaseInsensitive"/>
+    <functioncall functionName="MacroTest2"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QT_FORWARD_DECLARE_CLASS"/>
+    <functioncall functionName="QT_FORWARD_DECLARE_STRUCT"/>
+    <functioncall functionName="QT_TR_NOOP"/>
+    <functioncall functionName="Q_DECLARE_LOGGING_CATEGORY"/>
+    <functioncall functionName="Q_DECLARE_TR_FUNCTIONS"/>
+    <functioncall functionName="Q_LIKELY"/>
+    <functioncall functionName="Q_NULLPTR"/>
+    <functioncall functionName="Q_PLUGIN_METADATA"/>
+    <functioncall functionName="Q_UNLIKELY"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="at"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="chop"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="compare"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="data"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="exists"/>
+    <functioncall functionName="file1"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="forwardDeclaredClass"/>
+    <functioncall functionName="forwardDeclaredStruct"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="logging_category_test"/>
+    <functioncall functionName="pIntPtr"/>
+    <functioncall functionName="pop"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="push"/>
+    <functioncall functionName="qstr1"/>
+    <functioncall functionName="qstrArg"/>
+    <functioncall functionName="remove"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="startsWith"/>
+    <functioncall functionName="toLatin1"/>
+    <functioncall functionName="top"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="trUtf8"/>
+    <functioncall functionName="void"/>
+  </FileInfo>
+</analyzerinfo>

@@ -1,0 +1,162 @@
+copy call:[SplashFunctionPattern] noreturn:[SplashFunctionPattern]
+testPosition
+isStatic
+getShading
+isCMYK
+isStatic
+getShading
+isCMYK
+copy call:[SplashAxialPattern] noreturn:[SplashAxialPattern]
+copy call:[SplashGouraudPattern] noreturn:[SplashGouraudPattern]
+getColor
+testPosition
+isStatic
+isCMYK
+isParameterized call:[isParameterized] noreturn:[isParameterized]
+getNTriangles call:[getNTriangles] noreturn:[getNTriangles]
+getTriangle call:[getTriangle] noreturn:[getTriangle]
+copy call:[SplashRadialPattern] noreturn:[SplashRadialPattern]
+useTilingPatternFill
+useShadedFills call:[return]
+upsideDown
+useDrawChar
+interpretType3Chars
+isReverseVideo
+setReverseVideo
+getBitmap
+setBitmapUpsideDown
+getSplash
+getCurrentFont
+setSkipText
+getNestCount
+getFontAntialias
+setFontAntialias
+convertGfxColor call:[colToByte,getGray,getRGB,splashColorCopy] noreturn:[splashColorCopy]
+convertGfxShortColor call:[colToByte,getGray,getRGB] noreturn:[colToByte]
+SplashGouraudPattern call:[getColorSpace,getMode] noreturn:[getMode]
+SplashGouraudPattern
+getParameterizedColor call:[colToByte,convertGfxShortColor,getColorSpace,getParameterizedColor] noreturn:[colToByte,convertGfxShortColor]
+SplashFunctionPattern call:[convertGfxColor,getCTM,getColorSpace,getDefaultColor,getDomain,getMatrix,getMode,invertTo] noreturn:[convertGfxColor]
+SplashFunctionPattern
+getColor call:[convertGfxColor,getColor,getColorSpace,transform]
+SplashUnivariatePattern call:[getCTM,getColorSpace,getDomain0,getDomain1,getMode,getUserClipBBox,invertTo,setupCache] noreturn:[getMode]
+SplashUnivariatePattern
+getColor call:[convertGfxColor,getColor,getColorSpace,getNComps,getParameter,transform,unlikely]
+testPosition call:[getParameter,return,transform]
+SplashRadialPattern call:[convertGfxColor,fabs,getColorSpace,getCoords,getDefaultColor] noreturn:[convertGfxColor]
+SplashRadialPattern
+getParameter call:[fabs,getExtend0,getExtend1,sqrt]
+SplashAxialPattern call:[convertGfxColor,getColorSpace,getCoords,getDefaultColor,unlikely] noreturn:[convertGfxColor]
+SplashAxialPattern
+getParameter call:[getExtend0,getExtend1]
+div255 call:[return]
+splashOutBlendMultiply
+splashOutBlendScreen
+splashOutBlendOverlay
+splashOutBlendDarken
+splashOutBlendLighten
+splashOutBlendColorDodge
+splashOutBlendColorBurn
+splashOutBlendHardLight
+splashOutBlendSoftLight call:[sqrt] noreturn:[sqrt]
+splashOutBlendDifference
+splashOutBlendExclusion
+getLum call:[return]
+getSat
+clipColor call:[getLum]
+setLum call:[clipColor,getLum] noreturn:[clipColor]
+setSat
+splashOutBlendHue call:[getLum,getSat,setLum,setSat]
+splashOutBlendSaturation call:[getLum,getSat,setLum,setSat]
+splashOutBlendColor call:[getLum,setLum]
+splashOutBlendLuminosity call:[getLum,setLum]
+SplashOutFontFileID
+SplashOutFontFileID
+matches call:[return]
+matches
+T3FontCache call:[error,gmallocn,gmallocn_checkoverflow,sizeof] noreturn:[gmallocn_checkoverflow]
+T3FontCache call:[gfree] noreturn:[gfree]
+SplashOutputDev global:[s_minLineWidth] call:[Splash,SplashBitmap,clear,setMinLineWidth,setThinLineMode,setupScreenParams,splashClearColor,splashColorCopy] noreturn:[splashClearColor,splashColorCopy]
+setupScreenParams
+SplashOutputDev
+startDoc call:[SplashFontEngine,getEnableFreeType,getFontAntialias]
+startPage global:[s_minLineWidth] call:[Splash,SplashBitmap,SplashSolidColor,clear,getCTM,getDataPtr,getHDPI,getHeight,getPageHeight,getPageWidth,getThinLineMode,getVDPI,getWidth,setFillPattern,setFlatness,setLineCap,setLineDash,setLineJoin,setMatrix,setMinLineWidth,setMiterLimit,setStrokeAdjust,setStrokePattern,setThinLineMode,setupScreenParams] noreturn:[SplashBitmap,clear,setMatrix]
+endPage call:[compositeBackground] noreturn:[compositeBackground]
+saveState call:[error,saveState] noreturn:[error]
+restoreState call:[error,restoreState] noreturn:[error]
+updateAll call:[updateFillColor,updateFillColorSpace,updateFlatness,updateLineCap,updateLineDash,updateLineJoin,updateLineWidth,updateMiterLimit,updateStrokeAdjust,updateStrokeColor,updateStrokeColorSpace]
+updateCTM call:[getCTM,setMatrix] noreturn:[setMatrix]
+updateLineDash call:[getLineDash,setLineDash] noreturn:[setLineDash]
+updateFlatness
+updateLineJoin call:[getLineJoin,setLineJoin] noreturn:[setLineJoin]
+updateLineCap call:[getLineCap,setLineCap] noreturn:[setLineCap]
+updateMiterLimit call:[getMiterLimit,setMiterLimit] noreturn:[setMiterLimit]
+updateLineWidth call:[getLineWidth,setLineWidth] noreturn:[setLineWidth]
+updateStrokeAdjust
+updateFillColorSpace
+updateStrokeColorSpace
+updateFillColor call:[getColor,getFillGray,getFillRGB,setFillPattern]
+updateStrokeColor call:[getColor,getStrokeGray,getStrokeRGB,setStrokePattern]
+getColor call:[SplashSolidColor,colToByte] noreturn:[SplashSolidColor]
+getColor call:[SplashSolidColor,colToByte] noreturn:[SplashSolidColor]
+getMatteColor call:[colToByte,getColorSpace,getGray,getRGB]
+setOverprintMask
+updateBlendMode global:[splashOutBlendFuncs] call:[getBlendMode,setBlendFunc] noreturn:[setBlendFunc]
+updateFillOpacity call:[getFillOpacity,setFillAlpha] noreturn:[getFillOpacity]
+updateStrokeOpacity call:[getStrokeOpacity,setStrokeAlpha] noreturn:[getStrokeOpacity]
+updatePatternOpacity call:[getFillOpacity,getStrokeOpacity,setPatternAlpha] noreturn:[setPatternAlpha]
+clearPatternOpacity call:[clearPatternAlpha] noreturn:[clearPatternAlpha]
+updateFillOverprint call:[getFillOverprint,setFillOverprint] noreturn:[setFillOverprint]
+updateStrokeOverprint call:[getStrokeOverprint,setStrokeOverprint] noreturn:[setStrokeOverprint]
+updateOverprintMode call:[getOverprintMode,setOverprintMode] noreturn:[setOverprintMode]
+updateTransfer call:[getInputSize,getOutputSize,getTransfer,setTransfer,transform] noreturn:[setTransfer]
+updateFont
+doUpdateFont call:[SplashOutFontFileID,c_str,error,getCIDToGID,getCIDToGIDLen,getCharName,getCodeToGIDMap,getEncoding,getFont,getFontFile,getFontSize,getGlyphAdvance,getHDPI,getHorizScaling,getID,getMatrix,getName,getTextMat,getTransformedFontSize,getType,getVDPI,getWidth,getXRef,gmallocn,invalidateEmbeddedFont,isCIDFont,isSymbolic,load,loadCIDFont,loadOpenTypeCFFFont,loadOpenTypeT1CFont,loadTrueTypeFont,loadType1CFont,loadType1Font,locateFont,make,memcpy,readEmbFontFile,setBuf,setFile,sizeof,unref] noreturn:[getFont,load,make,memcpy,setBuf,setFile,unref]
+stroke call:[convertPath,getOverprintMode,getPath,getStrokeColor,getStrokeColorSpace,getStrokeOverprint,isNonMarking,setOverprintMask,stroke] noreturn:[stroke]
+fill call:[convertPath,fill,getFillColor,getFillColorSpace,getFillOverprint,getOverprintMode,getPath,isNonMarking,setOverprintMask] noreturn:[fill]
+eoFill call:[convertPath,fill,getFillColor,getFillColorSpace,getFillOverprint,getOverprintMode,getPath,isNonMarking,setOverprintMask] noreturn:[fill]
+clip call:[clipToPath,convertPath,getPath] noreturn:[clipToPath]
+eoClip call:[clipToPath,convertPath,getPath] noreturn:[clipToPath]
+clipToStrokePath call:[clipToPath,convertPath,getLineWidth,getPath,makeStrokePath]
+convertPath call:[close,curveTo,getCurve,getNumPoints,getNumSubpaths,getSubpath,getX,getY,isClosed,lineTo,moveTo,reserve] noreturn:[close]
+drawChar call:[append,doUpdateFont,fabs,fill,fillChar,getFillColor,getFillColorSpace,getFillOverprint,getFontTransMat,getGlyphPath,getLineWidth,getOverprintMode,getRender,getStrokeAdjust,getStrokeColor,getStrokeColorSpace,getStrokeOverprint,getVDPI,isNonMarking,offset,setLineWidth,setOverprintMask,setStrokeAdjust,stroke] noreturn:[append,doUpdateFont,fillChar,offset,setLineWidth,setStrokeAdjust,stroke]
+beginType3Char call:[T3FontCache,T3GlyphStack,ceil,drawType3Glyph,error,fabs,floor,getCTM,getFont,getFontBBox,getFontTransMat,getID,getRender,matches,transform] noreturn:[T3FontCache]
+endType3Char call:[drawType3Glyph,getCTM,getDataPtr,memcpy,setCTM,updateCTM] noreturn:[drawType3Glyph]
+type3D0 call:[error,likely] noreturn:[error]
+type3D1 global:[s_minLineWidth] call:[Splash,SplashBitmap,SplashSolidColor,clear,error,getCTM,getScreen,setCTM,setFillPattern,setMinLineWidth,setStrokePattern,setThinLineMode,transform,unlikely,updateCTM] noreturn:[error]
+drawType3Glyph call:[fillGlyph,getFillColor,getFillColorSpace,getFillOverprint,getOverprintMode,setOverprintMask] noreturn:[fillGlyph]
+beginTextObject
+endTextObject call:[clipToPath]
+imageMaskSrc call:[getLine]
+drawImageMask call:[ImageStream,close,fillImageMask,getCTM,getFillColor,getFillColorSpace,getFillOverprint,getLine,getOverprintMode,isNonMarking,isfinite,reset,setOverprintMask] noreturn:[close]
+setSoftMaskFromImageMask call:[ImageStream,Splash,SplashBitmap,SplashSolidColor,beginTransparencyGroup,clear,close,fillImageMask,getCTM,getFillColorSpace,getHeight,getWidth,isNonMarking,isfinite,reset,setFillPattern] noreturn:[close]
+unsetSoftMaskFromImageMask call:[endTransparencyGroup,getAlphaPtr,getDataPtr,getHeight,getRowSize,paintTransparencyGroup] noreturn:[paintTransparencyGroup]
+clip255
+imageSrc call:[clip255,colToByte,getGray,getGrayLine,getLine,getNumPixelComps,getRGB,getRGBLine,getRGBXLine,memset,useRGBLine] noreturn:[colToByte,getRGBLine,getRGBXLine]
+alphaImageSrc call:[colToByte,getGray,getLine,getNumPixelComps,getRGB]
+tilingBitmapSrc call:[div255,getAlphaPtr,getColor,getDataPtr,getHeight,getMode,getPixel,getRowSize,getWidth] noreturn:[div255]
+drawImage call:[ImageStream,close,colToByte,drawImage,getBits,getCTM,getColorSpace,getFillOverprint,getGray,getLine,getNumPixelComps,getOverprintMode,getRGB,gfree,gmalloc,gmallocn,gmallocn_checkoverflow,isfinite,likely,reset,setOverprintMask] noreturn:[close,colToByte]
+maskedImageSrc call:[colToByte,getDataPtr,getGray,getLine,getNumPixelComps,getRGB,getRowSize]
+drawMaskedImage call:[Array,GfxDeviceGrayColorSpace,GfxImageColorMap,ImageStream,Object,Splash,SplashBitmap,SplashSolidColor,arrayAdd,clear,close,colToByte,drawImage,drawSoftMaskedImage,fillImageMask,getBits,getCTM,getColorSpace,getDataPtr,getFillOverprint,getGray,getNumPixelComps,getOverprintMode,getRGB,getXRef,gfree,gmalloc,gmallocn,isfinite,maskDecode,reset,setFillPattern,setOverprintMask] noreturn:[SplashBitmap,close,colToByte]
+drawSoftMaskedImage call:[AutoFreeMemStream,ImageStream,Splash,SplashBitmap,checkedMultiply,clear,close,colToByte,copy,doGetChars,drawImage,getBits,getCTM,getColorSpace,getDictObject,getFillOverprint,getGray,getHeight,getMatteColor,getNumPixelComps,getOverprintMode,getRGB,getWidth,gfree,gmalloc,gmallocn_checkoverflow,isfinite,likely,memset,reset,setOverprintMask,setSoftMask,unlikely] noreturn:[AutoFreeMemStream,close,colToByte,memset,reset]
+checkTransparencyGroup call:[getAlphaIsShape,getBlendMode,getFillOpacity,getSoftMask,getStrokeOpacity]
+beginTransparencyGroup global:[s_minLineWidth] call:[Splash,SplashBitmap,SplashTransparencyGroup,blitTransparent,ceil,clear,copy,floor,getAA,getDataPtr,getFillPattern,getHeight,getMode,getNComps,getScreen,getSeparationList,getStrokePattern,getThinLineMode,getWidth,setAA,setFillPattern,setInNonIsolatedGroup,setMinLineWidth,setStrokePattern,setThinLineMode,shiftCTMAndClip,transform,updateCTM] noreturn:[SplashBitmap,clear,setAA,setInNonIsolatedGroup]
+endTransparencyGroup call:[getMode,shiftCTMAndClip,updateCTM] noreturn:[updateCTM]
+paintTransparencyGroup call:[composite,getHeight,getWidth,setAA,setOverprintMask]
+setSoftMask call:[Splash,SplashBitmap,colToByte,compositeBackground,getAlpha,getDataPtr,getGray,getHeight,getMode,getPixel,getRGB,getRowSize,getScreen,getWidth,memset,setSoftMask,transform] noreturn:[colToByte,getAlpha,getRowSize,transform]
+clearSoftMask call:[setSoftMask] noreturn:[setSoftMask]
+setPaperColor call:[splashColorCopy] noreturn:[splashColorCopy]
+getBitmapWidth call:[getWidth] noreturn:[getWidth]
+getBitmapHeight call:[getHeight] noreturn:[getHeight]
+takeBitmap call:[SplashBitmap]
+getModRegion call:[getModRegion] noreturn:[getModRegion]
+clearModRegion call:[clearModRegion] noreturn:[clearModRegion]
+getVectorAntialias call:[getVectorAntialias] noreturn:[getVectorAntialias]
+setVectorAntialias call:[setVectorAntialias] noreturn:[setVectorAntialias]
+setFreeTypeHinting
+tilingPatternFill global:[s_minLineWidth] call:[Gfx,Splash,SplashBitmap,blitImage,ceil,clear,concatCTM,display,drawImage,fabs,getCTM,getDataPtr,getFillPattern,getHDPI,getHeight,getState,getThinLineMode,getVDPI,getWidth,isfinite,setCTM,setMinLineWidth,setThinLineMode,splashAbs,splashFloor,transform,updateCTM] noreturn:[blitImage,clear,transform]
+gouraudTriangleShadedFill call:[SplashGouraudPattern,getColorSpace,getMode,getVectorAntialias,gouraudTriangleShadedFill,isParameterized,setVectorAntialias]
+univariateShadedFill call:[ceil,clearPath,closePath,convertPath,floor,getBBox,getCTM,getClipBBox,getColorSpace,getFillOverprint,getHasBBox,getOverprintMode,getPath,getShading,getVectorAntialias,invertTo,lineTo,moveTo,setOverprintMask,setVectorAntialias,shadedFill,transform] noreturn:[getBBox]
+functionShadedFill call:[SplashFunctionPattern,ceil,clearPath,closePath,convertPath,floor,getBBox,getCTM,getClipBBox,getColorSpace,getFillOverprint,getHasBBox,getOverprintMode,getPath,getShading,getVectorAntialias,invertTo,lineTo,moveTo,setOverprintMask,setVectorAntialias,shadedFill,transform] noreturn:[getBBox]
+axialShadedFill call:[SplashAxialPattern,univariateShadedFill]
+radialShadedFill call:[SplashRadialPattern,univariateShadedFill]

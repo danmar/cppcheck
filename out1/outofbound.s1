@@ -1,0 +1,12 @@
+f1
+f2 call:[malloc]
+f3
+f4
+f5 call:[calloc]
+f6
+f7
+vla
+alloca_region call:[__builtin_alloca]
+symbolic_index
+symbolic_index2
+overflow_binary_search

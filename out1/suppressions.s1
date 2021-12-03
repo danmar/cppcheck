@@ -1,0 +1,62 @@
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+acceptFile call:[acceptFile] noreturn:[acceptFile]
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+isAcceptedErrorIdChar call:[isalnum] noreturn:[isalnum]
+parseFile call:[addSuppressionLine,begin,empty,end,errmsg,getline,istr2,length,replace]
+parseXmlFile call:[FirstChildElement,GetText,LoadFile,Name,NextSiblingElement,addSuppression,atoi,empty,istringstream,strcmp,string] noreturn:[atoi]
+parseMultiSuppressComment call:[clear,compare,empty,find,find_first_not_of,iss,push_back,substr] noreturn:[push_back,substr]
+addSuppressionLine call:[addSuppression,erase,find,getline,isspace,istr1,min,rfind,simplifyPath,str,substr] noreturn:[addSuppression,erase,str]
+addSuppression call:[begin,bind,empty,end,find_if,isAcceptedErrorIdChar,isLocal,isValidGlobPattern,isdigit,length,push_back]
+addSuppressions call:[addSuppression]
+setFileName call:[simplifyPath] noreturn:[simplifyPath]
+parseComment call:[compare,empty,erase,find,find_first_not_of,iss,size,substr] noreturn:[erase,substr]
+isSuppressed call:[empty,find,getFileName,matchglob,size,substr]
+isMatch call:[isSuppressed]
+getText call:[compare,empty,substr,toString] noreturn:[substr,toString]
+isSuppressed call:[isMatch,unmatchedSuppression]
+isSuppressedLocal call:[isLocal,isMatch,unmatchedSuppression]
+dump call:[empty,toxml]
+getUnmatchedLocalSuppressions call:[empty,isLocal,push_back,simplifyPath] noreturn:[push_back]
+getUnmatchedGlobalSuppressions call:[isLocal,push_back] noreturn:[push_back]
+getSuppressions

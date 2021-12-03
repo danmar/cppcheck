@@ -1,0 +1,257 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2669803574">
+  <FileInfo check="Class">
+<class name="CppcheckLibraryData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="28" col="1" hash="12814053615150217456"/>
+<class name="CppcheckLibraryData::Container" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="32" col="5" hash="2005264129650127191"/>
+<class name="CppcheckLibraryData::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="50" col="9" hash="9305761117681135359"/>
+<class name="CppcheckLibraryData::Define" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="60" col="5" hash="9762528397553776282"/>
+<class name="CppcheckLibraryData::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="65" col="5" hash="7709077768247235740"/>
+<class name="CppcheckLibraryData::Function::ReturnValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="76" col="9" hash="2941624480534084580"/>
+<class name="CppcheckLibraryData::Function::Arg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="89" col="9" hash="10560061904865885360"/>
+<class name="CppcheckLibraryData::Function::Arg::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="104" col="13" hash="1441677657335109401"/>
+<class name="CppcheckLibraryData::Function::Arg::Iterator" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="110" col="13" hash="5612367683987642184"/>
+<class name="CppcheckLibraryData::MemoryResource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="135" col="5" hash="510420658595555990"/>
+<class name="CppcheckLibraryData::MemoryResource::Alloc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="137" col="9" hash="3724875746971234360"/>
+<class name="CppcheckLibraryData::MemoryResource::Dealloc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="152" col="9" hash="13156322318479987015"/>
+<class name="CppcheckLibraryData::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="166" col="5" hash="9641437974410206362"/>
+<class name="CppcheckLibraryData::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="173" col="5" hash="7995025389799641861"/>
+<class name="CppcheckLibraryData::Reflection" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="182" col="5" hash="12071517381403192149"/>
+<class name="CppcheckLibraryData::Reflection::Call" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="183" col="9" hash="7919669940825108656"/>
+<class name="CppcheckLibraryData::Markup" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="195" col="5" hash="16509753476748642895"/>
+<class name="CppcheckLibraryData::Markup::CodeBlocks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="196" col="9" hash="12360601708972750268"/>
+<class name="CppcheckLibraryData::Markup::Exporter" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="207" col="9" hash="16565149977285752714"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="unhandledElement" lineNumber="32"/>
+    <functiondecl functionName="mandatoryAttibuteMissing" lineNumber="37"/>
+    <functiondecl functionName="loadContainer" lineNumber="45"/>
+    <functiondecl functionName="loadDefine" lineNumber="95"/>
+    <functiondecl functionName="loadUndefine" lineNumber="103"/>
+    <functiondecl functionName="loadSmartPointer" lineNumber="108"/>
+    <functiondecl functionName="loadTypeChecks" lineNumber="113"/>
+    <functiondecl functionName="loadFunctionArg" lineNumber="130"/>
+    <functiondecl functionName="loadFunction" lineNumber="176"/>
+    <functiondecl functionName="loadMemoryResource" lineNumber="220"/>
+    <functiondecl functionName="loadPodType" lineNumber="260"/>
+    <functiondecl functionName="loadPlatformType" lineNumber="273"/>
+    <functiondecl functionName="loadReflection" lineNumber="296"/>
+    <functiondecl functionName="loadMarkup" lineNumber="323"/>
+    <functiondecl functionName="open" lineNumber="415"/>
+    <functiondecl functionName="writeContainerFunctions" lineNumber="473"/>
+    <functiondecl functionName="writeContainer" lineNumber="496"/>
+    <functiondecl functionName="writeFunction" lineNumber="525"/>
+    <functiondecl functionName="writeMemoryResource" lineNumber="639"/>
+    <functiondecl functionName="writeTypeChecks" lineNumber="677"/>
+    <functiondecl functionName="writePlatformType" lineNumber="695"/>
+    <functiondecl functionName="writeReflection" lineNumber="714"/>
+    <functiondecl functionName="writeMarkup" lineNumber="726"/>
+    <functiondecl functionName="toString" lineNumber="788"/>
+    <functioncall functionName="ANY"/>
+    <functioncall functionName="Alloc"/>
+    <functioncall functionName="Arg"/>
+    <functioncall functionName="Call"/>
+    <functioncall functionName="CodeBlocks"/>
+    <functioncall functionName="Container"/>
+    <functioncall functionName="CppcheckLibraryData"/>
+    <functioncall functionName="Dealloc"/>
+    <functioncall functionName="Exporter"/>
+    <functioncall functionName="False"/>
+    <functioncall functionName="Function"/>
+    <functioncall functionName="Iterator"/>
+    <functioncall functionName="QList"/>
+    <functioncall functionName="QPair"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QStringList"/>
+    <functioncall functionName="QVariant"/>
+    <functioncall functionName="ReturnValue"/>
+    <functioncall functionName="True"/>
+    <functioncall functionName="Unknown"/>
+    <functioncall functionName="VARIADIC"/>
+    <functioncall functionName="accessFunctions"/>
+    <functioncall functionName="access_arrayLike"/>
+    <functioncall functionName="action"/>
+    <functioncall functionName="afterCode"/>
+    <functioncall functionName="alloc"/>
+    <functioncall functionName="alternatives"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="arg2"/>
+    <functioncall functionName="args"/>
+    <functioncall functionName="atEnd"/>
+    <functioncall functionName="attributeName"/>
+    <functioncall functionName="attributes"/>
+    <functioncall functionName="block"/>
+    <functioncall functionName="blocks"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="bufferSize"/>
+    <functioncall functionName="call"/>
+    <functioncall functionName="calls"/>
+    <functioncall functionName="catch"/>
+    <functioncall functionName="check"/>
+    <functioncall functionName="chop"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="codeBlock"/>
+    <functioncall functionName="codeBlocks"/>
+    <functioncall functionName="comment"/>
+    <functioncall functionName="comments"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="container"/>
+    <functioncall functionName="containers"/>
+    <functioncall functionName="contains"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="cstd"/>
+    <functioncall functionName="dealloc"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="defaultValue"/>
+    <functioncall functionName="defines"/>
+    <functioncall functionName="elementName"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endPattern"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="entry"/>
+    <functioncall functionName="errorString"/>
+    <functioncall functionName="exporter"/>
+    <functioncall functionName="ext"/>
+    <functioncall functionName="extra"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="foreach"/>
+    <functioncall functionName="formatstr"/>
+    <functioncall functionName="function"/>
+    <functioncall functionName="functions"/>
+    <functioncall functionName="gccConst"/>
+    <functioncall functionName="gccPure"/>
+    <functioncall functionName="hasAttribute"/>
+    <functioncall functionName="hasError"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="import"/>
+    <functioncall functionName="importer"/>
+    <functioncall functionName="inherits"/>
+    <functioncall functionName="init"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="isNull"/>
+    <functioncall functionName="isRealloc"/>
+    <functioncall functionName="itEndPattern"/>
+    <functioncall functionName="keyword"/>
+    <functioncall functionName="keywords"/>
+    <functioncall functionName="leakignore"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="loadContainer"/>
+    <functioncall functionName="loadDefine"/>
+    <functioncall functionName="loadFunction"/>
+    <functioncall functionName="loadFunctionArg"/>
+    <functioncall functionName="loadMarkup"/>
+    <functioncall functionName="loadMemoryResource"/>
+    <functioncall functionName="loadPlatformType"/>
+    <functioncall functionName="loadPodType"/>
+    <functioncall functionName="loadReflection"/>
+    <functioncall functionName="loadSmartPointer"/>
+    <functioncall functionName="loadTypeChecks"/>
+    <functioncall functionName="loadUndefine"/>
+    <functioncall functionName="mandatoryAttibuteMissing"/>
+    <functioncall functionName="markups"/>
+    <functioncall functionName="memoryresource"/>
+    <functioncall functionName="mid"/>
+    <functioncall functionName="minsize"/>
+    <functioncall functionName="minsizes"/>
+    <functioncall functionName="mr"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="mup"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="noreturn"/>
+    <functioncall functionName="notbool"/>
+    <functioncall functionName="notnull"/>
+    <functioncall functionName="notuninit"/>
+    <functioncall functionName="nr"/>
+    <functioncall functionName="number"/>
+    <functioncall functionName="offset"/>
+    <functioncall functionName="opLessAllowed"/>
+    <functioncall functionName="otherFunctions"/>
+    <functioncall functionName="outputString"/>
+    <functioncall functionName="platform"/>
+    <functioncall functionName="platformTypes"/>
+    <functioncall functionName="platforms"/>
+    <functioncall functionName="podtypes"/>
+    <functioncall functionName="prefix"/>
+    <functioncall functionName="prefixList"/>
+    <functioncall functionName="pt"/>
+    <functioncall functionName="readElementText"/>
+    <functioncall functionName="readNext"/>
+    <functioncall functionName="reallocArg"/>
+    <functioncall functionName="reason"/>
+    <functioncall functionName="refl"/>
+    <functioncall functionName="reflections"/>
+    <functioncall functionName="reportErrors"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="runtime_error"/>
+    <functioncall functionName="scan"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="secure"/>
+    <functioncall functionName="setAutoFormatting"/>
+    <functioncall functionName="setAutoFormattingIndent"/>
+    <functioncall functionName="severity"/>
+    <functioncall functionName="sign"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeFunctions"/>
+    <functioncall functionName="size_templateParameter"/>
+    <functioncall functionName="smartPointers"/>
+    <functioncall functionName="smartPtr"/>
+    <functioncall functionName="split"/>
+    <functioncall functionName="start"/>
+    <functioncall functionName="startPattern"/>
+    <functioncall functionName="startsWith"/>
+    <functioncall functionName="stdtype"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="struct"/>
+    <functioncall functionName="strz"/>
+    <functioncall functionName="suffix"/>
+    <functioncall functionName="suffixList"/>
+    <functioncall functionName="swap"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="templateParameter"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="toInt"/>
+    <functioncall functionName="toStdString"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="toUInt"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="typeChecks"/>
+    <functioncall functionName="types"/>
+    <functioncall functionName="undef"/>
+    <functioncall functionName="undefines"/>
+    <functioncall functionName="unhandledElement"/>
+    <functioncall functionName="use"/>
+    <functioncall functionName="useretval"/>
+    <functioncall functionName="valid"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="what"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="writeAttribute"/>
+    <functioncall functionName="writeCharacters"/>
+    <functioncall functionName="writeComment"/>
+    <functioncall functionName="writeContainer"/>
+    <functioncall functionName="writeContainerFunctions"/>
+    <functioncall functionName="writeEmptyElement"/>
+    <functioncall functionName="writeEndElement"/>
+    <functioncall functionName="writeFunction"/>
+    <functioncall functionName="writeMarkup"/>
+    <functioncall functionName="writeMemoryResource"/>
+    <functioncall functionName="writePlatformType"/>
+    <functioncall functionName="writeReflection"/>
+    <functioncall functionName="writeStartDocument"/>
+    <functioncall functionName="writeStartElement"/>
+    <functioncall functionName="writeTextElement"/>
+    <functioncall functionName="writeTypeChecks"/>
+    <functioncall functionName="xmlReader"/>
+    <functioncall functionName="xmlWriter"/>
+    <functioncall functionName="yields"/>
+  </FileInfo>
+</analyzerinfo>

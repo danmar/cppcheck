@@ -1,0 +1,668 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1633416019">
+        <error id="uselessAssignmentPtrArg" severity="warning" msg="Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?" verbose="Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14249\dwarf_elf_load_headers.c" line="1204" column="5"/>
+        </error>
+        <error id="uselessAssignmentPtrArg" severity="warning" msg="Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?" verbose="Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14249\dwarf_elf_load_headers.c" line="1407" column="5"/>
+        </error>
+        <error id="strdupCalled" severity="style" msg="Obsolete function &apos;strdup&apos; called. It is recommended to use &apos;_strdup&apos; instead." verbose="Obsolete function &apos;strdup&apos; called. It is recommended to use &apos;_strdup&apos; instead." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14249\dwarf_elf_load_headers.c" line="191" column="19"/>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;res&apos; can be reduced." verbose="The scope of the variable &apos;res&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14249\dwarf_elf_load_headers.c" line="1816" column="9"/>
+            <symbol>res</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;count_out&apos; is assigned a value that is never used." verbose="Variable &apos;count_out&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14249\dwarf_elf_load_headers.c" line="1204" column="15"/>
+            <symbol>count_out</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;count_out&apos; is assigned a value that is never used." verbose="Variable &apos;count_out&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14249\dwarf_elf_load_headers.c" line="1407" column="15"/>
+            <symbol>count_out</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;i&apos; is assigned a value that is never used." verbose="Variable &apos;i&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14249\dwarf_elf_load_headers.c" line="1815" column="22"/>
+            <symbol>i</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;res&apos; is assigned a value that is never used." verbose="Variable &apos;res&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14249\dwarf_elf_load_headers.c" line="1816" column="13"/>
+            <symbol>res</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:566:1" call-funcname="dwarf_generic_elf_load_symbols32" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="709" col="47" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:630:1" call-funcname="dwarf_generic_elf_load_symbols64" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="714" col="47" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" call-funcname="dwarf_generic_elf_load_symbols" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="770" col="41" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" call-funcname="this_is_a_section_dwarf_related" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1475" col="42" call-argexpr="&amp;oksec" call-argvaluetype="7" call-argvalue="4"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" call-funcname="_dwarf_elf_load_rela_32" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1485" col="38" call-argexpr="&amp;grp" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" call-funcname="_dwarf_elf_load_rela_64" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1488" col="38" call-argexpr="&amp;grp" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:566:1" call-funcname="dwarf_generic_elf_load_symbols32" call-argnr="6" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="709" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" my-argnr="6"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" call-funcname="dwarf_generic_elf_load_symbols" call-argnr="6" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="770" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1554:1" call-funcname="validate_section_name_string" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1594" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1653:1" call-funcname="validate_struct_sizes" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1723" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" call-funcname="read_gs_section_group" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1979" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1744:1" call-funcname="validate_links" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2070" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1070:1" call-funcname="elf_load_sectheaders32" call-argnr="5" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2086" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="2"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:97:1" my-argnr="1" my-argname="sname" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="99" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:201:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="208" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:243:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="252" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:276:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="285" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:434:1" my-argnr="2" my-argname="count_out" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="448" col="6" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:499:1" my-argnr="2" my-argname="count_out" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="513" col="6" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="763" col="29" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:783:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="791" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="825" col="28" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="822" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:991:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="999" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1032:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1041" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1159" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1361" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" my-argnr="2" my-argname="gshdr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1425" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1586" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1608:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1615" col="17" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1630:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1637" col="17" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1720" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="1" my-argname="n" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1771" col="32" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="2" my-argname="q" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1772" col="33" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" my-argnr="2" my-argname="psh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1818" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1961" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2037" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2085" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:97:1" my-argnr="1" my-argname="sname" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="99" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:201:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="208" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:243:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="252" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:276:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="285" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="763" col="29" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:783:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="791" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="825" col="28" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="822" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:991:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="999" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1159" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1361" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" my-argnr="2" my-argname="gshdr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1425" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1586" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1720" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="1" my-argname="n" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1771" col="32" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="2" my-argname="q" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1772" col="33" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" my-argnr="2" my-argname="psh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1818" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1961" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2037" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2085" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:566:1" call-funcname="dwarf_generic_elf_load_symbols32" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="709" col="47" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:630:1" call-funcname="dwarf_generic_elf_load_symbols64" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="714" col="47" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" call-funcname="dwarf_generic_elf_load_symbols" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="770" col="41" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" call-funcname="this_is_a_section_dwarf_related" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1475" col="42" call-argexpr="&amp;oksec" call-argvaluetype="7" call-argvalue="4"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" call-funcname="_dwarf_elf_load_rela_32" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1485" col="38" call-argexpr="&amp;grp" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" call-funcname="_dwarf_elf_load_rela_64" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1488" col="38" call-argexpr="&amp;grp" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:566:1" call-funcname="dwarf_generic_elf_load_symbols32" call-argnr="6" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="709" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" my-argnr="6"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" call-funcname="dwarf_generic_elf_load_symbols" call-argnr="6" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="770" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1554:1" call-funcname="validate_section_name_string" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1594" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1653:1" call-funcname="validate_struct_sizes" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1723" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" call-funcname="read_gs_section_group" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1979" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1744:1" call-funcname="validate_links" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2070" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1070:1" call-funcname="elf_load_sectheaders32" call-argnr="5" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2086" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="2"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:97:1" my-argnr="1" my-argname="sname" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="99" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:201:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="208" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:243:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="252" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:276:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="285" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:434:1" my-argnr="2" my-argname="count_out" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="448" col="6" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:499:1" my-argnr="2" my-argname="count_out" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="513" col="6" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="763" col="29" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:783:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="791" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="825" col="28" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="822" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:991:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="999" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1032:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1041" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1159" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1361" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" my-argnr="2" my-argname="gshdr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1425" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1586" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1608:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1615" col="17" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1630:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1637" col="17" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1720" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="1" my-argname="n" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1771" col="32" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="2" my-argname="q" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1772" col="33" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" my-argnr="2" my-argname="psh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1818" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1961" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2037" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2085" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:97:1" my-argnr="1" my-argname="sname" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="99" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:201:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="208" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:243:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="252" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:276:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="285" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="763" col="29" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:783:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="791" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="825" col="28" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="822" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:991:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="999" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1159" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1361" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" my-argnr="2" my-argname="gshdr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1425" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1586" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1720" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="1" my-argname="n" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1771" col="32" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="2" my-argname="q" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1772" col="33" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" my-argnr="2" my-argname="psh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1818" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1961" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2037" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2085" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:566:1" call-funcname="dwarf_generic_elf_load_symbols32" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="709" col="47" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:630:1" call-funcname="dwarf_generic_elf_load_symbols64" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="714" col="47" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" call-funcname="dwarf_generic_elf_load_symbols" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="770" col="41" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" call-funcname="this_is_a_section_dwarf_related" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1475" col="42" call-argexpr="&amp;oksec" call-argvaluetype="7" call-argvalue="4"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" call-funcname="_dwarf_elf_load_rela_32" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1485" col="38" call-argexpr="&amp;grp" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" call-funcname="_dwarf_elf_load_rela_64" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1488" col="38" call-argexpr="&amp;grp" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:566:1" call-funcname="dwarf_generic_elf_load_symbols32" call-argnr="6" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="709" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" my-argnr="6"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" call-funcname="dwarf_generic_elf_load_symbols" call-argnr="6" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="770" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1554:1" call-funcname="validate_section_name_string" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1594" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1653:1" call-funcname="validate_struct_sizes" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1723" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" call-funcname="read_gs_section_group" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1979" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1744:1" call-funcname="validate_links" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2070" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1070:1" call-funcname="elf_load_sectheaders32" call-argnr="5" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2086" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="2"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:97:1" my-argnr="1" my-argname="sname" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="99" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:201:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="208" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:243:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="252" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:276:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="285" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:434:1" my-argnr="2" my-argname="count_out" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="448" col="6" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:499:1" my-argnr="2" my-argname="count_out" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="513" col="6" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="763" col="29" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:783:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="791" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="825" col="28" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="822" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:991:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="999" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1032:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1041" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1159" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1361" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" my-argnr="2" my-argname="gshdr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1425" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1586" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1608:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1615" col="17" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1630:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1637" col="17" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1720" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="1" my-argname="n" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1771" col="32" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="2" my-argname="q" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1772" col="33" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" my-argnr="2" my-argname="psh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1818" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1961" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2037" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2085" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:97:1" my-argnr="1" my-argname="sname" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="99" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:201:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="208" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:243:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="252" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:276:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="285" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="763" col="29" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:783:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="791" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="825" col="28" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="822" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:991:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="999" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1159" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1361" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" my-argnr="2" my-argname="gshdr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1425" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1586" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1720" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="1" my-argname="n" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1771" col="32" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="2" my-argname="q" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1772" col="33" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" my-argnr="2" my-argname="psh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1818" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1961" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2037" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2085" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:566:1" call-funcname="dwarf_generic_elf_load_symbols32" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="709" col="47" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:630:1" call-funcname="dwarf_generic_elf_load_symbols64" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="714" col="47" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" call-funcname="dwarf_generic_elf_load_symbols" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="770" col="41" call-argexpr="&amp;gsym" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" call-funcname="this_is_a_section_dwarf_related" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1475" col="42" call-argexpr="&amp;oksec" call-argvaluetype="7" call-argvalue="4"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" call-funcname="_dwarf_elf_load_rela_32" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1485" col="38" call-argexpr="&amp;grp" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" call-funcname="_dwarf_elf_load_rela_64" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1488" col="38" call-argexpr="&amp;grp" call-argvaluetype="7" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:566:1" call-funcname="dwarf_generic_elf_load_symbols32" call-argnr="6" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="709" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" my-argnr="6"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:694:1" call-funcname="dwarf_generic_elf_load_symbols" call-argnr="6" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="770" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1554:1" call-funcname="validate_section_name_string" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1594" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1653:1" call-funcname="validate_struct_sizes" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1723" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" call-funcname="read_gs_section_group" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1979" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1744:1" call-funcname="validate_links" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2070" col="11" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1070:1" call-funcname="elf_load_sectheaders32" call-argnr="5" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2086" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="2"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:97:1" my-argnr="1" my-argname="sname" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="99" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:201:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="208" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:243:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="252" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:243:1" my-argnr="3" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="252" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:276:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="285" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:276:1" my-argnr="3" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="285" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:434:1" my-argnr="2" my-argname="count_out" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="448" col="6" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:499:1" my-argnr="2" my-argname="count_out" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="513" col="6" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="763" col="29" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:783:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="791" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="825" col="28" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="822" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:991:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="999" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1032:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1041" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1159" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1361" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" my-argnr="2" my-argname="gshdr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1425" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1586" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1608:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1615" col="17" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1630:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1637" col="17" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1720" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="1" my-argname="n" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1771" col="32" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="2" my-argname="q" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1772" col="33" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" my-argnr="2" my-argname="psh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1818" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1961" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2037" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2085" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:97:1" my-argnr="1" my-argname="sname" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="99" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:201:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="208" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:243:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="252" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:276:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="285" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:757:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="763" col="29" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:783:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="791" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="825" col="28" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:815:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="822" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:991:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="999" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1143:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1159" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1345:1" my-argnr="2" my-argname="gsh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1361" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1416:1" my-argnr="2" my-argname="gshdr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1425" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1577:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1586" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1717:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1720" col="27" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="1" my-argname="n" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1771" col="32" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1769:1" my-argnr="2" my-argname="q" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1772" col="33" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1810:1" my-argnr="2" my-argname="psh" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1818" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:1952:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="1961" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2028:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2037" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c:2080:1" my-argnr="1" my-argname="ep" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14249/dwarf_elf_load_headers.c" line="2085" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="_dwarf_load_elf_section_is_dwarf" lineNumber="97"/>
+    <functiondecl functionName="is_empty_section" lineNumber="119"/>
+    <functiondecl functionName="dwarf_construct_elf_access" lineNumber="158"/>
+    <functiondecl functionName="dwarf_destruct_elf_access" lineNumber="201"/>
+    <functiondecl functionName="generic_ehdr_from_32" lineNumber="243"/>
+    <functiondecl functionName="generic_ehdr_from_64" lineNumber="276"/>
+    <functiondecl functionName="generic_shdr_from_shdr32" lineNumber="434"/>
+    <functiondecl functionName="generic_shdr_from_shdr64" lineNumber="499"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols32" lineNumber="566"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols64" lineNumber="630"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols" lineNumber="694"/>
+    <functiondecl functionName="_dwarf_load_elf_symtab_symbols" lineNumber="757"/>
+    <functiondecl functionName="generic_rel_from_rela32" lineNumber="783"/>
+    <functiondecl functionName="generic_rel_from_rela64" lineNumber="815"/>
+    <functiondecl functionName="_dwarf_load_elf_symstr" lineNumber="991"/>
+    <functiondecl functionName="_dwarf_elf_load_sectstrings" lineNumber="1032"/>
+    <functiondecl functionName="elf_load_sectheaders32" lineNumber="1070"/>
+    <functiondecl functionName="elf_load_sectheaders64" lineNumber="1106"/>
+    <functiondecl functionName="_dwarf_elf_load_rela_32" lineNumber="1143"/>
+    <functiondecl functionName="_dwarf_elf_load_rela_64" lineNumber="1345"/>
+    <functiondecl functionName="this_is_a_section_dwarf_related" lineNumber="1416"/>
+    <functiondecl functionName="_dwarf_load_elf_rela" lineNumber="1447"/>
+    <functiondecl functionName="validate_section_name_string" lineNumber="1554"/>
+    <functiondecl functionName="_dwarf_elf_load_sect_namestring" lineNumber="1577"/>
+    <functiondecl functionName="elf_load_elf_header32" lineNumber="1608"/>
+    <functiondecl functionName="elf_load_elf_header64" lineNumber="1630"/>
+    <functiondecl functionName="validate_struct_sizes" lineNumber="1653"/>
+    <functiondecl functionName="_dwarf_load_elf_header" lineNumber="1717"/>
+    <functiondecl functionName="validate_links" lineNumber="1744"/>
+    <functiondecl functionName="string_endswith" lineNumber="1769"/>
+    <functiondecl functionName="elf_sht_groupsec" lineNumber="1789"/>
+    <functiondecl functionName="elf_flagmatches" lineNumber="1800"/>
+    <functiondecl functionName="read_gs_section_group" lineNumber="1810"/>
+    <functiondecl functionName="_dwarf_elf_setup_all_section_groups" lineNumber="1952"/>
+    <functiondecl functionName="_dwarf_elf_find_sym_sections" lineNumber="2028"/>
+    <functiondecl functionName="_dwarf_load_elf_sectheaders" lineNumber="2080"/>
+    <functiondecl functionName="_dwarf_load_elf_section_is_dwarf" lineNumber="97"/>
+    <functiondecl functionName="is_empty_section" lineNumber="119"/>
+    <functiondecl functionName="dwarf_construct_elf_access" lineNumber="158"/>
+    <functiondecl functionName="dwarf_destruct_elf_access" lineNumber="201"/>
+    <functiondecl functionName="generic_ehdr_from_32" lineNumber="243"/>
+    <functiondecl functionName="generic_ehdr_from_64" lineNumber="276"/>
+    <functiondecl functionName="generic_shdr_from_shdr32" lineNumber="434"/>
+    <functiondecl functionName="generic_shdr_from_shdr64" lineNumber="499"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols32" lineNumber="566"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols64" lineNumber="630"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols" lineNumber="694"/>
+    <functiondecl functionName="_dwarf_load_elf_symtab_symbols" lineNumber="757"/>
+    <functiondecl functionName="generic_rel_from_rela32" lineNumber="783"/>
+    <functiondecl functionName="generic_rel_from_rela64" lineNumber="815"/>
+    <functiondecl functionName="_dwarf_load_elf_symstr" lineNumber="991"/>
+    <functiondecl functionName="_dwarf_elf_load_sectstrings" lineNumber="1032"/>
+    <functiondecl functionName="elf_load_sectheaders32" lineNumber="1070"/>
+    <functiondecl functionName="elf_load_sectheaders64" lineNumber="1106"/>
+    <functiondecl functionName="_dwarf_elf_load_rela_32" lineNumber="1143"/>
+    <functiondecl functionName="_dwarf_elf_load_rela_64" lineNumber="1345"/>
+    <functiondecl functionName="this_is_a_section_dwarf_related" lineNumber="1416"/>
+    <functiondecl functionName="_dwarf_load_elf_rela" lineNumber="1447"/>
+    <functiondecl functionName="validate_section_name_string" lineNumber="1554"/>
+    <functiondecl functionName="_dwarf_elf_load_sect_namestring" lineNumber="1577"/>
+    <functiondecl functionName="elf_load_elf_header32" lineNumber="1608"/>
+    <functiondecl functionName="elf_load_elf_header64" lineNumber="1630"/>
+    <functiondecl functionName="validate_struct_sizes" lineNumber="1653"/>
+    <functiondecl functionName="_dwarf_load_elf_header" lineNumber="1717"/>
+    <functiondecl functionName="validate_links" lineNumber="1744"/>
+    <functiondecl functionName="string_endswith" lineNumber="1769"/>
+    <functiondecl functionName="elf_sht_groupsec" lineNumber="1789"/>
+    <functiondecl functionName="elf_flagmatches" lineNumber="1800"/>
+    <functiondecl functionName="read_gs_section_group" lineNumber="1810"/>
+    <functiondecl functionName="_dwarf_elf_setup_all_section_groups" lineNumber="1952"/>
+    <functiondecl functionName="_dwarf_elf_find_sym_sections" lineNumber="2028"/>
+    <functiondecl functionName="_dwarf_load_elf_sectheaders" lineNumber="2080"/>
+    <functiondecl functionName="_dwarf_load_elf_section_is_dwarf" lineNumber="97"/>
+    <functiondecl functionName="is_empty_section" lineNumber="119"/>
+    <functiondecl functionName="dwarf_construct_elf_access" lineNumber="158"/>
+    <functiondecl functionName="dwarf_destruct_elf_access" lineNumber="201"/>
+    <functiondecl functionName="generic_ehdr_from_32" lineNumber="243"/>
+    <functiondecl functionName="generic_ehdr_from_64" lineNumber="276"/>
+    <functiondecl functionName="generic_shdr_from_shdr32" lineNumber="434"/>
+    <functiondecl functionName="generic_shdr_from_shdr64" lineNumber="499"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols32" lineNumber="566"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols64" lineNumber="630"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols" lineNumber="694"/>
+    <functiondecl functionName="_dwarf_load_elf_symtab_symbols" lineNumber="757"/>
+    <functiondecl functionName="generic_rel_from_rela32" lineNumber="783"/>
+    <functiondecl functionName="generic_rel_from_rela64" lineNumber="815"/>
+    <functiondecl functionName="_dwarf_load_elf_symstr" lineNumber="991"/>
+    <functiondecl functionName="_dwarf_elf_load_sectstrings" lineNumber="1032"/>
+    <functiondecl functionName="elf_load_sectheaders32" lineNumber="1070"/>
+    <functiondecl functionName="elf_load_sectheaders64" lineNumber="1106"/>
+    <functiondecl functionName="_dwarf_elf_load_rela_32" lineNumber="1143"/>
+    <functiondecl functionName="_dwarf_elf_load_rela_64" lineNumber="1345"/>
+    <functiondecl functionName="this_is_a_section_dwarf_related" lineNumber="1416"/>
+    <functiondecl functionName="_dwarf_load_elf_rela" lineNumber="1447"/>
+    <functiondecl functionName="validate_section_name_string" lineNumber="1554"/>
+    <functiondecl functionName="_dwarf_elf_load_sect_namestring" lineNumber="1577"/>
+    <functiondecl functionName="elf_load_elf_header32" lineNumber="1608"/>
+    <functiondecl functionName="elf_load_elf_header64" lineNumber="1630"/>
+    <functiondecl functionName="validate_struct_sizes" lineNumber="1653"/>
+    <functiondecl functionName="_dwarf_load_elf_header" lineNumber="1717"/>
+    <functiondecl functionName="validate_links" lineNumber="1744"/>
+    <functiondecl functionName="string_endswith" lineNumber="1769"/>
+    <functiondecl functionName="elf_sht_groupsec" lineNumber="1789"/>
+    <functiondecl functionName="elf_flagmatches" lineNumber="1800"/>
+    <functiondecl functionName="read_gs_section_group" lineNumber="1810"/>
+    <functiondecl functionName="_dwarf_elf_setup_all_section_groups" lineNumber="1952"/>
+    <functiondecl functionName="_dwarf_elf_find_sym_sections" lineNumber="2028"/>
+    <functiondecl functionName="_dwarf_load_elf_sectheaders" lineNumber="2080"/>
+    <functiondecl functionName="_dwarf_load_elf_section_is_dwarf" lineNumber="97"/>
+    <functiondecl functionName="is_empty_section" lineNumber="119"/>
+    <functiondecl functionName="dwarf_construct_elf_access" lineNumber="158"/>
+    <functiondecl functionName="dwarf_destruct_elf_access" lineNumber="201"/>
+    <functiondecl functionName="generic_ehdr_from_32" lineNumber="243"/>
+    <functiondecl functionName="generic_ehdr_from_64" lineNumber="276"/>
+    <functiondecl functionName="generic_shdr_from_shdr32" lineNumber="434"/>
+    <functiondecl functionName="generic_shdr_from_shdr64" lineNumber="499"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols32" lineNumber="566"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols64" lineNumber="630"/>
+    <functiondecl functionName="dwarf_generic_elf_load_symbols" lineNumber="694"/>
+    <functiondecl functionName="_dwarf_load_elf_symtab_symbols" lineNumber="757"/>
+    <functiondecl functionName="generic_rel_from_rela32" lineNumber="783"/>
+    <functiondecl functionName="generic_rel_from_rela64" lineNumber="815"/>
+    <functiondecl functionName="_dwarf_load_elf_symstr" lineNumber="991"/>
+    <functiondecl functionName="_dwarf_elf_load_sectstrings" lineNumber="1032"/>
+    <functiondecl functionName="elf_load_sectheaders32" lineNumber="1070"/>
+    <functiondecl functionName="elf_load_sectheaders64" lineNumber="1106"/>
+    <functiondecl functionName="_dwarf_elf_load_rela_32" lineNumber="1143"/>
+    <functiondecl functionName="_dwarf_elf_load_rela_64" lineNumber="1345"/>
+    <functiondecl functionName="this_is_a_section_dwarf_related" lineNumber="1416"/>
+    <functiondecl functionName="_dwarf_load_elf_rela" lineNumber="1447"/>
+    <functiondecl functionName="validate_section_name_string" lineNumber="1554"/>
+    <functiondecl functionName="_dwarf_elf_load_sect_namestring" lineNumber="1577"/>
+    <functiondecl functionName="elf_load_elf_header32" lineNumber="1608"/>
+    <functiondecl functionName="elf_load_elf_header64" lineNumber="1630"/>
+    <functiondecl functionName="validate_struct_sizes" lineNumber="1653"/>
+    <functiondecl functionName="_dwarf_load_elf_header" lineNumber="1717"/>
+    <functiondecl functionName="validate_links" lineNumber="1744"/>
+    <functiondecl functionName="string_endswith" lineNumber="1769"/>
+    <functiondecl functionName="elf_sht_groupsec" lineNumber="1789"/>
+    <functiondecl functionName="elf_flagmatches" lineNumber="1800"/>
+    <functiondecl functionName="read_gs_section_group" lineNumber="1810"/>
+    <functiondecl functionName="_dwarf_elf_setup_all_section_groups" lineNumber="1952"/>
+    <functiondecl functionName="_dwarf_elf_find_sym_sections" lineNumber="2028"/>
+    <functiondecl functionName="_dwarf_load_elf_sectheaders" lineNumber="2080"/>
+    <functioncall functionName="DWARF_32BIT_SIZE"/>
+    <functioncall functionName="DW_DLE_ALLOC_FAIL"/>
+    <functioncall functionName="DW_DLE_BAD_TYPE_SIZE"/>
+    <functioncall functionName="DW_DLE_ELF_SECTION_COUNT_MISMATCH"/>
+    <functioncall functionName="DW_DLE_ELF_SECTION_ERROR"/>
+    <functioncall functionName="DW_DLE_ELF_SECTION_GROUP_ERROR"/>
+    <functioncall functionName="DW_DLE_ELF_SECTION_LINK_ERROR"/>
+    <functioncall functionName="DW_DLE_ELF_STRING_SECTION_ERROR"/>
+    <functioncall functionName="DW_DLE_ELF_STRING_SECTION_MISSING"/>
+    <functioncall functionName="DW_DLE_FILE_OFFSET_BAD"/>
+    <functioncall functionName="DW_DLE_INTEGER_TOO_SMALL"/>
+    <functioncall functionName="DW_DLE_INTERNAL_NULL_POINTER"/>
+    <functioncall functionName="DW_DLE_OFFSET_SIZE"/>
+    <functioncall functionName="DW_DLE_SECTION_INDEX_BAD"/>
+    <functioncall functionName="DW_DLE_SECTION_SIZE_ERROR"/>
+    <functioncall functionName="DW_DLE_SECTION_STRING_OFFSET_BAD"/>
+    <functioncall functionName="DW_GROUPNUMBER_BASE"/>
+    <functioncall functionName="DW_GROUPNUMBER_DWO"/>
+    <functioncall functionName="Dwarf_Unsigned"/>
+    <functioncall functionName="Elf32_Ehdr"/>
+    <functioncall functionName="Elf32_Phdr"/>
+    <functioncall functionName="Elf32_Rel"/>
+    <functioncall functionName="Elf32_Rela"/>
+    <functioncall functionName="Elf32_Shdr"/>
+    <functioncall functionName="Elf32_Sym"/>
+    <functioncall functionName="Elf64_Ehdr"/>
+    <functioncall functionName="Elf64_Phdr"/>
+    <functioncall functionName="Elf64_Rel"/>
+    <functioncall functionName="Elf64_Rela"/>
+    <functioncall functionName="Elf64_Shdr"/>
+    <functioncall functionName="Elf64_Sym"/>
+    <functioncall functionName="RRMOA"/>
+    <functioncall functionName="SHF_GROUP"/>
+    <functioncall functionName="SIGN_EXTEND"/>
+    <functioncall functionName="_dwarf_elf_find_sym_sections"/>
+    <functioncall functionName="_dwarf_elf_load_rela_32"/>
+    <functioncall functionName="_dwarf_elf_load_rela_64"/>
+    <functioncall functionName="_dwarf_elf_load_sect_namestring"/>
+    <functioncall functionName="_dwarf_elf_load_sectstrings"/>
+    <functioncall functionName="_dwarf_elf_setup_all_section_groups"/>
+    <functioncall functionName="_dwarf_load_elf_section_is_dwarf"/>
+    <functioncall functionName="_dwarf_memcpy_swap_bytes"/>
+    <functioncall functionName="bind"/>
+    <functioncall functionName="calloc"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="count_read"/>
+    <functioncall functionName="data"/>
+    <functioncall functionName="dblock"/>
+    <functioncall functionName="dp"/>
+    <functioncall functionName="dw_elf32_ehdr"/>
+    <functioncall functionName="dw_elf32_phdr"/>
+    <functioncall functionName="dw_elf32_rel"/>
+    <functioncall functionName="dw_elf32_rela"/>
+    <functioncall functionName="dw_elf32_shdr"/>
+    <functioncall functionName="dw_elf32_sym"/>
+    <functioncall functionName="dw_elf64_ehdr"/>
+    <functioncall functionName="dw_elf64_phdr"/>
+    <functioncall functionName="dw_elf64_rel"/>
+    <functioncall functionName="dw_elf64_rela"/>
+    <functioncall functionName="dw_elf64_shdr"/>
+    <functioncall functionName="dw_elf64_sym"/>
+    <functioncall functionName="dwarf_elf_object_access_internals_t"/>
+    <functioncall functionName="dwarf_generic_elf_load_symbols"/>
+    <functioncall functionName="dwarf_generic_elf_load_symbols32"/>
+    <functioncall functionName="dwarf_generic_elf_load_symbols64"/>
+    <functioncall functionName="dwarf_object_detector_fd"/>
+    <functioncall functionName="e_ehsize"/>
+    <functioncall functionName="e_entry"/>
+    <functioncall functionName="e_flags"/>
+    <functioncall functionName="e_machine"/>
+    <functioncall functionName="e_phentsize"/>
+    <functioncall functionName="e_phnum"/>
+    <functioncall functionName="e_phoff"/>
+    <functioncall functionName="e_shentsize"/>
+    <functioncall functionName="e_shnum"/>
+    <functioncall functionName="e_shoff"/>
+    <functioncall functionName="e_shstrndx"/>
+    <functioncall functionName="e_type"/>
+    <functioncall functionName="e_version"/>
+    <functioncall functionName="ecount"/>
+    <functioncall functionName="ehdr"/>
+    <functioncall functionName="ehdr32"/>
+    <functioncall functionName="ehdr64"/>
+    <functioncall functionName="elf_flagmatches"/>
+    <functioncall functionName="elf_load_elf_header32"/>
+    <functioncall functionName="elf_load_elf_header64"/>
+    <functioncall functionName="elf_load_sectheaders32"/>
+    <functioncall functionName="elf_load_sectheaders64"/>
+    <functioncall functionName="elf_sht_groupsec"/>
+    <functioncall functionName="endian"/>
+    <functioncall functionName="entsize"/>
+    <functioncall functionName="ep"/>
+    <functioncall functionName="errcode"/>
+    <functioncall functionName="f_copy_word"/>
+    <functioncall functionName="f_destruct_close_fd"/>
+    <functioncall functionName="f_dynamic"/>
+    <functioncall functionName="f_dynsym"/>
+    <functioncall functionName="f_dynsym_sect_strings"/>
+    <functioncall functionName="f_ehdr"/>
+    <functioncall functionName="f_elf_shstrings_data"/>
+    <functioncall functionName="f_elf_shstrings_length"/>
+    <functioncall functionName="f_elf_shstrings_max"/>
+    <functioncall functionName="f_fd"/>
+    <functioncall functionName="f_filesize"/>
+    <functioncall functionName="f_offsetsize"/>
+    <functioncall functionName="f_path"/>
+    <functioncall functionName="f_phdr"/>
+    <functioncall functionName="f_sg_next_group_number"/>
+    <functioncall functionName="f_shdr"/>
+    <functioncall functionName="f_shf_group_flag_section_count"/>
+    <functioncall functionName="f_sht_group_type_section_count"/>
+    <functioncall functionName="f_symtab"/>
+    <functioncall functionName="f_symtab_sect_index"/>
+    <functioncall functionName="f_symtab_sect_strings"/>
+    <functioncall functionName="f_symtab_sect_strings_max"/>
+    <functioncall functionName="f_symtab_sect_strings_sect_index"/>
+    <functioncall functionName="fd"/>
+    <functioncall functionName="filesize"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="foundone"/>
+    <functioncall functionName="free"/>
+    <functioncall functionName="ftype"/>
+    <functioncall functionName="g_count"/>
+    <functioncall functionName="ge_ehsize"/>
+    <functioncall functionName="ge_entry"/>
+    <functioncall functionName="ge_flags"/>
+    <functioncall functionName="ge_machine"/>
+    <functioncall functionName="ge_phentsize"/>
+    <functioncall functionName="ge_phnum"/>
+    <functioncall functionName="ge_phoff"/>
+    <functioncall functionName="ge_shentsize"/>
+    <functioncall functionName="ge_shnum"/>
+    <functioncall functionName="ge_shoff"/>
+    <functioncall functionName="ge_shstrndx"/>
+    <functioncall functionName="ge_type"/>
+    <functioncall functionName="ge_version"/>
+    <functioncall functionName="generic_count"/>
+    <functioncall functionName="generic_ehdr_from_32"/>
+    <functioncall functionName="generic_ehdr_from_64"/>
+    <functioncall functionName="generic_rel_from_rela32"/>
+    <functioncall functionName="generic_rel_from_rela64"/>
+    <functioncall functionName="generic_shdr_from_shdr32"/>
+    <functioncall functionName="generic_shdr_from_shdr64"/>
+    <functioncall functionName="gh_addr"/>
+    <functioncall functionName="gh_addralign"/>
+    <functioncall functionName="gh_content"/>
+    <functioncall functionName="gh_entsize"/>
+    <functioncall functionName="gh_flags"/>
+    <functioncall functionName="gh_info"/>
+    <functioncall functionName="gh_is_dwarf"/>
+    <functioncall functionName="gh_link"/>
+    <functioncall functionName="gh_name"/>
+    <functioncall functionName="gh_namestring"/>
+    <functioncall functionName="gh_offset"/>
+    <functioncall functionName="gh_reloc_target_secnum"/>
+    <functioncall functionName="gh_rels"/>
+    <functioncall functionName="gh_section_group_number"/>
+    <functioncall functionName="gh_sht_group_array"/>
+    <functioncall functionName="gh_size"/>
+    <functioncall functionName="gh_type"/>
+    <functioncall functionName="gr_addend"/>
+    <functioncall functionName="gr_info"/>
+    <functioncall functionName="gr_offset"/>
+    <functioncall functionName="gr_sym"/>
+    <functioncall functionName="grel"/>
+    <functioncall functionName="grouparray"/>
+    <functioncall functionName="grp"/>
+    <functioncall functionName="gs_info"/>
+    <functioncall functionName="gs_name"/>
+    <functioncall functionName="gs_other"/>
+    <functioncall functionName="gs_shndx"/>
+    <functioncall functionName="gs_size"/>
+    <functioncall functionName="gs_value"/>
+    <functioncall functionName="gseca"/>
+    <functioncall functionName="gsecb"/>
+    <functioncall functionName="gsh"/>
+    <functioncall functionName="gshdr"/>
+    <functioncall functionName="gsym"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="is_empty_section"/>
+    <functioncall functionName="issparcv9"/>
+    <functioncall functionName="knownsect"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="malloc"/>
+    <functioncall functionName="memcpy"/>
+    <functioncall functionName="mfp"/>
+    <functioncall functionName="n"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="namestr"/>
+    <functioncall functionName="object_reclen"/>
+    <functioncall functionName="offset"/>
+    <functioncall functionName="offsetsize"/>
+    <functioncall functionName="oksec"/>
+    <functioncall functionName="oksecnum"/>
+    <functioncall functionName="orig_gshdr"/>
+    <functioncall functionName="orig_gsym"/>
+    <functioncall functionName="orig_psh"/>
+    <functioncall functionName="orig_psym"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="psh"/>
+    <functioncall functionName="psym"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="qlen"/>
+    <functioncall functionName="r_addend"/>
+    <functioncall functionName="r_info"/>
+    <functioncall functionName="r_offset"/>
+    <functioncall functionName="read_gs_section_group"/>
+    <functioncall functionName="realsym"/>
+    <functioncall functionName="relp"/>
+    <functioncall functionName="seclen"/>
+    <functioncall functionName="secnum"/>
+    <functioncall functionName="secoffset"/>
+    <functioncall functionName="section_length"/>
+    <functioncall functionName="sh_addr"/>
+    <functioncall functionName="sh_addralign"/>
+    <functioncall functionName="sh_entsize"/>
+    <functioncall functionName="sh_flags"/>
+    <functioncall functionName="sh_info"/>
+    <functioncall functionName="sh_link"/>
+    <functioncall functionName="sh_name"/>
+    <functioncall functionName="sh_offset"/>
+    <functioncall functionName="sh_size"/>
+    <functioncall functionName="sh_type"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeg"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="sname"/>
+    <functioncall functionName="st_info"/>
+    <functioncall functionName="st_name"/>
+    <functioncall functionName="st_other"/>
+    <functioncall functionName="st_shndx"/>
+    <functioncall functionName="st_size"/>
+    <functioncall functionName="st_value"/>
+    <functioncall functionName="startpt"/>
+    <functioncall functionName="strcmp"/>
+    <functioncall functionName="strdup"/>
+    <functioncall functionName="string_endswith"/>
+    <functioncall functionName="string_sect"/>
+    <functioncall functionName="strings_start"/>
+    <functioncall functionName="stringsecbase"/>
+    <functioncall functionName="stringsection"/>
+    <functioncall functionName="strlen"/>
+    <functioncall functionName="strncmp"/>
+    <functioncall functionName="strsectindex"/>
+    <functioncall functionName="strsectlength"/>
+    <functioncall functionName="tbyte"/>
+    <functioncall functionName="this_is_a_section_dwarf_related"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="va"/>
+    <functioncall functionName="validate_links"/>
+    <functioncall functionName="validate_section_name_string"/>
+    <functioncall functionName="validate_struct_sizes"/>
+    <functioncall functionName="while"/>
+  </FileInfo>
+</analyzerinfo>

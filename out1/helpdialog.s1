@@ -1,0 +1,6 @@
+HelpBrowser
+setHelpEngine
+loadResource call:[QUrl,QVariant,fileData,indexOf,loadResource,remove,scheme,toString,url] noreturn:[QVariant,loadResource,remove]
+getHelpFile call:[QFileInfo,QString,applicationDirPath,exists,getDataDir] noreturn:[QString]
+HelpDialog call:[QHelpEngine,QUrl,SIGNAL,SLOT,addWidget,arg,connect,contentWidget,exec,getHelpFile,indexWidget,isEmpty,linkActivated,msgBox,setHelpEngine,setProperty,setSource,setupData,setupUi,tr] noreturn:[connect]
+HelpDialog

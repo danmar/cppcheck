@@ -1,0 +1,38 @@
+Container
+Function
+ReturnValue
+empty call:[isNull]
+Arg
+Iterator
+isEmpty call:[isEmpty] noreturn:[isEmpty]
+Alloc
+Dealloc
+Call
+CodeBlocks
+clear call:[clear] noreturn:[clear]
+swap call:[swap] noreturn:[swap]
+CppcheckLibraryData
+unhandledElement call:[arg,lineNumber,name,runtime_error,toStdString,toString,tr] noreturn:[runtime_error]
+mandatoryAttibuteMissing call:[arg,lineNumber,name,runtime_error,toStdString,toString,tr] noreturn:[runtime_error]
+loadContainer call:[append,attributes,isEmpty,name,readNext,toInt,toString,unhandledElement,value] noreturn:[append,toInt,toString,unhandledElement]
+loadDefine call:[attributes,toString,value]
+loadUndefine call:[attributes,toString,value] noreturn:[toString]
+loadSmartPointer call:[attributes,toString,value] noreturn:[toString]
+loadTypeChecks call:[append,entry,name,readElementText,readNext,toString] noreturn:[append]
+loadFunctionArg call:[append,attributes,name,readElementText,readNext,toInt,toString,toUInt,unhandledElement,value] noreturn:[append,readElementText,toString,toUInt,unhandledElement]
+loadFunction call:[append,attributes,isNull,loadFunctionArg,name,readElementText,readNext,toInt,toString,unhandledElement,value] noreturn:[append,readElementText,toString,unhandledElement]
+loadMemoryResource call:[append,attributes,hasAttribute,name,readElementText,readNext,toInt,toString,unhandledElement,value] noreturn:[append,toInt,toString,unhandledElement]
+loadPodType call:[attributes,isEmpty,mandatoryAttibuteMissing,toString,value] noreturn:[mandatoryAttibuteMissing]
+loadPlatformType call:[QStringList,append,attributes,contains,name,readNext,toString,unhandledElement,value] noreturn:[append,unhandledElement]
+loadReflection call:[append,attributes,hasAttribute,mandatoryAttibuteMissing,name,readElementText,readNext,toInt,toString,unhandledElement,value] noreturn:[append,mandatoryAttibuteMissing,toInt,unhandledElement]
+loadMarkup call:[append,attributes,hasAttribute,mandatoryAttibuteMissing,name,readElementText,readNext,toInt,toString,unhandledElement,value] noreturn:[append,mandatoryAttibuteMissing,toString,unhandledElement]
+open call:[QString,append,atEnd,clear,elementName,errorString,hasError,isEmpty,loadContainer,loadDefine,loadFunction,loadMarkup,loadMemoryResource,loadPlatformType,loadPodType,loadReflection,loadSmartPointer,loadTypeChecks,loadUndefine,name,readNext,text,toString,unhandledElement,what,xmlReader] noreturn:[QString,append,errorString,unhandledElement,what]
+writeContainerFunctions call:[isEmpty,number,writeAttribute,writeEndElement,writeStartElement] noreturn:[writeAttribute,writeEndElement]
+writeContainer call:[isEmpty,isNull,writeAttribute,writeContainerFunctions,writeEndElement,writeStartElement] noreturn:[writeAttribute,writeEndElement]
+writeFunction call:[chop,empty,endsWith,isEmpty,isNull,length,mid,number,split,startsWith,writeAttribute,writeCharacters,writeComment,writeEmptyElement,writeEndElement,writeStartElement,writeTextElement] noreturn:[chop,mid,writeAttribute,writeCharacters,writeComment,writeEmptyElement,writeEndElement,writeTextElement]
+writeMemoryResource call:[QString,arg,isEmpty,writeAttribute,writeCharacters,writeEndElement,writeStartElement,writeTextElement] noreturn:[writeAttribute,writeEndElement,writeStartElement,writeTextElement]
+writeTypeChecks call:[isEmpty,writeCharacters,writeEndElement,writeStartElement] noreturn:[writeEndElement,writeStartElement]
+writePlatformType call:[isEmpty,writeAttribute,writeEndElement,writeStartElement] noreturn:[writeAttribute,writeEndElement]
+writeReflection call:[QString,arg,writeAttribute,writeCharacters,writeEndElement,writeStartElement] noreturn:[writeEndElement]
+writeMarkup call:[QString,QVariant,arg,isEmpty,toString,writeAttribute,writeCharacters,writeEndElement,writeStartElement] noreturn:[writeEndElement]
+toString call:[isEmpty,setAutoFormatting,setAutoFormattingIndent,writeAttribute,writeContainer,writeEndElement,writeFunction,writeMarkup,writeMemoryResource,writePlatformType,writeReflection,writeStartDocument,writeStartElement,writeTypeChecks,xmlWriter] noreturn:[writeAttribute,writeContainer,writeEndElement,writeFunction,writeMarkup,writeMemoryResource,writePlatformType,writeReflection,writeTypeChecks]

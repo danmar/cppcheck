@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3506602225">
+        <error id="arrayIndexOutOfBoundsCond" severity="warning" msg="Either the condition &apos;i&lt;12&apos; is redundant or the array &apos;buf[9]&apos; is accessed at index 11, which is out of bounds." verbose="Either the condition &apos;i&lt;12&apos; is redundant or the array &apos;buf[9]&apos; is accessed at index 11, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/x-flow/buffer03.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\x-flow\buffer03.cpp" line="11" column="12" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\x-flow\buffer03.cpp" line="10" column="14" info="Assuming that condition &apos;i&lt;12&apos; is not redundant"/>
+        </error>
+        <error id="memleakOnRealloc" severity="error" msg="Common realloc mistake: &apos;buf&apos; nulled but not freed upon failure" verbose="Common realloc mistake: &apos;buf&apos; nulled but not freed upon failure" cwe="401" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/x-flow/buffer03.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\x-flow\buffer03.cpp" line="8" column="5"/>
+            <symbol>buf</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="f" lineNumber="5"/>
+    <functiondecl functionName="main" lineNumber="16"/>
+    <functioncall functionName="buf"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="malloc"/>
+    <functioncall functionName="realloc"/>
+    <functioncall functionName="while"/>
+  </FileInfo>
+</analyzerinfo>

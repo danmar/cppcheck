@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1840218190">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="toString" lineNumber="20"/>
+    <functiondecl functionName="toString" lineNumber="20"/>
+    <functioncall functionName="STDOUT_FILENO"/>
+    <functioncall functionName="c"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="isatty"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="use_color"/>
+  </FileInfo>
+</analyzerinfo>

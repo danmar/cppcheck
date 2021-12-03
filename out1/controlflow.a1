@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1048145024">
+        <error id="arrayIndexOutOfBoundsCond" severity="warning" msg="Either the condition &apos;a==100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." verbose="Either the condition &apos;a==100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/controlflow.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="10" column="12" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="9" column="10" info="Assuming that condition &apos;a==100&apos; is not redundant"/>
+        </error>
+        <error id="arrayIndexOutOfBoundsCond" severity="warning" msg="Either the condition &apos;a==100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." verbose="Either the condition &apos;a==100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/controlflow.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="14" column="8" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="15" column="10" info="Assuming that condition &apos;a==100&apos; is not redundant"/>
+        </error>
+        <error id="arrayIndexOutOfBoundsCond" severity="warning" msg="Either the condition &apos;a==100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." verbose="Either the condition &apos;a==100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/controlflow.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="20" column="8" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="19" column="10" info="Assuming that condition &apos;a==100&apos; is not redundant"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;buf[2]&apos; accessed at index 99, which is out of bounds." verbose="Array &apos;buf[2]&apos; accessed at index 99, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/controlflow.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="26" column="12" info="Array index out of bounds"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;buf[2]&apos; accessed at index 100, which is out of bounds." verbose="Array &apos;buf[2]&apos; accessed at index 100, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/controlflow.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="33" column="8" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="32" column="5" info="After for loop, x has value 100"/>
+        </error>
+        <error id="arrayIndexOutOfBoundsCond" severity="warning" msg="Either the switch case &apos;case 100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." verbose="Either the switch case &apos;case 100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/controlflow.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="45" column="8" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="47" column="5" info="case 100: x is 100 here."/>
+        </error>
+        <error id="arrayIndexOutOfBoundsCond" severity="warning" msg="Either the condition &apos;x&lt;100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 99, which is out of bounds." verbose="Either the condition &apos;x&lt;100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 99, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/controlflow.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="63" column="12" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="62" column="13" info="Assuming that condition &apos;x&lt;100&apos; is not redundant"/>
+        </error>
+        <error id="arrayIndexOutOfBoundsCond" severity="warning" msg="Either the condition &apos;x&lt;100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." verbose="Either the condition &apos;x&lt;100&apos; is redundant or the array &apos;buf[2]&apos; is accessed at index 100, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/controlflow.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="72" column="8" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\controlflow.c" line="70" column="13" info="Assuming that condition &apos;x&lt;100&apos; is not redundant"/>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="in_if" lineNumber="8"/>
+    <functiondecl functionName="before_if" lineNumber="13"/>
+    <functiondecl functionName="after_if" lineNumber="18"/>
+    <functiondecl functionName="in_for" lineNumber="23"/>
+    <functiondecl functionName="after_for" lineNumber="30"/>
+    <functiondecl functionName="in_switch" lineNumber="36"/>
+    <functiondecl functionName="before_switch" lineNumber="44"/>
+    <functiondecl functionName="after_switch" lineNumber="52"/>
+    <functiondecl functionName="in_while" lineNumber="60"/>
+    <functiondecl functionName="after_while" lineNumber="68"/>
+    <functioncall functionName="a"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="x"/>
+  </FileInfo>
+</analyzerinfo>

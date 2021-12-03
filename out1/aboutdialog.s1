@@ -1,0 +1,1 @@
+AboutDialog call:[arg,connect,fmtVersion,isEmpty,right,setText,setupUi,text] noreturn:[connect]

@@ -1,0 +1,1120 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3984042097">
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;buf[10]&apos; accessed at index 10, which is out of bounds." verbose="Array &apos;buf[10]&apos; accessed at index 10, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="330" column="12" info="Array index out of bounds"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="337" column="5" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf2" verbose="Buffer is accessed out of bounds: byteBuf2" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="337" column="5" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="340" column="22" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf2" verbose="Buffer is accessed out of bounds: byteBuf2" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="340" column="31" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="342" column="5" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf2" verbose="Buffer is accessed out of bounds: byteBuf2" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="342" column="5" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="345" column="15" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf2" verbose="Buffer is accessed out of bounds: byteBuf2" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="345" column="15" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="348" column="5" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf2" verbose="Buffer is accessed out of bounds: byteBuf2" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="348" column="5" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="351" column="15" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf2" verbose="Buffer is accessed out of bounds: byteBuf2" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="351" column="15" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="353" column="5" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="355" column="15" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="357" column="25" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="359" column="22" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="361" column="5" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: byteBuf" verbose="Buffer is accessed out of bounds: byteBuf" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="363" column="15" info="Buffer overrun"/>
+        </error>
+        <error id="bufferAccessOutOfBounds" severity="error" msg="Buffer is accessed out of bounds: pAlloc1" verbose="Buffer is accessed out of bounds: pAlloc1" cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="368" column="12" info="Buffer overrun"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="365" column="20" info="Assign pAlloc1, buffer with size 32"/>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function memcmp() is not used." verbose="Return value of function memcmp() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="337" column="5"/>
+            <symbol>memcmp</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function memcmp() is not used." verbose="Return value of function memcmp() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="340" column="5"/>
+            <symbol>memcmp</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function GetProcAddress() is not used." verbose="Return value of function GetProcAddress() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="612" column="5"/>
+            <symbol>GetProcAddress</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function _malloca() is not used." verbose="Return value of function _malloca() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="624" column="5"/>
+            <symbol>_malloca</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function _alloca() is not used." verbose="Return value of function _alloca() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="626" column="5"/>
+            <symbol>_alloca</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function GetLastError() is not used." verbose="Return value of function GetLastError() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="629" column="5"/>
+            <symbol>GetLastError</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function GetProcessHeap() is not used." verbose="Return value of function GetProcessHeap() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="632" column="5"/>
+            <symbol>GetProcessHeap</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function HeapAlloc() is not used." verbose="Return value of function HeapAlloc() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="635" column="5"/>
+            <symbol>HeapAlloc</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function HeapReAlloc() is not used." verbose="Return value of function HeapReAlloc() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="638" column="5"/>
+            <symbol>HeapReAlloc</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function _fileno() is not used." verbose="Return value of function _fileno() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="644" column="5"/>
+            <symbol>_fileno</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function lstrlen() is not used." verbose="Return value of function lstrlen() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="648" column="5"/>
+            <symbol>lstrlen</symbol>
+        </error>
+        <error id="ignoredReturnValue" severity="warning" msg="Return value of function _fileno() is not used." verbose="Return value of function _fileno() is not used." cwe="252" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="743" column="5"/>
+            <symbol>_fileno</symbol>
+        </error>
+        <error id="lstrcatCalled" severity="style" msg="Due to security concerns it is not recommended to use this function, see MSDN for details." verbose="Due to security concerns it is not recommended to use this function, see MSDN for details." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="153" column="5"/>
+        </error>
+        <error id="strlwrCalled" severity="style" msg="Obsolete function &apos;strlwr&apos; called. It is recommended to use &apos;_strlwr&apos; or &apos;_strlwr_s&apos; instead." verbose="Obsolete function &apos;strlwr&apos; called. It is recommended to use &apos;_strlwr&apos; or &apos;_strlwr_s&apos; instead." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="156" column="5"/>
+        </error>
+        <error id="struprCalled" severity="style" msg="Obsolete function &apos;strupr&apos; called. It is recommended to use &apos;_strupr&apos; or &apos;_strupr_s&apos; instead." verbose="Obsolete function &apos;strupr&apos; called. It is recommended to use &apos;_strupr&apos; or &apos;_strupr_s&apos; instead." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="158" column="5"/>
+        </error>
+        <error id="LocalAllocCalled" severity="style" msg="Obsolete function &apos;LocalAlloc&apos; called. It is recommended to use &apos;HeapAlloc&apos; instead." verbose="Obsolete function &apos;LocalAlloc&apos; called. It is recommended to use &apos;HeapAlloc&apos; instead." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="285" column="26"/>
+        </error>
+        <error id="lstrlenCalled" severity="style" msg="Due to security concerns it is not recommended to use this function, see MSDN for details." verbose="Due to security concerns it is not recommended to use this function, see MSDN for details." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="289" column="11"/>
+        </error>
+        <error id="lstrlenCalled" severity="style" msg="Due to security concerns it is not recommended to use this function, see MSDN for details." verbose="Due to security concerns it is not recommended to use this function, see MSDN for details." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="291" column="11"/>
+        </error>
+        <error id="lstrcatCalled" severity="style" msg="Due to security concerns it is not recommended to use this function, see MSDN for details." verbose="Due to security concerns it is not recommended to use this function, see MSDN for details." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="392" column="5"/>
+        </error>
+        <error id="lstrcatCalled" severity="style" msg="Due to security concerns it is not recommended to use this function, see MSDN for details." verbose="Due to security concerns it is not recommended to use this function, see MSDN for details." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="396" column="5"/>
+        </error>
+        <error id="strlwrCalled" severity="style" msg="Obsolete function &apos;strlwr&apos; called. It is recommended to use &apos;_strlwr&apos; or &apos;_strlwr_s&apos; instead." verbose="Obsolete function &apos;strlwr&apos; called. It is recommended to use &apos;_strlwr&apos; or &apos;_strlwr_s&apos; instead." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="425" column="5"/>
+        </error>
+        <error id="struprCalled" severity="style" msg="Obsolete function &apos;strupr&apos; called. It is recommended to use &apos;_strupr&apos; or &apos;_strupr_s&apos; instead." verbose="Obsolete function &apos;strupr&apos; called. It is recommended to use &apos;_strupr&apos; or &apos;_strupr_s&apos; instead." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="428" column="5"/>
+        </error>
+        <error id="LocalAllocCalled" severity="style" msg="Obsolete function &apos;LocalAlloc&apos; called. It is recommended to use &apos;HeapAlloc&apos; instead." verbose="Obsolete function &apos;LocalAlloc&apos; called. It is recommended to use &apos;HeapAlloc&apos; instead." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="491" column="22"/>
+        </error>
+        <error id="lstrlenCalled" severity="style" msg="Due to security concerns it is not recommended to use this function, see MSDN for details." verbose="Due to security concerns it is not recommended to use this function, see MSDN for details." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="648" column="5"/>
+        </error>
+        <error id="lstrcatCalled" severity="style" msg="Due to security concerns it is not recommended to use this function, see MSDN for details." verbose="Due to security concerns it is not recommended to use this function, see MSDN for details." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="700" column="5"/>
+        </error>
+        <error id="lstrcatCalled" severity="style" msg="Due to security concerns it is not recommended to use this function, see MSDN for details." verbose="Due to security concerns it is not recommended to use this function, see MSDN for details." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="705" column="5"/>
+        </error>
+        <error id="strlwrCalled" severity="style" msg="Obsolete function &apos;strlwr&apos; called. It is recommended to use &apos;_strlwr&apos; or &apos;_strlwr_s&apos; instead." verbose="Obsolete function &apos;strlwr&apos; called. It is recommended to use &apos;_strlwr&apos; or &apos;_strlwr_s&apos; instead." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="727" column="5"/>
+        </error>
+        <error id="struprCalled" severity="style" msg="Obsolete function &apos;strupr&apos; called. It is recommended to use &apos;_strupr&apos; or &apos;_strupr_s&apos; instead." verbose="Obsolete function &apos;strupr&apos; called. It is recommended to use &apos;_strupr&apos; or &apos;_strupr_s&apos; instead." cwe="477" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="730" column="5"/>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid CreateSemaphore() argument nr 3. The value is 0 but the valid values are &apos;1:&apos;." verbose="Invalid CreateSemaphore() argument nr 3. The value is 0 but the valid values are &apos;1:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="655" column="43" info="Invalid argument"/>
+            <symbol>CreateSemaphore</symbol>
+        </error>
+        <error id="invalidFunctionArgBool" severity="error" msg="Invalid CreateSemaphore() argument nr 4. A non-boolean value is required." verbose="Invalid CreateSemaphore() argument nr 4. A non-boolean value is required." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="658" column="46"/>
+            <symbol>CreateSemaphore</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid CreateSemaphoreEx() argument nr 3. The value is 0 but the valid values are &apos;1:&apos;." verbose="Invalid CreateSemaphoreEx() argument nr 3. The value is 0 but the valid values are &apos;1:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="661" column="45" info="Invalid argument"/>
+            <symbol>CreateSemaphoreEx</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid CreateSemaphoreEx() argument nr 5. The value is 1 but the valid values are &apos;0&apos;." verbose="Invalid CreateSemaphoreEx() argument nr 5. The value is 1 but the valid values are &apos;0&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="664" column="54" info="Invalid argument"/>
+            <symbol>CreateSemaphoreEx</symbol>
+        </error>
+        <error id="invalidFunctionArgBool" severity="error" msg="Invalid CreateMutex() argument nr 3. A non-boolean value is required." verbose="Invalid CreateMutex() argument nr 3. A non-boolean value is required." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="669" column="38"/>
+            <symbol>CreateMutex</symbol>
+        </error>
+        <error id="invalidFunctionArgBool" severity="error" msg="Invalid CreateMutex() argument nr 3. A non-boolean value is required." verbose="Invalid CreateMutex() argument nr 3. A non-boolean value is required." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="672" column="39"/>
+            <symbol>CreateMutex</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid CreateMutexEx() argument nr 3. The value is 3 but the valid values are &apos;0,1&apos;." verbose="Invalid CreateMutexEx() argument nr 3. The value is 3 but the valid values are &apos;0,1&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="675" column="40" info="Invalid argument"/>
+            <symbol>CreateMutexEx</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid LoadLibraryEx() argument nr 2. The value is 1 but the valid values are &apos;0&apos;." verbose="Invalid LoadLibraryEx() argument nr 2. The value is 1 but the valid values are &apos;0&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="680" column="51" info="Invalid argument"/>
+            <symbol>LoadLibraryEx</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid _malloca() argument nr 1. The value is -1 but the valid values are &apos;0:&apos;." verbose="Invalid _malloca() argument nr 1. The value is -1 but the valid values are &apos;0:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="684" column="28" info="Invalid argument"/>
+            <symbol>_malloca</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid _alloca() argument nr 1. The value is -5 but the valid values are &apos;0:&apos;." verbose="Invalid _alloca() argument nr 1. The value is -5 but the valid values are &apos;0:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="688" column="21" info="Invalid argument"/>
+            <symbol>_alloca</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid CreateThread() argument nr 2. The value is -1 but the valid values are &apos;0:&apos;." verbose="Invalid CreateThread() argument nr 2. The value is -1 but the valid values are &apos;0:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="915" column="46" info="Invalid argument"/>
+            <symbol>CreateThread</symbol>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="error" msg="sprintf_s format string requires 2 parameters but only 1 is given." verbose="sprintf_s format string requires 2 parameters but only 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="750" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="error" msg="sprintf_s format string requires 2 parameters but only 1 is given." verbose="sprintf_s format string requires 2 parameters but only 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="753" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="warning" msg="sprintf_s format string requires 0 parameters but 1 is given." verbose="sprintf_s format string requires 0 parameters but 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="756" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="warning" msg="sprintf_s format string requires 0 parameters but 1 is given." verbose="sprintf_s format string requires 0 parameters but 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="759" column="5"/>
+        </error>
+        <error id="invalidPrintfArgType_s" severity="warning" msg="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." verbose="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." cwe="686" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="762" column="5"/>
+        </error>
+        <error id="invalidPrintfArgType_s" severity="warning" msg="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." verbose="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." cwe="686" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="765" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="error" msg="swprintf_s format string requires 2 parameters but only 1 is given." verbose="swprintf_s format string requires 2 parameters but only 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="770" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="error" msg="swprintf_s format string requires 2 parameters but only 1 is given." verbose="swprintf_s format string requires 2 parameters but only 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="773" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="warning" msg="swprintf_s format string requires 0 parameters but 1 is given." verbose="swprintf_s format string requires 0 parameters but 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="776" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="warning" msg="swprintf_s format string requires 0 parameters but 1 is given." verbose="swprintf_s format string requires 0 parameters but 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="779" column="5"/>
+        </error>
+        <error id="invalidPrintfArgType_s" severity="warning" msg="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." verbose="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." cwe="686" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="782" column="5"/>
+        </error>
+        <error id="invalidPrintfArgType_s" severity="warning" msg="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." verbose="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." cwe="686" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="785" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="error" msg="_stprintf_s format string requires 2 parameters but only 1 is given." verbose="_stprintf_s format string requires 2 parameters but only 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="790" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="error" msg="_stprintf_s format string requires 2 parameters but only 1 is given." verbose="_stprintf_s format string requires 2 parameters but only 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="793" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="warning" msg="_stprintf_s format string requires 0 parameters but 1 is given." verbose="_stprintf_s format string requires 0 parameters but 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="796" column="5"/>
+        </error>
+        <error id="wrongPrintfScanfArgNum" severity="warning" msg="_stprintf_s format string requires 0 parameters but 1 is given." verbose="_stprintf_s format string requires 0 parameters but 1 is given." cwe="685" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="799" column="5"/>
+        </error>
+        <error id="invalidPrintfArgType_s" severity="warning" msg="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." verbose="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." cwe="686" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="802" column="5"/>
+        </error>
+        <error id="invalidPrintfArgType_s" severity="warning" msg="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." verbose="%s in format string (no. 1) requires &apos;char *&apos; but the argument type is &apos;signed int&apos;." cwe="686" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="805" column="5"/>
+        </error>
+        <error id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: pChar" verbose="Mismatching allocation and deallocation: pChar" cwe="762" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="376" column="5"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="374" column="20"/>
+            <symbol>pChar</symbol>
+        </error>
+        <error id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: pChar" verbose="Mismatching allocation and deallocation: pChar" cwe="762" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="380" column="5"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="378" column="13"/>
+            <symbol>pChar</symbol>
+        </error>
+        <error id="memleak" severity="error" msg="Memory leak: pMem" verbose="Memory leak: pMem" cwe="401" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="467" column="1"/>
+            <symbol>pMem</symbol>
+        </error>
+        <error id="memleak" severity="error" msg="Memory leak: pMem" verbose="Memory leak: pMem" cwe="401" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="485" column="1"/>
+            <symbol>pMem</symbol>
+        </error>
+        <error id="memleak" severity="error" msg="Memory leak: pszBuf" verbose="Memory leak: pszBuf" cwe="401" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="497" column="1"/>
+            <symbol>pszBuf</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hSemaphore" verbose="Resource leak: hSemaphore" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="505" column="1"/>
+            <symbol>hSemaphore</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hSemaphore" verbose="Resource leak: hSemaphore" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="513" column="1"/>
+            <symbol>hSemaphore</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hSemaphore" verbose="Resource leak: hSemaphore" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="521" column="1"/>
+            <symbol>hSemaphore</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hMutex" verbose="Resource leak: hMutex" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="529" column="1"/>
+            <symbol>hMutex</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hMutex" verbose="Resource leak: hMutex" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="537" column="1"/>
+            <symbol>hMutex</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hMutex" verbose="Resource leak: hMutex" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="545" column="1"/>
+            <symbol>hMutex</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hInstLib" verbose="Resource leak: hInstLib" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="555" column="1"/>
+            <symbol>hInstLib</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hEvent" verbose="Resource leak: hEvent" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="563" column="1"/>
+            <symbol>hEvent</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hEvent" verbose="Resource leak: hEvent" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="571" column="1"/>
+            <symbol>hEvent</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: hEvent" verbose="Resource leak: hEvent" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="579" column="1"/>
+            <symbol>hEvent</symbol>
+        </error>
+        <error id="resourceLeak" severity="error" msg="Resource leak: sock" verbose="Resource leak: sock" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="587" column="1"/>
+            <symbol>sock</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;OpenEvent&apos; is not stored." verbose="Return value of allocation function &apos;OpenEvent&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="413" column="5"/>
+            <symbol>OpenEvent</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateSemaphoreW&apos; is not stored." verbose="Return value of allocation function &apos;CreateSemaphoreW&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="592" column="5"/>
+            <symbol>CreateSemaphoreW</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateSemaphoreExA&apos; is not stored." verbose="Return value of allocation function &apos;CreateSemaphoreExA&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="594" column="5"/>
+            <symbol>CreateSemaphoreExA</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;OpenSemaphoreA&apos; is not stored." verbose="Return value of allocation function &apos;OpenSemaphoreA&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="596" column="5"/>
+            <symbol>OpenSemaphoreA</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateMutexW&apos; is not stored." verbose="Return value of allocation function &apos;CreateMutexW&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="599" column="5"/>
+            <symbol>CreateMutexW</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateMutexExA&apos; is not stored." verbose="Return value of allocation function &apos;CreateMutexExA&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="601" column="5"/>
+            <symbol>CreateMutexExA</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;OpenMutexA&apos; is not stored." verbose="Return value of allocation function &apos;OpenMutexA&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="603" column="5"/>
+            <symbol>OpenMutexA</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;LoadLibrary&apos; is not stored." verbose="Return value of allocation function &apos;LoadLibrary&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="606" column="5"/>
+            <symbol>LoadLibrary</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;LoadLibraryEx&apos; is not stored." verbose="Return value of allocation function &apos;LoadLibraryEx&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="608" column="5"/>
+            <symbol>LoadLibraryEx</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateEvent&apos; is not stored." verbose="Return value of allocation function &apos;CreateEvent&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="616" column="5"/>
+            <symbol>CreateEvent</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;OpenEvent&apos; is not stored." verbose="Return value of allocation function &apos;OpenEvent&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="618" column="5"/>
+            <symbol>OpenEvent</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateEventEx&apos; is not stored." verbose="Return value of allocation function &apos;CreateEventEx&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="620" column="5"/>
+            <symbol>CreateEventEx</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;_malloca&apos; is not stored." verbose="Return value of allocation function &apos;_malloca&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="624" column="5"/>
+            <symbol>_malloca</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;HeapAlloc&apos; is not stored." verbose="Return value of allocation function &apos;HeapAlloc&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="635" column="5"/>
+            <symbol>HeapAlloc</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;HeapReAlloc&apos; is not stored." verbose="Return value of allocation function &apos;HeapReAlloc&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="638" column="5"/>
+            <symbol>HeapReAlloc</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;socket&apos; is not stored." verbose="Return value of allocation function &apos;socket&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="641" column="5"/>
+            <symbol>socket</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateThread&apos; is not stored." verbose="Return value of allocation function &apos;CreateThread&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="895" column="12"/>
+            <symbol>CreateThread</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateThread&apos; is not stored." verbose="Return value of allocation function &apos;CreateThread&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="898" column="12"/>
+            <symbol>CreateThread</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateThread&apos; is not stored." verbose="Return value of allocation function &apos;CreateThread&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="901" column="12"/>
+            <symbol>CreateThread</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateThread&apos; is not stored." verbose="Return value of allocation function &apos;CreateThread&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="904" column="12"/>
+            <symbol>CreateThread</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateThread&apos; is not stored." verbose="Return value of allocation function &apos;CreateThread&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="907" column="12"/>
+            <symbol>CreateThread</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateThread&apos; is not stored." verbose="Return value of allocation function &apos;CreateThread&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="911" column="12"/>
+            <symbol>CreateThread</symbol>
+        </error>
+        <error id="leakReturnValNotUsed" severity="error" msg="Return value of allocation function &apos;CreateThread&apos; is not stored." verbose="Return value of allocation function &apos;CreateThread&apos; is not stored." cwe="771" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="915" column="12"/>
+            <symbol>CreateThread</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: p" verbose="Null pointer dereference: p" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="77" column="19" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="75" column="14" info="Assignment &apos;p=NULL&apos;, assigned value is 0"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: pSec" verbose="Null pointer dereference: pSec" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="120" column="25" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="118" column="18" info="Assignment &apos;pSec=NULL&apos;, assigned value is 0"/>
+            <symbol>pSec</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: pHours" verbose="Null pointer dereference: pHours" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="130" column="25" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="128" column="19" info="Assignment &apos;pHours=NULL&apos;, assigned value is 0"/>
+            <symbol>pHours</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: phModule" verbose="Null pointer dereference: phModule" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="409" column="32" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="407" column="26" info="Assignment &apos;phModule=NULL&apos;, assigned value is 0"/>
+            <symbol>phModule</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: hEvent" verbose="Null pointer dereference: hEvent" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="416" column="16" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="414" column="21" info="Assignment &apos;hEvent=NULL&apos;, assigned value is 0"/>
+            <symbol>hEvent</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: hEvent" verbose="Null pointer dereference: hEvent" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="418" column="16" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="414" column="21" info="Assignment &apos;hEvent=NULL&apos;, assigned value is 0"/>
+            <symbol>hEvent</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: hEvent" verbose="Null pointer dereference: hEvent" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="420" column="14" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="414" column="21" info="Assignment &apos;hEvent=NULL&apos;, assigned value is 0"/>
+            <symbol>hEvent</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: str" verbose="Null pointer dereference: str" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="425" column="12" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="422" column="17" info="Assignment &apos;str=NULL&apos;, assigned value is 0"/>
+            <symbol>str</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: str" verbose="Null pointer dereference: str" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="428" column="12" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="422" column="17" info="Assignment &apos;str=NULL&apos;, assigned value is 0"/>
+            <symbol>str</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: pIntNull" verbose="Null pointer dereference: pIntNull" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="454" column="46" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="445" column="21" info="Assignment &apos;pIntNull=NULL&apos;, assigned value is 0"/>
+            <symbol>pIntNull</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: pIntNull" verbose="Null pointer dereference: pIntNull" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="458" column="43" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="445" column="21" info="Assignment &apos;pIntNull=NULL&apos;, assigned value is 0"/>
+            <symbol>pIntNull</symbol>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="77" column="19" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="120" column="25" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="130" column="25" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="387" column="61" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="392" column="13" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="396" column="18" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="400" column="49" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="405" column="36" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="409" column="32" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="413" column="40" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="416" column="16" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="418" column="16" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="420" column="14" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="425" column="12" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="428" column="12" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="431" column="19" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="433" column="18" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="440" column="24" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="448" column="19" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="450" column="22" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="452" column="29" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="454" column="46" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="456" column="32" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="458" column="43" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="911" column="58" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="939" column="19" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="941" column="34" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="969" column="21" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="971" column="55" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="1002" column="24" info="Null pointer dereference"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference" verbose="Null pointer dereference" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="1004" column="51" info="Null pointer dereference"/>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;dwordInit&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;dwordInit&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="260" column="15" info="dwordInit is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="245" column="15" info="dwordInit is assigned"/>
+            <symbol>dwordInit</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;wordInit&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;wordInit&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="262" column="14" info="wordInit is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="258" column="14" info="wordInit is assigned"/>
+            <symbol>wordInit</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;byteInit&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;byteInit&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="266" column="14" info="byteInit is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="263" column="14" info="byteInit is assigned"/>
+            <symbol>byteInit</symbol>
+        </error>
+        <error id="overlappingWriteFunction" severity="error" msg="Overlapping read/write in _mbscat() is undefined behavior" verbose="Overlapping read/write in _mbscat() is undefined behavior" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="22" column="12"/>
+        </error>
+        <error id="overlappingWriteFunction" severity="error" msg="Overlapping read/write in _memccpy() is undefined behavior" verbose="Overlapping read/write in _memccpy() is undefined behavior" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="31" column="12"/>
+        </error>
+        <error id="overlappingWriteFunction" severity="error" msg="Overlapping read/write in _memccpy() is undefined behavior" verbose="Overlapping read/write in _memccpy() is undefined behavior" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="33" column="12"/>
+        </error>
+        <error id="overlappingWriteFunction" severity="error" msg="Overlapping read/write in _mbscpy() is undefined behavior" verbose="Overlapping read/write in _mbscpy() is undefined behavior" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="41" column="12"/>
+        </error>
+        <error id="overlappingWriteFunction" severity="error" msg="Overlapping read/write in _swab() is undefined behavior" verbose="Overlapping read/write in _swab() is undefined behavior" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="49" column="5"/>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: p" verbose="Uninitialized variable: p" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="67" column="19"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: hSemaphore" verbose="Uninitialized variable: hSemaphore" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="695" column="17"/>
+            <symbol>hSemaphore</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: buf" verbose="Uninitialized variable: buf" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="700" column="13"/>
+            <symbol>buf</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: buf2" verbose="Uninitialized variable: buf2" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="705" column="18"/>
+            <symbol>buf2</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: hMutex1" verbose="Uninitialized variable: hMutex1" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="709" column="18"/>
+            <symbol>hMutex1</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: hMutex2" verbose="Uninitialized variable: hMutex2" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="711" column="17"/>
+            <symbol>hMutex2</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: hEvent1" verbose="Uninitialized variable: hEvent1" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="715" column="16"/>
+            <symbol>hEvent1</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: hEvent2" verbose="Uninitialized variable: hEvent2" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="717" column="16"/>
+            <symbol>hEvent2</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: hEvent3" verbose="Uninitialized variable: hEvent3" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="719" column="14"/>
+            <symbol>hEvent3</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: hEvent4" verbose="Uninitialized variable: hEvent4" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="721" column="17"/>
+            <symbol>hEvent4</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: buf_uninit1" verbose="Uninitialized variable: buf_uninit1" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="727" column="12"/>
+            <symbol>buf_uninit1</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: buf_uninit2" verbose="Uninitialized variable: buf_uninit2" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="730" column="12"/>
+            <symbol>buf_uninit2</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: dwordUninit" verbose="Uninitialized variable: dwordUninit" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="734" column="18"/>
+            <symbol>dwordUninit</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: dwordUninit" verbose="Uninitialized variable: dwordUninit" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="738" column="24"/>
+            <symbol>dwordUninit</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: pFileUninit" verbose="Uninitialized variable: pFileUninit" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="743" column="13"/>
+            <symbol>pFileUninit</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: c1" verbose="Uninitialized variable: c1" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="835" column="20"/>
+            <symbol>c1</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: c2" verbose="Uninitialized variable: c2" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="837" column="22"/>
+            <symbol>c2</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: c1" verbose="Uninitialized variable: c1" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="844" column="20"/>
+            <symbol>c1</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: c2" verbose="Uninitialized variable: c2" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="846" column="22"/>
+            <symbol>c2</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: i" verbose="Uninitialized variable: i" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="853" column="23"/>
+            <symbol>i</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: i" verbose="Uninitialized variable: i" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="860" column="23"/>
+            <symbol>i</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_dwStackSize" verbose="Uninitialized variable: uninit_dwStackSize" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="904" column="45"/>
+            <symbol>uninit_dwStackSize</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_lpParameter" verbose="Uninitialized variable: uninit_lpParameter" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="898" column="74"/>
+            <symbol>uninit_lpParameter</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_dwCreationFlags" verbose="Uninitialized variable: uninit_dwCreationFlags" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="895" column="87"/>
+            <symbol>uninit_dwCreationFlags</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_deststr" verbose="Uninitialized variable: uninit_deststr" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="927" column="19"/>
+            <symbol>uninit_deststr</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_srcstr1" verbose="Uninitialized variable: uninit_srcstr1" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="927" column="34"/>
+            <symbol>uninit_srcstr1</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_srcstr2" verbose="Uninitialized variable: uninit_srcstr2" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="929" column="34"/>
+            <symbol>uninit_srcstr2</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_strDestination" verbose="Uninitialized variable: uninit_strDestination" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="955" column="21"/>
+            <symbol>uninit_strDestination</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_numberOfElements" verbose="Uninitialized variable: uninit_numberOfElements" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="957" column="37"/>
+            <symbol>uninit_numberOfElements</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_strSource" verbose="Uninitialized variable: uninit_strSource" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="959" column="55"/>
+            <symbol>uninit_strSource</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_numberOfElements" verbose="Uninitialized variable: uninit_numberOfElements" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="986" column="33"/>
+            <symbol>uninit_numberOfElements</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_strSource" verbose="Uninitialized variable: uninit_strSource" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="988" column="51"/>
+            <symbol>uninit_strSource</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_count" verbose="Uninitialized variable: uninit_count" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="990" column="62"/>
+            <symbol>uninit_count</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: uninit_locale" verbose="Uninitialized variable: uninit_locale" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="992" column="69"/>
+            <symbol>uninit_locale</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;pMem&apos; is assigned a value that is never used." verbose="Variable &apos;pMem&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="465" column="16"/>
+            <symbol>pMem</symbol>
+        </error>
+        <error id="unusedAllocatedMemory" severity="style" msg="Variable &apos;pMem&apos; is allocated memory that is never used." verbose="Variable &apos;pMem&apos; is allocated memory that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="465" column="18"/>
+            <symbol>pMem</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;memSize&apos; is assigned a value that is never used." verbose="Variable &apos;memSize&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="483" column="20"/>
+            <symbol>memSize</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hSemaphore&apos; is assigned a value that is never used." verbose="Variable &apos;hSemaphore&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="503" column="16"/>
+            <symbol>hSemaphore</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hSemaphore&apos; is assigned a value that is never used." verbose="Variable &apos;hSemaphore&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="511" column="16"/>
+            <symbol>hSemaphore</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hSemaphore&apos; is assigned a value that is never used." verbose="Variable &apos;hSemaphore&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="519" column="16"/>
+            <symbol>hSemaphore</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hMutex&apos; is assigned a value that is never used." verbose="Variable &apos;hMutex&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="527" column="12"/>
+            <symbol>hMutex</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hMutex&apos; is assigned a value that is never used." verbose="Variable &apos;hMutex&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="535" column="12"/>
+            <symbol>hMutex</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hMutex&apos; is assigned a value that is never used." verbose="Variable &apos;hMutex&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="543" column="12"/>
+            <symbol>hMutex</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;pFunc&apos; is assigned a value that is never used." verbose="Variable &apos;pFunc&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="553" column="18"/>
+            <symbol>pFunc</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hEvent&apos; is assigned a value that is never used." verbose="Variable &apos;hEvent&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="569" column="12"/>
+            <symbol>hEvent</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;hEvent&apos; is assigned a value that is never used." verbose="Variable &apos;hEvent&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="577" column="12"/>
+            <symbol>hEvent</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;sock&apos; is assigned a value that is never used." verbose="Variable &apos;sock&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\windows.cpp" line="585" column="10"/>
+            <symbol>sock</symbol>
+        </error>
+  <FileInfo check="Class">
+<class name="MyClass" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="1028" col="1" hash="7601511017586766323"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:17:17" my-argnr="1" my-argname="src" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="20" col="25" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:17:17" my-argnr="2" my-argname="dest" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="20" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:25:17" my-argnr="1" my-argname="src" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="28" col="26" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:25:17" my-argnr="2" my-argname="dest" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="28" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:36:17" my-argnr="1" my-argname="src" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="39" col="25" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:36:17" my-argnr="2" my-argname="dest" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="39" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:44:6" my-argnr="1" my-argname="src" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="47" col="17" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:44:6" my-argnr="2" my-argname="dest" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="47" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:60:6" my-argnr="1" my-argname="envstr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="63" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:70:6" my-argnr="1" my-argname="envstr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="73" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:97:6" my-argnr="4" my-argname="lpReturnedString" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="105" col="68" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:97:6" my-argnr="6" my-argname="lpFileName" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="105" col="93" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:113:6" my-argnr="1" my-argname="sec" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="116" col="25" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:123:6" my-argnr="1" my-argname="h" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="126" col="25" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:922:17" my-argnr="1" my-argname="strDestination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="929" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:922:17" my-argnr="2" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="932" col="35" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:936:17" my-argnr="1" my-argname="strDestination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="941" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:936:17" my-argnr="2" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="939" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:948:9" my-argnr="1" my-argname="strDestination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="957" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:948:9" my-argnr="3" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="955" col="62" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:966:9" my-argnr="1" my-argname="strDestination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="971" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:966:9" my-argnr="3" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="969" col="42" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:978:9" my-argnr="1" my-argname="strDest" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="986" col="24" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:978:9" my-argnr="3" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="986" col="58" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:999:9" my-argnr="1" my-argname="strDest" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="1004" col="24" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:999:9" my-argnr="3" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="1002" col="45" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:1010:6" my-argnr="1" my-argname="lpszPath" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="1012" col="36" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:17:17" my-argnr="1" my-argname="src" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="20" col="25" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:17:17" my-argnr="2" my-argname="dest" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="20" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:25:17" my-argnr="1" my-argname="src" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="28" col="26" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:36:17" my-argnr="1" my-argname="src" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="39" col="25" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:44:6" my-argnr="2" my-argname="dest" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="47" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:60:6" my-argnr="1" my-argname="envstr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="63" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:70:6" my-argnr="1" my-argname="envstr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="73" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:97:6" my-argnr="6" my-argname="lpFileName" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="105" col="93" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:922:17" my-argnr="1" my-argname="strDestination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="929" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:922:17" my-argnr="2" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="932" col="35" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:936:17" my-argnr="1" my-argname="strDestination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="941" col="19" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:936:17" my-argnr="2" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="939" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:948:9" my-argnr="1" my-argname="strDestination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="957" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:948:9" my-argnr="3" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="955" col="62" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:966:9" my-argnr="1" my-argname="strDestination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="971" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:966:9" my-argnr="3" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="969" col="42" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:978:9" my-argnr="3" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="986" col="58" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:999:9" my-argnr="3" my-argname="strSource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="1002" col="45" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp:1010:6" my-argnr="1" my-argname="lpszPath" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/windows.cpp" line="1012" col="36" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="overlappingWriteFunction__mbscat" lineNumber="17"/>
+    <functiondecl functionName="overlappingWriteFunction__memccpy" lineNumber="25"/>
+    <functiondecl functionName="overlappingWriteFunction__mbscpy" lineNumber="36"/>
+    <functiondecl functionName="overlappingWriteFunction__swab" lineNumber="44"/>
+    <functiondecl functionName="uninitvar_GetSystemInfo" lineNumber="52"/>
+    <functiondecl functionName="uninitvar__putenv" lineNumber="60"/>
+    <functiondecl functionName="nullPointer__putenv" lineNumber="70"/>
+    <functiondecl functionName="invalidFunctionArg__getcwd" lineNumber="80"/>
+    <functiondecl functionName="nullPointer_GetPrivateProfileString" lineNumber="97"/>
+    <functiondecl functionName="nullPointer__get_timezone" lineNumber="113"/>
+    <functiondecl functionName="nullPointer__get_daylight" lineNumber="123"/>
+    <functiondecl functionName="validCode" lineNumber="133"/>
+    <functiondecl functionName="bufferAccessOutOfBounds" lineNumber="319"/>
+    <functiondecl functionName="mismatchAllocDealloc" lineNumber="372"/>
+    <functiondecl functionName="nullPointer" lineNumber="383"/>
+    <functiondecl functionName="memleak_malloca" lineNumber="461"/>
+    <functiondecl functionName="memleak_AllocateAndInitializeSid" lineNumber="469"/>
+    <functiondecl functionName="memleak_HeapAlloc" lineNumber="477"/>
+    <functiondecl functionName="memleak_LocalAlloc" lineNumber="487"/>
+    <functiondecl functionName="resourceLeak_CreateSemaphoreA" lineNumber="499"/>
+    <functiondecl functionName="resourceLeak_CreateSemaphoreEx" lineNumber="507"/>
+    <functiondecl functionName="resourceLeak_OpenSemaphore" lineNumber="515"/>
+    <functiondecl functionName="resourceLeak_CreateMutexA" lineNumber="523"/>
+    <functiondecl functionName="resourceLeak_CreateMutexEx" lineNumber="531"/>
+    <functiondecl functionName="resourceLeak_OpenMutex" lineNumber="539"/>
+    <functiondecl functionName="resourceLeak_LoadLibrary" lineNumber="547"/>
+    <functiondecl functionName="resourceLeak_CreateEvent" lineNumber="557"/>
+    <functiondecl functionName="resourceLeak_CreateEventExA" lineNumber="565"/>
+    <functiondecl functionName="resourceLeak_OpenEventW" lineNumber="573"/>
+    <functiondecl functionName="resourceLeak_socket" lineNumber="581"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="589"/>
+    <functiondecl functionName="invalidFunctionArg" lineNumber="651"/>
+    <functiondecl functionName="uninitvar" lineNumber="691"/>
+    <functiondecl functionName="errorPrintf" lineNumber="746"/>
+    <functiondecl functionName="allocDealloc_GetModuleHandleEx" lineNumber="809"/>
+    <functiondecl functionName="uninitvar_tolower" lineNumber="831"/>
+    <functiondecl functionName="uninitvar_toupper" lineNumber="840"/>
+    <functiondecl functionName="uninitvar_towlower" lineNumber="849"/>
+    <functiondecl functionName="uninitvar_towupper" lineNumber="856"/>
+    <functiondecl functionName="oppositeInnerCondition_SUCCEEDED_FAILED" lineNumber="863"/>
+    <functiondecl functionName="test_CreateThread" lineNumber="879"/>
+    <functiondecl functionName="uninitvar_mbscat" lineNumber="922"/>
+    <functiondecl functionName="nullPointer_mbscat" lineNumber="936"/>
+    <functiondecl functionName="uninitvar_mbscat_s" lineNumber="948"/>
+    <functiondecl functionName="nullPointer_mbscat_s" lineNumber="966"/>
+    <functiondecl functionName="uninitvar__strncpy_s_l" lineNumber="978"/>
+    <functiondecl functionName="nullPointer__strncpy_s_l" lineNumber="999"/>
+    <functiondecl functionName="GetShortPathName_validCode" lineNumber="1010"/>
+    <functioncall functionName="AllocateAndInitializeSid"/>
+    <functioncall functionName="CREATE_EVENT_INITIAL_SET"/>
+    <functioncall functionName="CloseHandle"/>
+    <functioncall functionName="CreateEvent"/>
+    <functioncall functionName="CreateEventEx"/>
+    <functioncall functionName="CreateEventExA"/>
+    <functioncall functionName="CreateMutex"/>
+    <functioncall functionName="CreateMutexA"/>
+    <functioncall functionName="CreateMutexEx"/>
+    <functioncall functionName="CreateMutexExA"/>
+    <functioncall functionName="CreateMutexW"/>
+    <functioncall functionName="CreateSemaphore"/>
+    <functioncall functionName="CreateSemaphoreA"/>
+    <functioncall functionName="CreateSemaphoreEx"/>
+    <functioncall functionName="CreateSemaphoreExA"/>
+    <functioncall functionName="CreateSemaphoreW"/>
+    <functioncall functionName="CreateThread"/>
+    <functioncall functionName="FALSE"/>
+    <functioncall functionName="FIONBIO"/>
+    <functioncall functionName="FreeLibrary"/>
+    <functioncall functionName="FreeLibraryAndExitThread"/>
+    <functioncall functionName="FreeSid"/>
+    <functioncall functionName="GetLastError"/>
+    <functioncall functionName="GetLocalTime"/>
+    <functioncall functionName="GetModuleHandle"/>
+    <functioncall functionName="GetModuleHandleEx"/>
+    <functioncall functionName="GetPrivateProfileString"/>
+    <functioncall functionName="GetProcAddress"/>
+    <functioncall functionName="GetProcessHeap"/>
+    <functioncall functionName="GetShortPathName"/>
+    <functioncall functionName="GetSystemInfo"/>
+    <functioncall functionName="GetSystemTime"/>
+    <functioncall functionName="GetUserName"/>
+    <functioncall functionName="HeapAlloc"/>
+    <functioncall functionName="HeapFree"/>
+    <functioncall functionName="HeapReAlloc"/>
+    <functioncall functionName="HeapSize"/>
+    <functioncall functionName="HeapValidate"/>
+    <functioncall functionName="LoadLibrary"/>
+    <functioncall functionName="LoadLibraryA"/>
+    <functioncall functionName="LoadLibraryEx"/>
+    <functioncall functionName="LoadLibraryExW"/>
+    <functioncall functionName="LocalAlloc"/>
+    <functioncall functionName="LocalFlags"/>
+    <functioncall functionName="LocalFree"/>
+    <functioncall functionName="LocalLock"/>
+    <functioncall functionName="LocalSize"/>
+    <functioncall functionName="LocalUnlock"/>
+    <functioncall functionName="MUTEX_ALL_ACCESS"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="OpenEvent"/>
+    <functioncall functionName="OpenEventW"/>
+    <functioncall functionName="OpenMutex"/>
+    <functioncall functionName="OpenMutexA"/>
+    <functioncall functionName="OpenSemaphore"/>
+    <functioncall functionName="OpenSemaphoreA"/>
+    <functioncall functionName="PostMessage"/>
+    <functioncall functionName="PulseEvent"/>
+    <functioncall functionName="ReleaseMutex"/>
+    <functioncall functionName="ResetEvent"/>
+    <functioncall functionName="SECURITY_WORLD_RID"/>
+    <functioncall functionName="SECURITY_WORLD_SID_AUTHORITY"/>
+    <functioncall functionName="SIDAuthWorld"/>
+    <functioncall functionName="SetEvent"/>
+    <functioncall functionName="SetLastError"/>
+    <functioncall functionName="SystemInfo"/>
+    <functioncall functionName="TRUE"/>
+    <functioncall functionName="WM_QUIT"/>
+    <functioncall functionName="WSACleanup"/>
+    <functioncall functionName="WSAStartup"/>
+    <functioncall functionName="__alignof"/>
+    <functioncall functionName="__noop"/>
+    <functioncall functionName="__nop"/>
+    <functioncall functionName="_aligned_free"/>
+    <functioncall functionName="_aligned_malloc"/>
+    <functioncall functionName="_alignof"/>
+    <functioncall functionName="_alloca"/>
+    <functioncall functionName="_fileno"/>
+    <functioncall functionName="_freea"/>
+    <functioncall functionName="_get_daylight"/>
+    <functioncall functionName="_get_timezone"/>
+    <functioncall functionName="_getcwd"/>
+    <functioncall functionName="_malloca"/>
+    <functioncall functionName="_mbscat"/>
+    <functioncall functionName="_mbscat_s"/>
+    <functioncall functionName="_mbscpy"/>
+    <functioncall functionName="_memccpy"/>
+    <functioncall functionName="_putenv"/>
+    <functioncall functionName="_strncpy_s_l"/>
+    <functioncall functionName="_swab"/>
+    <functioncall functionName="_tolower"/>
+    <functioncall functionName="_tolower_l"/>
+    <functioncall functionName="_toupper"/>
+    <functioncall functionName="_toupper_l"/>
+    <functioncall functionName="_towlower_l"/>
+    <functioncall functionName="_towupper_l"/>
+    <functioncall functionName="bind"/>
+    <functioncall functionName="boolVar"/>
+    <functioncall functionName="buf"/>
+    <functioncall functionName="buf2"/>
+    <functioncall functionName="bufC"/>
+    <functioncall functionName="bufTC"/>
+    <functioncall functionName="bufWC"/>
+    <functioncall functionName="buf_uninit1"/>
+    <functioncall functionName="buf_uninit2"/>
+    <functioncall functionName="buffer"/>
+    <functioncall functionName="byteBuf"/>
+    <functioncall functionName="byteBuf2"/>
+    <functioncall functionName="byteInit"/>
+    <functioncall functionName="c"/>
+    <functioncall functionName="c1"/>
+    <functioncall functionName="c2"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="charArray"/>
+    <functioncall functionName="closesocket"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="dest"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="dwCreationFlags"/>
+    <functioncall functionName="dwStackSize"/>
+    <functioncall functionName="dwordInit"/>
+    <functioncall functionName="dwordUninit"/>
+    <functioncall functionName="envstr"/>
+    <functioncall functionName="event"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="free"/>
+    <functioncall functionName="getpeername"/>
+    <functioncall functionName="getsockopt"/>
+    <functioncall functionName="h"/>
+    <functioncall functionName="hEvent"/>
+    <functioncall functionName="hEvent1"/>
+    <functioncall functionName="hEvent2"/>
+    <functioncall functionName="hEvent3"/>
+    <functioncall functionName="hEvent4"/>
+    <functioncall functionName="hInstLib"/>
+    <functioncall functionName="hModule"/>
+    <functioncall functionName="hModule1"/>
+    <functioncall functionName="hModule2"/>
+    <functioncall functionName="hMutex"/>
+    <functioncall functionName="hMutex1"/>
+    <functioncall functionName="hMutex2"/>
+    <functioncall functionName="hMutex3"/>
+    <functioncall functionName="hSemaphore"/>
+    <functioncall functionName="hSemaphore1"/>
+    <functioncall functionName="hSemaphore2"/>
+    <functioncall functionName="hSemaphore3"/>
+    <functioncall functionName="hr"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="intInit"/>
+    <functioncall functionName="ioctlsocket"/>
+    <functioncall functionName="l"/>
+    <functioncall functionName="lastError"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="locale"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="lpAppName"/>
+    <functioncall functionName="lpDefault"/>
+    <functioncall functionName="lpFileName"/>
+    <functioncall functionName="lpKeyName"/>
+    <functioncall functionName="lpParameter"/>
+    <functioncall functionName="lpReturnedString"/>
+    <functioncall functionName="lpStartAddress"/>
+    <functioncall functionName="lpThreadAttributes"/>
+    <functioncall functionName="lpThreadId"/>
+    <functioncall functionName="lpszPath"/>
+    <functioncall functionName="lstrcat"/>
+    <functioncall functionName="lstrlen"/>
+    <functioncall functionName="memcmp"/>
+    <functioncall functionName="memcpy"/>
+    <functioncall functionName="memmove"/>
+    <functioncall functionName="memset"/>
+    <functioncall functionName="n"/>
+    <functioncall functionName="nSize"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="numberOfElements"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="pAddr"/>
+    <functioncall functionName="pAlloc1"/>
+    <functioncall functionName="pChar"/>
+    <functioncall functionName="pEveryoneSID"/>
+    <functioncall functionName="pFileUninit"/>
+    <functioncall functionName="pHours"/>
+    <functioncall functionName="pIntNull"/>
+    <functioncall functionName="pLocalAlloc"/>
+    <functioncall functionName="pMem"/>
+    <functioncall functionName="pMem1"/>
+    <functioncall functionName="pMem2"/>
+    <functioncall functionName="pSec"/>
+    <functioncall functionName="phModule"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="pszBuf"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="sec"/>
+    <functioncall functionName="short"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="sock"/>
+    <functioncall functionName="sockInit"/>
+    <functioncall functionName="sockaddrUninit"/>
+    <functioncall functionName="socket"/>
+    <functioncall functionName="socketInit"/>
+    <functioncall functionName="sprintf_s"/>
+    <functioncall functionName="src"/>
+    <functioncall functionName="st"/>
+    <functioncall functionName="stdio"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="strDest"/>
+    <functioncall functionName="strDestination"/>
+    <functioncall functionName="strSource"/>
+    <functioncall functionName="strlwr"/>
+    <functioncall functionName="strupr"/>
+    <functioncall functionName="swprintf"/>
+    <functioncall functionName="swprintf_s"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="ulongInit"/>
+    <functioncall functionName="uninit_count"/>
+    <functioncall functionName="uninit_deststr"/>
+    <functioncall functionName="uninit_dwCreationFlags"/>
+    <functioncall functionName="uninit_dwStackSize"/>
+    <functioncall functionName="uninit_locale"/>
+    <functioncall functionName="uninit_lpParameter"/>
+    <functioncall functionName="uninit_lpStartAddress"/>
+    <functioncall functionName="uninit_lpThreadAttributes"/>
+    <functioncall functionName="uninit_numberOfElements"/>
+    <functioncall functionName="uninit_srcstr1"/>
+    <functioncall functionName="uninit_srcstr2"/>
+    <functioncall functionName="uninit_strDestination"/>
+    <functioncall functionName="uninit_strSource"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="wchar_t"/>
+    <functioncall functionName="wordInit"/>
+    <functioncall functionName="wprintf"/>
+    <functioncall functionName="wsaData"/>
+  </FileInfo>
+</analyzerinfo>

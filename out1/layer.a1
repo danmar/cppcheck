@@ -1,0 +1,208 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3719238622">
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;page.x&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;page.x&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-13454\layer.c" line="1994" column="15" info="page.x is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-13454\layer.c" line="1984" column="23" info="page.x is assigned"/>
+            <symbol>page.x</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;page.y&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;page.y&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-13454\layer.c" line="1995" column="15" info="page.y is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-13454\layer.c" line="1985" column="23" info="page.y is assigned"/>
+            <symbol>page.y</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;p&apos; can be reduced." verbose="The scope of the variable &apos;p&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-13454\layer.c" line="169" column="6"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;q&apos; can be reduced." verbose="The scope of the variable &apos;q&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-13454\layer.c" line="170" column="6"/>
+            <symbol>q</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;cleared&apos; is assigned a value that is never used." verbose="Variable &apos;cleared&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-13454\layer.c" line="1240" column="24"/>
+            <symbol>cleared</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:912:15" call-funcname="OptimizeLayerFrames" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1392" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1389:21" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:912:15" call-funcname="OptimizeLayerFrames" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1392" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1389:21" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:912:15" call-funcname="OptimizeLayerFrames" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1425" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1422:21" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:912:15" call-funcname="OptimizeLayerFrames" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1425" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1422:21" my-argnr="2"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:100:13" my-argnr="2" my-argname="bounds" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="106" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:165:26" my-argnr="3" my-argname="bounds" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="178" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1587:19" my-argnr="1" my-argname="images" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1597" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1668:19" my-argnr="1" my-argname="images" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1674" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1758:20" my-argnr="1" my-argname="destination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1765" col="30" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1758:20" my-argnr="3" my-argname="source" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1765" col="15" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:100:13" my-argnr="2" my-argname="bounds" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="106" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:165:26" my-argnr="3" my-argname="bounds" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="178" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1587:19" my-argnr="1" my-argname="images" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1597" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1668:19" my-argnr="1" my-argname="images" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1674" col="14" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1758:20" my-argnr="1" my-argname="destination" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1765" col="30" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c:1758:20" my-argnr="3" my-argname="source" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13454/layer.c" line="1765" col="15" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="ClearBounds" lineNumber="100"/>
+    <functiondecl functionName="IsBoundsCleared" lineNumber="165"/>
+    <functiondecl functionName="CoalesceImages" lineNumber="229"/>
+    <functiondecl functionName="DisposeImages" lineNumber="377"/>
+    <functiondecl functionName="ComparePixels" lineNumber="522"/>
+    <functiondecl functionName="CompareImagesBounds" lineNumber="590"/>
+    <functiondecl functionName="CompareImagesLayers" lineNumber="743"/>
+    <functiondecl functionName="OptimizeLayerFrames" lineNumber="912"/>
+    <functiondecl functionName="OptimizeImageLayers" lineNumber="1389"/>
+    <functiondecl functionName="OptimizePlusImageLayers" lineNumber="1422"/>
+    <functiondecl functionName="OptimizeImageTransparency" lineNumber="1459"/>
+    <functiondecl functionName="RemoveDuplicateLayers" lineNumber="1587"/>
+    <functiondecl functionName="RemoveZeroDelayLayers" lineNumber="1668"/>
+    <functiondecl functionName="CompositeCanvas" lineNumber="1758"/>
+    <functiondecl functionName="CompositeLayers" lineNumber="1773"/>
+    <functiondecl functionName="MergeImageLayers" lineNumber="1901"/>
+    <functioncall functionName="AcquireExceptionInfo"/>
+    <functioncall functionName="AcquireQuantumMemory"/>
+    <functioncall functionName="AppendImageToList"/>
+    <functioncall functionName="BackgroundDispose"/>
+    <functioncall functionName="BlendPixelTrait"/>
+    <functioncall functionName="ChangeMaskCompositeOp"/>
+    <functioncall functionName="ClearBounds"/>
+    <functioncall functionName="CloneImage"/>
+    <functioncall functionName="CloneImageArtifacts"/>
+    <functioncall functionName="CloneImageProfiles"/>
+    <functioncall functionName="CloneImageProperties"/>
+    <functioncall functionName="CompareAnyLayer"/>
+    <functioncall functionName="CompareClearLayer"/>
+    <functioncall functionName="CompareImagesBounds"/>
+    <functioncall functionName="CompareOverlayLayer"/>
+    <functioncall functionName="ComparePixels"/>
+    <functioncall functionName="CompositeCanvas"/>
+    <functioncall functionName="CompositeImage"/>
+    <functioncall functionName="CopyCompositeOp"/>
+    <functioncall functionName="CropImage"/>
+    <functioncall functionName="DeleteImageFromList"/>
+    <functioncall functionName="DestroyExceptionInfo"/>
+    <functioncall functionName="DestroyImage"/>
+    <functioncall functionName="DestroyImageList"/>
+    <functioncall functionName="DisposeType"/>
+    <functioncall functionName="GetAuthenticPixels"/>
+    <functioncall functionName="GetFirstImageInList"/>
+    <functioncall functionName="GetImageArtifact"/>
+    <functioncall functionName="GetImageListLength"/>
+    <functioncall functionName="GetLastImageInList"/>
+    <functioncall functionName="GetMagickModule"/>
+    <functioncall functionName="GetNextImageInList"/>
+    <functioncall functionName="GetPixelAlpha"/>
+    <functioncall functionName="GetPixelChannels"/>
+    <functioncall functionName="GetPixelInfo"/>
+    <functioncall functionName="GetPixelInfoPixel"/>
+    <functioncall functionName="GetPreviousImageInList"/>
+    <functioncall functionName="GetVirtualPixels"/>
+    <functioncall functionName="IsBoundsCleared"/>
+    <functioncall functionName="IsFuzzyEquivalencePixelInfo"/>
+    <functioncall functionName="IsStringTrue"/>
+    <functioncall functionName="LogMagickEvent"/>
+    <functioncall functionName="MagickBooleanType"/>
+    <functioncall functionName="MagickFalse"/>
+    <functioncall functionName="MagickOffsetType"/>
+    <functioncall functionName="MagickRealType"/>
+    <functioncall functionName="MagickTrue"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="NewImageList"/>
+    <functioncall functionName="NoneDispose"/>
+    <functioncall functionName="OpaqueAlpha"/>
+    <functioncall functionName="OpaqueAlphaChannel"/>
+    <functioncall functionName="OptimizeImageLayer"/>
+    <functioncall functionName="OptimizeLayerFrames"/>
+    <functioncall functionName="OptimizePlusLayer"/>
+    <functioncall functionName="OptionError"/>
+    <functioncall functionName="OptionWarning"/>
+    <functioncall functionName="OverCompositeOp"/>
+    <functioncall functionName="PreviousDispose"/>
+    <functioncall functionName="Quantum"/>
+    <functioncall functionName="ReferenceImage"/>
+    <functioncall functionName="RelinquishMagickMemory"/>
+    <functioncall functionName="ResourceLimitError"/>
+    <functioncall functionName="SetImageAlphaChannel"/>
+    <functioncall functionName="SetImageBackgroundColor"/>
+    <functioncall functionName="SetImageProgress"/>
+    <functioncall functionName="SetPixelAlpha"/>
+    <functioncall functionName="SyncAuthenticPixels"/>
+    <functioncall functionName="ThrowImageException"/>
+    <functioncall functionName="ThrowMagickException"/>
+    <functioncall functionName="TraceEvent"/>
+    <functioncall functionName="TransparentAlpha"/>
+    <functioncall functionName="UndefinedDispose"/>
+    <functioncall functionName="add_frames"/>
+    <functioncall functionName="alpha"/>
+    <functioncall functionName="alpha_trait"/>
+    <functioncall functionName="assert"/>
+    <functioncall functionName="bgnd_bounds"/>
+    <functioncall functionName="bgnd_image"/>
+    <functioncall functionName="bounds"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="canvas"/>
+    <functioncall functionName="coalesce_image"/>
+    <functioncall functionName="columns"/>
+    <functioncall functionName="compose"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="curr"/>
+    <functioncall functionName="current_image"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="delay"/>
+    <functioncall functionName="dest"/>
+    <functioncall functionName="destination"/>
+    <functioncall functionName="disposals"/>
+    <functioncall functionName="dispose"/>
+    <functioncall functionName="dispose_image"/>
+    <functioncall functionName="dispose_images"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="dup_bounds"/>
+    <functioncall functionName="dup_image"/>
+    <functioncall functionName="exception"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="height"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="image"/>
+    <functioncall functionName="image1"/>
+    <functioncall functionName="image2"/>
+    <functioncall functionName="image_a"/>
+    <functioncall functionName="image_b"/>
+    <functioncall functionName="images"/>
+    <functioncall functionName="iterations"/>
+    <functioncall functionName="layers"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="method"/>
+    <functioncall functionName="next"/>
+    <functioncall functionName="number_images"/>
+    <functioncall functionName="optimized_image"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="page"/>
+    <functioncall functionName="pixel1"/>
+    <functioncall functionName="pixel2"/>
+    <functioncall functionName="prev_image"/>
+    <functioncall functionName="previous"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rows"/>
+    <functioncall functionName="sans_exception"/>
+    <functioncall functionName="scene"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="source"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="ticks_per_second"/>
+    <functioncall functionName="try_bounds"/>
+    <functioncall functionName="try_cleared"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="width"/>
+    <functioncall functionName="x"/>
+    <functioncall functionName="x_offset"/>
+    <functioncall functionName="y"/>
+    <functioncall functionName="y_offset"/>
+  </FileInfo>
+</analyzerinfo>

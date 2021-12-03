@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3317153717">
+        <error id="syntaxError" severity="error" msg="syntax error: file . " verbose="syntax error: file . " file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/files/foo6.txx">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\gui\test\data\files\foo6.txx" line="1" column="16"/>
+        </error>
+</analyzerinfo>

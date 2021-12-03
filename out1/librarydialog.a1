@@ -1,0 +1,202 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2531980520">
+  <FileInfo check="Class">
+<class name="CppcheckLibraryData::Container" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="32" col="5" hash="2005264129650127191"/>
+<class name="CppcheckLibraryData::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="50" col="9" hash="9305761117681135359"/>
+<class name="CppcheckLibraryData::Define" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="60" col="5" hash="9762528397553776282"/>
+<class name="CppcheckLibraryData::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="65" col="5" hash="7709077768247235740"/>
+<class name="CppcheckLibraryData::Function::ReturnValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="76" col="9" hash="2941624480534084580"/>
+<class name="CppcheckLibraryData::Function::Arg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="89" col="9" hash="10560061904865885360"/>
+<class name="CppcheckLibraryData::Function::Arg::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="104" col="13" hash="1441677657335109401"/>
+<class name="CppcheckLibraryData::Function::Arg::Iterator" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="110" col="13" hash="5612367683987642184"/>
+<class name="CppcheckLibraryData::MemoryResource" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="135" col="5" hash="510420658595555990"/>
+<class name="CppcheckLibraryData::MemoryResource::Alloc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="137" col="9" hash="3724875746971234360"/>
+<class name="CppcheckLibraryData::MemoryResource::Dealloc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="152" col="9" hash="13156322318479987015"/>
+<class name="CppcheckLibraryData::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="166" col="5" hash="9641437974410206362"/>
+<class name="CppcheckLibraryData::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="173" col="5" hash="7995025389799641861"/>
+<class name="CppcheckLibraryData::Reflection" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="182" col="5" hash="12071517381403192149"/>
+<class name="CppcheckLibraryData::Reflection::Call" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="183" col="9" hash="7919669940825108656"/>
+<class name="CppcheckLibraryData::Markup" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="195" col="5" hash="16509753476748642895"/>
+<class name="CppcheckLibraryData::Markup::CodeBlocks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="196" col="9" hash="12360601708972750268"/>
+<class name="CppcheckLibraryData::Markup::Exporter" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/cppchecklibrarydata.h" line="207" col="9" hash="16565149977285752714"/>
+<class name="FunctionListItem" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/librarydialog.cpp" line="33" col="1" hash="9660087070153488523"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/librarydialog.cpp:35:5" my-argnr="2" my-argname="function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/librarydialog.cpp" line="39" col="17" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="currentFunction" lineNumber="67"/>
+    <functiondecl functionName="openCfg" lineNumber="75"/>
+    <functiondecl functionName="saveCfg" lineNumber="131"/>
+    <functiondecl functionName="saveCfgAs" lineNumber="150"/>
+    <functiondecl functionName="addFunction" lineNumber="168"/>
+    <functiondecl functionName="editFunctionName" lineNumber="191"/>
+    <functiondecl functionName="selectFunction" lineNumber="209"/>
+    <functiondecl functionName="sortFunctions" lineNumber="253"/>
+    <functiondecl functionName="filterFunctions" lineNumber="272"/>
+    <functiondecl functionName="changeFunction" lineNumber="287"/>
+    <functiondecl functionName="editArg" lineNumber="304"/>
+    <functiondecl functionName="getArgText" lineNumber="324"/>
+    <functiondecl functionName="updateArguments" lineNumber="342"/>
+    <functioncall functionName="Alloc"/>
+    <functioncall functionName="Arg"/>
+    <functioncall functionName="Call"/>
+    <functioncall functionName="CaseInsensitive"/>
+    <functioncall functionName="CodeBlocks"/>
+    <functioncall functionName="Container"/>
+    <functioncall functionName="Critical"/>
+    <functioncall functionName="Dealloc"/>
+    <functioncall functionName="Exporter"/>
+    <functioncall functionName="False"/>
+    <functioncall functionName="Function"/>
+    <functioncall functionName="FunctionListItem"/>
+    <functioncall functionName="ItemIsEditable"/>
+    <functioncall functionName="Iterator"/>
+    <functioncall functionName="LibraryAddFunctionDialog"/>
+    <functioncall functionName="LibraryDialog"/>
+    <functioncall functionName="LibraryEditArgDialog"/>
+    <functioncall functionName="MatchContains"/>
+    <functioncall functionName="MinSize"/>
+    <functioncall functionName="Ok"/>
+    <functioncall functionName="QDialog"/>
+    <functioncall functionName="QList"/>
+    <functioncall functionName="QListWidgetItem"/>
+    <functioncall functionName="QPair"/>
+    <functioncall functionName="QRegExp"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="ReturnValue"/>
+    <functioncall functionName="Text"/>
+    <functioncall functionName="True"/>
+    <functioncall functionName="TrueFalseUnknown"/>
+    <functioncall functionName="Unknown"/>
+    <functioncall functionName="acceptFile"/>
+    <functioncall functionName="access_arrayLike"/>
+    <functioncall functionName="addItem"/>
+    <functioncall functionName="allItems"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="arg2"/>
+    <functioncall functionName="args"/>
+    <functioncall functionName="back"/>
+    <functioncall functionName="bool"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="comments"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="container"/>
+    <functioncall functionName="containers"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="currentFunction"/>
+    <functioncall functionName="currentIndex"/>
+    <functioncall functionName="d"/>
+    <functioncall functionName="datadir"/>
+    <functioncall functionName="defines"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="dynamic_cast"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="errmsg"/>
+    <functioncall functionName="exactMatch"/>
+    <functioncall functionName="exec"/>
+    <functioncall functionName="extra"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="filter"/>
+    <functioncall functionName="filterFunctions"/>
+    <functioncall functionName="findItems"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="flags"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="foreach"/>
+    <functioncall functionName="formatstr"/>
+    <functioncall functionName="function"/>
+    <functioncall functionName="functionName"/>
+    <functioncall functionName="functions"/>
+    <functioncall functionName="gccConst"/>
+    <functioncall functionName="gccPure"/>
+    <functioncall functionName="getArg"/>
+    <functioncall functionName="getArgText"/>
+    <functioncall functionName="getDataDir"/>
+    <functioncall functionName="getOpenFileName"/>
+    <functioncall functionName="getPathFromFilename"/>
+    <functioncall functionName="getSaveFileName"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="init"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="isChecked"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="isNull"/>
+    <functioncall functionName="isRealloc"/>
+    <functioncall functionName="item"/>
+    <functioncall functionName="leakignore"/>
+    <functioncall functionName="mFileName"/>
+    <functioncall functionName="mIgnoreChanges"/>
+    <functioncall functionName="mUi"/>
+    <functioncall functionName="markups"/>
+    <functioncall functionName="memoryresource"/>
+    <functioncall functionName="minsizes"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="noreturn"/>
+    <functioncall functionName="notbool"/>
+    <functioncall functionName="notnull"/>
+    <functioncall functionName="notuninit"/>
+    <functioncall functionName="nr"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="number"/>
+    <functioncall functionName="numberOfArguments"/>
+    <functioncall functionName="open"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="platformTypes"/>
+    <functioncall functionName="podtypes"/>
+    <functioncall functionName="reallocArg"/>
+    <functioncall functionName="reflections"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="row"/>
+    <functioncall functionName="s"/>
+    <functioncall functionName="saveCfg"/>
+    <functioncall functionName="selectFunction"/>
+    <functioncall functionName="selected"/>
+    <functioncall functionName="selectedFile"/>
+    <functioncall functionName="selectedFilter"/>
+    <functioncall functionName="selectedItems"/>
+    <functioncall functionName="setChecked"/>
+    <functioncall functionName="setCurrentIndex"/>
+    <functioncall functionName="setEnabled"/>
+    <functioncall functionName="setFlags"/>
+    <functioncall functionName="setHidden"/>
+    <functioncall functionName="setPlainText"/>
+    <functioncall functionName="setSelected"/>
+    <functioncall functionName="setText"/>
+    <functioncall functionName="setupUi"/>
+    <functioncall functionName="size_templateParameter"/>
+    <functioncall functionName="smartPointers"/>
+    <functioncall functionName="sort"/>
+    <functioncall functionName="sortItems"/>
+    <functioncall functionName="startsWith"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="struct"/>
+    <functioncall functionName="strz"/>
+    <functioncall functionName="swap"/>
+    <functioncall functionName="tempdata"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="toPlainText"/>
+    <functioncall functionName="toStdString"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="ts"/>
+    <functioncall functionName="typeChecks"/>
+    <functioncall functionName="undefines"/>
+    <functioncall functionName="updateArguments"/>
+    <functioncall functionName="useretval"/>
+    <functioncall functionName="valid"/>
+    <functioncall functionName="view"/>
+  </FileInfo>
+</analyzerinfo>

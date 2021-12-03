@@ -1,0 +1,11 @@
+callfunc1 call:[scanf]
+float1
+float2
+functionCall call:[unknown_function] noreturn:[unknown_function]
+globalVar1 global:[globalvar]
+globalVar2 global:[globalvar] call:[dostuff]
+pointer1
+pointer2
+stdmap
+struct1
+trycatch call:[dostuff]

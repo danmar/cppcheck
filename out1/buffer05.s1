@@ -1,0 +1,2 @@
+f call:[malloc,strcpy] noreturn:[strcpy]
+main call:[f]

@@ -1,0 +1,688 @@
+CWE
+Check
+Check call:[instances,remove] noreturn:[remove]
+name
+FileInfo
+FileInfo
+toString call:[string] noreturn:[string]
+getFileInfo
+loadFileInfoFromXml
+analyseWholeProgram
+reportError call:[CWE,reportError] noreturn:[reportError]
+reportError call:[callstack,reportError] noreturn:[reportError]
+reportError call:[CWE,reportError] noreturn:[reportError]
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+FwdAnalysis
+Result
+Result
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+isClass call:[setFlag] noreturn:[setFlag]
+isFunction call:[setFlag] noreturn:[setFlag]
+isVariable call:[setFlag] noreturn:[setFlag]
+isAlias call:[setFlag] noreturn:[setFlag]
+isSpecialization call:[setFlag] noreturn:[setFlag]
+isPartialSpecialization call:[setFlag] noreturn:[setFlag]
+isForwardDeclaration call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+getFlag call:[return] noreturn:[return]
+setFlag
+operator==
+token
+token
+scope
+name
+fullName
+nameToken
+paramEnd
+paramEnd
+isClass call:[getFlag] noreturn:[getFlag]
+isFunction call:[getFlag] noreturn:[getFlag]
+isVariable call:[getFlag] noreturn:[getFlag]
+isAlias call:[getFlag] noreturn:[getFlag]
+isSpecialization call:[getFlag] noreturn:[getFlag]
+isPartialSpecialization call:[getFlag] noreturn:[getFlag]
+isForwardDeclaration call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isSameFamily call:[return]
+ScopeInfo2
+TokenImpl
+str call:[update_property_info] noreturn:[update_property_info]
+str
+tokAt call:[tokAt]
+linkAt call:[linkAt]
+simpleMatch call:[simpleMatch] noreturn:[simpleMatch]
+valueType
+argumentType call:[Match,astParent] noreturn:[astParent]
+tokType
+tokType call:[setFlag] noreturn:[setFlag]
+isKeyword
+isName call:[getFlag] noreturn:[getFlag]
+isNameOnly
+isLiteral call:[getFlag] noreturn:[getFlag]
+isNumber
+isEnumerator
+isOp call:[isAssignmentOp,isConstOp,return] noreturn:[return]
+isConstOp call:[isArithmeticalOp,return] noreturn:[return]
+isExtendedOp call:[isConstOp]
+isArithmeticalOp
+isComparisonOp
+isAssignmentOp
+isBoolean
+isIncDecOp
+isBinaryOp call:[astOperand1,astOperand2]
+isUnaryOp call:[astOperand1,astOperand2]
+flags
+flags
+isUnsigned call:[getFlag] noreturn:[getFlag]
+isUnsigned call:[setFlag] noreturn:[setFlag]
+isSigned call:[getFlag] noreturn:[getFlag]
+isSigned call:[setFlag] noreturn:[setFlag]
+isPointerCompare call:[getFlag] noreturn:[getFlag]
+isPointerCompare call:[setFlag] noreturn:[setFlag]
+isLong call:[getFlag] noreturn:[getFlag]
+isLong call:[setFlag] noreturn:[setFlag]
+isStandardType call:[getFlag] noreturn:[getFlag]
+isStandardType call:[setFlag] noreturn:[setFlag]
+isExpandedMacro call:[getFlag] noreturn:[getFlag]
+isExpandedMacro call:[setFlag] noreturn:[setFlag]
+isCast call:[getFlag] noreturn:[getFlag]
+isCast call:[setFlag] noreturn:[setFlag]
+isAttributeConstructor call:[getFlag] noreturn:[getFlag]
+isAttributeConstructor call:[setFlag] noreturn:[setFlag]
+isAttributeDestructor call:[getFlag] noreturn:[getFlag]
+isAttributeDestructor call:[setFlag] noreturn:[setFlag]
+isAttributeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeUnused call:[setFlag] noreturn:[setFlag]
+isAttributeUsed call:[getFlag] noreturn:[getFlag]
+isAttributeUsed call:[setFlag] noreturn:[setFlag]
+isAttributePure call:[getFlag] noreturn:[getFlag]
+isAttributePure call:[setFlag] noreturn:[setFlag]
+isAttributeConst call:[getFlag] noreturn:[getFlag]
+isAttributeConst call:[setFlag] noreturn:[setFlag]
+isAttributeNoreturn call:[getFlag] noreturn:[getFlag]
+isAttributeNoreturn call:[setFlag] noreturn:[setFlag]
+isAttributeNothrow call:[getFlag] noreturn:[getFlag]
+isAttributeNothrow call:[setFlag] noreturn:[setFlag]
+isAttributePacked call:[getFlag] noreturn:[getFlag]
+isAttributePacked call:[setFlag] noreturn:[setFlag]
+isAttributeNodiscard call:[getFlag] noreturn:[getFlag]
+isAttributeNodiscard call:[setFlag] noreturn:[setFlag]
+isAttributeMaybeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeMaybeUnused call:[setFlag] noreturn:[setFlag]
+setCppcheckAttribute call:[setCppcheckAttribute] noreturn:[setCppcheckAttribute]
+getCppcheckAttribute call:[getCppcheckAttribute] noreturn:[getCppcheckAttribute]
+hasCppcheckAttributes
+isControlFlowKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[setFlag] noreturn:[setFlag]
+isComplex call:[getFlag] noreturn:[getFlag]
+isComplex call:[setFlag] noreturn:[setFlag]
+isEnumType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[setFlag] noreturn:[setFlag]
+isAtAddress call:[getFlag] noreturn:[getFlag]
+isAtAddress call:[setFlag] noreturn:[setFlag]
+isIncompleteVar call:[getFlag] noreturn:[getFlag]
+isIncompleteVar call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+isExternC call:[getFlag] noreturn:[getFlag]
+isExternC call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclComma call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclComma call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclEq call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclEq call:[setFlag] noreturn:[setFlag]
+isImplicitInt call:[getFlag] noreturn:[getFlag]
+isImplicitInt call:[setFlag] noreturn:[setFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isInline call:[setFlag] noreturn:[setFlag]
+isTemplate call:[getFlag] noreturn:[getFlag]
+isTemplate call:[setFlag] noreturn:[setFlag]
+isBitfield
+bits
+templateSimplifierPointers
+templateSimplifierPointer call:[insert] noreturn:[insert]
+setBits
+isUtf8 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf16 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf32 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isCChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isCMultiChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isTemplateArg call:[getFlag] noreturn:[getFlag]
+isTemplateArg call:[setFlag] noreturn:[setFlag]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findmatch call:[findmatch]
+findmatch call:[findmatch]
+fileIndex
+fileIndex
+linenr
+linenr
+column
+column
+next
+previous
+varId
+varId call:[isStandardType,tokType,update_property_info] noreturn:[isStandardType,update_property_info]
+exprId
+exprId
+forDebug
+forDebugVarId call:[forDebug]
+forDebugExprId call:[forDebug]
+forPrintOut call:[forDebug]
+link call:[update_property_info] noreturn:[update_property_info]
+link
+scope
+scope
+function
+variable call:[tokType] noreturn:[tokType]
+variable
+type
+enumerator
+enumerator call:[tokType] noreturn:[tokType]
+progressValue
+originalName global:[emptyString]
+values
+originalName call:[string] noreturn:[string]
+getKnownIntValue call:[front]
+removeValues call:[remove_if] noreturn:[remove_if]
+index
+next
+previous
+getFlag call:[return] noreturn:[return]
+setFlag
+astOperand1
+astOperand1
+astOperand2
+astOperand2
+astParent
+astParent
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astTop
+astTop
+clearAst
+clearValueFlow
+astString call:[astString] noreturn:[astString]
+setCpp11init
+isCpp11init
+setSettings
+getSettings
+isC
+isCPP
+front
+front
+back
+back
+getFiles
+find call:[find] noreturn:[find]
+end call:[end] noreturn:[end]
+map
+getVarId
+setTimerResults
+isC call:[isC] noreturn:[isC]
+isCPP call:[isCPP] noreturn:[isCPP]
+setPreprocessor
+getPreprocessor
+codeWithTemplates
+setSettings call:[setSettings] noreturn:[setSettings]
+getSymbolDatabase
+varIdCount
+tokens call:[front] noreturn:[front]
+isMaxTime
+getSettings
+newVarId
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+Dimension
+BaseInfo
+operator<
+FriendInfo
+Type call:[next,str,tokAt] noreturn:[next]
+type global:[emptyString] call:[str]
+isTypeAlias call:[str]
+Enumerator
+getFlag call:[return] noreturn:[return]
+setFlag
+Variable call:[evaluate] noreturn:[evaluate]
+nameToken
+typeStartToken
+typeEndToken
+name global:[emptyString] call:[str] noreturn:[str]
+declarationId call:[varId] noreturn:[varId]
+index
+isPublic
+isProtected
+isPrivate
+isGlobal
+isNamespace
+isArgument
+isLocal call:[isExtern,return] noreturn:[isExtern]
+isMutable call:[getFlag] noreturn:[getFlag]
+isVolatile call:[getFlag] noreturn:[getFlag]
+isStatic call:[getFlag] noreturn:[getFlag]
+isExtern call:[getFlag] noreturn:[getFlag]
+isConst call:[getFlag] noreturn:[getFlag]
+isThrow
+isClass call:[getFlag] noreturn:[getFlag]
+isArray call:[getFlag] noreturn:[getFlag]
+isPointer call:[getFlag] noreturn:[getFlag]
+isPointerToArray call:[getFlag,isPointer] noreturn:[getFlag]
+isArrayOrPointer call:[getFlag] noreturn:[getFlag]
+isReference call:[getFlag] noreturn:[getFlag]
+isRValueReference call:[getFlag] noreturn:[getFlag]
+hasDefault call:[getFlag] noreturn:[getFlag]
+isInit call:[getFlag] noreturn:[getFlag]
+type
+typeScope
+scope
+dimensions
+dimension
+dimensionKnown
+isStlType call:[getFlag] noreturn:[getFlag]
+isStlStringType call:[getFlag] noreturn:[getFlag]
+isSmartPointer call:[getFlag] noreturn:[getFlag]
+isStlType call:[isStlType,strAt] noreturn:[strAt]
+isStlType call:[end,find,isStlType,strAt] noreturn:[end]
+isFloatingType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[isEnumType,type] noreturn:[isEnumType]
+isMaybeUnused call:[getFlag] noreturn:[getFlag]
+valueType
+accessControl
+type
+getFlag call:[return] noreturn:[return]
+setFlag
+name call:[str] noreturn:[str]
+argCount call:[size] noreturn:[size]
+minArgCount call:[size]
+initializedArgCount
+isLambda
+isConstructor
+isDestructor
+isAttributeConstructor call:[isAttributeConstructor] noreturn:[isAttributeConstructor]
+isAttributeDestructor call:[isAttributeDestructor] noreturn:[isAttributeDestructor]
+isAttributePure call:[isAttributePure] noreturn:[isAttributePure]
+isAttributeConst call:[isAttributeConst] noreturn:[isAttributeConst]
+isAttributeNoreturn call:[isAttributeNoreturn] noreturn:[isAttributeNoreturn]
+isAttributeNothrow call:[isAttributeNothrow] noreturn:[isAttributeNothrow]
+isAttributeNodiscard call:[isAttributeNodiscard] noreturn:[isAttributeNodiscard]
+hasBody call:[getFlag] noreturn:[getFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isConst call:[getFlag] noreturn:[getFlag]
+hasVirtualSpecifier call:[getFlag] noreturn:[getFlag]
+isPure call:[getFlag] noreturn:[getFlag]
+isStatic call:[getFlag] noreturn:[getFlag]
+isStaticLocal call:[getFlag] noreturn:[getFlag]
+isExtern call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isExplicit call:[getFlag] noreturn:[getFlag]
+isDefault call:[getFlag] noreturn:[getFlag]
+isDelete call:[getFlag] noreturn:[getFlag]
+isNoExcept call:[getFlag] noreturn:[getFlag]
+isThrow call:[getFlag] noreturn:[getFlag]
+hasOverrideSpecifier call:[getFlag] noreturn:[getFlag]
+hasFinalSpecifier call:[getFlag] noreturn:[getFlag]
+isOperator call:[getFlag] noreturn:[getFlag]
+hasLvalRefQualifier call:[getFlag] noreturn:[getFlag]
+hasRvalRefQualifier call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isVolatile call:[getFlag] noreturn:[getFlag]
+hasTrailingReturnType call:[getFlag] noreturn:[getFlag]
+hasBody call:[setFlag] noreturn:[setFlag]
+isInlineKeyword call:[getFlag] noreturn:[getFlag]
+isEscapeFunction call:[getFlag] noreturn:[getFlag]
+isEscapeFunction call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+returnDefEnd call:[findmatch,hasTrailingReturnType] noreturn:[findmatch]
+isInline call:[setFlag] noreturn:[setFlag]
+isConst call:[setFlag] noreturn:[setFlag]
+hasVirtualSpecifier call:[setFlag] noreturn:[setFlag]
+isPure call:[setFlag] noreturn:[setFlag]
+isStatic call:[setFlag] noreturn:[setFlag]
+isStaticLocal call:[setFlag] noreturn:[setFlag]
+isExtern call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+isExplicit call:[setFlag] noreturn:[setFlag]
+isDefault call:[setFlag] noreturn:[setFlag]
+isDelete call:[setFlag] noreturn:[setFlag]
+isNoExcept call:[setFlag] noreturn:[setFlag]
+isThrow call:[setFlag] noreturn:[setFlag]
+isOperator call:[setFlag] noreturn:[setFlag]
+hasLvalRefQualifier call:[setFlag] noreturn:[setFlag]
+hasRvalRefQualifier call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isVolatile call:[setFlag] noreturn:[setFlag]
+hasTrailingReturnType call:[setFlag] noreturn:[setFlag]
+isInlineKeyword call:[setFlag] noreturn:[setFlag]
+setBodyStartEnd call:[link,push_back] noreturn:[push_back]
+isAnonymous call:[compare,isdigit,size] noreturn:[isdigit]
+findEnumerator call:[str]
+isNestedIn
+nestedInFunction
+isClassOrStruct call:[return] noreturn:[return]
+isClassOrStructOrUnion call:[return] noreturn:[return]
+isExecutable
+isLoopScope
+isLocal call:[return] noreturn:[return]
+findRecordInNestedList call:[findRecordInNestedList]
+findType call:[findType]
+addFunction call:[back,insert,make_pair,push_back,str] noreturn:[insert]
+ValueType
+ValueType
+ValueType
+ValueType
+isPrimitive call:[return] noreturn:[return]
+isIntegral call:[return] noreturn:[return]
+isFloat call:[return] noreturn:[return]
+isEnum
+findType call:[findType]
+findScope call:[findScope]
+isVarId call:[size] noreturn:[size]
+getVariableFromVarId call:[at] noreturn:[at]
+variableList
+CheckClass
+runChecks call:[checkClass,checkConst,checkCopyCtorAndEqOperator,checkDuplInheritedMembers,checkExplicitConstructors,checkMemset,checkOverride,checkSelfInitialization,checkThisUseAfterFree,checkUnsafeClassRefMember,checkVirtualFunctionCallInConstructor,constructors,copyconstructors,initializationListUsage,initializerListOrder,isC,operatorEqRetRefThis,operatorEqToSelf,privateFunctions,thisSubtraction,virtualDestructor] noreturn:[checkUnsafeClassRefMember]
+operator== call:[isSameLocation]
+isSameLocation
+getErrorMessages global:[emptyString] call:[c,checkConstError,copyConstructorShallowCopyError,copyCtorAndEqOperatorError,duplInheritedMembersError,initializerListError,mallocOnClassError,mallocOnClassWarning,memsetError,memsetErrorFloat,memsetErrorReference,noConstructorError,noCopyConstructorError,noDestructorError,noExplicitConstructorError,noOperatorEqError,operatorEqMissingReturnStatementError,operatorEqRetRefThisError,operatorEqShouldBeLeftUnimplementedError,operatorEqToSelfError,operatorEqVarError,overrideError,pureVirtualFunctionCallInConstructorError,selfInitializationError,suggestInitializationList,thisSubtractionError,thisUseAfterFree,uninitVarError,unsafeClassRefMemberError,unusedPrivateFunctionError,virtualDestructorError,virtualFunctionCallInConstructorError] noreturn:[unsafeClassRefMemberError]
+myName
+classInfo
+Usage
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+getFunctionTypeName
+isVariableCopyNeeded call:[isPointer,type,valueType]
+isVcl
+isVclTypeInit call:[isVclTypeInit]
+CheckClass
+constructors call:[Match,argCount,canNotCopy,canNotMove,clearAllVar,constructorMemberInitialization,createUsageList,empty,hasBody,hasDefault,initializeVarList,isClass,isConst,isConstructor,isEnabled,isInit,isOperator,isPointer,isPointerArray,isPrivate,isStatic,isVariableCopyNeeded,isVcl,isVclTypeInit,link,name,next,noConstructorError,operatorEqVarError,precedes,previous,scope,simpleMatch,str,tokType,type,typeScope,uninitVarError,valueType] noreturn:[operatorEqVarError,uninitVarError]
+checkExplicitConstructors call:[hasBody,isConstructor,isDelete,isEnabled,isExplicit,isPure,minArgCount,noExplicitConstructorError] noreturn:[noExplicitConstructorError]
+hasNonCopyableBase call:[hasNonCopyableBase,isDelete]
+copyconstructors call:[Match,begin,clear,copyConstructorShallowCopyError,empty,end,erase,find,getAllocFuncInfo,hasNonCopyableBase,insert,isDefault,isEnabled,isIntegral,isPointer,isStatic,linkAt,next,noCopyConstructorError,noDestructorError,noOperatorEqError,scope,str,tokAt,type,typeScope,valueType,varId,variable] noreturn:[copyConstructorShallowCopyError,erase,insert,noCopyConstructorError,noDestructorError,noOperatorEqError,tokAt]
+copyConstructorShallowCopyError global:[CWE398] call:[reportError] noreturn:[reportError]
+noMemberErrorMessage call:[string]
+noCopyConstructorError global:[CWE398] call:[noMemberErrorMessage,reportError] noreturn:[reportError]
+noOperatorEqError global:[CWE398] call:[noMemberErrorMessage,reportError] noreturn:[reportError]
+noDestructorError global:[CWE398] call:[noMemberErrorMessage,reportError] noreturn:[reportError]
+canNotCopy call:[isConstructor]
+canNotMove call:[isConstructor]
+getAllVariableMembers call:[getAllVariableMembers,isClassOrStruct,push_back] noreturn:[getAllVariableMembers,push_back]
+createUsageList call:[emplace_back,getAllVariableMembers,reserve,size] noreturn:[emplace_back]
+assignVar call:[declarationId]
+initVar call:[declarationId]
+assignAllVar
+clearAllVar
+isBaseClassFunc call:[str]
+initializeVarList call:[InternalError,Match,assignAllVar,assignVar,begin,declarationId,empty,end,find,function,hasBody,initVar,initializeVarList,isArray,isBaseClassFunc,isConstructor,isLikelyStreamRead,isName,isReference,link,linkAt,name,next,pop_back,previous,push_back,simpleMatch,str,strAt,tokAt,varId,variable] noreturn:[InternalError,assignAllVar,assignVar,initVar,link,next,pop_back,tokAt]
+noConstructorError global:[CWE398] call:[reportError,string] noreturn:[reportError]
+noExplicitConstructorError global:[CWE398] call:[message,reportError,string,verbose] noreturn:[reportError]
+uninitVarError global:[CWE398] call:[reportError,string] noreturn:[reportError]
+operatorEqVarError global:[CWE398] call:[reportError] noreturn:[reportError]
+initializationListUsage call:[Match,astOperand1,astOperand2,constructorMemberInitialization,findExpressionStartEndTokens,findLambdaEndToken,isArray,isConstructor,isEnabled,isEnumType,isLocal,isMemberFunc,isPointer,isReference,isStatic,linenr,next,scope,str,strAt,suggestInitializationList,tokAt,valueType,variable,visitAstNodes,wrongData] noreturn:[suggestInitializationList]
+suggestInitializationList global:[CWE398] call:[reportError] noreturn:[reportError]
+checkFunctionUsage call:[Match,begin,checkFunctionUsage,declarationId,end,findmatch,function,isStatic,link,linkAt,name,next,str,strAt,tokAt,varId] noreturn:[link,next,tokAt]
+privateFunctions call:[begin,checkFunctionUsage,empty,end,erase,findsimplematch,front,isEnabled,isImplicitlyVirtual,isOperator,name,pop_front,push_back,size,unusedPrivateFunctionError] noreturn:[checkFunctionUsage,erase,pop_front,push_back,unusedPrivateFunctionError]
+unusedPrivateFunctionError global:[CWE398] call:[reportError] noreturn:[reportError]
+findFunctionOf
+checkMemset call:[Match,checkMemsetType,dimensions,findFunctionOf,int,isArray,isArrayOrPointer,isEnabled,mallocOnClassWarning,next,nextArgument,previous,scope,simpleMatch,size,str,strAt,tokAt,type,typeEndToken,typeScope,variable] noreturn:[checkMemsetType,findFunctionOf,int,mallocOnClassWarning,next,nextArgument,previous,tokAt,typeScope]
+checkMemsetType call:[Match,checkMemsetType,end,find,hasVirtualSpecifier,insert,isArray,isConst,isEnabled,isFloatingType,isPointer,isReference,isStatic,isStlType,mallocOnClassError,memsetError,memsetErrorFloat,memsetErrorReference,podtype,str,tokAt,typeEndToken,typeScope,typeStartToken] noreturn:[checkMemsetType,mallocOnClassError,memsetError,memsetErrorFloat,str,tokAt]
+mallocOnClassWarning global:[CWE762] call:[reportError] noreturn:[reportError]
+mallocOnClassError global:[CWE665] call:[reportError] noreturn:[reportError]
+memsetError global:[CWE762] call:[reportError] noreturn:[reportError]
+memsetErrorReference global:[CWE665] call:[reportError] noreturn:[reportError]
+memsetErrorFloat global:[CWE758] call:[reportError] noreturn:[reportError]
+operatorEqRetRefThis call:[begin,checkReturnPtrThis,end,hasBody,isEnabled,strAt] noreturn:[checkReturnPtrThis]
+checkReturnPtrThis call:[checkReturnPtrThis] noreturn:[checkReturnPtrThis]
+checkReturnPtrThis call:[Match,astOperand1,begin,c_str,cast,checkReturnPtrThis,end,find,hasBody,insert,isConst,isScopeNoReturn,isUnaryOp,link,linkAt,next,operatorEqMissingReturnStatementError,operatorEqRetRefThisError,operatorEqShouldBeLeftUnimplementedError,previous,simpleMatch,size,str,strAt,tmp,tokAt] noreturn:[astOperand1,checkReturnPtrThis,operatorEqMissingReturnStatementError,operatorEqRetRefThisError,tokAt]
+operatorEqRetRefThisError global:[CWE398] call:[reportError] noreturn:[reportError]
+operatorEqShouldBeLeftUnimplementedError global:[CWE398] call:[reportError] noreturn:[reportError]
+operatorEqMissingReturnStatementError global:[CWE398] call:[operatorEqRetRefThisError,reportError] noreturn:[operatorEqRetRefThisError,reportError]
+operatorEqToSelf call:[Match,begin,empty,front,hasAllocation,hasAllocationInIfScope,hasAssignSelf,hasBody,isEnabled,nameToken,operatorEqToSelfError,previous,size,str,typeEndToken] noreturn:[operatorEqToSelfError,previous]
+hasAllocationInIfScope call:[hasAllocation,link,str] noreturn:[hasAllocation,link]
+hasAllocation call:[hasAllocation] noreturn:[hasAllocation]
+hasAllocation call:[Match,isMemberVar,next,tokAt,varId] noreturn:[next,tokAt]
+isTrueKeyword call:[getKnownIntValue,hasKnownIntValue]
+isFalseKeyword call:[getKnownIntValue,hasKnownIntValue]
+isInverted call:[astOperand1,astOperand2,astParent,c_str,isFalseKeyword,isTrueKeyword,next,simpleMatch,size,str]
+getIfStmtBodyStart call:[astParent,astTop,isInverted,link,next,simpleMatch] noreturn:[link]
+hasAssignSelf call:[Match,astOperand1,astOperand2,getIfStmtBodyStart,isUnaryOp,next,simpleMatch,str,visitAstNodes] noreturn:[astOperand1,astOperand2,getIfStmtBodyStart]
+operatorEqToSelfError global:[CWE398] call:[reportError] noreturn:[reportError]
+virtualDestructor global:[emptyString] call:[Match,begin,c_str,declarationId,empty,end,erase,find,getDestructor,hasBody,hasVirtualSpecifier,insert,isEnabled,isPointer,linkAt,name,next,push_back,simpleMatch,size,str,tmp,tokAt,tokens,type,varId,variableList,virtualDestructorError] noreturn:[erase,insert,virtualDestructorError]
+virtualDestructorError global:[CWE404] call:[isEnabled,reportError] noreturn:[reportError]
+thisSubtraction call:[findmatch,isEnabled,next,strAt,thisSubtractionError,tokens] noreturn:[next,thisSubtractionError]
+thisSubtractionError global:[CWE398] call:[reportError] noreturn:[reportError]
+checkConst call:[Match,checkConstError,checkConstError2,checkConstFunc,compare,empty,endsWith,hasBody,hasVirtualSpecifier,isConst,isEnabled,isFriend,isImplicitlyVirtual,isInline,isName,isOperator,isSmartPointer,isStatic,isUpperCaseName,next,size,str,string,type] noreturn:[checkConstError,checkConstError2]
+isMemberVar call:[Match,debugMessage,empty,isMemberVar,isStatic,link,linkAt,name,previous,simpleMatch,str,tokAt,varId,while] noreturn:[debugMessage,isStatic]
+isMemberFunc call:[argCount,empty,function,isMemberFunc,isStatic,isVariadic,minArgCount,name,nextArgument,str,tokAt] noreturn:[isStatic]
+isConstMemberFunc call:[empty,function,isConst,isConstMemberFunc] noreturn:[isConst]
+checkConstFunc global:[stl_containers_not_const] call:[Match,astParent,hasIfdef,isAssignmentOp,isCast,isConst,isConstMemberFunc,isLikelyStreamRead,isMemberFunc,isMemberVar,isMutable,isName,isPointer,isReference,isStandardType,isStlType,link,linkAt,nameToken,next,previous,simpleMatch,str,strAt,tokAt,tokType,typeScope,typeStartToken,valueType,varId,variable] noreturn:[link,linkAt,next,tokAt]
+checkConstError call:[checkConstError2] noreturn:[checkConstError2]
+checkConstError2 global:[CWE398] call:[push_back,reportError] noreturn:[push_back,reportError]
+VarInfo
+initializerListOrder call:[Match,begin,emplace_back,end,getVariable,hasBody,index,initializerListError,isConstructor,isEnabled,link,name,nameToken,next,size,str,strAt,tokAt] noreturn:[emplace_back,initializerListError,next]
+initializerListError global:[CWE398] call:[reportError] noreturn:[reportError]
+checkSelfInitialization call:[Match,isConstructor,link,next,selfInitializationError,str,strAt,tokAt,varId] noreturn:[selfInitializationError]
+selfInitializationError global:[CWE665] call:[reportError] noreturn:[reportError]
+checkVirtualFunctionCallInConstructor call:[back,callstack,empty,function,getFirstVirtualFunctionCallStack,getVirtualFunctionCalls,hasBody,hasFinalSpecifier,hasOverrideSpecifier,hasVirtualSpecifier,isConstructor,isDestructor,isEnabled,isPure,pureVirtualFunctionCallInConstructorError,str,virtualFunctionCallInConstructorError] noreturn:[pureVirtualFunctionCallInConstructorError,virtualFunctionCallInConstructorError]
+getVirtualFunctionCalls call:[Match,empty,end,find,function,getVirtualFunctionCalls,hasBody,ignorefunction,isImplicitlyVirtual,isPure,link,linkAt,next,previous,push_back,scope,simpleMatch,str] noreturn:[next,push_back]
+getFirstVirtualFunctionCallStack call:[begin,clear,empty,end,find,function,getFirstVirtualFunctionCallStack,hasBody,isImplicitlyVirtual,isPure,push_back] noreturn:[getFirstVirtualFunctionCallStack]
+virtualFunctionCallInConstructorError call:[CWE,Match,back,emplace_back,empty,front,getFunctionTypeName,linenr,link,next,previous,reportError,str,toString] noreturn:[emplace_back,reportError]
+pureVirtualFunctionCallInConstructorError call:[CWE,back,emplace_back,empty,getFunctionTypeName,reportError,str] noreturn:[emplace_back,reportError]
+checkDuplInheritedMembers call:[checkDuplInheritedMembersRecursive,isEnabled] noreturn:[checkDuplInheritedMembersRecursive]
+checkDuplInheritedMembersRecursive call:[checkDuplInheritedMembersRecursive,duplInheritedMembersError,isPrivate,name,nameToken] noreturn:[checkDuplInheritedMembersRecursive,duplInheritedMembersError]
+duplInheritedMembersError global:[CWE398] call:[emplace_back,reportError,string] noreturn:[reportError]
+checkCopyCtorAndEqOperator call:[begin,copyCtorAndEqOperatorError,end,getArgumentVar,hasBody,isEnabled,isStatic,type] noreturn:[copyCtorAndEqOperatorError]
+copyCtorAndEqOperatorError call:[getFunctionTypeName,reportError,string] noreturn:[reportError]
+checkOverride call:[empty,getOverriddenFunction,hasFinalSpecifier,hasOverrideSpecifier,isEnabled,overrideError] noreturn:[overrideError]
+overrideError call:[CWE,char,isDestructor,name,push_back,reportError,substr,toupper] noreturn:[push_back,reportError]
+checkThisUseAfterFree call:[Match,checkThisUseAfterFreeRecursive,declarationId,hasBody,isEnabled,isStatic,next,parseDecl,typeStartToken,valueType] noreturn:[checkThisUseAfterFreeRecursive]
+checkThisUseAfterFreeRecursive call:[Match,checkThisUseAfterFreeRecursive,count,function,insert,isArgument,isStatic,link,nameToken,next,previous,scope,str,thisUseAfterFree,tokAt,variable] noreturn:[link,tokAt]
+thisUseAfterFree call:[CWE,function,reportError,str] noreturn:[reportError]
+checkUnsafeClassRefMember call:[Match,constructorMemberInitialization,hasBody,isArgument,isConst,isConstructor,isEnabled,isReference,linkAt,name,next,tokAt,unsafeClassRefMemberError,variable] noreturn:[next,unsafeClassRefMemberError]
+unsafeClassRefMemberError call:[CWE,reportError] noreturn:[reportError]
+getFileInfo call:[Match,all_of,begin,clear,column,empty,end,erase,file,getSymbolDatabase,hasBody,isAnonymous,isCPP,isClassOrStruct,linenr,next,push_back,size,str,swap] noreturn:[hasBody,push_back,str]
+toString call:[to_string,toxml]
+loadFileInfoFromXml call:[Attribute,FirstChildElement,Name,NextSiblingElement,atoi,empty,push_back,strcmp,toULongNumber] noreturn:[push_back]
+analyseWholeProgram global:[CWE_ONE_DEFINITION_RULE,emptyString] call:[emplace_back,end,errmsg,find,isSameLocation,reportErr]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

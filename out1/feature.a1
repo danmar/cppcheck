@@ -1,0 +1,253 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="349252841">
+        <error id="invalidFunctionArg" severity="error" msg="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." verbose="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14981/feature.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14981\feature.c" line="1685" column="18" info="Invalid argument"/>
+            <symbol>sqrt</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." verbose="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14981/feature.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14981\feature.c" line="1687" column="18" info="Invalid argument"/>
+            <symbol>sqrt</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." verbose="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14981/feature.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14981\feature.c" line="1689" column="18" info="Invalid argument"/>
+            <symbol>sqrt</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." verbose="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14981/feature.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14981\feature.c" line="1692" column="22" info="Invalid argument"/>
+            <symbol>sqrt</symbol>
+        </error>
+        <error id="invalidFunctionArg" severity="error" msg="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." verbose="Invalid sqrt() argument nr 1. The value is -1 but the valid values are &apos;0.0:&apos;." cwe="628" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14981/feature.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-14981\feature.c" line="1695" column="22" info="Invalid argument"/>
+            <symbol>sqrt</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14981/feature.c:147:33" call-funcname="IsAuthenticPixel" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14981/feature.c" line="205" col="21" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-14981/feature.c:157:26" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="IsAuthenticPixel" lineNumber="147"/>
+    <functiondecl functionName="TraceEdges" lineNumber="157"/>
+    <functiondecl functionName="CannyEdgeImage" lineNumber="237"/>
+    <functiondecl functionName="MagickLog10" lineNumber="613"/>
+    <functiondecl functionName="GetImageFeatures" lineNumber="622"/>
+    <functiondecl functionName="MagickRound" lineNumber="1754"/>
+    <functiondecl functionName="RenderHoughLines" lineNumber="1764"/>
+    <functiondecl functionName="HoughLineImage" lineNumber="1827"/>
+    <functiondecl functionName="MeanShiftImage" lineNumber="2154"/>
+    <functioncall functionName="AcquireAuthenticCacheView"/>
+    <functioncall functionName="AcquireImage"/>
+    <functioncall functionName="AcquireImageInfo"/>
+    <functioncall functionName="AcquireKernelInfo"/>
+    <functioncall functionName="AcquireMagickMemory"/>
+    <functioncall functionName="AcquireMatrixInfo"/>
+    <functioncall functionName="AcquireQuantumMemory"/>
+    <functioncall functionName="AcquireUniqueFileResource"/>
+    <functioncall functionName="AcquireVirtualCacheView"/>
+    <functioncall functionName="AlphaPixelChannel"/>
+    <functioncall functionName="AppendImageToList"/>
+    <functioncall functionName="BlackPixelChannel"/>
+    <functioncall functionName="BluePixelChannel"/>
+    <functioncall functionName="ClampToQuantum"/>
+    <functioncall functionName="CloneDrawInfo"/>
+    <functioncall functionName="CloneImage"/>
+    <functioncall functionName="CloseBlob"/>
+    <functioncall functionName="ConvolveMorphology"/>
+    <functioncall functionName="DefaultResolution"/>
+    <functioncall functionName="DegreesToRadians"/>
+    <functioncall functionName="DestroyCacheView"/>
+    <functioncall functionName="DestroyDrawInfo"/>
+    <functioncall functionName="DestroyImage"/>
+    <functioncall functionName="DestroyImageInfo"/>
+    <functioncall functionName="DestroyImageList"/>
+    <functioncall functionName="DestroyKernelInfo"/>
+    <functioncall functionName="DestroyMatrixInfo"/>
+    <functioncall functionName="DirectClass"/>
+    <functioncall functionName="DrawImage"/>
+    <functioncall functionName="FileToString"/>
+    <functioncall functionName="FormatLocaleString"/>
+    <functioncall functionName="GRAYColorspace"/>
+    <functioncall functionName="GetBlobSize"/>
+    <functioncall functionName="GetBlobStreamData"/>
+    <functioncall functionName="GetCacheViewAuthenticPixels"/>
+    <functioncall functionName="GetCacheViewVirtualPixels"/>
+    <functioncall functionName="GetFirstImageInList"/>
+    <functioncall functionName="GetImageArtifact"/>
+    <functioncall functionName="GetMagickModule"/>
+    <functioncall functionName="GetMatrixElement"/>
+    <functioncall functionName="GetOneCacheViewVirtualPixelInfo"/>
+    <functioncall functionName="GetPixelAlpha"/>
+    <functioncall functionName="GetPixelBlack"/>
+    <functioncall functionName="GetPixelBlue"/>
+    <functioncall functionName="GetPixelChannels"/>
+    <functioncall functionName="GetPixelGreen"/>
+    <functioncall functionName="GetPixelInfo"/>
+    <functioncall functionName="GetPixelInfoPixel"/>
+    <functioncall functionName="GetPixelIntensity"/>
+    <functioncall functionName="GetPixelRed"/>
+    <functioncall functionName="GreenPixelChannel"/>
+    <functioncall functionName="IsAuthenticPixel"/>
+    <functioncall functionName="IsStringTrue"/>
+    <functioncall functionName="LogMagickEvent"/>
+    <functioncall functionName="MagickAbsoluteValue"/>
+    <functioncall functionName="MagickFalse"/>
+    <functioncall functionName="MagickLog10"/>
+    <functioncall functionName="MagickPathExtent"/>
+    <functioncall functionName="MagickProgressMonitor"/>
+    <functioncall functionName="MagickRound"/>
+    <functioncall functionName="MagickTrue"/>
+    <functioncall functionName="MatrixToImage"/>
+    <functioncall functionName="MaxMap"/>
+    <functioncall functionName="MorphologyImage"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="NullMatrix"/>
+    <functioncall functionName="OffAlphaChannel"/>
+    <functioncall functionName="OpenBlob"/>
+    <functioncall functionName="PerceptibleReciprocal"/>
+    <functioncall functionName="Q"/>
+    <functioncall functionName="QuantumRange"/>
+    <functioncall functionName="ReadBinaryBlobMode"/>
+    <functioncall functionName="RedPixelChannel"/>
+    <functioncall functionName="RelinquishMagickMemory"/>
+    <functioncall functionName="RelinquishUniqueFileResource"/>
+    <functioncall functionName="RenderHoughLines"/>
+    <functioncall functionName="ResourceLimitError"/>
+    <functioncall functionName="ResourceLimitFatalError"/>
+    <functioncall functionName="ScaleQuantumToMap"/>
+    <functioncall functionName="SetImageAlphaChannel"/>
+    <functioncall functionName="SetImageBackgroundColor"/>
+    <functioncall functionName="SetImageExtent"/>
+    <functioncall functionName="SetImageOption"/>
+    <functioncall functionName="SetImageProgress"/>
+    <functioncall functionName="SetImageStorageClass"/>
+    <functioncall functionName="SetMatrixElement"/>
+    <functioncall functionName="SetPixelAlpha"/>
+    <functioncall functionName="SetPixelBlue"/>
+    <functioncall functionName="SetPixelGreen"/>
+    <functioncall functionName="SetPixelRed"/>
+    <functioncall functionName="SyncCacheViewAuthenticPixels"/>
+    <functioncall functionName="ThrowFatalException"/>
+    <functioncall functionName="ThrowImageException"/>
+    <functioncall functionName="ThrowMagickException"/>
+    <functioncall functionName="TraceEdges"/>
+    <functioncall functionName="TraceEvent"/>
+    <functioncall functionName="TransformImageColorspace"/>
+    <functioncall functionName="accumulator"/>
+    <functioncall functionName="accumulator_height"/>
+    <functioncall functionName="accumulator_image"/>
+    <functioncall functionName="accumulator_width"/>
+    <functioncall functionName="alpha"/>
+    <functioncall functionName="alpha_pixel"/>
+    <functioncall functionName="artifact"/>
+    <functioncall functionName="assert"/>
+    <functioncall functionName="background_color"/>
+    <functioncall functionName="beta_pixel"/>
+    <functioncall functionName="black"/>
+    <functioncall functionName="blue"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="canny_cache"/>
+    <functioncall functionName="ceil"/>
+    <functioncall functionName="channel_features"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="columns"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="cooccurrence"/>
+    <functioncall functionName="correlation"/>
+    <functioncall functionName="cos"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="density_x"/>
+    <functioncall functionName="density_xy"/>
+    <functioncall functionName="density_y"/>
+    <functioncall functionName="distance"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="draw_info"/>
+    <functioncall functionName="dx"/>
+    <functioncall functionName="dy"/>
+    <functioncall functionName="edge"/>
+    <functioncall functionName="edge_image"/>
+    <functioncall functionName="edge_view"/>
+    <functioncall functionName="element"/>
+    <functioncall functionName="entropy_x"/>
+    <functioncall functionName="entropy_xy"/>
+    <functioncall functionName="entropy_xy1"/>
+    <functioncall functionName="entropy_xy2"/>
+    <functioncall functionName="entropy_y"/>
+    <functioncall functionName="exception"/>
+    <functioncall functionName="exp"/>
+    <functioncall functionName="fabs"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="floor"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="geometry"/>
+    <functioncall functionName="gray"/>
+    <functioncall functionName="grays"/>
+    <functioncall functionName="green"/>
+    <functioncall functionName="height"/>
+    <functioncall functionName="hough_height"/>
+    <functioncall functionName="hypot"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="image"/>
+    <functioncall functionName="image_info"/>
+    <functioncall functionName="image_view"/>
+    <functioncall functionName="intensity"/>
+    <functioncall functionName="kernel_info"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="line_count"/>
+    <functioncall functionName="lines_image"/>
+    <functioncall functionName="log10"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="lower_threshold"/>
+    <functioncall functionName="magnitude"/>
+    <functioncall functionName="maxima"/>
+    <functioncall functionName="mean"/>
+    <functioncall functionName="mean_image"/>
+    <functioncall functionName="mean_location"/>
+    <functioncall functionName="mean_pixel"/>
+    <functioncall functionName="mean_view"/>
+    <functioncall functionName="memcpy"/>
+    <functioncall functionName="memset"/>
+    <functioncall functionName="message"/>
+    <functioncall functionName="min"/>
+    <functioncall functionName="normalize"/>
+    <functioncall functionName="number_grays"/>
+    <functioncall functionName="orientation"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="pixel"/>
+    <functioncall functionName="pixel_view"/>
+    <functioncall functionName="primitive"/>
+    <functioncall functionName="progress"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="r"/>
+    <functioncall functionName="radius"/>
+    <functioncall functionName="red"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rows"/>
+    <functioncall functionName="sigma"/>
+    <functioncall functionName="sin"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="slope"/>
+    <functioncall functionName="sqrt"/>
+    <functioncall functionName="strlen"/>
+    <functioncall functionName="sum"/>
+    <functioncall functionName="sum_pixel"/>
+    <functioncall functionName="sum_squares"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="threshold"/>
+    <functioncall functionName="u"/>
+    <functioncall functionName="v"/>
+    <functioncall functionName="variance"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="width"/>
+    <functioncall functionName="write"/>
+    <functioncall functionName="x"/>
+    <functioncall functionName="x1"/>
+    <functioncall functionName="x2"/>
+    <functioncall functionName="y"/>
+    <functioncall functionName="y1"/>
+    <functioncall functionName="y2"/>
+    <functioncall functionName="z"/>
+  </FileInfo>
+</analyzerinfo>

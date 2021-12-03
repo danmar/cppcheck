@@ -1,0 +1,73 @@
+CWE
+getStatistics
+getShowTypes
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+toString call:[fromStdString,toString] noreturn:[fromStdString]
+fromString call:[fromString,toStdString] noreturn:[fromString]
+QErrorPathItem
+acceptFile call:[acceptFile] noreturn:[acceptFile]
+CodeEditorStyle
+isSystemTheme
+ResultsView call:[connect,installEventFilter,setContextMenuPolicy,setSortingEnabled,setupUi] noreturn:[setSortingEnabled]
+initialize call:[initialize,loadSettings,restoreState,setMinimum,setStyle,setVisible,theStyle,toBool,toByteArray,value] noreturn:[initialize]
+ResultsView
+setAddedFunctionContracts call:[addItems,clear,empty,findItems,front] noreturn:[front]
+setAddedVariableContracts call:[addItems,clear,findItems,insert] noreturn:[insert]
+clear call:[QString,clear,setFormat,setMaximum,setText,setValue] noreturn:[clear,setFormat]
+clear call:[clear] noreturn:[clear]
+clearRecheckFile call:[clearRecheckFile] noreturn:[clearRecheckFile]
+clearContracts call:[clear] noreturn:[clear]
+showContracts call:[setVisible] noreturn:[setVisible]
+progress call:[QString,arg,setFormat,setValue] noreturn:[setFormat]
+error call:[SeverityToShowType,addErrorItem,addItem,gotResults,tool] noreturn:[addItem]
+filterResults call:[filterResults] noreturn:[filterResults]
+saveStatistics call:[currentDate,currentMSecsSinceEpoch,f,getCount,getTools,open,toString,ts]
+updateFromOldReport call:[updateFromOldReport] noreturn:[updateFromOldReport]
+save call:[CsvReport,TxtReport,XmlReportV2,create,exec,saveResults,setIcon,setText,tr] noreturn:[exec,saveResults]
+print call:[dialog,exec,print,setWindowTitle,tr] noreturn:[print]
+printPreview call:[SIGNAL,SLOT,connect,dialog,exec,paintRequested,print] noreturn:[exec]
+print call:[doc,exec,getFormattedReportText,hasResults,print,saveResults,setIcon,setText,tr] noreturn:[print]
+updateSettings call:[updateSettings]
+updateStyleSetting call:[loadSettings,setStyle,theStyle] noreturn:[setStyle]
+setCheckDirectory call:[setCheckDirectory] noreturn:[setCheckDirectory]
+getCheckDirectory call:[getCheckDirectory] noreturn:[getCheckDirectory]
+checkingStarted call:[arg,setFormat,setMaximum,setValue,setVisible,tr] noreturn:[setFormat]
+checkingFinished call:[exec,hasResults,hasVisibleResults,msg,refreshTree,setFormat,setVisible,tr] noreturn:[exec]
+hasVisibleResults call:[hasVisibleResults] noreturn:[hasVisibleResults]
+hasResults call:[hasResults] noreturn:[hasResults]
+saveSettings call:[restoreState,saveSettings,saveState,setValue] noreturn:[restoreState]
+translate call:[retranslateUi,translate] noreturn:[translate]
+disableProgressbar call:[setEnabled] noreturn:[setEnabled]
+readErrorsXml call:[QFileInfo,addErrorItem,canonicalPath,determineVersion,exec,exists,isEmpty,open,read,report,setCheckDirectory,setIcon,setText,tr] noreturn:[addErrorItem,exec,read,setCheckDirectory]
+updateDetails call:[QFileInfo,QString,arg,child,clear,column,contains,data,exists,file,getCheckDirectory,getFileName,in,isEmpty,isHeader,itemFromIndex,model,number,open,parent,prepend,readAll,row,setError,setFileName,setText,showIdColumn,split,toBool,toInt,toMap,toNativeSeparators,toStdString,toString,tr] noreturn:[arg,child,prepend,setFileName,split,tr]
+log call:[addItem] noreturn:[addItem]
+debugError call:[addItem,toString] noreturn:[addItem]
+bughuntingReportLine call:[addItem,contains,insert,mid,split,startsWith] noreturn:[addItem]
+logClear call:[clear] noreturn:[clear]
+logCopyEntry call:[clipboard,currentItem,setText,text] noreturn:[setText]
+logCopyComplete call:[clipboard,count,item,setText,text] noreturn:[setText,text]
+contractDoubleClicked call:[editFunctionContract,text] noreturn:[editFunctionContract]
+variableDoubleClicked call:[editVariableContract,text] noreturn:[editVariableContract]
+editVariablesFilter call:[contains,findItems,indexOf,mid,setHidden,text] noreturn:[setHidden]
+on_mListLog_customContextMenuRequested call:[SLOT,addAction,count,exec,logClear,logCopyComplete,logCopyEntry,mapToGlobal,tr] noreturn:[exec]
+eventFilter call:[deleteFunctionContract,deleteVariableContract,eventFilter,indexOf,key,mid,selectedItems,text,type] noreturn:[eventFilter]

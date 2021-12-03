@@ -1,0 +1,179 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="901062803">
+        <error id="redundantCondition" severity="style" msg="Redundant condition: !cp-&gt;cinema. &apos;cp-&gt;cinema || (!cp-&gt;cinema &amp;&amp; t2_mode==FINAL_PASS)&apos; is equivalent to &apos;cp-&gt;cinema || t2_mode==FINAL_PASS&apos;" verbose="The condition &apos;cp-&gt;cinema || !cp-&gt;cinema &amp;&amp; t2_mode==FINAL_PASS&apos; is equivalent to &apos;cp-&gt;cinema || t2_mode==FINAL_PASS&apos;." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-20845\pi.c" line="730" column="37"/>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;p&apos; can be reduced." verbose="The scope of the variable &apos;p&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-20845\pi.c" line="475" column="9"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;q&apos; can be reduced." verbose="The scope of the variable &apos;q&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-20845\pi.c" line="475" column="12"/>
+            <symbol>q</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;p&apos; can be reduced." verbose="The scope of the variable &apos;p&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-20845\pi.c" line="613" column="9"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;q&apos; can be reduced." verbose="The scope of the variable &apos;q&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-20845\pi.c" line="613" column="12"/>
+            <symbol>q</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;compno&apos; can be reduced." verbose="The scope of the variable &apos;compno&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-20845\pi.c" line="766" column="9"/>
+            <symbol>compno</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;pino&apos; can be reduced." verbose="The scope of the variable &apos;pino&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-20845\pi.c" line="766" column="17"/>
+            <symbol>pino</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;tccp&apos; is assigned a value that is never used." verbose="Variable &apos;tccp&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-20845\pi.c" line="565" column="14"/>
+            <symbol>tccp</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;tccp&apos; is assigned a value that is never used." verbose="Variable &apos;tccp&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2018-20845\pi.c" line="700" column="14"/>
+            <symbol>tccp</symbol>
+        </error>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:52:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="94" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:58:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="137" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:64:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="179" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:70:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="280" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:76:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="380" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:787:10" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="789" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:807:10" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="816" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:52:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="94" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:58:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="137" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:64:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="179" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:70:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="280" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:76:17" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="380" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c:787:10" my-argnr="1" my-argname="pi" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2018-20845/pi.c" line="789" col="13" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="pi_next_lrcp" lineNumber="88"/>
+    <functiondecl functionName="pi_next_rlcp" lineNumber="131"/>
+    <functiondecl functionName="pi_next_rpcl" lineNumber="173"/>
+    <functiondecl functionName="pi_next_pcrl" lineNumber="274"/>
+    <functiondecl functionName="pi_next_cprl" lineNumber="374"/>
+    <functiondecl functionName="pi_create_decode" lineNumber="472"/>
+    <functiondecl functionName="pi_initialise_encode" lineNumber="610"/>
+    <functiondecl functionName="pi_destroy" lineNumber="764"/>
+    <functiondecl functionName="pi_next" lineNumber="787"/>
+    <functiondecl functionName="pi_create_encode" lineNumber="807"/>
+    <functioncall functionName="LABEL_SKIP"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="cinema"/>
+    <functioncall functionName="compE"/>
+    <functioncall functionName="compS"/>
+    <functioncall functionName="comp_t"/>
+    <functioncall functionName="compno"/>
+    <functioncall functionName="compno0"/>
+    <functioncall functionName="compno1"/>
+    <functioncall functionName="comps"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="cp"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="dx"/>
+    <functioncall functionName="dy"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="include"/>
+    <functioncall functionName="index"/>
+    <functioncall functionName="int_ceildiv"/>
+    <functioncall functionName="int_ceildivpow2"/>
+    <functioncall functionName="int_floordivpow2"/>
+    <functioncall functionName="int_max"/>
+    <functioncall functionName="int_min"/>
+    <functioncall functionName="layE"/>
+    <functioncall functionName="layS"/>
+    <functioncall functionName="lay_t"/>
+    <functioncall functionName="layno0"/>
+    <functioncall functionName="layno1"/>
+    <functioncall functionName="levelno"/>
+    <functioncall functionName="maxprec"/>
+    <functioncall functionName="maxres"/>
+    <functioncall functionName="numcomps"/>
+    <functioncall functionName="numlayers"/>
+    <functioncall functionName="numresolutions"/>
+    <functioncall functionName="opj_calloc"/>
+    <functioncall functionName="opj_free"/>
+    <functioncall functionName="opj_malloc"/>
+    <functioncall functionName="opj_pi_comp_t"/>
+    <functioncall functionName="opj_pi_iterator_t"/>
+    <functioncall functionName="opj_pi_resolution_t"/>
+    <functioncall functionName="pdx"/>
+    <functioncall functionName="pdy"/>
+    <functioncall functionName="ph"/>
+    <functioncall functionName="pi"/>
+    <functioncall functionName="pi_destroy"/>
+    <functioncall functionName="pi_next_cprl"/>
+    <functioncall functionName="pi_next_lrcp"/>
+    <functioncall functionName="pi_next_pcrl"/>
+    <functioncall functionName="pi_next_rlcp"/>
+    <functioncall functionName="pi_next_rpcl"/>
+    <functioncall functionName="pino"/>
+    <functioncall functionName="prcE"/>
+    <functioncall functionName="prcS"/>
+    <functioncall functionName="prc_t"/>
+    <functioncall functionName="precno0"/>
+    <functioncall functionName="precno1"/>
+    <functioncall functionName="prg"/>
+    <functioncall functionName="prg1"/>
+    <functioncall functionName="prog"/>
+    <functioncall functionName="pw"/>
+    <functioncall functionName="px0"/>
+    <functioncall functionName="py0"/>
+    <functioncall functionName="resE"/>
+    <functioncall functionName="resS"/>
+    <functioncall functionName="res_t"/>
+    <functioncall functionName="resno"/>
+    <functioncall functionName="resno0"/>
+    <functioncall functionName="resno1"/>
+    <functioncall functionName="resolutions"/>
+    <functioncall functionName="rx0"/>
+    <functioncall functionName="rx1"/>
+    <functioncall functionName="ry0"/>
+    <functioncall functionName="ry1"/>
+    <functioncall functionName="short"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="step_c"/>
+    <functioncall functionName="step_l"/>
+    <functioncall functionName="step_p"/>
+    <functioncall functionName="step_r"/>
+    <functioncall functionName="strncpy"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="tcx0"/>
+    <functioncall functionName="tcx1"/>
+    <functioncall functionName="tcy0"/>
+    <functioncall functionName="tcy1"/>
+    <functioncall functionName="tdx"/>
+    <functioncall functionName="tdy"/>
+    <functioncall functionName="tileno"/>
+    <functioncall functionName="tp_on"/>
+    <functioncall functionName="trx0"/>
+    <functioncall functionName="try0"/>
+    <functioncall functionName="tw"/>
+    <functioncall functionName="tx0"/>
+    <functioncall functionName="tx0_t"/>
+    <functioncall functionName="tx1"/>
+    <functioncall functionName="txE"/>
+    <functioncall functionName="txS"/>
+    <functioncall functionName="ty0"/>
+    <functioncall functionName="ty0_t"/>
+    <functioncall functionName="ty1"/>
+    <functioncall functionName="tyE"/>
+    <functioncall functionName="tyS"/>
+    <functioncall functionName="x"/>
+    <functioncall functionName="x0"/>
+    <functioncall functionName="x1"/>
+    <functioncall functionName="y"/>
+    <functioncall functionName="y0"/>
+    <functioncall functionName="y1"/>
+  </FileInfo>
+</analyzerinfo>

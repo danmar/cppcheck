@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3759809506">
+  <FileInfo check="Class">
+<class name="VariableContractsDialog" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/variablecontractsdialog.h" line="10" col="1" hash="3358106467676168602"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="getVarname" lineNumber="38"/>
+    <functiondecl functionName="getMin" lineNumber="42"/>
+    <functiondecl functionName="getMax" lineNumber="46"/>
+    <functioncall functionName="QDialog"/>
+    <functioncall functionName="QRegExp"/>
+    <functioncall functionName="QRegExpValidator"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="VariableContractsDialog"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="getMinMax"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="indexOf"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="mUI"/>
+    <functioncall functionName="mVarName"/>
+    <functioncall functionName="mid"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="pos1"/>
+    <functioncall functionName="setText"/>
+    <functioncall functionName="setValidator"/>
+    <functioncall functionName="setWindowTitle"/>
+    <functioncall functionName="setupUi"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="var"/>
+  </FileInfo>
+</analyzerinfo>

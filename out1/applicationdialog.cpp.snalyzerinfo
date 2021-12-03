@@ -1,0 +1,11 @@
+Application
+getName
+getPath
+getParameters
+setName
+setPath
+setParameters
+ApplicationDialog call:[adjustSize,connect,getName,getParameters,getPath,setText,setWindowTitle,setupUi] noreturn:[adjustSize]
+ApplicationDialog
+browse call:[getOpenFileName,getPath,isEmpty,path,setPath,setText,toNativeSeparators,tr] noreturn:[setText]
+ok call:[accept,exec,fromNativeSeparators,isEmpty,msg,reject,setName,setParameters,setPath,text,tr] noreturn:[accept,reject]

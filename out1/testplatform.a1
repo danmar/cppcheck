@@ -1,0 +1,245 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3773654335">
+        <error id="missingOverride" severity="style" msg="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="106" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="286" column="18" info="Virtual function in base class"/>
+            <symbol>bughuntingReport</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="107" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="256" column="18" info="Virtual function in base class"/>
+            <symbol>reportOut</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="108" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="264" column="18" info="Virtual function in base class"/>
+            <symbol>reportErr</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;run&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;run&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testplatform.cpp" line="31" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="51" column="18" info="Virtual function in base class"/>
+            <symbol>run</symbol>
+        </error>
+        <error id="useStlAlgorithm" severity="style" msg="Consider using std::any_of algorithm instead of a raw loop." verbose="Consider using std::any_of algorithm instead of a raw loop." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\utils.h" line="102" column="0"/>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="33" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="34" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="35" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="36" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="37" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="38" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="39" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="54" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="34"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="58" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="72" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="91" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="121" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="389"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="165" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="390"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="210" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="419"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="214" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="244" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="382"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="247" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="249" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="250" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="251" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="252" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="253" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="254" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="255" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="256" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="257" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="258" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="259" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="260" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="261" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="262" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="263" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="287" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="390"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="TestPlatform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="26" col="1" hash="6824163645533843203"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="33" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="34" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="35" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="36" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="37" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="38" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="39" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="54" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="34"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="58" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="72" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="91" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="121" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="389"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="165" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="390"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="210" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="419"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="214" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="244" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="382"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="247" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="249" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="250" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="251" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="252" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="253" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="254" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="255" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="256" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="257" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="258" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="259" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="260" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="261" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="262" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="263" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="287" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="390"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="TestPlatform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="26" col="1" hash="6824163645533843203"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="33" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="34" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="35" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="36" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="37" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="38" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="39" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="54" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="34"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="58" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="72" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="91" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="121" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="389"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="165" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="390"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="210" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="419"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="214" col="9" call-argexpr="&apos;\0&apos;" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="244" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="382"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="247" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="249" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="250" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="251" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="252" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="253" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="254" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="255" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="256" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="257" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="258" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="259" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="260" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="261" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="262" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="263" col="9" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp:43:17" call-funcname="readPlatform" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="287" col="9" call-argexpr="xmldata" call-argvaluetype="7" call-argvalue="390"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="TestPlatform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testplatform.cpp" line="26" col="1" hash="7386036044299275427"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="run" lineNumber="31"/>
+    <functiondecl functionName="readPlatform" lineNumber="43"/>
+    <functiondecl functionName="empty" lineNumber="49"/>
+    <functiondecl functionName="valid_config_native_1" lineNumber="66"/>
+    <functiondecl functionName="valid_config_native_2" lineNumber="85"/>
+    <functiondecl functionName="valid_config_file_1" lineNumber="99"/>
+    <functiondecl functionName="valid_config_file_2" lineNumber="143"/>
+    <functiondecl functionName="valid_config_file_3" lineNumber="187"/>
+    <functiondecl functionName="valid_config_file_4" lineNumber="222"/>
+    <functiondecl functionName="invalid_config_file_1" lineNumber="266"/>
+    <functiondecl functionName="run" lineNumber="31"/>
+    <functiondecl functionName="readPlatform" lineNumber="43"/>
+    <functiondecl functionName="empty" lineNumber="49"/>
+    <functiondecl functionName="valid_config_native_1" lineNumber="66"/>
+    <functiondecl functionName="valid_config_native_2" lineNumber="85"/>
+    <functiondecl functionName="valid_config_file_1" lineNumber="99"/>
+    <functiondecl functionName="valid_config_file_2" lineNumber="143"/>
+    <functiondecl functionName="valid_config_file_3" lineNumber="187"/>
+    <functiondecl functionName="valid_config_file_4" lineNumber="222"/>
+    <functiondecl functionName="invalid_config_file_1" lineNumber="266"/>
+    <functiondecl functionName="run" lineNumber="31"/>
+    <functiondecl functionName="readPlatform" lineNumber="43"/>
+    <functiondecl functionName="empty" lineNumber="49"/>
+    <functiondecl functionName="valid_config_native_1" lineNumber="66"/>
+    <functiondecl functionName="valid_config_native_2" lineNumber="85"/>
+    <functiondecl functionName="valid_config_file_1" lineNumber="99"/>
+    <functiondecl functionName="valid_config_file_2" lineNumber="143"/>
+    <functiondecl functionName="valid_config_file_3" lineNumber="187"/>
+    <functiondecl functionName="valid_config_file_4" lineNumber="222"/>
+    <functiondecl functionName="invalid_config_file_1" lineNumber="266"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="ErrorMessage"/>
+    <functioncall functionName="FileLocation"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="N"/>
+    <functioncall functionName="NO_LINE"/>
+    <functioncall functionName="Native"/>
+    <functioncall functionName="Parse"/>
+    <functioncall functionName="PlatformFile"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="Suppression"/>
+    <functioncall functionName="T"/>
+    <functioncall functionName="TestFixture"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="Unix32"/>
+    <functioncall functionName="Unix64"/>
+    <functioncall functionName="Unspecified"/>
+    <functioncall functionName="Win32A"/>
+    <functioncall functionName="Win32W"/>
+    <functioncall functionName="Win64"/>
+    <functioncall functionName="assertEquals"/>
+    <functioncall functionName="assertEqualsFailed"/>
+    <functioncall functionName="assert_"/>
+    <functioncall functionName="back"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="char_bit"/>
+    <functioncall functionName="class"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="column"/>
+    <functioncall functionName="compare"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="defaultSign"/>
+    <functioncall functionName="doc"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="emptyString"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endlen"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorId"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="fileIndex"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="find_first_of"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="getStringCharLiteral"/>
+    <functioncall functionName="hash"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="info"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="int_bit"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="invalid_config_file_1"/>
+    <functioncall functionName="isCharLiteral"/>
+    <functioncall functionName="isPrefixStringCharLiteral"/>
+    <functioncall functionName="isStringCharLiteral"/>
+    <functioncall functionName="isStringLiteral"/>
+    <functioncall functionName="isWindowsPlatform"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="line"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="linenr"/>
+    <functioncall functionName="loadFromXmlDocument"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="long_bit"/>
+    <functioncall functionName="long_long_bit"/>
+    <functioncall functionName="mFileName"/>
+    <functioncall functionName="mInfo"/>
+    <functioncall functionName="mOrigFileName"/>
+    <functioncall functionName="matched"/>
+    <functioncall functionName="max_value"/>
+    <functioncall functionName="min_value"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="other"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="platform"/>
+    <functioncall functionName="platformString"/>
+    <functioncall functionName="platformType"/>
+    <functioncall functionName="plistFooter"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="prepareTest"/>
+    <functioncall functionName="pt"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="readPlatform"/>
+    <functioncall functionName="reportErr"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="setVerbose"/>
+    <functioncall functionName="short_bit"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeof_bool"/>
+    <functioncall functionName="sizeof_double"/>
+    <functioncall functionName="sizeof_float"/>
+    <functioncall functionName="sizeof_int"/>
+    <functioncall functionName="sizeof_long"/>
+    <functioncall functionName="sizeof_long_double"/>
+    <functioncall functionName="sizeof_long_long"/>
+    <functioncall functionName="sizeof_pointer"/>
+    <functioncall functionName="sizeof_short"/>
+    <functioncall functionName="sizeof_size_t"/>
+    <functioncall functionName="sizeof_wchar_t"/>
+    <functioncall functionName="stage"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="suffixes"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="symbolName"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="thisAndNextLine"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="v"/>
+    <functioncall functionName="valid_config_file_1"/>
+    <functioncall functionName="valid_config_file_2"/>
+    <functioncall functionName="valid_config_file_3"/>
+    <functioncall functionName="valid_config_file_4"/>
+    <functioncall functionName="valid_config_native_1"/>
+    <functioncall functionName="valid_config_native_2"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="x"/>
+    <functioncall functionName="xmldata"/>
+  </FileInfo>
+</analyzerinfo>

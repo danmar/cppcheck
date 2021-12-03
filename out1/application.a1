@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2390905645">
+  <FileInfo check="Class">
+<class name="Application" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/application.h" line="43" col="1" hash="11708189031287511880"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functioncall functionName="Application"/>
+    <functioncall functionName="mName"/>
+    <functioncall functionName="mParameters"/>
+    <functioncall functionName="mPath"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="parameters"/>
+    <functioncall functionName="params"/>
+    <functioncall functionName="path"/>
+  </FileInfo>
+</analyzerinfo>

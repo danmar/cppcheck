@@ -1,0 +1,5 @@
+options call:[begin,count,empty,end,erase,find,insert,substr] noreturn:[erase,insert]
+quiet
+help
+which_test
+exe

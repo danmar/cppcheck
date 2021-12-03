@@ -1,0 +1,1 @@
+main call:[free,malloc,printf,sizeof] noreturn:[free]

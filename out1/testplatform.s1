@@ -1,0 +1,69 @@
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+TestPlatform
+run call:[empty,invalid_config_file_1,prepareTest,setVerbose,valid_config_file_1,valid_config_file_2,valid_config_file_3,valid_config_file_4,valid_config_native_1,valid_config_native_2,while] noreturn:[empty,invalid_config_file_1,valid_config_file_1,valid_config_file_2,valid_config_file_3,valid_config_file_4,valid_config_native_1,valid_config_native_2,while]
+readPlatform call:[Parse,loadFromXmlDocument] noreturn:[loadFromXmlDocument]
+empty call:[assertEquals,assert_,isWindowsPlatform,platform,readPlatform]
+valid_config_native_1 call:[assertEquals,assert_,isWindowsPlatform,platform]
+valid_config_native_2 call:[assertEquals,assert_,isWindowsPlatform,platform]
+valid_config_file_1 call:[assertEquals,assert_,isWindowsPlatform,readPlatform]
+valid_config_file_2 call:[assertEquals,assert_,isWindowsPlatform,readPlatform]
+valid_config_file_3 call:[assertEquals,assert_,isWindowsPlatform,platform,readPlatform]
+valid_config_file_4 call:[assertEquals,assert_,isWindowsPlatform,readPlatform]
+invalid_config_file_1 call:[assert_,readPlatform]

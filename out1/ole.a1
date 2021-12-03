@@ -1,0 +1,206 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3270890980">
+        <error id="resourceLeak" severity="error" msg="Resource leak: newfile" verbose="Resource leak: newfile" cwe="775" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-7156\ole.c" line="64" column="21"/>
+            <symbol>newfile</symbol>
+        </error>
+        <error id="constParameter" severity="style" msg="Parameter &apos;oleBuf&apos; can be declared with const" verbose="Parameter &apos;oleBuf&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-7156\ole.c" line="262" column="33" info="Parameter &apos;oleBuf&apos; can be declared with const"/>
+            <symbol>oleBuf</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:494:6" call-funcname="ole_finish" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="53" col="5" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:41:7" my-argnr="4"/>
+  </FileInfo>
+  <FileInfo check="Bounds checking">
+    <array-index>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:262:5" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="263" col="13" value="66"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:274:9" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="275" col="37" value="66"/>
+    </array-index>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:41:7" my-argnr="1" my-argname="f" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="55" col="15" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:262:5" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="263" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:274:9" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="275" col="37" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:286:7" my-argnr="2" my-argname="ole_params" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="292" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:393:10" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="395" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:494:6" my-argnr="1" my-argname="ole_params" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="495" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:582:6" my-argnr="1" my-argname="io_funcs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="583" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:590:8" my-argnr="1" my-argname="ptr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="592" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:590:8" my-argnr="4" my-argname="stream" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="592" col="36" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:595:5" my-argnr="1" my-argname="stream" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="597" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:600:6" my-argnr="1" my-argname="io_funcs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="601" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:41:7" my-argnr="1" my-argname="f" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="55" col="15" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:262:5" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="263" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:274:9" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="275" col="37" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:286:7" my-argnr="2" my-argname="ole_params" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="292" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:393:10" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="395" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:494:6" my-argnr="1" my-argname="ole_params" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="495" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:590:8" my-argnr="4" my-argname="stream" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="592" col="36" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:595:5" my-argnr="1" my-argname="stream" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="597" col="18" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:494:6" call-funcname="ole_finish" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="53" col="5" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:41:7" my-argnr="4"/>
+  </FileInfo>
+  <FileInfo check="Bounds checking">
+    <array-index>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:262:5" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="263" col="13" value="66"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:274:9" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="275" col="37" value="66"/>
+    </array-index>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:41:7" my-argnr="1" my-argname="f" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="55" col="15" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:262:5" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="263" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:274:9" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="275" col="37" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:286:7" my-argnr="2" my-argname="ole_params" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="292" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:393:10" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="395" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:494:6" my-argnr="1" my-argname="ole_params" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="495" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:582:6" my-argnr="1" my-argname="io_funcs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="583" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:590:8" my-argnr="1" my-argname="ptr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="592" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:590:8" my-argnr="4" my-argname="stream" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="592" col="36" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:595:5" my-argnr="1" my-argname="stream" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="597" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:600:6" my-argnr="1" my-argname="io_funcs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="601" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:41:7" my-argnr="1" my-argname="f" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="55" col="15" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:262:5" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="263" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:274:9" my-argnr="1" my-argname="oleBuf" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="275" col="37" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:286:7" my-argnr="2" my-argname="ole_params" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="292" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:393:10" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="395" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:494:6" my-argnr="1" my-argname="ole_params" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="495" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:590:8" my-argnr="4" my-argname="stream" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="592" col="36" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c:595:5" my-argnr="1" my-argname="stream" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-7156/ole.c" line="597" col="18" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="ole_init" lineNumber="41"/>
+    <functiondecl functionName="rightOleType" lineNumber="262"/>
+    <functiondecl functionName="getOleType" lineNumber="274"/>
+    <functiondecl functionName="ole_readdir" lineNumber="286"/>
+    <functiondecl functionName="ole_open" lineNumber="375"/>
+    <functiondecl functionName="calcFileBlockOffset" lineNumber="393"/>
+    <functiondecl functionName="ole_read" lineNumber="418"/>
+    <functiondecl functionName="ole_eof" lineNumber="483"/>
+    <functiondecl functionName="ole_finish" lineNumber="494"/>
+    <functiondecl functionName="ole_close" lineNumber="510"/>
+    <functiondecl functionName="ole_seek" lineNumber="529"/>
+    <functiondecl functionName="ole_tell" lineNumber="576"/>
+    <functiondecl functionName="set_ole_func" lineNumber="582"/>
+    <functiondecl functionName="my_fread" lineNumber="590"/>
+    <functiondecl functionName="my_fseek" lineNumber="595"/>
+    <functiondecl functionName="set_std_func" lineNumber="600"/>
+    <functiondecl functionName="ole_init" lineNumber="41"/>
+    <functiondecl functionName="rightOleType" lineNumber="262"/>
+    <functiondecl functionName="getOleType" lineNumber="274"/>
+    <functiondecl functionName="ole_readdir" lineNumber="286"/>
+    <functiondecl functionName="ole_open" lineNumber="375"/>
+    <functiondecl functionName="calcFileBlockOffset" lineNumber="393"/>
+    <functiondecl functionName="ole_read" lineNumber="418"/>
+    <functiondecl functionName="ole_eof" lineNumber="483"/>
+    <functiondecl functionName="ole_finish" lineNumber="494"/>
+    <functiondecl functionName="ole_close" lineNumber="510"/>
+    <functiondecl functionName="ole_seek" lineNumber="529"/>
+    <functiondecl functionName="ole_tell" lineNumber="576"/>
+    <functiondecl functionName="set_ole_func" lineNumber="582"/>
+    <functiondecl functionName="my_fread" lineNumber="590"/>
+    <functiondecl functionName="my_fseek" lineNumber="595"/>
+    <functiondecl functionName="set_std_func" lineNumber="600"/>
+    <functioncall functionName="BBD"/>
+    <functioncall functionName="BBD_BLOCK_SIZE"/>
+    <functioncall functionName="EINVAL"/>
+    <functioncall functionName="MSAT_ORIG_SIZE"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="PROP_BLOCK_SIZE"/>
+    <functioncall functionName="SBD"/>
+    <functioncall functionName="bbdNumBlocks"/>
+    <functioncall functionName="blk"/>
+    <functioncall functionName="blockNumber"/>
+    <functioncall functionName="blocks"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="bufSize"/>
+    <functioncall functionName="buffer"/>
+    <functioncall functionName="bytesInBlock"/>
+    <functioncall functionName="calcFileBlockOffset"/>
+    <functioncall functionName="chainCurrent"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="e"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="feof"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="file_offset"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="fread"/>
+    <functioncall functionName="free"/>
+    <functioncall functionName="fseek"/>
+    <functioncall functionName="ftell"/>
+    <functioncall functionName="fwrite"/>
+    <functioncall functionName="getOleType"/>
+    <functioncall functionName="getlong"/>
+    <functioncall functionName="getshort"/>
+    <functioncall functionName="getulong"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="isBigBlock"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="llen"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="malloc"/>
+    <functioncall functionName="memcpy"/>
+    <functioncall functionName="modBlock"/>
+    <functioncall functionName="my_fread"/>
+    <functioncall functionName="my_fseek"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="newChain"/>
+    <functioncall functionName="newProp"/>
+    <functioncall functionName="newSBD"/>
+    <functioncall functionName="new_file_offset"/>
+    <functioncall functionName="new_ole_offset"/>
+    <functioncall functionName="newbuf"/>
+    <functioncall functionName="newfile"/>
+    <functioncall functionName="newoffset"/>
+    <functioncall functionName="nmemb"/>
+    <functioncall functionName="numOfBlocks"/>
+    <functioncall functionName="offset"/>
+    <functioncall functionName="oleBuf"/>
+    <functioncall functionName="oleEntry"/>
+    <functioncall functionName="oleType"/>
+    <functioncall functionName="ole_close"/>
+    <functioncall functionName="ole_eof"/>
+    <functioncall functionName="ole_finish"/>
+    <functioncall functionName="ole_offset"/>
+    <functioncall functionName="ole_params"/>
+    <functioncall functionName="ole_read"/>
+    <functioncall functionName="ole_readdir"/>
+    <functioncall functionName="ole_seek"/>
+    <functioncall functionName="ole_sign"/>
+    <functioncall functionName="ole_tell"/>
+    <functioncall functionName="properties"/>
+    <functioncall functionName="ptr"/>
+    <functioncall functionName="realloc"/>
+    <functioncall functionName="ret"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rightOleType"/>
+    <functioncall functionName="rootEntry"/>
+    <functioncall functionName="rread"/>
+    <functioncall functionName="sbdPerSector"/>
+    <functioncall functionName="sbdSecNum"/>
+    <functioncall functionName="sbdStart"/>
+    <functioncall functionName="sectorSize"/>
+    <functioncall functionName="shortSectorSize"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="ssize"/>
+    <functioncall functionName="startBlock"/>
+    <functioncall functionName="strcmp"/>
+    <functioncall functionName="stream"/>
+    <functioncall functionName="strncmp"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="tEntry"/>
+    <functioncall functionName="tmpBuf"/>
+    <functioncall functionName="tmpfile"/>
+    <functioncall functionName="toReadBytes"/>
+    <functioncall functionName="whence"/>
+    <functioncall functionName="while"/>
+  </FileInfo>
+</analyzerinfo>

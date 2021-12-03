@@ -1,0 +1,2 @@
+validCode call:[cairo_create,cairo_destroy,cairo_line_to,cairo_move_to] noreturn:[cairo_destroy]
+ignoredReturnValue call:[cairo_create,cairo_status_to_string] noreturn:[cairo_status_to_string]

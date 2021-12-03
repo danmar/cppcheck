@@ -1,0 +1,67 @@
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+TestMathLib
+run call:[CPP14DigitSeparators,abs,calculate,calculate1,characterLiteralsNormalization,cos,incdec,isDecimalFloat,isEqual,isFloat,isFloatHex,isGreater,isGreaterEqual,isIntHex,isLess,isLessEqual,isNotEqual,isNullValue,isValidIntegerSuffix,isbin,isdec,isint,isnegative,isoct,ispositive,naninf,prepareTest,setVerbose,sin,tan,toDoubleNumber,toLongNumber,toString,typesuffix,while] noreturn:[CPP14DigitSeparators,abs,calculate,calculate1,characterLiteralsNormalization,cos,incdec,isDecimalFloat,isEqual,isFloat,isFloatHex,isGreater,isGreaterEqual,isIntHex,isLess,isLessEqual,isNotEqual,isNullValue,isValidIntegerSuffix,isbin,isdec,isint,isnegative,isoct,ispositive,naninf,sin,tan,toDoubleNumber,toLongNumber,toString,typesuffix,while]
+isGreater call:[assertEquals,isGreater]
+isGreaterEqual call:[assertEquals,isGreaterEqual]
+isEqual call:[assertEquals,isEqual]
+isNotEqual call:[assertEquals,isNotEqual]
+isLess call:[assertEquals,isLess]
+isLessEqual call:[assertEquals,isLessEqual]
+calculate call:[add,assertEquals,assertThrowFail,calculate,divide,multiply,subtract,while] noreturn:[assertThrowFail,while]
+calculate1 call:[assertEquals,assertThrowFail,calculate,while] noreturn:[assertThrowFail]
+typesuffix call:[add,assertEquals]
+toLongNumber call:[assertEquals,assertThrowFail,max,min,toLongNumber,toULongNumber,to_string,while] noreturn:[assertThrowFail,while]
+toDoubleNumber call:[assertEquals,assertEqualsDouble,toDoubleNumber,toString]
+isint call:[assertEquals,isInt]
+isbin call:[assertEquals,isBin]
+isnegative call:[assertEquals,isNegative]
+isoct call:[assertEquals,isOct]
+isFloatHex call:[assertEquals,isFloatHex]
+isIntHex call:[assertEquals,isIntHex]
+isValidIntegerSuffix call:[assertEquals,isValidIntegerSuffix]
+ispositive call:[assertEquals,isPositive]
+isFloat call:[assertEquals,isFloat]
+isDecimalFloat call:[assertEquals,isDecimalFloat]
+naninf call:[assertEquals,divide]
+isdec call:[assertEquals,isDec]
+isNullValue call:[assertEquals,isNullValue]
+incdec call:[assertEquals,assertThrowFail,incdec,toString,toULongNumber,while] noreturn:[assertThrowFail,while]
+sin call:[assertEquals,sin]
+cos call:[assertEquals,cos]
+tan call:[assertEquals,tan]
+abs call:[abs,assertEquals]
+toString call:[assertEquals,toString < double >,toString < float >,toString < long double >]
+characterLiteralsNormalization call:[assertEquals,assertThrowFail,normalizeCharacterLiteral,while] noreturn:[assertThrowFail,while]
+CPP14DigitSeparators call:[assert_,isDigitSeparator]
+toString < double > call:[str] noreturn:[str]
+toString < float > call:[str] noreturn:[str]
+toString < long double > call:[str] noreturn:[str]

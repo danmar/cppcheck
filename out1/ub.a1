@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="526390132">
+        <error id="invalidLifetime" severity="error" msg="Using pointer to local variable &apos;x&apos; that is out of scope." verbose="Using pointer to local variable &apos;x&apos; that is out of scope." cwe="562" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="8" column="52"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="8" column="29" info="Variable created here."/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="8" column="38" info="Address of variable taken here."/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;x[10]&apos; accessed at index 100, which is out of bounds." verbose="Array &apos;x[10]&apos; accessed at index 100, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="5" column="28" info="Array index out of bounds"/>
+        </error>
+        <error id="pointerOutOfBounds" severity="portability" msg="Undefined behaviour, pointer arithmetic &apos;buf+100&apos; is out of bounds." verbose="Undefined behaviour, pointer arithmetic &apos;buf+100&apos; is out of bounds." cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="24" column="36" info="Pointer arithmetic overflow"/>
+        </error>
+        <error id="missingReturn" severity="error" msg="Found a exit path from function with non-void return type that has missing return statement" verbose="Found a exit path from function with non-void return type that has missing return statement" cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="19" column="18"/>
+        </error>
+        <error id="nullPointer" severity="error" msg="Null pointer dereference: p" verbose="Null pointer dereference: p" cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="21" column="25" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="21" column="14" info="Assignment &apos;p=0&apos;, assigned value is 0"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="invalidPointerCast" severity="portability" msg="Casting between signed int * and float * which have an incompatible binary data representation." verbose="Casting between signed int * and float * which have an incompatible binary data representation." cwe="704" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="2" column="36"/>
+        </error>
+        <error id="zerodiv" severity="error" msg="Division by zero." verbose="Division by zero." cwe="369" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="11" column="16" info="Division by zero"/>
+        </error>
+        <error id="shiftNegativeLHS" severity="portability" msg="Shifting a negative value is technically undefined behaviour" verbose="Shifting a negative value is technically undefined behaviour" cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="39" column="15"/>
+        </error>
+        <error id="comparePointers" severity="error" msg="Subtracting pointers that point to different objects" verbose="Subtracting pointers that point to different objects" cwe="570" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="30" column="37"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="30" column="38" info="Array decayed to pointer here."/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="30" column="10" info="Variable declared here."/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="30" column="36" info="Array decayed to pointer here."/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="30" column="22" info="Variable declared here."/>
+        </error>
+        <error id="comparePointers" severity="error" msg="Comparing pointers that point to different objects" verbose="Comparing pointers that point to different objects" cwe="570" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="33" column="37"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="33" column="38" info="Array decayed to pointer here."/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="33" column="10" info="Variable declared here."/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="33" column="36" info="Array decayed to pointer here."/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="33" column="22" info="Variable declared here."/>
+        </error>
+        <error id="constVariable" severity="style" msg="Variable &apos;x&apos; can be declared with const" verbose="Variable &apos;x&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="5" column="9" info="Variable &apos;x&apos; can be declared with const"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="constVariable" severity="style" msg="Variable &apos;a&apos; can be declared with const" verbose="Variable &apos;a&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="33" column="10" info="Variable &apos;a&apos; can be declared with const"/>
+            <symbol>a</symbol>
+        </error>
+        <error id="constVariable" severity="style" msg="Variable &apos;b&apos; can be declared with const" verbose="Variable &apos;b&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="30" column="22" info="Variable &apos;b&apos; can be declared with const"/>
+            <symbol>b</symbol>
+        </error>
+        <error id="constVariable" severity="style" msg="Variable &apos;b&apos; can be declared with const" verbose="Variable &apos;b&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="33" column="22" info="Variable &apos;b&apos; can be declared with const"/>
+            <symbol>b</symbol>
+        </error>
+        <error id="constVariable" severity="style" msg="Variable &apos;a&apos; can be declared with const" verbose="Variable &apos;a&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="30" column="10" info="Variable &apos;a&apos; can be declared with const"/>
+            <symbol>a</symbol>
+        </error>
+        <error id="shiftTooManyBits" severity="error" msg="Shifting 32-bit value by 123 bits is undefined behaviour" verbose="Shifting 32-bit value by 123 bits is undefined behaviour" cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="36" column="14" info="Shift"/>
+        </error>
+        <error id="integerOverflow" severity="error" msg="Signed integer overflow for expression &apos;intmax*2&apos;." verbose="Signed integer overflow for expression &apos;intmax*2&apos;." cwe="190" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="42" column="44" info="Integer overflow"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="42" column="24" info="Assignment &apos;intmax=(~0U)&gt;&gt;1&apos;, assigned value is 2147483647"/>
+        </error>
+        <error id="floatConversionOverflow" severity="error" msg="Undefined behaviour: float (1e+100) to integer conversion overflow." verbose="Undefined behaviour: float (1e+100) to integer conversion overflow." cwe="190" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="14" column="28" info="float to integer conversion"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="14" column="14" info="Assignment &apos;d=1E100&apos;, assigned value is 1e+100.0"/>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: x" verbose="Uninitialized variable: x" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="48" column="19"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;fp&apos; is assigned a value that is never used." verbose="Variable &apos;fp&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="2" column="34"/>
+            <symbol>fp</symbol>
+        </error>
+        <error id="unusedVariable" severity="style" msg="Unused variable: x" verbose="Unused variable: x" cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="2" column="9"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="unusedVariable" severity="style" msg="Unused variable: buf" verbose="Unused variable: buf" cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="17" column="23"/>
+            <symbol>buf</symbol>
+        </error>
+        <error id="unassignedVariable" severity="style" msg="Variable &apos;a&apos; is not assigned a value." verbose="Variable &apos;a&apos; is not assigned a value." cwe="665" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="30" column="10"/>
+            <symbol>a</symbol>
+        </error>
+        <error id="unassignedVariable" severity="style" msg="Variable &apos;b&apos; is not assigned a value." verbose="Variable &apos;b&apos; is not assigned a value." cwe="665" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="30" column="22"/>
+            <symbol>b</symbol>
+        </error>
+        <error id="unassignedVariable" severity="style" msg="Variable &apos;a&apos; is not assigned a value." verbose="Variable &apos;a&apos; is not assigned a value." cwe="665" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="33" column="10"/>
+            <symbol>a</symbol>
+        </error>
+        <error id="unassignedVariable" severity="style" msg="Variable &apos;b&apos; is not assigned a value." verbose="Variable &apos;b&apos; is not assigned a value." cwe="665" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="33" column="22"/>
+            <symbol>b</symbol>
+        </error>
+        <error id="unassignedVariable" severity="style" msg="Variable &apos;x&apos; is not assigned a value." verbose="Variable &apos;x&apos; is not assigned a value." cwe="665" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/ub.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\ub.c" line="48" column="9"/>
+            <symbol>x</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="alias" lineNumber="1"/>
+    <functiondecl functionName="buffer_overflow" lineNumber="4"/>
+    <functiondecl functionName="dead_pointer" lineNumber="7"/>
+    <functiondecl functionName="division_by_zero" lineNumber="10"/>
+    <functiondecl functionName="float_to_int" lineNumber="13"/>
+    <functiondecl functionName="negative_size" lineNumber="16"/>
+    <functiondecl functionName="no_return" lineNumber="19"/>
+    <functiondecl functionName="null_pointer" lineNumber="20"/>
+    <functiondecl functionName="pointer_arithmetic" lineNumber="23"/>
+    <functiondecl functionName="pointer_to_u8" lineNumber="26"/>
+    <functiondecl functionName="pointer_subtraction" lineNumber="29"/>
+    <functiondecl functionName="pointer_comparison" lineNumber="32"/>
+    <functiondecl functionName="shift_overrun" lineNumber="35"/>
+    <functiondecl functionName="shift_negative" lineNumber="38"/>
+    <functiondecl functionName="int_overflow" lineNumber="41"/>
+    <functiondecl functionName="string_literal" lineNumber="44"/>
+    <functiondecl functionName="uninit" lineNumber="47"/>
+    <functioncall functionName="a"/>
+    <functioncall functionName="buf"/>
+    <functioncall functionName="d"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="ip"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="sz"/>
+    <functioncall functionName="x"/>
+  </FileInfo>
+</analyzerinfo>

@@ -1,0 +1,33 @@
+recursiveAddFiles call:[recursiveAddFiles] noreturn:[recursiveAddFiles]
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+TestFileLister
+run call:[fileExists,fin,isDirectory,is_open,prepareTest,recursiveAddFiles,setVerbose,while] noreturn:[fileExists,isDirectory,recursiveAddFiles,while]
+isDirectory call:[assertEquals,isDirectory]
+recursiveAddFiles call:[assert_,begin,compare,empty,end,erase,find,matcher,recursiveAddFiles,substr] noreturn:[erase]
+fileExists call:[assertEquals,fileExists]

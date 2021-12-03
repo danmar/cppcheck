@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3932460728">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="validCode" lineNumber="13"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="36"/>
+    <functiondecl functionName="resourceLeak_curl_easy_init" lineNumber="42"/>
+    <functiondecl functionName="resourceLeak_curl_easy_duphandle" lineNumber="49"/>
+    <functiondecl functionName="memleak_curl_easy_escape" lineNumber="56"/>
+    <functiondecl functionName="nullPointer" lineNumber="64"/>
+    <functiondecl functionName="uninitvar" lineNumber="77"/>
+    <functioncall functionName="CURLINFO_RESPONSE_CODE"/>
+    <functioncall functionName="CURLOPT_URL"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="buf"/>
+    <functioncall functionName="bufInit"/>
+    <functioncall functionName="bufUninit"/>
+    <functioncall functionName="curl"/>
+    <functioncall functionName="curl_easy_cleanup"/>
+    <functioncall functionName="curl_easy_duphandle"/>
+    <functioncall functionName="curl_easy_escape"/>
+    <functioncall functionName="curl_easy_getinfo"/>
+    <functioncall functionName="curl_easy_init"/>
+    <functioncall functionName="curl_easy_perform"/>
+    <functioncall functionName="curl_easy_recv"/>
+    <functioncall functionName="curl_easy_reset"/>
+    <functioncall functionName="curl_easy_send"/>
+    <functioncall functionName="curl_easy_setopt"/>
+    <functioncall functionName="curl_easy_strerror"/>
+    <functioncall functionName="curl_free"/>
+    <functioncall functionName="handle"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="len"/>
+    <functioncall functionName="pStr"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="response_code"/>
+  </FileInfo>
+</analyzerinfo>

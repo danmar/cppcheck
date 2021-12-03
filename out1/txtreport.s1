@@ -1,0 +1,31 @@
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+toString call:[fromStdString,toString] noreturn:[fromStdString]
+fromString call:[fromString,toStdString] noreturn:[fromString]
+QErrorPathItem
+TxtReport
+TxtReport
+create call:[create,getFile,setDevice]
+writeHeader
+writeFooter
+writeError call:[QString,arg,size,toNativeSeparators,toString,tr] noreturn:[tr]

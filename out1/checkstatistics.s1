@@ -1,0 +1,7 @@
+CWE
+CheckStatistics call:[clear] noreturn:[clear]
+addItem call:[contains]
+addItem call:[addItem,qDebug,toLower]
+clear call:[clear] noreturn:[clear]
+getCount call:[qDebug,toLower,value]
+getTools call:[QStringList,foreach,insert,keys,toList] noreturn:[QStringList]

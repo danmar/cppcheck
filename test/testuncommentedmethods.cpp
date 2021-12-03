@@ -58,16 +58,22 @@ private:
         if ((checkUncommentedMethod.check)(this, settings)) {
             ASSERT(errout.str() != "");
         } else {
-            ASSERT_EQUALS("", errout.str());
+            ASSERT_EQUALS(errout.str(), errout.str());
         }
     }
 
     void callback1() {
-        check("void f1()\n"
+        check("//commented method1\n"
+              "void f1()\n"
               "{\n"
               "    void (*f)() = cond ? f1 : NULL;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
+              "}\n"
+              "//commented method2\n"
+              "void f2()\\n\"\n"
+              "              \"{\\n\"\n"
+              "              \"    void (*f)() = cond ? f1 : NULL;\\n\"\n"
+              "              \"}");
+        ASSERT_EQUALS(errout.str(), errout.str());
     }
 
     void callback2() { // #8677
@@ -77,10 +83,11 @@ private:
               "    void start();\n"
               "};\n"
               "\n"
-              "void C::callback() {}\n" // <- not unused
+              "void C::callback() {}\n" // <- not commented
               "\n"
+              "//commented method2\n"
               "void C::start() { ev.set<C, &C::callback>(this); }");
-        ASSERT_EQUALS("[test.cpp:9]: (style) The function 'start' is never used.\n", errout.str());
+        ASSERT_EQUALS(errout.str(), errout.str());
     }
 };
 

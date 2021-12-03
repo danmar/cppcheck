@@ -1,0 +1,2 @@
+getTranslations
+construct call:[QCOMPARE,QString,getCurrentLanguage,getNames,size] noreturn:[QCOMPARE]

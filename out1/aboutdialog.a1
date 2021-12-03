@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="4226671482">
+  <FileInfo check="Class">
+<class name="AboutDialog" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/aboutdialog.h" line="35" col="1" hash="1621753907004854643"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functioncall functionName="AboutDialog"/>
+    <functioncall functionName="QDialog"/>
+    <functioncall functionName="__DATE__"/>
+    <functioncall functionName="accept"/>
+    <functioncall functionName="accepted"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="connect"/>
+    <functioncall functionName="fmtVersion"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="mButtons"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="right"/>
+    <functioncall functionName="setText"/>
+    <functioncall functionName="setupUi"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="url"/>
+    <functioncall functionName="version"/>
+  </FileInfo>
+</analyzerinfo>

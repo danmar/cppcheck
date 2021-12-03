@@ -1,0 +1,9 @@
+getDefaultFilters
+filterMatches call:[contains,ext,getDefaultFilters,isFile,suffix]
+addFile call:[filterMatches,inf]
+addDirectory call:[addDirectory,canonicalFilePath,dir,entryInfoList,getDefaultFilters,nameFilters,setFilter,setNameFilters,setSorting] noreturn:[addDirectory]
+addPathList call:[addDirectory,addFile,inf,isFile] noreturn:[addDirectory,addFile]
+getFileList call:[applyExcludeList,empty,filePath,fromNativeSeparators] noreturn:[applyExcludeList]
+addExcludeList
+toStdStringList call:[push_back,toStdString] noreturn:[push_back]
+applyExcludeList call:[canonicalFilePath,fromNativeSeparators,match,pathMatch,toStdString,toStdStringList]

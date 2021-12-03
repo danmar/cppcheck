@@ -1,0 +1,6 @@
+Report
+Report call:[close] noreturn:[close]
+create call:[isOpen,open,setFileName] noreturn:[open]
+open call:[isOpen,open,setFileName] noreturn:[open]
+close call:[close,isOpen] noreturn:[close]
+getFile

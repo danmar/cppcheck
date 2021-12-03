@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="4129016030">
+        <error id="syntaxError" severity="error" msg="syntax error" verbose="syntax error" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cli/proj-suppress-syntaxError/1.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cli\proj-suppress-syntaxError\1.c" line="6" column="5"/>
+        </error>
+</analyzerinfo>

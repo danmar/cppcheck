@@ -1,0 +1,140 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="4247937820">
+        <error id="missingOverride" severity="style" msg="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/cli/main.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\cli\cppcheckexecutor.h" line="75" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="256" column="18" info="Virtual function in base class"/>
+            <symbol>reportOut</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/cli/main.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\cli\cppcheckexecutor.h" line="78" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="264" column="18" info="Virtual function in base class"/>
+            <symbol>reportErr</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportProgress&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportProgress&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/cli/main.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\cli\cppcheckexecutor.h" line="80" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="272" column="18" info="Virtual function in base class"/>
+            <symbol>reportProgress</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportInfo&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportInfo&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/cli/main.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\cli\cppcheckexecutor.h" line="85" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="282" column="18" info="Virtual function in base class"/>
+            <symbol>reportInfo</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/cli/main.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\cli\cppcheckexecutor.h" line="87" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="286" column="18" info="Virtual function in base class"/>
+            <symbol>bughuntingReport</symbol>
+        </error>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="main" lineNumber="79"/>
+    <functiondecl functionName="main" lineNumber="79"/>
+    <functiondecl functionName="main" lineNumber="79"/>
+    <functiondecl functionName="main" lineNumber="79"/>
+    <functiondecl functionName="main" lineNumber="79"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="CppCheckExecutor"/>
+    <functioncall functionName="ErrorMessage"/>
+    <functioncall functionName="FileLocation"/>
+    <functioncall functionName="GetModuleFileNameA"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="NO_LINE"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="Suppression"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="_CRTDBG_LEAK_CHECK_DF"/>
+    <functioncall functionName="_CRTDBG_REPORT_FLAG"/>
+    <functioncall functionName="_CrtSetDbgFlag"/>
+    <functioncall functionName="argc"/>
+    <functioncall functionName="argv"/>
+    <functioncall functionName="catch"/>
+    <functioncall functionName="check"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="column"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="emptyString"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorId"/>
+    <functioncall functionName="exename"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="fileIndex"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="find_first_of"/>
+    <functioncall functionName="hash"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="info"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="line"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="mFileName"/>
+    <functioncall functionName="mInfo"/>
+    <functioncall functionName="mOrigFileName"/>
+    <functioncall functionName="matched"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="other"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="plistFooter"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="reportErr"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="stage"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="symbolName"/>
+    <functioncall functionName="thisAndNextLine"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="what"/>
+  </FileInfo>
+</analyzerinfo>

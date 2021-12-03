@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="4208876479">
+  <FileInfo check="Class">
+<class name="struct1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/libsigc++.cpp" line="12" col="1" hash="4462799268036130239"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="func1" lineNumber="13"/>
+    <functiondecl functionName="valid_code" lineNumber="16"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="23"/>
+    <functioncall functionName="func1"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="mem_fun"/>
+    <functioncall functionName="my_sruct1"/>
+    <functioncall functionName="sl"/>
+    <functioncall functionName="void"/>
+  </FileInfo>
+</analyzerinfo>

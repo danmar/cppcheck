@@ -1,0 +1,123 @@
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+CWE
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+FwdAnalysis
+Result
+Result
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+InferModel
+isEqual
+isEqual
+isEqual call:[isEqual] noreturn:[isEqual]
+isZero call:[T]
+calculate call:[InternalError,encodeMultiChar,isEqual,isZero,long,sizeof,wrap] noreturn:[InternalError,wrap]
+calculate
+getCompareValue call:[compare,min,pred] noreturn:[compare,min]
+str call:[front,size,to_string] noreturn:[to_string]
+setMinValue
+setMaxValue
+isLessThan call:[empty,front]
+isGreaterThan call:[empty,front]
+isScalar call:[size]
+empty call:[empty] noreturn:[empty]
+isScalarOrEmpty call:[empty,isScalar] noreturn:[isScalar]
+getScalar call:[assert,front,isScalar] noreturn:[front]
+getScalarRef call:[assert,isScalar,merge] noreturn:[merge]
+fromInt call:[setMaxValue,setMinValue]
+fromValues call:[assert,fromInt,getCompareValue,isImpossible,isKnown,isPossible,setMaxValue,setMinValue] noreturn:[assert,fromInt,setMaxValue,setMinValue]
+fromValues call:[fromValues] noreturn:[fromValues]
+apply call:[empty,f,front]
+merge call:[begin,end,insert]
+operator- call:[apply,empty,merge] noreturn:[merge]
+equal call:[getScalarRef,isScalar,merge] noreturn:[merge]
+compare call:[empty,equal,front,isGreaterThan,isLessThan]
+compare call:[all_of,begin,calculate,compare,empty,end,front] noreturn:[calculate]
+toString call:[str] noreturn:[str]
+addToErrorPath call:[back_inserter,begin,copy_if,end,insert] noreturn:[copy_if]
+setValueKind call:[isInconclusive,isPossible,setInconclusive,setKnown,setPossible] noreturn:[setInconclusive,setKnown,setPossible]
+inferNotEqual call:[any_of,begin,end,isImpossible] noreturn:[any_of]
+infer call:[addToErrorPath,calculate,compare,empty,fromValues,front,getScalar,getScalarRef,inferNotEqual,isScalar,isScalarOrEmpty,match,merge,push_back,remove_if,setImpossible,setValueKind,value] noreturn:[getScalarRef,match,push_back]
+infer call:[infer,move,yield] noreturn:[infer]
+infer call:[infer,move,yield] noreturn:[infer]
+ValuePtr < InferModel >
+ValuePtr < InferModel >
+ValuePtr < InferModel > call:[get,mClone,reset] noreturn:[reset]
+ValuePtr < InferModel >
+release call:[release] noreturn:[release]
+get call:[get] noreturn:[get]
+get call:[get] noreturn:[get]
+operator* call:[get] noreturn:[get]
+operator* call:[get] noreturn:[get]
+operator. call:[get] noreturn:[get]
+operator. call:[get] noreturn:[get]
+swap call:[swap] noreturn:[swap]
+operator= call:[swap]
+operatorbool
+ValuePtr < InferModel >
+apply call:[InferModel] noreturn:[InferModel]

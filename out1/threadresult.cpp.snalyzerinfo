@@ -1,0 +1,71 @@
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+toString call:[fromStdString,toString] noreturn:[fromStdString]
+fromString call:[fromString,toStdString] noreturn:[fromString]
+QErrorPathItem
+ThreadResult
+ThreadResult
+reportOut call:[fromStdString,log] noreturn:[log]
+fileChecked call:[QFile,arg,locker,progress,size,tr] noreturn:[progress]
+reportErr call:[debugError,error,item,locker] noreturn:[debugError,error]
+getNextFile call:[QString,isEmpty,locker,takeFirst] noreturn:[QString,takeFirst]
+getNextFileSettings call:[FileSettings,empty,front,locker,pop_front] noreturn:[FileSettings]
+setFiles call:[QFile,locker,size] noreturn:[size]
+setProject call:[QFile,clear,fromStdString,locker,size] noreturn:[size]
+clearFiles call:[clear,locker]
+getFileCount call:[locker,size] noreturn:[size]
+bughuntingReport call:[bughuntingReportLine,empty,fromStdString] noreturn:[bughuntingReportLine]

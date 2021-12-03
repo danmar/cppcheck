@@ -1,0 +1,2 @@
+validCode call:[omp_target_alloc,omp_target_free,printf] noreturn:[omp_target_free]
+memleak_omp_target_alloc call:[omp_target_alloc,printf] noreturn:[printf]

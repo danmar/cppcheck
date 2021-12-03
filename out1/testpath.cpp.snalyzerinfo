@@ -1,0 +1,38 @@
+acceptFile call:[acceptFile] noreturn:[acceptFile]
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+TestPath
+run call:[acceptFile,getCurrentPath,getRelative,get_path_from_filename,isAbsolute,is_c,is_cpp,prepareTest,removeQuotationMarks,setVerbose,while] noreturn:[acceptFile,getCurrentPath,getRelative,get_path_from_filename,isAbsolute,is_c,is_cpp,removeQuotationMarks,while]
+removeQuotationMarks call:[assertEquals,removeQuotationMarks]
+acceptFile call:[acceptFile,assertEquals,assert_]
+getCurrentPath call:[assertEquals,getCurrentPath,isAbsolute]
+isAbsolute call:[assertEquals,isAbsolute]
+getRelative call:[assertEquals,getRelativePath]
+is_c call:[assertEquals,assert_,isC]
+is_cpp call:[assertEquals,assert_,isCPP]
+get_path_from_filename call:[assertEquals,getPathFromFilename]

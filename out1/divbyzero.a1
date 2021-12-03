@@ -1,0 +1,83 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1467254009">
+        <error id="constParameter" severity="style" msg="Parameter &apos;data&apos; can be declared with const" verbose="Parameter &apos;data&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\danmar\divbyzero.cpp" line="61" column="31" info="Parameter &apos;data&apos; can be declared with const"/>
+            <symbol>data</symbol>
+        </error>
+        <error id="constParameter" severity="style" msg="Parameter &apos;p&apos; can be declared with const" verbose="Parameter &apos;p&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\danmar\divbyzero.cpp" line="51" column="19" info="Parameter &apos;p&apos; can be declared with const"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="constParameter" severity="style" msg="Parameter &apos;p&apos; can be declared with const" verbose="Parameter &apos;p&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\danmar\divbyzero.cpp" line="56" column="19" info="Parameter &apos;p&apos; can be declared with const"/>
+            <symbol>p</symbol>
+        </error>
+  <FileInfo check="Bounds checking">
+    <array-index>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:56:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="58" col="21" value="128"/>
+    </array-index>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="S" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="7" col="1" hash="15061778566296530962"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:51:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="53" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:56:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="58" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:66:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="68" col="21" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:51:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="53" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:56:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="58" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:66:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="68" col="21" value="0"/>
+  </FileInfo>
+  <FileInfo check="Bounds checking">
+    <array-index>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:56:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="58" col="21" value="128"/>
+    </array-index>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="S" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="7" col="1" hash="15061778566296530962"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:51:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="53" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:56:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="58" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:66:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="68" col="21" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:51:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="53" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:56:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="58" col="21" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp:66:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/divbyzero.cpp" line="68" col="21" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="callfunc1" lineNumber="13"/>
+    <functiondecl functionName="float1" lineNumber="20"/>
+    <functiondecl functionName="float2" lineNumber="25"/>
+    <functiondecl functionName="functionCall" lineNumber="30"/>
+    <functiondecl functionName="globalVar1" lineNumber="39"/>
+    <functiondecl functionName="globalVar2" lineNumber="44"/>
+    <functiondecl functionName="pointer1" lineNumber="51"/>
+    <functiondecl functionName="pointer2" lineNumber="56"/>
+    <functiondecl functionName="stdmap" lineNumber="61"/>
+    <functiondecl functionName="struct1" lineNumber="66"/>
+    <functiondecl functionName="trycatch" lineNumber="71"/>
+    <functiondecl functionName="callfunc1" lineNumber="13"/>
+    <functiondecl functionName="float1" lineNumber="20"/>
+    <functiondecl functionName="float2" lineNumber="25"/>
+    <functiondecl functionName="functionCall" lineNumber="30"/>
+    <functiondecl functionName="globalVar1" lineNumber="39"/>
+    <functiondecl functionName="globalVar2" lineNumber="44"/>
+    <functiondecl functionName="pointer1" lineNumber="51"/>
+    <functiondecl functionName="pointer2" lineNumber="56"/>
+    <functiondecl functionName="stdmap" lineNumber="61"/>
+    <functiondecl functionName="struct1" lineNumber="66"/>
+    <functiondecl functionName="trycatch" lineNumber="71"/>
+    <functioncall functionName="catch"/>
+    <functioncall functionName="dostuff"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="globalvar"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="scanf"/>
+    <functioncall functionName="unknown_function"/>
+    <functioncall functionName="x"/>
+  </FileInfo>
+</analyzerinfo>

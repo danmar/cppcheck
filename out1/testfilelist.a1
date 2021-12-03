@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1238623150">
+  <FileInfo check="Class">
+<class name="TestFileList" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/filelist/testfilelist.h" line="22" col="1" hash="12680189547814473032"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="addFile" lineNumber="25"/>
+    <functiondecl functionName="addPathList" lineNumber="42"/>
+    <functiondecl functionName="addFile_notexist" lineNumber="61"/>
+    <functiondecl functionName="addFile_unknown" lineNumber="69"/>
+    <functiondecl functionName="addDirectory" lineNumber="78"/>
+    <functiondecl functionName="addDirectory_recursive" lineNumber="86"/>
+    <functiondecl functionName="filterFiles" lineNumber="99"/>
+    <functiondecl functionName="filterFiles2" lineNumber="122"/>
+    <functiondecl functionName="filterFiles3" lineNumber="137"/>
+    <functiondecl functionName="filterFiles4" lineNumber="154"/>
+    <functioncall functionName="QCOMPARE"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QTEST_MAIN"/>
+    <functioncall functionName="QVERIFY"/>
+    <functioncall functionName="SRCDIR"/>
+    <functioncall functionName="TestFileList"/>
+    <functioncall functionName="addDirectory"/>
+    <functioncall functionName="addExcludeList"/>
+    <functioncall functionName="addFile"/>
+    <functioncall functionName="addPathList"/>
+    <functioncall functionName="canonicalPath"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="contains"/>
+    <functioncall functionName="dir"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="filters"/>
+    <functioncall functionName="getFileList"/>
+    <functioncall functionName="paths"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="true"/>
+  </FileInfo>
+</analyzerinfo>

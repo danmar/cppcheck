@@ -1,0 +1,13 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="941823061">
+        <error id="zerodiv" severity="error" msg="Division by zero." verbose="Division by zero." cwe="369" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cli/proj-inline-suppress/3.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cli\proj-inline-suppress\3.cpp" line="4" column="19" info="Division by zero"/>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;x&apos; is assigned a value that is never used." verbose="Variable &apos;x&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cli/proj-inline-suppress/3.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cli\proj-inline-suppress\3.cpp" line="4" column="11"/>
+            <symbol>x</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="foo" lineNumber="2"/>
+  </FileInfo>
+</analyzerinfo>

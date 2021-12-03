@@ -1,0 +1,10 @@
+boost_forceinline_test
+boost_noinline_test
+boost_noreturn_test
+print_hello call:[printf] noreturn:[printf]
+valid_code call:[BOOST_LIKELY,BOOST_UNLIKELY,bind,endian_reverse_inplace] noreturn:[bind]
+ignoredReturnValue call:[endian_reverse,iround,llround,lround,round] noreturn:[endian_reverse]
+uninitvar call:[endian_reverse_inplace,round] noreturn:[round]
+throwexception call:[bad_alloc,throw_exception] noreturn:[throw_exception]
+throwexception2 call:[BOOST_THROW_EXCEPTION,bad_alloc] noreturn:[BOOST_THROW_EXCEPTION]
+macros call:[BOOST_PP_REPEAT,BOOST_SCOPED_ENUM_DECLARE_END]

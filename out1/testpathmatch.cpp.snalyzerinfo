@@ -1,0 +1,57 @@
+CWE
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+TestPathMatch
+run call:[emptymaskemptyfile,emptymaskpath1,emptymaskpath2,emptymaskpath3,filemask1,filemask2,filemask3,filemaskdifferentcase,filemaskpath1,filemaskpath2,filemaskpath3,filemaskpath4,onemaskdifferentdir1,onemaskdifferentdir2,onemaskdifferentdir3,onemaskdifferentdir4,onemaskemptypath,onemasklongerpath1,onemasklongerpath2,onemasklongerpath3,onemasksamepath,onemasksamepathdifferentcase,onemasksamepathwithfile,onemaskshorterpath,prepareTest,setVerbose,twomasklongerpath1,twomasklongerpath2,twomasklongerpath3,twomasklongerpath4,while] noreturn:[emptymaskemptyfile,emptymaskpath1,emptymaskpath2,emptymaskpath3,filemask1,filemask2,filemask3,filemaskdifferentcase,filemaskpath1,filemaskpath2,filemaskpath3,filemaskpath4,onemaskdifferentdir1,onemaskdifferentdir2,onemaskdifferentdir3,onemaskdifferentdir4,onemaskemptypath,onemasklongerpath1,onemasklongerpath2,onemasklongerpath3,onemasksamepath,onemasksamepathdifferentcase,onemasksamepathwithfile,onemaskshorterpath,twomasklongerpath1,twomasklongerpath2,twomasklongerpath3,twomasklongerpath4,while]
+emptymaskemptyfile call:[assert_,match]
+emptymaskpath1 call:[assert_,match]
+emptymaskpath2 call:[assert_,match]
+emptymaskpath3 call:[assert_,match]
+onemaskemptypath call:[assert_,match]
+onemasksamepath call:[assert_,match]
+onemasksamepathdifferentcase call:[assert_,masks,match]
+onemasksamepathwithfile call:[assert_,match]
+onemaskshorterpath call:[assert_,length,longerExclude,match,shorterToMatch]
+onemaskdifferentdir1 call:[assert_,match]
+onemaskdifferentdir2 call:[assert_,match]
+onemaskdifferentdir3 call:[assert_,match]
+onemaskdifferentdir4 call:[assert_,match]
+onemasklongerpath1 call:[assert_,match]
+onemasklongerpath2 call:[assert_,match]
+onemasklongerpath3 call:[assert_,match]
+twomasklongerpath1 call:[assert_,match]
+twomasklongerpath2 call:[assert_,match]
+twomasklongerpath3 call:[assert_,match]
+twomasklongerpath4 call:[assert_,match]
+filemask1 call:[assert_,match]
+filemaskdifferentcase call:[assert_,masks,match]
+filemask2 call:[assert_,match]
+filemask3 call:[assert_,match]
+filemaskpath1 call:[assert_,match]
+filemaskpath2 call:[assert_,match]
+filemaskpath3 call:[assert_,match]
+filemaskpath4 call:[assert_,match]

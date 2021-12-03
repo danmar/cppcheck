@@ -1,0 +1,274 @@
+CWE
+showIdColumn
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+toString call:[fromStdString,toString] noreturn:[fromStdString]
+fromString call:[fromString,toStdString] noreturn:[fromString]
+QErrorPathItem
+Application
+getName
+getPath
+getParameters
+setName
+setPath
+setParameters
+getDefaultApplication
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+ProjectFile
+getActiveProject
+setActiveProject
+getRootPath
+getBuildDir
+getImportProject
+getAnalyzeAllVsConfigs
+getCheckHeaders
+setCheckHeaders
+getCheckUnusedTemplates
+setCheckUnusedTemplates
+getIncludeDirs call:[fromNativeSeparators] noreturn:[fromNativeSeparators]
+getDefines
+getUndefines
+getCheckPaths call:[fromNativeSeparators] noreturn:[fromNativeSeparators]
+getExcludedPaths call:[fromNativeSeparators] noreturn:[fromNativeSeparators]
+getVsConfigurations
+getLibraries
+getPlatform
+getSuppressions
+getAddons
+getClangAnalyzer
+setClangAnalyzer
+getClangTidy
+setClangTidy
+getTags
+getMaxCtuDepth
+setMaxCtuDepth
+getMaxTemplateRecursion
+setMaxTemplateRecursion
+getFunctionContracts
+getVariableContracts
+setVariableContracts call:[toStdString]
+deleteFunctionContract call:[erase,toStdString] noreturn:[erase]
+deleteVariableContract call:[erase] noreturn:[erase]
+getFilename
+setRootPath
+setBuildDir
+setImportProject
+setAnalyzeAllVsConfigs
+setTags
+setFilename
+SafeChecks
+getCheckUnknownFunctionReturn
+setCheckUnknownFunctionReturn
+setAddonsAndTools
+setSuppressions
+setClangIncludePaths
+setDataDir
+acceptFile call:[acceptFile] noreturn:[acceptFile]
+getFunction call:[data,toMap,toString,value] noreturn:[toString]
+ResultsTree call:[connect,setExpandsOnDoubleClick,setModel,setSortingEnabled,translate] noreturn:[connect]
+ResultsTree
+keyPressEvent call:[currentIndex,key,keyPressEvent,quickStartApplication] noreturn:[keyPressEvent,quickStartApplication]
+initialize call:[loadSettings] noreturn:[loadSettings]
+createNormalItem call:[QStandardItem,setData,setEditable]
+createCheckboxItem call:[setCheckState,setCheckable,setEnabled]
+createLineNumberItem call:[QStandardItem,QVariant,setData,setEditable,setTextAlignment,setToolTip,toInt]
+addErrorItem global:[COLUMN,CWE,ERRORID,FILE0,FILENAME,FUNCTION,HASH,HIDE,INCOMPLETE,INCONCLUSIVE,LINE,MESSAGE,SEVERITY,SINCEDATE,SUMMARY,SYMBOLNAMES,TAGS] call:[QModelIndex,QVariant,SeverityToShowType,addBacktraceFiles,back,contains,ensureFileItem,front,getActiveProject,getWarningTags,isEmpty,isShown,row,setData,setRowHidden,severityToIcon,size,startsWith,stripPath,tr] noreturn:[getWarningTags,setData,setRowHidden,tr]
+addBacktraceFiles call:[QIcon,QString,appendRow,child,createCheckboxItem,createLineNumberItem,createNormalItem,index,isEmpty,number,rowCount,setIcon,setRowHidden,severityToTranslatedString,text,toNativeSeparators,tr] noreturn:[setIcon]
+severityToTranslatedString call:[QString,tr] noreturn:[QString]
+findFileItem call:[item,rowCount,text] noreturn:[item]
+clear call:[removeRows,rowCount] noreturn:[removeRows]
+clear global:[FILE0,FILENAME] call:[data,item,removeRow,rowCount,stripPath,toMap,toString]
+clearRecheckFile global:[FILENAME] call:[actualfile,data,isEmpty,item,length,mid,removeRow,rowCount,startsWith,toMap,toString]
+loadSettings call:[QString,arg,columnCount,qMax,setColumnWidth,showIdColumn,showInconclusiveColumn,toBool,toInt,value] noreturn:[setColumnWidth,showInconclusiveColumn]
+saveSettings call:[QString,arg,columnCount,columnWidth,setValue] noreturn:[setValue]
+showResults call:[isShown,refreshTree,show] noreturn:[refreshTree]
+showCppcheckResults call:[refreshTree] noreturn:[refreshTree]
+showClangResults call:[refreshTree] noreturn:[refreshTree]
+filterResults call:[refreshTree] noreturn:[refreshTree]
+showHiddenResults global:[HIDE] call:[QVariant,child,clear,data,item,refreshTree,resultsHidden,rowCount,setData,toMap] noreturn:[resultsHidden,setData]
+refreshTree global:[ERRORID,FILENAME,HIDE,MESSAGE,SEVERITY,SUMMARY] call:[QModelIndex,VariantToShowType,child,contains,data,index,isEmpty,isShown,item,rowCount,setRowHidden,startsWith,toBool,toMap,toString] noreturn:[setRowHidden]
+ensureFileItem global:[FILE0,FILENAME] call:[QIcon,QModelIndex,QVariant,appendRow,createNormalItem,findFileItem,rowCount,setData,setIcon,setRowHidden,stripPath,toNativeSeparators]
+contextMenuEvent call:[QAction,QSignalMapper,QString,SIGNAL,SLOT,addAction,addMenu,addSeparator,connect,context,copy,count,data,disconnect,exec,getActiveProject,getApplication,getApplicationCount,getDefaultApplication,getFunction,getName,getTags,globalPos,hideAllIdResult,hideResult,indexAt,isChecking,isEmpty,isValid,itemFromIndex,map,mapped,menu,openContainingFolder,parent,pos,recheckSelectedFiles,selectedRows,selectionModel,setDisabled,setMapping,startsWith,tagSelectedItems,toMap,toString,tr,triggered,value] noreturn:[addSeparator,connect,disconnect,setDisabled,tagSelectedItems]
+startApplication global:[FILENAME,LINE,MESSAGE,SEVERITY] call:[QString,append,arg,askFileDir,checkdir,child,column,data,exec,exists,getApplication,getApplicationCount,getDefaultApplication,getParameters,getPath,indexOf,info,insert,isAbsolute,msg,msgbox,parent,qDebug,replace,row,setIcon,setText,setWindowTitle,startDetached,toInt,toMap,toNativeSeparators,toString,tr] noreturn:[append,child,exec,getDefaultApplication]
+askFileDir call:[QFileInfo,QString,arg,exec,exists,getExistingDirectory,getPath,indexOf,isEmpty,lastIndexOf,mid,msgbox,setIcon,setPath,setText,setWindowTitle,tr] noreturn:[QString,arg,mid,tr]
+copy global:[ERRORID,FILENAME,INCONCLUSIVE,LINE,MESSAGE,SEVERITY] call:[ShowTypeToSeverity,clipboard,contains,data,fromStdString,itemFromIndex,number,parent,selectedRows,setText,text,toBool,toInt,toMap,toString] noreturn:[parent,setText]
+hideResult global:[HIDE] call:[QVariant,data,itemFromIndex,refreshTree,resultsHidden,selectedRows,setData,toMap] noreturn:[resultsHidden]
+recheckSelectedFiles global:[FILE0,FILENAME] call:[askFileDir,checkSelected,contains,curfileInfo,data,exists,fileInfo,indexOf,isEmpty,isHeader,itemFromIndex,parent,selectedRows,toMap,toStdString,toString] noreturn:[checkSelected,parent]
+hideAllIdResult global:[ERRORID,HIDE] call:[QVariant,append,child,column,data,item,parent,refreshTree,resultsHidden,row,rowCount,setData,toMap,toString] noreturn:[child,resultsHidden,setData]
+suppressSelectedIds global:[ERRORID] call:[child,contains,data,item,itemFromIndex,parent,removeRow,row,rowCount,selectedRows,suppressIds,toList,toMap,toString] noreturn:[parent,removeRow,suppressIds,toString]
+suppressHash global:[ERRORID,FILENAME,HASH,LINE] call:[addSuppression,contains,data,getActiveProject,insert,itemFromIndex,parent,removeRow,row,rowCount,selectedRows,toInt,toMap,toStdString,toString,toULongLong,write] noreturn:[insert,parent,removeRow,write]
+openContainingFolder call:[QFileInfo,absolutePath,fromLocalFile,getFilePath,isEmpty,openUrl] noreturn:[openUrl]
+editContract call:[editFunctionContract,getFunction] noreturn:[editFunctionContract]
+tagSelectedItems global:[COLUMN_TAGS,HASH,TAGS] call:[QVariant,child,contains,data,getActiveProject,itemFromIndex,parent,row,selectedRows,setData,setText,setWarningTags,toMap,toULongLong,write] noreturn:[setWarningTags,write]
+context call:[startApplication] noreturn:[startApplication]
+quickStartApplication call:[itemFromIndex,startApplication] noreturn:[startApplication]
+getFilePath global:[FILENAME] call:[QString,child,column,data,fi,fileName,parent,row,toMap,toNativeSeparators,toString] noreturn:[QString,child,fileName]
+severityToIcon call:[QString] noreturn:[QString]
+saveResults call:[QModelIndex,isRowHidden,item,rowCount,saveErrors,writeFooter,writeHeader] noreturn:[saveErrors,writeFooter]
+saveErrors call:[child,index,isRowHidden,readErrorItem,rowCount,writeError] noreturn:[writeError]
+indexOf call:[sameCID,size]
+updateFromOldReport global:[COLUMN_SINCE_DATE,SINCEDATE,TAGS] call:[child,close,currentDate,data,indexOf,isEmpty,item,oldReport,open,read,readErrorItem,rowCount,setData,setText,toMap,toString] noreturn:[close,setData,setText]
+readErrorItem global:[CWE,ERRORID,FILE0,FILENAME,HASH,INCOMPLETE,INCONCLUSIVE,LINE,MESSAGE,SEVERITY,SINCEDATE,SUMMARY,TAGS] call:[ShowTypeToSeverity,VariantToShowType,child,data,rowCount,stripPath,toBool,toInt,toMap,toString,toULongLong]
+updateSettings call:[refreshFilePaths,showIdColumn,showInconclusiveColumn] noreturn:[refreshFilePaths,showInconclusiveColumn]
+setCheckDirectory
+getCheckDirectory
+stripPath call:[QString,dir,relativeFilePath] noreturn:[QString,relativeFilePath]
+refreshFilePaths global:[FILENAME] call:[child,data,hasChildren,rowCount,setText,stripPath,text,toMap,toString] noreturn:[setText]
+refreshFilePaths call:[item,qDebug,refreshFilePaths,rowCount] noreturn:[refreshFilePaths]
+hasVisibleResults
+hasResults call:[rowCount]
+translate call:[setHorizontalHeaderLabels,tr] noreturn:[setHorizontalHeaderLabels]
+showIdColumn call:[hideColumn,showColumn] noreturn:[hideColumn,showColumn]
+showInconclusiveColumn call:[hideColumn,showColumn] noreturn:[hideColumn,showColumn]
+currentChanged call:[currentChanged,treeSelectionChanged] noreturn:[treeSelectionChanged]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

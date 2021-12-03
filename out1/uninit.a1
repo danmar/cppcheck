@@ -1,0 +1,32 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1201695262">
+        <error id="constParameter" severity="style" msg="Parameter &apos;p&apos; can be declared with const" verbose="Parameter &apos;p&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\danmar\uninit.c" line="28" column="19" info="Parameter &apos;p&apos; can be declared with const"/>
+            <symbol>p</symbol>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: x" verbose="Uninitialized variable: x" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\danmar\uninit.c" line="25" column="12"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="unassignedVariable" severity="style" msg="Variable &apos;x&apos; is not assigned a value." verbose="Variable &apos;x&apos; is not assigned a value." cwe="665" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\danmar\uninit.c" line="22" column="9"/>
+            <symbol>x</symbol>
+        </error>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c:28:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c" line="30" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c:33:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c" line="35" col="19" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c:28:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c" line="30" col="13" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c:33:5" my-argnr="1" my-argname="p" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/danmar/uninit.c" line="35" col="19" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="array1" lineNumber="7"/>
+    <functiondecl functionName="array2" lineNumber="14"/>
+    <functiondecl functionName="local1" lineNumber="21"/>
+    <functiondecl functionName="pointer1" lineNumber="28"/>
+    <functiondecl functionName="pointer2" lineNumber="33"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="strlen"/>
+  </FileInfo>
+</analyzerinfo>

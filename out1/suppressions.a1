@@ -1,0 +1,205 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1225682753">
+        <error id="useStlAlgorithm" severity="style" msg="Consider using std::any_of algorithm instead of a raw loop." verbose="Consider using std::any_of algorithm instead of a raw loop." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/suppressions.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\utils.h" line="102" column="0"/>
+        </error>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="Suppressions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/suppressions.h" line="35" col="1" hash="17504773588390059325"/>
+<class name="Suppressions::ErrorMessage" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/suppressions.h" line="38" col="5" hash="14191911693713961379"/>
+<class name="Suppressions::Suppression" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/suppressions.h" line="52" col="5" hash="9917410694986121598"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="isAcceptedErrorIdChar" lineNumber="34"/>
+    <functiondecl functionName="parseFile" lineNumber="46"/>
+    <functiondecl functionName="parseXmlFile" lineNumber="77"/>
+    <functiondecl functionName="parseMultiSuppressComment" lineNumber="116"/>
+    <functiondecl functionName="addSuppressionLine" lineNumber="171"/>
+    <functiondecl functionName="addSuppression" lineNumber="219"/>
+    <functiondecl functionName="addSuppressions" lineNumber="256"/>
+    <functiondecl functionName="setFileName" lineNumber="266"/>
+    <functiondecl functionName="parseComment" lineNumber="271"/>
+    <functiondecl functionName="isSuppressed" lineNumber="307"/>
+    <functiondecl functionName="isMatch" lineNumber="338"/>
+    <functiondecl functionName="getText" lineNumber="346"/>
+    <functiondecl functionName="isSuppressed" lineNumber="364"/>
+    <functiondecl functionName="isSuppressedLocal" lineNumber="376"/>
+    <functiondecl functionName="dump" lineNumber="390"/>
+    <functiondecl functionName="getUnmatchedLocalSuppressions" lineNumber="409"/>
+    <functiondecl functionName="getUnmatchedGlobalSuppressions" lineNumber="427"/>
+    <functiondecl functionName="getSuppressions" lineNumber="444"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="ErrorMessage"/>
+    <functioncall functionName="FileLocation"/>
+    <functioncall functionName="FirstChildElement"/>
+    <functioncall functionName="GetText"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="LoadFile"/>
+    <functioncall functionName="N"/>
+    <functioncall functionName="NO_LINE"/>
+    <functioncall functionName="Name"/>
+    <functioncall functionName="NextSiblingElement"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="Suppression"/>
+    <functioncall functionName="T"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="_1"/>
+    <functioncall functionName="acceptFile"/>
+    <functioncall functionName="addSuppression"/>
+    <functioncall functionName="addSuppressionLine"/>
+    <functioncall functionName="atoi"/>
+    <functioncall functionName="back"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="bind"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="c"/>
+    <functioncall functionName="catch"/>
+    <functioncall functionName="class"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="column"/>
+    <functioncall functionName="compare"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="e"/>
+    <functioncall functionName="e2"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="emptyString"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="end_position"/>
+    <functioncall functionName="endlen"/>
+    <functioncall functionName="endpos"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="erase"/>
+    <functioncall functionName="errmsg"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorId"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="extra"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="fileIndex"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="filedata"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="find_first_not_of"/>
+    <functioncall functionName="find_first_of"/>
+    <functioncall functionName="find_if"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="float"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="getFileName"/>
+    <functioncall functionName="getStringCharLiteral"/>
+    <functioncall functionName="getline"/>
+    <functioncall functionName="hash"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="info"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="isAcceptedErrorIdChar"/>
+    <functioncall functionName="isCharLiteral"/>
+    <functioncall functionName="isFloat"/>
+    <functioncall functionName="isLocal"/>
+    <functioncall functionName="isMatch"/>
+    <functioncall functionName="isPrefixStringCharLiteral"/>
+    <functioncall functionName="isSameParameters"/>
+    <functioncall functionName="isStringCharLiteral"/>
+    <functioncall functionName="isStringLiteral"/>
+    <functioncall functionName="isSuppressed"/>
+    <functioncall functionName="isValidGlobPattern"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="isalnum"/>
+    <functioncall functionName="isdigit"/>
+    <functioncall functionName="iss"/>
+    <functioncall functionName="isspace"/>
+    <functioncall functionName="istr"/>
+    <functioncall functionName="istr1"/>
+    <functioncall functionName="istr2"/>
+    <functioncall functionName="istringstream"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="line"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="lineStream"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="mDoubleValue"/>
+    <functioncall functionName="mFileName"/>
+    <functioncall functionName="mInfo"/>
+    <functioncall functionName="mIntValue"/>
+    <functioncall functionName="mOrigFileName"/>
+    <functioncall functionName="mSuppressions"/>
+    <functioncall functionName="matched"/>
+    <functioncall functionName="matchglob"/>
+    <functioncall functionName="min"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="newSuppression"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="other"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="plistFooter"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="pos"/>
+    <functioncall functionName="pos1"/>
+    <functioncall functionName="pos2"/>
+    <functioncall functionName="push_back"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="replace"/>
+    <functioncall functionName="reportErr"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rfind"/>
+    <functioncall functionName="s"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="simplifyPath"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="stage"/>
+    <functioncall functionName="start_position"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="strcmp"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="suffixes"/>
+    <functioncall functionName="suppression"/>
+    <functioncall functionName="suppressions"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="symbolName"/>
+    <functioncall functionName="symname"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="thisAndNextLine"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="toxml"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="unmatchedSuppression"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="x"/>
+  </FileInfo>
+</analyzerinfo>

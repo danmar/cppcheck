@@ -1,0 +1,679 @@
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+CWE
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+isClass call:[setFlag] noreturn:[setFlag]
+isFunction call:[setFlag] noreturn:[setFlag]
+isVariable call:[setFlag] noreturn:[setFlag]
+isAlias call:[setFlag] noreturn:[setFlag]
+isSpecialization call:[setFlag] noreturn:[setFlag]
+isPartialSpecialization call:[setFlag] noreturn:[setFlag]
+isForwardDeclaration call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+getFlag call:[return] noreturn:[return]
+setFlag
+operator==
+token
+token
+scope
+name
+fullName
+nameToken
+paramEnd
+paramEnd
+isClass call:[getFlag] noreturn:[getFlag]
+isFunction call:[getFlag] noreturn:[getFlag]
+isVariable call:[getFlag] noreturn:[getFlag]
+isAlias call:[getFlag] noreturn:[getFlag]
+isSpecialization call:[getFlag] noreturn:[getFlag]
+isPartialSpecialization call:[getFlag] noreturn:[getFlag]
+isForwardDeclaration call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isSameFamily call:[return]
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+FwdAnalysis
+Result
+Result
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+ScopeInfo2
+TokenImpl
+str call:[update_property_info] noreturn:[update_property_info]
+str
+tokAt call:[tokAt]
+linkAt call:[linkAt]
+simpleMatch call:[simpleMatch] noreturn:[simpleMatch]
+valueType
+argumentType call:[Match,astParent] noreturn:[astParent]
+tokType
+tokType call:[setFlag] noreturn:[setFlag]
+isKeyword
+isName call:[getFlag] noreturn:[getFlag]
+isNameOnly
+isLiteral call:[getFlag] noreturn:[getFlag]
+isNumber
+isEnumerator
+isOp call:[isAssignmentOp,isConstOp,return] noreturn:[return]
+isConstOp call:[isArithmeticalOp,return] noreturn:[return]
+isExtendedOp call:[isConstOp]
+isArithmeticalOp
+isComparisonOp
+isAssignmentOp
+isBoolean
+isIncDecOp
+isBinaryOp call:[astOperand1,astOperand2]
+isUnaryOp call:[astOperand1,astOperand2]
+flags
+flags
+isUnsigned call:[getFlag] noreturn:[getFlag]
+isUnsigned call:[setFlag] noreturn:[setFlag]
+isSigned call:[getFlag] noreturn:[getFlag]
+isSigned call:[setFlag] noreturn:[setFlag]
+isPointerCompare call:[getFlag] noreturn:[getFlag]
+isPointerCompare call:[setFlag] noreturn:[setFlag]
+isLong call:[getFlag] noreturn:[getFlag]
+isLong call:[setFlag] noreturn:[setFlag]
+isStandardType call:[getFlag] noreturn:[getFlag]
+isStandardType call:[setFlag] noreturn:[setFlag]
+isExpandedMacro call:[getFlag] noreturn:[getFlag]
+isExpandedMacro call:[setFlag] noreturn:[setFlag]
+isCast call:[getFlag] noreturn:[getFlag]
+isCast call:[setFlag] noreturn:[setFlag]
+isAttributeConstructor call:[getFlag] noreturn:[getFlag]
+isAttributeConstructor call:[setFlag] noreturn:[setFlag]
+isAttributeDestructor call:[getFlag] noreturn:[getFlag]
+isAttributeDestructor call:[setFlag] noreturn:[setFlag]
+isAttributeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeUnused call:[setFlag] noreturn:[setFlag]
+isAttributeUsed call:[getFlag] noreturn:[getFlag]
+isAttributeUsed call:[setFlag] noreturn:[setFlag]
+isAttributePure call:[getFlag] noreturn:[getFlag]
+isAttributePure call:[setFlag] noreturn:[setFlag]
+isAttributeConst call:[getFlag] noreturn:[getFlag]
+isAttributeConst call:[setFlag] noreturn:[setFlag]
+isAttributeNoreturn call:[getFlag] noreturn:[getFlag]
+isAttributeNoreturn call:[setFlag] noreturn:[setFlag]
+isAttributeNothrow call:[getFlag] noreturn:[getFlag]
+isAttributeNothrow call:[setFlag] noreturn:[setFlag]
+isAttributePacked call:[getFlag] noreturn:[getFlag]
+isAttributePacked call:[setFlag] noreturn:[setFlag]
+isAttributeNodiscard call:[getFlag] noreturn:[getFlag]
+isAttributeNodiscard call:[setFlag] noreturn:[setFlag]
+isAttributeMaybeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeMaybeUnused call:[setFlag] noreturn:[setFlag]
+setCppcheckAttribute call:[setCppcheckAttribute] noreturn:[setCppcheckAttribute]
+getCppcheckAttribute call:[getCppcheckAttribute] noreturn:[getCppcheckAttribute]
+hasCppcheckAttributes
+isControlFlowKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[setFlag] noreturn:[setFlag]
+isComplex call:[getFlag] noreturn:[getFlag]
+isComplex call:[setFlag] noreturn:[setFlag]
+isEnumType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[setFlag] noreturn:[setFlag]
+isAtAddress call:[getFlag] noreturn:[getFlag]
+isAtAddress call:[setFlag] noreturn:[setFlag]
+isIncompleteVar call:[getFlag] noreturn:[getFlag]
+isIncompleteVar call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+isExternC call:[getFlag] noreturn:[getFlag]
+isExternC call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclComma call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclComma call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclEq call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclEq call:[setFlag] noreturn:[setFlag]
+isImplicitInt call:[getFlag] noreturn:[getFlag]
+isImplicitInt call:[setFlag] noreturn:[setFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isInline call:[setFlag] noreturn:[setFlag]
+isTemplate call:[getFlag] noreturn:[getFlag]
+isTemplate call:[setFlag] noreturn:[setFlag]
+isBitfield
+bits
+templateSimplifierPointers
+templateSimplifierPointer call:[insert] noreturn:[insert]
+setBits
+isUtf8 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf16 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf32 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isCChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isCMultiChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isTemplateArg call:[getFlag] noreturn:[getFlag]
+isTemplateArg call:[setFlag] noreturn:[setFlag]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findmatch call:[findmatch]
+findmatch call:[findmatch]
+fileIndex
+fileIndex
+linenr
+linenr
+column
+column
+next
+previous
+varId
+varId call:[isStandardType,tokType,update_property_info] noreturn:[isStandardType,update_property_info]
+exprId
+exprId
+forDebug
+forDebugVarId call:[forDebug]
+forDebugExprId call:[forDebug]
+forPrintOut call:[forDebug]
+link call:[update_property_info] noreturn:[update_property_info]
+link
+scope
+scope
+function
+variable call:[tokType] noreturn:[tokType]
+variable
+type
+enumerator
+enumerator call:[tokType] noreturn:[tokType]
+progressValue
+originalName global:[emptyString]
+values
+originalName call:[string] noreturn:[string]
+getKnownIntValue call:[front]
+removeValues call:[remove_if] noreturn:[remove_if]
+index
+next
+previous
+getFlag call:[return] noreturn:[return]
+setFlag
+astOperand1
+astOperand1
+astOperand2
+astOperand2
+astParent
+astParent
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astTop
+astTop
+clearAst
+clearValueFlow
+astString call:[astString] noreturn:[astString]
+setCpp11init
+isCpp11init
+setSettings
+getSettings
+isC
+isCPP
+front
+front
+back
+back
+getFiles
+find call:[find] noreturn:[find]
+end call:[end] noreturn:[end]
+map
+getVarId
+setTimerResults
+isC call:[isC] noreturn:[isC]
+isCPP call:[isCPP] noreturn:[isCPP]
+setPreprocessor
+getPreprocessor
+codeWithTemplates
+setSettings call:[setSettings] noreturn:[setSettings]
+getSymbolDatabase
+varIdCount
+tokens call:[front] noreturn:[front]
+isMaxTime
+getSettings
+newVarId
+TestSimplifyTemplate
+run call:[castInExpansion,concepts1,enable,expandSpecialized1,expandSpecialized2,expandSpecialized3,expandSpecialized4,explicitBool1,explicitBool2,findTemplateDeclarationEnd,fold_expression_1,fold_expression_2,fold_expression_3,fold_expression_4,getTemplateParametersInDeclaration,instantiateMatchTest,prepareTest,requires1,requires2,requires3,requires4,requires5,setVerbose,simplifyDecltype,simplifyTemplateArgs1,simplifyTemplateArgs2,syntax_error_templates_1,template1,template10,template100,template101,template102,template103,template104,template105,template106,template107,template108,template109,template11,template110,template111,template112,template113,template114,template115,template116,template117,template118,template119,template12,template120,template121,template122,template123,template124,template125,template126,template127,template128,template129,template13,template130,template131,template132,template133,template134,template135,template136,template137,template138,template139,template14,template140,template141,template142,template143,template144,template145,template146,template147,template148,template149,template15,template150,template151,template152,template153,template154,template155,template156,template157,template158,template159,template16,template160,template161,template162,template163,template164,template165,template166,template167,template168,template169,template17,template170,template171,template172,template173,template174,template18,template19,template2,template20,template21,template22,template23,template24,template25,template26,template27,template28,template3,template30,template31,template32,template33,template34,template35,template36,template37,template38,template39,template4,template40,template41,template42,template43,template44,template45,template46,template47,template48,template49,template5,template50,template52,template53,template54,template55,template56,template57,template58,template59,template6,template60,template61,template62,template63,template64,template65,template66,template67,template68,template69,template7,template70,template71,template72,template73,template74,template75,template76,template77,template78,template79,template8,template80,template81,template82,template83,template84,template85,template86,template87,template88,template89,template9,template90,template91,template92,template93,template94,template95,template96,template97,template98,template99,templateAlias1,templateAlias2,templateAlias3,templateAlias4,templateAlias5,templateNamePosition,templateParameterWithoutName,templateParameters,templateTypeDeduction1,templateTypeDeduction2,templateTypeDeduction3,templateTypeDeduction4,templateTypeDeduction5,template_array_type,template_constructor,template_default_parameter,template_default_type,template_enum,template_forward_declared_default_parameter,template_member_ptr,template_namespace_1,template_namespace_10,template_namespace_11,template_namespace_2,template_namespace_3,template_namespace_4,template_namespace_5,template_namespace_6,template_namespace_7,template_namespace_8,template_namespace_9,template_pointer_type,template_specialization_1,template_specialization_2,template_typename,template_unhandled,template_variable_1,template_variable_2,template_variable_3,template_variable_4,template_variadic_1,template_variadic_2,template_variadic_3,while] noreturn:[castInExpansion,concepts1,expandSpecialized1,expandSpecialized2,expandSpecialized3,expandSpecialized4,explicitBool1,explicitBool2,findTemplateDeclarationEnd,fold_expression_1,fold_expression_2,fold_expression_3,fold_expression_4,getTemplateParametersInDeclaration,instantiateMatchTest,requires1,requires2,requires3,requires4,requires5,simplifyDecltype,simplifyTemplateArgs1,simplifyTemplateArgs2,syntax_error_templates_1,template1,template10,template100,template101,template102,template103,template104,template105,template106,template107,template108,template109,template11,template110,template111,template112,template113,template114,template115,template116,template117,template118,template119,template12,template120,template121,template122,template123,template124,template125,template126,template127,template128,template129,template13,template130,template131,template132,template133,template134,template135,template136,template137,template138,template139,template14,template140,template141,template142,template143,template144,template145,template146,template147,template148,template149,template15,template150,template151,template152,template153,template154,template155,template156,template157,template158,template159,template16,template160,template161,template162,template163,template164,template165,template166,template167,template168,template169,template17,template170,template171,template172,template173,template174,template18,template19,template2,template20,template21,template22,template23,template24,template25,template26,template27,template28,template3,template30,template31,template32,template33,template34,template35,template36,template37,template38,template39,template4,template40,template41,template42,template43,template44,template45,template46,template47,template48,template49,template5,template50,template52,template53,template54,template55,template56,template57,template58,template59,template6,template60,template61,template62,template63,template64,template65,template66,template67,template68,template69,template7,template70,template71,template72,template73,template74,template75,template76,template77,template78,template79,template8,template80,template81,template82,template83,template84,template85,template86,template87,template88,template89,template9,template90,template91,template92,template93,template94,template95,template96,template97,template98,template99,templateAlias1,templateAlias2,templateAlias3,templateAlias4,templateAlias5,templateNamePosition,templateParameterWithoutName,templateParameters,templateTypeDeduction1,templateTypeDeduction2,templateTypeDeduction3,templateTypeDeduction4,templateTypeDeduction5,template_array_type,template_constructor,template_default_parameter,template_default_type,template_enum,template_forward_declared_default_parameter,template_member_ptr,template_namespace_1,template_namespace_10,template_namespace_11,template_namespace_2,template_namespace_3,template_namespace_4,template_namespace_5,template_namespace_6,template_namespace_7,template_namespace_8,template_namespace_9,template_pointer_type,template_specialization_1,template_specialization_2,template_typename,template_unhandled,template_variable_1,template_variable_2,template_variable_3,template_variable_4,template_variadic_1,template_variadic_2,template_variadic_3,while]
+tok_ global:[errout] call:[assert_,istr,platform,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+template1 call:[assertEquals,tok_]
+template2 call:[assertEquals,tok_]
+template3 call:[assertEquals,tok_]
+template4 call:[assertEquals,tok_]
+template5 call:[assertEquals,tok_]
+template6 call:[assertEquals,tok_]
+template7 call:[assertEquals,todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+template8 call:[assertEquals,tok_]
+template9 call:[assertEquals,tok_]
+template10 call:[assertEquals,tok_]
+template11 call:[assertEquals,tok_]
+template12 call:[assertEquals,tok_]
+template13 call:[assertEquals,tok_]
+template14 call:[assertEquals,tok_]
+template15 call:[assertEquals,tok_]
+template16 call:[assertEquals,tok_]
+template17 call:[assertEquals,tok_]
+template18 call:[assertEquals,tok_]
+template19 call:[assertEquals,tok_]
+template20 call:[assertEquals,tok_]
+template21 call:[assertEquals,tok_]
+template22 call:[assertEquals,tok_]
+template23 call:[assertEquals,tok_]
+template24 call:[assertEquals,tok_]
+template25 call:[assertEquals,tok_]
+template26 call:[assertEquals,tok_]
+template27 call:[assertThrowFail,tok_,while] noreturn:[assertThrowFail,while]
+template28 call:[assertEquals,tok_]
+template30 call:[assertEquals,tok_]
+template31 call:[assertEquals,tok_]
+template32 call:[assertEquals,tok_]
+template33 call:[assertEquals,tok_]
+template34 call:[tok_] noreturn:[tok_]
+template35 call:[assertEquals,tok_]
+template36 call:[assertEquals,tok_]
+template37 call:[assertEquals,tok_]
+template_unhandled call:[assertEquals,tok_]
+template38 call:[assertEquals,tok_]
+template39 call:[tok_] noreturn:[tok_]
+template40 call:[assertEquals,tok_]
+template41 call:[assertEquals,tok_]
+template42 call:[assertThrowFail,tok_,while] noreturn:[assertThrowFail,while]
+template43 call:[assertEquals,tok_]
+template44 call:[assertEquals,tok_]
+template45 global:[errout] call:[assertEquals,str,tok_]
+template46 global:[errout] call:[assertEquals,str,tok_]
+template47 global:[errout] call:[assertEquals,str,tok_]
+template48 global:[errout] call:[assertEquals,str,tok_]
+template49 call:[assertEquals,tok_]
+template50 call:[assertEquals,tok_]
+template52 call:[assertEquals,tok_]
+template53 global:[errout] call:[assertEquals,str,tok_]
+template54 call:[tok_] noreturn:[tok_]
+template55 call:[assertEquals,tok_]
+template56 global:[errout] call:[assertEquals,str,tok_]
+template57 call:[assertEquals,tok_]
+template58 call:[assertEquals,tok_]
+template59 call:[assertEquals,tok_]
+template60 call:[todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+template61 call:[assertEquals,tok_]
+template62 call:[assertEquals,tok_]
+template63 call:[assertEquals,tok_]
+template64 call:[assertEquals,tok_]
+template65 call:[assertEquals,tok_]
+template66 call:[assertEquals,tok_]
+template67 call:[assertEquals,tok_]
+template68 call:[assertEquals,tok_]
+template69 call:[assertEquals,tok_]
+template70 call:[todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+template71 call:[assertEquals,tok_]
+template72 call:[assertEquals,tok_]
+template73 call:[assertEquals,tok_]
+template74 call:[assertEquals,tok_]
+template75 call:[assertEquals,tok_]
+template76 call:[assertEquals,tok_]
+template77 call:[assertEquals,tok_]
+template78 call:[assertEquals,tok_]
+template79 call:[assertEquals,tok_]
+template80 call:[assertEquals,tok_]
+template81 call:[assertEquals,tok_]
+template82 call:[assertEquals,tok_]
+template83 call:[assertEquals,tok_]
+template84 call:[assertEquals,tok_]
+template85 call:[tok_] noreturn:[tok_]
+template86 call:[tok_] noreturn:[tok_]
+template87 call:[assertEquals,tok_]
+template88 call:[assertEquals,tok_]
+template89 call:[assertEquals,tok_]
+template90 call:[assertEquals,tok_]
+template91 call:[assertEquals,tok_]
+template92 call:[assertEquals,tok_]
+template93 call:[assertEquals,tok_]
+template94 call:[assertEquals,tok_]
+template95 call:[assertEquals,tok_]
+template96 call:[assertEquals,tok_]
+template97 call:[assertEquals,tok_]
+template98 call:[assertEquals,tok_]
+template99 call:[assertEquals,tok_]
+template100 call:[assertEquals,tok_]
+template101 global:[errout] call:[assertEquals,str,tok_]
+template102 call:[assertEquals,tok_]
+template103 call:[assertEquals,tok_]
+template104 call:[assertEquals,tok_]
+template105 call:[assertEquals,tok_]
+template106 call:[assertEquals,tok_]
+template107 call:[assertEquals,tok_]
+template108 call:[assertEquals,tok_]
+template109 call:[assertEquals,tok_]
+template110 call:[assertEquals,tok_]
+template111 call:[assertEquals,tok_]
+template112 call:[assertEquals,tok_]
+template113 call:[assertEquals,tok_]
+template114 call:[assertEquals,tok_]
+template115 call:[assertEquals,tok_]
+template116 call:[assertEquals,tok_]
+template117 call:[assertEquals,tok_]
+template118 call:[assertEquals,tok_]
+template119 call:[assertEquals,tok_]
+template120 call:[assertEquals,tok_]
+template121 call:[assertEquals,tok_]
+template122 call:[assertEquals,tok_]
+template123 call:[assertEquals,tok_]
+template124 call:[assertEquals,tok_]
+template125 call:[assertThrowFail,tok_,while] noreturn:[assertThrowFail,while]
+template126 call:[assertEquals,tok_]
+template127 call:[todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+template128 call:[assertEquals,tok_]
+template129 call:[assertEquals,tok_]
+template130 call:[assertEquals,tok_]
+template131 call:[assertEquals,tok_]
+template132 call:[assertEquals,tok_]
+template133 call:[todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+template134 call:[assertEquals,tok_]
+template135 call:[assertEquals,tok_]
+template136 call:[assertEquals,tok_]
+template137 call:[assertEquals,tok_]
+template138 call:[assertEquals,tok_]
+template139 call:[assertEquals,tok_]
+template140 call:[assertEquals,tok_]
+template141 call:[assertEquals,tok_]
+template142 call:[assertEquals,tok_]
+template143 call:[assertEquals,tok_]
+template144 call:[assertEquals,tok_]
+template145 call:[assertEquals,tok_]
+template146 call:[assertEquals,tok_]
+template147 call:[assertEquals,tok_]
+template148 call:[assertEquals,tok_]
+template149 call:[assertEquals,assertThrowFail,tok_,while] noreturn:[assertEquals,assertThrowFail,while]
+template150 call:[assertEquals,tok_]
+template151 call:[assertEquals,tok_]
+template152 call:[assertEquals,tok_]
+template153 call:[assertEquals,tok_]
+template154 call:[assertEquals,tok_]
+template155 call:[assertEquals,tok_]
+template156 call:[tok_] noreturn:[tok_]
+template157 call:[assertEquals,tok_]
+template158 call:[tok_] noreturn:[tok_]
+template159 call:[assertEquals,tok_]
+template160 call:[assertEquals,tok_]
+template161 call:[todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+template162 call:[assertEquals,tok_]
+template163 call:[assertEquals,tok_]
+template164 call:[assertEquals,tok_]
+template165 call:[assertEquals,tok_]
+template166 call:[assertEquals,tok_]
+template167 call:[assertEquals,tok_]
+template168 call:[assertEquals,tok_]
+template169 call:[assertEquals,tok_]
+template170 call:[assertEquals,tok_]
+template171 call:[todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+template172 call:[assertEquals,tok_]
+template173 call:[assertEquals,tok_]
+template174 call:[assertEquals,tok_]
+template_specialization_1 call:[assertEquals,tok_]
+template_specialization_2 call:[assertEquals,tok_]
+template_enum call:[assertEquals,tok_]
+template_default_parameter call:[assertEquals,tok_]
+template_forward_declared_default_parameter call:[assertEquals,tok_]
+template_default_type global:[errout] call:[assertEquals,str,tok_]
+template_typename call:[assertEquals,tok_]
+template_constructor call:[assertEquals,tok_]
+syntax_error_templates_1 global:[errout] call:[assertEquals,assertThrowFail,str,tok_,while] noreturn:[assertThrowFail]
+template_member_ptr call:[tok_] noreturn:[tok_]
+template_namespace_1 call:[assertEquals,tok_]
+template_namespace_2 call:[assertEquals,tok_]
+template_namespace_3 call:[assertEquals,tok_]
+template_namespace_4 call:[assertEquals,tok_]
+template_namespace_5 call:[assertEquals,tok_]
+template_namespace_6 call:[assertEquals,tok_]
+template_namespace_7 call:[assertEquals,tok_]
+template_namespace_8 call:[assertEquals,tok_]
+template_namespace_9 call:[assertEquals,tok_]
+template_namespace_10 call:[assertEquals,tok_]
+template_namespace_11 call:[assertEquals,tok_]
+template_pointer_type call:[assertEquals,tok_]
+template_array_type call:[assertEquals,tok_]
+templateParameters call:[createLinks,createTokens,istr,next,splitTemplateRightAngleBrackets,str,templateParameters,tokenizer,tokens,varId] noreturn:[templateParameters,varId]
+templateParameters call:[assertEquals,templateParameters]
+templateNamePositionHelper call:[createLinks,createTokens,getTemplateNamePosition,istr,next,splitTemplateRightAngleBrackets,tokenizer,tokens] noreturn:[getTemplateNamePosition,next]
+templateNamePosition call:[assertEquals,templateNamePositionHelper]
+findTemplateDeclarationEndHelper call:[createLinks,createTokens,findTemplateDeclarationEnd,findsimplematch,front,istr,next,return,splitTemplateRightAngleBrackets,strlen,tokenizer,tokens] noreturn:[next,return]
+findTemplateDeclarationEnd call:[assert_,findTemplateDeclarationEndHelper]
+getTemplateParametersInDeclarationHelper call:[createLinks,createTokens,getTemplateParametersInDeclaration,istr,size,splitTemplateRightAngleBrackets,str,tokAt,tokenizer,tokens]
+getTemplateParametersInDeclaration call:[assert_,getTemplateParametersInDeclarationHelper]
+expandSpecialized1 call:[assertEquals,tok_]
+expandSpecialized2 call:[assertEquals,tok_]
+expandSpecialized3 call:[assertEquals,tok_]
+expandSpecialized4 call:[assertEquals,tok_]
+templateAlias1 call:[assertEquals,tok_]
+templateAlias2 call:[assertEquals,tok_]
+templateAlias3 call:[assertEquals,tok_]
+templateAlias4 call:[assertEquals,tok_]
+templateAlias5 call:[assertEquals,tok_]
+instantiateMatch_ call:[assert_,istr,return,tokenize,tokenizer,tokens]
+instantiateMatchTest call:[assertEquals,instantiateMatch_]
+templateParameterWithoutName call:[assertEquals,templateParameters]
+templateTypeDeduction1 global:[errout] call:[assertEquals,str,tok_]
+templateTypeDeduction2 call:[todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+templateTypeDeduction3 call:[assertEquals,tok_]
+templateTypeDeduction4 call:[assertEquals,todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+templateTypeDeduction5 call:[assertEquals,tok_]
+simplifyTemplateArgs1 call:[assertEquals,tok_]
+simplifyTemplateArgs2 call:[assertEquals,tok_]
+template_variadic_1 call:[assertEquals,tok_]
+template_variadic_2 call:[assertEquals,tok_]
+template_variadic_3 call:[assertEquals,tok_]
+template_variable_1 call:[assertEquals,tok_]
+template_variable_2 call:[assertEquals,tok_]
+template_variable_3 call:[assertEquals,tok_]
+template_variable_4 call:[assertEquals,tok_]
+simplifyDecltype call:[assertEquals,tok_]
+castInExpansion call:[assertEquals,tok_]
+fold_expression_1 call:[assertEquals,tok_]
+fold_expression_2 call:[assertEquals,tok_]
+fold_expression_3 call:[assertEquals,tok_]
+fold_expression_4 call:[assertEquals,tok_]
+concepts1 call:[assertEquals,tok_]
+requires1 call:[assertEquals,tok_]
+requires2 call:[assertEquals,tok_]
+requires3 call:[assertEquals,tok_]
+requires4 call:[assertEquals,tok_]
+requires5 call:[assertEquals,tok_]
+explicitBool1 call:[assertEquals,tok_]
+explicitBool2 call:[assertEquals,tok_]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

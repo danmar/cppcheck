@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3667377920">
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;ar[10]&apos; accessed at index 10, which is out of bounds." verbose="Array &apos;ar[10]&apos; accessed at index 10, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong6.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong6.c" line="14" column="7" info="Array index out of bounds"/>
+        </error>
+        <error id="unusedStructMember" severity="style" msg="struct member &apos;Test::st&apos; is never used." verbose="struct member &apos;Test::st&apos; is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong6.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong6.c" line="5" column="10"/>
+            <symbol>Test::st</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;ar[10].a&apos; is assigned a value that is never used." verbose="Variable &apos;ar[10].a&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong6.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong6.c" line="14" column="13"/>
+            <symbol>ar[10].a</symbol>
+        </error>
+        <error id="unusedVariable" severity="style" msg="Unused variable: b" verbose="Unused variable: b" cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong6.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong6.c" line="12" column="17"/>
+            <symbol>b</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="main" lineNumber="8"/>
+    <functioncall functionName="printf"/>
+  </FileInfo>
+</analyzerinfo>

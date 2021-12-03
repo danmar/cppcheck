@@ -1,0 +1,4 @@
+formatFunctionName call:[endsWith,replace]
+FunctionContractDialog call:[formatFunctionName,setPlainText,setText,setupUi] noreturn:[setPlainText]
+FunctionContractDialog
+getExpects call:[toPlainText] noreturn:[toPlainText]

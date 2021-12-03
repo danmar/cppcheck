@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3899273438">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="validCode" lineNumber="14"/>
+    <functiondecl functionName="nullPointer" lineNumber="34"/>
+    <functiondecl functionName="PyMem_Malloc_memleak" lineNumber="42"/>
+    <functiondecl functionName="PyMem_Malloc_mismatchAllocDealloc" lineNumber="49"/>
+    <functiondecl functionName="PyMem_New_memleak" lineNumber="57"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="PyErr_NewException"/>
+    <functioncall functionName="PyMem_Free"/>
+    <functioncall functionName="PyMem_Malloc"/>
+    <functioncall functionName="PyMem_New"/>
+    <functioncall functionName="Py_CLEAR"/>
+    <functioncall functionName="Py_DECREF"/>
+    <functioncall functionName="Py_INCREF"/>
+    <functioncall functionName="Py_Initialize"/>
+    <functioncall functionName="Py_XDECREF"/>
+    <functioncall functionName="Py_XINCREF"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="free"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="pBuf1"/>
+    <functioncall functionName="pIntBuf1"/>
+    <functioncall functionName="pPyObjArg"/>
+    <functioncall functionName="pPyObjNULL"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="void"/>
+  </FileInfo>
+</analyzerinfo>

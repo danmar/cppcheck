@@ -1,0 +1,6 @@
+discard_pbm_line call:[readLine,while] noreturn:[readLine,while]
+read_pbm_int call:[discard_pbm_line,getChar,isdigit,isspace] noreturn:[discard_pbm_line]
+read_pbm_header call:[isdigit,isspace,read,read_pbm_int] noreturn:[read_pbm_int]
+scale_pbm_color call:[fromRgba64,toArgb32] noreturn:[toArgb32]
+read_pbm_body call:[QImage,QSize,format,fromRgba64,isNull,peek,qRgb,read,read_pbm_int,scale_pbm_color,scanLine,setColor,setColorCount,size,toArgb32] noreturn:[qRgb,read_pbm_int,scale_pbm_color,setColor,toArgb32]
+write_pbm_image call:[append,bytesPerLine,color,colorCount,colorTable,constScanLine,convertToFormat,depth,detach,format,hasAlphaChannel,height,insert,left,length,number,qBlue,qGray,qGreen,qRed,scanLine,width,write] noreturn:[convertToFormat,qBlue]

@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="4185334551">
+  <FileInfo check="Class">
+<class name="k_global_static_testclass1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/kde.cpp" line="14" col="1" hash="9540534138065002306"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="valid_code" lineNumber="17"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="26"/>
+    <functioncall functionName="K_GLOBAL_STATIC"/>
+    <functioncall functionName="entryTest"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="k_global_static_testclass1"/>
+    <functioncall functionName="k_global_static_testinstance1"/>
+    <functioncall functionName="pk_global_static_testclass1"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="readEntry"/>
+  </FileInfo>
+</analyzerinfo>

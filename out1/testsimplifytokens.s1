@@ -1,0 +1,682 @@
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+CWE
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+FwdAnalysis
+Result
+Result
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+isClass call:[setFlag] noreturn:[setFlag]
+isFunction call:[setFlag] noreturn:[setFlag]
+isVariable call:[setFlag] noreturn:[setFlag]
+isAlias call:[setFlag] noreturn:[setFlag]
+isSpecialization call:[setFlag] noreturn:[setFlag]
+isPartialSpecialization call:[setFlag] noreturn:[setFlag]
+isForwardDeclaration call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+getFlag call:[return] noreturn:[return]
+setFlag
+operator==
+token
+token
+scope
+name
+fullName
+nameToken
+paramEnd
+paramEnd
+isClass call:[getFlag] noreturn:[getFlag]
+isFunction call:[getFlag] noreturn:[getFlag]
+isVariable call:[getFlag] noreturn:[getFlag]
+isAlias call:[getFlag] noreturn:[getFlag]
+isSpecialization call:[getFlag] noreturn:[getFlag]
+isPartialSpecialization call:[getFlag] noreturn:[getFlag]
+isForwardDeclaration call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isSameFamily call:[return]
+ScopeInfo2
+TokenImpl
+str call:[update_property_info] noreturn:[update_property_info]
+str
+tokAt call:[tokAt]
+linkAt call:[linkAt]
+simpleMatch call:[simpleMatch] noreturn:[simpleMatch]
+valueType
+argumentType call:[Match,astParent] noreturn:[astParent]
+tokType
+tokType call:[setFlag] noreturn:[setFlag]
+isKeyword
+isName call:[getFlag] noreturn:[getFlag]
+isNameOnly
+isLiteral call:[getFlag] noreturn:[getFlag]
+isNumber
+isEnumerator
+isOp call:[isAssignmentOp,isConstOp,return] noreturn:[return]
+isConstOp call:[isArithmeticalOp,return] noreturn:[return]
+isExtendedOp call:[isConstOp]
+isArithmeticalOp
+isComparisonOp
+isAssignmentOp
+isBoolean
+isIncDecOp
+isBinaryOp call:[astOperand1,astOperand2]
+isUnaryOp call:[astOperand1,astOperand2]
+flags
+flags
+isUnsigned call:[getFlag] noreturn:[getFlag]
+isUnsigned call:[setFlag] noreturn:[setFlag]
+isSigned call:[getFlag] noreturn:[getFlag]
+isSigned call:[setFlag] noreturn:[setFlag]
+isPointerCompare call:[getFlag] noreturn:[getFlag]
+isPointerCompare call:[setFlag] noreturn:[setFlag]
+isLong call:[getFlag] noreturn:[getFlag]
+isLong call:[setFlag] noreturn:[setFlag]
+isStandardType call:[getFlag] noreturn:[getFlag]
+isStandardType call:[setFlag] noreturn:[setFlag]
+isExpandedMacro call:[getFlag] noreturn:[getFlag]
+isExpandedMacro call:[setFlag] noreturn:[setFlag]
+isCast call:[getFlag] noreturn:[getFlag]
+isCast call:[setFlag] noreturn:[setFlag]
+isAttributeConstructor call:[getFlag] noreturn:[getFlag]
+isAttributeConstructor call:[setFlag] noreturn:[setFlag]
+isAttributeDestructor call:[getFlag] noreturn:[getFlag]
+isAttributeDestructor call:[setFlag] noreturn:[setFlag]
+isAttributeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeUnused call:[setFlag] noreturn:[setFlag]
+isAttributeUsed call:[getFlag] noreturn:[getFlag]
+isAttributeUsed call:[setFlag] noreturn:[setFlag]
+isAttributePure call:[getFlag] noreturn:[getFlag]
+isAttributePure call:[setFlag] noreturn:[setFlag]
+isAttributeConst call:[getFlag] noreturn:[getFlag]
+isAttributeConst call:[setFlag] noreturn:[setFlag]
+isAttributeNoreturn call:[getFlag] noreturn:[getFlag]
+isAttributeNoreturn call:[setFlag] noreturn:[setFlag]
+isAttributeNothrow call:[getFlag] noreturn:[getFlag]
+isAttributeNothrow call:[setFlag] noreturn:[setFlag]
+isAttributePacked call:[getFlag] noreturn:[getFlag]
+isAttributePacked call:[setFlag] noreturn:[setFlag]
+isAttributeNodiscard call:[getFlag] noreturn:[getFlag]
+isAttributeNodiscard call:[setFlag] noreturn:[setFlag]
+isAttributeMaybeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeMaybeUnused call:[setFlag] noreturn:[setFlag]
+setCppcheckAttribute call:[setCppcheckAttribute] noreturn:[setCppcheckAttribute]
+getCppcheckAttribute call:[getCppcheckAttribute] noreturn:[getCppcheckAttribute]
+hasCppcheckAttributes
+isControlFlowKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[setFlag] noreturn:[setFlag]
+isComplex call:[getFlag] noreturn:[getFlag]
+isComplex call:[setFlag] noreturn:[setFlag]
+isEnumType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[setFlag] noreturn:[setFlag]
+isAtAddress call:[getFlag] noreturn:[getFlag]
+isAtAddress call:[setFlag] noreturn:[setFlag]
+isIncompleteVar call:[getFlag] noreturn:[getFlag]
+isIncompleteVar call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+isExternC call:[getFlag] noreturn:[getFlag]
+isExternC call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclComma call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclComma call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclEq call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclEq call:[setFlag] noreturn:[setFlag]
+isImplicitInt call:[getFlag] noreturn:[getFlag]
+isImplicitInt call:[setFlag] noreturn:[setFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isInline call:[setFlag] noreturn:[setFlag]
+isTemplate call:[getFlag] noreturn:[getFlag]
+isTemplate call:[setFlag] noreturn:[setFlag]
+isBitfield
+bits
+templateSimplifierPointers
+templateSimplifierPointer call:[insert] noreturn:[insert]
+setBits
+isUtf8 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf16 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf32 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isCChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isCMultiChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isTemplateArg call:[getFlag] noreturn:[getFlag]
+isTemplateArg call:[setFlag] noreturn:[setFlag]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findmatch call:[findmatch]
+findmatch call:[findmatch]
+fileIndex
+fileIndex
+linenr
+linenr
+column
+column
+next
+previous
+varId
+varId call:[isStandardType,tokType,update_property_info] noreturn:[isStandardType,update_property_info]
+exprId
+exprId
+forDebug
+forDebugVarId call:[forDebug]
+forDebugExprId call:[forDebug]
+forPrintOut call:[forDebug]
+link call:[update_property_info] noreturn:[update_property_info]
+link
+scope
+scope
+function
+variable call:[tokType] noreturn:[tokType]
+variable
+type
+enumerator
+enumerator call:[tokType] noreturn:[tokType]
+progressValue
+originalName global:[emptyString]
+values
+originalName call:[string] noreturn:[string]
+getKnownIntValue call:[front]
+removeValues call:[remove_if] noreturn:[remove_if]
+index
+next
+previous
+getFlag call:[return] noreturn:[return]
+setFlag
+astOperand1
+astOperand1
+astOperand2
+astOperand2
+astParent
+astParent
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astTop
+astTop
+clearAst
+clearValueFlow
+astString call:[astString] noreturn:[astString]
+setCpp11init
+isCpp11init
+setSettings
+getSettings
+isC
+isCPP
+front
+front
+back
+back
+getFiles
+find call:[find] noreturn:[find]
+end call:[end] noreturn:[end]
+map
+getVarId
+setTimerResults
+isC call:[isC] noreturn:[isC]
+isCPP call:[isCPP] noreturn:[isCPP]
+setPreprocessor
+getPreprocessor
+codeWithTemplates
+setSettings call:[setSettings] noreturn:[setSettings]
+getSymbolDatabase
+varIdCount
+tokens call:[front] noreturn:[front]
+isMaxTime
+getSettings
+newVarId
+TestSimplifyTokens
+run call:[and1,cAlternativeTokens,c_str,calculations,cast,casting,combine_Ustrings,combine_mixedstrings,combine_strings,combine_u8strings,combine_ustrings,combine_wstrings,comma_keyword,comparisons,complainMissingLib,consecutiveBraces,declareArray,declareVar,doWhileAssign,dontRemoveIncrement,double_plus,duplicateDefinition,elseif1,enable,flowControl,ifAssignWithCast,ifassign1,iftruefalse,load,namespaces,not1,or1,parentheses1,parenthesesVar,pointeralias1,pointeralias2,pointeralias3,pointeralias4,prepareTest,redundant_plus,redundant_plus_numbers,redundant_semicolon,removePostIncrement,removePreIncrement,removeRedundantAssignment,removeRedundantFor,removeUnwantedKeywords,remove_comma,removestd,return_strncat,setVerbose,simplifyArrayAccessSyntax,simplifyArrayAddress,simplifyAssignmentInFunctionCall,simplifyAtol,simplifyCalculations,simplifyCallingConvention,simplifyCasts1,simplifyCasts10,simplifyCasts11,simplifyCasts12,simplifyCasts13,simplifyCasts14,simplifyCasts15,simplifyCasts16,simplifyCasts17,simplifyCasts2,simplifyCasts3,simplifyCasts4,simplifyCasts5,simplifyCasts7,simplifyCasts8,simplifyCasts9,simplifyCharAt,simplifyCompoundAssignment,simplifyConditionOperator,simplifyErrNoInWhile,simplifyFlowControl,simplifyFuncInWhile,simplifyFunctionPointer,simplifyFunctionReturn,simplifyFunctorCall,simplifyInitVar,simplifyKnownVariables1,simplifyKnownVariables10,simplifyKnownVariables11,simplifyKnownVariables13,simplifyKnownVariables14,simplifyKnownVariables15,simplifyKnownVariables16,simplifyKnownVariables17,simplifyKnownVariables18,simplifyKnownVariables19,simplifyKnownVariables2,simplifyKnownVariables20,simplifyKnownVariables21,simplifyKnownVariables22,simplifyKnownVariables23,simplifyKnownVariables25,simplifyKnownVariables27,simplifyKnownVariables28,simplifyKnownVariables29,simplifyKnownVariables3,simplifyKnownVariables30,simplifyKnownVariables31,simplifyKnownVariables32,simplifyKnownVariables33,simplifyKnownVariables34,simplifyKnownVariables35,simplifyKnownVariables36,simplifyKnownVariables37,simplifyKnownVariables38,simplifyKnownVariables39,simplifyKnownVariables4,simplifyKnownVariables40,simplifyKnownVariables41,simplifyKnownVariables42,simplifyKnownVariables43,simplifyKnownVariables44,simplifyKnownVariables45,simplifyKnownVariables46,simplifyKnownVariables47,simplifyKnownVariables48,simplifyKnownVariables49,simplifyKnownVariables5,simplifyKnownVariables50,simplifyKnownVariables51,simplifyKnownVariables52,simplifyKnownVariables53,simplifyKnownVariables54,simplifyKnownVariables55,simplifyKnownVariables56,simplifyKnownVariables57,simplifyKnownVariables58,simplifyKnownVariables59,simplifyKnownVariables6,simplifyKnownVariables60,simplifyKnownVariables61,simplifyKnownVariables62,simplifyKnownVariables7,simplifyKnownVariables8,simplifyKnownVariables9,simplifyKnownVariablesBailOutAssign1,simplifyKnownVariablesBailOutAssign2,simplifyKnownVariablesBailOutAssign3,simplifyKnownVariablesBailOutConditionalIncrement,simplifyKnownVariablesBailOutFor1,simplifyKnownVariablesBailOutFor2,simplifyKnownVariablesBailOutFor3,simplifyKnownVariablesBailOutMemberFunction,simplifyKnownVariablesBailOutSwitchBreak,simplifyKnownVariablesClassMember,simplifyKnownVariablesFloat,simplifyKnownVariablesFunctionCalls,simplifyKnownVariablesGlobalVars,simplifyKnownVariablesPointerAliasFunctionCall,simplifyKnownVariablesReturn,simplifyMathExpressions,simplifyMathFunctions_acos,simplifyMathFunctions_acosh,simplifyMathFunctions_asin,simplifyMathFunctions_asinh,simplifyMathFunctions_atan,simplifyMathFunctions_atanh,simplifyMathFunctions_cbrt,simplifyMathFunctions_cos,simplifyMathFunctions_cosh,simplifyMathFunctions_erf,simplifyMathFunctions_erfc,simplifyMathFunctions_exp,simplifyMathFunctions_exp2,simplifyMathFunctions_expm1,simplifyMathFunctions_fmax,simplifyMathFunctions_fmin,simplifyMathFunctions_ilogb,simplifyMathFunctions_log,simplifyMathFunctions_log10,simplifyMathFunctions_log1p,simplifyMathFunctions_log2,simplifyMathFunctions_logb,simplifyMathFunctions_pow,simplifyMathFunctions_sin,simplifyMathFunctions_sinh,simplifyMathFunctions_sqrt,simplifyMathFunctions_tan,simplifyMathFunctions_tanh,simplifyNamespaceAliases1,simplifyNamespaceAliases2,simplifyNestedNamespace,simplifyOperator1,simplifyOperator2,simplifyOverride,simplifyRealloc,simplifyReference,simplifyStructDecl1,simplifyStructDecl2,simplifyStructDecl3,simplifyStructDecl4,simplifyStructDecl6,simplifyStructDecl7,simplifyStructDecl8,simplifyTokenList1,simplifyVarDeclInitLists,simplify_condition,simplify_constants,simplify_constants2,simplify_constants3,simplify_constants4,simplify_constants5,simplify_constants6,simplify_numeric_condition,sizeof10,sizeof11,sizeof12,sizeof13,sizeof14,sizeof15,sizeof16,sizeof17,sizeof18,sizeof19,sizeof20,sizeof21,sizeof22,sizeof5,sizeof6,sizeof7,sizeof8,sizeof9,sizeof_array,sizeofsizeof,strcat1,strcat2,strlen1,strlen2,test1,test_4881,undefinedSizeArray,while,while0,while0for,whileAssign1,whileAssign2,whileAssign3,whileAssign4] noreturn:[and1,cAlternativeTokens,calculations,cast,casting,combine_Ustrings,combine_mixedstrings,combine_strings,combine_u8strings,combine_ustrings,combine_wstrings,comma_keyword,comparisons,consecutiveBraces,declareArray,declareVar,doWhileAssign,dontRemoveIncrement,double_plus,duplicateDefinition,elseif1,flowControl,ifAssignWithCast,ifassign1,iftruefalse,namespaces,not1,or1,parentheses1,parenthesesVar,pointeralias1,pointeralias2,pointeralias3,pointeralias4,redundant_plus,redundant_plus_numbers,redundant_semicolon,removePostIncrement,removePreIncrement,removeRedundantAssignment,removeRedundantFor,removeUnwantedKeywords,remove_comma,removestd,return_strncat,simplifyArrayAccessSyntax,simplifyArrayAddress,simplifyAssignmentInFunctionCall,simplifyAtol,simplifyCalculations,simplifyCallingConvention,simplifyCasts1,simplifyCasts10,simplifyCasts11,simplifyCasts12,simplifyCasts13,simplifyCasts14,simplifyCasts15,simplifyCasts16,simplifyCasts17,simplifyCasts2,simplifyCasts3,simplifyCasts4,simplifyCasts5,simplifyCasts7,simplifyCasts8,simplifyCasts9,simplifyCharAt,simplifyCompoundAssignment,simplifyConditionOperator,simplifyErrNoInWhile,simplifyFlowControl,simplifyFuncInWhile,simplifyFunctionPointer,simplifyFunctionReturn,simplifyFunctorCall,simplifyInitVar,simplifyKnownVariables1,simplifyKnownVariables10,simplifyKnownVariables11,simplifyKnownVariables13,simplifyKnownVariables14,simplifyKnownVariables15,simplifyKnownVariables16,simplifyKnownVariables17,simplifyKnownVariables18,simplifyKnownVariables19,simplifyKnownVariables2,simplifyKnownVariables20,simplifyKnownVariables21,simplifyKnownVariables22,simplifyKnownVariables23,simplifyKnownVariables25,simplifyKnownVariables27,simplifyKnownVariables28,simplifyKnownVariables29,simplifyKnownVariables3,simplifyKnownVariables30,simplifyKnownVariables31,simplifyKnownVariables32,simplifyKnownVariables33,simplifyKnownVariables34,simplifyKnownVariables35,simplifyKnownVariables36,simplifyKnownVariables37,simplifyKnownVariables38,simplifyKnownVariables39,simplifyKnownVariables4,simplifyKnownVariables40,simplifyKnownVariables41,simplifyKnownVariables42,simplifyKnownVariables43,simplifyKnownVariables44,simplifyKnownVariables45,simplifyKnownVariables46,simplifyKnownVariables47,simplifyKnownVariables48,simplifyKnownVariables49,simplifyKnownVariables5,simplifyKnownVariables50,simplifyKnownVariables51,simplifyKnownVariables52,simplifyKnownVariables53,simplifyKnownVariables54,simplifyKnownVariables55,simplifyKnownVariables56,simplifyKnownVariables57,simplifyKnownVariables58,simplifyKnownVariables59,simplifyKnownVariables6,simplifyKnownVariables60,simplifyKnownVariables61,simplifyKnownVariables62,simplifyKnownVariables7,simplifyKnownVariables8,simplifyKnownVariables9,simplifyKnownVariablesBailOutAssign1,simplifyKnownVariablesBailOutAssign2,simplifyKnownVariablesBailOutAssign3,simplifyKnownVariablesBailOutConditionalIncrement,simplifyKnownVariablesBailOutFor1,simplifyKnownVariablesBailOutFor2,simplifyKnownVariablesBailOutFor3,simplifyKnownVariablesBailOutMemberFunction,simplifyKnownVariablesBailOutSwitchBreak,simplifyKnownVariablesClassMember,simplifyKnownVariablesFloat,simplifyKnownVariablesFunctionCalls,simplifyKnownVariablesGlobalVars,simplifyKnownVariablesPointerAliasFunctionCall,simplifyKnownVariablesReturn,simplifyMathExpressions,simplifyMathFunctions_acos,simplifyMathFunctions_acosh,simplifyMathFunctions_asin,simplifyMathFunctions_asinh,simplifyMathFunctions_atan,simplifyMathFunctions_atanh,simplifyMathFunctions_cbrt,simplifyMathFunctions_cos,simplifyMathFunctions_cosh,simplifyMathFunctions_erf,simplifyMathFunctions_erfc,simplifyMathFunctions_exp,simplifyMathFunctions_exp2,simplifyMathFunctions_expm1,simplifyMathFunctions_fmax,simplifyMathFunctions_fmin,simplifyMathFunctions_ilogb,simplifyMathFunctions_log,simplifyMathFunctions_log10,simplifyMathFunctions_log1p,simplifyMathFunctions_log2,simplifyMathFunctions_logb,simplifyMathFunctions_pow,simplifyMathFunctions_sin,simplifyMathFunctions_sinh,simplifyMathFunctions_sqrt,simplifyMathFunctions_tan,simplifyMathFunctions_tanh,simplifyNamespaceAliases1,simplifyNamespaceAliases2,simplifyNestedNamespace,simplifyOperator1,simplifyOperator2,simplifyOverride,simplifyRealloc,simplifyReference,simplifyStructDecl1,simplifyStructDecl2,simplifyStructDecl3,simplifyStructDecl4,simplifyStructDecl6,simplifyStructDecl7,simplifyStructDecl8,simplifyTokenList1,simplifyVarDeclInitLists,simplify_condition,simplify_constants,simplify_constants2,simplify_constants3,simplify_constants4,simplify_constants5,simplify_constants6,simplify_numeric_condition,sizeof10,sizeof11,sizeof12,sizeof13,sizeof14,sizeof15,sizeof16,sizeof17,sizeof18,sizeof19,sizeof20,sizeof21,sizeof22,sizeof5,sizeof6,sizeof7,sizeof8,sizeof9,sizeof_array,sizeofsizeof,strcat1,strcat2,strlen1,strlen2,test1,test_4881,undefinedSizeArray,while,while0,while0for,whileAssign1,whileAssign2,whileAssign3,whileAssign4]
+tok_ global:[errout] call:[assert_,istr,platform,simplifyTokenList2,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[simplifyTokenList2,stringifyList]
+tokWithWindows_ global:[errout] call:[assert_,istr,platform,simplifyTokenList2,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[simplifyTokenList2,stringifyList]
+tok_ global:[errout] call:[assert_,istr,simplifyTokenList2,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[simplifyTokenList2,stringifyList]
+tokWithNewlines_ global:[errout] call:[assert_,istr,simplifyTokenList2,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+tokWithStdLib_ global:[errout] call:[assert_,istr,simplifyTokenList2,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+tokenizeAndStringify_ global:[errout] call:[assert_,find,getline,istr,istr2,platform,simplifyTokenList2,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[simplifyTokenList2,stringifyList]
+tokenizeDebugListing_ global:[errout] call:[assert_,istr,simplifyTokenList2,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[simplifyTokenList2,stringifyList]
+simplifyTokenList1 call:[assertEquals,tok_]
+test1 call:[assertEquals,tok_]
+simplifyMathFunctions_erfc call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_cos call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_cosh call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_acos call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_acosh call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_sqrt call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_cbrt call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_exp2 call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_exp call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_erf call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_atanh call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_atan call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_tanh call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_tan call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_expm1 call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_asinh call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_asin call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_sinh call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_sin call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_ilogb call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_logb call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_log1p call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_log10 call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_log call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_log2 call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_pow call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_fmin call:[assertEquals,tokWithNewlines_]
+simplifyMathFunctions_fmax call:[assertEquals,tokWithNewlines_]
+simplifyMathExpressions call:[assertEquals,tokWithNewlines_]
+simplifyAssignmentInFunctionCall call:[assertEquals,tok_]
+simplifyCompoundAssignment call:[assertEquals,todoAssertEquals,tok_]
+cast call:[assertEquals,tok_]
+iftruefalse call:[assertEquals,tok_]
+combine_strings call:[assertEquals,tok_]
+combine_wstrings call:[assertEquals,assert_,istr,stringifyList,tokenize,tokenizer,tokens]
+combine_ustrings call:[assertEquals,assert_,istr,stringifyList,tokenize,tokenizer,tokens]
+combine_Ustrings call:[assertEquals,assert_,istr,stringifyList,tokenize,tokenizer,tokens]
+combine_u8strings call:[assertEquals,assert_,istr,stringifyList,tokenize,tokenizer,tokens]
+combine_mixedstrings call:[assertEquals,assert_,istr,stringifyList,tokenize,tokenizer,tokens]
+double_plus call:[assertEquals,tok_]
+redundant_plus call:[assertEquals,tok_]
+redundant_plus_numbers call:[assertEquals,tok_]
+parentheses1 call:[assertEquals,tok_]
+parenthesesVar call:[assertEquals,tok_]
+declareVar call:[assertEquals,tok_]
+declareArray call:[assertEquals,tok_]
+dontRemoveIncrement call:[assertEquals,tok_]
+removePostIncrement call:[todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+removePreIncrement call:[assertEquals,todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+elseif1 call:[assertEquals,tok_,tokenizeDebugListing_]
+sizeofFromTokenizer call:[fillTypeSizes,sizeOfType,str,tokenizer] noreturn:[sizeOfType]
+sizeof_array call:[assertEquals,tok_]
+sizeof5 call:[assertEquals,sizeofFromTokenizer,str,tok_]
+sizeof6 call:[assertEquals,sizeof,str,tok_]
+sizeof7 call:[assertEquals,tokWithWindows_,tok_]
+sizeof8 call:[assertEquals,sizeofFromTokenizer,str,tok_]
+sizeof9 call:[assertEquals,sizeof,sizeofFromTokenizer,str,tok_]
+sizeof10 call:[assertEquals,tok_]
+sizeof11 call:[assertEquals,tok_]
+sizeof12 call:[assertEquals,tok_]
+sizeof13 call:[assertEquals,tok_]
+sizeof14 call:[assertEquals,tok_]
+sizeof15 global:[errout] call:[assertEquals,str,tok_]
+sizeof16 global:[errout] call:[assertEquals,str,tok_]
+sizeof17 global:[errout] call:[assertEquals,str,tok_]
+sizeof18 global:[errout] call:[assertEquals,sizeof,str,tok_]
+sizeof19 global:[errout] call:[assertEquals,sizeof,str,tok_]
+sizeof20 call:[assertEquals,tok_]
+sizeof21 call:[tok_] noreturn:[tok_]
+sizeof22 call:[todoAssertEquals,tokWithStdLib_] noreturn:[todoAssertEquals]
+sizeofsizeof global:[errout] call:[assertEquals,str,tok_]
+casting call:[assertEquals,tok_]
+strlen1 call:[assertEquals,tok_]
+strlen2 call:[assertEquals,tok_]
+namespaces call:[assertEquals,tok_]
+simplifyIfAndWhileAssign_ call:[assert_,istr,simplifyIfAndWhileAssign,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+ifassign1 call:[assertEquals,simplifyIfAndWhileAssign_,todoAssertEquals,tok_] noreturn:[todoAssertEquals]
+ifAssignWithCast call:[assertEquals,tok_]
+whileAssign1 call:[assertEquals,simplifyIfAndWhileAssign_,tok_]
+whileAssign2 global:[errout] call:[assertEquals,str,tok_]
+whileAssign3 call:[assertEquals,tokenizeDebugListing_]
+whileAssign4 global:[errout] call:[assertEquals,assert_,istr,linkAt,simplifyTokenList2,str,stringifyList,tokAt,tokenize,tokenizer,tokens]
+doWhileAssign call:[assertEquals,simplifyIfAndWhileAssign_,tok_]
+not1 call:[assertEquals,tok_]
+and1 call:[assertEquals,tok_]
+or1 call:[assertEquals,tok_]
+cAlternativeTokens call:[assertEquals,tok_]
+comma_keyword call:[assertEquals,tok_]
+remove_comma call:[assertEquals,tok_]
+simplifyConditionOperator call:[assertEquals,assertThrow,tok_,while] noreturn:[assertThrow,tok_,while]
+calculations call:[assertEquals,tok_]
+comparisons call:[assertEquals,tok_]
+simplifyCalculations call:[assertEquals,tok_]
+simplifyFlowControl call:[assertEquals,tokWithStdLib_]
+flowControl call:[assertEquals,tokWithStdLib_] noreturn:[tokWithStdLib_]
+strcat1 call:[assertEquals,tok_]
+strcat2 call:[assertEquals,tok_]
+simplifyAtol call:[assertEquals,tok_]
+simplifyOperator1 call:[assertEquals,tok_]
+simplifyOperator2 call:[assertEquals,tok_]
+simplifyArrayAccessSyntax call:[assertEquals,tokenizeDebugListing_]
+simplify_numeric_condition call:[assertEquals,tok_]
+simplify_condition call:[assertEquals,tok_]
+pointeralias1 call:[assertEquals,tok_]
+pointeralias2 call:[assertEquals,tok_]
+pointeralias3 call:[assertEquals,tok_]
+pointeralias4 call:[assertEquals,tok_]
+while0 call:[assertEquals,tok_]
+while0for call:[assertEquals,tok_]
+duplicateDefinition call:[assertEquals,assert_,duplicateDefinition,front,istr,tokAt,tokenize,tokenizer]
+removestd call:[assertEquals,tok_]
+simplifyInitVar call:[assertEquals,tok_]
+simplifyReference call:[assertEquals,tok_]
+simplifyRealloc call:[assertEquals,tok_]
+simplifyErrNoInWhile call:[assertEquals,tok_]
+simplifyFuncInWhile call:[assertEquals,tok_]
+simplifyStructDecl1 call:[assertEquals,tok_]
+simplifyStructDecl2 call:[assertEquals,tok_]
+simplifyStructDecl3 call:[assertEquals,tok_]
+simplifyStructDecl4 call:[assertEquals,tok_]
+simplifyStructDecl6 call:[assertEquals,tok_]
+simplifyStructDecl7 call:[assertEquals,tok_]
+simplifyStructDecl8 call:[assertEquals,tok_]
+removeUnwantedKeywords call:[assertEquals,tok_]
+simplifyCallingConvention call:[assertEquals,tok_]
+simplifyFunctorCall call:[assertEquals,tok_]
+simplifyFunctionPointer call:[assertEquals,tok_]
+redundant_semicolon call:[assertEquals,tok_]
+simplifyFunctionReturn call:[assertEquals,tok_] noreturn:[tok_]
+return_strncat call:[assertEquals,tok_]
+removeRedundantFor call:[assertEquals,tok_]
+consecutiveBraces call:[assertEquals,tok_]
+undefinedSizeArray call:[assertEquals,tok_]
+simplifyArrayAddress call:[assertEquals,tok_]
+simplifyCharAt call:[assertEquals,tok_]
+test_4881 call:[assertEquals,tok_]
+simplifyOverride call:[assertEquals,tok_]
+simplifyNestedNamespace call:[assertEquals,tok_]
+simplifyNamespaceAliases1 call:[assertEquals,todoAssertEquals,tok_]
+simplifyNamespaceAliases2 call:[assertEquals,tok_]
+simplifyKnownVariables_ global:[errout] call:[assert_,istr,simplifyKnownVariables,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+simplifyKnownVariables1 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables2 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables3 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables4 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables5 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables6 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables7 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables8 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables9 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables10 call:[assertEquals,expected1,simplifyKnownVariables_,todoAssertEquals] noreturn:[todoAssertEquals]
+simplifyKnownVariables11 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables13 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables14 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables15 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables16 call:[assertThrowFail,simplifyKnownVariables_,while] noreturn:[assertThrowFail,while]
+simplifyKnownVariables17 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables18 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables19 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables20 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables21 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables22 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables23 call:[simplifyKnownVariables_,todoAssertEquals] noreturn:[todoAssertEquals]
+simplifyKnownVariables25 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables27 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables28 call:[assertEquals,simplifyKnownVariables_]
+simplifyKnownVariables29 call:[assertEquals,tokenizeDebugListing_]
+simplifyKnownVariables30 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables31 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables32 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables33 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables34 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables35 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables36 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables37 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables38 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables39 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables40 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables41 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables42 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables43 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables44 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables45 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables46 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables47 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables48 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables49 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables50 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables51 call:[assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+simplifyKnownVariables52 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables53 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables54 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables55 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables56 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables57 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables58 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables59 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables60 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariables61 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+simplifyKnownVariables62 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesBailOutAssign1 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesBailOutAssign2 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesBailOutAssign3 call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesBailOutFor1 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+simplifyKnownVariablesBailOutFor2 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+simplifyKnownVariablesBailOutFor3 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+simplifyKnownVariablesBailOutMemberFunction call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesBailOutConditionalIncrement global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+simplifyKnownVariablesBailOutSwitchBreak call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesFloat call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesFunctionCalls call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesGlobalVars call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesReturn call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesPointerAliasFunctionCall call:[assertEquals,tokenizeAndStringify_]
+simplifyKnownVariablesClassMember call:[assertEquals,find,s,todoAssertEquals,tokenizeAndStringify_] noreturn:[todoAssertEquals]
+simplifyCasts1 call:[assertEquals,tok_]
+simplifyCasts2 call:[assertEquals,tok_]
+simplifyCasts3 call:[assertEquals,tok_]
+simplifyCasts4 call:[assertEquals,tok_]
+simplifyCasts5 call:[assertEquals,tok_]
+simplifyCasts7 call:[assertEquals,tok_]
+simplifyCasts8 call:[assertEquals,tok_]
+simplifyCasts9 call:[assertEquals,tok_]
+simplifyCasts10 call:[assertEquals,tok_]
+simplifyCasts11 call:[assertEquals,tok_]
+simplifyCasts12 call:[assertEquals,tokenizeAndStringify_]
+simplifyCasts13 call:[assertEquals,todoAssertEquals,tok_]
+simplifyCasts14 call:[assertEquals,tok_]
+simplifyCasts15 call:[assertEquals,tok_]
+simplifyCasts16 call:[assertEquals,tok_]
+simplifyCasts17 call:[assertEquals,tok_]
+removeRedundantAssignment call:[assertEquals,tok_]
+simplify_constants call:[assertEquals,tok_]
+simplify_constants2 call:[assertEquals,tok_]
+simplify_constants3 call:[assertEquals,tok_]
+simplify_constants4 call:[assertEquals,tok_]
+simplify_constants5 call:[assertEquals,tok_]
+simplify_constants6 call:[assertEquals,tok_]
+simplifyVarDeclInitLists call:[assertEquals,tok_]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

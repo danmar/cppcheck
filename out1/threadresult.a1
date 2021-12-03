@@ -1,0 +1,216 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1052532935">
+        <error id="useStlAlgorithm" severity="style" msg="Consider using std::any_of algorithm instead of a raw loop." verbose="Consider using std::any_of algorithm instead of a raw loop." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/threadresult.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\utils.h" line="102" column="0"/>
+        </error>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="GuiSeverity" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/erroritem.h" line="36" col="1" hash="16824455050042739439"/>
+<class name="ErrorLine" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/erroritem.h" line="110" col="1" hash="1731979487472973095"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="GuiSeverity" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/erroritem.h" line="36" col="1" hash="16824455050042739439"/>
+<class name="ErrorLine" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/erroritem.h" line="110" col="1" hash="1731979487472973095"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="reportOut" lineNumber="36"/>
+    <functiondecl functionName="fileChecked" lineNumber="41"/>
+    <functiondecl functionName="reportErr" lineNumber="56"/>
+    <functiondecl functionName="getNextFile" lineNumber="66"/>
+    <functiondecl functionName="getNextFileSettings" lineNumber="76"/>
+    <functiondecl functionName="setFiles" lineNumber="87"/>
+    <functiondecl functionName="setProject" lineNumber="104"/>
+    <functiondecl functionName="clearFiles" lineNumber="122"/>
+    <functiondecl functionName="getFileCount" lineNumber="131"/>
+    <functiondecl functionName="bughuntingReport" lineNumber="137"/>
+    <functiondecl functionName="reportOut" lineNumber="36"/>
+    <functiondecl functionName="fileChecked" lineNumber="41"/>
+    <functiondecl functionName="reportErr" lineNumber="56"/>
+    <functiondecl functionName="getNextFile" lineNumber="66"/>
+    <functiondecl functionName="getNextFileSettings" lineNumber="76"/>
+    <functiondecl functionName="setFiles" lineNumber="87"/>
+    <functiondecl functionName="setProject" lineNumber="104"/>
+    <functiondecl functionName="clearFiles" lineNumber="122"/>
+    <functiondecl functionName="getFileCount" lineNumber="131"/>
+    <functiondecl functionName="bughuntingReport" lineNumber="137"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="BORLAND"/>
+    <functioncall functionName="COMPILE_DB"/>
+    <functioncall functionName="CPPCHECK_GUI"/>
+    <functioncall functionName="Color"/>
+    <functioncall functionName="ErrorLogger"/>
+    <functioncall functionName="ErrorMessage"/>
+    <functioncall functionName="FileLocation"/>
+    <functioncall functionName="FileSettings"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="ImportProject"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="MISSING"/>
+    <functioncall functionName="N"/>
+    <functioncall functionName="NO_LINE"/>
+    <functioncall functionName="Native"/>
+    <functioncall functionName="PlatformFile"/>
+    <functioncall functionName="QErrorPathItem"/>
+    <functioncall functionName="QFile"/>
+    <functioncall functionName="QObject"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="Suppression"/>
+    <functioncall functionName="T"/>
+    <functioncall functionName="ThreadResult"/>
+    <functioncall functionName="UNKNOWN"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="Unix32"/>
+    <functioncall functionName="Unix64"/>
+    <functioncall functionName="Unspecified"/>
+    <functioncall functionName="VS_SLN"/>
+    <functioncall functionName="VS_VCXPROJ"/>
+    <functioncall functionName="Win32A"/>
+    <functioncall functionName="Win32W"/>
+    <functioncall functionName="Win64"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="back"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="bughuntingReportLine"/>
+    <functioncall functionName="caseInsensitiveStringCompare"/>
+    <functioncall functionName="char_bit"/>
+    <functioncall functionName="class"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="column"/>
+    <functioncall functionName="compare"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="debugError"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="description"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="emptyString"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endlen"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorId"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="fileIndex"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="fileSettings"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="files"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="find_first_of"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="foreach"/>
+    <functioncall functionName="fromStdString"/>
+    <functioncall functionName="fromString"/>
+    <functioncall functionName="front"/>
+    <functioncall functionName="getStringCharLiteral"/>
+    <functioncall functionName="hash"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="info"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="int_bit"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="isCharLiteral"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="isPrefixStringCharLiteral"/>
+    <functioncall functionName="isStringCharLiteral"/>
+    <functioncall functionName="isStringLiteral"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="item"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="lhs"/>
+    <functioncall functionName="line"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="locker"/>
+    <functioncall functionName="log"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="long_bit"/>
+    <functioncall functionName="long_long_bit"/>
+    <functioncall functionName="mFileName"/>
+    <functioncall functionName="mFilesChecked"/>
+    <functioncall functionName="mInfo"/>
+    <functioncall functionName="mMaxProgress"/>
+    <functioncall functionName="mOrigFileName"/>
+    <functioncall functionName="mProgress"/>
+    <functioncall functionName="mTotalFiles"/>
+    <functioncall functionName="matched"/>
+    <functioncall functionName="max_value"/>
+    <functioncall functionName="min_value"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="msc"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="mutex"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="other"/>
+    <functioncall functionName="outmsg"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="platformString"/>
+    <functioncall functionName="platformType"/>
+    <functioncall functionName="plistFooter"/>
+    <functioncall functionName="pop_front"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="progress"/>
+    <functioncall functionName="pt"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="reportErr"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rhs"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="severity"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeOfFiles"/>
+    <functioncall functionName="stage"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="stricmp"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="suffixes"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="symbolName"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="takeFirst"/>
+    <functioncall functionName="thisAndNextLine"/>
+    <functioncall functionName="toStdString"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="useMfc"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="x"/>
+  </FileInfo>
+</analyzerinfo>

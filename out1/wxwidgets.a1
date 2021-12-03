@@ -1,0 +1,427 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1899351529">
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:99:14" my-argnr="1" my-argname="sizer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="102" col="12" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:105:6" my-argnr="1" my-argname="pg" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="108" col="11" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:287:6" my-argnr="1" my-argname="framePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="291" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp:295:6" my-argnr="1" my-argname="menuBarPtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/wxwidgets.cpp" line="299" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="useRetval_wxString_MakeCapitalized" lineNumber="45"/>
+    <functiondecl functionName="useRetval_wxString_MakeLower" lineNumber="51"/>
+    <functiondecl functionName="useRetval_wxString_MakeUpper" lineNumber="57"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayString" lineNumber="63"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayInt" lineNumber="73"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSize" lineNumber="83"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSizeMM" lineNumber="91"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxSizer_Add" lineNumber="99"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxPGProperty_Hide" lineNumber="105"/>
+    <functiondecl functionName="nullPointer_wxTextCtrl_HitTest" lineNumber="113"/>
+    <functiondecl functionName="validCode" lineNumber="119"/>
+    <functiondecl functionName="nullPointer" lineNumber="146"/>
+    <functiondecl functionName="nullPointer_wxSizer_Add" lineNumber="183"/>
+    <functiondecl functionName="uninitvar_wxSizer_Add" lineNumber="192"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="203"/>
+    <functiondecl functionName="invalidFunctionArg" lineNumber="215"/>
+    <functiondecl functionName="uninitvar" lineNumber="234"/>
+    <functiondecl functionName="uninitvar_wxStaticText" lineNumber="250"/>
+    <functiondecl functionName="uninitvar_wxString_NumberConversion" lineNumber="259"/>
+    <functiondecl functionName="uninitvar_SetMenuBar" lineNumber="287"/>
+    <functiondecl functionName="uninitvar_wxMenuBarAppend" lineNumber="295"/>
+    <functiondecl functionName="deprecatedFunctions_wxDataViewCustomRenderer" lineNumber="303"/>
+    <functiondecl functionName="deprecatedFunctions" lineNumber="311"/>
+    <functiondecl functionName="wxString_test1" lineNumber="374"/>
+    <functiondecl functionName="wxString_test2" lineNumber="382"/>
+    <functiondecl functionName="wxString_test3" lineNumber="395"/>
+    <functiondecl functionName="duplicateBreak_wxLogApiError" lineNumber="34"/>
+    <functiondecl functionName="useRetval_wxString_MakeCapitalized" lineNumber="45"/>
+    <functiondecl functionName="useRetval_wxString_MakeLower" lineNumber="51"/>
+    <functiondecl functionName="useRetval_wxString_MakeUpper" lineNumber="57"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayString" lineNumber="63"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayInt" lineNumber="73"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSize" lineNumber="83"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSizeMM" lineNumber="91"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxSizer_Add" lineNumber="99"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxPGProperty_Hide" lineNumber="105"/>
+    <functiondecl functionName="nullPointer_wxTextCtrl_HitTest" lineNumber="113"/>
+    <functiondecl functionName="validCode" lineNumber="119"/>
+    <functiondecl functionName="nullPointer" lineNumber="146"/>
+    <functiondecl functionName="nullPointer_wxSizer_Add" lineNumber="183"/>
+    <functiondecl functionName="uninitvar_wxSizer_Add" lineNumber="192"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="203"/>
+    <functiondecl functionName="invalidFunctionArg" lineNumber="215"/>
+    <functiondecl functionName="uninitvar" lineNumber="234"/>
+    <functiondecl functionName="uninitvar_wxStaticText" lineNumber="250"/>
+    <functiondecl functionName="uninitvar_wxString_NumberConversion" lineNumber="259"/>
+    <functiondecl functionName="uninitvar_SetMenuBar" lineNumber="287"/>
+    <functiondecl functionName="uninitvar_wxMenuBarAppend" lineNumber="295"/>
+    <functiondecl functionName="deprecatedFunctions_wxDataViewCustomRenderer" lineNumber="303"/>
+    <functiondecl functionName="deprecatedFunctions" lineNumber="311"/>
+    <functiondecl functionName="wxString_test1" lineNumber="374"/>
+    <functiondecl functionName="wxString_test2" lineNumber="382"/>
+    <functiondecl functionName="wxString_test3" lineNumber="395"/>
+    <functiondecl functionName="useRetval_wxString_MakeCapitalized" lineNumber="45"/>
+    <functiondecl functionName="useRetval_wxString_MakeLower" lineNumber="51"/>
+    <functiondecl functionName="useRetval_wxString_MakeUpper" lineNumber="57"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayString" lineNumber="63"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayInt" lineNumber="73"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSize" lineNumber="83"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSizeMM" lineNumber="91"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxSizer_Add" lineNumber="99"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxPGProperty_Hide" lineNumber="105"/>
+    <functiondecl functionName="nullPointer_wxTextCtrl_HitTest" lineNumber="113"/>
+    <functiondecl functionName="validCode" lineNumber="119"/>
+    <functiondecl functionName="nullPointer" lineNumber="146"/>
+    <functiondecl functionName="nullPointer_wxSizer_Add" lineNumber="183"/>
+    <functiondecl functionName="uninitvar_wxSizer_Add" lineNumber="192"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="203"/>
+    <functiondecl functionName="invalidFunctionArg" lineNumber="215"/>
+    <functiondecl functionName="uninitvar" lineNumber="234"/>
+    <functiondecl functionName="uninitvar_wxStaticText" lineNumber="250"/>
+    <functiondecl functionName="uninitvar_wxString_NumberConversion" lineNumber="259"/>
+    <functiondecl functionName="uninitvar_SetMenuBar" lineNumber="287"/>
+    <functiondecl functionName="uninitvar_wxMenuBarAppend" lineNumber="295"/>
+    <functiondecl functionName="deprecatedFunctions_wxDataViewCustomRenderer" lineNumber="303"/>
+    <functiondecl functionName="deprecatedFunctions" lineNumber="311"/>
+    <functiondecl functionName="wxString_test1" lineNumber="374"/>
+    <functiondecl functionName="wxString_test2" lineNumber="382"/>
+    <functiondecl functionName="wxString_test3" lineNumber="395"/>
+    <functiondecl functionName="useRetval_wxString_MakeCapitalized" lineNumber="45"/>
+    <functiondecl functionName="useRetval_wxString_MakeLower" lineNumber="51"/>
+    <functiondecl functionName="useRetval_wxString_MakeUpper" lineNumber="57"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayString" lineNumber="63"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayInt" lineNumber="73"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSize" lineNumber="83"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSizeMM" lineNumber="91"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxSizer_Add" lineNumber="99"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxPGProperty_Hide" lineNumber="105"/>
+    <functiondecl functionName="nullPointer_wxTextCtrl_HitTest" lineNumber="113"/>
+    <functiondecl functionName="validCode" lineNumber="119"/>
+    <functiondecl functionName="nullPointer" lineNumber="146"/>
+    <functiondecl functionName="nullPointer_wxSizer_Add" lineNumber="183"/>
+    <functiondecl functionName="uninitvar_wxSizer_Add" lineNumber="192"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="203"/>
+    <functiondecl functionName="invalidFunctionArg" lineNumber="215"/>
+    <functiondecl functionName="uninitvar" lineNumber="234"/>
+    <functiondecl functionName="uninitvar_wxStaticText" lineNumber="250"/>
+    <functiondecl functionName="uninitvar_wxString_NumberConversion" lineNumber="259"/>
+    <functiondecl functionName="uninitvar_SetMenuBar" lineNumber="287"/>
+    <functiondecl functionName="uninitvar_wxMenuBarAppend" lineNumber="295"/>
+    <functiondecl functionName="deprecatedFunctions_wxDataViewCustomRenderer" lineNumber="303"/>
+    <functiondecl functionName="deprecatedFunctions" lineNumber="311"/>
+    <functiondecl functionName="wxString_test1" lineNumber="374"/>
+    <functiondecl functionName="wxString_test2" lineNumber="382"/>
+    <functiondecl functionName="wxString_test3" lineNumber="395"/>
+    <functiondecl functionName="useRetval_wxString_MakeCapitalized" lineNumber="45"/>
+    <functiondecl functionName="useRetval_wxString_MakeLower" lineNumber="51"/>
+    <functiondecl functionName="useRetval_wxString_MakeUpper" lineNumber="57"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayString" lineNumber="63"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayInt" lineNumber="73"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSize" lineNumber="83"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSizeMM" lineNumber="91"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxSizer_Add" lineNumber="99"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxPGProperty_Hide" lineNumber="105"/>
+    <functiondecl functionName="nullPointer_wxTextCtrl_HitTest" lineNumber="113"/>
+    <functiondecl functionName="validCode" lineNumber="119"/>
+    <functiondecl functionName="nullPointer" lineNumber="146"/>
+    <functiondecl functionName="nullPointer_wxSizer_Add" lineNumber="183"/>
+    <functiondecl functionName="uninitvar_wxSizer_Add" lineNumber="192"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="203"/>
+    <functiondecl functionName="invalidFunctionArg" lineNumber="215"/>
+    <functiondecl functionName="uninitvar" lineNumber="234"/>
+    <functiondecl functionName="uninitvar_wxStaticText" lineNumber="250"/>
+    <functiondecl functionName="uninitvar_wxString_NumberConversion" lineNumber="259"/>
+    <functiondecl functionName="uninitvar_SetMenuBar" lineNumber="287"/>
+    <functiondecl functionName="uninitvar_wxMenuBarAppend" lineNumber="295"/>
+    <functiondecl functionName="deprecatedFunctions_wxDataViewCustomRenderer" lineNumber="303"/>
+    <functiondecl functionName="deprecatedFunctions" lineNumber="311"/>
+    <functiondecl functionName="wxString_test1" lineNumber="374"/>
+    <functiondecl functionName="wxString_test2" lineNumber="382"/>
+    <functiondecl functionName="wxString_test3" lineNumber="395"/>
+    <functiondecl functionName="useRetval_wxString_MakeCapitalized" lineNumber="45"/>
+    <functiondecl functionName="useRetval_wxString_MakeLower" lineNumber="51"/>
+    <functiondecl functionName="useRetval_wxString_MakeUpper" lineNumber="57"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayString" lineNumber="63"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayInt" lineNumber="73"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSize" lineNumber="83"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSizeMM" lineNumber="91"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxSizer_Add" lineNumber="99"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxPGProperty_Hide" lineNumber="105"/>
+    <functiondecl functionName="nullPointer_wxTextCtrl_HitTest" lineNumber="113"/>
+    <functiondecl functionName="validCode" lineNumber="119"/>
+    <functiondecl functionName="validGuiCode" lineNumber="136"/>
+    <functiondecl functionName="nullPointer" lineNumber="146"/>
+    <functiondecl functionName="nullPointer_wxSizer_Add" lineNumber="183"/>
+    <functiondecl functionName="uninitvar_wxSizer_Add" lineNumber="192"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="203"/>
+    <functiondecl functionName="invalidFunctionArg" lineNumber="215"/>
+    <functiondecl functionName="uninitvar" lineNumber="234"/>
+    <functiondecl functionName="uninitvar_wxStaticText" lineNumber="250"/>
+    <functiondecl functionName="uninitvar_wxString_NumberConversion" lineNumber="259"/>
+    <functiondecl functionName="uninitvar_SetMenuBar" lineNumber="287"/>
+    <functiondecl functionName="uninitvar_wxMenuBarAppend" lineNumber="295"/>
+    <functiondecl functionName="deprecatedFunctions_wxDataViewCustomRenderer" lineNumber="303"/>
+    <functiondecl functionName="deprecatedFunctions" lineNumber="311"/>
+    <functiondecl functionName="wxString_test1" lineNumber="374"/>
+    <functiondecl functionName="wxString_test2" lineNumber="382"/>
+    <functiondecl functionName="wxString_test3" lineNumber="395"/>
+    <functiondecl functionName="useRetval_wxString_MakeCapitalized" lineNumber="45"/>
+    <functiondecl functionName="useRetval_wxString_MakeLower" lineNumber="51"/>
+    <functiondecl functionName="useRetval_wxString_MakeUpper" lineNumber="57"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayString" lineNumber="63"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayInt" lineNumber="73"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSize" lineNumber="83"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSizeMM" lineNumber="91"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxSizer_Add" lineNumber="99"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxPGProperty_Hide" lineNumber="105"/>
+    <functiondecl functionName="nullPointer_wxTextCtrl_HitTest" lineNumber="113"/>
+    <functiondecl functionName="validCode" lineNumber="119"/>
+    <functiondecl functionName="validGuiCode" lineNumber="136"/>
+    <functiondecl functionName="nullPointer" lineNumber="146"/>
+    <functiondecl functionName="nullPointer_wxSizer_Add" lineNumber="183"/>
+    <functiondecl functionName="uninitvar_wxSizer_Add" lineNumber="192"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="203"/>
+    <functiondecl functionName="invalidFunctionArg" lineNumber="215"/>
+    <functiondecl functionName="uninitvar" lineNumber="234"/>
+    <functiondecl functionName="uninitvar_wxStaticText" lineNumber="250"/>
+    <functiondecl functionName="uninitvar_wxString_NumberConversion" lineNumber="259"/>
+    <functiondecl functionName="uninitvar_SetMenuBar" lineNumber="287"/>
+    <functiondecl functionName="uninitvar_wxMenuBarAppend" lineNumber="295"/>
+    <functiondecl functionName="deprecatedFunctions_wxDataViewCustomRenderer" lineNumber="303"/>
+    <functiondecl functionName="deprecatedFunctions" lineNumber="311"/>
+    <functiondecl functionName="wxString_test1" lineNumber="374"/>
+    <functiondecl functionName="wxString_test2" lineNumber="382"/>
+    <functiondecl functionName="wxString_test3" lineNumber="395"/>
+    <functiondecl functionName="useRetval_wxString_MakeCapitalized" lineNumber="45"/>
+    <functiondecl functionName="useRetval_wxString_MakeLower" lineNumber="51"/>
+    <functiondecl functionName="useRetval_wxString_MakeUpper" lineNumber="57"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayString" lineNumber="63"/>
+    <functiondecl functionName="containerOutOfBounds_wxArrayInt" lineNumber="73"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSize" lineNumber="83"/>
+    <functiondecl functionName="ignoredReturnValue_wxDC_GetSizeMM" lineNumber="91"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxSizer_Add" lineNumber="99"/>
+    <functiondecl functionName="invalidFunctionArgBool_wxPGProperty_Hide" lineNumber="105"/>
+    <functiondecl functionName="nullPointer_wxTextCtrl_HitTest" lineNumber="113"/>
+    <functiondecl functionName="validCode" lineNumber="119"/>
+    <functiondecl functionName="nullPointer" lineNumber="146"/>
+    <functiondecl functionName="nullPointer_wxSizer_Add" lineNumber="183"/>
+    <functiondecl functionName="uninitvar_wxSizer_Add" lineNumber="192"/>
+    <functiondecl functionName="ignoredReturnValue" lineNumber="203"/>
+    <functiondecl functionName="invalidFunctionArg" lineNumber="215"/>
+    <functiondecl functionName="uninitvar" lineNumber="234"/>
+    <functiondecl functionName="uninitvar_wxStaticText" lineNumber="250"/>
+    <functiondecl functionName="uninitvar_wxString_NumberConversion" lineNumber="259"/>
+    <functiondecl functionName="uninitvar_SetMenuBar" lineNumber="287"/>
+    <functiondecl functionName="uninitvar_wxMenuBarAppend" lineNumber="295"/>
+    <functiondecl functionName="deprecatedFunctions_wxDataViewCustomRenderer" lineNumber="303"/>
+    <functiondecl functionName="deprecatedFunctions" lineNumber="311"/>
+    <functiondecl functionName="wxString_test1" lineNumber="374"/>
+    <functiondecl functionName="wxString_test2" lineNumber="382"/>
+    <functiondecl functionName="wxString_test3" lineNumber="395"/>
+    <functioncall functionName="Activate"/>
+    <functioncall functionName="Add"/>
+    <functioncall functionName="Append"/>
+    <functioncall functionName="Clear"/>
+    <functioncall functionName="Close"/>
+    <functioncall functionName="EnableYearChange"/>
+    <functioncall functionName="GetLevel"/>
+    <functioncall functionName="GetSize"/>
+    <functioncall functionName="GetSizeMM"/>
+    <functioncall functionName="GetTextIndent"/>
+    <functioncall functionName="Hide"/>
+    <functioncall functionName="HidePopup"/>
+    <functioncall functionName="HitTest"/>
+    <functioncall functionName="Insert"/>
+    <functioncall functionName="LeftClick"/>
+    <functioncall functionName="MacOpenFile"/>
+    <functioncall functionName="MakeCapitalized"/>
+    <functioncall functionName="MakeLower"/>
+    <functioncall functionName="MakeUpper"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="SetBase"/>
+    <functioncall functionName="SetLevel"/>
+    <functioncall functionName="SetMenuBar"/>
+    <functioncall functionName="SetTextIndent"/>
+    <functioncall functionName="ToCDouble"/>
+    <functioncall functionName="ToCLong"/>
+    <functioncall functionName="ToCULong"/>
+    <functioncall functionName="ToDouble"/>
+    <functioncall functionName="ToLong"/>
+    <functioncall functionName="ToLongLong"/>
+    <functioncall functionName="ToULong"/>
+    <functioncall functionName="ToULongLong"/>
+    <functioncall functionName="Wrap"/>
+    <functioncall functionName="_"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="artProvider"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="cBufUninit"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="cell"/>
+    <functioncall functionName="col"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="cursor"/>
+    <functioncall functionName="doublePtr"/>
+    <functioncall functionName="doublePtr1"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="flags"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="height"/>
+    <functioncall functionName="hide"/>
+    <functioncall functionName="hr"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="item"/>
+    <functioncall functionName="l"/>
+    <functioncall functionName="ll"/>
+    <functioncall functionName="logLevelUninit"/>
+    <functioncall functionName="longLongPtr"/>
+    <functioncall functionName="longPtr"/>
+    <functioncall functionName="longPtr1"/>
+    <functioncall functionName="menu"/>
+    <functioncall functionName="menuBar"/>
+    <functioncall functionName="menuBarPtr"/>
+    <functioncall functionName="menuPtr"/>
+    <functioncall functionName="model"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="pcUninit"/>
+    <functioncall functionName="pos"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="ptr"/>
+    <functioncall functionName="s"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="title"/>
+    <functioncall functionName="translation1"/>
+    <functioncall functionName="translation2"/>
+    <functioncall functionName="translation3"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="ul"/>
+    <functioncall functionName="ull"/>
+    <functioncall functionName="ulongLongPtr"/>
+    <functioncall functionName="ulongPtr"/>
+    <functioncall functionName="ulongPtr1"/>
+    <functioncall functionName="uninit1"/>
+    <functioncall functionName="uninit2"/>
+    <functioncall functionName="uninit3"/>
+    <functioncall functionName="uninitBool"/>
+    <functioncall functionName="uninitInt"/>
+    <functioncall functionName="uninitInteger1"/>
+    <functioncall functionName="uninitInteger2"/>
+    <functioncall functionName="uninitInteger3"/>
+    <functioncall functionName="uninitInteger4"/>
+    <functioncall functionName="uninitInteger5"/>
+    <functioncall functionName="uninitInteger6"/>
+    <functioncall functionName="userData"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="w"/>
+    <functioncall functionName="width"/>
+    <functioncall functionName="window"/>
+    <functioncall functionName="wxAtof"/>
+    <functioncall functionName="wxAtoi"/>
+    <functioncall functionName="wxAtol"/>
+    <functioncall functionName="wxDos2UnixFilename"/>
+    <functioncall functionName="wxFileNameFromPath"/>
+    <functioncall functionName="wxGetCwd"/>
+    <functioncall functionName="wxGetTranslation"/>
+    <functioncall functionName="wxLOG_Message"/>
+    <functioncall functionName="wxLogApiError"/>
+    <functioncall functionName="wxLogGeneric"/>
+    <functioncall functionName="wxLogMessage"/>
+    <functioncall functionName="wxPrintf"/>
+    <functioncall functionName="wxT_2"/>
+  </FileInfo>
+</analyzerinfo>

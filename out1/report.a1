@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="566471951">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="create" lineNumber="31"/>
+    <functiondecl functionName="open" lineNumber="41"/>
+    <functiondecl functionName="close" lineNumber="51"/>
+    <functiondecl functionName="getFile" lineNumber="57"/>
+    <functioncall functionName="CSV"/>
+    <functioncall functionName="QObject"/>
+    <functioncall functionName="Report"/>
+    <functioncall functionName="TXT"/>
+    <functioncall functionName="Text"/>
+    <functioncall functionName="XMLV2"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="isOpen"/>
+    <functioncall functionName="mFilename"/>
+    <functioncall functionName="open"/>
+    <functioncall functionName="setFileName"/>
+  </FileInfo>
+</analyzerinfo>

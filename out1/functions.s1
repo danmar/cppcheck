@@ -1,0 +1,5 @@
+par_not_dependant global:[TestData]
+par_dependant global:[TestData]
+call call:[par_dependant,par_not_dependant] noreturn:[par_dependant]
+getLargeIndex
+return_value global:[TestData] call:[getLargeIndex]

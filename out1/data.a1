@@ -1,0 +1,59 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2154072897">
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." verbose="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="7" column="13" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="6" column="9" info="Assignment &apos;g=1000&apos;, assigned value is 1000"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." verbose="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="13" column="13" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="12" column="15" info="Assignment &apos;garr[3]=1000&apos;, assigned value is 1000"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." verbose="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="19" column="13" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="18" column="11" info="Assignment &apos;*gp=1000&apos;, assigned value is 1000"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." verbose="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="26" column="13" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="25" column="9" info="Assignment &apos;x=1000&apos;, assigned value is 1000"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." verbose="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="32" column="13" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="31" column="14" info="Assignment &apos;arr[3]=1000&apos;, assigned value is 1000"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." verbose="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="39" column="13" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="38" column="10" info="Assignment &apos;*p=1000&apos;, assigned value is 1000"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." verbose="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="62" column="13" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="61" column="14" info="Assignment &apos;abc-&gt;a=1000&apos;, assigned value is 1000"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." verbose="Array &apos;TestData[10]&apos; accessed at index 1000, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="67" column="13" info="Array index out of bounds"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="66" column="17" info="Assignment &apos;abc-&gt;b[3]=1000&apos;, assigned value is 1000"/>
+        </error>
+        <error id="uninitvar" severity="error" msg="Uninitialized variable: *p" verbose="Uninitialized variable: *p" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="39" column="14"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\data.c" line="37" column="14" info="Address of variable taken here."/>
+            <symbol>*p</symbol>
+        </error>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c:60:6" my-argnr="1" my-argname="abc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c" line="61" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c:65:6" my-argnr="1" my-argname="abc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/data.c" line="66" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="global" lineNumber="5"/>
+    <functiondecl functionName="global_array" lineNumber="11"/>
+    <functiondecl functionName="global_pointer" lineNumber="17"/>
+    <functiondecl functionName="local" lineNumber="23"/>
+    <functiondecl functionName="local_array" lineNumber="29"/>
+    <functiondecl functionName="local_alias_1" lineNumber="35"/>
+    <functiondecl functionName="local_alias_2" lineNumber="42"/>
+    <functiondecl functionName="struct_member_init" lineNumber="55"/>
+    <functiondecl functionName="struct_member_assign" lineNumber="60"/>
+    <functiondecl functionName="struct_arraymember" lineNumber="65"/>
+    <functioncall functionName="a"/>
+    <functioncall functionName="g"/>
+    <functioncall functionName="x"/>
+  </FileInfo>
+</analyzerinfo>

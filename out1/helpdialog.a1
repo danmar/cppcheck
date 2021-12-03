@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3544574807">
+        <error id="unsafeClassCanLeak" severity="style" msg="Class &apos;HelpDialog&apos; is unsafe, &apos;HelpDialog::mHelpEngine&apos; can leak by wrong usage." verbose="The class &apos;HelpDialog&apos; is unsafe, wrong usage can cause memory/resource leaks for &apos;HelpDialog::mHelpEngine&apos;. This can for instance be fixed by adding proper cleanup in the destructor." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/helpdialog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\gui\helpdialog.h" line="31" column="18"/>
+            <symbol>HelpDialog</symbol>
+            <symbol>HelpDialog::mHelpEngine</symbol>
+        </error>
+  <FileInfo check="Class">
+<class name="HelpBrowser" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/helpdialog.h" line="13" col="1" hash="4830267667765404699"/>
+<class name="HelpDialog" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/helpdialog.h" line="22" col="1" hash="497563994230016308"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="setHelpEngine" lineNumber="11"/>
+    <functiondecl functionName="loadResource" lineNumber="16"/>
+    <functiondecl functionName="getHelpFile" lineNumber="27"/>
+    <functioncall functionName="HelpDialog"/>
+    <functioncall functionName="Ok"/>
+    <functioncall functionName="QDialog"/>
+    <functioncall functionName="QFileInfo"/>
+    <functioncall functionName="QHelpEngine"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QTextBrowser"/>
+    <functioncall functionName="QUrl"/>
+    <functioncall functionName="QVariant"/>
+    <functioncall functionName="SIGNAL"/>
+    <functioncall functionName="SLOT"/>
+    <functioncall functionName="Warning"/>
+    <functioncall functionName="addWidget"/>
+    <functioncall functionName="applicationDirPath"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="bool"/>
+    <functioncall functionName="connect"/>
+    <functioncall functionName="contentWidget"/>
+    <functioncall functionName="exec"/>
+    <functioncall functionName="exists"/>
+    <functioncall functionName="fileData"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="fromValue"/>
+    <functioncall functionName="getDataDir"/>
+    <functioncall functionName="getHelpFile"/>
+    <functioncall functionName="helpEngine"/>
+    <functioncall functionName="helpFile"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="indexOf"/>
+    <functioncall functionName="indexWidget"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="linkActivated"/>
+    <functioncall functionName="loadResource"/>
+    <functioncall functionName="mHelpEngine"/>
+    <functioncall functionName="mUi"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="msgBox"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="paths"/>
+    <functioncall functionName="remove"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="scheme"/>
+    <functioncall functionName="setHelpEngine"/>
+    <functioncall functionName="setProperty"/>
+    <functioncall functionName="setSource"/>
+    <functioncall functionName="setupData"/>
+    <functioncall functionName="setupUi"/>
+    <functioncall functionName="textBrowser"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="url"/>
+    <functioncall functionName="while"/>
+  </FileInfo>
+</analyzerinfo>

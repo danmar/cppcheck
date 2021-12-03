@@ -1,0 +1,36 @@
+_dwarf_load_elf_section_is_dwarf call:[strcmp,strncmp]
+is_empty_section
+dwarf_construct_elf_access call:[calloc,dwarf_object_detector_fd,sizeof,strdup]
+dwarf_destruct_elf_access call:[close,free] noreturn:[close]
+generic_ehdr_from_32 call:[f_copy_word,sizeof,while] noreturn:[f_copy_word]
+generic_ehdr_from_64 call:[f_copy_word,sizeof,while] noreturn:[f_copy_word]
+generic_shdr_from_shdr32 call:[RRMOA,calloc,f_copy_word,free,sizeof,while] noreturn:[f_copy_word]
+generic_shdr_from_shdr64 call:[RRMOA,calloc,f_copy_word,free,sizeof,while] noreturn:[f_copy_word]
+dwarf_generic_elf_load_symbols32 call:[RRMOA,calloc,f_copy_word,free,sizeof,while] noreturn:[f_copy_word]
+dwarf_generic_elf_load_symbols64 call:[RRMOA,calloc,f_copy_word,free,sizeof,while] noreturn:[f_copy_word]
+dwarf_generic_elf_load_symbols call:[dwarf_generic_elf_load_symbols32,dwarf_generic_elf_load_symbols64] noreturn:[dwarf_generic_elf_load_symbols32,dwarf_generic_elf_load_symbols64]
+_dwarf_load_elf_symtab_symbols call:[dwarf_generic_elf_load_symbols]
+generic_rel_from_rela32 call:[SIGN_EXTEND,f_copy_word,sizeof,while] noreturn:[f_copy_word]
+generic_rel_from_rela64 call:[SIGN_EXTEND,f_copy_word,memcpy,sizeof,while] noreturn:[f_copy_word]
+_dwarf_load_elf_symstr call:[RRMOA,calloc,free]
+_dwarf_elf_load_sectstrings call:[RRMOA,free,is_empty_section,malloc]
+elf_load_sectheaders32 call:[generic_shdr_from_shdr32,sizeof]
+elf_load_sectheaders64 call:[generic_shdr_from_shdr64,sizeof]
+_dwarf_elf_load_rela_32 call:[RRMOA,free,generic_rel_from_rela32,malloc,sizeof]
+_dwarf_elf_load_rela_64 call:[RRMOA,free,generic_rel_from_rela64,malloc,sizeof]
+this_is_a_section_dwarf_related
+_dwarf_load_elf_rela call:[_dwarf_elf_load_rela_32,_dwarf_elf_load_rela_64,is_empty_section,this_is_a_section_dwarf_related] noreturn:[_dwarf_elf_load_rela_32,_dwarf_elf_load_rela_64]
+validate_section_name_string
+_dwarf_elf_load_sect_namestring call:[validate_section_name_string]
+elf_load_elf_header32 call:[RRMOA,calloc,generic_ehdr_from_32,sizeof]
+elf_load_elf_header64 call:[RRMOA,calloc,generic_ehdr_from_64,sizeof]
+validate_struct_sizes
+_dwarf_load_elf_header call:[elf_load_elf_header32,elf_load_elf_header64,sizeof,validate_struct_sizes] noreturn:[elf_load_elf_header32,elf_load_elf_header64]
+validate_links
+string_endswith call:[strcmp,strlen]
+elf_sht_groupsec call:[strcmp]
+elf_flagmatches
+read_gs_section_group call:[RRMOA,_dwarf_memcpy_swap_bytes,free,malloc,memcpy,sizeof,while] noreturn:[_dwarf_memcpy_swap_bytes,memcpy]
+_dwarf_elf_setup_all_section_groups call:[_dwarf_load_elf_section_is_dwarf,elf_flagmatches,elf_sht_groupsec,is_empty_section,read_gs_section_group,string_endswith]
+_dwarf_elf_find_sym_sections call:[is_empty_section,strcmp,validate_links]
+_dwarf_load_elf_sectheaders call:[_dwarf_elf_find_sym_sections,_dwarf_elf_load_sect_namestring,_dwarf_elf_load_sectstrings,_dwarf_elf_setup_all_section_groups,elf_load_sectheaders32,elf_load_sectheaders64] noreturn:[elf_load_sectheaders32,elf_load_sectheaders64]

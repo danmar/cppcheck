@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2631614420">
+        <error id="negativeIndex" severity="error" msg="Array &apos;p[10]&apos; accessed at index -1, which is out of bounds." verbose="Array &apos;p[10]&apos; accessed at index -1, which is out of bounds." cwe="786" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong7.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong7.c" line="8" column="6" info="Negative array index"/>
+        </error>
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;p[10]&apos; accessed at index 10, which is out of bounds." verbose="Array &apos;p[10]&apos; accessed at index 10, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong7.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong7.c" line="10" column="6" info="Array index out of bounds"/>
+        </error>
+        <error id="uninitdata" severity="error" msg="Memory is allocated but not initialized: p" verbose="Memory is allocated but not initialized: p" cwe="457" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong7.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong7.c" line="8" column="5"/>
+            <symbol>p</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="main" lineNumber="3"/>
+    <functioncall functionName="free"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="malloc"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="printf"/>
+    <functioncall functionName="sizeof"/>
+  </FileInfo>
+</analyzerinfo>

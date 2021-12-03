@@ -1,0 +1,21 @@
+acceptFile call:[acceptFile] noreturn:[acceptFile]
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+PathMatch call:[begin,end,getCurrentPath,push_back,transform] noreturn:[push_back,transform]
+match call:[begin,compare,empty,end,endsWith,excludedPath,find,fromNativeSeparators,getRelativePath,isAbsolute,length,removeFilename,size,transform] noreturn:[removeFilename,transform]
+removeFilename call:[find_last_of,substr] noreturn:[substr]

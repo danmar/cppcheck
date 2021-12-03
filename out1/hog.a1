@@ -1,0 +1,720 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2404074014">
+        <error id="objectIndex" severity="warning" msg="The address of local variable &apos;blockData&apos; might be accessed at non-zero index." verbose="The address of local variable &apos;blockData&apos; might be accessed at non-zero index." cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="1434" column="58"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="1406" column="48" info="Address of variable taken here."/>
+        </error>
+        <error id="objectIndex" severity="warning" msg="The address of local variable &apos;blockData&apos; might be accessed at non-zero index." verbose="The address of local variable &apos;blockData&apos; might be accessed at non-zero index." cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="1505" column="58"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="1471" column="48" info="Address of variable taken here."/>
+        </error>
+        <error id="objectIndex" severity="warning" msg="The address of local variable &apos;blockData&apos; might be accessed at non-zero index." verbose="The address of local variable &apos;blockData&apos; might be accessed at non-zero index." cwe="758" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3380" column="58"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3367" column="41" info="Assuming condition is false"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3349" column="48" info="Address of variable taken here."/>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;img&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;img&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="1561" column="13"/>
+            <symbol>img</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;winStride&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;winStride&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="1563" column="13"/>
+            <symbol>winStride</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;padding&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;padding&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="1564" column="13"/>
+            <symbol>padding</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;img&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;img&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3272" column="13"/>
+            <symbol>img</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;padding&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;padding&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3274" column="13"/>
+            <symbol>padding</symbol>
+        </error>
+        <error id="virtualCallInConstructor" severity="style" msg="Virtual function &apos;load&apos; is called from constructor &apos;HOGDescriptor(const String&amp;filename)&apos; at line 421. Dynamic binding is not used." verbose="Virtual function &apos;load&apos; is called from constructor &apos;HOGDescriptor(const String&amp;filename)&apos; at line 421. Dynamic binding is not used." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\opencv2\objdetect.hpp" line="470" column="26" info="load is a virtual function"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\opencv2\objdetect.hpp" line="421" column="9" info="Calling load"/>
+        </error>
+        <error id="virtualCallInConstructor" severity="style" msg="Virtual function &apos;init&apos; is called from constructor &apos;HOGCache(const HOGDescriptor*descriptor,const Mat&amp;img,const Size&amp;paddingTL,const Size&amp;paddingBR,bool useCache,const Size&amp;cacheStride)&apos; at line 545. Dynamic binding is not used." verbose="Virtual function &apos;init&apos; is called from constructor &apos;HOGCache(const HOGDescriptor*descriptor,const Mat&amp;img,const Size&amp;paddingTL,const Size&amp;paddingBR,bool useCache,const Size&amp;cacheStride)&apos; at line 545. Dynamic binding is not used." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="506" column="22" info="init is a virtual function"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="545" column="9" info="Calling init"/>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;SimilarRects&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;SimilarRects&apos; has a constructor with 1 argument that is not explicit. Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\opencv2\objdetect.hpp" line="124" column="5"/>
+            <symbol>SimilarRects</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;CascadeClassifier&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;CascadeClassifier&apos; has a constructor with 1 argument that is not explicit. Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\opencv2\objdetect.hpp" line="232" column="13"/>
+            <symbol>CascadeClassifier</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Struct &apos;HOGDescriptor&apos; has a constructor with 1 argument that is not explicit." verbose="Struct &apos;HOGDescriptor&apos; has a constructor with 1 argument that is not explicit. Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\opencv2\objdetect.hpp" line="419" column="13"/>
+            <symbol>HOGDescriptor</symbol>
+        </error>
+        <error id="redundantInitialization" severity="style" msg="Redundant initialization for &apos;cacheRow&apos;. The initialized value is overwritten before it is read." verbose="Redundant initialization for &apos;cacheRow&apos;. The initialized value is overwritten before it is read." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="787" column="26" info="cacheRow is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="786" column="38" info="cacheRow is initialized"/>
+            <symbol>cacheRow</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3486" column="18" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3482" column="14" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3489" column="18" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3486" column="18" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3491" column="18" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3489" column="18" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3493" column="18" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3491" column="18" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3495" column="18" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3493" column="18" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3498" column="18" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3495" column="18" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3502" column="14" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3498" column="18" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3505" column="18" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3502" column="14" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3507" column="18" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3505" column="18" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="redundantAssignment" severity="style" msg="Variable &apos;nread&apos; is reassigned a value before the old one has been used." verbose="Variable &apos;nread&apos; is reassigned a value before the old one has been used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3511" column="14" info="nread is overwritten"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3507" column="18" info="nread is assigned"/>
+            <symbol>nread</symbol>
+        </error>
+        <error id="unreadVariable" severity="style" msg="Variable &apos;nread&apos; is assigned a value that is never used." verbose="Variable &apos;nread&apos; is assigned a value that is never used." cwe="563" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-15939\hog.cpp" line="3511" column="14"/>
+            <symbol>nread</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp:506:22" call-funcname="init" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp" line="545" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp:502:9" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Bounds checking">
+    <array-index>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp:514:22" my-argnr="1" my-argname="_hist" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp" line="947" col="24" value="0"/>
+    </array-index>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp:506:22" call-funcname="init" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp" line="545" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp:502:9" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Bounds checking">
+    <array-index>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp:514:22" my-argnr="1" my-argname="_hist" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp" line="947" col="24" value="0"/>
+    </array-index>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp:506:22" call-funcname="init" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp" line="545" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp:502:9" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Bounds checking">
+    <array-index>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp:514:22" my-argnr="1" my-argname="_hist" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-15939/hog.cpp" line="947" col="24" value="0"/>
+    </array-index>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="numPartsWithin" lineNumber="69"/>
+    <functiondecl functionName="numPartsWithin" lineNumber="75"/>
+    <functiondecl functionName="getBlockHistogramSize" lineNumber="82"/>
+    <functiondecl functionName="getDescriptorSize" lineNumber="90"/>
+    <functiondecl functionName="getWinSigma" lineNumber="104"/>
+    <functiondecl functionName="checkDetectorSize" lineNumber="109"/>
+    <functiondecl functionName="setSVMDetector" lineNumber="117"/>
+    <functiondecl functionName="read" lineNumber="142"/>
+    <functiondecl functionName="write" lineNumber="178"/>
+    <functiondecl functionName="load" lineNumber="201"/>
+    <functiondecl functionName="save" lineNumber="208"/>
+    <functiondecl functionName="copyTo" lineNumber="214"/>
+    <functiondecl functionName="init" lineNumber="548"/>
+    <functiondecl functionName="getBlock" lineNumber="767"/>
+    <functiondecl functionName="normalizeBlockHistogram" lineNumber="945"/>
+    <functiondecl functionName="windowsInImage" lineNumber="1040"/>
+    <functiondecl functionName="getWindow" lineNumber="1046"/>
+    <functiondecl functionName="gcd" lineNumber="1054"/>
+    <functiondecl functionName="getDefaultPeopleDetector" lineNumber="1947"/>
+    <functiondecl functionName="getDaimlerPeopleDetector" lineNumber="2760"/>
+    <functiondecl functionName="groupRectangles" lineNumber="3540"/>
+    <functiondecl functionName="isInstance" lineNumber="1894"/>
+    <functiondecl functionName="release" lineNumber="1907"/>
+    <functiondecl functionName="read" lineNumber="1915"/>
+    <functiondecl functionName="write" lineNumber="1925"/>
+    <functiondecl functionName="clone" lineNumber="1934"/>
+    <functiondecl functionName="numPartsWithin" lineNumber="69"/>
+    <functiondecl functionName="numPartsWithin" lineNumber="75"/>
+    <functiondecl functionName="getBlockHistogramSize" lineNumber="82"/>
+    <functiondecl functionName="getDescriptorSize" lineNumber="90"/>
+    <functiondecl functionName="getWinSigma" lineNumber="104"/>
+    <functiondecl functionName="checkDetectorSize" lineNumber="109"/>
+    <functiondecl functionName="setSVMDetector" lineNumber="117"/>
+    <functiondecl functionName="read" lineNumber="142"/>
+    <functiondecl functionName="write" lineNumber="178"/>
+    <functiondecl functionName="load" lineNumber="201"/>
+    <functiondecl functionName="save" lineNumber="208"/>
+    <functiondecl functionName="copyTo" lineNumber="214"/>
+    <functiondecl functionName="init" lineNumber="548"/>
+    <functiondecl functionName="getBlock" lineNumber="767"/>
+    <functiondecl functionName="normalizeBlockHistogram" lineNumber="945"/>
+    <functiondecl functionName="windowsInImage" lineNumber="1040"/>
+    <functiondecl functionName="getWindow" lineNumber="1046"/>
+    <functiondecl functionName="gcd" lineNumber="1054"/>
+    <functiondecl functionName="getDefaultPeopleDetector" lineNumber="1947"/>
+    <functiondecl functionName="getDaimlerPeopleDetector" lineNumber="2760"/>
+    <functiondecl functionName="groupRectangles" lineNumber="3540"/>
+    <functiondecl functionName="isInstance" lineNumber="1894"/>
+    <functiondecl functionName="release" lineNumber="1907"/>
+    <functiondecl functionName="read" lineNumber="1915"/>
+    <functiondecl functionName="write" lineNumber="1925"/>
+    <functiondecl functionName="clone" lineNumber="1934"/>
+    <functiondecl functionName="numPartsWithin" lineNumber="69"/>
+    <functiondecl functionName="numPartsWithin" lineNumber="75"/>
+    <functiondecl functionName="getBlockHistogramSize" lineNumber="82"/>
+    <functiondecl functionName="getDescriptorSize" lineNumber="90"/>
+    <functiondecl functionName="getWinSigma" lineNumber="104"/>
+    <functiondecl functionName="checkDetectorSize" lineNumber="109"/>
+    <functiondecl functionName="setSVMDetector" lineNumber="117"/>
+    <functiondecl functionName="read" lineNumber="142"/>
+    <functiondecl functionName="write" lineNumber="178"/>
+    <functiondecl functionName="load" lineNumber="201"/>
+    <functiondecl functionName="save" lineNumber="208"/>
+    <functiondecl functionName="copyTo" lineNumber="214"/>
+    <functiondecl functionName="init" lineNumber="548"/>
+    <functiondecl functionName="getBlock" lineNumber="767"/>
+    <functiondecl functionName="normalizeBlockHistogram" lineNumber="945"/>
+    <functiondecl functionName="windowsInImage" lineNumber="1040"/>
+    <functiondecl functionName="getWindow" lineNumber="1046"/>
+    <functiondecl functionName="gcd" lineNumber="1054"/>
+    <functiondecl functionName="ocl_compute_gradients_8UC1" lineNumber="1069"/>
+    <functiondecl functionName="ocl_computeGradient" lineNumber="1101"/>
+    <functiondecl functionName="ocl_compute_hists" lineNumber="1114"/>
+    <functiondecl functionName="power_2up" lineNumber="1166"/>
+    <functiondecl functionName="ocl_normalize_hists" lineNumber="1174"/>
+    <functiondecl functionName="ocl_extract_descrs_by_rows" lineNumber="1241"/>
+    <functiondecl functionName="ocl_extract_descrs_by_cols" lineNumber="1275"/>
+    <functiondecl functionName="ocl_compute" lineNumber="1310"/>
+    <functiondecl functionName="ocl_classify_hists" lineNumber="1629"/>
+    <functiondecl functionName="ocl_detect" lineNumber="1714"/>
+    <functiondecl functionName="ocl_detectMultiScale" lineNumber="1782"/>
+    <functiondecl functionName="getDefaultPeopleDetector" lineNumber="1947"/>
+    <functiondecl functionName="getDaimlerPeopleDetector" lineNumber="2760"/>
+    <functiondecl functionName="groupRectangles" lineNumber="3540"/>
+    <functiondecl functionName="isInstance" lineNumber="1894"/>
+    <functiondecl functionName="release" lineNumber="1907"/>
+    <functiondecl functionName="read" lineNumber="1915"/>
+    <functiondecl functionName="write" lineNumber="1925"/>
+    <functiondecl functionName="clone" lineNumber="1934"/>
+    <functioncall functionName="ACCESS_READ"/>
+    <functioncall functionName="Angle"/>
+    <functioncall functionName="BORDER_REFLECT_101"/>
+    <functioncall functionName="BaseCascadeClassifier"/>
+    <functioncall functionName="BlockData"/>
+    <functioncall functionName="CV_32F"/>
+    <functioncall functionName="CV_32FC1"/>
+    <functioncall functionName="CV_32FC2"/>
+    <functioncall functionName="CV_32SC2"/>
+    <functioncall functionName="CV_8U"/>
+    <functioncall functionName="CV_8UC2"/>
+    <functioncall functionName="CV_Assert"/>
+    <functioncall functionName="CV_ELEM_SIZE1"/>
+    <functioncall functionName="CV_INSTRUMENT_REGION"/>
+    <functioncall functionName="CV_OCL_RUN"/>
+    <functioncall functionName="CV_PI"/>
+    <functioncall functionName="CvAttrList"/>
+    <functioncall functionName="DEFAULT_NLEVELS"/>
+    <functioncall functionName="DESCR_FORMAT_COL_BY_COL"/>
+    <functioncall functionName="DESCR_FORMAT_ROW_BY_ROW"/>
+    <functioncall functionName="DetectionROI"/>
+    <functioncall functionName="Dx"/>
+    <functioncall functionName="Dy"/>
+    <functioncall functionName="Exception"/>
+    <functioncall functionName="HOGCache"/>
+    <functioncall functionName="HOGConfInvoker"/>
+    <functioncall functionName="HOGDescriptor"/>
+    <functioncall functionName="INTER_LINEAR_EXACT"/>
+    <functioncall functionName="Impl"/>
+    <functioncall functionName="L2Hys"/>
+    <functioncall functionName="L2HysThreshold"/>
+    <functioncall functionName="Mag"/>
+    <functioncall functionName="MaskGenerator"/>
+    <functioncall functionName="Mat"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="PixData"/>
+    <functioncall functionName="Point"/>
+    <functioncall functionName="Point2d"/>
+    <functioncall functionName="PtrReadOnly"/>
+    <functioncall functionName="PtrReadWrite"/>
+    <functioncall functionName="PtrWriteOnly"/>
+    <functioncall functionName="READ"/>
+    <functioncall functionName="Range"/>
+    <functioncall functionName="Rect"/>
+    <functioncall functionName="Rect_"/>
+    <functioncall functionName="SimilarRects"/>
+    <functioncall functionName="Size"/>
+    <functioncall functionName="String"/>
+    <functioncall functionName="StsError"/>
+    <functioncall functionName="WRITE"/>
+    <functioncall functionName="_L2HysThreshold"/>
+    <functioncall functionName="__FUNCTION__"/>
+    <functioncall functionName="_angle"/>
+    <functioncall functionName="_bh"/>
+    <functioncall functionName="_blockSize"/>
+    <functioncall functionName="_blockStride"/>
+    <functioncall functionName="_bw"/>
+    <functioncall functionName="_cacheStride"/>
+    <functioncall functionName="_cellSize"/>
+    <functioncall functionName="_dbuf"/>
+    <functioncall functionName="_derivAperture"/>
+    <functioncall functionName="_descriptor"/>
+    <functioncall functionName="_descriptors"/>
+    <functioncall functionName="_dx0"/>
+    <functioncall functionName="_dx1"/>
+    <functioncall functionName="_dx2"/>
+    <functioncall functionName="_dy0"/>
+    <functioncall functionName="_dy1"/>
+    <functioncall functionName="_dy2"/>
+    <functioncall functionName="_eps"/>
+    <functioncall functionName="_fs"/>
+    <functioncall functionName="_gammaCorrection"/>
+    <functioncall functionName="_hidx"/>
+    <functioncall functionName="_histogramNormType"/>
+    <functioncall functionName="_hitThreshold"/>
+    <functioncall functionName="_hog"/>
+    <functioncall functionName="_img"/>
+    <functioncall functionName="_levelScale"/>
+    <functioncall functionName="_lut"/>
+    <functioncall functionName="_mag1"/>
+    <functioncall functionName="_mag2"/>
+    <functioncall functionName="_mtx"/>
+    <functioncall functionName="_nbins"/>
+    <functioncall functionName="_nlevels"/>
+    <functioncall functionName="_padding"/>
+    <functioncall functionName="_paddingBR"/>
+    <functioncall functionName="_paddingTL"/>
+    <functioncall functionName="_scales"/>
+    <functioncall functionName="_signedGradient"/>
+    <functioncall functionName="_svmDetector"/>
+    <functioncall functionName="_t0"/>
+    <functioncall functionName="_t1"/>
+    <functioncall functionName="_threshold"/>
+    <functioncall functionName="_useCache"/>
+    <functioncall functionName="_vec"/>
+    <functioncall functionName="_weights"/>
+    <functioncall functionName="_winSigma"/>
+    <functioncall functionName="_winSize"/>
+    <functioncall functionName="_winStride"/>
+    <functioncall functionName="a"/>
+    <functioncall functionName="abs"/>
+    <functioncall functionName="alignSize"/>
+    <functioncall functionName="allCandidates"/>
+    <functioncall functionName="angle"/>
+    <functioncall functionName="angleScale"/>
+    <functioncall functionName="angle_scale"/>
+    <functioncall functionName="area"/>
+    <functioncall functionName="assert"/>
+    <functioncall functionName="assign"/>
+    <functioncall functionName="at"/>
+    <functioncall functionName="b"/>
+    <functioncall functionName="back_inserter"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="bh"/>
+    <functioncall functionName="blockCacheFlags"/>
+    <functioncall functionName="blockHist"/>
+    <functioncall functionName="blockHistogramSize"/>
+    <functioncall functionName="blockSize"/>
+    <functioncall functionName="blockStride"/>
+    <functioncall functionName="block_hist_size"/>
+    <functioncall functionName="block_hists"/>
+    <functioncall functionName="block_stride_x"/>
+    <functioncall functionName="block_stride_y"/>
+    <functioncall functionName="blocks_in_group"/>
+    <functioncall functionName="blocks_total"/>
+    <functioncall functionName="borderInterpolate"/>
+    <functioncall functionName="borderType"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="buf"/>
+    <functioncall functionName="bw"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="cache"/>
+    <functioncall functionName="cacheIdx"/>
+    <functioncall functionName="cacheRows"/>
+    <functioncall functionName="cacheSize"/>
+    <functioncall functionName="cacheStride"/>
+    <functioncall functionName="cartToPolar"/>
+    <functioncall functionName="cellSize"/>
+    <functioncall functionName="cellX"/>
+    <functioncall functionName="cellY"/>
+    <functioncall functionName="channels"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="checkDetectorSize"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="clipObjects"/>
+    <functioncall functionName="clone"/>
+    <functioncall functionName="cls"/>
+    <functioncall functionName="coef_const"/>
+    <functioncall functionName="coef_lin"/>
+    <functioncall functionName="cols"/>
+    <functioncall functionName="computeGradient"/>
+    <functioncall functionName="confidences"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="convertTo"/>
+    <functioncall functionName="copy"/>
+    <functioncall functionName="copyTo"/>
+    <functioncall functionName="correctGamma"/>
+    <functioncall functionName="correct_gamma"/>
+    <functioncall functionName="count1"/>
+    <functioncall functionName="count2"/>
+    <functioncall functionName="count4"/>
+    <functioncall functionName="create"/>
+    <functioncall functionName="custom"/>
+    <functioncall functionName="cvCeil"/>
+    <functioncall functionName="cvFloor"/>
+    <functioncall functionName="cvRound"/>
+    <functioncall functionName="data"/>
+    <functioncall functionName="dbuf"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="derivAperture"/>
+    <functioncall functionName="descr_format"/>
+    <functioncall functionName="descr_size"/>
+    <functioncall functionName="descr_width"/>
+    <functioncall functionName="descriptor_size"/>
+    <functioncall functionName="descriptors"/>
+    <functioncall functionName="descriptors_quadstep"/>
+    <functioncall functionName="detect"/>
+    <functioncall functionName="detectMultiScale"/>
+    <functioncall functionName="detectROI"/>
+    <functioncall functionName="detector"/>
+    <functioncall functionName="detector_reordered"/>
+    <functioncall functionName="dets"/>
+    <functioncall functionName="di"/>
+    <functioncall functionName="dims"/>
+    <functioncall functionName="dj"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="dsize"/>
+    <functioncall functionName="dst"/>
+    <functioncall functionName="dummy"/>
+    <functioncall functionName="dummyp"/>
+    <functioncall functionName="dx"/>
+    <functioncall functionName="dx0"/>
+    <functioncall functionName="dy"/>
+    <functioncall functionName="dy0"/>
+    <functioncall functionName="eerr"/>
+    <functioncall functionName="effect_size"/>
+    <functioncall functionName="efile"/>
+    <functioncall functionName="efunc"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="eps"/>
+    <functioncall functionName="exp"/>
+    <functioncall functionName="fabs"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="fclose"/>
+    <functioncall functionName="fhalf"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="finalThreshold"/>
+    <functioncall functionName="final_hists_size"/>
+    <functioncall functionName="float"/>
+    <functioncall functionName="fn"/>
+    <functioncall functionName="fopen"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="format"/>
+    <functioncall functionName="foundLocations"/>
+    <functioncall functionName="foundScales"/>
+    <functioncall functionName="foundWeights"/>
+    <functioncall functionName="found_locations"/>
+    <functioncall functionName="fread"/>
+    <functioncall functionName="free_coef"/>
+    <functioncall functionName="fs"/>
+    <functioncall functionName="ft0"/>
+    <functioncall functionName="ft1"/>
+    <functioncall functionName="gammaCorrection"/>
+    <functioncall functionName="gamma_correction"/>
+    <functioncall functionName="gauss_w_lut"/>
+    <functioncall functionName="gaussian_lut"/>
+    <functioncall functionName="gcd"/>
+    <functioncall functionName="getBlock"/>
+    <functioncall functionName="getBlockHistogramSize"/>
+    <functioncall functionName="getDefault"/>
+    <functioncall functionName="getDefaultObjectName"/>
+    <functioncall functionName="getDescriptorSize"/>
+    <functioncall functionName="getFirstTopLevelNode"/>
+    <functioncall functionName="getMat"/>
+    <functioncall functionName="getUMat"/>
+    <functioncall functionName="getWinSigma"/>
+    <functioncall functionName="getWindow"/>
+    <functioncall functionName="globalThreads"/>
+    <functioncall functionName="grad"/>
+    <functioncall functionName="gradOfs"/>
+    <functioncall functionName="gradWeight"/>
+    <functioncall functionName="grad_quadstep"/>
+    <functioncall functionName="gradsize"/>
+    <functioncall functionName="groupRectangles"/>
+    <functioncall functionName="groupRectangles_meanshift"/>
+    <functioncall functionName="groupThreshold"/>
+    <functioncall functionName="group_threshold"/>
+    <functioncall functionName="h0"/>
+    <functioncall functionName="h1"/>
+    <functioncall functionName="height"/>
+    <functioncall functionName="hidx"/>
+    <functioncall functionName="hist"/>
+    <functioncall functionName="hist0"/>
+    <functioncall functionName="hist1"/>
+    <functioncall functionName="histOfs"/>
+    <functioncall functionName="histWeights"/>
+    <functioncall functionName="histogramNormType"/>
+    <functioncall functionName="hitThreshold"/>
+    <functioncall functionName="hit_threshold"/>
+    <functioncall functionName="hits"/>
+    <functioncall functionName="hitsWeights"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="i1"/>
+    <functioncall functionName="i2"/>
+    <functioncall functionName="icellX0"/>
+    <functioncall functionName="icellY0"/>
+    <functioncall functionName="icellY1"/>
+    <functioncall functionName="idx"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="ii"/>
+    <functioncall functionName="image_scale"/>
+    <functioncall functionName="img"/>
+    <functioncall functionName="imgOffset"/>
+    <functioncall functionName="imgSize"/>
+    <functioncall functionName="img_block_height"/>
+    <functioncall functionName="img_block_width"/>
+    <functioncall functionName="img_win_height"/>
+    <functioncall functionName="img_win_width"/>
+    <functioncall functionName="init"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="invoker"/>
+    <functioncall functionName="isInstance"/>
+    <functioncall functionName="isIntel"/>
+    <functioncall functionName="isMap"/>
+    <functioncall functionName="isSeq"/>
+    <functioncall functionName="isUMat"/>
+    <functioncall functionName="is_cpu"/>
+    <functioncall functionName="it0"/>
+    <functioncall functionName="it1"/>
+    <functioncall functionName="it2"/>
+    <functioncall functionName="it3"/>
+    <functioncall functionName="izero"/>
+    <functioncall functionName="j"/>
+    <functioncall functionName="k"/>
+    <functioncall functionName="kernel_type"/>
+    <functioncall functionName="l"/>
+    <functioncall functionName="labels"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="levelScale"/>
+    <functioncall functionName="levels"/>
+    <functioncall functionName="linearbias"/>
+    <functioncall functionName="linearwt"/>
+    <functioncall functionName="load"/>
+    <functioncall functionName="localThreads"/>
+    <functioncall functionName="locateROI"/>
+    <functioncall functionName="locations"/>
+    <functioncall functionName="lock"/>
+    <functioncall functionName="locs"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="mag"/>
+    <functioncall functionName="mapbuf"/>
+    <functioncall functionName="mask"/>
+    <functioncall functionName="max"/>
+    <functioncall functionName="maxSz"/>
+    <functioncall functionName="memcpy"/>
+    <functioncall functionName="memset"/>
+    <functioncall functionName="min"/>
+    <functioncall functionName="minScale"/>
+    <functioncall functionName="modelfl"/>
+    <functioncall functionName="mtx"/>
+    <functioncall functionName="mul_res"/>
+    <functioncall functionName="n"/>
+    <functioncall functionName="n1"/>
+    <functioncall functionName="n2"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="nbins"/>
+    <functioncall functionName="nblocks_win_x"/>
+    <functioncall functionName="nblocks_win_y"/>
+    <functioncall functionName="nclasses"/>
+    <functioncall functionName="nlevels"/>
+    <functioncall functionName="noArray"/>
+    <functioncall functionName="normalizeBlockHistogram"/>
+    <functioncall functionName="nthreads"/>
+    <functioncall functionName="numInClass"/>
+    <functioncall functionName="numPartsWithin"/>
+    <functioncall functionName="nwindows"/>
+    <functioncall functionName="nwindowsX"/>
+    <functioncall functionName="obj"/>
+    <functioncall functionName="objName"/>
+    <functioncall functionName="objdetect_hog_oclsrc"/>
+    <functioncall functionName="objname"/>
+    <functioncall functionName="oclSvmDetector"/>
+    <functioncall functionName="ocl_classify_hists"/>
+    <functioncall functionName="ocl_compute"/>
+    <functioncall functionName="ocl_computeGradient"/>
+    <functioncall functionName="ocl_compute_gradients_8UC1"/>
+    <functioncall functionName="ocl_compute_hists"/>
+    <functioncall functionName="ocl_detect"/>
+    <functioncall functionName="ocl_detectMultiScale"/>
+    <functioncall functionName="ocl_extract_descrs_by_cols"/>
+    <functioncall functionName="ocl_extract_descrs_by_rows"/>
+    <functioncall functionName="ocl_normalize_hists"/>
+    <functioncall functionName="operator()"/>
+    <functioncall functionName="opts"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="p02"/>
+    <functioncall functionName="p12"/>
+    <functioncall functionName="paddedImgSize"/>
+    <functioncall functionName="padding"/>
+    <functioncall functionName="parallel_for_"/>
+    <functioncall functionName="partSum"/>
+    <functioncall functionName="partition"/>
+    <functioncall functionName="poly_degree"/>
+    <functioncall functionName="power_2up"/>
+    <functioncall functionName="pp"/>
+    <functioncall functionName="preferedWorkGroupSizeMultiple"/>
+    <functioncall functionName="pt"/>
+    <functioncall functionName="pt0"/>
+    <functioncall functionName="ptr"/>
+    <functioncall functionName="push_back"/>
+    <functioncall functionName="qangle"/>
+    <functioncall functionName="qangleOfs"/>
+    <functioncall functionName="qangle_elem_size"/>
+    <functioncall functionName="qangle_step"/>
+    <functioncall functionName="qangle_type"/>
+    <functioncall functionName="r"/>
+    <functioncall functionName="r1"/>
+    <functioncall functionName="range"/>
+    <functioncall functionName="rawBlockSize"/>
+    <functioncall functionName="rbf_gamma"/>
+    <functioncall functionName="read"/>
+    <functioncall functionName="rectList"/>
+    <functioncall functionName="release"/>
+    <functioncall functionName="reshape"/>
+    <functioncall functionName="resize"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rho"/>
+    <functioncall functionName="roiofs"/>
+    <functioncall functionName="row"/>
+    <functioncall functionName="rows"/>
+    <functioncall functionName="rrects"/>
+    <functioncall functionName="run"/>
+    <functioncall functionName="s"/>
+    <functioncall functionName="saturate_cast"/>
+    <functioncall functionName="scale"/>
+    <functioncall functionName="scale0"/>
+    <functioncall functionName="scaled_win_size"/>
+    <functioncall functionName="scales"/>
+    <functioncall functionName="set"/>
+    <functioncall functionName="setSVMDetector"/>
+    <functioncall functionName="sigma"/>
+    <functioncall functionName="signedGradient"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="smallerImg"/>
+    <functioncall functionName="smallerImgBuf"/>
+    <functioncall functionName="smem"/>
+    <functioncall functionName="sqrt"/>
+    <functioncall functionName="src"/>
+    <functioncall functionName="start"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="step"/>
+    <functioncall functionName="step1"/>
+    <functioncall functionName="strcmp"/>
+    <functioncall functionName="stride"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="sum"/>
+    <functioncall functionName="sv_num"/>
+    <functioncall functionName="svmDetector"/>
+    <functioncall functionName="svmVec"/>
+    <functioncall functionName="swap"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="sz"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="t0"/>
+    <functioncall functionName="t1"/>
+    <functioncall functionName="tempScales"/>
+    <functioncall functionName="tempWeights"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="thresh"/>
+    <functioncall functionName="threshold"/>
+    <functioncall functionName="tl"/>
+    <functioncall functionName="total"/>
+    <functioncall functionName="totdoc"/>
+    <functioncall functionName="totwords"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="uchar"/>
+    <functioncall functionName="unlock"/>
+    <functioncall functionName="useCache"/>
+    <functioncall functionName="useMeanshiftGrouping"/>
+    <functioncall functionName="v_cvt_f32"/>
+    <functioncall functionName="v_float32x4"/>
+    <functioncall functionName="v_floor"/>
+    <functioncall functionName="v_load"/>
+    <functioncall functionName="v_max"/>
+    <functioncall functionName="v_min"/>
+    <functioncall functionName="v_pack"/>
+    <functioncall functionName="v_reinterpret_as_f32"/>
+    <functioncall functionName="v_reinterpret_as_s16"/>
+    <functioncall functionName="v_reinterpret_as_s32"/>
+    <functioncall functionName="v_reinterpret_as_u8"/>
+    <functioncall functionName="v_select"/>
+    <functioncall functionName="v_setall_f32"/>
+    <functioncall functionName="v_setall_s32"/>
+    <functioncall functionName="v_setzero_s32"/>
+    <functioncall functionName="v_sqrt"/>
+    <functioncall functionName="v_store"/>
+    <functioncall functionName="v_store_interleave"/>
+    <functioncall functionName="v_store_low"/>
+    <functioncall functionName="v_zip"/>
+    <functioncall functionName="vec"/>
+    <functioncall functionName="vector"/>
+    <functioncall functionName="version"/>
+    <functioncall functionName="version_buffer"/>
+    <functioncall functionName="w1"/>
+    <functioncall functionName="weights"/>
+    <functioncall functionName="weightsV"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="wholeSize"/>
+    <functioncall functionName="width"/>
+    <functioncall functionName="winSigma"/>
+    <functioncall functionName="winSize"/>
+    <functioncall functionName="winStride"/>
+    <functioncall functionName="win_block_stride_x"/>
+    <functioncall functionName="win_block_stride_y"/>
+    <functioncall functionName="win_stride"/>
+    <functioncall functionName="win_stride_x"/>
+    <functioncall functionName="win_stride_y"/>
+    <functioncall functionName="windowsInImage"/>
+    <functioncall functionName="write"/>
+    <functioncall functionName="x"/>
+    <functioncall functionName="x0"/>
+    <functioncall functionName="x1"/>
+    <functioncall functionName="x2"/>
+    <functioncall functionName="x3"/>
+    <functioncall functionName="y"/>
+  </FileInfo>
+</analyzerinfo>

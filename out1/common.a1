@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1393436693">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="getPath" lineNumber="27"/>
+    <functiondecl functionName="setPath" lineNumber="41"/>
+    <functiondecl functionName="toFilterString" lineNumber="47"/>
+    <functiondecl functionName="getDataDir" lineNumber="70"/>
+    <functioncall functionName="CaseInsensitive"/>
+    <functioncall functionName="QFileInfo"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QStringList"/>
+    <functioncall functionName="addAll"/>
+    <functioncall functionName="addAllSupported"/>
+    <functioncall functionName="applicationFilePath"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="canonicalPath"/>
+    <functioncall functionName="exists"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="homePath"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="indexOf"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="join"/>
+    <functioncall functionName="k"/>
+    <functioncall functionName="keys"/>
+    <functioncall functionName="left"/>
+    <functioncall functionName="setValue"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="translate"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="values"/>
+  </FileInfo>
+</analyzerinfo>

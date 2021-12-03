@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="92985956">
+        <error id="syntaxError" severity="error" msg="syntax error: &lt;)" verbose="syntax error: &lt;)" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/cfg/bsd.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\cfg\bsd.c" line="17" column="28"/>
+        </error>
+</analyzerinfo>

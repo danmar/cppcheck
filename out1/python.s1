@@ -1,0 +1,5 @@
+validCode call:[PyErr_NewException,PyMem_Free,PyMem_Malloc,PyMem_New,Py_CLEAR,Py_DECREF,Py_INCREF,Py_Initialize,Py_XDECREF,Py_XINCREF] noreturn:[PyMem_Free]
+nullPointer call:[Py_DECREF,Py_INCREF] noreturn:[Py_DECREF]
+PyMem_Malloc_memleak call:[PyMem_Malloc,printf] noreturn:[printf]
+PyMem_Malloc_mismatchAllocDealloc call:[PyMem_Malloc,free] noreturn:[free]
+PyMem_New_memleak call:[PyMem_New,printf] noreturn:[printf]

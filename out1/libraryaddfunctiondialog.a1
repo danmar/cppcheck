@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="189211644">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="functionName" lineNumber="21"/>
+    <functiondecl functionName="numberOfArguments" lineNumber="26"/>
+    <functioncall functionName="LibraryAddFunctionDialog"/>
+    <functioncall functionName="QDialog"/>
+    <functioncall functionName="QRegExpValidator"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="mUi"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="rx"/>
+    <functioncall functionName="setValidator"/>
+    <functioncall functionName="setupUi"/>
+    <functioncall functionName="text"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="validator"/>
+    <functioncall functionName="value"/>
+  </FileInfo>
+</analyzerinfo>

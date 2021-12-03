@@ -1,0 +1,5 @@
+VariableContractsDialog call:[QRegExp,QRegExpValidator,QString,getMinMax,indexOf,length,mid,setText,setValidator,setWindowTitle,setupUi] noreturn:[QString,mid,setValidator]
+VariableContractsDialog
+getVarname
+getMin call:[text] noreturn:[text]
+getMax call:[text] noreturn:[text]

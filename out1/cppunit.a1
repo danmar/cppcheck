@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2799574740">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="cppunit_assert_equal" lineNumber="11"/>
+    <functiondecl functionName="cppunit_throw" lineNumber="34"/>
+    <functiondecl functionName="cppunit_assertion_assert" lineNumber="42"/>
+    <functiondecl functionName="cppunit_assert_fail" lineNumber="50"/>
+    <functioncall functionName="CPPUNIT_ASSERT"/>
+    <functioncall functionName="CPPUNIT_ASSERT_ASSERTION_FAIL"/>
+    <functioncall functionName="CPPUNIT_ASSERT_ASSERTION_FAIL_MESSAGE"/>
+    <functioncall functionName="CPPUNIT_ASSERT_ASSERTION_PASS"/>
+    <functioncall functionName="CPPUNIT_ASSERT_ASSERTION_PASS_MESSAGE"/>
+    <functioncall functionName="CPPUNIT_ASSERT_DOUBLES_EQUAL"/>
+    <functioncall functionName="CPPUNIT_ASSERT_DOUBLES_EQUAL_MESSAGE"/>
+    <functioncall functionName="CPPUNIT_ASSERT_EQUAL"/>
+    <functioncall functionName="CPPUNIT_ASSERT_EQUAL_MESSAGE"/>
+    <functioncall functionName="CPPUNIT_ASSERT_MESSAGE"/>
+    <functioncall functionName="CPPUNIT_ASSERT_NO_THROW"/>
+    <functioncall functionName="CPPUNIT_ASSERT_NO_THROW_MESSAGE"/>
+    <functioncall functionName="CPPUNIT_ASSERT_THROW"/>
+    <functioncall functionName="CPPUNIT_ASSERT_THROW_MESSAGE"/>
+    <functioncall functionName="CPPUNIT_FAIL"/>
+    <functioncall functionName="Exception"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="y"/>
+  </FileInfo>
+</analyzerinfo>

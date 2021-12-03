@@ -1,0 +1,2 @@
+operator<< call:[isatty]
+toString call:[str] noreturn:[str]

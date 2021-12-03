@@ -1,0 +1,75 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1902432658">
+  <FileInfo check="Class">
+<class name="FileList" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/filelist.h" line="37" col="1" hash="15888342818960605938"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="FileList" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/filelist.h" line="37" col="1" hash="10602032859516378005"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="getDefaultFilters" lineNumber="24"/>
+    <functiondecl functionName="filterMatches" lineNumber="31"/>
+    <functiondecl functionName="addFile" lineNumber="43"/>
+    <functiondecl functionName="addDirectory" lineNumber="50"/>
+    <functiondecl functionName="addPathList" lineNumber="77"/>
+    <functiondecl functionName="getFileList" lineNumber="89"/>
+    <functiondecl functionName="addExcludeList" lineNumber="103"/>
+    <functiondecl functionName="toStdStringList" lineNumber="108"/>
+    <functiondecl functionName="applyExcludeList" lineNumber="117"/>
+    <functiondecl functionName="getDefaultFilters" lineNumber="24"/>
+    <functiondecl functionName="filterMatches" lineNumber="31"/>
+    <functiondecl functionName="addFile" lineNumber="43"/>
+    <functiondecl functionName="addDirectory" lineNumber="50"/>
+    <functiondecl functionName="addPathList" lineNumber="77"/>
+    <functiondecl functionName="getFileList" lineNumber="89"/>
+    <functiondecl functionName="addExcludeList" lineNumber="103"/>
+    <functiondecl functionName="toStdStringList" lineNumber="108"/>
+    <functiondecl functionName="applyExcludeList" lineNumber="117"/>
+    <functioncall functionName="CaseInsensitive"/>
+    <functioncall functionName="Name"/>
+    <functioncall functionName="NoDotAndDotDot"/>
+    <functioncall functionName="addDirectory"/>
+    <functioncall functionName="addFile"/>
+    <functioncall functionName="applyExcludeList"/>
+    <functioncall functionName="canonicalFilePath"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="contains"/>
+    <functioncall functionName="dir"/>
+    <functioncall functionName="directory"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="entryInfoList"/>
+    <functioncall functionName="ext"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="filePath"/>
+    <functioncall functionName="filepath"/>
+    <functioncall functionName="filterMatches"/>
+    <functioncall functionName="filters"/>
+    <functioncall functionName="foreach"/>
+    <functioncall functionName="fromNativeSeparators"/>
+    <functioncall functionName="getDefaultFilters"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inf"/>
+    <functioncall functionName="isFile"/>
+    <functioncall functionName="item"/>
+    <functioncall functionName="list"/>
+    <functioncall functionName="mExcludedPaths"/>
+    <functioncall functionName="mFileList"/>
+    <functioncall functionName="match"/>
+    <functioncall functionName="nameFilters"/>
+    <functioncall functionName="origNameFilters"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="pathMatch"/>
+    <functioncall functionName="paths"/>
+    <functioncall functionName="push_back"/>
+    <functioncall functionName="recursive"/>
+    <functioncall functionName="setFilter"/>
+    <functioncall functionName="setNameFilters"/>
+    <functioncall functionName="setSorting"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="stringList"/>
+    <functioncall functionName="suffix"/>
+    <functioncall functionName="toStdString"/>
+    <functioncall functionName="toStdStringList"/>
+    <functioncall functionName="true"/>
+  </FileInfo>
+</analyzerinfo>

@@ -1,0 +1,1004 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="4032700994">
+        <error id="missingOverride" severity="style" msg="The function &apos;addResults&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;addResults&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\timer.h" line="62" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\timer.h" line="40" column="18" info="Virtual function in base class"/>
+            <symbol>addResults</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testutils.h" line="57" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="264" column="18" info="Virtual function in base class"/>
+            <symbol>reportErr</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="106" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="286" column="18" info="Virtual function in base class"/>
+            <symbol>bughuntingReport</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="107" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="256" column="18" info="Virtual function in base class"/>
+            <symbol>reportOut</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="108" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="264" column="18" info="Virtual function in base class"/>
+            <symbol>reportErr</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;run&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;run&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testutils.cpp" line="30" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="51" column="18" info="Virtual function in base class"/>
+            <symbol>run</symbol>
+        </error>
+        <error id="useStlAlgorithm" severity="style" msg="Consider using std::any_of algorithm instead of a raw loop." verbose="Consider using std::any_of algorithm instead of a raw loop." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\utils.h" line="102" column="0"/>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:1274:10" call-funcname="setFlag" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="479" col="16" call-argexpr="b" call-argvaluetype="0" call-argvalue="0">
+  <path file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\token.h" line="827" col="28" info="Calling function &apos;isStandardType&apos;, 1st argument &apos;false&apos; value is 0"/>
+</function-call><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:729:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="748" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="826" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:478:10" call-funcname="isStandardType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="827" col="27" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="1007" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="31" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="41" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="42" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="43" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="50" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="51" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="52" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="61" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="65" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="66" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="67" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="371" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:370:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="379" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:378:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="384" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:383:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="392" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:391:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="407" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:406:41" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="414" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:413:49" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:276:17" call-funcname="simpleMatch" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="273" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:272:17" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:727:25" call-funcname="findsimplematch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="744" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:743:19" my-argnr="4"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:750:19" my-argnr="3"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="Standards" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/standards.h" line="34" col="1" hash="17043851307251082023"/>
+<class name="Library::Error" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="59" col="5" hash="12286307183496921675"/>
+<class name="Library::AllocFunc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="75" col="5" hash="10775169490966942164"/>
+<class name="Library::NonOverlappingData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="171" col="5" hash="10150418528887826577"/>
+<class name="Library::WarnInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="179" col="5" hash="11288615153331524748"/>
+<class name="Library::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="245" col="9" hash="15300938604767074657"/>
+<class name="Library::ArgumentChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="282" col="5" hash="12750571595020437426"/>
+<class name="Library::ArgumentChecks::IteratorInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="304" col="9" hash="5808938552945039590"/>
+<class name="Library::ArgumentChecks::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="315" col="9" hash="7462947863318927415"/>
+<class name="Library::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="335" col="5" hash="10946023400099646984"/>
+<class name="Library::InvalidArgValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="396" col="5" hash="3434550972527386128"/>
+<class name="Library::SmartPointer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="473" col="5" hash="8397110513034780634"/>
+<class name="Library::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="482" col="5" hash="3603579986792226113"/>
+<class name="Library::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="492" col="5" hash="10212310188441517679"/>
+<class name="Library::Platform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="521" col="5" hash="4619885331303444484"/>
+<class name="Library::ExportedFunctions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="558" col="5" hash="5594972995536624256"/>
+<class name="Library::CodeBlock" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="577" col="5" hash="17600443670251453574"/>
+<class name="TimerResultsData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.h" line="43" col="1" hash="7257645589623825125"/>
+<class name="Settings::VariableContracts" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="204" col="5" hash="16671245001190282098"/>
+<class name="Settings::Rule" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="272" col="5" hash="13320214295678024590"/>
+<class name="Settings::SafeChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="293" col="5" hash="10269175182482100614"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="TokensFrontBack" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="52" col="1" hash="17620348941246977134"/>
+<class name="ScopeInfo2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="58" col="1" hash="15052730997986221754"/>
+<class name="TokenImpl::CppcheckAttributes" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="114" col="5" hash="2601846839105023242"/>
+<class name="Token::stringifyOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="874" col="5" hash="4923686271509485484"/>
+<class name="Tokenizer::TypedefInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/tokenize.h" line="990" col="5" hash="5721776847729191833"/>
+<class name="givenACodeSampleToTokenize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="29" col="1" hash="15749296020712351752"/>
+<class name="SimpleSuppressor" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="50" col="1" hash="11093573676905489618"/>
+<class name="TestUtils" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="25" col="1" hash="1402818536930178559"/>
+<class name="SimpleEnableGroup &lt; Severity :: SeverityType &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="14669890690904262479"/>
+<class name="SimpleEnableGroup &lt; Certainty :: CertaintyLevel &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="13133107653432228683"/>
+<class name="SimpleEnableGroup &lt; Checks :: CheckList &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="17560988328030008378"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:581:14" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="582" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:584:14" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="585" col="20" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:1274:10" call-funcname="setFlag" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="479" col="16" call-argexpr="b" call-argvaluetype="0" call-argvalue="0">
+  <path file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\token.h" line="827" col="28" info="Calling function &apos;isStandardType&apos;, 1st argument &apos;false&apos; value is 0"/>
+</function-call><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:729:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="748" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="826" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:478:10" call-funcname="isStandardType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="827" col="27" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="1007" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="31" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="41" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="42" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="43" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="50" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="51" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="52" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="61" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="65" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="66" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="67" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="371" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:370:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="379" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:378:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="384" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:383:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="392" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:391:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="407" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:406:41" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="414" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:413:49" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:276:17" call-funcname="simpleMatch" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="273" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:272:17" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:727:25" call-funcname="findsimplematch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="744" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:743:19" my-argnr="4"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:750:19" my-argnr="3"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="Standards" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/standards.h" line="34" col="1" hash="17043851307251082023"/>
+<class name="Library::Error" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="59" col="5" hash="12286307183496921675"/>
+<class name="Library::AllocFunc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="75" col="5" hash="10775169490966942164"/>
+<class name="Library::NonOverlappingData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="171" col="5" hash="10150418528887826577"/>
+<class name="Library::WarnInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="179" col="5" hash="11288615153331524748"/>
+<class name="Library::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="245" col="9" hash="15300938604767074657"/>
+<class name="Library::ArgumentChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="282" col="5" hash="12750571595020437426"/>
+<class name="Library::ArgumentChecks::IteratorInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="304" col="9" hash="5808938552945039590"/>
+<class name="Library::ArgumentChecks::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="315" col="9" hash="7462947863318927415"/>
+<class name="Library::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="335" col="5" hash="10946023400099646984"/>
+<class name="Library::InvalidArgValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="396" col="5" hash="3434550972527386128"/>
+<class name="Library::SmartPointer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="473" col="5" hash="8397110513034780634"/>
+<class name="Library::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="482" col="5" hash="3603579986792226113"/>
+<class name="Library::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="492" col="5" hash="10212310188441517679"/>
+<class name="Library::Platform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="521" col="5" hash="4619885331303444484"/>
+<class name="Library::ExportedFunctions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="558" col="5" hash="5594972995536624256"/>
+<class name="Library::CodeBlock" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="577" col="5" hash="17600443670251453574"/>
+<class name="TimerResultsData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.h" line="43" col="1" hash="7257645589623825125"/>
+<class name="Settings::VariableContracts" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="204" col="5" hash="16671245001190282098"/>
+<class name="Settings::Rule" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="272" col="5" hash="13320214295678024590"/>
+<class name="Settings::SafeChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="293" col="5" hash="10269175182482100614"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="TokensFrontBack" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="52" col="1" hash="17620348941246977134"/>
+<class name="ScopeInfo2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="58" col="1" hash="15052730997986221754"/>
+<class name="TokenImpl::CppcheckAttributes" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="114" col="5" hash="2601846839105023242"/>
+<class name="Token::stringifyOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="874" col="5" hash="4923686271509485484"/>
+<class name="Tokenizer::TypedefInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/tokenize.h" line="990" col="5" hash="5721776847729191833"/>
+<class name="givenACodeSampleToTokenize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="29" col="1" hash="15749296020712351752"/>
+<class name="SimpleSuppressor" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="50" col="1" hash="11093573676905489618"/>
+<class name="TestUtils" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="25" col="1" hash="1402818536930178559"/>
+<class name="SimpleEnableGroup &lt; Severity :: SeverityType &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="14669890690904262479"/>
+<class name="SimpleEnableGroup &lt; Certainty :: CertaintyLevel &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="13133107653432228683"/>
+<class name="SimpleEnableGroup &lt; Checks :: CheckList &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="17560988328030008378"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:581:14" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="582" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:584:14" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="585" col="20" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:1274:10" call-funcname="setFlag" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="479" col="16" call-argexpr="b" call-argvaluetype="0" call-argvalue="0">
+  <path file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\token.h" line="827" col="28" info="Calling function &apos;isStandardType&apos;, 1st argument &apos;false&apos; value is 0"/>
+</function-call><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:729:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="748" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="826" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:478:10" call-funcname="isStandardType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="827" col="27" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="1007" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="31" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="41" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="42" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="43" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="50" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="51" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="52" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="61" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="65" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="66" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="67" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="371" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:370:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="379" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:378:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="384" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:383:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="392" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:391:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="407" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:406:41" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="414" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:413:49" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:276:17" call-funcname="simpleMatch" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="273" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:272:17" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:727:25" call-funcname="findsimplematch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="744" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:743:19" my-argnr="4"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:750:19" my-argnr="3"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="Standards" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/standards.h" line="34" col="1" hash="17043851307251082023"/>
+<class name="Library::Error" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="59" col="5" hash="12286307183496921675"/>
+<class name="Library::AllocFunc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="75" col="5" hash="10775169490966942164"/>
+<class name="Library::NonOverlappingData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="171" col="5" hash="10150418528887826577"/>
+<class name="Library::WarnInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="179" col="5" hash="11288615153331524748"/>
+<class name="Library::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="245" col="9" hash="15300938604767074657"/>
+<class name="Library::ArgumentChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="282" col="5" hash="12750571595020437426"/>
+<class name="Library::ArgumentChecks::IteratorInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="304" col="9" hash="5808938552945039590"/>
+<class name="Library::ArgumentChecks::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="315" col="9" hash="7462947863318927415"/>
+<class name="Library::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="335" col="5" hash="10946023400099646984"/>
+<class name="Library::InvalidArgValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="396" col="5" hash="3434550972527386128"/>
+<class name="Library::SmartPointer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="473" col="5" hash="8397110513034780634"/>
+<class name="Library::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="482" col="5" hash="3603579986792226113"/>
+<class name="Library::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="492" col="5" hash="10212310188441517679"/>
+<class name="Library::Platform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="521" col="5" hash="4619885331303444484"/>
+<class name="Library::ExportedFunctions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="558" col="5" hash="5594972995536624256"/>
+<class name="Library::CodeBlock" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="577" col="5" hash="17600443670251453574"/>
+<class name="TimerResultsData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.h" line="43" col="1" hash="7257645589623825125"/>
+<class name="Settings::VariableContracts" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="204" col="5" hash="16671245001190282098"/>
+<class name="Settings::Rule" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="272" col="5" hash="13320214295678024590"/>
+<class name="Settings::SafeChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="293" col="5" hash="10269175182482100614"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="TokensFrontBack" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="52" col="1" hash="17620348941246977134"/>
+<class name="ScopeInfo2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="58" col="1" hash="15052730997986221754"/>
+<class name="TokenImpl::CppcheckAttributes" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="114" col="5" hash="2601846839105023242"/>
+<class name="Token::stringifyOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="874" col="5" hash="4923686271509485484"/>
+<class name="Tokenizer::TypedefInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/tokenize.h" line="990" col="5" hash="5721776847729191833"/>
+<class name="givenACodeSampleToTokenize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="29" col="1" hash="15749296020712351752"/>
+<class name="SimpleSuppressor" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="50" col="1" hash="11093573676905489618"/>
+<class name="TestUtils" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="25" col="1" hash="1402818536930178559"/>
+<class name="SimpleEnableGroup &lt; Severity :: SeverityType &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="14669890690904262479"/>
+<class name="SimpleEnableGroup &lt; Certainty :: CertaintyLevel &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="13133107653432228683"/>
+<class name="SimpleEnableGroup &lt; Checks :: CheckList &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="17560988328030008378"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:581:14" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="582" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:584:14" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="585" col="20" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:1274:10" call-funcname="setFlag" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="479" col="16" call-argexpr="b" call-argvaluetype="0" call-argvalue="0">
+  <path file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\token.h" line="827" col="28" info="Calling function &apos;isStandardType&apos;, 1st argument &apos;false&apos; value is 0"/>
+</function-call><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:729:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="748" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="826" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:478:10" call-funcname="isStandardType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="827" col="27" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="1007" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="31" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="41" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="42" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="43" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="50" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="51" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="52" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="61" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="65" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="66" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="67" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="371" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:370:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="379" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:378:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="384" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:383:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="392" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:391:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="407" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:406:41" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="414" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:413:49" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:276:17" call-funcname="simpleMatch" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="273" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:272:17" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:727:25" call-funcname="findsimplematch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="744" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:743:19" my-argnr="4"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:750:19" my-argnr="3"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="Standards" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/standards.h" line="34" col="1" hash="17043851307251082023"/>
+<class name="Library::Error" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="59" col="5" hash="12286307183496921675"/>
+<class name="Library::AllocFunc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="75" col="5" hash="10775169490966942164"/>
+<class name="Library::NonOverlappingData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="171" col="5" hash="10150418528887826577"/>
+<class name="Library::WarnInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="179" col="5" hash="11288615153331524748"/>
+<class name="Library::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="245" col="9" hash="15300938604767074657"/>
+<class name="Library::ArgumentChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="282" col="5" hash="12750571595020437426"/>
+<class name="Library::ArgumentChecks::IteratorInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="304" col="9" hash="5808938552945039590"/>
+<class name="Library::ArgumentChecks::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="315" col="9" hash="7462947863318927415"/>
+<class name="Library::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="335" col="5" hash="10946023400099646984"/>
+<class name="Library::InvalidArgValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="396" col="5" hash="3434550972527386128"/>
+<class name="Library::SmartPointer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="473" col="5" hash="8397110513034780634"/>
+<class name="Library::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="482" col="5" hash="3603579986792226113"/>
+<class name="Library::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="492" col="5" hash="10212310188441517679"/>
+<class name="Library::Platform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="521" col="5" hash="4619885331303444484"/>
+<class name="Library::ExportedFunctions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="558" col="5" hash="5594972995536624256"/>
+<class name="Library::CodeBlock" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="577" col="5" hash="17600443670251453574"/>
+<class name="TimerResultsData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.h" line="43" col="1" hash="7257645589623825125"/>
+<class name="Settings::VariableContracts" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="204" col="5" hash="16671245001190282098"/>
+<class name="Settings::Rule" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="272" col="5" hash="13320214295678024590"/>
+<class name="Settings::SafeChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="293" col="5" hash="10269175182482100614"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="TokensFrontBack" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="52" col="1" hash="17620348941246977134"/>
+<class name="ScopeInfo2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="58" col="1" hash="15052730997986221754"/>
+<class name="TokenImpl::CppcheckAttributes" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="114" col="5" hash="2601846839105023242"/>
+<class name="Token::stringifyOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="874" col="5" hash="4923686271509485484"/>
+<class name="Tokenizer::TypedefInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/tokenize.h" line="990" col="5" hash="5721776847729191833"/>
+<class name="givenACodeSampleToTokenize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="29" col="1" hash="15749296020712351752"/>
+<class name="SimpleSuppressor" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="50" col="1" hash="10382569218832188466"/>
+<class name="TestUtils" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="25" col="1" hash="7187625173368500855"/>
+<class name="SimpleEnableGroup &lt; Severity :: SeverityType &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="14669890690904262479"/>
+<class name="SimpleEnableGroup &lt; Certainty :: CertaintyLevel &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="13133107653432228683"/>
+<class name="SimpleEnableGroup &lt; Checks :: CheckList &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="17560988328030008378"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:581:14" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="582" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:584:14" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="585" col="20" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:1274:10" call-funcname="setFlag" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="479" col="16" call-argexpr="b" call-argvaluetype="0" call-argvalue="0">
+  <path file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\token.h" line="827" col="28" info="Calling function &apos;isStandardType&apos;, 1st argument &apos;false&apos; value is 0"/>
+</function-call><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:729:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="748" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="45" call-argexpr="varId" call-argvaluetype="0" call-argvalue="0" warning="true"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="826" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:478:10" call-funcname="isStandardType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="827" col="27" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:376:10" call-funcname="tokType" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="1007" col="20" call-argexpr="eVariable" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="31" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:95:10" call-funcname="setVerbose" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="32" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="41" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="42" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="43" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="50" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="51" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="52" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="61" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="65" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="66" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" call-funcname="assertEquals" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="67" col="9" call-argexpr="false" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="371" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:370:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="379" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:378:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="384" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:383:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="392" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:391:24" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="407" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:406:41" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:637:28" call-funcname="getarg" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="414" col="37" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:413:49" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:276:17" call-funcname="simpleMatch" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="273" col="16" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:272:17" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:727:25" call-funcname="findsimplematch" call-argnr="4" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="744" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:743:19" my-argnr="4"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:730:25" call-funcname="findmatch" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="751" col="36" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h:750:19" my-argnr="3"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+<class name="Standards" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/standards.h" line="34" col="1" hash="17043851307251082023"/>
+<class name="Library::Error" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="59" col="5" hash="12286307183496921675"/>
+<class name="Library::AllocFunc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="75" col="5" hash="10775169490966942164"/>
+<class name="Library::NonOverlappingData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="171" col="5" hash="10150418528887826577"/>
+<class name="Library::WarnInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="179" col="5" hash="11288615153331524748"/>
+<class name="Library::Container::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="245" col="9" hash="15300938604767074657"/>
+<class name="Library::ArgumentChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="282" col="5" hash="12750571595020437426"/>
+<class name="Library::ArgumentChecks::IteratorInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="304" col="9" hash="5808938552945039590"/>
+<class name="Library::ArgumentChecks::MinSize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="315" col="9" hash="7462947863318927415"/>
+<class name="Library::Function" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="335" col="5" hash="10946023400099646984"/>
+<class name="Library::InvalidArgValue" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="396" col="5" hash="3434550972527386128"/>
+<class name="Library::SmartPointer" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="473" col="5" hash="8397110513034780634"/>
+<class name="Library::PodType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="482" col="5" hash="3603579986792226113"/>
+<class name="Library::PlatformType" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="492" col="5" hash="10212310188441517679"/>
+<class name="Library::Platform" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="521" col="5" hash="4619885331303444484"/>
+<class name="Library::ExportedFunctions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="558" col="5" hash="5594972995536624256"/>
+<class name="Library::CodeBlock" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="577" col="5" hash="17600443670251453574"/>
+<class name="TimerResultsData" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/timer.h" line="43" col="1" hash="7257645589623825125"/>
+<class name="Settings::VariableContracts" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="204" col="5" hash="16671245001190282098"/>
+<class name="Settings::Rule" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="272" col="5" hash="13320214295678024590"/>
+<class name="Settings::SafeChecks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="293" col="5" hash="10269175182482100614"/>
+<class name="ReferenceToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="158" col="1" hash="18367821150477013183"/>
+<class name="FwdAnalysis::KnownAndToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="363" col="5" hash="13253569295172965350"/>
+<class name="FwdAnalysis::Result" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/astutils.h" line="378" col="5" hash="17194492263868569833"/>
+<class name="LifetimeToken" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/valueflow.h" line="460" col="1" hash="455822235091759252"/>
+<class name="TokensFrontBack" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="52" col="1" hash="17620348941246977134"/>
+<class name="ScopeInfo2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="58" col="1" hash="15052730997986221754"/>
+<class name="TokenImpl::CppcheckAttributes" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="114" col="5" hash="2601846839105023242"/>
+<class name="Token::stringifyOptions" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/token.h" line="874" col="5" hash="4923686271509485484"/>
+<class name="Tokenizer::TypedefInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/tokenize.h" line="990" col="5" hash="5721776847729191833"/>
+<class name="givenACodeSampleToTokenize" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="29" col="1" hash="15749296020712351752"/>
+<class name="SimpleSuppressor" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.h" line="50" col="1" hash="10382569218832188466"/>
+<class name="TestUtils" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testutils.cpp" line="25" col="1" hash="7187625173368500855"/>
+<class name="SimpleEnableGroup &lt; Severity :: SeverityType &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="14669890690904262479"/>
+<class name="SimpleEnableGroup &lt; Certainty :: CertaintyLevel &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="13133107653432228683"/>
+<class name="SimpleEnableGroup &lt; Checks :: CheckList &gt;" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/settings.h" line="48" col="1" hash="17560988328030008378"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:581:14" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="582" col="22" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:584:14" my-argnr="1" my-argname="e" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="585" col="20" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:154:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="155" col="18" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h:162:17" my-argnr="1" my-argname="func" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/library.h" line="163" col="18" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="run" lineNumber="30"/>
+    <functiondecl functionName="isValidGlobPattern" lineNumber="35"/>
+    <functiondecl functionName="matchglob" lineNumber="55"/>
+    <functiondecl functionName="run" lineNumber="30"/>
+    <functiondecl functionName="isValidGlobPattern" lineNumber="35"/>
+    <functiondecl functionName="matchglob" lineNumber="55"/>
+    <functiondecl functionName="run" lineNumber="30"/>
+    <functiondecl functionName="isValidGlobPattern" lineNumber="35"/>
+    <functiondecl functionName="matchglob" lineNumber="55"/>
+    <functiondecl functionName="run" lineNumber="30"/>
+    <functiondecl functionName="isValidGlobPattern" lineNumber="35"/>
+    <functiondecl functionName="matchglob" lineNumber="55"/>
+    <functiondecl functionName="run" lineNumber="30"/>
+    <functiondecl functionName="isValidGlobPattern" lineNumber="35"/>
+    <functiondecl functionName="matchglob" lineNumber="55"/>
+    <functioncall functionName="ARGVALUE"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="AT_INDEX"/>
+    <functioncall functionName="Address"/>
+    <functioncall functionName="AllocFunc"/>
+    <functioncall functionName="Argument"/>
+    <functioncall functionName="ArgumentChecks"/>
+    <functioncall functionName="BAD_ATTRIBUTE_VALUE"/>
+    <functioncall functionName="BAD_XML"/>
+    <functioncall functionName="BAILOUT"/>
+    <functioncall functionName="BORLAND"/>
+    <functioncall functionName="BREAK"/>
+    <functioncall functionName="BUFFER"/>
+    <functioncall functionName="BUFFER_NT"/>
+    <functioncall functionName="BUFFER_SIZE"/>
+    <functioncall functionName="C"/>
+    <functioncall functionName="C11"/>
+    <functioncall functionName="C89"/>
+    <functioncall functionName="C99"/>
+    <functioncall functionName="CHANGE"/>
+    <functioncall functionName="CHANGE_CONTENT"/>
+    <functioncall functionName="CHANGE_INTERNAL"/>
+    <functioncall functionName="CLEAR"/>
+    <functioncall functionName="CLOCKS_PER_SEC"/>
+    <functioncall functionName="COMPILE_DB"/>
+    <functioncall functionName="CONTAINER_SIZE"/>
+    <functioncall functionName="CPP"/>
+    <functioncall functionName="CPP03"/>
+    <functioncall functionName="CPP11"/>
+    <functioncall functionName="CPP11INIT"/>
+    <functioncall functionName="CPP14"/>
+    <functioncall functionName="CPP17"/>
+    <functioncall functionName="CPP20"/>
+    <functioncall functionName="CPPCHECK_GUI"/>
+    <functioncall functionName="CPPLatest"/>
+    <functioncall functionName="ChildrenToVisit"/>
+    <functioncall functionName="CodeBlock"/>
+    <functioncall functionName="Container"/>
+    <functioncall functionName="DEFAULT"/>
+    <functioncall functionName="DIR_IN"/>
+    <functioncall functionName="DIR_INOUT"/>
+    <functioncall functionName="DIR_OUT"/>
+    <functioncall functionName="DIR_UNKNOWN"/>
+    <functioncall functionName="DUPLICATE_PLATFORM_TYPE"/>
+    <functioncall functionName="EMPTY"/>
+    <functioncall functionName="END_ITERATOR"/>
+    <functioncall functionName="ERASE"/>
+    <functioncall functionName="ERROR_CODE"/>
+    <functioncall functionName="ErrorMessage"/>
+    <functioncall functionName="ExportedFunctions"/>
+    <functioncall functionName="FILE_NOT_FOUND"/>
+    <functioncall functionName="FIND"/>
+    <functioncall functionName="False"/>
+    <functioncall functionName="FalseTrueMaybe"/>
+    <functioncall functionName="FileLocation"/>
+    <functioncall functionName="FileSettings"/>
+    <functioncall functionName="ForwardedVariable"/>
+    <functioncall functionName="Function"/>
+    <functioncall functionName="HIGH"/>
+    <functioncall functionName="INSERT"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INT"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="ITEM"/>
+    <functioncall functionName="ITERATOR"/>
+    <functioncall functionName="ITERATOR_END"/>
+    <functioncall functionName="ITERATOR_START"/>
+    <functioncall functionName="ImportProject"/>
+    <functioncall functionName="Impossible"/>
+    <functioncall functionName="Inconclusive"/>
+    <functioncall functionName="InferModel"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="InvalidArgValue"/>
+    <functioncall functionName="Iterator"/>
+    <functioncall functionName="Known"/>
+    <functioncall functionName="KnownAndToken"/>
+    <functioncall functionName="LIFETIME"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="LOW"/>
+    <functioncall functionName="Lambda"/>
+    <functioncall functionName="LifetimeToken"/>
+    <functioncall functionName="Local"/>
+    <functioncall functionName="Lower"/>
+    <functioncall functionName="MISSING"/>
+    <functioncall functionName="MISSING_ATTRIBUTE"/>
+    <functioncall functionName="MOVED"/>
+    <functioncall functionName="MUL"/>
+    <functioncall functionName="Match"/>
+    <functioncall functionName="Maybe"/>
+    <functioncall functionName="MinSize"/>
+    <functioncall functionName="MovedVariable"/>
+    <functioncall functionName="N"/>
+    <functioncall functionName="NO"/>
+    <functioncall functionName="NOINIT"/>
+    <functioncall functionName="NONE"/>
+    <functioncall functionName="NO_ACTION"/>
+    <functioncall functionName="NO_LINE"/>
+    <functioncall functionName="NO_YIELD"/>
+    <functioncall functionName="Native"/>
+    <functioncall functionName="NonMovedVariable"/>
+    <functioncall functionName="NonOverlappingData"/>
+    <functioncall functionName="None"/>
+    <functioncall functionName="OK"/>
+    <functioncall functionName="Object"/>
+    <functioncall functionName="PLATFORM_TYPE_REDEFINED"/>
+    <functioncall functionName="POP"/>
+    <functioncall functionName="PUSH"/>
+    <functioncall functionName="Platform"/>
+    <functioncall functionName="PlatformFile"/>
+    <functioncall functionName="PlatformType"/>
+    <functioncall functionName="PodType"/>
+    <functioncall functionName="Point"/>
+    <functioncall functionName="Possible"/>
+    <functioncall functionName="READ"/>
+    <functioncall functionName="RESIZE"/>
+    <functioncall functionName="RETURN"/>
+    <functioncall functionName="Reassign"/>
+    <functioncall functionName="ReferenceToken"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="Result"/>
+    <functioncall functionName="Rule"/>
+    <functioncall functionName="SHOWTIME_FILE"/>
+    <functioncall functionName="SHOWTIME_SUMMARY"/>
+    <functioncall functionName="SHOWTIME_TOP5"/>
+    <functioncall functionName="SIZE"/>
+    <functioncall functionName="SIZEOF"/>
+    <functioncall functionName="START_ITERATOR"/>
+    <functioncall functionName="STRLEN"/>
+    <functioncall functionName="SYMBOLIC"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="ScopeInfo2"/>
+    <functioncall functionName="SmartPointer"/>
+    <functioncall functionName="Standards"/>
+    <functioncall functionName="SubFunction"/>
+    <functioncall functionName="SubObject"/>
+    <functioncall functionName="Suppression"/>
+    <functioncall functionName="T"/>
+    <functioncall functionName="TOK"/>
+    <functioncall functionName="TestFixture"/>
+    <functioncall functionName="TimerResultsData"/>
+    <functioncall functionName="Token"/>
+    <functioncall functionName="TokenAndName"/>
+    <functioncall functionName="TokenImpl"/>
+    <functioncall functionName="Tokenizer"/>
+    <functioncall functionName="True"/>
+    <functioncall functionName="TypeCheck"/>
+    <functioncall functionName="TypedefInfo"/>
+    <functioncall functionName="UNINIT"/>
+    <functioncall functionName="UNKNOWN"/>
+    <functioncall functionName="UNKNOWN_ELEMENT"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="UNSUPPORTED_FORMAT"/>
+    <functioncall functionName="Unix32"/>
+    <functioncall functionName="Unix64"/>
+    <functioncall functionName="Unspecified"/>
+    <functioncall functionName="UnusedValue"/>
+    <functioncall functionName="Upper"/>
+    <functioncall functionName="VALUE"/>
+    <functioncall functionName="VS_SLN"/>
+    <functioncall functionName="VS_VCXPROJ"/>
+    <functioncall functionName="Value"/>
+    <functioncall functionName="ValueFlow"/>
+    <functioncall functionName="VariableContracts"/>
+    <functioncall functionName="WRITE"/>
+    <functioncall functionName="WarnInfo"/>
+    <functioncall functionName="Win32A"/>
+    <functioncall functionName="Win32W"/>
+    <functioncall functionName="Win64"/>
+    <functioncall functionName="_1"/>
+    <functioncall functionName="a"/>
+    <functioncall functionName="abs"/>
+    <functioncall functionName="ac"/>
+    <functioncall functionName="action"/>
+    <functioncall functionName="addressOf"/>
+    <functioncall functionName="arg"/>
+    <functioncall functionName="arg2"/>
+    <functioncall functionName="argnr"/>
+    <functioncall functionName="arrayLike_indexOp"/>
+    <functioncall functionName="assert"/>
+    <functioncall functionName="assertEquals"/>
+    <functioncall functionName="assertEqualsFailed"/>
+    <functioncall functionName="astOperand1"/>
+    <functioncall functionName="astOperand2"/>
+    <functioncall functionName="astParent"/>
+    <functioncall functionName="astString"/>
+    <functioncall functionName="b"/>
+    <functioncall functionName="back"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="bind"/>
+    <functioncall functionName="blockName"/>
+    <functioncall functionName="bodyEnd"/>
+    <functioncall functionName="bodyEnd_"/>
+    <functioncall functionName="bool"/>
+    <functioncall functionName="bound"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="c"/>
+    <functioncall functionName="calloc"/>
+    <functioncall functionName="caseInsensitiveStringCompare"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="char_bit"/>
+    <functioncall functionName="check"/>
+    <functioncall functionName="class"/>
+    <functioncall functionName="classes"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="column"/>
+    <functioncall functionName="compare"/>
+    <functioncall functionName="condition"/>
+    <functioncall functionName="conditional"/>
+    <functioncall functionName="configExcludePath"/>
+    <functioncall functionName="configExcludePaths"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="const_cast"/>
+    <functioncall functionName="container"/>
+    <functioncall functionName="containerAction"/>
+    <functioncall functionName="containerYield"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="cpp"/>
+    <functioncall functionName="createOnly"/>
+    <functioncall functionName="createTokens"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="decreaseRange"/>
+    <functioncall functionName="def"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="defaultArg"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="direction"/>
+    <functioncall functionName="disable"/>
+    <functioncall functionName="done"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="e"/>
+    <functioncall functionName="eArithmeticalOp"/>
+    <functioncall functionName="eAssignmentOp"/>
+    <functioncall functionName="eBitOp"/>
+    <functioncall functionName="eBoolean"/>
+    <functioncall functionName="eBracket"/>
+    <functioncall functionName="eChar"/>
+    <functioncall functionName="eComparisonOp"/>
+    <functioncall functionName="eEllipsis"/>
+    <functioncall functionName="eEnumerator"/>
+    <functioncall functionName="eExtendedOp"/>
+    <functioncall functionName="eFunction"/>
+    <functioncall functionName="eIncDecOp"/>
+    <functioncall functionName="eKeyword"/>
+    <functioncall functionName="eLambda"/>
+    <functioncall functionName="eLiteral"/>
+    <functioncall functionName="eLogicalOp"/>
+    <functioncall functionName="eName"/>
+    <functioncall functionName="eNone"/>
+    <functioncall functionName="eNumber"/>
+    <functioncall functionName="eOther"/>
+    <functioncall functionName="eString"/>
+    <functioncall functionName="eType"/>
+    <functioncall functionName="eVariable"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="emptyString"/>
+    <functioncall functionName="enable"/>
+    <functioncall functionName="enabled"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endlen"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="eq"/>
+    <functioncall functionName="equalValue"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorId"/>
+    <functioncall functionName="errorPath"/>
+    <functioncall functionName="errorcode"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="externalFunctions"/>
+    <functioncall functionName="externalVariables"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="fAtAddress"/>
+    <functioncall functionName="fConstexpr"/>
+    <functioncall functionName="fExternC"/>
+    <functioncall functionName="fIncompleteVar"/>
+    <functioncall functionName="fIsAlias"/>
+    <functioncall functionName="fIsAttributeConst"/>
+    <functioncall functionName="fIsAttributeConstructor"/>
+    <functioncall functionName="fIsAttributeDestructor"/>
+    <functioncall functionName="fIsAttributeMaybeUnused"/>
+    <functioncall functionName="fIsAttributeNodiscard"/>
+    <functioncall functionName="fIsAttributeNoreturn"/>
+    <functioncall functionName="fIsAttributeNothrow"/>
+    <functioncall functionName="fIsAttributePacked"/>
+    <functioncall functionName="fIsAttributePure"/>
+    <functioncall functionName="fIsAttributeUnused"/>
+    <functioncall functionName="fIsAttributeUsed"/>
+    <functioncall functionName="fIsCast"/>
+    <functioncall functionName="fIsClass"/>
+    <functioncall functionName="fIsComplex"/>
+    <functioncall functionName="fIsControlFlowKeyword"/>
+    <functioncall functionName="fIsEnumType"/>
+    <functioncall functionName="fIsExpandedMacro"/>
+    <functioncall functionName="fIsForwardDeclaration"/>
+    <functioncall functionName="fIsFriend"/>
+    <functioncall functionName="fIsFunction"/>
+    <functioncall functionName="fIsImplicitInt"/>
+    <functioncall functionName="fIsInline"/>
+    <functioncall functionName="fIsLiteral"/>
+    <functioncall functionName="fIsLong"/>
+    <functioncall functionName="fIsName"/>
+    <functioncall functionName="fIsOperatorKeyword"/>
+    <functioncall functionName="fIsPartialSpecialization"/>
+    <functioncall functionName="fIsPointerCompare"/>
+    <functioncall functionName="fIsSigned"/>
+    <functioncall functionName="fIsSpecialization"/>
+    <functioncall functionName="fIsSplitVarDeclComma"/>
+    <functioncall functionName="fIsSplitVarDeclEq"/>
+    <functioncall functionName="fIsStandardType"/>
+    <functioncall functionName="fIsTemplate"/>
+    <functioncall functionName="fIsTemplateArg"/>
+    <functioncall functionName="fIsUnsigned"/>
+    <functioncall functionName="fIsVariable"/>
+    <functioncall functionName="fIsVariadic"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="fileIndex"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="fill"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="find_first_of"/>
+    <functioncall functionName="findmatch"/>
+    <functioncall functionName="findsimplematch"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="flag"/>
+    <functioncall functionName="flag_"/>
+    <functioncall functionName="flags_"/>
+    <functioncall functionName="float"/>
+    <functioncall functionName="floatValue"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="forDebug"/>
+    <functioncall functionName="formatstr"/>
+    <functioncall functionName="formatstr_scan"/>
+    <functioncall functionName="formatstr_secure"/>
+    <functioncall functionName="front"/>
+    <functioncall functionName="ftok"/>
+    <functioncall functionName="funcname"/>
+    <functioncall functionName="function"/>
+    <functioncall functionName="functionname"/>
+    <functioncall functionName="ge"/>
+    <functioncall functionName="getAllocDealloc"/>
+    <functioncall functionName="getCppcheckAttribute"/>
+    <functioncall functionName="getFlag"/>
+    <functioncall functionName="getStringCharLiteral"/>
+    <functioncall functionName="getarg"/>
+    <functioncall functionName="groupId"/>
+    <functioncall functionName="gt"/>
+    <functioncall functionName="hasInitializerListConstructor"/>
+    <functioncall functionName="hash"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="ignore"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="index"/>
+    <functioncall functionName="indexOfFile"/>
+    <functioncall functionName="indirect"/>
+    <functioncall functionName="info"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="insert"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="int_bit"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="internalFunctions"/>
+    <functioncall functionName="intvalue"/>
+    <functioncall functionName="invertBound"/>
+    <functioncall functionName="isArithmeticalOp"/>
+    <functioncall functionName="isAssignmentOp"/>
+    <functioncall functionName="isC"/>
+    <functioncall functionName="isCPP"/>
+    <functioncall functionName="isCharLiteral"/>
+    <functioncall functionName="isConstOp"/>
+    <functioncall functionName="isFloat"/>
+    <functioncall functionName="isInt"/>
+    <functioncall functionName="isKnown"/>
+    <functioncall functionName="isLifetimeValue"/>
+    <functioncall functionName="isMovedValue"/>
+    <functioncall functionName="isPrefix"/>
+    <functioncall functionName="isPrefixStringCharLiteral"/>
+    <functioncall functionName="isStandardType"/>
+    <functioncall functionName="isStringCharLiteral"/>
+    <functioncall functionName="isStringLiteral"/>
+    <functioncall functionName="isSuffix"/>
+    <functioncall functionName="isSuppressed"/>
+    <functioncall functionName="isSymbolicValue"/>
+    <functioncall functionName="isUninitValue"/>
+    <functioncall functionName="isValidGlobPattern"/>
+    <functioncall functionName="is_arithmetic"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="isconst"/>
+    <functioncall functionName="ispure"/>
+    <functioncall functionName="iss"/>
+    <functioncall functionName="it"/>
+    <functioncall functionName="iteratorInfo"/>
+    <functioncall functionName="last"/>
+    <functioncall functionName="le"/>
+    <functioncall functionName="leakignore"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="lhs"/>
+    <functioncall functionName="library"/>
+    <functioncall functionName="lifetimeKind"/>
+    <functioncall functionName="lifetimeScope"/>
+    <functioncall functionName="line"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="linenr"/>
+    <functioncall functionName="linkAt"/>
+    <functioncall functionName="linkToToken"/>
+    <functioncall functionName="list"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="long_bit"/>
+    <functioncall functionName="long_long_bit"/>
+    <functioncall functionName="lt"/>
+    <functioncall functionName="m"/>
+    <functioncall functionName="mAlloc"/>
+    <functioncall functionName="mAstOperand1"/>
+    <functioncall functionName="mAstOperand2"/>
+    <functioncall functionName="mAstParent"/>
+    <functioncall functionName="mBits"/>
+    <functioncall functionName="mClocks"/>
+    <functioncall functionName="mColumn"/>
+    <functioncall functionName="mConstPtr"/>
+    <functioncall functionName="mCpp"/>
+    <functioncall functionName="mCpp11init"/>
+    <functioncall functionName="mCppcheckAttributes"/>
+    <functioncall functionName="mDealloc"/>
+    <functioncall functionName="mDoubleValue"/>
+    <functioncall functionName="mEmptyValueList"/>
+    <functioncall functionName="mEnumerator"/>
+    <functioncall functionName="mExprId"/>
+    <functioncall functionName="mFileIndex"/>
+    <functioncall functionName="mFileName"/>
+    <functioncall functionName="mFlags"/>
+    <functioncall functionName="mFunction"/>
+    <functioncall functionName="mIndex"/>
+    <functioncall functionName="mInfo"/>
+    <functioncall functionName="mIntValue"/>
+    <functioncall functionName="mLibrary"/>
+    <functioncall functionName="mLineNumber"/>
+    <functioncall functionName="mLong"/>
+    <functioncall functionName="mNumberOfResults"/>
+    <functioncall functionName="mOffset"/>
+    <functioncall functionName="mOrigFileName"/>
+    <functioncall functionName="mOriginalName"/>
+    <functioncall functionName="mPointer"/>
+    <functioncall functionName="mProgressValue"/>
+    <functioncall functionName="mPtrPtr"/>
+    <functioncall functionName="mScope"/>
+    <functioncall functionName="mScopeInfo"/>
+    <functioncall functionName="mSigned"/>
+    <functioncall functionName="mStr"/>
+    <functioncall functionName="mTemplateSimplifierPointers"/>
+    <functioncall functionName="mType"/>
+    <functioncall functionName="mUnsigned"/>
+    <functioncall functionName="mValueFlowKnown"/>
+    <functioncall functionName="mValueType"/>
+    <functioncall functionName="mValues"/>
+    <functioncall functionName="mVarId"/>
+    <functioncall functionName="mVariable"/>
+    <functioncall functionName="mWhat"/>
+    <functioncall functionName="macro"/>
+    <functioncall functionName="malloc"/>
+    <functioncall functionName="matched"/>
+    <functioncall functionName="matchglob"/>
+    <functioncall functionName="max_value"/>
+    <functioncall functionName="memoizedIsLiteral"/>
+    <functioncall functionName="memoizedIsName"/>
+    <functioncall functionName="min_value"/>
+    <functioncall functionName="minsizes"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="move"/>
+    <functioncall functionName="moveKind"/>
+    <functioncall functionName="msc"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="name_"/>
+    <functioncall functionName="next"/>
+    <functioncall functionName="nextToken"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="notbool"/>
+    <functioncall functionName="notnull"/>
+    <functioncall functionName="notuninit"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="o"/>
+    <functioncall functionName="op1"/>
+    <functioncall functionName="op1_and_op2"/>
+    <functioncall functionName="op2"/>
+    <functioncall functionName="opLessAllowed"/>
+    <functioncall functionName="optional"/>
+    <functioncall functionName="other"/>
+    <functioncall functionName="outmsg"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="pattern"/>
+    <functioncall functionName="pattern_len"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="platform"/>
+    <functioncall functionName="platformString"/>
+    <functioncall functionName="platformType"/>
+    <functioncall functionName="platform_type"/>
+    <functioncall functionName="plistFooter"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="pred"/>
+    <functioncall functionName="prefix"/>
+    <functioncall functionName="prepareTest"/>
+    <functioncall functionName="preprocessor"/>
+    <functioncall functionName="previousToken"/>
+    <functioncall functionName="pt"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="r"/>
+    <functioncall functionName="range"/>
+    <functioncall functionName="reallocArg"/>
+    <functioncall functionName="reason"/>
+    <functioncall functionName="ref"/>
+    <functioncall functionName="remove_if"/>
+    <functioncall functionName="reportErr"/>
+    <functioncall functionName="reportOut"/>
+    <functioncall functionName="result"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rhs"/>
+    <functioncall functionName="s"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="sameToken"/>
+    <functioncall functionName="sample"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="sep"/>
+    <functioncall functionName="setCppcheckAttribute"/>
+    <functioncall functionName="setFlag"/>
+    <functioncall functionName="setSettings"/>
+    <functioncall functionName="setVerbose"/>
+    <functioncall functionName="settings"/>
+    <functioncall functionName="severity"/>
+    <functioncall functionName="short"/>
+    <functioncall functionName="sign"/>
+    <functioncall functionName="simpleMatch"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="size_templateArgNo"/>
+    <functioncall functionName="stage"/>
+    <functioncall functionName="startTok"/>
+    <functioncall functionName="state"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="stdAssociativeLike"/>
+    <functioncall functionName="stdStringLike"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="strdup"/>
+    <functioncall functionName="stricmp"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="strz"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="subexpressions"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="suffix"/>
+    <functioncall functionName="suffixes"/>
+    <functioncall functionName="suppress"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="symbolName"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="thisAndNextLine"/>
+    <functioncall functionName="time"/>
+    <functioncall functionName="toSuppressionsErrorMessage"/>
+    <functioncall functionName="tok"/>
+    <functioncall functionName="tokAt"/>
+    <functioncall functionName="tokType"/>
+    <functioncall functionName="token"/>
+    <functioncall functionName="tokenAndName"/>
+    <functioncall functionName="tokenize"/>
+    <functioncall functionName="tokenizer"/>
+    <functioncall functionName="tokenlist"/>
+    <functioncall functionName="tokens"/>
+    <functioncall functionName="tokvalue"/>
+    <functioncall functionName="tr"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="type_templateArgNo"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="uint32_t"/>
+    <functioncall functionName="unstableErase"/>
+    <functioncall functionName="unstableInsert"/>
+    <functioncall functionName="unused"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="update_property_info"/>
+    <functioncall functionName="use"/>
+    <functioncall functionName="useMfc"/>
+    <functioncall functionName="useretval"/>
+    <functioncall functionName="usingNamespaces"/>
+    <functioncall functionName="usingNamespaces_"/>
+    <functioncall functionName="v"/>
+    <functioncall functionName="val"/>
+    <functioncall functionName="valid"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="valueKind"/>
+    <functioncall functionName="valueType"/>
+    <functioncall functionName="varId"/>
+    <functioncall functionName="variadic"/>
+    <functioncall functionName="varname"/>
+    <functioncall functionName="varvalue"/>
+    <functioncall functionName="vector"/>
+    <functioncall functionName="view"/>
+    <functioncall functionName="visitValue"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="wideintvalue"/>
+    <functioncall functionName="x"/>
+    <functioncall functionName="y"/>
+    <functioncall functionName="yield"/>
+  </FileInfo>
+</analyzerinfo>

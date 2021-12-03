@@ -1,0 +1,4 @@
+LibraryAddFunctionDialog call:[QRegExpValidator,rx,setValidator,setupUi] noreturn:[setValidator]
+LibraryAddFunctionDialog
+functionName call:[text] noreturn:[text]
+numberOfArguments call:[value] noreturn:[value]

@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2831829682">
+  <FileInfo check="Class">
+<class name="FunctionContractDialog" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/functioncontractdialog.h" line="10" col="1" hash="2017321812737895335"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="formatFunctionName" lineNumber="4"/>
+    <functiondecl functionName="getExpects" lineNumber="27"/>
+    <functioncall functionName="FunctionContractDialog"/>
+    <functioncall functionName="QDialog"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="expects"/>
+    <functioncall functionName="formatFunctionName"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="mUi"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="replace"/>
+    <functioncall functionName="setPlainText"/>
+    <functioncall functionName="setText"/>
+    <functioncall functionName="setupUi"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="toPlainText"/>
+  </FileInfo>
+</analyzerinfo>

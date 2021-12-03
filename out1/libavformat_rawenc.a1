@@ -1,0 +1,408 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="494330683">
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:63:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="65" col="23" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:63:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="65" col="23" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:318:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="320" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:318:12" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="321" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:318:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="320" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:318:12" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="321" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:341:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="343" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:341:12" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="344" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:341:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="343" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:341:12" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="344" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="16" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:29:5" my-argnr="2" my-argname="pkt" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="31" col="23" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c:35:12" my-argnr="1" my-argname="s" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-13390/libavformat_rawenc.c" line="37" col="9" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="adx_write_trailer" lineNumber="63"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="h264_check_bitstream" lineNumber="318"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="hevc_check_bitstream" lineNumber="341"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functiondecl functionName="ff_raw_write_packet" lineNumber="29"/>
+    <functiondecl functionName="force_one_stream" lineNumber="35"/>
+    <functioncall functionName="AVERROR"/>
+    <functioncall functionName="AVFMT_NOTIMESTAMPS"/>
+    <functioncall functionName="AV_CODEC_ID_AC3"/>
+    <functioncall functionName="AV_CODEC_ID_ADPCM_ADX"/>
+    <functioncall functionName="AV_CODEC_ID_ADPCM_G722"/>
+    <functioncall functionName="AV_CODEC_ID_ADPCM_G726"/>
+    <functioncall functionName="AV_CODEC_ID_ADPCM_G726LE"/>
+    <functioncall functionName="AV_CODEC_ID_APTX"/>
+    <functioncall functionName="AV_CODEC_ID_APTX_HD"/>
+    <functioncall functionName="AV_CODEC_ID_AVS2"/>
+    <functioncall functionName="AV_CODEC_ID_CAVS"/>
+    <functioncall functionName="AV_CODEC_ID_CODEC2"/>
+    <functioncall functionName="AV_CODEC_ID_DIRAC"/>
+    <functioncall functionName="AV_CODEC_ID_DNXHD"/>
+    <functioncall functionName="AV_CODEC_ID_DTS"/>
+    <functioncall functionName="AV_CODEC_ID_EAC3"/>
+    <functioncall functionName="AV_CODEC_ID_G723_1"/>
+    <functioncall functionName="AV_CODEC_ID_GSM"/>
+    <functioncall functionName="AV_CODEC_ID_H261"/>
+    <functioncall functionName="AV_CODEC_ID_H263"/>
+    <functioncall functionName="AV_CODEC_ID_H264"/>
+    <functioncall functionName="AV_CODEC_ID_HEVC"/>
+    <functioncall functionName="AV_CODEC_ID_MJPEG"/>
+    <functioncall functionName="AV_CODEC_ID_MLP"/>
+    <functioncall functionName="AV_CODEC_ID_MP2"/>
+    <functioncall functionName="AV_CODEC_ID_MPEG1VIDEO"/>
+    <functioncall functionName="AV_CODEC_ID_MPEG2VIDEO"/>
+    <functioncall functionName="AV_CODEC_ID_MPEG4"/>
+    <functioncall functionName="AV_CODEC_ID_NONE"/>
+    <functioncall functionName="AV_CODEC_ID_RAWVIDEO"/>
+    <functioncall functionName="AV_CODEC_ID_SBC"/>
+    <functioncall functionName="AV_CODEC_ID_TRUEHD"/>
+    <functioncall functionName="AV_CODEC_ID_VC1"/>
+    <functioncall functionName="AV_LOG_ERROR"/>
+    <functioncall functionName="AV_RB24"/>
+    <functioncall functionName="AV_RB32"/>
+    <functioncall functionName="EINVAL"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="NULL_IF_CONFIG_SMALL"/>
+    <functioncall functionName="adx_write_trailer"/>
+    <functioncall functionName="av_log"/>
+    <functioncall functionName="avio_seek"/>
+    <functioncall functionName="avio_tell"/>
+    <functioncall functionName="avio_wb32"/>
+    <functioncall functionName="avio_write"/>
+    <functioncall functionName="codecpar"/>
+    <functioncall functionName="data"/>
+    <functioncall functionName="ff_raw_write_packet"/>
+    <functioncall functionName="ff_stream_add_bitstream_filter"/>
+    <functioncall functionName="file_size"/>
+    <functioncall functionName="force_one_stream"/>
+    <functioncall functionName="h264_check_bitstream"/>
+    <functioncall functionName="hevc_check_bitstream"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="pb"/>
+    <functioncall functionName="s"/>
+    <functioncall functionName="sample_count"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="st"/>
+  </FileInfo>
+</analyzerinfo>

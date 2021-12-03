@@ -1,0 +1,260 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="390924722">
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" verbose="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" cwe="570" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="573" column="18" info="Condition &apos;*version!=&apos;\0&apos;&apos; is always false"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="568" column="14" info="Assignment &apos;*version=&apos;\0&apos;&apos;, assigned value is 0"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" verbose="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" cwe="570" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="586" column="18" info="Condition &apos;*version!=&apos;\0&apos;&apos; is always false"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="568" column="14" info="Assignment &apos;*version=&apos;\0&apos;&apos;, assigned value is 0"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" verbose="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" cwe="570" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="599" column="18" info="Condition &apos;*version!=&apos;\0&apos;&apos; is always false"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="568" column="14" info="Assignment &apos;*version=&apos;\0&apos;&apos;, assigned value is 0"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" verbose="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" cwe="570" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="612" column="18" info="Condition &apos;*version!=&apos;\0&apos;&apos; is always false"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="568" column="14" info="Assignment &apos;*version=&apos;\0&apos;&apos;, assigned value is 0"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" verbose="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" cwe="570" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="625" column="18" info="Condition &apos;*version!=&apos;\0&apos;&apos; is always false"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="568" column="14" info="Assignment &apos;*version=&apos;\0&apos;&apos;, assigned value is 0"/>
+        </error>
+        <error id="knownConditionTrueFalse" severity="style" msg="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" verbose="Condition &apos;*version!=&apos;\0&apos;&apos; is always false" cwe="570" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="638" column="18" info="Condition &apos;*version!=&apos;\0&apos;&apos; is always false"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-12977\jp2.c" line="568" column="14" info="Assignment &apos;*version=&apos;\0&apos;&apos;, assigned value is 0"/>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c:110:26" call-funcname="IsJ2K" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c" line="318" col="14" call-argexpr="sans" call-argvaluetype="7" call-argvalue="4"/>  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c:710:13" my-argnr="1" my-argname="jp2_image" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c" line="733" col="10" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c:710:13" my-argnr="2" my-argname="parameters" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c" line="716" col="5" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c:710:13" my-argnr="1" my-argname="jp2_image" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-12977/jp2.c" line="733" col="10" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="IsJ2K" lineNumber="110"/>
+    <functiondecl functionName="IsJP2" lineNumber="144"/>
+    <functiondecl functionName="RegisterJP2Image" lineNumber="560"/>
+    <functiondecl functionName="UnregisterJP2Image" lineNumber="672"/>
+    <functiondecl functionName="IsJ2K" lineNumber="110"/>
+    <functiondecl functionName="IsJP2" lineNumber="144"/>
+    <functiondecl functionName="JP2ErrorHandler" lineNumber="188"/>
+    <functiondecl functionName="JP2ReadHandler" lineNumber="198"/>
+    <functiondecl functionName="JP2SeekHandler" lineNumber="213"/>
+    <functiondecl functionName="JP2SkipHandler" lineNumber="222"/>
+    <functiondecl functionName="JP2WarningHandler" lineNumber="231"/>
+    <functiondecl functionName="JP2WriteHandler" lineNumber="241"/>
+    <functiondecl functionName="ReadJP2Image" lineNumber="254"/>
+    <functiondecl functionName="RegisterJP2Image" lineNumber="560"/>
+    <functiondecl functionName="UnregisterJP2Image" lineNumber="672"/>
+    <functiondecl functionName="CinemaProfileCompliance" lineNumber="710"/>
+    <functiondecl functionName="WriteJP2Image" lineNumber="780"/>
+    <functioncall functionName="AcquireImage"/>
+    <functioncall functionName="AcquireMagickInfo"/>
+    <functioncall functionName="AcquireMagickResource"/>
+    <functioncall functionName="AppendImageToList"/>
+    <functioncall functionName="BlendPixelTrait"/>
+    <functioncall functionName="BlobToStringInfo"/>
+    <functioncall functionName="CinemaProfileCompliance"/>
+    <functioncall functionName="ClampToQuantum"/>
+    <functioncall functionName="CloneImage"/>
+    <functioncall functionName="CloseBlob"/>
+    <functioncall functionName="CoderError"/>
+    <functioncall functionName="CoderWarning"/>
+    <functioncall functionName="ConstantString"/>
+    <functioncall functionName="DelegateError"/>
+    <functioncall functionName="DestroyImageList"/>
+    <functioncall functionName="DestroyStringInfo"/>
+    <functioncall functionName="FormatLocaleString"/>
+    <functioncall functionName="GRAYColorspace"/>
+    <functioncall functionName="GetAuthenticPixels"/>
+    <functioncall functionName="GetBlobSize"/>
+    <functioncall functionName="GetFirstImageInList"/>
+    <functioncall functionName="GetImageOption"/>
+    <functioncall functionName="GetImageProperty"/>
+    <functioncall functionName="GetMagickModule"/>
+    <functioncall functionName="GetPixelAlpha"/>
+    <functioncall functionName="GetPixelBlue"/>
+    <functioncall functionName="GetPixelChannels"/>
+    <functioncall functionName="GetPixelGray"/>
+    <functioncall functionName="GetPixelGreen"/>
+    <functioncall functionName="GetPixelRed"/>
+    <functioncall functionName="GetVirtualPixels"/>
+    <functioncall functionName="HeightResource"/>
+    <functioncall functionName="IsGrayColorspace"/>
+    <functioncall functionName="IsJ2K"/>
+    <functioncall functionName="IsJP2"/>
+    <functioncall functionName="JP2ErrorHandler"/>
+    <functioncall functionName="JP2ReadHandler"/>
+    <functioncall functionName="JP2SeekHandler"/>
+    <functioncall functionName="JP2SkipHandler"/>
+    <functioncall functionName="JP2WarningHandler"/>
+    <functioncall functionName="JP2WriteHandler"/>
+    <functioncall functionName="JPEG2000Compression"/>
+    <functioncall functionName="LoadImageTag"/>
+    <functioncall functionName="LocaleCompare"/>
+    <functioncall functionName="LogMagickEvent"/>
+    <functioncall functionName="MagickFalse"/>
+    <functioncall functionName="MagickImageCoderSignature"/>
+    <functioncall functionName="MagickOffsetType"/>
+    <functioncall functionName="MagickPathExtent"/>
+    <functioncall functionName="MagickTrue"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="OPJ_CINEMA2K"/>
+    <functioncall functionName="OPJ_CINEMA2K_24"/>
+    <functioncall functionName="OPJ_CINEMA4K"/>
+    <functioncall functionName="OPJ_CINEMA4K_24"/>
+    <functioncall functionName="OPJ_CLRSPC_GRAY"/>
+    <functioncall functionName="OPJ_CLRSPC_SRGB"/>
+    <functioncall functionName="OPJ_CLRSPC_SYCC"/>
+    <functioncall functionName="OPJ_CODEC_J2K"/>
+    <functioncall functionName="OPJ_CODEC_JP2"/>
+    <functioncall functionName="OPJ_CODEC_JPT"/>
+    <functioncall functionName="OPJ_CPRL"/>
+    <functioncall functionName="OPJ_FALSE"/>
+    <functioncall functionName="OPJ_INT32"/>
+    <functioncall functionName="OPJ_J2K_STREAM_CHUNK_SIZE"/>
+    <functioncall functionName="OPJ_LRCP"/>
+    <functioncall functionName="OPJ_PCRL"/>
+    <functioncall functionName="OPJ_RLCP"/>
+    <functioncall functionName="OPJ_RPCL"/>
+    <functioncall functionName="OPJ_SIZE_T"/>
+    <functioncall functionName="OPJ_TRUE"/>
+    <functioncall functionName="OPJ_UINT32"/>
+    <functioncall functionName="OpaqueAlpha"/>
+    <functioncall functionName="OpenBlob"/>
+    <functioncall functionName="ParseAbsoluteGeometry"/>
+    <functioncall functionName="QuantumRange"/>
+    <functioncall functionName="ReadBinaryBlobMode"/>
+    <functioncall functionName="ReadBlob"/>
+    <functioncall functionName="ReadJP2Image"/>
+    <functioncall functionName="Rec601YCbCrColorspace"/>
+    <functioncall functionName="RegisterMagickInfo"/>
+    <functioncall functionName="SaveImageTag"/>
+    <functioncall functionName="SeekBlob"/>
+    <functioncall functionName="SetImageColorspace"/>
+    <functioncall functionName="SetImageExtent"/>
+    <functioncall functionName="SetImageProfile"/>
+    <functioncall functionName="SetImageProgress"/>
+    <functioncall functionName="SetPixelAlpha"/>
+    <functioncall functionName="SetPixelBlue"/>
+    <functioncall functionName="SetPixelGray"/>
+    <functioncall functionName="SetPixelGreen"/>
+    <functioncall functionName="SetPixelRed"/>
+    <functioncall functionName="StringToInteger"/>
+    <functioncall functionName="SyncAuthenticPixels"/>
+    <functioncall functionName="ThrowMagickException"/>
+    <functioncall functionName="ThrowReaderException"/>
+    <functioncall functionName="ThrowWriterException"/>
+    <functioncall functionName="TraceEvent"/>
+    <functioncall functionName="TransformImageColorspace"/>
+    <functioncall functionName="UnregisterMagickInfo"/>
+    <functioncall functionName="WidthResource"/>
+    <functioncall functionName="WriteBinaryBlobMode"/>
+    <functioncall functionName="WriteBlob"/>
+    <functioncall functionName="WriteJP2Image"/>
+    <functioncall functionName="assert"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="buffer"/>
+    <functioncall functionName="channels"/>
+    <functioncall functionName="client_data"/>
+    <functioncall functionName="colorspace"/>
+    <functioncall functionName="columns"/>
+    <functioncall functionName="context"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="depth"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="dx"/>
+    <functioncall functionName="dy"/>
+    <functioncall functionName="entry"/>
+    <functioncall functionName="exception"/>
+    <functioncall functionName="extract"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="float"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="geometry"/>
+    <functioncall functionName="h"/>
+    <functioncall functionName="height"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="icc_profile_buf"/>
+    <functioncall functionName="icc_profile_len"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="image"/>
+    <functioncall functionName="image_info"/>
+    <functioncall functionName="image_offset_x0"/>
+    <functioncall functionName="image_offset_y0"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="jp2_codec"/>
+    <functioncall functionName="jp2_colorspace"/>
+    <functioncall functionName="jp2_image"/>
+    <functioncall functionName="jp2_info"/>
+    <functioncall functionName="jp2_stream"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="magick"/>
+    <functioncall functionName="memcmp"/>
+    <functioncall functionName="memset"/>
+    <functioncall functionName="message"/>
+    <functioncall functionName="numcomps"/>
+    <functioncall functionName="numresolution"/>
+    <functioncall functionName="offset"/>
+    <functioncall functionName="opj_create_compress"/>
+    <functioncall functionName="opj_create_decompress"/>
+    <functioncall functionName="opj_decode"/>
+    <functioncall functionName="opj_destroy_codec"/>
+    <functioncall functionName="opj_encode"/>
+    <functioncall functionName="opj_end_compress"/>
+    <functioncall functionName="opj_end_decompress"/>
+    <functioncall functionName="opj_get_decoded_tile"/>
+    <functioncall functionName="opj_image_create"/>
+    <functioncall functionName="opj_image_destroy"/>
+    <functioncall functionName="opj_read_header"/>
+    <functioncall functionName="opj_set_decode_area"/>
+    <functioncall functionName="opj_set_default_decoder_parameters"/>
+    <functioncall functionName="opj_set_default_encoder_parameters"/>
+    <functioncall functionName="opj_set_error_handler"/>
+    <functioncall functionName="opj_set_warning_handler"/>
+    <functioncall functionName="opj_setup_decoder"/>
+    <functioncall functionName="opj_setup_encoder"/>
+    <functioncall functionName="opj_start_compress"/>
+    <functioncall functionName="opj_stream_create"/>
+    <functioncall functionName="opj_stream_destroy"/>
+    <functioncall functionName="opj_stream_set_read_function"/>
+    <functioncall functionName="opj_stream_set_seek_function"/>
+    <functioncall functionName="opj_stream_set_skip_function"/>
+    <functioncall functionName="opj_stream_set_user_data"/>
+    <functioncall functionName="opj_stream_set_user_data_length"/>
+    <functioncall functionName="opj_stream_set_write_function"/>
+    <functioncall functionName="opj_version"/>
+    <functioncall functionName="option"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="parameters"/>
+    <functioncall functionName="pixel"/>
+    <functioncall functionName="prec"/>
+    <functioncall functionName="profile"/>
+    <functioncall functionName="property"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="quality"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rows"/>
+    <functioncall functionName="sRGBColorspace"/>
+    <functioncall functionName="sampling_factor"/>
+    <functioncall functionName="sans"/>
+    <functioncall functionName="sgnd"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="sscanf"/>
+    <functioncall functionName="status"/>
+    <functioncall functionName="subsampling_dx"/>
+    <functioncall functionName="subsampling_dy"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="version"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="w"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="width"/>
+    <functioncall functionName="x"/>
+    <functioncall functionName="y"/>
+  </FileInfo>
+</analyzerinfo>

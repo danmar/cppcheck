@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1313990618">
+        <error id="arrayIndexOutOfBounds" severity="error" msg="Array &apos;TestData[100]&apos; accessed at index 1000, which is out of bounds." verbose="Array &apos;TestData[100]&apos; accessed at index 1000, which is out of bounds." cwe="788" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/functions.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\synthetic\functions.c" line="21" column="13" info="Array index out of bounds"/>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/functions.c:8:6" call-funcname="par_dependant" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/synthetic/functions.c" line="14" col="18" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/>  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="par_not_dependant" lineNumber="5"/>
+    <functiondecl functionName="par_dependant" lineNumber="8"/>
+    <functiondecl functionName="call" lineNumber="12"/>
+    <functiondecl functionName="getLargeIndex" lineNumber="17"/>
+    <functiondecl functionName="return_value" lineNumber="20"/>
+    <functioncall functionName="getLargeIndex"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="par"/>
+    <functioncall functionName="par_dependant"/>
+    <functioncall functionName="par_not_dependant"/>
+    <functioncall functionName="y"/>
+  </FileInfo>
+</analyzerinfo>

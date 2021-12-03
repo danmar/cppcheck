@@ -1,0 +1,34 @@
+CodeEditorStyle
+isSystemTheme
+StyleEditDialog
+setFileName
+getFileName
+clear call:[QString,clear,setPlainText] noreturn:[setPlainText]
+LineNumberArea
+sizeHint call:[QSize,lineNumberAreaWidth] noreturn:[QSize]
+paintEvent call:[lineNumberAreaPaintEvent] noreturn:[lineNumberAreaPaintEvent]
+SelectColorButton
+SelectFontWeightCombo
+StyleEditDialog call:[CodeEditor,QDialogButtonBox,QFormLayout,QHBoxLayout,QPushButton,QString,QVBoxLayout,SIGNAL,SLOT,SelectColorButton,SelectFontWeightCombo,accept,accepted,addLayout,addRow,addStretch,addWidget,button,clicked,colorChanged,colorChangedClassFG,colorChangedCommentFG,colorChangedHighlightBG,colorChangedKeywordFG,colorChangedLineNumBG,colorChangedLineNumFG,colorChangedQuoteFG,colorChangedSymbolBG,colorChangedSymbolFG,colorChangedWidgetBG,colorChangedWidgetFG,connect,fm,reject,rejected,resetStyle,sampleFont,setError,setMinimumWidth,setStyleDefaultDark,setStyleDefaultLight,tr,updateControls,updateStyle,weightChanged,weightChangedClass,weightChangedComment,weightChangedKeyword,weightChangedQuote,weightChangedSymbol,width] noreturn:[connect]
+updateControls call:[setColor,setWeight] noreturn:[setWeight]
+updateStyle call:[setEnabled,setStyle] noreturn:[setStyle]
+getStyle
+resetStyle call:[updateControls,updateStyle] noreturn:[updateStyle]
+setStyleDefaultLight call:[updateControls,updateStyle] noreturn:[updateStyle]
+setStyleDefaultDark call:[updateControls,updateStyle] noreturn:[updateStyle]
+colorChangedWidgetFG call:[updateStyle] noreturn:[updateStyle]
+colorChangedWidgetBG call:[updateStyle] noreturn:[updateStyle]
+colorChangedHighlightBG call:[updateStyle] noreturn:[updateStyle]
+colorChangedLineNumFG call:[updateStyle] noreturn:[updateStyle]
+colorChangedLineNumBG call:[updateStyle] noreturn:[updateStyle]
+colorChangedKeywordFG call:[updateStyle] noreturn:[updateStyle]
+weightChangedKeyword call:[updateStyle] noreturn:[updateStyle]
+colorChangedClassFG call:[updateStyle] noreturn:[updateStyle]
+weightChangedClass call:[updateStyle] noreturn:[updateStyle]
+colorChangedQuoteFG call:[updateStyle] noreturn:[updateStyle]
+weightChangedQuote call:[updateStyle] noreturn:[updateStyle]
+colorChangedCommentFG call:[updateStyle] noreturn:[updateStyle]
+weightChangedComment call:[updateStyle] noreturn:[updateStyle]
+colorChangedSymbolFG call:[updateStyle] noreturn:[updateStyle]
+colorChangedSymbolBG call:[updateStyle] noreturn:[updateStyle]
+weightChangedSymbol call:[updateStyle] noreturn:[updateStyle]

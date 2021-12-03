@@ -1,0 +1,11 @@
+CWE
+ShowTypes call:[load] noreturn:[load]
+ShowTypes call:[save] noreturn:[save]
+SeverityToShowType
+ShowTypeToSeverity
+VariantToShowType call:[return,toInt]
+load call:[toBool,value] noreturn:[toBool]
+save call:[setValue] noreturn:[setValue]
+isShown
+isShown call:[SeverityToShowType,isShown] noreturn:[isShown]
+show

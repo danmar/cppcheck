@@ -1,0 +1,358 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3657897353">
+        <error id="clarifyCondition" severity="style" msg="Boolean result is used in bitwise operation. Clarify expression with parentheses." verbose="Suspicious expression. Boolean result is used in bitwise operation. The operator &apos;!&apos; and the comparison operators have higher precedence than bitwise operators. It is recommended that the expression is clarified with parentheses." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\gui\test\data\benchmark\simple.cpp" line="2184" column="38"/>
+        </error>
+        <error id="nullPointerRedundantCheck" severity="warning" msg="Either the condition &apos;tok&apos; is redundant or there is possible null pointer dereference: tok." verbose="Either the condition &apos;tok&apos; is redundant or there is possible null pointer dereference: tok." cwe="476" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\gui\test\data\benchmark\simple.cpp" line="2928" column="28" info="Null pointer dereference"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\gui\test\data\benchmark\simple.cpp" line="2917" column="12" info="Assuming that condition &apos;tok&apos; is not redundant"/>
+            <symbol>tok</symbol>
+        </error>
+        <error id="constParameter" severity="style" msg="Parameter &apos;scope&apos; can be declared with const" verbose="Parameter &apos;scope&apos; can be declared with const" cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\gui\test\data\benchmark\simple.cpp" line="1020" column="35" info="Parameter &apos;scope&apos; can be declared with const"/>
+            <symbol>scope</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp:988:5" call-funcname="ScopeInfo" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="1013" col="27" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp:994:16" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="ScopeInfo" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="985" col="1" hash="9452541497648190613"/>
+<class name="Variables" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="1036" col="1" hash="9791442103425559527"/>
+<class name="Variables::VariableUsage" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="1041" col="5" hash="10531643016093789034"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp:1088:10" my-argnr="1" my-argname="name" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="1202" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp:1557:13" my-argnr="1" my-argname="tok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="1559" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp:1567:13" my-argnr="1" my-argname="tok" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="1569" col="5" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp:2934:13" my-argnr="2" my-argname="last" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="2936" col="43" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp:1088:10" my-argnr="1" my-argname="name" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="1202" col="9" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp:2934:13" my-argnr="2" my-argname="last" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/test/data/benchmark/simple.cpp" line="2936" col="43" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="parent" lineNumber="991"/>
+    <functiondecl functionName="addChild" lineNumber="1011"/>
+    <functiondecl functionName="remove" lineNumber="1020"/>
+    <functiondecl functionName="use" lineNumber="1059"/>
+    <functiondecl functionName="unused" lineNumber="1065"/>
+    <functiondecl functionName="clear" lineNumber="1082"/>
+    <functiondecl functionName="varUsage" lineNumber="1085"/>
+    <functiondecl functionName="erase" lineNumber="1100"/>
+    <functiondecl functionName="alias" lineNumber="1118"/>
+    <functiondecl functionName="clearAliases" lineNumber="1159"/>
+    <functiondecl functionName="eraseAliases" lineNumber="1179"/>
+    <functiondecl functionName="eraseAll" lineNumber="1191"/>
+    <functiondecl functionName="addVar" lineNumber="1197"/>
+    <functiondecl functionName="allocateMemory" lineNumber="1206"/>
+    <functiondecl functionName="read" lineNumber="1214"/>
+    <functiondecl functionName="readAliases" lineNumber="1222"/>
+    <functiondecl functionName="readAll" lineNumber="1238"/>
+    <functiondecl functionName="write" lineNumber="1256"/>
+    <functiondecl functionName="writeAliases" lineNumber="1264"/>
+    <functiondecl functionName="writeAll" lineNumber="1280"/>
+    <functiondecl functionName="use" lineNumber="1298"/>
+    <functiondecl functionName="modified" lineNumber="1316"/>
+    <functiondecl functionName="find" lineNumber="1334"/>
+    <functiondecl functionName="doAssignment" lineNumber="1344"/>
+    <functiondecl functionName="nextIsStandardType" lineNumber="1557"/>
+    <functiondecl functionName="nextIsStandardTypeOrVoid" lineNumber="1567"/>
+    <functiondecl functionName="isFunction" lineNumber="2810"/>
+    <functiondecl functionName="stringifyTokens" lineNumber="2902"/>
+    <functiondecl functionName="expressionHasSideEffects" lineNumber="2934"/>
+    <functioncall functionName="Equal"/>
+    <functioncall functionName="First"/>
+    <functioncall functionName="Less"/>
+    <functioncall functionName="LessEqual"/>
+    <functioncall functionName="Match"/>
+    <functioncall functionName="More"/>
+    <functioncall functionName="MoreEqual"/>
+    <functioncall functionName="NA"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="NotEqual"/>
+    <functioncall functionName="Scope"/>
+    <functioncall functionName="ScopeInfo"/>
+    <functioncall functionName="Second"/>
+    <functioncall functionName="Token"/>
+    <functioncall functionName="VariableUsage"/>
+    <functioncall functionName="_allocateMemory"/>
+    <functioncall functionName="_modified"/>
+    <functioncall functionName="_name"/>
+    <functioncall functionName="_parent"/>
+    <functioncall functionName="_read"/>
+    <functioncall functionName="_scope"/>
+    <functioncall functionName="_token"/>
+    <functioncall functionName="_type"/>
+    <functioncall functionName="_write"/>
+    <functioncall functionName="addChild"/>
+    <functioncall functionName="addToIndex"/>
+    <functioncall functionName="addVar"/>
+    <functioncall functionName="after"/>
+    <functioncall functionName="alias"/>
+    <functioncall functionName="aliased"/>
+    <functioncall functionName="allocate"/>
+    <functioncall functionName="allocateMemory"/>
+    <functioncall functionName="allocatedButUnusedVariableError"/>
+    <functioncall functionName="always"/>
+    <functioncall functionName="alwaysTrueFalseStringCompare"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="array"/>
+    <functioncall functionName="assertPattern"/>
+    <functioncall functionName="assignBoolToPointerError"/>
+    <functioncall functionName="assignmentInAssertError"/>
+    <functioncall functionName="at"/>
+    <functioncall functionName="bailout"/>
+    <functioncall functionName="before"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="bool"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="breakPattern"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="calc"/>
+    <functioncall functionName="catchExceptionByValueError"/>
+    <functioncall functionName="catchPattern"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="charArrayIndexError"/>
+    <functioncall functionName="charBitOpError"/>
+    <functioncall functionName="clarifyCalculationError"/>
+    <functioncall functionName="clarifyConditionError"/>
+    <functioncall functionName="classStart"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="clearAliases"/>
+    <functioncall functionName="comparisonOfBoolWithIntError"/>
+    <functioncall functionName="cond"/>
+    <functioncall functionName="conditionPattern"/>
+    <functioncall functionName="conditions"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="constStatementError"/>
+    <functioncall functionName="continue"/>
+    <functioncall functionName="cstyleCastError"/>
+    <functioncall functionName="dangerousUsageStrtolError"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="declTok"/>
+    <functioncall functionName="dereference"/>
+    <functioncall functionName="doAssignment"/>
+    <functioncall functionName="duplicateBranchError"/>
+    <functioncall functionName="duplicateBreakError"/>
+    <functioncall functionName="duplicateExpressionError"/>
+    <functioncall functionName="duplicateIfError"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endOfConditional"/>
+    <functioncall functionName="endTok"/>
+    <functioncall functionName="erase"/>
+    <functioncall functionName="eraseAliases"/>
+    <functioncall functionName="eraseAll"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="expression"/>
+    <functioncall functionName="expressionHasSideEffects"/>
+    <functioncall functionName="fabs"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="fflushOnInputStreamError"/>
+    <functioncall functionName="fileIndex"/>
+    <functioncall functionName="fileLine"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="findmatch"/>
+    <functioncall functionName="findsimplematch"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="firstConstant"/>
+    <functioncall functionName="firstVarId"/>
+    <functioncall functionName="firstcase"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="format"/>
+    <functioncall functionName="formatstr"/>
+    <functioncall functionName="functionPattern"/>
+    <functioncall functionName="getFiles"/>
+    <functioncall functionName="getStrLength"/>
+    <functioncall functionName="getSymbolDatabase"/>
+    <functioncall functionName="getVariableFromVarId"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="incorrectLogicOperatorError"/>
+    <functioncall functionName="incorrectStringCompareError"/>
+    <functioncall functionName="incrementBooleanError"/>
+    <functioncall functionName="indentlevel"/>
+    <functioncall functionName="info"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="insert"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="invalidScanfError"/>
+    <functioncall functionName="isArithmeticalOp"/>
+    <functioncall functionName="isAssignmentOp"/>
+    <functioncall functionName="isClassOrStruct"/>
+    <functioncall functionName="isEnabled"/>
+    <functioncall functionName="isEqual"/>
+    <functioncall functionName="isExtendedOp"/>
+    <functioncall functionName="isFloat"/>
+    <functioncall functionName="isFunction"/>
+    <functioncall functionName="isGreater"/>
+    <functioncall functionName="isGreaterEqual"/>
+    <functioncall functionName="isInt"/>
+    <functioncall functionName="isJavaOrCSharp"/>
+    <functioncall functionName="isLess"/>
+    <functioncall functionName="isLessEqual"/>
+    <functioncall functionName="isLong"/>
+    <functioncall functionName="isName"/>
+    <functioncall functionName="isNegative"/>
+    <functioncall functionName="isNotEqual"/>
+    <functioncall functionName="isNullValue"/>
+    <functioncall functionName="isNumber"/>
+    <functioncall functionName="isPointer"/>
+    <functioncall functionName="isRecordTypeWithoutSideEffects"/>
+    <functioncall functionName="isSigned"/>
+    <functioncall functionName="isStandardType"/>
+    <functioncall functionName="isStatic"/>
+    <functioncall functionName="isUnsigned"/>
+    <functioncall functionName="isUnused"/>
+    <functioncall functionName="isalpha"/>
+    <functioncall functionName="isdigit"/>
+    <functioncall functionName="it"/>
+    <functioncall functionName="justbreak"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="linenr"/>
+    <functioncall functionName="link"/>
+    <functioncall functionName="logicTok"/>
+    <functioncall functionName="lookupVar"/>
+    <functioncall functionName="make_pair"/>
+    <functioncall functionName="mathfunctionCallError"/>
+    <functioncall functionName="memsetZeroBytesError"/>
+    <functioncall functionName="misusedScopeObjectError"/>
+    <functioncall functionName="modified"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="nameToken"/>
+    <functioncall functionName="nametok"/>
+    <functioncall functionName="next"/>
+    <functioncall functionName="nextIsStandardType"/>
+    <functioncall functionName="nextIsStandardTypeOrVoid"/>
+    <functioncall functionName="nextTok"/>
+    <functioncall functionName="numTok"/>
+    <functioncall functionName="offset"/>
+    <functioncall functionName="op"/>
+    <functioncall functionName="op1Tok"/>
+    <functioncall functionName="op1TokStr"/>
+    <functioncall functionName="op2Tok"/>
+    <functioncall functionName="op2TokStr"/>
+    <functioncall functionName="op3Tok"/>
+    <functioncall functionName="op3TokStr"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="parent_"/>
+    <functioncall functionName="passedByValueError"/>
+    <functioncall functionName="pattern"/>
+    <functioncall functionName="pattern1"/>
+    <functioncall functionName="pattern2"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="pointer"/>
+    <functioncall functionName="pointerArray"/>
+    <functioncall functionName="pointerPointer"/>
+    <functioncall functionName="pop"/>
+    <functioncall functionName="pop_front"/>
+    <functioncall functionName="position"/>
+    <functioncall functionName="previous"/>
+    <functioncall functionName="push"/>
+    <functioncall functionName="push_back"/>
+    <functioncall functionName="read"/>
+    <functioncall functionName="readAliases"/>
+    <functioncall functionName="readAll"/>
+    <functioncall functionName="redundantAssignmentInSwitchError"/>
+    <functioncall functionName="reference"/>
+    <functioncall functionName="referenceArray"/>
+    <functioncall functionName="replace"/>
+    <functioncall functionName="reportError"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="rfind"/>
+    <functioncall functionName="s"/>
+    <functioncall functionName="s1"/>
+    <functioncall functionName="s2"/>
+    <functioncall functionName="scope"/>
+    <functioncall functionName="scopes"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="secondConstant"/>
+    <functioncall functionName="selfAssignmentError"/>
+    <functioncall functionName="selfAssignmentPattern"/>
+    <functioncall functionName="simpleMatch"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="sizeofCalculationError"/>
+    <functioncall functionName="sizeofForArrayParameterError"/>
+    <functioncall functionName="sizeofForNumericParameterError"/>
+    <functioncall functionName="sizeofsizeofError"/>
+    <functioncall functionName="sprintfOverlappingDataError"/>
+    <functioncall functionName="standard"/>
+    <functioncall functionName="start"/>
+    <functioncall functionName="startToken"/>
+    <functioncall functionName="state"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="str1"/>
+    <functioncall functionName="str2"/>
+    <functioncall functionName="strAt"/>
+    <functioncall functionName="strPlusChar"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="stringifyTokens"/>
+    <functioncall functionName="structname"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="summary"/>
+    <functioncall functionName="switchCaseFallThrough"/>
+    <functioncall functionName="switchPattern"/>
+    <functioncall functionName="temp"/>
+    <functioncall functionName="term1Tok"/>
+    <functioncall functionName="term2Tok"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="toDoubleNumber"/>
+    <functioncall functionName="toLongNumber"/>
+    <functioncall functionName="tok"/>
+    <functioncall functionName="tok1"/>
+    <functioncall functionName="tok2"/>
+    <functioncall functionName="tok3"/>
+    <functioncall functionName="tokAt"/>
+    <functioncall functionName="tokIdx"/>
+    <functioncall functionName="tokType"/>
+    <functioncall functionName="token"/>
+    <functioncall functionName="tokens"/>
+    <functioncall functionName="toks"/>
+    <functioncall functionName="top"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="truefalse"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="typeEndToken"/>
+    <functioncall functionName="typeStartToken"/>
+    <functioncall functionName="udivError"/>
+    <functioncall functionName="unassignedVariableError"/>
+    <functioncall functionName="unreadVariableError"/>
+    <functioncall functionName="unsignedLessThanZero"/>
+    <functioncall functionName="unsignedPositive"/>
+    <functioncall functionName="unused"/>
+    <functioncall functionName="unusedStructMemberError"/>
+    <functioncall functionName="unusedVariableError"/>
+    <functioncall functionName="usage"/>
+    <functioncall functionName="usagePattern"/>
+    <functioncall functionName="use"/>
+    <functioncall functionName="used"/>
+    <functioncall functionName="var"/>
+    <functioncall functionName="var1"/>
+    <functioncall functionName="var2"/>
+    <functioncall functionName="varFirst1"/>
+    <functioncall functionName="varFirst2"/>
+    <functioncall functionName="varId"/>
+    <functioncall functionName="varTok"/>
+    <functioncall functionName="varUsage"/>
+    <functioncall functionName="variableScopeError"/>
+    <functioncall functionName="variables"/>
+    <functioncall functionName="varid"/>
+    <functioncall functionName="varid1"/>
+    <functioncall functionName="varid2"/>
+    <functioncall functionName="varname"/>
+    <functioncall functionName="verbose"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="write"/>
+    <functioncall functionName="writeAliases"/>
+    <functioncall functionName="writeAll"/>
+    <functioncall functionName="write_"/>
+    <functioncall functionName="written"/>
+    <functioncall functionName="zerodivError"/>
+  </FileInfo>
+</analyzerinfo>

@@ -1,0 +1,4 @@
+getPath call:[QString,homePath,isEmpty,toString,value] noreturn:[homePath]
+setPath call:[setValue] noreturn:[setValue]
+toFilterString call:[QString,QStringList,arg,join,keys,translate,value,values] noreturn:[arg,join]
+getDataDir call:[QFileInfo,QString,applicationFilePath,canonicalPath,exists,indexOf,isEmpty,left,toString,value] noreturn:[left]

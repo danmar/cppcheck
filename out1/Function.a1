@@ -1,0 +1,383 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1470323389">
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &apos;Function::m&apos; is not initialized in the constructor." verbose="Member variable &apos;Function::m&apos; is not initialized in the constructor." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="38" column="11"/>
+            <symbol>Function::m</symbol>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &apos;Function::n&apos; is not initialized in the constructor." verbose="Member variable &apos;Function::n&apos; is not initialized in the constructor." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="38" column="11"/>
+            <symbol>Function::n</symbol>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &apos;Function::domain&apos; is not initialized in the constructor." verbose="Member variable &apos;Function::domain&apos; is not initialized in the constructor." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="38" column="11"/>
+            <symbol>Function::domain</symbol>
+        </error>
+        <error id="uninitMemberVar" severity="warning" msg="Member variable &apos;Function::range&apos; is not initialized in the constructor." verbose="Member variable &apos;Function::range&apos; is not initialized in the constructor." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="38" column="11"/>
+            <symbol>Function::range</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;ok&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;ok&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="215" column="3"/>
+            <symbol>ok</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;ok&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;ok&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="504" column="3"/>
+            <symbol>ok</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;ok&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;ok&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="630" column="3"/>
+            <symbol>ok</symbol>
+        </error>
+        <error id="useInitializationList" severity="performance" msg="Variable &apos;ok&apos; is assigned in constructor body. Consider performing initialization in initialization list." verbose="When an object of a class is created, the constructors of all member variables are called consecutively in the order the variables are declared, even if you don&apos;t explicitly write them to the initialization list. You could avoid assigning &apos;ok&apos; a value by passing the value to the constructor in the initialization list." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="907" column="3"/>
+            <symbol>ok</symbol>
+        </error>
+        <error id="noCopyConstructor" severity="warning" msg="Class &apos;PostScriptFunction&apos; does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s)." verbose="Class &apos;PostScriptFunction&apos; does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s)." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="926" column="3"/>
+            <symbol>PostScriptFunction</symbol>
+        </error>
+        <error id="noOperatorEq" severity="warning" msg="Class &apos;PostScriptFunction&apos; does not have a operator= which is recommended since it has dynamic memory/resource allocation(s)." verbose="Class &apos;PostScriptFunction&apos; does not have a operator= which is recommended since it has dynamic memory/resource allocation(s)." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="926" column="3"/>
+            <symbol>PostScriptFunction</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;SampledFunction&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;SampledFunction&apos; has a constructor with 1 argument that is not explicit. Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="160" column="5"/>
+            <symbol>SampledFunction</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;ExponentialFunction&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;ExponentialFunction&apos; has a constructor with 1 argument that is not explicit. Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="211" column="5"/>
+            <symbol>ExponentialFunction</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;StitchingFunction&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;StitchingFunction&apos; has a constructor with 1 argument that is not explicit. Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="257" column="5"/>
+            <symbol>StitchingFunction</symbol>
+        </error>
+        <error id="noExplicitConstructor" severity="style" msg="Class &apos;PostScriptFunction&apos; has a constructor with 1 argument that is not explicit." verbose="Class &apos;PostScriptFunction&apos; has a constructor with 1 argument that is not explicit. Such constructors should in general be explicit for type safety reasons. Using the explicit keyword in the constructor means some mistakes when using the class can be avoided." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="293" column="5"/>
+            <symbol>PostScriptFunction</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="105" column="23" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="47" column="23" info="Virtual function in base class"/>
+            <symbol>copy</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="108" column="17" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="55" column="17" info="Virtual function in base class"/>
+            <symbol>getType</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="111" column="18" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="82" column="18" info="Virtual function in base class"/>
+            <symbol>transform</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="112" column="19" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="84" column="19" info="Virtual function in base class"/>
+            <symbol>isOk</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="128" column="23" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="47" column="23" info="Virtual function in base class"/>
+            <symbol>copy</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="131" column="17" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="55" column="17" info="Virtual function in base class"/>
+            <symbol>getType</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="134" column="18" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="82" column="18" info="Virtual function in base class"/>
+            <symbol>transform</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="135" column="19" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="84" column="19" info="Virtual function in base class"/>
+            <symbol>isOk</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="188" column="23" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="47" column="23" info="Virtual function in base class"/>
+            <symbol>copy</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="191" column="17" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="55" column="17" info="Virtual function in base class"/>
+            <symbol>getType</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="194" column="18" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="82" column="18" info="Virtual function in base class"/>
+            <symbol>transform</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="195" column="19" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="84" column="19" info="Virtual function in base class"/>
+            <symbol>isOk</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="228" column="23" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="47" column="23" info="Virtual function in base class"/>
+            <symbol>copy</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="231" column="17" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="55" column="17" info="Virtual function in base class"/>
+            <symbol>getType</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="234" column="18" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="82" column="18" info="Virtual function in base class"/>
+            <symbol>transform</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="235" column="19" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="84" column="19" info="Virtual function in base class"/>
+            <symbol>isOk</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;copy&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="276" column="23" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="47" column="23" info="Virtual function in base class"/>
+            <symbol>copy</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;getType&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="279" column="17" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="55" column="17" info="Virtual function in base class"/>
+            <symbol>getType</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;transform&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="282" column="18" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="82" column="18" info="Virtual function in base class"/>
+            <symbol>transform</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;isOk&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="283" column="19" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.h" line="84" column="19" info="Virtual function in base class"/>
+            <symbol>isOk</symbol>
+        </error>
+        <error id="cstyleCast" severity="style" msg="C-style pointer casting" verbose="C-style pointer casting detected. C++ offers four different kinds of casts as replacements: static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to any of those automatically, thus it is considered safer if the programmer explicitly states which kind of cast is expected. See also: https://www.securecoding.cert.org/confluence/display/cplusplus/EXP05-CPP.+Do+not+use+C-style+casts." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="965" column="10"/>
+        </error>
+        <error id="cstyleCast" severity="style" msg="C-style pointer casting" verbose="C-style pointer casting detected. C++ offers four different kinds of casts as replacements: static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to any of those automatically, thus it is considered safer if the programmer explicitly states which kind of cast is expected. See also: https://www.securecoding.cert.org/confluence/display/cplusplus/EXP05-CPP.+Do+not+use+C-style+casts." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="1126" column="12"/>
+        </error>
+        <error id="cstyleCast" severity="style" msg="C-style pointer casting" verbose="C-style pointer casting detected. C++ offers four different kinds of casts as replacements: static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to any of those automatically, thus it is considered safer if the programmer explicitly states which kind of cast is expected. See also: https://www.securecoding.cert.org/confluence/display/cplusplus/EXP05-CPP.+Do+not+use+C-style+casts." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="1139" column="12"/>
+        </error>
+        <error id="cstyleCast" severity="style" msg="C-style pointer casting" verbose="C-style pointer casting detected. C++ offers four different kinds of casts as replacements: static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to any of those automatically, thus it is considered safer if the programmer explicitly states which kind of cast is expected. See also: https://www.securecoding.cert.org/confluence/display/cplusplus/EXP05-CPP.+Do+not+use+C-style+casts." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="1153" column="12"/>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;x&apos; can be reduced." verbose="The scope of the variable &apos;x&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="420" column="10"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;i&apos; can be reduced." verbose="The scope of the variable &apos;i&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="750" column="7"/>
+            <symbol>i</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;x&apos; can be reduced." verbose="The scope of the variable &apos;x&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="978" column="10"/>
+            <symbol>x</symbol>
+        </error>
+        <error id="variableScope" severity="style" msg="The scope of the variable &apos;p&apos; can be reduced." verbose="The scope of the variable &apos;p&apos; can be reduced. Warning: Be careful when fixing this message, especially when there are inner loops. Here is an example where cppcheck will write that the scope for &apos;i&apos; can be reduced:\012void f(int x)\012{\012    int i = 0;\012    if (x) {\012        // it&apos;s safe to move &apos;int i = 0;&apos; here\012        for (int n = 0; n &lt; 10; ++n) {\012            // it is possible but not safe to move &apos;int i = 0;&apos; here\012            do_something(&amp;i);\012        }\012    }\012}\012When you see this message it is always safe to reduce the variable scope 1 level." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-10018\Function.cc" line="1028" column="9"/>
+            <symbol>p</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:294:11" call-funcname="parseCode" call-argnr="2" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="942" col="17" call-argexpr="&amp;tokPtr" call-argvaluetype="7" call-argvalue="4"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:294:11" call-funcname="parseCode" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="942" col="17" call-argexpr="&amp;codePtr" call-argvaluetype="7" call-argvalue="4"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:299:9" call-funcname="exec" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="997" col="12" call-argexpr="stack" call-argvaluetype="7" call-argvalue="800"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:296:10" call-funcname="addCodeI" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="1044" col="15" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:296:10" call-funcname="addCodeI" call-argnr="3" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="1058" col="10" call-argexpr="0" call-argvaluetype="0" call-argvalue="0"/><function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:45:11" call-funcname="init" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="218" col="8" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:126:5" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:45:11" call-funcname="init" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="507" col="8" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:186:5" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:45:11" call-funcname="init" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="637" col="8" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:226:5" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:45:11" call-funcname="init" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="910" col="8" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:274:5" my-argnr="2"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:297:10" call-funcname="addCodeD" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="1041" col="7" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:294:11" my-argnr="3"/>
+  </FileInfo>
+  <FileInfo check="Bounds checking">
+    <array-index>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:194:18" my-argnr="1" my-argname="in" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="601" col="7" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:234:18" my-argnr="1" my-argname="in" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="769" col="7" value="0"/>
+    </array-index>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="IdentityFunction" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h" line="100" col="1" hash="641312881072895860"/>
+<class name="SampledFunction" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h" line="123" col="1" hash="3271409354052245319"/>
+<class name="ExponentialFunction" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h" line="183" col="1" hash="17345699911231656111"/>
+<class name="StitchingFunction" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h" line="223" col="1" hash="14553030923376011752"/>
+<class name="PostScriptFunction" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h" line="271" col="1" hash="7739220361308727481"/>
+<class name="PSCode" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="887" col="1" hash="18334450303146832316"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:45:11" my-argnr="1" my-argname="dict" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="99" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:126:5" my-argnr="1" my-argname="funcObj" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="236" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:194:18" my-argnr="1" my-argname="in" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="601" col="7" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:234:18" my-argnr="1" my-argname="in" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="769" col="7" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:274:5" my-argnr="1" my-argname="funcObj" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="919" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:295:10" my-argnr="1" my-argname="codePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="1120" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:296:10" my-argnr="1" my-argname="codePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="1133" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:297:10" my-argnr="1" my-argname="codePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="1147" col="8" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:45:11" my-argnr="1" my-argname="dict" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="99" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:126:5" my-argnr="1" my-argname="funcObj" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="236" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:194:18" my-argnr="1" my-argname="in" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="601" col="7" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:234:18" my-argnr="1" my-argname="in" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="769" col="7" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:274:5" my-argnr="1" my-argname="funcObj" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="919" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:295:10" my-argnr="1" my-argname="codePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="1120" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:296:10" my-argnr="1" my-argname="codePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="1133" col="8" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.h:297:10" my-argnr="1" my-argname="codePtr" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-10018/Function.cc" line="1147" col="8" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="parse" lineNumber="44"/>
+    <functiondecl functionName="init" lineNumber="94"/>
+    <functiondecl functionName="transform" lineNumber="189"/>
+    <functiondecl functionName="transform" lineNumber="419"/>
+    <functiondecl functionName="transform" lineNumber="597"/>
+    <functiondecl functionName="transform" lineNumber="765"/>
+    <functiondecl functionName="transform" lineNumber="976"/>
+    <functiondecl functionName="parseCode" lineNumber="1026"/>
+    <functiondecl functionName="addCode" lineNumber="1119"/>
+    <functiondecl functionName="addCodeI" lineNumber="1132"/>
+    <functiondecl functionName="addCodeD" lineNumber="1146"/>
+    <functiondecl functionName="getToken" lineNumber="1160"/>
+    <functiondecl functionName="exec" lineNumber="1209"/>
+    <functioncall functionName="ExponentialFunction"/>
+    <functioncall functionName="Function"/>
+    <functioncall functionName="GList"/>
+    <functioncall functionName="GString"/>
+    <functioncall functionName="IdentityFunction"/>
+    <functioncall functionName="NULL"/>
+    <functioncall functionName="PSCode"/>
+    <functioncall functionName="PostScriptFunction"/>
+    <functioncall functionName="SampledFunction"/>
+    <functioncall functionName="StitchingFunction"/>
+    <functioncall functionName="a"/>
+    <functioncall functionName="addCode"/>
+    <functioncall functionName="addCodeD"/>
+    <functioncall functionName="addCodeI"/>
+    <functioncall functionName="append"/>
+    <functioncall functionName="arrayGet"/>
+    <functioncall functionName="arrayGetLength"/>
+    <functioncall functionName="atan2"/>
+    <functioncall functionName="atof"/>
+    <functioncall functionName="b"/>
+    <functioncall functionName="bit"/>
+    <functioncall functionName="bitMask"/>
+    <functioncall functionName="bounds"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="c"/>
+    <functioncall functionName="cacheOut"/>
+    <functioncall functionName="ceil"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="cmp"/>
+    <functioncall functionName="code"/>
+    <functioncall functionName="codePtr"/>
+    <functioncall functionName="codePtr0"/>
+    <functioncall functionName="codePtr1"/>
+    <functioncall functionName="codeSize"/>
+    <functioncall functionName="codeString"/>
+    <functioncall functionName="comment"/>
+    <functioncall functionName="copy"/>
+    <functioncall functionName="cos"/>
+    <functioncall functionName="d"/>
+    <functioncall functionName="deleteGList"/>
+    <functioncall functionName="dict"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="e"/>
+    <functioncall functionName="encode"/>
+    <functioncall functionName="err1"/>
+    <functioncall functionName="err2"/>
+    <functioncall functionName="err3"/>
+    <functioncall functionName="errSyntaxError"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="exec"/>
+    <functioncall functionName="fabs"/>
+    <functioncall functionName="floor"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="free"/>
+    <functioncall functionName="func"/>
+    <functioncall functionName="funcObj"/>
+    <functioncall functionName="funcType"/>
+    <functioncall functionName="funcs"/>
+    <functioncall functionName="gFalse"/>
+    <functioncall functionName="gTrue"/>
+    <functioncall functionName="get"/>
+    <functioncall functionName="getCString"/>
+    <functioncall functionName="getChar"/>
+    <functioncall functionName="getDict"/>
+    <functioncall functionName="getInputSize"/>
+    <functioncall functionName="getInt"/>
+    <functioncall functionName="getLength"/>
+    <functioncall functionName="getNum"/>
+    <functioncall functionName="getOutputSize"/>
+    <functioncall functionName="getStream"/>
+    <functioncall functionName="getToken"/>
+    <functioncall functionName="gfree"/>
+    <functioncall functionName="gmallocn"/>
+    <functioncall functionName="greallocn"/>
+    <functioncall functionName="hasRange"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="idxOffset"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="in"/>
+    <functioncall functionName="init"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="invalidArg"/>
+    <functioncall functionName="isArray"/>
+    <functioncall functionName="isDict"/>
+    <functioncall functionName="isInt"/>
+    <functioncall functionName="isName"/>
+    <functioncall functionName="isNum"/>
+    <functioncall functionName="isOk"/>
+    <functioncall functionName="isStream"/>
+    <functioncall functionName="isalnum"/>
+    <functioncall functionName="isdigit"/>
+    <functioncall functionName="isspace"/>
+    <functioncall functionName="j"/>
+    <functioncall functionName="k"/>
+    <functioncall functionName="log"/>
+    <functioncall functionName="log10"/>
+    <functioncall functionName="lookChar"/>
+    <functioncall functionName="lookup"/>
+    <functioncall functionName="m"/>
+    <functioncall functionName="memcpy"/>
+    <functioncall functionName="mid"/>
+    <functioncall functionName="n"/>
+    <functioncall functionName="nSamples"/>
+    <functioncall functionName="nn"/>
+    <functioncall functionName="obj1"/>
+    <functioncall functionName="obj2"/>
+    <functioncall functionName="op"/>
+    <functioncall functionName="out"/>
+    <functioncall functionName="overflow"/>
+    <functioncall functionName="parse"/>
+    <functioncall functionName="parseCode"/>
+    <functioncall functionName="pow"/>
+    <functioncall functionName="private:"/>
+    <functioncall functionName="psOpNames"/>
+    <functioncall functionName="recursion"/>
+    <functioncall functionName="reset"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="sBuf"/>
+    <functioncall functionName="sampleBits"/>
+    <functioncall functionName="samples"/>
+    <functioncall functionName="scale"/>
+    <functioncall functionName="sin"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="sp"/>
+    <functioncall functionName="sp0"/>
+    <functioncall functionName="sqrt"/>
+    <functioncall functionName="stack"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="streamGetDict"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="tok"/>
+    <functioncall functionName="tokPtr"/>
+    <functioncall functionName="tokens"/>
+    <functioncall functionName="transform"/>
+    <functioncall functionName="underflow"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="x"/>
+  </FileInfo>
+</analyzerinfo>

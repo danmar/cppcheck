@@ -1,0 +1,22 @@
+Application
+getName
+getPath
+getParameters
+setName
+setPath
+setParameters
+getDefaultApplication
+ApplicationList
+ApplicationList call:[clear] noreturn:[clear]
+loadSettings call:[QFileInfo,QString,QStringList,addApplication,app,checkAndAddApplication,empty,isExecutable,length,setName,setParameters,setPath,size,toInt,toStringList,value] noreturn:[QString,addApplication]
+saveSettings call:[getApplication,getApplicationCount,getName,getParameters,getPath,setValue] noreturn:[getParameters,setValue]
+getApplicationCount call:[size] noreturn:[size]
+getApplication call:[size]
+getApplication call:[size]
+addApplication call:[getName,getPath,isEmpty]
+removeApplication call:[removeAt] noreturn:[removeAt]
+setDefault call:[size]
+copy call:[addApplication,clear,getApplication,getApplicationCount,getDefaultApplication] noreturn:[addApplication,getDefaultApplication]
+clear call:[clear]
+checkAndAddApplication call:[QFileInfo,addApplication,exists,isExecutable,setName,setParameters,setPath]
+findDefaultWindowsEditor call:[QString,appPathx64,appPathx86,checkAndAddApplication,getenv,indexOf,isEmpty,left,registry,registryMSVSCode,registryUEdit32,registryUEdit64,replace,toString,value,windowsPath]

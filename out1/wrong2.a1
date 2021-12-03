@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1518989959">
+        <error id="mismatchAllocDealloc" severity="error" msg="Mismatching allocation and deallocation: pI" verbose="Mismatching allocation and deallocation: pI" cwe="762" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong2.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong2.cc" line="13" column="3"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong2.cc" line="10" column="13"/>
+            <symbol>pI</symbol>
+        </error>
+        <error id="doubleFree" severity="error" msg="Memory pointed to by &apos;pI&apos; is freed twice." verbose="Memory pointed to by &apos;pI&apos; is freed twice." cwe="415" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/duma/wrong2.cc">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong2.cc" line="20" column="10"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\duma\wrong2.cc" line="18" column="3"/>
+            <symbol>pI</symbol>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="main" lineNumber="7"/>
+    <functioncall functionName="delete"/>
+    <functioncall functionName="free"/>
+    <functioncall functionName="pI"/>
+  </FileInfo>
+</analyzerinfo>

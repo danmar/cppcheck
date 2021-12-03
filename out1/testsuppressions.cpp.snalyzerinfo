@@ -1,0 +1,208 @@
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+CWE
+Check
+Check call:[instances,remove] noreturn:[remove]
+name
+FileInfo
+FileInfo
+toString call:[string] noreturn:[string]
+getFileInfo
+loadFileInfoFromXml
+analyseWholeProgram
+reportError call:[CWE,reportError] noreturn:[reportError]
+reportError call:[callstack,reportError] noreturn:[reportError]
+reportError call:[CWE,reportError] noreturn:[reportError]
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+dontSimplify
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+isEnabled
+TestSuppressions
+run call:[globalSuppressions,globalsuppress_unusedFunction,inlinesuppress,inlinesuppress_comment,inlinesuppress_symbolname,inlinesuppress_unusedFunction,multi_inlinesuppress,multi_inlinesuppress_comment,prepareTest,setVerbose,suppressingSyntaxErrorAndExitCode,suppressingSyntaxErrors,suppressingSyntaxErrorsInline,suppressingSyntaxErrorsWhileFileRead,suppressionWithRelativePaths,suppressionsBadId1,suppressionsDosFormat,suppressionsFileComment,suppressionsFileNameWithColon,suppressionsFileNameWithExtraPath,suppressionsGlob,suppressionsLine0,suppressionsMultiFile,suppressionsPathSeparator,suppressionsSettings,symbol,unusedFunction,while] noreturn:[globalSuppressions,globalsuppress_unusedFunction,inlinesuppress,inlinesuppress_comment,inlinesuppress_symbolname,inlinesuppress_unusedFunction,multi_inlinesuppress,multi_inlinesuppress_comment,suppressingSyntaxErrorAndExitCode,suppressingSyntaxErrors,suppressingSyntaxErrorsInline,suppressingSyntaxErrorsWhileFileRead,suppressionWithRelativePaths,suppressionsBadId1,suppressionsDosFormat,suppressionsFileComment,suppressionsFileNameWithColon,suppressionsFileNameWithExtraPath,suppressionsGlob,suppressionsLine0,suppressionsMultiFile,suppressionsPathSeparator,suppressionsSettings,symbol,unusedFunction,while]
+suppressionsBadId1 call:[assertEquals,parseFile,s1,s2]
+errorMessage
+errorMessage call:[setFileName]
+suppressionsDosFormat call:[assertEquals,errorMessage,isSuppressed,parseFile,s]
+suppressionsFileNameWithColon call:[assertEquals,errorMessage,isSuppressed,parseFile,s]
+suppressionsGlob call:[assertEquals,errorMessage,isSuppressed,parseFile,s]
+suppressionsFileNameWithExtraPath call:[addSuppressionLine,assertEquals,errorMessage,isSuppressed]
+reportSuppressions call:[begin,end,getUnmatchedGlobalSuppressions,getUnmatchedLocalSuppressions,reportUnmatchedSuppressions] noreturn:[reportUnmatchedSuppressions]
+checkSuppression call:[checkSuppression] noreturn:[checkSuppression]
+checkSuppression global:[errout] call:[addSuppressionLine,analyseWholeProgram,assertEquals,begin,check,cppCheck,empty,enable,end,reportSuppressions,setEnabled,settings,str] noreturn:[assertEquals,check,setEnabled]
+checkSuppressionThreads global:[errout,output] call:[addFileContent,addSuppressionLine,assertEquals,begin,check,empty,enable,end,executor,reportSuppressions,str] noreturn:[addFileContent,assertEquals]
+runChecks global:[errout] call:[assertEquals,str]
+suppressionsSettings call:[isEnabled,runChecks] noreturn:[runChecks]
+suppressionsMultiFile global:[errout] call:[assertEquals,checkSuppression,str]
+suppressionsPathSeparator call:[assertEquals,errorMessage,isSuppressed,s1,s2]
+suppressionsLine0 call:[addSuppressionLine,assertEquals,errorMessage,isSuppressed]
+suppressionsFileComment call:[assertEquals,errorMessage,file1,file2,file3,file4,file5,file6,isSuppressed,parseFile]
+inlinesuppress call:[assertEquals,clear,parseComment]
+inlinesuppress_symbolname global:[errout] call:[assertEquals,checkSuppression,str]
+inlinesuppress_comment call:[assertEquals,parseComment]
+multi_inlinesuppress call:[assertEquals,empty,parseMultiSuppressComment,size]
+multi_inlinesuppress_comment call:[assertEquals,empty,parseMultiSuppressComment,size]
+globalSuppressions global:[errout] call:[addSuppressionLine,assertEquals,check,cppCheck,settings,str]
+inlinesuppress_unusedFunction call:[Suppression,addSuppression,assertEquals,empty,getUnmatchedGlobalSuppressions,getUnmatchedLocalSuppressions]
+globalsuppress_unusedFunction call:[addSuppressionLine,assertEquals,empty,getUnmatchedGlobalSuppressions,getUnmatchedLocalSuppressions]
+suppressionWithRelativePaths global:[errout] call:[assertEquals,check,cppCheck,emplace_back,enable,settings,str]
+suppressingSyntaxErrors global:[errout] call:[assertEquals,checkSuppression,str]
+suppressingSyntaxErrorsInline global:[errout] call:[assertEquals,checkSuppression,str]
+suppressingSyntaxErrorsWhileFileRead global:[errout] call:[assertEquals,checkSuppression,str]
+symbol call:[assertEquals,isSuppressed,setFileName]
+unusedFunction call:[assertEquals,checkSuppression]
+suppressingSyntaxErrorAndExitCode global:[errout] call:[assertEquals,checkSuppression,str]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

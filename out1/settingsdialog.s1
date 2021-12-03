@@ -1,0 +1,40 @@
+Application
+getName
+getPath
+getParameters
+setName
+setPath
+setParameters
+getDefaultApplication
+getTranslations
+CodeEditorStyle
+isSystemTheme
+StyleEditDialog
+SettingsDialog call:[CodeEditorStyle,QString,SIGNAL,SLOT,addApplication,boolToCheckState,clicked,connect,copy,defaultApplication,editApplication,editCodeEditorStyle,idealThreadCount,initTranslationsList,itemDoubleClicked,loadSettings,manageStyleControls,number,populateApplicationList,released,removeApplication,setCheckState,setCodeEditorStyleDefault,setEnabled,setSortingEnabled,setStyleSheet,setText,setVisible,setupUi,textEdited,toBool,toString,toggled,tr,validateEditPythonPath,value] noreturn:[initTranslationsList,setText]
+SettingsDialog call:[saveSettings] noreturn:[saveSettings]
+initTranslationsList call:[QVariant,addItem,getCurrentLanguage,getTranslations,mid,setCurrentItem,setData,setText] noreturn:[setCurrentItem]
+boolToCheckState
+checkStateToBool
+loadSettings call:[resize,toInt,value] noreturn:[resize]
+saveSettings call:[height,setValue,size,width] noreturn:[setValue]
+saveSettingValues call:[currentItem,data,saveCheckboxValue,saveSettings,setValue,text,toInt,toString] noreturn:[saveSettings,setValue]
+saveCheckboxValue call:[checkState,checkStateToBool,setValue] noreturn:[setValue]
+validateEditPythonPath call:[arg,exists,hide,isEmpty,isExecutable,isFile,pythonPathInfo,setStyleSheet,setText,show,text,tr] noreturn:[hide,show]
+addApplication call:[addApplication,addItem,dialog,exec,getName,tr] noreturn:[addItem]
+removeApplication call:[clear,getDefaultApplication,populateApplicationList,removeApplication,row,selectedItems,setDefault] noreturn:[populateApplicationList,setDefault]
+editApplication call:[dialog,exec,getApplication,getDefaultApplication,getName,row,selectedItems,setText,tr] noreturn:[setText,tr]
+defaultApplication call:[clear,isEmpty,populateApplicationList,row,selectedItems,setDefault] noreturn:[populateApplicationList]
+populateApplicationList call:[addItem,getApplication,getApplicationCount,getDefaultApplication,getName,setCurrentRow,tr] noreturn:[addItem,setCurrentRow,tr]
+ok call:[accept,copy] noreturn:[accept]
+showFullPath call:[checkState,checkStateToBool] noreturn:[checkStateToBool]
+saveFullPath call:[checkState,checkStateToBool] noreturn:[checkStateToBool]
+saveAllErrors call:[checkState,checkStateToBool] noreturn:[checkStateToBool]
+showNoErrorsMessage call:[checkState,checkStateToBool] noreturn:[checkStateToBool]
+showErrorId call:[checkState,checkStateToBool] noreturn:[checkStateToBool]
+showInconclusive call:[checkState,checkStateToBool] noreturn:[checkStateToBool]
+browsePythonPath call:[contains,getOpenFileName,rootPath,setText,tr] noreturn:[setText]
+browseMisraFile call:[getOpenFileName,homePath,isEmpty,setText,tr] noreturn:[setText]
+setCodeEditorStyleDefault call:[getSystemTheme,isChecked,manageStyleControls] noreturn:[getSystemTheme,manageStyleControls]
+editCodeEditorStyle call:[dlg,exec,getStyle,manageStyleControls] noreturn:[manageStyleControls]
+browseClangPath call:[getExistingDirectory,isEmpty,rootPath,setText,tr] noreturn:[setText]
+manageStyleControls call:[isSystemTheme,setChecked,setEnabled] noreturn:[setEnabled]

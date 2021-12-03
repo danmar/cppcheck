@@ -1,0 +1,7 @@
+validCode call:[curl_easy_cleanup,curl_easy_escape,curl_easy_getinfo,curl_easy_init,curl_easy_perform,curl_easy_reset,curl_easy_setopt,curl_free,printf] noreturn:[curl_easy_cleanup,curl_easy_reset,printf]
+ignoredReturnValue call:[curl_easy_strerror] noreturn:[curl_easy_strerror]
+resourceLeak_curl_easy_init call:[curl_easy_init,printf] noreturn:[printf]
+resourceLeak_curl_easy_duphandle call:[curl_easy_duphandle,printf] noreturn:[printf]
+memleak_curl_easy_escape call:[curl_easy_escape,printf] noreturn:[printf]
+nullPointer call:[curl_easy_recv,curl_easy_send] noreturn:[curl_easy_send]
+uninitvar call:[curl_easy_send] noreturn:[curl_easy_send]

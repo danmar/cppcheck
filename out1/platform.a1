@@ -1,0 +1,152 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1991088102">
+        <error id="useStlAlgorithm" severity="style" msg="Consider using std::any_of algorithm instead of a raw loop." verbose="Consider using std::any_of algorithm instead of a raw loop." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\utils.h" line="102" column="0"/>
+        </error>
+  <FileInfo check="Class">
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.h:129:14" my-argnr="1" my-argname="doc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.cpp" line="193" col="51" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.h:129:14" my-argnr="1" my-argname="doc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.cpp" line="193" col="51" value="0"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.h:129:14" my-argnr="1" my-argname="doc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.cpp" line="193" col="51" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.h:129:14" my-argnr="1" my-argname="doc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.cpp" line="193" col="51" value="0"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.h:129:14" my-argnr="1" my-argname="doc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.cpp" line="193" col="51" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.h:129:14" my-argnr="1" my-argname="doc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.cpp" line="193" col="51" value="0"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="SelectMapKeys" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="32" col="1" hash="14674998498639334143"/>
+<class name="SelectMapValues" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="39" col="1" hash="14982277652450184961"/>
+<class name="EnumClassHash" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/utils.h" line="65" col="1" hash="9130248424087289204"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.h:129:14" my-argnr="1" my-argname="doc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.cpp" line="193" col="51" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.h:129:14" my-argnr="1" my-argname="doc" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/platform.cpp" line="193" col="51" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="platform" lineNumber="40"/>
+    <functiondecl functionName="loadPlatformFile" lineNumber="157"/>
+    <functiondecl functionName="loadFromXmlDocument" lineNumber="191"/>
+    <functiondecl functionName="platform" lineNumber="40"/>
+    <functiondecl functionName="loadPlatformFile" lineNumber="157"/>
+    <functiondecl functionName="loadFromXmlDocument" lineNumber="191"/>
+    <functiondecl functionName="platform" lineNumber="40"/>
+    <functiondecl functionName="loadPlatformFile" lineNumber="157"/>
+    <functiondecl functionName="loadFromXmlDocument" lineNumber="191"/>
+    <functiondecl functionName="platform" lineNumber="40"/>
+    <functiondecl functionName="loadPlatformFile" lineNumber="157"/>
+    <functiondecl functionName="loadFromXmlDocument" lineNumber="191"/>
+    <functioncall functionName="FirstChildElement"/>
+    <functioncall functionName="GetText"/>
+    <functioncall functionName="LoadFile"/>
+    <functioncall functionName="N"/>
+    <functioncall functionName="Name"/>
+    <functioncall functionName="Native"/>
+    <functioncall functionName="NextSiblingElement"/>
+    <functioncall functionName="Platform"/>
+    <functioncall functionName="PlatformFile"/>
+    <functioncall functionName="T"/>
+    <functioncall functionName="Unix32"/>
+    <functioncall functionName="Unix64"/>
+    <functioncall functionName="Unspecified"/>
+    <functioncall functionName="Win32A"/>
+    <functioncall functionName="Win32W"/>
+    <functioncall functionName="Win64"/>
+    <functioncall functionName="acceptFile"/>
+    <functioncall functionName="atoi"/>
+    <functioncall functionName="back"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="bool"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="c_str"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="char_bit"/>
+    <functioncall functionName="class"/>
+    <functioncall functionName="compare"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="doc"/>
+    <functioncall functionName="double"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="endlen"/>
+    <functioncall functionName="endsWith"/>
+    <functioncall functionName="exename"/>
+    <functioncall functionName="extra"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="filenames"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="first"/>
+    <functioncall functionName="float"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="fromNativeSeparators"/>
+    <functioncall functionName="getPathFromFilename"/>
+    <functioncall functionName="getStringCharLiteral"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="int_bit"/>
+    <functioncall functionName="isCharLiteral"/>
+    <functioncall functionName="isPrefixStringCharLiteral"/>
+    <functioncall functionName="isStringCharLiteral"/>
+    <functioncall functionName="isStringLiteral"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="loadFromXmlDocument"/>
+    <functioncall functionName="long"/>
+    <functioncall functionName="long_bit"/>
+    <functioncall functionName="long_long_bit"/>
+    <functioncall functionName="max_value"/>
+    <functioncall functionName="min_value"/>
+    <functioncall functionName="node"/>
+    <functioncall functionName="p"/>
+    <functioncall functionName="platform"/>
+    <functioncall functionName="platformString"/>
+    <functioncall functionName="platformType"/>
+    <functioncall functionName="pt"/>
+    <functioncall functionName="push_back"/>
+    <functioncall functionName="q"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="second"/>
+    <functioncall functionName="short"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="sizeof"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="strcmp"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="success"/>
+    <functioncall functionName="suffixes"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="sz"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="wchar_t"/>
+    <functioncall functionName="x"/>
+  </FileInfo>
+</analyzerinfo>

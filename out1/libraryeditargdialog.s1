@@ -1,0 +1,17 @@
+Container
+Function
+ReturnValue
+empty call:[isNull]
+Arg
+Iterator
+isEmpty call:[isEmpty] noreturn:[isEmpty]
+Alloc
+Dealloc
+Call
+CodeBlocks
+clear call:[clear] noreturn:[clear]
+swap call:[swap] noreturn:[swap]
+LibraryEditArgDialog call:[addItems,clear,count,indexOf,setChecked,setCurrentIndex,setEnabled,setText,setValue,setupUi,toInt] noreturn:[setValue]
+LibraryEditArgDialog
+getArg call:[append,currentIndex,currentText,isChecked,number,text,value] noreturn:[append,number]
+minsizeChanged call:[currentIndex,currentText,setEnabled] noreturn:[setEnabled]

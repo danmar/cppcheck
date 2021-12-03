@@ -1,0 +1,28 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="477168203">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="quiet" lineNumber="37"/>
+    <functiondecl functionName="help" lineNumber="42"/>
+    <functiondecl functionName="which_test" lineNumber="47"/>
+    <functiondecl functionName="exe" lineNumber="52"/>
+    <functioncall functionName="argc"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="count"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="erase"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="insert"/>
+    <functioncall functionName="it"/>
+    <functioncall functionName="mExe"/>
+    <functioncall functionName="mHelp"/>
+    <functioncall functionName="mQuiet"/>
+    <functioncall functionName="mWhichTests"/>
+    <functioncall functionName="options"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="substr"/>
+  </FileInfo>
+</analyzerinfo>

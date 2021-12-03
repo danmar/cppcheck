@@ -1,0 +1,286 @@
+isEmbedStream
+isEncoder
+getImageParams
+getNextStream
+isBinary
+getBaseStream
+getUndecodedStream
+getDict call:[getDict] noreturn:[getDict]
+getFileName
+getPos call:[getPos] noreturn:[getPos]
+getBaseStream call:[getBaseStream] noreturn:[getBaseStream]
+getUndecodedStream call:[getUndecodedStream] noreturn:[getUndecodedStream]
+getDict call:[getDict] noreturn:[getDict]
+getNextStream
+isOk
+getPredictor
+getWidth
+getNComps
+getNBits
+getKind
+getChar call:[fillBuf,return]
+lookChar call:[fillBuf,return]
+getPos
+getStart
+getKind
+getChar call:[return]
+lookChar call:[return]
+getPos call:[return]
+getStart
+getKind call:[getKind] noreturn:[getKind]
+isEmbedStream
+reset
+getPos call:[getPos] noreturn:[getPos]
+getKind
+getChar call:[lookChar]
+getKind
+getChar call:[lookChar]
+getKind
+getKind
+getChar call:[fillBuf,return]
+lookChar call:[fillBuf,return]
+getKind
+eatBits
+getKind
+getRawStream
+getKind
+getKind
+reset
+getChar
+lookChar
+getBlock
+getPSFilter
+isBinary
+getKind
+getPSFilter
+getKind
+getPSFilter
+isEncoder
+getKind
+getChar call:[fillBuf,return]
+lookChar call:[fillBuf,return]
+getPSFilter
+isBinary
+isEncoder
+getKind
+getChar call:[fillBuf,return]
+lookChar call:[fillBuf,return]
+getPSFilter
+isBinary
+isEncoder
+getKind
+getChar call:[fillBuf,return]
+lookChar call:[fillBuf,return]
+getPSFilter
+isBinary
+isEncoder
+getKind
+getPSFilter
+isBinary
+isEncoder
+Stream
+Stream
+close
+getRawChar call:[error]
+getBlock call:[getChar]
+getLine call:[getChar,lookChar] noreturn:[getChar]
+discardChars call:[getBlock,sizeof] noreturn:[sizeof]
+getPSFilter call:[GString] noreturn:[GString]
+addFilters call:[EOFStream,arrayGet,arrayGetLength,dictLookup,error,free,getName,getPos,initNull,isArray,isName,isNull,makeFilter] noreturn:[EOFStream,arrayGet,dictLookup,error,free,initNull,makeFilter]
+makeFilter call:[ASCII85Stream,ASCIIHexStream,CCITTFaxStream,DCTStream,EOFStream,FlateStream,JBIG2Stream,JPXStream,LZWStream,RunLengthStream,dictLookup,error,free,getBool,getInt,getPos,isBool,isDict,isInt,strcmp] noreturn:[ASCII85Stream,ASCIIHexStream,CCITTFaxStream,DCTStream,EOFStream,FlateStream,JPXStream,LZWStream,RunLengthStream,dictLookup,free,getBool,getInt]
+BaseStream
+BaseStream call:[free] noreturn:[free]
+FilterStream
+FilterStream
+close call:[close] noreturn:[close]
+setPos call:[error] noreturn:[error]
+ImageStream call:[gmallocn,sizeof] noreturn:[gmallocn]
+ImageStream call:[gfree] noreturn:[gfree]
+reset call:[reset] noreturn:[reset]
+close call:[close] noreturn:[close]
+getPixel call:[getLine]
+getLine call:[getBlock]
+skipLine call:[getBlock] noreturn:[getBlock]
+StreamPredictor call:[gmalloc,reset]
+StreamPredictor call:[gfree] noreturn:[gfree]
+reset call:[memset]
+lookChar call:[getNextLine]
+getChar call:[getNextLine]
+getBlock call:[getNextLine,memcpy]
+getNextLine call:[getRawChar,memset]
+SharedFile
+SharedFile
+copy
+free
+readBlock call:[fread,gfseek]
+getSize call:[gfseek,gftell]
+FileStream call:[SharedFile]
+FileStream call:[copy]
+FileStream call:[free] noreturn:[free]
+copy call:[FileStream,copy] noreturn:[FileStream]
+makeSubStream call:[FileStream] noreturn:[FileStream]
+reset
+getBlock call:[fillBuf,memcpy]
+fillBuf call:[readBlock]
+setPos call:[getSize]
+moveStart
+MemStream
+MemStream call:[gfree] noreturn:[gfree]
+copy call:[MemStream,copy] noreturn:[MemStream]
+makeSubStream call:[MemStream]
+reset
+close
+getBlock call:[memcpy]
+setPos
+moveStart
+EmbedStream
+EmbedStream
+copy call:[EmbedStream,copy] noreturn:[EmbedStream]
+makeSubStream call:[error]
+getChar call:[getChar] noreturn:[getChar]
+lookChar call:[lookChar] noreturn:[lookChar]
+getBlock call:[getBlock] noreturn:[getBlock]
+setPos call:[error] noreturn:[error]
+getStart call:[error]
+moveStart call:[error] noreturn:[error]
+ASCIIHexStream
+ASCIIHexStream
+copy call:[ASCIIHexStream,copy] noreturn:[ASCIIHexStream]
+reset call:[reset]
+lookChar call:[error,getChar,getPos,isspace,while] noreturn:[error,getChar]
+getPSFilter call:[append,getPSFilter]
+isBinary call:[isBinary] noreturn:[isBinary]
+ASCII85Stream
+ASCII85Stream
+copy call:[ASCII85Stream,copy] noreturn:[ASCII85Stream]
+reset call:[reset]
+lookChar call:[getChar,isSpace,while] noreturn:[getChar]
+getPSFilter call:[append,getPSFilter]
+isBinary call:[isBinary] noreturn:[isBinary]
+LZWStream call:[StreamPredictor,clearTable,isOk] noreturn:[clearTable]
+LZWStream
+copy call:[LZWStream,copy,getNBits,getNComps,getPredictor,getWidth] noreturn:[LZWStream]
+getChar call:[getChar,processNextCode] noreturn:[getChar]
+lookChar call:[lookChar,processNextCode] noreturn:[lookChar]
+getRawChar call:[processNextCode]
+getBlock call:[getBlock,memcpy,processNextCode] noreturn:[getBlock]
+reset call:[clearTable,reset] noreturn:[clearTable,reset]
+processNextCode call:[clearTable,error,getCode,getPos] noreturn:[clearTable]
+clearTable
+getCode call:[getChar]
+getPSFilter call:[append,getPSFilter] noreturn:[append]
+isBinary call:[isBinary] noreturn:[isBinary]
+RunLengthStream
+RunLengthStream
+copy call:[RunLengthStream,copy] noreturn:[RunLengthStream]
+reset call:[reset]
+getBlock call:[fillBuf,memcpy]
+getPSFilter call:[append,getPSFilter]
+isBinary call:[isBinary] noreturn:[isBinary]
+fillBuf call:[getChar] noreturn:[getChar]
+CCITTFaxStream call:[gmallocn,sizeof]
+CCITTFaxStream call:[gfree] noreturn:[gfree]
+copy call:[CCITTFaxStream,copy] noreturn:[CCITTFaxStream]
+reset call:[eatBits,lookBits,reset] noreturn:[eatBits]
+getChar call:[readRow,while] noreturn:[while]
+lookChar call:[readRow,while] noreturn:[while]
+getBlock call:[readRow,while] noreturn:[while]
+addPixels call:[error,getPos]
+addPixelsNeg call:[error,getPos]
+readRow call:[addPixels,addPixelsNeg,eatBits,error,getBlackCode,getPos,getTwoDimCode,getWhiteCode,lookBits,while] noreturn:[addPixels,eatBits,getBlackCode,getWhiteCode,lookBits,while]
+getTwoDimCode call:[eatBits,error,getPos,lookBits]
+getWhiteCode call:[eatBits,error,getPos,lookBits]
+getBlackCode call:[eatBits,error,getPos,lookBits]
+lookBits call:[getChar,return]
+getPSFilter call:[append,getPSFilter,sprintf] noreturn:[append]
+isBinary call:[isBinary] noreturn:[isBinary]
+dctClipInit global:[dctClipData]
+dctClip global:[dctClipData]
+DCTStream call:[close]
+copy call:[DCTStream,copy] noreturn:[DCTStream]
+reset call:[decodeImage,error,getPos,gmallocn,memset,readHeader,readScan,reset,restart,sizeof,while] noreturn:[memset,readScan,restart]
+close call:[close,gfree] noreturn:[close]
+getChar call:[readMCURow]
+lookChar call:[readMCURow]
+getBlock call:[memcpy,readMCURow]
+restart
+readMCURow call:[dctClip,error,getPos,readDataUnit,readMarker,restart,transformDataUnit] noreturn:[dctClip,restart]
+readScan call:[error,getPos,readDataUnit,readMarker,readProgressiveDataUnit,restart] noreturn:[restart]
+readDataUnit global:[dctZigZag] call:[readAmp,readHuffSym]
+readProgressiveDataUnit global:[dctZigZag] call:[readAmp,readBit,readHuffSym]
+decodeImage call:[dctClip,transformDataUnit] noreturn:[dctClip]
+transformDataUnit global:[idctScaleMat] call:[dctClip] noreturn:[dctClip]
+readHuffSym call:[error,getPos,readBit,while]
+readAmp call:[readBit]
+readBit call:[error,getChar,getPos,while] noreturn:[getChar]
+readHeader call:[discardChars,error,getPos,read16,readAdobeMarker,readBaselineSOF,readHuffmanTables,readJFIFMarker,readMarker,readProgressiveSOF,readQuantTables,readRestartInterval,readScanInfo] noreturn:[discardChars]
+readBaselineSOF call:[error,getChar,getPos,read16]
+readProgressiveSOF call:[error,getChar,getPos,read16]
+readScanInfo call:[error,getChar,getPos,read16]
+readQuantTables global:[dctZigZag] call:[error,getChar,getPos,read16] noreturn:[getChar,read16]
+readHuffmanTables call:[error,getChar,getPos,read16] noreturn:[getChar]
+readRestartInterval call:[error,getPos,read16]
+readJFIFMarker call:[error,getChar,getPos,memcmp,read16]
+readAdobeMarker call:[error,getChar,getPos,read16,strncmp]
+readTrailer call:[error,getPos,readMarker]
+readMarker call:[getChar,while] noreturn:[getChar,while]
+read16 call:[getChar,return]
+getPSFilter call:[append,getPSFilter]
+isBinary call:[isBinary] noreturn:[isBinary]
+FlateStream call:[StreamPredictor,isOk,memset] noreturn:[memset]
+FlateStream call:[gfree] noreturn:[gfree]
+copy call:[FlateStream,copy,getNBits,getNComps,getPredictor,getWidth] noreturn:[FlateStream]
+reset call:[error,getChar,getPos,reset] noreturn:[reset]
+getChar call:[getChar,readSome] noreturn:[getChar,readSome]
+lookChar call:[lookChar,readSome] noreturn:[lookChar,readSome]
+getRawChar call:[readSome] noreturn:[readSome]
+getBlock call:[getBlock,readSome] noreturn:[getBlock,readSome]
+getPSFilter call:[append,getPSFilter]
+isBinary call:[isBinary] noreturn:[isBinary]
+readSome call:[error,getChar,getCodeWord,getHuffmanCodeWord,getPos,startBlock]
+startBlock call:[error,getChar,getCodeWord,getPos,gfree,loadFixedCodes,readDynamicCodes] noreturn:[error,gfree,loadFixedCodes]
+loadFixedCodes
+readDynamicCodes call:[compHuffmanCodes,error,getCodeWord,getHuffmanCodeWord,getPos,gfree]
+compHuffmanCodes call:[gmallocn,sizeof]
+getHuffmanCodeWord call:[getChar,return]
+getCodeWord call:[getChar]
+EOFStream
+EOFStream
+copy call:[EOFStream,copy] noreturn:[EOFStream]
+BufStream call:[gmallocn,sizeof] noreturn:[gmallocn]
+BufStream call:[gfree]
+copy call:[BufStream,copy] noreturn:[BufStream]
+reset call:[getChar,reset] noreturn:[getChar]
+getChar call:[getChar]
+lookChar
+lookChar
+isBinary call:[isBinary] noreturn:[isBinary]
+FixedLengthEncoder
+FixedLengthEncoder call:[isEncoder]
+copy call:[error]
+reset call:[reset]
+getChar call:[getChar] noreturn:[getChar]
+lookChar call:[getChar] noreturn:[getChar]
+isBinary call:[isBinary] noreturn:[isBinary]
+ASCIIHexEncoder
+ASCIIHexEncoder call:[isEncoder]
+copy call:[error]
+reset call:[reset]
+fillBuf call:[getChar]
+ASCII85Encoder
+ASCII85Encoder call:[isEncoder]
+copy call:[error]
+reset call:[reset]
+fillBuf call:[getChar]
+RunLengthEncoder
+RunLengthEncoder call:[isEncoder]
+copy call:[error]
+reset call:[reset]
+fillBuf call:[getChar]
+LZWEncoder
+LZWEncoder call:[isEncoder]
+copy call:[error]
+reset call:[getBlock,reset,sizeof]
+getChar call:[fillBuf] noreturn:[fillBuf]
+lookChar call:[fillBuf,return] noreturn:[fillBuf]
+fillBuf call:[getBlock,memcpy,sizeof] noreturn:[getBlock]

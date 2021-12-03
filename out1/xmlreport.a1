@@ -1,0 +1,38 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2731034686">
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="quoteMessage" lineNumber="32"/>
+    <functiondecl functionName="unquoteMessage" lineNumber="43"/>
+    <functiondecl functionName="determineVersion" lineNumber="54"/>
+    <functioncall functionName="CSV"/>
+    <functioncall functionName="ErrorItem"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="Report"/>
+    <functioncall functionName="TXT"/>
+    <functioncall functionName="Text"/>
+    <functioncall functionName="VersionAttribute"/>
+    <functioncall functionName="XMLV2"/>
+    <functioncall functionName="XmlReport"/>
+    <functioncall functionName="atEnd"/>
+    <functioncall functionName="attributes"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="hasAttribute"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="message"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="open"/>
+    <functioncall functionName="quotedMessage"/>
+    <functioncall functionName="readNext"/>
+    <functioncall functionName="reader"/>
+    <functioncall functionName="replace"/>
+    <functioncall functionName="setFileName"/>
+    <functioncall functionName="succeed"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="toInt"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="while"/>
+  </FileInfo>
+</analyzerinfo>

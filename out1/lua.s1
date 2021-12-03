@@ -1,0 +1,2 @@
+validCode call:[lua_gettop,lua_pop,lua_pushnil,printf] noreturn:[lua_pop]
+ignoredReturnValue call:[lua_isboolean,lua_isnil,lua_tonumber,lua_tostring] noreturn:[lua_isnil]

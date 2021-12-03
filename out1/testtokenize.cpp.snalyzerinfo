@@ -1,0 +1,754 @@
+operator()
+operator()
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+contains call:[begin,end,find] noreturn:[end]
+operator()
+endsWith call:[back,empty]
+endsWith call:[compare,return,size]
+endsWith call:[endsWith] noreturn:[endsWith]
+isPrefixStringCharLiteral call:[compare,endsWith,length,size]
+isStringCharLiteral call:[isPrefixStringCharLiteral]
+isStringLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+isCharLiteral call:[isStringCharLiteral] noreturn:[isStringCharLiteral]
+getStringCharLiteral call:[find,size,substr] noreturn:[substr]
+getStringLiteral call:[getStringCharLiteral,isStringLiteral] noreturn:[getStringCharLiteral]
+getCharLiteral call:[getStringCharLiteral,isCharLiteral] noreturn:[getStringCharLiteral]
+getOrdinalText
+min_value
+max_value call:[return]
+Platform
+isIntValue call:[max_value,min_value] noreturn:[max_value]
+isIntValue call:[max_value]
+isLongValue call:[max_value,min_value] noreturn:[max_value]
+isLongValue call:[max_value]
+isLongLongValue call:[max_value]
+isWindowsPlatform
+platformString call:[platformString] noreturn:[platformString]
+platformString
+unsignedCharMax call:[max_value] noreturn:[max_value]
+signedCharMax call:[max_value] noreturn:[max_value]
+signedCharMin call:[min_value] noreturn:[min_value]
+setDirectives
+getDirectives
+setFile0
+operator() call:[caseInsensitiveStringCompare]
+FileSettings
+cppcheckDefines
+isInt
+isFloat
+getDoubleValue call:[isFloat]
+toString call:[str] noreturn:[str]
+CWE
+Standards
+setC
+getC
+setCPP
+getCPP
+Error
+Error
+Error
+getAllocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+getDeallocFuncInfo call:[getAllocDealloc] noreturn:[getAllocDealloc]
+allocId call:[getAllocDealloc]
+deallocId call:[getAllocDealloc]
+setalloc
+setdealloc
+setrealloc
+setnoreturn
+ismemory call:[return] noreturn:[return]
+ismemory call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+isresource call:[return] noreturn:[return]
+Container
+getAction call:[end,find]
+getYield call:[end,find]
+ArgumentChecks
+IteratorInfo
+MinSize
+Function
+isboolargbad call:[getarg]
+isargformatstr call:[getarg]
+isargstrz call:[getarg]
+validarg global:[emptyString] call:[getarg]
+isInt call:[isInt] noreturn:[isInt]
+getArgIteratorInfo call:[getarg]
+argminsizes call:[getarg]
+markupExtensions
+isexporter call:[end,find] noreturn:[end]
+isexportedprefix call:[end,find,isPrefix,return] noreturn:[return]
+isexportedsuffix call:[end,find,isSuffix,return] noreturn:[return]
+isreflection call:[end,find] noreturn:[end]
+reflectionArgument call:[end,find]
+podtype call:[end,find,return]
+PlatformType
+operator== call:[return] noreturn:[return]
+operator!=
+platform_type call:[end,find,return]
+platform_type call:[end,find,platform_type,return]
+addPrefix call:[insert] noreturn:[insert]
+addSuffix call:[insert] noreturn:[insert]
+isPrefix call:[end,find,return] noreturn:[return]
+isSuffix call:[end,find,return] noreturn:[return]
+CodeBlock
+setStart
+setEnd
+setOffset
+addBlock call:[insert] noreturn:[insert]
+start
+end
+offset
+isBlock call:[end,find] noreturn:[end]
+getAllocDealloc call:[end,find,return]
+getFileName
+Suppression
+Suppression
+Suppression
+operator=
+operator<
+isLocal call:[empty,find_first_of]
+isSameParameters
+TimerResultsIntf
+TimerResultsData
+seconds
+TimerResults
+Rule
+SafeChecks
+clear
+configurationExcluded call:[compare,length]
+posix call:[begin,end,find] noreturn:[end]
+terminate
+terminated
+FileLocation
+FileLocation
+FileLocation
+getinfo
+setinfo
+shortMessage
+verboseMessage
+symbolNames
+ErrorLogger
+ErrorLogger call:[close,is_open,plistFooter] noreturn:[close]
+reportProgress
+reportInfo call:[reportErr] noreturn:[reportErr]
+plistFooter
+assertEquals call:[assertEqualsFailed,str] noreturn:[assertEqualsFailed]
+setVerbose
+setMultiline
+bughuntingReport
+TestFixture
+FwdAnalysis
+Result
+Result
+operator()
+operator()
+operator()
+operator() call:[abs]
+operator()
+Value
+equalValue call:[sameToken]
+visitValue call:[f]
+operator() call:[compare] noreturn:[compare]
+operator() call:[bind,move,ref,visitValue] noreturn:[visitValue]
+compareValue call:[assert,bind,isSymbolicValue,move,ref,sameToken,visitValue]
+operator== call:[equalValue]
+operator!=
+equalTo call:[bind,ref,visitValue]
+decreaseRange call:[visitValue] noreturn:[visitValue]
+invertBound
+invertRange call:[decreaseRange,invertBound] noreturn:[decreaseRange]
+isIntValue
+isTokValue
+isFloatValue
+isMovedValue
+isUninitValue
+isContainerSizeValue
+isLifetimeValue
+isBufferSizeValue
+isIteratorValue
+isIteratorStartValue
+isIteratorEndValue
+isSymbolicValue
+isLocalLifetimeValue
+isArgumentLifetimeValue
+isSubFunctionLifetimeValue
+isNonValue call:[isLifetimeValue,isMovedValue,isUninitValue] noreturn:[isLifetimeValue]
+setKnown
+isKnown
+setPossible
+isPossible
+isImpossible
+setImpossible
+setInconclusive
+isInconclusive
+changeKnownToPossible call:[isKnown]
+errorSeverity
+LifetimeToken
+LifetimeToken
+LifetimeToken
+setAddressOf
+setInconclusive
+isClass call:[setFlag] noreturn:[setFlag]
+isFunction call:[setFlag] noreturn:[setFlag]
+isVariable call:[setFlag] noreturn:[setFlag]
+isAlias call:[setFlag] noreturn:[setFlag]
+isSpecialization call:[setFlag] noreturn:[setFlag]
+isPartialSpecialization call:[setFlag] noreturn:[setFlag]
+isForwardDeclaration call:[setFlag] noreturn:[setFlag]
+isVariadic call:[setFlag] noreturn:[setFlag]
+isFriend call:[setFlag] noreturn:[setFlag]
+getFlag call:[return] noreturn:[return]
+setFlag
+operator==
+token
+token
+scope
+name
+fullName
+nameToken
+paramEnd
+paramEnd
+isClass call:[getFlag] noreturn:[getFlag]
+isFunction call:[getFlag] noreturn:[getFlag]
+isVariable call:[getFlag] noreturn:[getFlag]
+isAlias call:[getFlag] noreturn:[getFlag]
+isSpecialization call:[getFlag] noreturn:[getFlag]
+isPartialSpecialization call:[getFlag] noreturn:[getFlag]
+isForwardDeclaration call:[getFlag] noreturn:[getFlag]
+isVariadic call:[getFlag] noreturn:[getFlag]
+isFriend call:[getFlag] noreturn:[getFlag]
+isSameFamily call:[return]
+ScopeInfo2
+TokenImpl
+str call:[update_property_info] noreturn:[update_property_info]
+str
+tokAt call:[tokAt]
+linkAt call:[linkAt]
+simpleMatch call:[simpleMatch] noreturn:[simpleMatch]
+valueType
+argumentType call:[Match,astParent] noreturn:[astParent]
+tokType
+tokType call:[setFlag] noreturn:[setFlag]
+isKeyword
+isName call:[getFlag] noreturn:[getFlag]
+isNameOnly
+isLiteral call:[getFlag] noreturn:[getFlag]
+isNumber
+isEnumerator
+isOp call:[isAssignmentOp,isConstOp,return] noreturn:[return]
+isConstOp call:[isArithmeticalOp,return] noreturn:[return]
+isExtendedOp call:[isConstOp]
+isArithmeticalOp
+isComparisonOp
+isAssignmentOp
+isBoolean
+isIncDecOp
+isBinaryOp call:[astOperand1,astOperand2]
+isUnaryOp call:[astOperand1,astOperand2]
+flags
+flags
+isUnsigned call:[getFlag] noreturn:[getFlag]
+isUnsigned call:[setFlag] noreturn:[setFlag]
+isSigned call:[getFlag] noreturn:[getFlag]
+isSigned call:[setFlag] noreturn:[setFlag]
+isPointerCompare call:[getFlag] noreturn:[getFlag]
+isPointerCompare call:[setFlag] noreturn:[setFlag]
+isLong call:[getFlag] noreturn:[getFlag]
+isLong call:[setFlag] noreturn:[setFlag]
+isStandardType call:[getFlag] noreturn:[getFlag]
+isStandardType call:[setFlag] noreturn:[setFlag]
+isExpandedMacro call:[getFlag] noreturn:[getFlag]
+isExpandedMacro call:[setFlag] noreturn:[setFlag]
+isCast call:[getFlag] noreturn:[getFlag]
+isCast call:[setFlag] noreturn:[setFlag]
+isAttributeConstructor call:[getFlag] noreturn:[getFlag]
+isAttributeConstructor call:[setFlag] noreturn:[setFlag]
+isAttributeDestructor call:[getFlag] noreturn:[getFlag]
+isAttributeDestructor call:[setFlag] noreturn:[setFlag]
+isAttributeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeUnused call:[setFlag] noreturn:[setFlag]
+isAttributeUsed call:[getFlag] noreturn:[getFlag]
+isAttributeUsed call:[setFlag] noreturn:[setFlag]
+isAttributePure call:[getFlag] noreturn:[getFlag]
+isAttributePure call:[setFlag] noreturn:[setFlag]
+isAttributeConst call:[getFlag] noreturn:[getFlag]
+isAttributeConst call:[setFlag] noreturn:[setFlag]
+isAttributeNoreturn call:[getFlag] noreturn:[getFlag]
+isAttributeNoreturn call:[setFlag] noreturn:[setFlag]
+isAttributeNothrow call:[getFlag] noreturn:[getFlag]
+isAttributeNothrow call:[setFlag] noreturn:[setFlag]
+isAttributePacked call:[getFlag] noreturn:[getFlag]
+isAttributePacked call:[setFlag] noreturn:[setFlag]
+isAttributeNodiscard call:[getFlag] noreturn:[getFlag]
+isAttributeNodiscard call:[setFlag] noreturn:[setFlag]
+isAttributeMaybeUnused call:[getFlag] noreturn:[getFlag]
+isAttributeMaybeUnused call:[setFlag] noreturn:[setFlag]
+setCppcheckAttribute call:[setCppcheckAttribute] noreturn:[setCppcheckAttribute]
+getCppcheckAttribute call:[getCppcheckAttribute] noreturn:[getCppcheckAttribute]
+hasCppcheckAttributes
+isControlFlowKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[getFlag] noreturn:[getFlag]
+isOperatorKeyword call:[setFlag] noreturn:[setFlag]
+isComplex call:[getFlag] noreturn:[getFlag]
+isComplex call:[setFlag] noreturn:[setFlag]
+isEnumType call:[getFlag] noreturn:[getFlag]
+isEnumType call:[setFlag] noreturn:[setFlag]
+isAtAddress call:[getFlag] noreturn:[getFlag]
+isAtAddress call:[setFlag] noreturn:[setFlag]
+isIncompleteVar call:[getFlag] noreturn:[getFlag]
+isIncompleteVar call:[setFlag] noreturn:[setFlag]
+isConstexpr call:[getFlag] noreturn:[getFlag]
+isConstexpr call:[setFlag] noreturn:[setFlag]
+isExternC call:[getFlag] noreturn:[getFlag]
+isExternC call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclComma call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclComma call:[setFlag] noreturn:[setFlag]
+isSplittedVarDeclEq call:[getFlag] noreturn:[getFlag]
+isSplittedVarDeclEq call:[setFlag] noreturn:[setFlag]
+isImplicitInt call:[getFlag] noreturn:[getFlag]
+isImplicitInt call:[setFlag] noreturn:[setFlag]
+isInline call:[getFlag] noreturn:[getFlag]
+isInline call:[setFlag] noreturn:[setFlag]
+isTemplate call:[getFlag] noreturn:[getFlag]
+isTemplate call:[setFlag] noreturn:[setFlag]
+isBitfield
+bits
+templateSimplifierPointers
+templateSimplifierPointer call:[insert] noreturn:[insert]
+setBits
+isUtf8 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf16 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isUtf32 call:[isPrefixStringCharLiteral,return] noreturn:[return]
+isCChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isCMultiChar call:[isPrefixStringCharLiteral,length,return] noreturn:[return]
+isTemplateArg call:[getFlag] noreturn:[getFlag]
+isTemplateArg call:[setFlag] noreturn:[setFlag]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findsimplematch call:[findsimplematch] noreturn:[findsimplematch]
+findsimplematch call:[findsimplematch]
+findmatch call:[findmatch]
+findmatch call:[findmatch]
+fileIndex
+fileIndex
+linenr
+linenr
+column
+column
+next
+previous
+varId
+varId call:[isStandardType,tokType,update_property_info] noreturn:[isStandardType,update_property_info]
+exprId
+exprId
+forDebug
+forDebugVarId call:[forDebug]
+forDebugExprId call:[forDebug]
+forPrintOut call:[forDebug]
+link call:[update_property_info] noreturn:[update_property_info]
+link
+scope
+scope
+function
+variable call:[tokType] noreturn:[tokType]
+variable
+type
+enumerator
+enumerator call:[tokType] noreturn:[tokType]
+progressValue
+originalName global:[emptyString]
+values
+originalName call:[string] noreturn:[string]
+getKnownIntValue call:[front]
+removeValues call:[remove_if] noreturn:[remove_if]
+index
+next
+previous
+getFlag call:[return] noreturn:[return]
+setFlag
+astOperand1
+astOperand1
+astOperand2
+astOperand2
+astParent
+astParent
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astSibling call:[astOperand1,astOperand2,astParent] noreturn:[astOperand1,astOperand2]
+astTop
+astTop
+clearAst
+clearValueFlow
+astString call:[astString] noreturn:[astString]
+setCpp11init
+isCpp11init
+setSettings
+getSettings
+isC
+isCPP
+front
+front
+back
+back
+getFiles
+find call:[find] noreturn:[find]
+end call:[end] noreturn:[end]
+map
+getVarId
+setTimerResults
+isC call:[isC] noreturn:[isC]
+isCPP call:[isCPP] noreturn:[isCPP]
+setPreprocessor
+getPreprocessor
+codeWithTemplates
+setSettings call:[setSettings] noreturn:[setSettings]
+getSymbolDatabase
+varIdCount
+tokens call:[front] noreturn:[front]
+isMaxTime
+getSettings
+newVarId
+TestTokenizer
+run call:[addSemicolonAfterUnknownMacro,arraySize,astbrackets,astcase,astcast,astexpr,astexpr2,astfunction,astlambda,astnewdelete,astnewscoped,astpar,astrefqualifier,asttemplate,astunaryop,astvardecl,bitfields1,bitfields10,bitfields12,bitfields13,bitfields14,bitfields15,bitfields16,bitfields2,bitfields3,bitfields4,bitfields5,bitfields6,bitfields7,bitfields8,bitfields9,borland,c_str,checkConditionBlock,checkConfiguration,checkEnableIf,checkHeader1,checkIfCppCast,checkLambdas,checkNamespaces,checkRefQualifiers,checkTemplates,checkUnknownCircularVar,combineOperators,compileLimits,complainMissingLib,concatenateNegativeNumber,cpp03template1,cpp0xtemplate1,cpp0xtemplate2,cpp0xtemplate3,cpp0xtemplate4,cpp0xtemplate5,cpp14template,cppcast,createLinks,createLinks2,doWhileAddBraces,doWhileAddBracesLabels,findGarbageCode,forAddBraces1,forAddBraces2,forAddBracesLabels,foreach,functionAttributeAfter,functionAttributeBefore1,functionAttributeBefore2,functionAttributeListAfter,functionAttributeListBefore,ifAddBraces1,ifAddBraces11,ifAddBraces12,ifAddBraces13,ifAddBraces15,ifAddBraces16,ifAddBraces17,ifAddBraces18,ifAddBraces19,ifAddBraces2,ifAddBraces20,ifAddBraces3,ifAddBraces4,ifAddBraces5,ifAddBraces7,ifAddBraces9,ifAddBracesLabels,ifconstexpr,implicitIntConst,implicitIntExtern,implicitIntSigned1,implicitIntUnsigned1,implicitIntUnsigned2,implicitIntUnsigned3,inlineasm,isOneNumber,isTwoNumber,isZeroNumber,labels,load,longtok,microsoftMemory,microsoftString,multipleAssignment,noCrash1,noCrash2,noCrash3,objectiveC,platformWin32A,platformWin32AStringCat,platformWin32W,platformWin32WStringCat,platformWinWithNamespace,prepareTernaryOpForAST,prepareTest,removeAlignas1,removeAlignas2,removeExtraTemplateKeywords,removeMacroInClassDef,removeMacroInVarDecl,removeMacrosInGlobalScope,removeParentheses1,removeParentheses10,removeParentheses11,removeParentheses12,removeParentheses13,removeParentheses14,removeParentheses15,removeParentheses16,removeParentheses17,removeParentheses18,removeParentheses19,removeParentheses20,removeParentheses21,removeParentheses22,removeParentheses23,removeParentheses24,removeParentheses25,removeParentheses26,removeParentheses3,removeParentheses4,removeParentheses5,removeParentheses6,removeParentheses7,removeParentheses8,removeParentheses9,removePragma,removeattribute,removedeclspec,reportUnknownMacros,setVerbose,simplifyAsm2,simplifyAt,simplifyCAlternativeTokens,simplifyCPPAttribute,simplifyCaseRange,simplifyConst,simplifyCoroutines,simplifyEmptyNamespaces,simplifyExternC,simplifyFunctionParameters,simplifyFunctionParameters1,simplifyFunctionParameters2,simplifyFunctionParameters3,simplifyFunctionParameters4,simplifyFunctionParametersErrors,simplifyFunctionParametersMultiTemplate,simplifyFunctionPointers1,simplifyFunctionPointers2,simplifyFunctionPointers3,simplifyFunctionPointers4,simplifyFunctionPointers5,simplifyFunctionPointers6,simplifyFunctionPointers7,simplifyFunctionPointers8,simplifyFunctionPointers9,simplifyFunctionTryCatch,simplifyHeadersAndUnusedTemplates1,simplifyHeadersAndUnusedTemplates2,simplifyIfSwitchForInit1,simplifyIfSwitchForInit2,simplifyIfSwitchForInit3,simplifyIfSwitchForInit4,simplifyInitVar,simplifyInitVar2,simplifyInitVar3,simplifyKeyword,simplifyMulAndParens,simplifyNamespaceStd,simplifyNullArray,simplifyOperatorName1,simplifyOperatorName10,simplifyOperatorName11,simplifyOperatorName12,simplifyOperatorName13,simplifyOperatorName14,simplifyOperatorName15,simplifyOperatorName16,simplifyOperatorName17,simplifyOperatorName18,simplifyOperatorName19,simplifyOperatorName2,simplifyOperatorName20,simplifyOperatorName21,simplifyOperatorName22,simplifyOperatorName23,simplifyOperatorName24,simplifyOperatorName25,simplifyOperatorName26,simplifyOperatorName27,simplifyOperatorName28,simplifyOperatorName29,simplifyOperatorName3,simplifyOperatorName31,simplifyOperatorName4,simplifyOperatorName5,simplifyOperatorName6,simplifyOperatorName7,simplifyOperatorName8,simplifyOperatorName9,simplifyOverloadedOperators1,simplifyOverloadedOperators2,simplifyOverloadedOperators3,simplifyPointerToStandardType,simplifyQtSignalsSlots1,simplifyQtSignalsSlots2,simplifyRoundCurlyParentheses,simplifySQL,simplifySpaceshipOperator,simplifyStaticConst,simplifyStdType,simplifyString,simplifyStructDecl,sizeofAddParentheses,splitTemplateRightAngleBrackets,startOfExecutableScope,switchAddBracesLabels,switchCase,syntax_case_default,tokenize1,tokenize11,tokenize13,tokenize14,tokenize15,tokenize17,tokenize18,tokenize19,tokenize2,tokenize21,tokenize22,tokenize25,tokenize26,tokenize27,tokenize31,tokenize32,tokenize33,tokenize34,tokenize35,tokenize36,tokenize37,tokenize38,tokenize39,tokenize4,tokenize5,tokenize7,tokenize8,tokenize9,tokenizeHexWithSuffix,tokenize_double,tokenize_strings,unknownMacroBeforeReturn,unknownType,validate,vardec_static,vardecl1,vardecl10,vardecl11,vardecl12,vardecl13,vardecl14,vardecl15,vardecl16,vardecl17,vardecl18,vardecl19,vardecl2,vardecl20,vardecl21,vardecl22,vardecl23,vardecl24,vardecl25,vardecl26,vardecl27,vardecl28,vardecl3,vardecl4,vardecl5,vardecl6,vardecl7,vardecl8,vardecl9,vardecl_class_ref,vardecl_par,vardecl_par2,vardecl_par3,vardecl_stl_1,vardecl_stl_2,vardecl_template_1,vardecl_template_2,vardecl_union,volatile_variables,while,whileAddBraces,whileAddBracesLabels] noreturn:[addSemicolonAfterUnknownMacro,arraySize,astbrackets,astcase,astcast,astexpr,astexpr2,astfunction,astlambda,astnewdelete,astnewscoped,astpar,astrefqualifier,asttemplate,astunaryop,astvardecl,bitfields1,bitfields10,bitfields12,bitfields13,bitfields14,bitfields15,bitfields16,bitfields2,bitfields3,bitfields4,bitfields5,bitfields6,bitfields7,bitfields8,bitfields9,borland,checkConditionBlock,checkConfiguration,checkEnableIf,checkHeader1,checkIfCppCast,checkLambdas,checkNamespaces,checkRefQualifiers,checkTemplates,checkUnknownCircularVar,combineOperators,compileLimits,concatenateNegativeNumber,cpp03template1,cpp0xtemplate1,cpp0xtemplate2,cpp0xtemplate3,cpp0xtemplate4,cpp0xtemplate5,cpp14template,cppcast,createLinks,createLinks2,doWhileAddBraces,doWhileAddBracesLabels,findGarbageCode,forAddBraces1,forAddBraces2,forAddBracesLabels,foreach,functionAttributeAfter,functionAttributeBefore1,functionAttributeBefore2,functionAttributeListAfter,functionAttributeListBefore,ifAddBraces1,ifAddBraces11,ifAddBraces12,ifAddBraces13,ifAddBraces15,ifAddBraces16,ifAddBraces17,ifAddBraces18,ifAddBraces19,ifAddBraces2,ifAddBraces20,ifAddBraces3,ifAddBraces4,ifAddBraces5,ifAddBraces7,ifAddBraces9,ifAddBracesLabels,ifconstexpr,implicitIntConst,implicitIntExtern,implicitIntSigned1,implicitIntUnsigned1,implicitIntUnsigned2,implicitIntUnsigned3,inlineasm,isOneNumber,isTwoNumber,isZeroNumber,labels,longtok,microsoftMemory,microsoftString,multipleAssignment,noCrash1,noCrash2,noCrash3,objectiveC,platformWin32A,platformWin32AStringCat,platformWin32W,platformWin32WStringCat,platformWinWithNamespace,prepareTernaryOpForAST,removeAlignas1,removeAlignas2,removeExtraTemplateKeywords,removeMacroInClassDef,removeMacroInVarDecl,removeMacrosInGlobalScope,removeParentheses1,removeParentheses10,removeParentheses11,removeParentheses12,removeParentheses13,removeParentheses14,removeParentheses15,removeParentheses16,removeParentheses17,removeParentheses18,removeParentheses19,removeParentheses20,removeParentheses21,removeParentheses22,removeParentheses23,removeParentheses24,removeParentheses25,removeParentheses26,removeParentheses3,removeParentheses4,removeParentheses5,removeParentheses6,removeParentheses7,removeParentheses8,removeParentheses9,removePragma,removeattribute,removedeclspec,reportUnknownMacros,simplifyAsm2,simplifyAt,simplifyCAlternativeTokens,simplifyCPPAttribute,simplifyCaseRange,simplifyConst,simplifyCoroutines,simplifyEmptyNamespaces,simplifyExternC,simplifyFunctionParameters,simplifyFunctionParameters1,simplifyFunctionParameters2,simplifyFunctionParameters3,simplifyFunctionParameters4,simplifyFunctionParametersErrors,simplifyFunctionParametersMultiTemplate,simplifyFunctionPointers1,simplifyFunctionPointers2,simplifyFunctionPointers3,simplifyFunctionPointers4,simplifyFunctionPointers5,simplifyFunctionPointers6,simplifyFunctionPointers7,simplifyFunctionPointers8,simplifyFunctionPointers9,simplifyFunctionTryCatch,simplifyHeadersAndUnusedTemplates1,simplifyHeadersAndUnusedTemplates2,simplifyIfSwitchForInit1,simplifyIfSwitchForInit2,simplifyIfSwitchForInit3,simplifyIfSwitchForInit4,simplifyInitVar,simplifyInitVar2,simplifyInitVar3,simplifyKeyword,simplifyMulAndParens,simplifyNamespaceStd,simplifyNullArray,simplifyOperatorName1,simplifyOperatorName10,simplifyOperatorName11,simplifyOperatorName12,simplifyOperatorName13,simplifyOperatorName14,simplifyOperatorName15,simplifyOperatorName16,simplifyOperatorName17,simplifyOperatorName18,simplifyOperatorName19,simplifyOperatorName2,simplifyOperatorName20,simplifyOperatorName21,simplifyOperatorName22,simplifyOperatorName23,simplifyOperatorName24,simplifyOperatorName25,simplifyOperatorName26,simplifyOperatorName27,simplifyOperatorName28,simplifyOperatorName29,simplifyOperatorName3,simplifyOperatorName31,simplifyOperatorName4,simplifyOperatorName5,simplifyOperatorName6,simplifyOperatorName7,simplifyOperatorName8,simplifyOperatorName9,simplifyOverloadedOperators1,simplifyOverloadedOperators2,simplifyOverloadedOperators3,simplifyPointerToStandardType,simplifyQtSignalsSlots1,simplifyQtSignalsSlots2,simplifyRoundCurlyParentheses,simplifySQL,simplifySpaceshipOperator,simplifyStaticConst,simplifyStdType,simplifyString,simplifyStructDecl,sizeofAddParentheses,splitTemplateRightAngleBrackets,startOfExecutableScope,switchAddBracesLabels,switchCase,syntax_case_default,tokenize1,tokenize11,tokenize13,tokenize14,tokenize15,tokenize17,tokenize18,tokenize19,tokenize2,tokenize21,tokenize22,tokenize25,tokenize26,tokenize27,tokenize31,tokenize32,tokenize33,tokenize34,tokenize35,tokenize36,tokenize37,tokenize38,tokenize39,tokenize4,tokenize5,tokenize7,tokenize8,tokenize9,tokenizeHexWithSuffix,tokenize_double,tokenize_strings,unknownMacroBeforeReturn,unknownType,validate,vardec_static,vardecl1,vardecl10,vardecl11,vardecl12,vardecl13,vardecl14,vardecl15,vardecl16,vardecl17,vardecl18,vardecl19,vardecl2,vardecl20,vardecl21,vardecl22,vardecl23,vardecl24,vardecl25,vardecl26,vardecl27,vardecl28,vardecl3,vardecl4,vardecl5,vardecl6,vardecl7,vardecl8,vardecl9,vardecl_class_ref,vardecl_par,vardecl_par2,vardecl_par3,vardecl_stl_1,vardecl_stl_2,vardecl_template_1,vardecl_template_2,vardecl_union,volatile_variables,while,whileAddBraces,whileAddBracesLabels]
+tokenizeAndStringify_ global:[errout] call:[assert_,find,getline,istr,istr2,platform,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+tokenizeAndStringifyWindows_ global:[errout] call:[assert_,find,getline,istr,istr2,platform,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+tokenizeAndStringify_ global:[errout] call:[assert_,istr,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+tokenizeDebugListing_ global:[errout] call:[assert_,istr,str,stringifyList,tokenize,tokenizer,tokens] noreturn:[stringifyList]
+tokenize1 call:[assertEquals,tokenizeAndStringify_]
+tokenize2 call:[assertEquals,tokenizeAndStringify_]
+tokenize4 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+tokenize5 call:[assertEquals,tokenizeAndStringify_]
+tokenize7 call:[assertEquals,tokenizeAndStringify_]
+tokenize8 call:[assertEquals,tokenizeDebugListing_]
+tokenize9 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+tokenize11 call:[assertEquals,tokenizeAndStringify_]
+tokenize13 call:[assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+tokenize14 call:[assertEquals,tokenizeAndStringify_]
+tokenizeHexWithSuffix call:[assertEquals,tokenizeAndStringify_]
+tokenize15 call:[assertEquals,tokenizeAndStringify_]
+tokenize17 call:[assertEquals,tokenizeAndStringify_]
+tokenize18 call:[assertEquals,tokenizeAndStringify_]
+tokenize19 call:[assertEquals,assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail]
+tokenize21 call:[assertEquals,tokenizeAndStringify_]
+tokenize22 call:[assertEquals,tokenizeAndStringify_]
+tokenize25 call:[assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+tokenize26 call:[assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+tokenize27 call:[tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+tokenize31 call:[assertEquals,tokenizeAndStringify_]
+tokenize32 call:[assertEquals,tokenizeAndStringify_]
+tokenize33 call:[tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+tokenize34 call:[assertEquals,tokenizeDebugListing_]
+tokenize35 call:[tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+tokenize36 call:[assertEquals,tokenizeAndStringify_]
+tokenize37 call:[assertEquals,tokenizeAndStringify_]
+tokenize38 call:[assertEquals,tokenizeAndStringify_]
+tokenize39 call:[assertEquals,tokenizeAndStringify_]
+validate call:[assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+objectiveC call:[assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+syntax_case_default global:[errout] call:[assertEquals,assertThrow,str,tokenizeAndStringify_,while] noreturn:[assertThrow,tokenizeAndStringify_]
+removePragma call:[assertEquals,tokenizeAndStringify_]
+foreach call:[assertEquals,tokenizeAndStringify_]
+ifconstexpr call:[assertEquals,tokenizeAndStringify_]
+combineOperators call:[assertEquals,tokenizeAndStringify_]
+concatenateNegativeNumber call:[assertEquals,tokenizeAndStringify_]
+longtok call:[assertEquals,c_str,filedata,tokenizeAndStringify_]
+simplifyHeadersAndUnusedTemplates1 call:[assertEquals,tokenizeAndStringify_]
+simplifyHeadersAndUnusedTemplates2 call:[assertEquals,tokenizeAndStringify_]
+simplifyAt call:[assertEquals,tokenizeAndStringify_]
+inlineasm call:[assertEquals,tokenizeAndStringify_]
+simplifyAsm2 call:[assertEquals,assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail]
+ifAddBraces1 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces2 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces3 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces4 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces5 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces7 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces9 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces11 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces12 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces13 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces15 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces16 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces17 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces18 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces19 call:[assertEquals,tokenizeAndStringify_]
+ifAddBraces20 call:[assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+ifAddBracesLabels call:[assertEquals,tokenizeAndStringify_]
+switchAddBracesLabels call:[assertEquals,tokenizeAndStringify_]
+whileAddBraces call:[assertEquals,tokenizeAndStringify_]
+whileAddBracesLabels call:[assertEquals,tokenizeAndStringify_]
+doWhileAddBraces call:[assertEquals,tokenizeAndStringify_]
+doWhileAddBracesLabels call:[assertEquals,tokenizeAndStringify_]
+forAddBraces1 call:[assertEquals,tokenizeAndStringify_]
+forAddBraces2 call:[assertEquals,tokenizeAndStringify_]
+forAddBracesLabels call:[assertEquals,tokenizeAndStringify_]
+simplifyExternC call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionParameters call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionParameters1 call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionParameters2 call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionParameters3 call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionParameters4 call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionParametersMultiTemplate call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionParametersErrors global:[errout] call:[assertEquals,assertThrowFail,str,tokenizeAndStringify_,while] noreturn:[assertThrowFail]
+simplifyFunctionTryCatch call:[assertEquals,tokenizeAndStringify_]
+removeParentheses1 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses3 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses4 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses5 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses6 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses7 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses8 call:[actual,assertEquals,tokenizeAndStringify_]
+removeParentheses9 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses10 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses11 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses12 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses13 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses14 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses15 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses16 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses17 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses18 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses19 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses20 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses21 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses22 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses23 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses24 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses25 call:[assertEquals,tokenizeAndStringify_]
+removeParentheses26 call:[assertEquals,tokenizeAndStringify_]
+tokenize_double call:[assertEquals,tokenizeAndStringify_]
+tokenize_strings call:[assertEquals,tokenizeAndStringify_]
+simplifyMulAndParens call:[assertEquals,tokenizeAndStringify_]
+simplifyStructDecl call:[assertEquals,tokenizeAndStringify_]
+vardecl1 call:[actual,assertEquals,tokenizeAndStringify_]
+vardecl2 call:[actual,assertEquals,tokenizeAndStringify_]
+vardecl3 call:[actual,assertEquals,tokenizeAndStringify_]
+vardecl4 call:[assertEquals,tokenizeAndStringify_]
+vardecl5 call:[assertEquals,tokenizeAndStringify_]
+vardecl_stl_1 call:[assertEquals,tokenizeAndStringify_]
+vardecl_stl_2 call:[assertEquals,tokenizeAndStringify_]
+vardecl_template_1 call:[assertEquals,tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+vardecl_template_2 call:[assertEquals,tokenizeAndStringify_]
+vardecl_union call:[assertEquals,tokenizeAndStringify_]
+vardecl_par call:[assertEquals,tokenizeAndStringify_]
+vardecl_par2 call:[assertEquals,tokenizeAndStringify_]
+vardecl_par3 call:[assertEquals,tokenizeAndStringify_]
+vardecl_class_ref call:[assertEquals,tokenizeAndStringify_]
+vardec_static call:[assertEquals,tokenizeAndStringify_]
+vardecl6 call:[assertEquals,tokenizeAndStringify_]
+vardecl7 call:[assertEquals,tokenizeAndStringify_]
+vardecl8 call:[assertEquals,tokenizeAndStringify_]
+vardecl9 call:[assertEquals,tokenizeAndStringify_]
+vardecl10 call:[assertEquals,tokenizeAndStringify_]
+vardecl11 call:[assertEquals,tokenizeAndStringify_]
+vardecl12 call:[assertEquals,tokenizeAndStringify_]
+vardecl13 call:[assertEquals,tokenizeAndStringify_]
+vardecl14 call:[assertEquals,tokenizeAndStringify_]
+vardecl15 call:[assertEquals,tokenizeAndStringify_]
+vardecl16 call:[assertEquals,tokenizeAndStringify_]
+vardecl17 call:[assertEquals,tokenizeAndStringify_]
+vardecl18 call:[assertEquals,tokenizeAndStringify_]
+vardecl19 call:[assertEquals,tokenizeAndStringify_]
+vardecl20 call:[assertEquals,tokenizeAndStringify_]
+vardecl21 call:[assertEquals,tokenizeAndStringify_]
+vardecl22 call:[tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+vardecl23 call:[assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+vardecl24 call:[assertEquals,tokenizeAndStringify_]
+vardecl25 call:[tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+vardecl26 call:[assertEquals,tokenizeAndStringify_]
+vardecl27 call:[tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+vardecl28 call:[assertEquals,tokenizeAndStringify_]
+volatile_variables call:[actual,assertEquals,tokenizeAndStringify_]
+simplifyKeyword call:[assertEquals,tokenizeAndStringify_]
+implicitIntConst call:[assertEquals,tokenizeAndStringify_]
+implicitIntExtern call:[assertEquals,tokenizeAndStringify_]
+implicitIntSigned1 call:[assertEquals,tokenizeAndStringify_]
+implicitIntUnsigned1 call:[assertEquals,tokenizeAndStringify_]
+implicitIntUnsigned2 call:[assertEquals,tokenizeAndStringify_]
+implicitIntUnsigned3 call:[assertEquals,tokenizeAndStringify_]
+simplifyStdType call:[assertEquals,tokenizeAndStringify_]
+createLinks global:[errout] call:[assertEquals,assert_,istr,linkAt,str,tokAt,tokenize,tokenizer,tokens]
+createLinks2 global:[errout] call:[assertEquals,assert_,findsimplematch,istr,link,linkAt,next,previous,simpleMatch,str,tokAt,tokenize,tokenizer,tokens]
+simplifyString global:[errout] call:[assertEquals,simplifyString,str,string,tokenizer]
+simplifyConst call:[assertEquals,tokenizeAndStringify_]
+switchCase call:[assertEquals,assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+simplifyPointerToStandardType call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionPointers1 call:[assertEquals,todoAssertEquals,tokenizeAndStringify_] noreturn:[todoAssertEquals]
+simplifyFunctionPointers2 call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionPointers3 call:[assertEquals,tokenizeAndStringify_]
+simplifyFunctionPointers4 call:[assertEquals,tokenizeDebugListing_]
+simplifyFunctionPointers5 call:[assertEquals,tokenizeDebugListing_]
+simplifyFunctionPointers6 call:[assertEquals,tokenizeDebugListing_]
+simplifyFunctionPointers7 call:[assertEquals,tokenizeDebugListing_]
+simplifyFunctionPointers8 call:[assertEquals,tokenizeDebugListing_]
+simplifyFunctionPointers9 call:[assertEquals,tokenizeDebugListing_]
+removedeclspec call:[assertEquals,tokenizeAndStringify_]
+removeattribute call:[assertEquals,tokenizeAndStringify_]
+functionAttributeBefore1 global:[errout] call:[assertEquals,assert_,findsimplematch,isAttributeConst,isAttributeNoreturn,isAttributeNothrow,isAttributePure,istr,str,stringifyList,tokenize,tokenizer,tokens]
+functionAttributeBefore2 global:[errout] call:[assertEquals,assert_,findsimplematch,isAttributeNoreturn,istr,str,stringifyList,tokenize,tokenizer,tokens]
+functionAttributeAfter global:[errout] call:[assertEquals,assert_,findsimplematch,isAttributeConst,isAttributeNoreturn,isAttributeNothrow,isAttributePure,istr,str,stringifyList,tokenize,tokenizer,tokens]
+functionAttributeListBefore global:[errout] call:[assertEquals,assert_,findsimplematch,isAttributeConst,isAttributeNoreturn,isAttributeNothrow,isAttributePure,istr,str,stringifyList,tokenize,tokenizer,tokens]
+functionAttributeListAfter global:[errout] call:[assertEquals,assert_,findsimplematch,isAttributeConst,isAttributeNoreturn,isAttributeNothrow,isAttributePure,istr,str,stringifyList,tokenize,tokenizer,tokens]
+splitTemplateRightAngleBrackets call:[assertEquals,find,tokenizeAndStringify_]
+cpp03template1 call:[assertEquals,tokenizeAndStringify_]
+cpp0xtemplate1 call:[assertEquals,tokenizeAndStringify_]
+cpp0xtemplate2 call:[assertEquals,tokenizeAndStringify_]
+cpp0xtemplate3 call:[assertEquals,tokenizeAndStringify_]
+cpp0xtemplate4 call:[tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+cpp0xtemplate5 call:[assertEquals,tokenizeAndStringify_]
+cpp14template call:[tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+arraySize call:[assertEquals,tokenizeAndStringify_]
+labels call:[assertEquals,assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail]
+simplifyInitVar global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+simplifyInitVar2 call:[assertEquals,tokenizeAndStringify_]
+simplifyInitVar3 call:[assertEquals,tokenizeAndStringify_]
+bitfields1 call:[assertEquals,tokenizeAndStringifyWindows_,tokenizeAndStringify_]
+bitfields2 call:[assertEquals,tokenizeAndStringify_]
+bitfields3 call:[assertEquals,tokenizeAndStringify_]
+bitfields4 call:[assertEquals,tokenizeAndStringify_]
+bitfields5 call:[assertEquals,tokenizeAndStringify_]
+bitfields6 call:[assertEquals,tokenizeAndStringify_]
+bitfields7 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+bitfields8 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+bitfields9 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+bitfields10 call:[assertEquals,tokenizeAndStringify_]
+bitfields12 call:[assertEquals,tokenizeAndStringify_]
+bitfields13 call:[assertEquals,tokenizeAndStringify_]
+bitfields14 call:[assertEquals,tokenizeAndStringify_]
+bitfields15 call:[assertEquals,tokenizeAndStringify_]
+bitfields16 global:[errout] call:[assertEquals,assert_,bits,findsimplematch,istr,str,tokenize,tokenizer,tokens]
+simplifyNamespaceStd call:[assertEquals,tokenizeAndStringify_]
+microsoftMemory call:[assertEquals,tokenizeAndStringify_]
+microsoftString call:[assertEquals,tokenizeAndStringify_]
+borland call:[assertEquals,tokenizeAndStringify_]
+simplifyQtSignalsSlots1 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+simplifyQtSignalsSlots2 call:[assertEquals,tokenizeAndStringify_]
+simplifySQL call:[assertEquals,assertNoThrowFail,assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,assertThrowFail,tokenizeAndStringify_,while]
+simplifyCAlternativeTokens call:[assertEquals,tokenizeAndStringify_]
+simplifyRoundCurlyParentheses call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName1 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName2 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName3 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName4 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName5 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName6 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName7 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName8 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName9 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName31 global:[errout] call:[assertEquals,str,tokenizeAndStringify_]
+simplifyOperatorName10 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName11 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName12 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName13 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName14 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName15 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName16 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName17 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName18 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName19 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName20 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName21 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName22 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName23 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName24 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName25 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName26 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName27 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName28 call:[assertEquals,tokenizeAndStringify_]
+simplifyOperatorName29 call:[assertEquals,tokenizeAndStringify_]
+simplifyOverloadedOperators1 call:[assertEquals,tokenizeAndStringify_]
+simplifyOverloadedOperators2 call:[assertEquals,tokenizeAndStringify_]
+simplifyOverloadedOperators3 call:[assertEquals,tokenizeAndStringify_]
+simplifyNullArray call:[assertEquals,tokenizeAndStringify_]
+removeMacrosInGlobalScope call:[assertEquals,assertNoThrowFail,assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,assertThrowFail,tokenizeAndStringify_,while]
+removeMacroInVarDecl call:[assertEquals,tokenizeAndStringify_]
+addSemicolonAfterUnknownMacro call:[assertEquals,tokenizeAndStringify_]
+multipleAssignment call:[assertEquals,tokenizeAndStringify_]
+platformWin call:[assertEquals,tokenizeAndStringifyWindows_]
+platformWin32A call:[assertEquals,tokenizeAndStringifyWindows_]
+platformWin32W call:[assertEquals,tokenizeAndStringifyWindows_]
+platformWin32AStringCat call:[assertEquals,tokenizeAndStringifyWindows_]
+platformWin32WStringCat call:[assertEquals,tokenizeAndStringifyWindows_]
+platformWinWithNamespace call:[assertEquals,tokenizeAndStringifyWindows_]
+isZeroNumber call:[assertEquals,isZeroNumber]
+isOneNumber call:[assertEquals,isOneNumber]
+isTwoNumber call:[assertEquals,isTwoNumber]
+simplifyStaticConst call:[assertEquals,tokenizeAndStringify_]
+simplifyCPPAttribute call:[assertEquals,tokenizeAndStringify_]
+simplifyCaseRange call:[assertEquals,tokenizeAndStringify_]
+simplifyEmptyNamespaces call:[assertEquals,tokenizeAndStringify_]
+prepareTernaryOpForAST call:[assertEquals,tokenizeAndStringify_]
+testAst call:[assignIndexes,astOperand1,astOperand2,astString,astStringZ3,astTop,combineOperators,combineStringAndCharLiterals,createAst,createLinks,createLinks2,createTokens,empty,end,find,front,insert,istr,next,prepareTernaryOpForAST,simplifySpaceshipOperator,str,tokenList,validateAst,varId] noreturn:[astString,astStringZ3,str,varId]
+astexpr call:[assertEquals,testAst]
+astexpr2 call:[assertThrow,tokenizeAndStringify_,while] noreturn:[assertThrow,tokenizeAndStringify_,while]
+astnewdelete call:[assertEquals,testAst]
+astpar call:[assertEquals,testAst,todoAssertEquals,tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+astbrackets call:[assertEquals,testAst]
+astvardecl call:[assertEquals,testAst]
+astunaryop call:[assertEquals,testAst]
+astfunction call:[assertEquals,testAst]
+asttemplate call:[assertEquals,assertNoThrowFail,testAst,while] noreturn:[assertNoThrowFail,testAst]
+astcast call:[assertEquals,testAst]
+astlambda call:[assertEquals,assertNoThrowFail,testAst,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_]
+astcase call:[assertEquals,testAst]
+astrefqualifier call:[assertEquals,testAst]
+astnewscoped call:[assertEquals,testAst]
+compileLimits global:[emptyString] call:[c_str,fin,getcode,preprocess,preprocessor,tokenizeAndStringify_] noreturn:[tokenizeAndStringify_]
+isStartOfExecutableScope_ call:[assert_,istr,startOfExecutableScope,tokAt,tokenize,tokenizer,tokens]
+startOfExecutableScope call:[assert_,isStartOfExecutableScope_]
+removeMacroInClassDef call:[assertEquals,tokenizeAndStringify_]
+sizeofAddParentheses call:[assertEquals,tokenizeAndStringify_]
+reportUnknownMacros call:[assertNoThrowFail,assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,assertThrowFail,tokenizeAndStringify_,while]
+findGarbageCode call:[assertEquals,assertNoThrowFail,assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertEquals,assertNoThrowFail,assertThrowFail,tokenizeAndStringify_,while]
+checkEnableIf call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+checkTemplates call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+checkNamespaces call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+checkLambdas call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+checkIfCppCast call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+checkRefQualifiers call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+checkConditionBlock call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+checkUnknownCircularVar call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+noCrash1 call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+noCrash2 call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+noCrash3 call:[assertNoThrowFail,tokenizeAndStringify_,while] noreturn:[assertNoThrowFail,tokenizeAndStringify_,while]
+checkConfig global:[errout] call:[assert_,istr,str,tokenize,tokenizer]
+checkConfiguration call:[assertThrowFail,checkConfig,while] noreturn:[assertThrowFail,while]
+unknownType global:[errout] call:[assertEquals,assert_,istr,printUnknownTypes,str,tokenize,tokenizer]
+unknownMacroBeforeReturn call:[assertThrowFail,tokenizeAndStringify_,while] noreturn:[assertThrowFail,while]
+cppcast call:[assertEquals,assert_,isCast,istr,next,str,tokenize,tokenizer,tokens]
+checkHeaders global:[errout] call:[DUI,createTokens,files,istr,move,preprocess,preprocessor,setDirectives,simplifyTokens1,str,stringifyList,tokenizer,tokens,tokens1,tokens2] noreturn:[stringifyList]
+checkHeader1 call:[assertEquals,checkHeaders]
+removeExtraTemplateKeywords call:[assertEquals,tokenizeAndStringify_]
+removeAlignas1 call:[assertEquals,tokenizeAndStringify_]
+removeAlignas2 call:[assertEquals,tokenizeAndStringify_]
+simplifyCoroutines call:[assertEquals,tokenizeAndStringify_]
+simplifySpaceshipOperator call:[assertEquals,tokenizeAndStringify_]
+simplifyIfSwitchForInit1 call:[assertEquals,tokenizeAndStringify_]
+simplifyIfSwitchForInit2 call:[assertEquals,tokenizeAndStringify_]
+simplifyIfSwitchForInit3 call:[assertEquals,tokenizeAndStringify_]
+simplifyIfSwitchForInit4 call:[assertEquals,tokenizeAndStringify_]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]
+intValue
+clear
+fill
+setEnabledAll call:[clear,fill] noreturn:[clear,fill]
+isEnabled call:[return]
+enable
+disable
+setEnabled call:[disable,enable] noreturn:[disable,enable]

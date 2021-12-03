@@ -1,0 +1,282 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="2237172267">
+        <error id="missingOverride" severity="style" msg="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;bughuntingReport&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="106" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="286" column="18" info="Virtual function in base class"/>
+            <symbol>bughuntingReport</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportOut&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="107" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="256" column="18" info="Virtual function in base class"/>
+            <symbol>reportOut</symbol>
+        </error>
+        <error id="missingOverride" severity="style" msg="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." verbose="The function &apos;reportErr&apos; overrides a function in a base class but is not marked with a &apos;override&apos; specifier." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuite.h" line="108" column="10" info="Function in derived class"/>
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\lib\errorlogger.h" line="264" column="18" info="Virtual function in base class"/>
+            <symbol>reportErr</symbol>
+        </error>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="144" col="19" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:56:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="152" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="165" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="196" col="5" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:76:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="201" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:77:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="205" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="209" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:79:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="219" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="231" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:81:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="241" col="19" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:83:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:83:10" call-funcname="todoAssertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="256" col="5" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:85:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:83:10" call-funcname="todoAssertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="266" col="5" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:87:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="272" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:89:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="280" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:90:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="288" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:91:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="RedirectOutputError" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/redirect.h" line="31" col="1" hash="432092493415657207"/>
+<class name="TestRegistry" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="44" col="1" hash="2956758406285306249"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp:38:14" my-argnr="1" my-argname="lhs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="39" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp:38:14" my-argnr="2" my-argname="rhs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="39" col="37" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" my-argnr="1" my-argname="filename" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="111" col="24" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp:38:14" my-argnr="1" my-argname="lhs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="39" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp:38:14" my-argnr="2" my-argname="rhs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="39" col="37" value="0"/>
+  </FileInfo>
+  <FileInfo check="ctu">
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h" line="66" col="13" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:59:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="144" col="19" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:56:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="152" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:73:10" call-funcname="assertEqualsFailed" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="165" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="196" col="5" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:76:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="201" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:77:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="205" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:78:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="209" col="12" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:79:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="219" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:80:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:75:10" call-funcname="assertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="231" col="9" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:81:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="241" col="19" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:83:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:83:10" call-funcname="todoAssertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="256" col="5" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:85:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:83:10" call-funcname="todoAssertEquals" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="266" col="5" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:87:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="272" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:89:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="280" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:90:10" my-argnr="1"/>
+<function-call call-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" call-funcname="getLocationStr" call-argnr="1" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="288" col="15" my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:91:10" my-argnr="1"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="RedirectOutputError" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/redirect.h" line="31" col="1" hash="432092493415657207"/>
+<class name="TestRegistry" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="44" col="1" hash="2956758406285306249"/>
+  </FileInfo>
+  <FileInfo check="Null pointer">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp:38:14" my-argnr="1" my-argname="lhs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="39" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp:38:14" my-argnr="2" my-argname="rhs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="39" col="37" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.h:54:17" my-argnr="1" my-argname="filename" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="111" col="24" value="0"/>
+  </FileInfo>
+  <FileInfo check="Uninitialized variables">
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp:38:14" my-argnr="1" my-argname="lhs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="39" col="20" value="0"/>
+    <unsafe-usage my-id="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp:38:14" my-argnr="2" my-argname="rhs" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuite.cpp" line="39" col="37" value="0"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="theInstance" lineNumber="48"/>
+    <functiondecl functionName="addTest" lineNumber="53"/>
+    <functiondecl functionName="tests" lineNumber="57"/>
+    <functiondecl functionName="prepareTest" lineNumber="87"/>
+    <functiondecl functionName="getLocationStr" lineNumber="109"/>
+    <functiondecl functionName="writestr" lineNumber="114"/>
+    <functiondecl functionName="assert_" lineNumber="140"/>
+    <functiondecl functionName="assertEqualsFailed" lineNumber="149"/>
+    <functiondecl functionName="assertEquals" lineNumber="162"/>
+    <functiondecl functionName="deleteLineNumber" lineNumber="170"/>
+    <functiondecl functionName="assertEqualsWithoutLineNumbers" lineNumber="194"/>
+    <functiondecl functionName="assertEquals" lineNumber="199"/>
+    <functiondecl functionName="assertEquals" lineNumber="203"/>
+    <functiondecl functionName="assertEquals" lineNumber="207"/>
+    <functiondecl functionName="assertEquals" lineNumber="212"/>
+    <functiondecl functionName="assertEqualsDouble" lineNumber="224"/>
+    <functiondecl functionName="todoAssertEquals" lineNumber="235"/>
+    <functiondecl functionName="todoAssertEquals" lineNumber="251"/>
+    <functiondecl functionName="todoAssertEquals" lineNumber="260"/>
+    <functiondecl functionName="assertThrow" lineNumber="269"/>
+    <functiondecl functionName="assertThrowFail" lineNumber="277"/>
+    <functiondecl functionName="assertNoThrowFail" lineNumber="285"/>
+    <functiondecl functionName="complainMissingLib" lineNumber="293"/>
+    <functiondecl functionName="printHelp" lineNumber="298"/>
+    <functiondecl functionName="run" lineNumber="318"/>
+    <functiondecl functionName="processOptions" lineNumber="329"/>
+    <functiondecl functionName="runTests" lineNumber="335"/>
+    <functiondecl functionName="reportOut" lineNumber="376"/>
+    <functiondecl functionName="reportErr" lineNumber="381"/>
+    <functiondecl functionName="theInstance" lineNumber="48"/>
+    <functiondecl functionName="addTest" lineNumber="53"/>
+    <functiondecl functionName="tests" lineNumber="57"/>
+    <functiondecl functionName="prepareTest" lineNumber="87"/>
+    <functiondecl functionName="getLocationStr" lineNumber="109"/>
+    <functiondecl functionName="writestr" lineNumber="114"/>
+    <functiondecl functionName="assert_" lineNumber="140"/>
+    <functiondecl functionName="assertEqualsFailed" lineNumber="149"/>
+    <functiondecl functionName="assertEquals" lineNumber="162"/>
+    <functiondecl functionName="deleteLineNumber" lineNumber="170"/>
+    <functiondecl functionName="assertEqualsWithoutLineNumbers" lineNumber="194"/>
+    <functiondecl functionName="assertEquals" lineNumber="199"/>
+    <functiondecl functionName="assertEquals" lineNumber="203"/>
+    <functiondecl functionName="assertEquals" lineNumber="207"/>
+    <functiondecl functionName="assertEquals" lineNumber="212"/>
+    <functiondecl functionName="assertEqualsDouble" lineNumber="224"/>
+    <functiondecl functionName="todoAssertEquals" lineNumber="235"/>
+    <functiondecl functionName="todoAssertEquals" lineNumber="251"/>
+    <functiondecl functionName="todoAssertEquals" lineNumber="260"/>
+    <functiondecl functionName="assertThrow" lineNumber="269"/>
+    <functiondecl functionName="assertThrowFail" lineNumber="277"/>
+    <functiondecl functionName="assertNoThrowFail" lineNumber="285"/>
+    <functiondecl functionName="complainMissingLib" lineNumber="293"/>
+    <functiondecl functionName="printHelp" lineNumber="298"/>
+    <functiondecl functionName="run" lineNumber="318"/>
+    <functiondecl functionName="processOptions" lineNumber="329"/>
+    <functiondecl functionName="runTests" lineNumber="335"/>
+    <functiondecl functionName="reportOut" lineNumber="376"/>
+    <functiondecl functionName="reportErr" lineNumber="381"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="Color"/>
+    <functioncall functionName="CompareFixtures"/>
+    <functioncall functionName="ErrorMessage"/>
+    <functioncall functionName="FileLocation"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="NO_LINE"/>
+    <functioncall functionName="Reset"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="Suppression"/>
+    <functioncall functionName="TestFixture"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="_name"/>
+    <functioncall functionName="_oldCerr"/>
+    <functioncall functionName="_oldCout"/>
+    <functioncall functionName="actual"/>
+    <functioncall functionName="addTest"/>
+    <functioncall functionName="after"/>
+    <functioncall functionName="args"/>
+    <functioncall functionName="assertEquals"/>
+    <functioncall functionName="assertEqualsFailed"/>
+    <functioncall functionName="at"/>
+    <functioncall functionName="begin"/>
+    <functioncall functionName="char"/>
+    <functioncall functionName="classname"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="close"/>
+    <functioncall functionName="column"/>
+    <functioncall functionName="condition"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="current"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="deleteLineNumber"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="emptyString"/>
+    <functioncall functionName="end"/>
+    <functioncall functionName="erase"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="errorId"/>
+    <functioncall functionName="errormessage"/>
+    <functioncall functionName="exe"/>
+    <functioncall functionName="exename"/>
+    <functioncall functionName="expected"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="fflush"/>
+    <functioncall functionName="file"/>
+    <functioncall functionName="fileIndex"/>
+    <functioncall functionName="fileName"/>
+    <functioncall functionName="filename"/>
+    <functioncall functionName="find"/>
+    <functioncall functionName="find_first_not_of"/>
+    <functioncall functionName="find_first_of"/>
+    <functioncall functionName="flush"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="gccStyle"/>
+    <functioncall functionName="getLocationStr"/>
+    <functioncall functionName="hash"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="info"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="insert"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="is_open"/>
+    <functioncall functionName="isprint"/>
+    <functioncall functionName="libname"/>
+    <functioncall functionName="line"/>
+    <functioncall functionName="lineNumber"/>
+    <functioncall functionName="linenr"/>
+    <functioncall functionName="mFileName"/>
+    <functioncall functionName="mInfo"/>
+    <functioncall functionName="mOrigFileName"/>
+    <functioncall functionName="mTemplateFormat"/>
+    <functioncall functionName="mTemplateLocation"/>
+    <functioncall functionName="mVerbose"/>
+    <functioncall functionName="matched"/>
+    <functioncall functionName="message"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="missingLibs"/>
+    <functioncall functionName="msg"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="options"/>
+    <functioncall functionName="other"/>
+    <functioncall functionName="override"/>
+    <functioncall functionName="pair"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="plistFooter"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="pos"/>
+    <functioncall functionName="processOptions"/>
+    <functioncall functionName="putchar"/>
+    <functioncall functionName="quiet"/>
+    <functioncall functionName="quiet_tests"/>
+    <functioncall functionName="rdbuf"/>
+    <functioncall functionName="reportErr"/>
+    <functioncall functionName="result"/>
+    <functioncall functionName="run"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="stage"/>
+    <functioncall functionName="static_cast"/>
+    <functioncall functionName="stdout"/>
+    <functioncall functionName="str"/>
+    <functioncall functionName="string"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="substr"/>
+    <functioncall functionName="succeeded_todos_counter"/>
+    <functioncall functionName="symbolName"/>
+    <functioncall functionName="t"/>
+    <functioncall functionName="testname"/>
+    <functioncall functionName="tests"/>
+    <functioncall functionName="theInstance"/>
+    <functioncall functionName="this"/>
+    <functioncall functionName="thisAndNextLine"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="to_string"/>
+    <functioncall functionName="todoAssertEquals"/>
+    <functioncall functionName="tolerance"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="typename"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="v"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="void"/>
+    <functioncall functionName="wanted"/>
+    <functioncall functionName="warning"/>
+    <functioncall functionName="which_test"/>
+    <functioncall functionName="while"/>
+    <functioncall functionName="writestr"/>
+  </FileInfo>
+</analyzerinfo>

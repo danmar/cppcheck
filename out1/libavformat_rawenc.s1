@@ -1,0 +1,2 @@
+ff_raw_write_packet call:[avio_write]
+force_one_stream call:[AVERROR,av_log] noreturn:[AVERROR]

@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3385707856">
+        <error id="unknownMacro" severity="error" msg="There is an unknown macro here somewhere. Configuration is required. If ; is a macro then please configure it." verbose="There is an unknown macro here somewhere. Configuration is required. If ; is a macro then please configure it." file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/bug-hunting/cve/CVE-2019-19334/parser.c">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\bug-hunting\cve\CVE-2019-19334\parser.c" line="894" column="57"/>
+        </error>
+</analyzerinfo>

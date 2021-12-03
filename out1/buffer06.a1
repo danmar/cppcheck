@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1157123944">
+        <error id="cstyleCast" severity="style" msg="C-style pointer casting" verbose="C-style pointer casting detected. C++ offers four different kinds of casts as replacements: static_cast, const_cast, dynamic_cast and reinterpret_cast. A C-style cast could evaluate to any of those automatically, thus it is considered safer if the programmer explicitly states which kind of cast is expected. See also: https://www.securecoding.cert.org/confluence/display/cplusplus/EXP05-CPP.+Do+not+use+C-style+casts." cwe="398" file0="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/test/testsuites/x-flow/buffer06.cpp">
+            <location file="C:\Users\mihae\OneDrive\Desktop\SE\cppcheck\test\testsuites\x-flow\buffer06.cpp" line="10" column="22"/>
+        </error>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="f" lineNumber="5"/>
+    <functiondecl functionName="main" lineNumber="17"/>
+    <functioncall functionName="Person"/>
+    <functioncall functionName="f"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="malloc"/>
+    <functioncall functionName="sizeof"/>
+  </FileInfo>
+</analyzerinfo>

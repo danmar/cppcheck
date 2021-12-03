@@ -1,0 +1,79 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="1524486133">
+  <FileInfo check="Class">
+<class name="Certainty" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="43" col="1" hash="18199203830454094941"/>
+<class name="Checks" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="50" col="1" hash="1542228543380317401"/>
+<class name="CWE" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/lib/errortypes.h" line="119" col="1" hash="12839322455692376512"/>
+<class name="CheckStatistics" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/checkstatistics.h" line="34" col="1" hash="13498809007581854365"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="addItem" lineNumber="29"/>
+    <functiondecl functionName="addItem" lineNumber="37"/>
+    <functiondecl functionName="clear" lineNumber="66"/>
+    <functiondecl functionName="getCount" lineNumber="76"/>
+    <functiondecl functionName="getTools" lineNumber="99"/>
+    <functioncall functionName="AST"/>
+    <functioncall functionName="CheckStatistics"/>
+    <functioncall functionName="INSTANTIATION"/>
+    <functioncall functionName="INTERNAL"/>
+    <functioncall functionName="InternalError"/>
+    <functioncall functionName="LIMIT"/>
+    <functioncall functionName="QObject"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QStringList"/>
+    <functioncall functionName="SYNTAX"/>
+    <functioncall functionName="ShowErrors"/>
+    <functioncall functionName="ShowInformation"/>
+    <functioncall functionName="ShowNone"/>
+    <functioncall functionName="ShowPerformance"/>
+    <functioncall functionName="ShowPortability"/>
+    <functioncall functionName="ShowTypes"/>
+    <functioncall functionName="ShowWarnings"/>
+    <functioncall functionName="UNKNOWN_MACRO"/>
+    <functioncall functionName="addItem"/>
+    <functioncall functionName="break"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="contains"/>
+    <functioncall functionName="cweId"/>
+    <functioncall functionName="debug"/>
+    <functioncall functionName="default"/>
+    <functioncall functionName="error"/>
+    <functioncall functionName="experimental"/>
+    <functioncall functionName="foreach"/>
+    <functioncall functionName="id"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="inconclusive"/>
+    <functioncall functionName="information"/>
+    <functioncall functionName="insert"/>
+    <functioncall functionName="int"/>
+    <functioncall functionName="internalCheck"/>
+    <functioncall functionName="key"/>
+    <functioncall functionName="keys"/>
+    <functioncall functionName="lower"/>
+    <functioncall functionName="mError"/>
+    <functioncall functionName="mInformation"/>
+    <functioncall functionName="mPerformance"/>
+    <functioncall functionName="mPortability"/>
+    <functioncall functionName="mStyle"/>
+    <functioncall functionName="mWarning"/>
+    <functioncall functionName="missingInclude"/>
+    <functioncall functionName="none"/>
+    <functioncall functionName="normal"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="performance"/>
+    <functioncall functionName="portability"/>
+    <functioncall functionName="qDebug"/>
+    <functioncall functionName="safe"/>
+    <functioncall functionName="style"/>
+    <functioncall functionName="switch"/>
+    <functioncall functionName="toList"/>
+    <functioncall functionName="toLower"/>
+    <functioncall functionName="tool"/>
+    <functioncall functionName="type"/>
+    <functioncall functionName="unusedFunction"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="warning"/>
+  </FileInfo>
+</analyzerinfo>

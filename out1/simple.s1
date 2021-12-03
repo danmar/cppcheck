@@ -1,0 +1,33 @@
+ScopeInfo
+ScopeInfo
+parent
+ScopeInfo call:[begin,empty,pop_front] noreturn:[pop_front]
+addChild call:[ScopeInfo,push_back]
+remove call:[begin,end,erase]
+VariableUsage
+use
+unused call:[return] noreturn:[return]
+clear call:[clear] noreturn:[clear]
+varUsage
+erase call:[erase] noreturn:[erase]
+alias call:[begin,clear,end,erase,find,insert,use,varId] noreturn:[clear,erase,insert,use]
+clearAliases call:[begin,clear,end,erase,find,varId] noreturn:[clear,erase]
+eraseAliases call:[begin,end,erase,find] noreturn:[erase]
+eraseAll call:[erase,eraseAliases] noreturn:[erase]
+addVar call:[VariableUsage,insert,make_pair,varId] noreturn:[insert]
+allocateMemory call:[find]
+read call:[find]
+readAliases call:[begin,end,find]
+readAll call:[begin,end,find]
+write call:[find]
+writeAliases call:[begin,end,find]
+writeAll call:[begin,end,find]
+use call:[begin,end,find,use] noreturn:[use]
+modified call:[begin,end,find]
+find call:[end,find]
+doAssignment call:[Match,alias,clearAliases,empty,end,eraseAll,find,insert,read,readAliases,size,str,strAt,tokAt,use,varId] noreturn:[alias,clearAliases,eraseAll,insert,read,readAliases,use]
+nextIsStandardType call:[isStandardType,next,str] noreturn:[isStandardType,next]
+nextIsStandardTypeOrVoid call:[isStandardType,next,str] noreturn:[next]
+isFunction call:[c_str,find,isName,link,next,pattern1,simpleMatch,str,tokAt] noreturn:[link]
+stringifyTokens call:[append,isLong,isSigned,isUnsigned,next,str] noreturn:[append]
+expressionHasSideEffects call:[Match,isAssignmentOp,isStandardType,next]

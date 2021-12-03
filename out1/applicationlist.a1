@@ -1,0 +1,122 @@
+<?xml version="1.0"?>
+<analyzerinfo checksum="3033015805">
+  <FileInfo check="Class">
+<class name="ApplicationList" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/applicationlist.h" line="32" col="1" hash="741222910944807497"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="ApplicationList" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/applicationlist.h" line="32" col="1" hash="11747279383376055072"/>
+  </FileInfo>
+  <FileInfo check="Class">
+<class name="ApplicationList" file="C:/Users/mihae/OneDrive/Desktop/SE/cppcheck/gui/applicationlist.h" line="32" col="1" hash="15110397181890204165"/>
+  </FileInfo>
+  <FileInfo check="CheckUnusedFunctions">
+    <functiondecl functionName="loadSettings" lineNumber="42"/>
+    <functiondecl functionName="saveSettings" lineNumber="103"/>
+    <functiondecl functionName="getApplicationCount" lineNumber="123"/>
+    <functiondecl functionName="getApplication" lineNumber="128"/>
+    <functiondecl functionName="getApplication" lineNumber="138"/>
+    <functiondecl functionName="addApplication" lineNumber="148"/>
+    <functiondecl functionName="removeApplication" lineNumber="156"/>
+    <functiondecl functionName="setDefault" lineNumber="161"/>
+    <functiondecl functionName="copy" lineNumber="168"/>
+    <functiondecl functionName="clear" lineNumber="182"/>
+    <functiondecl functionName="checkAndAddApplication" lineNumber="188"/>
+    <functiondecl functionName="findDefaultWindowsEditor" lineNumber="201"/>
+    <functiondecl functionName="loadSettings" lineNumber="42"/>
+    <functiondecl functionName="saveSettings" lineNumber="103"/>
+    <functiondecl functionName="getApplicationCount" lineNumber="123"/>
+    <functiondecl functionName="getApplication" lineNumber="128"/>
+    <functiondecl functionName="getApplication" lineNumber="138"/>
+    <functiondecl functionName="addApplication" lineNumber="148"/>
+    <functiondecl functionName="removeApplication" lineNumber="156"/>
+    <functiondecl functionName="setDefault" lineNumber="161"/>
+    <functiondecl functionName="copy" lineNumber="168"/>
+    <functiondecl functionName="clear" lineNumber="182"/>
+    <functiondecl functionName="checkAndAddApplication" lineNumber="188"/>
+    <functiondecl functionName="findDefaultWindowsEditor" lineNumber="201"/>
+    <functiondecl functionName="loadSettings" lineNumber="42"/>
+    <functiondecl functionName="saveSettings" lineNumber="103"/>
+    <functiondecl functionName="getApplicationCount" lineNumber="123"/>
+    <functiondecl functionName="getApplication" lineNumber="128"/>
+    <functiondecl functionName="getApplication" lineNumber="138"/>
+    <functiondecl functionName="addApplication" lineNumber="148"/>
+    <functiondecl functionName="removeApplication" lineNumber="156"/>
+    <functiondecl functionName="setDefault" lineNumber="161"/>
+    <functiondecl functionName="copy" lineNumber="168"/>
+    <functiondecl functionName="clear" lineNumber="182"/>
+    <functiondecl functionName="checkAndAddApplication" lineNumber="188"/>
+    <functiondecl functionName="findDefaultWindowsEditor" lineNumber="201"/>
+    <functioncall functionName="Application"/>
+    <functioncall functionName="ApplicationList"/>
+    <functioncall functionName="NativeFormat"/>
+    <functioncall functionName="QFileInfo"/>
+    <functioncall functionName="QObject"/>
+    <functioncall functionName="QString"/>
+    <functioncall functionName="QStringList"/>
+    <functioncall functionName="addApplication"/>
+    <functioncall functionName="app"/>
+    <functioncall functionName="appPath"/>
+    <functioncall functionName="appPathx64"/>
+    <functioncall functionName="appPathx86"/>
+    <functioncall functionName="checkAndAddApplication"/>
+    <functioncall functionName="clear"/>
+    <functioncall functionName="const"/>
+    <functioncall functionName="defapp"/>
+    <functioncall functionName="empty"/>
+    <functioncall functionName="exists"/>
+    <functioncall functionName="false"/>
+    <functioncall functionName="findDefaultWindowsEditor"/>
+    <functioncall functionName="for"/>
+    <functioncall functionName="getApplication"/>
+    <functioncall functionName="getApplicationCount"/>
+    <functioncall functionName="getDefaultApplication"/>
+    <functioncall functionName="getName"/>
+    <functioncall functionName="getParameters"/>
+    <functioncall functionName="getPath"/>
+    <functioncall functionName="getenv"/>
+    <functioncall functionName="i"/>
+    <functioncall functionName="if"/>
+    <functioncall functionName="index"/>
+    <functioncall functionName="indexOf"/>
+    <functioncall functionName="isEmpty"/>
+    <functioncall functionName="isExecutable"/>
+    <functioncall functionName="left"/>
+    <functioncall functionName="length"/>
+    <functioncall functionName="list"/>
+    <functioncall functionName="mDefaultApplicationIndex"/>
+    <functioncall functionName="msvscodePath"/>
+    <functioncall functionName="name"/>
+    <functioncall functionName="names"/>
+    <functioncall functionName="nullptr"/>
+    <functioncall functionName="parameters"/>
+    <functioncall functionName="params"/>
+    <functioncall functionName="parent"/>
+    <functioncall functionName="path"/>
+    <functioncall functionName="paths"/>
+    <functioncall functionName="qtCreatorPath"/>
+    <functioncall functionName="regPath"/>
+    <functioncall functionName="regPathMSVSCode"/>
+    <functioncall functionName="regPathUEdit32"/>
+    <functioncall functionName="regPathUEdit64"/>
+    <functioncall functionName="registry"/>
+    <functioncall functionName="registryMSVSCode"/>
+    <functioncall functionName="registryUEdit32"/>
+    <functioncall functionName="registryUEdit64"/>
+    <functioncall functionName="removeAt"/>
+    <functioncall functionName="replace"/>
+    <functioncall functionName="return"/>
+    <functioncall functionName="setName"/>
+    <functioncall functionName="setParameters"/>
+    <functioncall functionName="setPath"/>
+    <functioncall functionName="setValue"/>
+    <functioncall functionName="size"/>
+    <functioncall functionName="toInt"/>
+    <functioncall functionName="toString"/>
+    <functioncall functionName="toStringList"/>
+    <functioncall functionName="true"/>
+    <functioncall functionName="uedit32Path"/>
+    <functioncall functionName="uedit64Path"/>
+    <functioncall functionName="value"/>
+    <functioncall functionName="windowsPath"/>
+  </FileInfo>
+</analyzerinfo>
