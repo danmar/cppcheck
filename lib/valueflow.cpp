@@ -3610,7 +3610,7 @@ struct LifetimeStore {
                 value.errorPath = er;
                 value.lifetimeKind = type;
                 value.setInconclusive(inconclusive || lt.inconclusive);
-                const Variable *var = lt.token->variable();
+                const Variable* var = lt.token->variable();
                 if (var && var->isArgument()) {
                     value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
                 } else if (exprDependsOnThis(lt.token)) {
@@ -3620,7 +3620,8 @@ struct LifetimeStore {
                 }
                 // Don't add the value a second time
                 if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
-                    continue;;
+                    continue;
+                ;
                 setTokenValue(tok, value, tokenlist->getSettings());
                 update = true;
             }
@@ -3788,7 +3789,10 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                     continue;
                 if (!v.tokvalue)
                     continue;
-                if (memtok && (contains({ValueFlow::Value::LifetimeScope::ThisPointer, ValueFlow::Value::LifetimeScope::ThisValue}, v.lifetimeScope) || exprDependsOnThis(v.tokvalue))) {
+                if (memtok &&
+                    (contains({ValueFlow::Value::LifetimeScope::ThisPointer, ValueFlow::Value::LifetimeScope::ThisValue},
+                              v.lifetimeScope) ||
+                     exprDependsOnThis(v.tokvalue))) {
                     LifetimeStore ls = LifetimeStore{memtok,
                                                      "Passed to member function '" + tok->expressionString() + "'.",
                                                      ValueFlow::Value::LifetimeKind::Object};

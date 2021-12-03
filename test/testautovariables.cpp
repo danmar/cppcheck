@@ -3347,9 +3347,7 @@ private:
               "auto g() {\n"
               "    return A().f();\n"
               "}\n");
-        ASSERT_EQUALS(
-            "",
-            errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("struct A {\n"
               "    int* i;\n"
