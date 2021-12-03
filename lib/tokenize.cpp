@@ -4462,8 +4462,7 @@ void Tokenizer::createLinks2()
                     type.pop();
                 }
                 type.pop();
-            } else
-                token->link(nullptr);
+            }
         } else if (templateTokens.empty() && !isStruct && Token::Match(token, "%oror%|&&|;")) {
             if (Token::Match(token, "&& [,>]"))
                 continue;
