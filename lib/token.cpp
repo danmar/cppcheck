@@ -1021,7 +1021,7 @@ void Token::function(const Function *f)
         tokType(eName);
 }
 
-Token * Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
+Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, bool prepend)
 {
     Token *newToken;
     if (mStr.empty())
