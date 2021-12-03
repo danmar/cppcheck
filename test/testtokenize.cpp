@@ -6713,9 +6713,8 @@ private:
                             "}\n"));
 
         // #9301
-        ASSERT_NO_THROW(tokenizeAndStringify(
-                            "template <typename> constexpr char x[] = \"\";\n"
-                            "template <> constexpr char x<int>[] = \"\";\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename> constexpr char x[] = \"\";\n"
+                                             "template <> constexpr char x<int>[] = \"\";\n"));
     }
 
     void checkNamespaces() {
