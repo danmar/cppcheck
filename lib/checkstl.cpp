@@ -349,8 +349,7 @@ void CheckStl::iteratorsError(const Token* tok, const Token* containerTok, const
                 "iterators3",
                 "$symbol:" + containerName +
                 "\n"
-                "Same iterator is used with containers '" +
-                containerName + "' that are temporaries or defined in different scopes.",
+                "Same iterator is used with containers '$symbol' that are temporaries or defined in different scopes.",
                 CWE664,
                 Certainty::normal);
 }
