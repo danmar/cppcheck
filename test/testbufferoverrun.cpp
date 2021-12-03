@@ -178,6 +178,7 @@ private:
         TEST_CASE(array_index_58); // #7524
         TEST_CASE(array_index_59); // #10413
         TEST_CASE(array_index_60); // #10617, #9824
+        TEST_CASE(array_index_61); // #10621
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1728,6 +1729,19 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:5]: (warning) Either the condition 'index>5' is redundant or the array 'array[5]' is accessed at index 5, which is out of bounds.\n",
             errout.str());
+    }
+
+    void array_index_61()
+    {
+        check("int f(int i) {\n"
+            "  const int M[] = { 0, 1, 2, 3 };\n"
+            "  if (i > 4)\n"
+            "      return -1;\n"
+            "  if (i < 0 || i == std::size(M))\n"
+            "    return 0; \n"
+            "  return M[i];\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {

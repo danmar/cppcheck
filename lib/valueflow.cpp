@@ -897,6 +897,23 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     else if (Token::Match(parent, ":: %name%") && parent->astOperand2() == tok) {
         setTokenValue(parent, value, settings);
     }
+    // Calling std::size or std::empty on an array
+    else if (value.isTokValue() && Token::simpleMatch(value.tokvalue, "{") && tok->variable() && tok->variable()->isArray() && Token::Match(parent->previous(), "%name% (") && astIsRHS(tok)) {
+        std::vector<const Token*> args = getArguments(value.tokvalue);
+        if (const Library::Function* f = settings->library.getFunction(parent->previous())) {
+            if (f->containerYield == Library::Container::Yield::SIZE) {
+                ValueFlow::Value v(value);
+                v.valueType = ValueFlow::Value::ValueType::INT;
+                v.intvalue = args.size();
+                setTokenValue(parent, v, settings);
+            } else if (f->containerYield == Library::Container::Yield::EMPTY) {
+                ValueFlow::Value v(value);
+                v.intvalue = args.empty();
+                v.valueType = ValueFlow::Value::ValueType::INT;
+                setTokenValue(parent, v, settings);
+            }
+        }
+    }
 }
 
 static void setTokenValueCast(Token *parent, const ValueType &valueType, const ValueFlow::Value &value, const Settings *settings)
@@ -7840,9 +7857,6 @@ static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& s
         return {};
     if (size.bound == ValueFlow::Value::Bound::Lower)
         return {};
-    ValueFlow::Value inBoundsValue = inferCondition("<", indexTok, size.intvalue);
-    if (inBoundsValue.isKnown() && inBoundsValue.intvalue != 0)
-        return {};
     ValueFlow::Value value = inferCondition(">=", indexTok, indexValue->intvalue);
     if (!value.isKnown())
         return {};
@@ -7855,6 +7869,9 @@ static std::vector<ValueFlow::Value> isOutOfBoundsImpl(const ValueFlow::Value& s
 
 std::vector<ValueFlow::Value> ValueFlow::isOutOfBounds(const Value& size, const Token* indexTok, bool possible)
 {
+    ValueFlow::Value inBoundsValue = inferCondition("<", indexTok, size.intvalue);
+    if (inBoundsValue.isKnown() && inBoundsValue.intvalue != 0)
+        return {};
     std::vector<ValueFlow::Value> result = isOutOfBoundsImpl(size, indexTok, false);
     if (!result.empty())
         return result;
