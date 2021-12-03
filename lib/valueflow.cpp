@@ -3614,7 +3614,7 @@ struct LifetimeStore {
                 if (var && var->isArgument()) {
                     value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
                 } else if (exprDependsOnThis(lt.token)) {
-                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::Class;
+                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::ThisPointer;
                 } else {
                     continue;
                 }
@@ -3788,7 +3788,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                     continue;
                 if (!v.tokvalue)
                     continue;
-                if (memtok && (v.lifetimeScope == ValueFlow::Value::LifetimeScope::Class || exprDependsOnThis(v.tokvalue))) {
+                if (memtok && (contains({ValueFlow::Value::LifetimeScope::ThisPointer, ValueFlow::Value::LifetimeScope::ThisValue}, v.lifetimeScope) || exprDependsOnThis(v.tokvalue))) {
                     LifetimeStore ls = LifetimeStore{memtok,
                                                      "Passed to member function '" + tok->expressionString() + "'.",
                                                      ValueFlow::Value::LifetimeKind::Object};
@@ -3796,7 +3796,10 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
                     ls.forward = false;
                     ls.errorPath = v.errorPath;
                     ls.errorPath.emplace_front(returnTok, "Return " + lifetimeType(returnTok, &v) + ".");
-                    update |= ls.byRef(tok->next(), tokenlist, errorLogger, settings);
+                    if (v.lifetimeScope == ValueFlow::Value::LifetimeScope::ThisValue)
+                        update |= ls.byVal(tok->next(), tokenlist, errorLogger, settings);
+                    else
+                        update |= ls.byRef(tok->next(), tokenlist, errorLogger, settings);
                     continue;
                 }
                 const Variable *var = v.tokvalue->variable();
@@ -3943,7 +3946,11 @@ struct Lambda {
             bodyTok = afterArguments;
         }
         for (const Token* c:getCaptures()) {
-            if (c->variable()) {
+            if (Token::Match(c, "this !!.")) {
+                explicitCaptures[c->variable()] = std::make_pair(c, Capture::ByReference);
+            } else if (Token::simpleMatch(c, "* this")) {
+                explicitCaptures[c->next()->variable()] = std::make_pair(c->next(), Capture::ByValue);
+            } else if (c->variable()) {
                 explicitCaptures[c->variable()] = std::make_pair(c, Capture::ByValue);
             } else if (c->isUnaryOp("&") && Token::Match(c->astOperand1(), "%var%")) {
                 explicitCaptures[c->astOperand1()->variable()] = std::make_pair(c->astOperand1(), Capture::ByReference);
@@ -4013,6 +4020,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             std::set<const Scope *> scopes;
             // Avoid capturing a variable twice
             std::set<nonneg int> varids;
+            bool capturedThis = false;
 
             auto isImplicitCapturingVariable = [&](const Token *varTok) {
                 const Variable *var = varTok->variable();
@@ -4020,7 +4028,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                     return false;
                 if (varids.count(var->declarationId()) > 0)
                     return false;
-                if (!var->isLocal() && !var->isArgument() && !exprDependsOnThis(varTok))
+                if (!var->isLocal() && !var->isArgument())
                     return false;
                 const Scope *scope = var->scope();
                 if (!scope)
@@ -4053,23 +4061,65 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 }
             };
 
+            auto captureThisVariable = [&](const Token* tok2, Lambda::Capture c) {
+                ValueFlow::Value value;
+                value.valueType = ValueFlow::Value::ValueType::LIFETIME;
+                if (c == Lambda::Capture::ByReference)
+                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::ThisPointer;
+                else if (c == Lambda::Capture::ByValue)
+                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::ThisValue;
+                value.tokvalue = tok2;
+                value.errorPath.push_back({tok2, "Lambda captures the 'this' variable here."});
+                value.lifetimeKind = ValueFlow::Value::LifetimeKind::Lambda;
+                capturedThis = true;
+                // Don't add the value a second time
+                if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
+                    return;
+                setTokenValue(tok, value, tokenlist->getSettings());
+                update |= true;
+            };
+
             // Handle explicit capture
             for (const auto& p:lam.explicitCaptures) {
                 const Variable* var = p.first;
-                if (!var)
-                    continue;
                 const Token* tok2 = p.second.first;
                 Lambda::Capture c = p.second.second;
-                captureVariable(tok2, c, [](const Token*) {
-                    return true;
-                });
-                varids.insert(var->declarationId());
+                if (Token::Match(tok2, "this !!.")) {
+                    captureThisVariable(tok2, c);
+                } else if (var) {
+                    captureVariable(tok2, c, [](const Token*) {
+                        return true;
+                    });
+                    varids.insert(var->declarationId());
+                }
             }
 
+            auto isImplicitCapturingThis = [&](const Token* tok2) {
+                if (capturedThis)
+                    return false;
+                if (Token::simpleMatch(tok2, "this")) {
+                    return true;
+                } else if (tok2->variable()) {
+                    if (Token::simpleMatch(tok2->previous(), "."))
+                        return false;
+                    const Variable* var = tok2->variable();
+                    if (var->isLocal())
+                        return false;
+                    if (var->isArgument())
+                        return false;
+                    return exprDependsOnThis(tok2);
+                } else if (Token::Match(tok2, "(")) {
+                    return exprDependsOnThis(tok2);
+                }
+                return false;
+            };
+
             for (const Token * tok2 = lam.bodyTok; tok2 != lam.bodyTok->link(); tok2 = tok2->next()) {
-                if (!tok2->variable())
-                    continue;
-                captureVariable(tok2, lam.implicitCapture, isImplicitCapturingVariable);
+                if (isImplicitCapturingThis(tok2)) {
+                    captureThisVariable(tok2, Lambda::Capture::ByReference);
+                } else if (tok2->variable()) {
+                    captureVariable(tok2, lam.implicitCapture, isImplicitCapturingVariable);
+                }
             }
             if (update)
                 valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
