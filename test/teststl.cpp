@@ -1575,7 +1575,7 @@ private:
               "void foo() {\n"
               "    (void)std::find(A().f().begin(), A().g().end(), 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Iterators to containers from different expressions 'A().f()' and 'A().g()' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterators of different containers 'A().f()' and 'A().g()' are used together.\n", errout.str());
 
         check("struct A {\n"
               "    std::vector<int>& f();\n"
@@ -1584,7 +1584,7 @@ private:
               "void foo() {\n"
               "    (void)std::find(A{} .f().begin(), A{} .g().end(), 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Iterators to containers from different expressions 'A{}.f()' and 'A{}.g()' are used together.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Iterators of different containers 'A{}.f()' and 'A{}.g()' are used together.\n", errout.str());
 
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
