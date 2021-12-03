@@ -117,13 +117,15 @@ if max_packages:
 if not os.path.exists(work_path):
     os.mkdir(work_path)
 repo_path = os.path.join(work_path, 'repo')
+migrate_repo_path = os.path.join(work_path, 'cppcheck')
+
 packages_processed = 0
 
 print('Get Cppcheck..')
 try:
-    try_retry(clone_cppcheck, fargs=(repo_path,))
+    try_retry(clone_cppcheck, fargs=(repo_path, migrate_repo_path))
 except:
-    print('Failed to clone Cppcheck, retry later')
+    print('Error: Failed to clone Cppcheck, retry later')
     sys.exit(1)
 
 while True:
@@ -151,14 +153,13 @@ while True:
         current_cppcheck_dir = os.path.join(work_path, 'tree-'+ver)
         try:
             print('Fetching Cppcheck-{}..'.format(ver))
-            try_retry(get_cppcheck_version, fargs=(repo_path, ver, current_cppcheck_dir))
+            try_retry(checkout_cppcheck_version, fargs=(repo_path, ver, current_cppcheck_dir))
         except KeyboardInterrupt as e:
             # Passthrough for user abort
             raise e
         except:
             print('Failed to update Cppcheck, retry later')
             sys.exit(1)
-        print('Compiling Cppcheck-{}..'.format(ver))
         if ver == 'main':
             if not compile_cppcheck(current_cppcheck_dir, jobs):
                 print('Failed to compile Cppcheck-{}, retry later'.format(ver))

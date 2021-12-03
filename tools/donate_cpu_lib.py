@@ -57,38 +57,37 @@ def try_retry(fun, fargs=(), max_tries=5):
                 raise e
 
 
-def clone_cppcheck(repo_path):
+def clone_cppcheck(repo_path, migrate_from_path):
     repo_git_dir = os.path.join(repo_path, '.git')
     if os.path.exists(repo_git_dir):
         return
-    # A shallow git clone (depth = 1) is enough for building and scanning.
-    # Do not checkout until fetch_cppcheck_version.
-    subprocess.check_call(['git', 'clone', '--depth=1', '--no-checkout', CPPCHECK_REPO_URL, repo_path])
-    # Checkout an empty branch to allow "git worktree add" for main later on
-    os.chdir(repo_path)
+    # Attempt to migrate clone directory used prior to 1.3.17
+    if os.path.exists(migrate_from_path):
+        os.rename(migrate_from_path, repo_path)
+    else:
+        # A shallow git clone (depth = 1) is enough for building and scanning.
+        # Do not checkout until fetch_cppcheck_version.
+        subprocess.check_call(['git', 'clone', '--depth=1', '--no-checkout', CPPCHECK_REPO_URL, repo_path])
+        # Checkout an empty branch to allow "git worktree add" for main later on
     try:
         # git >= 2.27
-        subprocess.check_call(['git', 'switch', '--orphan', 'empty'])
+        subprocess.check_call(['git', 'switch', '--orphan', 'empty'], cwd=repo_path)
     except subprocess.CalledProcessError:
-        subprocess.check_call(['git', 'checkout','--orphan', 'empty'])
+        subprocess.check_call(['git', 'checkout','--orphan', 'empty'], cwd=repo_path)
 
 
-def get_cppcheck_version(repo_path, version, cppcheck_path):
+def checkout_cppcheck_version(repo_path, version, cppcheck_path):
     if os.path.exists(cppcheck_path):
-        os.chdir(cppcheck_path)
+        subprocess.check_call(['git', 'checkout' , '-f', version], cwd=cppcheck_path)
         # It is possible to pull branches, not tags
         if version == 'main':
-            subprocess.check_call(['git', 'checkout' , '-f', 'origin/' + version])
-            subprocess.check_call(['git', 'pull'])
-        else:
-            subprocess.check_call(['git', 'checkout' , '-f', version])
+            subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
     else:
-        os.chdir(repo_path)
         if version != 'main':
             # Since this is a shallow clone, explicitly fetch the remote version tag
             refspec = 'refs/tags/' + version + ':ref/tags/' + version
-            subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec])
-        subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version])
+            subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec], cwd=repo_path)
+        subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version], cwd=repo_path)
 
 
 def get_cppcheck_info(cppcheck_path):
@@ -105,12 +104,12 @@ def compile_version(cppcheck_path, jobs):
     # Build
     ret = compile_cppcheck(cppcheck_path, jobs)
     # Clean intermediate build files
-    os.chdir(cppcheck_path)
-    subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', 'cppcheck'])
+    subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', 'cppcheck'], cwd=cppcheck_path)
     return ret
 
 
 def compile_cppcheck(cppcheck_path, jobs):
+    print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
         os.chdir(cppcheck_path)
         subprocess.call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g'])
