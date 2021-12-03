@@ -1734,13 +1734,13 @@ private:
     void array_index_61()
     {
         check("int f(int i) {\n"
-            "  const int M[] = { 0, 1, 2, 3 };\n"
-            "  if (i > 4)\n"
-            "      return -1;\n"
-            "  if (i < 0 || i == std::size(M))\n"
-            "    return 0; \n"
-            "  return M[i];\n"
-            "}\n");
+              "  const int M[] = { 0, 1, 2, 3 };\n"
+              "  if (i > 4)\n"
+              "      return -1;\n"
+              "  if (i < 0 || i == std::size(M))\n"
+              "    return 0; \n"
+              "  return M[i];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

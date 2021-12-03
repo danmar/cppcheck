@@ -898,7 +898,8 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
         setTokenValue(parent, value, settings);
     }
     // Calling std::size or std::empty on an array
-    else if (value.isTokValue() && Token::simpleMatch(value.tokvalue, "{") && tok->variable() && tok->variable()->isArray() && Token::Match(parent->previous(), "%name% (") && astIsRHS(tok)) {
+    else if (value.isTokValue() && Token::simpleMatch(value.tokvalue, "{") && tok->variable() &&
+             tok->variable()->isArray() && Token::Match(parent->previous(), "%name% (") && astIsRHS(tok)) {
         std::vector<const Token*> args = getArguments(value.tokvalue);
         if (const Library::Function* f = settings->library.getFunction(parent->previous())) {
             if (f->containerYield == Library::Container::Yield::SIZE) {
