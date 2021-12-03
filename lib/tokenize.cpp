@@ -4540,9 +4540,12 @@ void Tokenizer::createLinks2()
                     continue;
             }
 
-            if (token->str() == ">>") {
+            if (token->str() == ">>" && top1 && top2) {
                 type.pop();
                 type.pop();
+                // Split the angle brackets
+                token->str(">");
+                Token::createMutualLinks(top1, token->insertTokenBefore(">"));
                 Token::createMutualLinks(top2, token);
                 if (templateTokens.size() == 2 && (top1 == templateTokens.top() || top2 == templateTokens.top())) {
                     templateTokens.pop();
