@@ -3335,6 +3335,19 @@ private:
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
+
+        {
+            // #10615
+            const char code[] = "struct A : public B<__is_constructible()>{};\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< >");
+            const Token* tok2 = Token::findsimplematch(tok1, "> { } >");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
     }
 
     void simplifyString() {
