@@ -6719,6 +6719,16 @@ private:
                                              "    ;\n"
                                              "}\n"));
 
+        // #9523
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <int> struct a;\n"
+                            "template <typename, typename> struct b;\n"
+                            "template <typename c> struct b<c, typename a<c{} && 0>::d> {\n"
+                            "  void e() {\n"
+                            "    if (0) {}\n"
+                            "  }\n"
+                            "};\n"));
+
         ASSERT_NO_THROW(tokenizeAndStringify(
                             "template <std::size_t First, std::size_t... Indices, typename Functor>\n"
                             "constexpr void constexpr_for_fold_impl([[maybe_unused]] Functor&& f, std::index_sequence<Indices...>) noexcept {\n"
