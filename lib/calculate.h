@@ -50,6 +50,9 @@ R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
     auto wrap = [](T z) {
         return R{z};
     };
+    const MathLib::bigint maxBitsShift = sizeof(MathLib::bigint) * 8;
+    // For portability we cannot shift signed integers by 63 bits
+    const MathLib::bigint maxBitsSignedShift = maxBitsShift - 1;
     switch (MathLib::encodeMultiChar(s)) {
     case '+':
         return wrap(x + y);
@@ -82,14 +85,14 @@ R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
     case '<':
         return wrap(x < y);
     case '<<':
-        if (y >= sizeof(MathLib::bigint) * 8 || y < 0 || x < 0) {
+        if (y >= maxBitsSignedShift || y < 0 || x < 0) {
             if (error)
                 *error = true;
             return R{};
         }
         return wrap(MathLib::bigint(x) << MathLib::bigint(y));
     case '>>':
-        if (y >= sizeof(MathLib::bigint) * 8 || y < 0 || x < 0) {
+        if (y >= maxBitsSignedShift || y < 0 || x < 0) {
             if (error)
                 *error = true;
             return R{};
