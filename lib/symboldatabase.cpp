@@ -5277,6 +5277,11 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
         const Token* tok1 = tok->previous()->astOperand1();
         if (tok1 && tok1->valueType() && tok1->valueType()->typeScope) {
             return tok1->valueType()->typeScope->findFunction(tok, tok1->valueType()->constness == 1);
+        } else if (tok1 && Token::Match(tok1->previous(), "%name% (") && tok1->previous()->function() &&
+                   tok1->previous()->function()->retDef) {
+            ValueType vt = ValueType::parseDecl(tok1->previous()->function()->retDef, mSettings);
+            if (vt.typeScope)
+                return vt.typeScope->findFunction(tok, vt.constness == 1);
         } else if (Token::Match(tok1, "%var% .")) {
             const Variable *var = getVariableFromVarId(tok1->varId());
             if (var && var->typeScope())
@@ -6554,6 +6559,16 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
             // library type/function
             else if (tok->previous()) {
+                // Aggregate constructor
+                if (Token::Match(tok->previous(), "%name%")) {
+                    ValueType valuetype;
+                    if (parsedecl(tok->previous(), &valuetype, mDefaultSignedness, mSettings)) {
+                        if (valuetype.typeScope) {
+                            setValueType(tok, valuetype);
+                            continue;
+                        }
+                    }
+                }
                 if (tok->astParent() && Token::Match(tok->astOperand1(), "%name%|::")) {
                     const Token *typeStartToken = tok->astOperand1();
                     while (typeStartToken && typeStartToken->str() == "::")
