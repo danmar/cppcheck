@@ -1305,7 +1305,9 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n",
+            errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1320,7 +1322,7 @@ private:
               "}");
         TODO_ASSERT_EQUALS(
             "[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
-            "[test.cpp:7] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n",
+            "[test.cpp:7] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n",
             errout.str());
 
         check("void foo()\n"
@@ -1336,7 +1338,7 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:8] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
+            "[test.cpp:8] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n",
             errout.str());
 
         check("void foo()\n"
@@ -1352,7 +1354,18 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:8] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
+            "[test.cpp:8] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n",
+            errout.str());
+
+        check("std::set<int> g() {\n"
+              "    static const std::set<int> s = {1};\n"
+              "    return s;\n"
+              "}\n"
+              "void f() {\n"
+              "    if (g().find(2) == g().end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:6]: (error) Same iterator is used with containers 'g()' that are temporaries or defined in different scopes.\n",
             errout.str());
     }
 
@@ -1575,7 +1588,9 @@ private:
               "void foo() {\n"
               "    (void)std::find(A().f().begin(), A().g().end(), 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Iterators to containers from different expressions 'A().f()' and 'A().g()' are used together.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6]: (error) Iterators of different containers 'A().f()' and 'A().g()' are used together.\n",
+            errout.str());
 
         check("struct A {\n"
               "    std::vector<int>& f();\n"
@@ -1584,7 +1599,9 @@ private:
               "void foo() {\n"
               "    (void)std::find(A{} .f().begin(), A{} .g().end(), 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Iterators to containers from different expressions 'A{}.f()' and 'A{}.g()' are used together.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6]: (error) Iterators of different containers 'A{}.f()' and 'A{}.g()' are used together.\n",
+            errout.str());
 
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"

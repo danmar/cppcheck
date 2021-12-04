@@ -4462,8 +4462,7 @@ void Tokenizer::createLinks2()
                     type.pop();
                 }
                 type.pop();
-            } else
-                token->link(nullptr);
+            }
         } else if (templateTokens.empty() && !isStruct && Token::Match(token, "%oror%|&&|;")) {
             if (Token::Match(token, "&& [,>]"))
                 continue;
@@ -4530,7 +4529,8 @@ void Tokenizer::createLinks2()
             }
             // if > is followed by [ .. "new a<b>[" is expected
             // unless this is from varidiac expansion
-            if (token->strAt(1) == "[" && !Token::simpleMatch(token->tokAt(-1), "... >")) {
+            if (token->strAt(1) == "[" && !Token::simpleMatch(token->tokAt(-1), "... >") &&
+                !Token::Match(token->tokAt(1), "[ ]")) {
                 Token *prev = type.top()->previous();
                 while (prev && Token::Match(prev->previous(), ":: %name%"))
                     prev = prev->tokAt(-2);
