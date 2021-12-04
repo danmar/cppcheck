@@ -4156,6 +4156,13 @@ private:
               "    return v;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("extern bool bar(int);\n"
+              "void f(std::vector<int> & v) {\n"
+              "    std::vector<int>::iterator i= v.begin();\n"
+              "    if(i == v.end() && bar(*(i+1)) ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:4]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
