@@ -6711,6 +6711,10 @@ private:
                             "constexpr void constexpr_for_fold_impl([[maybe_unused]] Functor&& f, std::index_sequence<Indices...>) noexcept {\n"
                             "    (std::forward<Functor>(f).template operator() < First + Indices > (), ...);\n"
                             "}\n"));
+
+        // #9301
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename> constexpr char x[] = \"\";\n"
+                                             "template <> constexpr char x<int>[] = \"\";\n"));
     }
 
     void checkNamespaces() {
