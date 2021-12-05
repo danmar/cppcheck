@@ -1021,7 +1021,7 @@ void Token::function(const Function *f)
         tokType(eName);
 }
 
-void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
+Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, bool prepend)
 {
     Token *newToken;
     if (mStr.empty())
@@ -1072,11 +1072,11 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                         while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                             tok1 = tok1->previous();
                         if (tok1->strAt(-1) != ")")
-                            return;
+                            return newToken;
                     } else if (Token::Match(newToken->tokAt(-2), ":|, %name%")) {
                         tok1 = tok1->tokAt(-2);
                         if (tok1->strAt(-1) != ")")
-                            return;
+                            return newToken;
                     }
                     if (tok1->strAt(-1) == ">")
                         tok1 = tok1->previous()->findOpeningBracket();
@@ -1149,6 +1149,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
             }
         }
     }
+    return newToken;
 }
 
 void Token::eraseTokens(Token *begin, const Token *end)
