@@ -215,6 +215,24 @@ private:
     void outOfBounds() {
         setMultiline();
 
+        checkNormal("bool f(const int a, const int b)\n" // #8648
+                    "{\n"
+                    "    std::cout << a << b;\n"
+                    "    return true;\n"
+                    "}\n"
+                    "void f(const std::vector<int> &v)\n"
+                    "{\n"
+                    "    if(v.size() >=2 &&\n"
+                    "            bar(v[2], v[3]) )\n"                          // v[3] is accessed
+                    "    {;}\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:9:warning:Either the condition 'v.size()>=2' is redundant or v size can be 2. Expression 'v[2]' cause access out of bounds.\n"
+                      "test.cpp:8:note:condition 'v.size()>=2'\n"
+                      "test.cpp:9:note:Access out of bounds\n"
+                      "test.cpp:9:warning:Either the condition 'v.size()>=2' is redundant or v size can be 2. Expression 'v[3]' cause access out of bounds.\n"
+                      "test.cpp:8:note:condition 'v.size()>=2'\n"
+                      "test.cpp:9:note:Access out of bounds\n", errout.str());
+
         checkNormal("void f() {\n"
                     "  std::string s;\n"
                     "  s[10] = 1;\n"
