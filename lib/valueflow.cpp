@@ -4764,6 +4764,52 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
     }
 }
 
+static void valueFlowForwardConst(Token* start, const Token* end, const Variable* var, const std::list<ValueFlow::Value>& values, const Settings* const settings)
+{
+    for (Token* tok = start; tok != end; tok = tok->next()) {
+        if (tok->varId() == var->declarationId()) {
+            for(const ValueFlow::Value& value:values)
+                setTokenValue(tok, value, settings);
+        } else {
+            [&] {
+                // Follow references
+                std::vector<ReferenceToken> refs = followAllReferences(tok);
+                ValueFlow::Value::ValueKind refKind = refs.size() == 1 ? ValueFlow::Value::ValueKind::Known : ValueFlow::Value::ValueKind::Inconclusive;
+                for(const ReferenceToken& ref:refs) {
+                    if (ref.token->varId() == var->declarationId()) {
+                        for(ValueFlow::Value value:values) {
+                            value.valueKind = refKind;
+                            value.errorPath.insert(value.errorPath.end(), ref.errors.begin(), ref.errors.end());
+                            setTokenValue(tok, value, settings);
+                        }
+                        return;
+                    }
+                }
+                // Follow symbolic vaues
+                for (const ValueFlow::Value& v : tok->values()) {
+                    if (!v.isSymbolicValue())
+                        continue;
+                    if (!v.tokvalue)
+                        continue;
+                    if (v.tokvalue->varId() != var->declarationId())
+                        continue;
+                    for(ValueFlow::Value value:values) {
+                        if (v.intvalue != 0) {
+                            if (!value.isIntValue())
+                                continue;
+                            value.intvalue + v.intvalue;
+                        }
+                        value.valueKind = v.valueKind;
+                        value.bound = v.bound;
+                        value.errorPath.insert(value.errorPath.end(), v.errorPath.begin(), v.errorPath.end());
+                        setTokenValue(tok, value, settings);
+                    }
+                }
+            }();
+        }
+    }
+}
+
 static void valueFlowForwardAssign(Token* const tok,
                                    const Token* expr,
                                    std::vector<const Variable*> vars,
@@ -4825,6 +4871,25 @@ static void valueFlowForwardAssign(Token* const tok,
         if (value.isTokValue())
             continue;
         value.tokvalue = tok;
+    }
+    // Const variable
+    if (expr->variable() && expr->variable()->isConst() && !expr->variable()->isReference()) {
+        auto it = std::remove_if(values.begin(), values.end(), [](const ValueFlow::Value& value) {
+            if (!value.isKnown())
+                return false;
+            if (value.isIntValue())
+                return true;
+            if (value.isFloatValue())
+                return true;
+            if (value.isContainerSizeValue())
+                return true;
+            if (value.isIteratorValue())
+                return true;
+            return false;
+        });
+        std::list<ValueFlow::Value> constValues;
+        constValues.splice(constValues.end(), values, it, values.end());
+        valueFlowForwardConst(const_cast<Token*>(nextExpression), endOfVarScope, expr->variable(), constValues, settings);
     }
     valueFlowForward(const_cast<Token*>(nextExpression), endOfVarScope, expr, values, tokenlist, settings);
 }
