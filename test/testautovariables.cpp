@@ -782,6 +782,16 @@ private:
                       "[test.cpp:6]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
                       "[test.cpp:9]: (error) Deallocation of an pointer pointing to a string literal (\"abc\") results in undefined behaviour.\n",
                       errout.str());
+
+        check("void f() {\n"
+              "   char *ptr = malloc(10);\n"
+              "   char *empty_str = \"\";\n"
+              "   if (ptr == NULL)\n"
+              "      ptr = empty_str;\n"
+              "   if (ptr != empty_str)\n"
+              "      free(ptr);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_C() {

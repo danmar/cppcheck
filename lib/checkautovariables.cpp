@@ -275,7 +275,7 @@ void CheckAutoVariables::autoVariables()
                     for (const ValueFlow::Value &v : tok->values()) {
                         if (!(v.isTokValue()))
                             continue;
-                        if (isArrayVar(v.tokvalue) || v.tokvalue->tokType() == Token::eString) {
+                        if (isArrayVar(v.tokvalue) || ((v.tokvalue->tokType() == Token::eString) && !v.isImpossible())) {
                             errorInvalidDeallocation(tok, &v);
                             break;
                         }
