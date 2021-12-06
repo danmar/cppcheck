@@ -128,6 +128,7 @@ private:
         TEST_CASE(nullpointer86);
         TEST_CASE(nullpointer87); // #9291
         TEST_CASE(nullpointer88); // #9949
+        TEST_CASE(nullpointer89); // #10640
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2616,6 +2617,21 @@ private:
               "        s->ppc[0] = \"\";\n"
               "}\n", /*inconclusive*/ false, "test.c");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer89() // #10640
+    {
+        check("typedef struct {\n"
+              "    int x;\n"
+              "} foo_t;\n"
+              "typedef struct {\n"
+              "    foo_t *y;\n"
+              "} bar_t;\n"
+              "void f(bar_t *ptr) {\n"
+              "    if(ptr->y->x)\n"
+              "        if(ptr->y != nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:8]: (warning) Either the condition 'ptr->y!=nullptr' is redundant or there is possible null pointer dereference: ptr->y.\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
