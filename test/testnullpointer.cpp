@@ -2631,7 +2631,9 @@ private:
               "    if(ptr->y->x)\n"
               "        if(ptr->y != nullptr) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:8]: (warning) Either the condition 'ptr->y!=nullptr' is redundant or there is possible null pointer dereference: ptr->y.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:8]: (warning) Either the condition 'ptr->y!=nullptr' is redundant or there is possible null pointer dereference: ptr->y.\n",
+            errout.str());
     }
 
     void nullpointer_addressOf() { // address of
