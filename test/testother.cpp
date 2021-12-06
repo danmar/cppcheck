@@ -5593,6 +5593,14 @@ private:
               "  std::vector<int> v = b ? bar : baz;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool q) {\n" // #9570
+              "    static int a = 0;\n"
+              "    static int b = 0;\n"
+              "    int& x = q ? a : b;\n"
+              "    ++x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionTemplate() { // #6930
