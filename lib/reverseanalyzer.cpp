@@ -302,6 +302,12 @@ struct ReverseTraversal {
                     if (action.isModified())
                         break;
                 }
+                Token* condTok = getCondTokFromEnd(tok->link());
+                if (condTok) {
+                    Analyzer::Result r = valueFlowGenericForward(condTok, analyzer, settings);
+                    if (r.action.isModified())
+                        break;
+                }
                 if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
                     tok = tok->linkAt(-2);
                 if (Token::simpleMatch(tok->previous(), ") {"))
