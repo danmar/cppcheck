@@ -4802,7 +4802,7 @@ static void valueFlowForwardConst(Token* start,
                         if (v.intvalue != 0) {
                             if (!value.isIntValue())
                                 continue;
-                            value.intvalue + v.intvalue;
+                            value.intvalue += v.intvalue;
                         }
                         value.valueKind = v.valueKind;
                         value.bound = v.bound;
