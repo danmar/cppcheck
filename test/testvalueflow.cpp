@@ -96,6 +96,7 @@ private:
         TEST_CASE(valueFlowForwardLambda);
         TEST_CASE(valueFlowForwardTryCatch);
         TEST_CASE(valueFlowForwardInconclusiveImpossible);
+        TEST_CASE(valueFlowForwardConst);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -3514,6 +3515,61 @@ private:
                "    bool b = x;" // <- not always true
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 1));
+    }
+
+    void valueFlowForwardConst()
+    {
+        const char* code;
+
+        code = "int f() {\n"
+               "    const int i = 2;\n"
+               "    const int x = i+1;\n"
+               "    goto end;\n"
+               "end:\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 3));
+
+        code = "int f() {\n"
+               "    int i = 2;\n"
+               "    const int& x = i;\n"
+               "    i++;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
+
+        code = "int f(int a, int b, int c) {\n"
+               "    const int i = 2;\n"
+               "    const int x = i+1;\n"
+               "    if (a == x) { return 0; }\n"
+               "    if (b == x) { return 0; }\n"
+               "    if (c == x) { return 0; }\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 3));
+
+        code = "int f(int a, int b, int c) {\n"
+               "    const int i = 2;\n"
+               "    const int y = i+1;\n"
+               "    const int& x = y;\n"
+               "    if (a == x) { return 0; }\n"
+               "    if (b == x) { return 0; }\n"
+               "    if (c == x) { return 0; }\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 8U, 3));
+
+        code = "int f(int a, int b, int c, int x) {\n"
+               "    const int i = 2;\n"
+               "    const int y = i+1;\n"
+               "    if (a == y) { return 0; }\n"
+               "    if (b == y) { return 0; }\n"
+               "    if (c == y) { return 0; }\n"
+               "    if (x == y)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 8U, 3));
     }
 
     void valueFlowRightShift() {
