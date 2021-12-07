@@ -3398,6 +3398,23 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:9] -> [test.cpp:9] -> [test.cpp:9] -> [test.cpp:4] -> [test.cpp:4] -> [test.cpp:8] -> [test.cpp:9]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
             errout.str());
+
+        check("struct S {\n"
+              "    int i{};\n"
+              "};\n"
+              "struct T {\n"
+              "    S getS() const { return S{ j }; }\n"
+              "    int j{};\n"
+              "};\n"
+              "void f(S* p) {\n"
+              "    S ret;\n"
+              "    {\n"
+              "        T t;\n"
+              "        ret = t.getS();\n"
+              "    }\n"
+              "    *p = ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {

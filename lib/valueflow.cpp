@@ -3631,8 +3631,6 @@ struct LifetimeStore {
                 const Variable* var = lt.token->variable();
                 if (var && var->isArgument()) {
                     value.lifetimeScope = ValueFlow::Value::LifetimeScope::Argument;
-                } else if (exprDependsOnThis(lt.token)) {
-                    value.lifetimeScope = ValueFlow::Value::LifetimeScope::ThisPointer;
                 } else {
                     continue;
                 }
