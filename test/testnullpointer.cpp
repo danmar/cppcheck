@@ -129,6 +129,7 @@ private:
         TEST_CASE(nullpointer87); // #9291
         TEST_CASE(nullpointer88); // #9949
         TEST_CASE(nullpointer89); // #10640
+        TEST_CASE(nullpointer90); // #6098
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2633,6 +2634,28 @@ private:
               "}\n");
         ASSERT_EQUALS(
             "[test.cpp:9] -> [test.cpp:8]: (warning) Either the condition 'ptr->y!=nullptr' is redundant or there is possible null pointer dereference: ptr->y.\n",
+            errout.str());
+    }
+
+    void nullpointer90() // #6098
+    {
+        check("std::string definitionToName(Definition *ctx)\n"
+              "{\n"
+              "  if (ctx->definitionType()==Definition::TypeMember)\n"                           // possible null pointer dereference
+              "  {\n"
+              "     return \"y\";\n"
+              "  }\n"
+              "  else if (ctx)\n"                           // ctx is checked against null
+              "  {\n"
+              "    if(ctx->definitionType()!=Definition::TypeMember)\n"
+              "    {\n"
+              "       return \"x\";\n"
+              "    }\n"
+              "  }\n"
+              "  return \"unknown\";\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:3]: (warning) Either the condition 'ctx' is redundant or there is possible null pointer dereference: ctx.\n",
             errout.str());
     }
 
