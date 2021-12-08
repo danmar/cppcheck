@@ -34,7 +34,15 @@ jobs:
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
 
+      - name: Cache PCRE
+        id: cache-pcre
+        uses: actions/cache@v2
+        with:
+          path: pcre-${{ env.PCRE_VERSION }}.zip
+          key: pcre-${{ env.PCRE_VERSION }}
+
       - name: Download PCRE
+        if: steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip
 
@@ -51,7 +59,15 @@ jobs:
           copy pcre.h ..\externals
           copy Release\pcre.lib ..\externals\pcre64.lib
 
+      - name: Cache Z3 Library
+        id: cache-z3
+        uses: actions/cache@v2
+        with:
+          path: z3-${{ env.Z3_VERSION }}-x64-win.zip
+          key: z3-${{ env.Z3_VERSION }}-x64-win
+
       - name: Download Z3 library
+        if: steps.cache-z3.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-x64-win.zip -o z3-%Z3_VERSION%-x64-win.zip
 

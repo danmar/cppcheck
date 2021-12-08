@@ -42,8 +42,16 @@ jobs:
         if: matrix.qt_ver == ''
         uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: Download PCRE
+      - name: Cache PCRE
+        id: cache-pcre
+        uses: actions/cache@v2
         if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        with:
+          path: pcre-${{ env.PCRE_VERSION }}.zip
+          key: pcre-${{ env.PCRE_VERSION }}
+
+      - name: Download PCRE
+        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
 
@@ -64,8 +72,16 @@ jobs:
         env:
           CL: /MP
 
-      - name: Download Z3 library
+      - name: Cache Z3 Library
+        id: cache-z3
+        uses: actions/cache@v2
         if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        with:
+          path: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win.zip
+          key: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win
+
+      - name: Download Z3 library
+        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-z3.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip || exit /b !errorlevel!
 
