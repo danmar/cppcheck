@@ -34,9 +34,12 @@ jobs:
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
 
-      - name: Install PCRE
+      - name: Download PCRE
         run: |
           curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip
+
+      - name: Install PCRE
+        run: |
           7z x pcre-%PCRE_VERSION%.zip
           cd pcre-%PCRE_VERSION%
           cmake . -G "Visual Studio 16 2019" -A x64
@@ -48,9 +51,12 @@ jobs:
           copy pcre.h ..\externals
           copy Release\pcre.lib ..\externals\pcre64.lib
 
-      - name: Install Z3 library
+      - name: Download Z3 library
         run: |
           curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-x64-win.zip -o z3-%Z3_VERSION%-win.zip
+
+      - name: Install Z3 library
+        run: |
           7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y
           move externals\z3-%Z3_VERSION%-x64-win externals\z3
 
