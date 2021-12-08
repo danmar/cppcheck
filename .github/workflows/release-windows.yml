@@ -53,11 +53,11 @@ jobs:
 
       - name: Download Z3 library
         run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-x64-win.zip -o z3-%Z3_VERSION%-win.zip
+          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-x64-win.zip -o z3-%Z3_VERSION%-x64-win.zip
 
       - name: Install Z3 library
         run: |
-          7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y
+          7z x z3-%Z3_VERSION%-x64-win.zip -oexternals -r -y
           move externals\z3-%Z3_VERSION%-x64-win externals\z3
 
       - name: Install Qt

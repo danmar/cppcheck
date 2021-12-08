@@ -65,11 +65,11 @@ jobs:
 
       - name: Download Z3 library
         run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-win.zip || exit /b !errorlevel!
+          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip || exit /b !errorlevel!
 
       - name: Install Z3 library
         run: |
-          7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y || exit /b !errorlevel!
+          7z x z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -oexternals -r -y || exit /b !errorlevel!
           move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
 
       # no 32-bit Qt available
