@@ -30,6 +30,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
 
       - name: Set up Python 3.10
         if: matrix.qt_ver == ''
@@ -42,10 +43,12 @@ jobs:
         uses: microsoft/setup-msbuild@v1.0.2
 
       - name: Download PCRE
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
         run: |
           curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
 
       - name: Install PCRE
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
@@ -62,10 +65,12 @@ jobs:
           CL: /MP
 
       - name: Download Z3 library
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
         run: |
           curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip || exit /b !errorlevel!
 
       - name: Install Z3 library
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
         run: |
           7z x z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -oexternals -r -y || exit /b !errorlevel!
           move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
