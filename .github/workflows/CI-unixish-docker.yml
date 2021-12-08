@@ -135,13 +135,13 @@ jobs:
         run: |
           # "/usr/lib64" for centos / "/usr/lib" for ubuntu
           export PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) HAVE_RULES=yes
+          make -j$(nproc) HAVE_RULES=yes CXXFLAGS="-w"
 
       - name: Build test
         run: |
           # "/usr/lib64" for centos / "/usr/lib" for ubuntu
           export PATH="/usr/lib64/ccache:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) testrunner HAVE_RULES=yes
+          make -j$(nproc) testrunner HAVE_RULES=yes CXXFLAGS="-w"
 
       - name: Run test
         run: |
