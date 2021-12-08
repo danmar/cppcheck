@@ -22,6 +22,12 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      # see https://www.pcre.org/original/changelog.txt
+      PCRE_VERSION: 8.44
+      # see https://github.com/Z3Prover/z3/releases:
+      Z3_VERSION: 4.8.10
+
     steps:
       - uses: actions/checkout@v2
 
@@ -51,8 +57,6 @@ jobs:
             copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
           )
         env:
-          # see https://www.pcre.org/original/changelog.txt
-          PCRE_VERSION: 8.44
           CL: /MP
 
       - name: Install Z3 library
@@ -60,9 +64,6 @@ jobs:
           curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-win.zip || exit /b !errorlevel!
           7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y || exit /b !errorlevel!
           move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
-        env:
-          # see https://github.com/Z3Prover/z3/releases:  
-          Z3_VERSION: 4.8.10
 
       # no 32-bit Qt available
       - name: Install Qt ${{ matrix.qt_ver }}
