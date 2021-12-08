@@ -26,7 +26,7 @@ jobs:
       # see https://www.pcre.org/original/changelog.txt
       PCRE_VERSION: 8.45
       # see https://github.com/Z3Prover/z3/releases:
-      Z3_VERSION: 4.8.7
+      Z3_VERSION: 4.8.10
 
     steps:
       - uses: actions/checkout@v2
