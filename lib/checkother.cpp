@@ -2296,10 +2296,10 @@ void CheckOther::checkDuplicateExpression()
                 auto isAssignmentToReference = [](const Token* tok) { // takes ":" token
                     int parentCount = 0;
                     do {
-                      tok = tok->astParent();
-                      if (!tok)
-                          return false;
-                      ++parentCount;
+                        tok = tok->astParent();
+                        if (!tok)
+                            return false;
+                        ++parentCount;
                     } while (parentCount < 3 && tok->str() != "=");
                     if (parentCount == 3)
                         return false;
@@ -2309,7 +2309,7 @@ void CheckOther::checkDuplicateExpression()
                     const auto vt = tok->valueType();
                     if (!vt)
                         return false;
-                    return vt->reference != Reference::None;
+                    return vt->reference != Reference::None && Token::Match(tok->tokAt(-2), "%type% &|&&"); // reference must be newly declared
                 };
                 if (!isAssignmentToReference(tok) && !tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()))
                     duplicateValueTernaryError(tok);
