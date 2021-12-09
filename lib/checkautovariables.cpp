@@ -60,7 +60,7 @@ static bool isArrayArg(const Token *tok)
 static bool isArrayVar(const Token *tok)
 {
     const Variable *var = tok->variable();
-    return (var && var->isArray());
+    return (var && var->isArray() && !var->isArgument());
 }
 
 static bool isRefPtrArg(const Token *tok)

@@ -79,6 +79,7 @@ private:
         TEST_CASE(testautovar_extern);
         TEST_CASE(testautovar_reassigned);
         TEST_CASE(testinvaliddealloc);
+        TEST_CASE(testinvaliddealloc_input); // Ticket #10600
         TEST_CASE(testinvaliddealloc_string);
         TEST_CASE(testinvaliddealloc_C);
         TEST_CASE(testassign1);  // Ticket #1819
@@ -761,6 +762,33 @@ private:
               "    std::array<long, 256>* m_Arr{};\n"
               "};\n"
               "Array arr;\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void testinvaliddealloc_input() {
+        // #10600
+        check("void f(int* a[]) {\n"
+              "    free(a);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a[]) {\n"
+              "    free(a);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* a[]) {\n"
+              "    int * p = *a;\n"
+              "    free(p);\n"
+              "    int ** q = a;\n"
+              "    free(q);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a[]) {\n"
+              "    int * p = a;\n"
+              "    free(p);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
