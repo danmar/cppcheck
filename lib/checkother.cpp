@@ -2306,7 +2306,7 @@ void CheckOther::checkDuplicateExpression()
                     tok = tok->astOperand1(); // assignee
                     if (!tok)
                         return false;
-                    const auto vt = tok->valueType();
+                    const auto* const vt = tok->valueType();
                     if (!vt)
                         return false;
                     return vt->reference != Reference::None && Token::Match(tok->tokAt(-2), "%type% &|&&"); // reference must be newly declared
