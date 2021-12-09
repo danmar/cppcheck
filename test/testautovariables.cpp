@@ -79,6 +79,7 @@ private:
         TEST_CASE(testautovar_extern);
         TEST_CASE(testautovar_reassigned);
         TEST_CASE(testinvaliddealloc);
+        TEST_CASE(testinvaliddealloc_input); // Ticket #10600
         TEST_CASE(testinvaliddealloc_string);
         TEST_CASE(testinvaliddealloc_C);
         TEST_CASE(testassign1);  // Ticket #1819
@@ -764,6 +765,33 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void testinvaliddealloc_input() {
+        // #10600
+        check("void f(int* a[]) {\n"
+              "    free(a);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a[]) {\n"
+              "    free(a);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* a[]) {\n"
+              "    int * p = *a;\n"
+              "    free(p);\n"
+              "    int ** q = a;\n"
+              "    free(q);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a[]) {\n"
+              "    int * p = a;\n"
+              "    free(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void testinvaliddealloc_string() {
         // #7341
         check("void f() {\n"
@@ -782,6 +810,16 @@ private:
                       "[test.cpp:6]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
                       "[test.cpp:9]: (error) Deallocation of an pointer pointing to a string literal (\"abc\") results in undefined behaviour.\n",
                       errout.str());
+
+        check("void f() {\n"
+              "   char *ptr = malloc(10);\n"
+              "   char *empty_str = \"\";\n"
+              "   if (ptr == NULL)\n"
+              "      ptr = empty_str;\n"
+              "   if (ptr != empty_str)\n"
+              "      free(ptr);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void testinvaliddealloc_C() {
@@ -2954,7 +2992,7 @@ private:
               "    return by_value(v.begin());\n"
               "}\n");
         ASSERT_EQUALS(
-            "[test.cpp:7] -> [test.cpp:7] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            "[test.cpp:7] -> [test.cpp:7] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:6] -> [test.cpp:7]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
             errout.str());
 
         check("auto by_ref(int& x) {\n"
@@ -3350,6 +3388,61 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:9] -> [test.cpp:9] -> [test.cpp:14] -> [test.cpp:13] -> [test.cpp:14]: (error) Returning pointer to local variable 'fred' that will be invalid when returning.\n",
             errout.str());
+
+        check("struct A {\n"
+              "    int i;\n"
+              "    auto f() const {\n"
+              "        return [=]{ return i; };\n"
+              "    }\n"
+              "};\n"
+              "auto g() {\n"
+              "    return A().f();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4] -> [test.cpp:8] -> [test.cpp:8]: (error) Returning object that will be invalid when returning.\n",
+            errout.str());
+
+        check("struct A {\n"
+              "    int i;\n"
+              "    auto f() const {\n"
+              "        return [*this]{ return i; };\n"
+              "    }\n"
+              "};\n"
+              "auto g() {\n"
+              "    return A().f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    int* i;\n"
+              "    auto f() const {\n"
+              "        return [*this]{ return i; };\n"
+              "    }\n"
+              "};\n"
+              "auto g() {\n"
+              "    int i = 0;\n"
+              "    return A{&i}.f();\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:9] -> [test.cpp:9] -> [test.cpp:4] -> [test.cpp:4] -> [test.cpp:8] -> [test.cpp:9]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
+            errout.str());
+
+        check("struct S {\n"
+              "    int i{};\n"
+              "};\n"
+              "struct T {\n"
+              "    S getS() const { return S{ j }; }\n"
+              "    int j{};\n"
+              "};\n"
+              "void f(S* p) {\n"
+              "    S ret;\n"
+              "    {\n"
+              "        T t;\n"
+              "        ret = t.getS();\n"
+              "    }\n"
+              "    *p = ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidLifetime() {

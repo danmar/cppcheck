@@ -3335,6 +3335,45 @@ private:
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
+
+        {
+            // #10552
+            const char code[] = "v.value<QPair<int, int>>()\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< QPair");
+            const Token* tok2 = Token::findsimplematch(tok1, "> (");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
+
+        {
+            // #10552
+            const char code[] = "v.value<QPair<int, int>>()\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< int");
+            const Token* tok2 = Token::findsimplematch(tok1, "> > (");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
+
+        {
+            // #10615
+            const char code[] = "struct A : public B<__is_constructible()>{};\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< >");
+            const Token* tok2 = Token::findsimplematch(tok1, "> { } >");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
     }
 
     void simplifyString() {
@@ -6706,11 +6745,25 @@ private:
                                              "    ;\n"
                                              "}\n"));
 
+        // #9523
+        ASSERT_NO_THROW(tokenizeAndStringify(
+                            "template <int> struct a;\n"
+                            "template <typename, typename> struct b;\n"
+                            "template <typename c> struct b<c, typename a<c{} && 0>::d> {\n"
+                            "  void e() {\n"
+                            "    if (0) {}\n"
+                            "  }\n"
+                            "};\n"));
+
         ASSERT_NO_THROW(tokenizeAndStringify(
                             "template <std::size_t First, std::size_t... Indices, typename Functor>\n"
                             "constexpr void constexpr_for_fold_impl([[maybe_unused]] Functor&& f, std::index_sequence<Indices...>) noexcept {\n"
                             "    (std::forward<Functor>(f).template operator() < First + Indices > (), ...);\n"
                             "}\n"));
+
+        // #9301
+        ASSERT_NO_THROW(tokenizeAndStringify("template <typename> constexpr char x[] = \"\";\n"
+                                             "template <> constexpr char x<int>[] = \"\";\n"));
     }
 
     void checkNamespaces() {

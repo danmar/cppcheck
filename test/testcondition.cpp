@@ -3914,6 +3914,19 @@ private:
               "    if (m_PC->GetI() != I) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10624
+        check("struct Data {\n"
+              "  Base* PBase{};\n"
+              "};\n"
+              "void f(Data* BaseData) {\n"
+              "  Base* PObj = BaseData->PBase;\n"
+              "  if (PObj == nullptr)\n"
+              "    return;\n"
+              "  Derived* pD = dynamic_cast<Derived*>(PObj);\n"
+              "  if (pD) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {

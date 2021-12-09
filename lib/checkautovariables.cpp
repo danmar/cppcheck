@@ -60,7 +60,7 @@ static bool isArrayArg(const Token *tok)
 static bool isArrayVar(const Token *tok)
 {
     const Variable *var = tok->variable();
-    return (var && var->isArray());
+    return (var && var->isArray() && !var->isArgument());
 }
 
 static bool isRefPtrArg(const Token *tok)
@@ -275,7 +275,7 @@ void CheckAutoVariables::autoVariables()
                     for (const ValueFlow::Value &v : tok->values()) {
                         if (!(v.isTokValue()))
                             continue;
-                        if (isArrayVar(v.tokvalue) || v.tokvalue->tokType() == Token::eString) {
+                        if (isArrayVar(v.tokvalue) || ((v.tokvalue->tokType() == Token::eString) && !v.isImpossible())) {
                             errorInvalidDeallocation(tok, &v);
                             break;
                         }

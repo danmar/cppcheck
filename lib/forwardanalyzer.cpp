@@ -145,7 +145,8 @@ struct ForwardTraversal {
         // Evaluate:
         //     1. RHS of assignment before LHS
         //     2. Unary op before operand
-        if (tok->isAssignmentOp() || !secondOp)
+        //     3. Function arguments before function call
+        if (tok->isAssignmentOp() || !secondOp || isFunctionCall(tok))
             std::swap(firstOp, secondOp);
         if (firstOp && traverseRecursive(firstOp, f, traverseUnknown, recursion+1) == Progress::Break)
             return Break();
@@ -755,6 +756,21 @@ struct ForwardTraversal {
         if (Token::Match(tok->previous(), "sizeof|decltype ("))
             return true;
         return false;
+    }
+
+    static bool isFunctionCall(const Token* tok)
+    {
+        if (!Token::simpleMatch(tok, "("))
+            return false;
+        if (tok->isCast())
+            return false;
+        if (!tok->isBinaryOp())
+            return false;
+        if (Token::simpleMatch(tok->link(), ") {"))
+            return false;
+        if (isUnevaluated(tok))
+            return false;
+        return Token::Match(tok->previous(), "%name%|)|]|>");
     }
 
     static Token* assignExpr(Token* tok) {

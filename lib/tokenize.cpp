@@ -4462,8 +4462,7 @@ void Tokenizer::createLinks2()
                     type.pop();
                 }
                 type.pop();
-            } else
-                token->link(nullptr);
+            }
         } else if (templateTokens.empty() && !isStruct && Token::Match(token, "%oror%|&&|;")) {
             if (Token::Match(token, "&& [,>]"))
                 continue;
@@ -4530,7 +4529,8 @@ void Tokenizer::createLinks2()
             }
             // if > is followed by [ .. "new a<b>[" is expected
             // unless this is from varidiac expansion
-            if (token->strAt(1) == "[" && !Token::simpleMatch(token->tokAt(-1), "... >")) {
+            if (token->strAt(1) == "[" && !Token::simpleMatch(token->tokAt(-1), "... >") &&
+                !Token::Match(token->tokAt(1), "[ ]")) {
                 Token *prev = type.top()->previous();
                 while (prev && Token::Match(prev->previous(), ":: %name%"))
                     prev = prev->tokAt(-2);
@@ -4540,9 +4540,12 @@ void Tokenizer::createLinks2()
                     continue;
             }
 
-            if (token->str() == ">>") {
+            if (token->str() == ">>" && top1 && top2) {
                 type.pop();
                 type.pop();
+                // Split the angle brackets
+                token->str(">");
+                Token::createMutualLinks(top1, token->insertTokenBefore(">"));
                 Token::createMutualLinks(top2, token);
                 if (templateTokens.size() == 2 && (top1 == templateTokens.top() || top2 == templateTokens.top())) {
                     templateTokens.pop();

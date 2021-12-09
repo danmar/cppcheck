@@ -215,6 +215,24 @@ private:
     void outOfBounds() {
         setMultiline();
 
+        checkNormal("bool f(const int a, const int b)\n" // #8648
+                    "{\n"
+                    "    std::cout << a << b;\n"
+                    "    return true;\n"
+                    "}\n"
+                    "void f(const std::vector<int> &v)\n"
+                    "{\n"
+                    "    if(v.size() >=2 &&\n"
+                    "            bar(v[2], v[3]) )\n"                          // v[3] is accessed
+                    "    {;}\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:9:warning:Either the condition 'v.size()>=2' is redundant or v size can be 2. Expression 'v[2]' cause access out of bounds.\n"
+                      "test.cpp:8:note:condition 'v.size()>=2'\n"
+                      "test.cpp:9:note:Access out of bounds\n"
+                      "test.cpp:9:warning:Either the condition 'v.size()>=2' is redundant or v size can be 2. Expression 'v[3]' cause access out of bounds.\n"
+                      "test.cpp:8:note:condition 'v.size()>=2'\n"
+                      "test.cpp:9:note:Access out of bounds\n", errout.str());
+
         checkNormal("void f() {\n"
                     "  std::string s;\n"
                     "  s[10] = 1;\n"
@@ -1305,7 +1323,9 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n",
+            errout.str());
 
         check("void foo()\n"
               "{\n"
@@ -1320,7 +1340,7 @@ private:
               "}");
         TODO_ASSERT_EQUALS(
             "[test.cpp:7] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
-            "[test.cpp:7] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n",
+            "[test.cpp:7] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n",
             errout.str());
 
         check("void foo()\n"
@@ -1336,7 +1356,7 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:8] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
+            "[test.cpp:8] -> [test.cpp:4]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n",
             errout.str());
 
         check("void foo()\n"
@@ -1352,7 +1372,18 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:8] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are defined in different scopes.\n",
+            "[test.cpp:8] -> [test.cpp:7]: (error) Same iterator is used with containers 'l1' that are temporaries or defined in different scopes.\n",
+            errout.str());
+
+        check("std::set<int> g() {\n"
+              "    static const std::set<int> s = {1};\n"
+              "    return s;\n"
+              "}\n"
+              "void f() {\n"
+              "    if (g().find(2) == g().end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:6]: (error) Same iterator is used with containers 'g()' that are temporaries or defined in different scopes.\n",
             errout.str());
     }
 
@@ -1575,7 +1606,9 @@ private:
               "void foo() {\n"
               "    (void)std::find(A().f().begin(), A().g().end(), 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Iterators to containers from different expressions 'A().f()' and 'A().g()' are used together.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6]: (error) Iterators of different containers 'A().f()' and 'A().g()' are used together.\n",
+            errout.str());
 
         check("struct A {\n"
               "    std::vector<int>& f();\n"
@@ -1584,7 +1617,9 @@ private:
               "void foo() {\n"
               "    (void)std::find(A{} .f().begin(), A{} .g().end(), 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (warning) Iterators to containers from different expressions 'A{}.f()' and 'A{}.g()' are used together.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6]: (error) Iterators of different containers 'A{}.f()' and 'A{}.g()' are used together.\n",
+            errout.str());
 
         check("std::vector<int>& f();\n"
               "std::vector<int>& g();\n"
@@ -4156,6 +4191,15 @@ private:
               "    return v;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("extern bool bar(int);\n"
+              "void f(std::vector<int> & v) {\n"
+              "    std::vector<int>::iterator i= v.begin();\n"
+              "    if(i == v.end() && bar(*(i+1)) ) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:4]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n",
+            errout.str());
     }
 
     void dereferenceInvalidIterator2() {

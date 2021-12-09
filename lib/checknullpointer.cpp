@@ -168,7 +168,8 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
-    if (parent->str() == "." && parent->astOperand2() == tok)
+    const bool addressOf = parent->astParent() && parent->astParent()->str() == "&";
+    if (parent->str() == "." && astIsRHS(tok))
         return isPointerDeRef(parent, unknown, settings);
     const bool firstOperand = parent->astOperand1() == tok;
     parent = astParentSkipParens(tok);
@@ -176,11 +177,11 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // Dereferencing pointer..
-    if (parent->isUnaryOp("*") && !Token::Match(parent->tokAt(-2), "sizeof|decltype|typeof"))
+    if (parent->isUnaryOp("*") && !addressOf)
         return true;
 
     // array access
-    if (firstOperand && parent->str() == "[" && (!parent->astParent() || parent->astParent()->str() != "&"))
+    if (firstOperand && parent->str() == "[" && !addressOf)
         return true;
 
     // address of member variable / array element
@@ -191,18 +192,8 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // read/write member variable
-    if (firstOperand && parent->originalName() == "->" && (!parent->astParent() || parent->astParent()->str() != "&")) {
-        if (!parent->astParent())
-            return true;
-        if (!Token::Match(parent->astParent()->previous(), "if|while|for|switch ("))
-            return true;
-        if (!Token::Match(parent->astParent()->previous(), "%name% ("))
-            return true;
-        if (parent->astParent() == tok->previous())
-            return true;
-        unknown = true;
-        return false;
-    }
+    if (firstOperand && parent->originalName() == "->" && !addressOf)
+        return true;
 
     // If its a function pointer then check if its called
     if (tok->variable() && tok->variable()->isPointer() && Token::Match(tok->variable()->nameToken(), "%name% ) (") &&
