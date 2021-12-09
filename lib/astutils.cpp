@@ -1037,9 +1037,6 @@ static bool compareKnownValue(const Token * const tok1, const Token * const tok2
 {
     static const auto isKnownFn = std::mem_fn(&ValueFlow::Value::isKnown);
 
-    if ((tok1->variable() && tok1->variable()->isStatic()) || (tok2->variable() && tok2->variable()->isStatic()))
-        return false;
-
     const auto v1 = std::find_if(tok1->values().begin(), tok1->values().end(), isKnownFn);
     if (v1 == tok1->values().end()) {
         return false;
