@@ -3927,7 +3927,7 @@ private:
               "  if (pD) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         // #9549
         check("void f(const uint32_t v) {\n"
               "    const uint32_t v16 = v >> 16;\n"
