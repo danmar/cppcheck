@@ -5773,6 +5773,15 @@ private:
               "    if( *a == !(b) ) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+
+        check("void f(uint16_t u) {\n" // #9342
+              "    if (u != (u & -u))\n"
+              "        return false;\n"
+              "    if (u != (-u & u))\n"
+              "        return false;\n"
+              "    return true;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateVarExpression() {
