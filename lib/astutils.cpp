@@ -1555,9 +1555,9 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
         return false;
     if (isOppositeCond(true, cpp, tok1, tok2, library, pure, followVar, errors))
         return true;
-    if (tok1->isUnaryOp("-"))
+    if (tok1->isUnaryOp("-") && !(tok2->astParent() && tok2->astParent()->tokType() == Token::eBitOp))
         return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure, followVar, errors);
-    if (tok2->isUnaryOp("-"))
+    if (tok2->isUnaryOp("-") && !(tok2->astParent() && tok2->astParent()->tokType() == Token::eBitOp))
         return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure, followVar, errors);
     return false;
 }
