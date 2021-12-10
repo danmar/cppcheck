@@ -669,7 +669,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
              parent->astOperand1() &&
              parent->astOperand2()) {
 
-        const bool noninvertible = parent->isComparisonOp() || Token::Match(parent, "%|/|&|%or%");
+        const bool noninvertible = parent->isComparisonOp() || Token::Match(parent, "%|/|&|%or%|<<|>>");
 
         // Skip operators with impossible values that are not invertible
         if (noninvertible && value.isImpossible())
