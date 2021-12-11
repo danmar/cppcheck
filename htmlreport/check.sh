@@ -40,7 +40,7 @@ validate_html "$INDEX_HTML"
 validate_html "$STATS_HTML"
 
 
-../cppcheck ../gui/test --enable=all  --inconclusive --xml-version=2 2> "$GUI_TEST_XML"
+../cppcheck ../test/cfg --enable=all --inconclusive --xml-version=2 2> "$GUI_TEST_XML"
 xmllint --noout "$GUI_TEST_XML"
 $PYTHON cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive test" --report-dir "$REPORT_DIR"
 echo ""
@@ -49,7 +49,7 @@ validate_html "$INDEX_HTML"
 validate_html "$STATS_HTML"
 
 
-../cppcheck ../gui/test --enable=all --inconclusive --verbose --xml-version=2 2> "$GUI_TEST_XML"
+../cppcheck ../test/cfg --enable=all --inconclusive --verbose --xml-version=2 2> "$GUI_TEST_XML"
 xmllint --noout "$GUI_TEST_XML"
 $PYTHON cppcheck-htmlreport --file "$GUI_TEST_XML" --title "xml2 + inconclusive + verbose test" --report-dir "$REPORT_DIR"
 echo -e "\n"
