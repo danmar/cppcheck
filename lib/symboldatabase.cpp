@@ -6008,7 +6008,10 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             bool setType = false;
             ValueType autovt;
             const Type *templateArgType = nullptr; // container element type / smart pointer type
-            if (vt2->containerTypeToken) {
+            if (!vt2->container->rangeItemRecordType.empty()) {
+                setType = true;
+                autovt.type = ValueType::Type::RECORD;
+            } else if (vt2->containerTypeToken) {
                 if (mSettings->library.isSmartPointer(vt2->containerTypeToken)) {
                     const Token *smartPointerTypeTok = vt2->containerTypeToken;
                     while (Token::Match(smartPointerTypeTok, "%name%|::"))
@@ -6023,7 +6026,6 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     setType = true;
                     templateArgType = vt2->containerTypeToken->type();
                 }
-
             }
 
             if (setType) {

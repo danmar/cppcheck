@@ -478,6 +478,7 @@ private:
         TEST_CASE(auto13);
         TEST_CASE(auto14);
         TEST_CASE(auto15); // C++17 auto deduction from braced-init-list
+        TEST_CASE(auto16);
 
         TEST_CASE(unionWithConstructor);
 
@@ -8352,6 +8353,16 @@ private:
         const Variable *var2 = db->variableList()[2];
         ASSERT(var2->valueType());
         ASSERT_EQUALS(ValueType::Type::DOUBLE, var2->valueType()->type);
+    }
+
+    void auto16() {
+        GET_SYMBOL_DB("void foo(std::map<std::string, bool> x) {\n"
+                      "    for (const auto& i: x) {}\n"
+                      "}\n");
+        ASSERT_EQUALS(3, db->variableList().size());
+        const Variable *i = db->variableList().back();
+        ASSERT(i->valueType());
+        ASSERT_EQUALS(ValueType::Type::RECORD, i->valueType()->type);
     }
 
     void unionWithConstructor() {
