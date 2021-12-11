@@ -580,15 +580,6 @@ std::string Preprocessor::removeSpaceNearNL(const std::string &str)
     return tmp;
 }
 
-void Preprocessor::preprocessWhitespaces(std::string &processedFile)
-{
-    // Replace all tabs with spaces..
-    std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
-
-    // Remove space characters that are after or before new line character
-    processedFile = removeSpaceNearNL(processedFile);
-}
-
 void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
 {
     (void)includePaths;

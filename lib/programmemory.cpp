@@ -28,16 +28,6 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
         return nullptr;
 }
 
-bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint* result) const
-{
-    const ValueFlow::Value* value = getValue(exprid);
-    if (value && value->isIntValue()) {
-        *result = value->intvalue;
-        return true;
-    }
-    return false;
-}
-
 void ProgramMemory::setIntValue(nonneg int exprid, MathLib::bigint value, bool impossible)
 {
     ValueFlow::Value v(value);

@@ -178,9 +178,6 @@ public:
      */
     void dereferenceErasedError(const Token* erased, const Token* deref, const std::string& itername, bool inconclusive);
 
-    /** @brief Reading from empty stl container (using valueflow) */
-    void readingEmptyStlContainer2();
-
     /** @brief Look for loops that can replaced with std algorithms */
     void useStlAlgorithm();
 

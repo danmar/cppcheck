@@ -103,7 +103,7 @@ public:
 
     void ignorePaths(const std::vector<std::string> &ipaths);
     void ignoreOtherConfigs(const std::string &cfg);
-    void ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType);
+
 
     Type import(const std::string &filename, Settings *settings=nullptr);
 protected:

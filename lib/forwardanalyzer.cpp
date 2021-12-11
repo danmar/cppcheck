@@ -89,10 +89,6 @@ struct ForwardTraversal {
         return evalCond(tok, ctx).first;
     }
 
-    bool isConditionFalse(const Token* tok, const Token* ctx = nullptr) const {
-        return evalCond(tok, ctx).second;
-    }
-
     template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
     Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
         if (Token::Match(tok, "asm|goto|setjmp|longjmp"))

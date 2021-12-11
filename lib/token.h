@@ -863,11 +863,6 @@ public:
     void printOut(const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
-     * print out tokens
-     */
-    void printLines(int lines=5) const;
-
-    /**
      * Replace token replaceThis with tokens between start and end,
      * including start and end. The replaceThis token is deleted.
      * @param replaceThis This token will be deleted.
@@ -1170,8 +1165,6 @@ public:
 
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize(const Settings *settings) const;
-
-    const Token *getValueTokenDeadPointer() const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);

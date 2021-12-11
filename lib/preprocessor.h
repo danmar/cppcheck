@@ -155,12 +155,6 @@ public:
     std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
 
     /**
-     * preprocess all whitespaces
-     * @param processedFile The data to be processed
-     */
-    static void preprocessWhitespaces(std::string &processedFile);
-
-    /**
      * make sure empty configuration macros are not used in code. the given code must be a single configuration
      * @param cfg configuration
      * @param macroUsageList macro usage list
