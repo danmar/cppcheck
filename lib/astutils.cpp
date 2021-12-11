@@ -1068,7 +1068,7 @@ bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
     });
 }
 
-bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
+static inline bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
 {
     return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) {
         bool r = v1.equalValue(v2);
@@ -1079,7 +1079,7 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
     });
 }
 
-static bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
+static inline bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
 {
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
@@ -1200,13 +1200,14 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (Token::simpleMatch(tok2, "!") && Token::simpleMatch(tok2->astOperand1(), "!") && !Token::simpleMatch(tok2->astParent(), "=")) {
         return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure, followVar, errors);
     }
-    if (tok1->str() != tok2->str() && isDifferentKnownValues(tok1, tok2))
+    const bool tok_str_eq = tok1->str() == tok2->str();
+    if (!tok_str_eq && isDifferentKnownValues(tok1, tok2))
         return false;
     if (isSameConstantValue(macro, tok1, tok2))
         return true;
 
     // Follow variable
-    if (followVar && tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
+    if (followVar && !tok_str_eq && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
         if ((varTok1->str() == tok2->str()) || isSameConstantValue(macro, varTok1, tok2)) {
             followVariableExpressionError(tok1, varTok1, errors);
@@ -1224,13 +1225,13 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         }
     }
     // Follow references
-    if (tok1->str() != tok2->str()) {
+    if (!tok_str_eq) {
         const Token* refTok1 = followReferences(tok1, errors);
         const Token* refTok2 = followReferences(tok2, errors);
         if (refTok1 != tok1 || refTok2 != tok2)
             return isSameExpression(cpp, macro, refTok1, refTok2, library, pure, followVar, errors);
     }
-    if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
+    if (tok1->varId() != tok2->varId() || !tok_str_eq || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>") && Token::Match(tok2,"<|>")) ||
             (Token::Match(tok1,"<=|>=") && Token::Match(tok2,"<=|>="))) {
             return isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand2(), library, pure, followVar, errors) &&
