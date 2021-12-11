@@ -178,14 +178,6 @@ private:
 
     static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
 
-    /**
-     * Remove space that has new line character on left or right side of it.
-     *
-     * @param str The string to be converted
-     * @return The string where space characters have been removed.
-     */
-    static std::string removeSpaceNearNL(const std::string &str);
-
 public:
 
 

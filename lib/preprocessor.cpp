@@ -559,27 +559,6 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
     }
 }
 
-std::string Preprocessor::removeSpaceNearNL(const std::string &str)
-{
-    std::string tmp;
-    char prev = '\n'; // treat start of file as newline
-    for (std::size_t i = 0; i < str.size(); i++) {
-        if (str[i] == ' ' &&
-            (prev == '\n' ||
-             i + 1 >= str.size() || // treat end of file as newline
-             str[i+1] == '\n'
-            )
-            ) {
-            // Ignore space that has new line in either side of it
-        } else {
-            tmp.append(1, str[i]);
-            prev = str[i];
-        }
-    }
-
-    return tmp;
-}
-
 void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
 {
     (void)includePaths;
