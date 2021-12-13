@@ -2293,25 +2293,7 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             } else if (styleEnabled && tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
-                auto isAssignmentToReference = [](const Token* tok) { // takes ":" token
-                    int parentCount = 0;
-                    do {
-                        tok = tok->astParent();
-                        if (!tok)
-                            return false;
-                        ++parentCount;
-                    } while (parentCount < 3 && tok->str() != "=");
-                    if (parentCount == 3)
-                        return false;
-                    tok = tok->astOperand1(); // assignee
-                    if (!tok)
-                        return false;
-                    const auto* const vt = tok->valueType();
-                    if (!vt)
-                        return false;
-                    return vt->reference != Reference::None && Token::Match(tok->tokAt(-2), "%type% &|&&"); // reference must be newly declared
-                };
-                if (!isAssignmentToReference(tok) && !tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()))
+                if (!isVariableChanged(tok->astParent(), /*indirect*/ 0, mSettings, mTokenizer->isCPP()) && !tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()))
                     duplicateValueTernaryError(tok);
                 else if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath))
                     duplicateExpressionTernaryError(tok, errorPath);

@@ -2111,6 +2111,10 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
 {
     if (!tok)
         return false;
+
+    if (indirect == 0 && isConstVarExpression(tok))
+        return false;
+
     const Token *tok2 = tok;
     int derefs = 0;
     while (Token::simpleMatch(tok2->astParent(), "*") ||
@@ -2579,6 +2583,8 @@ bool isConstVarExpression(const Token *tok, const char* skipMatch)
 {
     if (!tok)
         return false;
+    if (tok->str() == "?" && tok->astOperand2()) // ternary operator
+        return isConstVarExpression(tok->astOperand2()->astOperand1()) && isConstVarExpression(tok->astOperand2()->astOperand2()); // left and right of ":"
     if (skipMatch && Token::Match(tok, skipMatch))
         return false;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
