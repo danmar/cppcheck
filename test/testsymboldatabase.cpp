@@ -82,8 +82,7 @@ private:
     const static SymbolDatabase* getSymbolDB_inner(Tokenizer& tokenizer, const char* code, const char* filename) {
         errout.str("");
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
-        return tokenizer.getSymbolDatabase();
+        return tokenizer.tokenize(istr, filename) ? tokenizer.getSymbolDatabase() : nullptr;
     }
 
     static const Scope *findFunctionScopeByToken(const SymbolDatabase * db, const Token *tok) {
@@ -479,6 +478,7 @@ private:
         TEST_CASE(auto13);
         TEST_CASE(auto14);
         TEST_CASE(auto15); // C++17 auto deduction from braced-init-list
+        TEST_CASE(auto16);
 
         TEST_CASE(unionWithConstructor);
 
@@ -2147,7 +2147,8 @@ private:
         ASSERT_EQUALS("char", arg1->typeEndToken()->str());
     }
 
-    void check(const char code[], bool debug = true, const char filename[] = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool debug = true, const char filename[] = "test.cpp") {
         // Clear the error log
         errout.str("");
 
@@ -2157,7 +2158,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // force symbol database creation
         tokenizer.createSymbolDatabase();
@@ -7138,10 +7139,11 @@ private:
         ASSERT(class_scope->functionList.begin()->functionScope == &*scope);
     }
 
-    std::string typeOf(const char code[], const char pattern[], const char filename[] = "test.cpp", const Settings *settings = nullptr) {
+#define typeOf(...) typeOf_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string typeOf_(const char* file, int line, const char code[], const char pattern[], const char filename[] = "test.cpp", const Settings *settings = nullptr) {
         Tokenizer tokenizer(settings ? settings : &settings2, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
         const Token* tok;
         for (tok = tokenizer.list.back(); tok; tok = tok->previous())
             if (Token::simpleMatch(tok, pattern, strlen(pattern)))
@@ -7543,12 +7545,21 @@ private:
         // auto variables
         ASSERT_EQUALS("signed int", typeOf("; auto x = 3;", "x"));
         ASSERT_EQUALS("signed int *", typeOf("; auto *p = (int *)0;", "p"));
+        ASSERT_EQUALS("const signed int *", typeOf("; auto *p = (const int *)0;", "p"));
+        ASSERT_EQUALS("const signed int *", typeOf("; auto *p = (constexpr int *)0;", "p"));
+        ASSERT_EQUALS("const signed int *", typeOf("; const auto *p = (int *)0;", "p"));
+        ASSERT_EQUALS("const signed int *", typeOf("; constexpr auto *p = (int *)0;", "p"));
+        ASSERT_EQUALS("const signed int *", typeOf("; const auto *p = (const int *)0;", "p"));
+        ASSERT_EQUALS("const signed int *", typeOf("; constexpr auto *p = (constexpr int *)0;", "p"));
+        ASSERT_EQUALS("const signed int *", typeOf("; const constexpr auto *p = (int *)0;", "p"));
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new int[100];", "data"));
         ASSERT_EQUALS("signed int", typeOf("; auto data = new X::Y; int x=1000; x=x/5;", "/")); // #7970
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new (nothrow) int[100];", "data"));
         ASSERT_EQUALS("signed int *", typeOf("; auto data = new (std::nothrow) int[100];", "data"));
         ASSERT_EQUALS("const signed short", typeOf("short values[10]; void f() { for (const auto *x : values); }", "x"));
         ASSERT_EQUALS("const signed int", typeOf("; const auto x = 3;", "x"));
+        ASSERT_EQUALS("const signed int", typeOf("; constexpr auto x = 3;", "x"));
+        ASSERT_EQUALS("const signed int", typeOf("; const constexpr auto x = 3;", "x"));
 
         // Variable declaration
         ASSERT_EQUALS("char *", typeOf("; char abc[] = \"abc\";", "["));
@@ -8342,6 +8353,16 @@ private:
         const Variable *var2 = db->variableList()[2];
         ASSERT(var2->valueType());
         ASSERT_EQUALS(ValueType::Type::DOUBLE, var2->valueType()->type);
+    }
+
+    void auto16() {
+        GET_SYMBOL_DB("void foo(std::map<std::string, bool> x) {\n"
+                      "    for (const auto& i: x) {}\n"
+                      "}\n");
+        ASSERT_EQUALS(3, db->variableList().size());
+        const Variable *i = db->variableList().back();
+        ASSERT(i->valueType());
+        ASSERT_EQUALS(ValueType::Type::RECORD, i->valueType()->type);
     }
 
     void unionWithConstructor() {

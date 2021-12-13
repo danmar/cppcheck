@@ -96,6 +96,7 @@ private:
         TEST_CASE(valueFlowForwardLambda);
         TEST_CASE(valueFlowForwardTryCatch);
         TEST_CASE(valueFlowForwardInconclusiveImpossible);
+        TEST_CASE(valueFlowForwardConst);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -178,11 +179,12 @@ private:
         return !val.isImpossible();
     }
 
-    bool testValueOfXKnown(const char code[], unsigned int linenr, int value) {
+#define testValueOfXKnown(...) testValueOfXKnown_(__FILE__, __LINE__, __VA_ARGS__)
+    bool testValueOfXKnown_(const char* file, int line, const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -198,11 +200,11 @@ private:
         return false;
     }
 
-    bool testValueOfXKnown(const char code[], unsigned int linenr, const std::string& expr, int value) {
+    bool testValueOfXKnown_(const char* file, int line, const char code[], unsigned int linenr, const std::string& expr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -218,11 +220,12 @@ private:
         return false;
     }
 
-    bool testValueOfXImpossible(const char code[], unsigned int linenr, int value) {
+#define testValueOfXImpossible(...) testValueOfXImpossible_(__FILE__, __LINE__, __VA_ARGS__)
+    bool testValueOfXImpossible_(const char* file, int line, const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -238,12 +241,12 @@ private:
         return false;
     }
 
-    bool testValueOfXImpossible(const char code[], unsigned int linenr, const std::string& expr, int value)
+    bool testValueOfXImpossible_(const char* file, int line, const char code[], unsigned int linenr, const std::string& expr, int value)
     {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -259,11 +262,12 @@ private:
         return false;
     }
 
-    bool testValueOfXInconclusive(const char code[], unsigned int linenr, int value) {
+#define testValueOfXInconclusive(code, linenr, value) testValueOfXInconclusive_(code, linenr, value, __FILE__, __LINE__)
+    bool testValueOfXInconclusive_(const char code[], unsigned int linenr, int value, const char* file, int line) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -279,11 +283,12 @@ private:
         return false;
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, int value) {
+#define testValueOfX(...) testValueOfX_(__FILE__, __LINE__, __VA_ARGS__)
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, int value) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -297,12 +302,12 @@ private:
         return false;
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, const std::string& expr, int value)
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, const std::string& expr, int value)
     {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token* tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -317,11 +322,11 @@ private:
         return false;
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, float value, float diff) {
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, float value, float diff) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -336,11 +341,12 @@ private:
         return false;
     }
 
-    std::string getErrorPathForX(const char code[], unsigned int linenr) {
+#define getErrorPathForX(code, linenr) getErrorPathForX_(code, linenr, __FILE__, __LINE__)
+    std::string getErrorPathForX_(const char code[], unsigned int linenr, const char* file, int line) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() != "x" || tok->linenr() != linenr)
@@ -360,11 +366,11 @@ private:
         return "";
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, const char value[], ValueFlow::Value::ValueType type) {
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, const char value[], ValueFlow::Value::ValueType type) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -378,11 +384,12 @@ private:
         return false;
     }
 
-    bool testLifetimeOfX(const char code[], unsigned int linenr, const char value[], ValueFlow::Value::LifetimeScope lifetimeScope = ValueFlow::Value::LifetimeScope::Local) {
+#define testLifetimeOfX(...) testLifetimeOfX_(__FILE__, __LINE__, __VA_ARGS__)
+    bool testLifetimeOfX_(const char* file, int line, const char code[], unsigned int linenr, const char value[], ValueFlow::Value::LifetimeScope lifetimeScope = ValueFlow::Value::LifetimeScope::Local) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -396,11 +403,11 @@ private:
         return false;
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, int value, ValueFlow::Value::ValueType type) {
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, int value, ValueFlow::Value::ValueType type) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -414,11 +421,11 @@ private:
         return false;
     }
 
-    bool testValueOfX(const char code[], unsigned int linenr, ValueFlow::Value::MoveKind moveKind) {
+    bool testValueOfX_(const char* file, int line, const char code[], unsigned int linenr, ValueFlow::Value::MoveKind moveKind) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -432,11 +439,12 @@ private:
         return false;
     }
 
-    bool testConditionalValueOfX(const char code[], unsigned int linenr, int value) {
+#define testConditionalValueOfX(code, linenr, value) testConditionalValueOfX_(code, linenr, value, __FILE__, __LINE__)
+    bool testConditionalValueOfX_(const char code[], unsigned int linenr, int value, const char* file, int line) {
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
             if (tok->str() == "x" && tok->linenr() == linenr) {
@@ -470,29 +478,31 @@ private:
         settings.debugwarnings = false;
     }
 
-    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], const Settings *s = nullptr) {
+#define tokenValues(...) tokenValues_(__FILE__, __LINE__, __VA_ARGS__)
+    std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr) {
         Tokenizer tokenizer(s ? s : &settings, this);
         std::istringstream istr(code);
         errout.str("");
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
         return tok ? tok->values() : std::list<ValueFlow::Value>();
     }
 
-    std::list<ValueFlow::Value> tokenValues(const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings *s = nullptr) {
-        std::list<ValueFlow::Value> values = tokenValues(code, tokstr, s);
+    std::list<ValueFlow::Value> tokenValues_(const char* file, int line, const char code[], const char tokstr[], ValueFlow::Value::ValueType vt, const Settings *s = nullptr) {
+        std::list<ValueFlow::Value> values = tokenValues_(file, line, code, tokstr, s);
         values.remove_if([&](const ValueFlow::Value& v) {
             return v.valueType != vt;
         });
         return values;
     }
 
-    std::vector<std::string> lifetimeValues(const char code[], const char tokstr[], const Settings *s = nullptr) {
+#define lifetimeValues(...) lifetimeValues_(__FILE__, __LINE__, __VA_ARGS__)
+    std::vector<std::string> lifetimeValues_(const char* file, int line, const char code[], const char tokstr[], const Settings *s = nullptr) {
         std::vector<std::string> result;
         Tokenizer tokenizer(s ? s : &settings, this);
         std::istringstream istr(code);
         errout.str("");
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token *tok = Token::findmatch(tokenizer.tokens(), tokstr);
         if (!tok)
             return result;
@@ -506,8 +516,9 @@ private:
         return result;
     }
 
-    ValueFlow::Value valueOfTok(const char code[], const char tokstr[]) {
-        std::list<ValueFlow::Value> values = tokenValues(code, tokstr);
+#define valueOfTok(code, tokstr) valueOfTok_(code, tokstr, __FILE__, __LINE__)
+    ValueFlow::Value valueOfTok_(const char code[], const char tokstr[], const char* file, int line) {
+        std::list<ValueFlow::Value> values = tokenValues_(file, line, code, tokstr);
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
     }
 
@@ -3506,6 +3517,61 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 1));
     }
 
+    void valueFlowForwardConst()
+    {
+        const char* code;
+
+        code = "int f() {\n"
+               "    const int i = 2;\n"
+               "    const int x = i+1;\n"
+               "    goto end;\n"
+               "end:\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 3));
+
+        code = "int f() {\n"
+               "    int i = 2;\n"
+               "    const int& x = i;\n"
+               "    i++;\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
+
+        code = "int f(int a, int b, int c) {\n"
+               "    const int i = 2;\n"
+               "    const int x = i+1;\n"
+               "    if (a == x) { return 0; }\n"
+               "    if (b == x) { return 0; }\n"
+               "    if (c == x) { return 0; }\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 7U, 3));
+
+        code = "int f(int a, int b, int c) {\n"
+               "    const int i = 2;\n"
+               "    const int y = i+1;\n"
+               "    const int& x = y;\n"
+               "    if (a == x) { return 0; }\n"
+               "    if (b == x) { return 0; }\n"
+               "    if (c == x) { return 0; }\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 8U, 3));
+
+        code = "int f(int a, int b, int c, int x) {\n"
+               "    const int i = 2;\n"
+               "    const int y = i+1;\n"
+               "    if (a == y) { return 0; }\n"
+               "    if (b == y) { return 0; }\n"
+               "    if (c == y) { return 0; }\n"
+               "    if (x == y)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 8U, 3));
+    }
+
     void valueFlowRightShift() {
         const char *code;
         /* Set some temporary fixed values to simplify testing */
@@ -5818,6 +5884,15 @@ private:
                "    return v;\n"
                "}\n";
         ASSERT_EQUALS(true, tokenValues(code, "v [ 0 ] != 0 ) { }", ValueFlow::Value::ValueType::CONTAINER_SIZE).empty());
+
+        code = "std::vector<int> f() {\n"
+               "    std::vector<int> v;\n"
+               "    v.reserve(1);\n"
+               "    v[1] = 42;\n"
+               "    return v;\n"
+               "}\n";
+        ASSERT_EQUALS(
+            "", isKnownContainerSizeValue(tokenValues(code, "v [", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
     }
 
     void valueFlowDynamicBufferSize() {

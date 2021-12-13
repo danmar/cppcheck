@@ -246,9 +246,14 @@ public:
             Action action;
             Yield yield;
         };
+        struct RangeItemRecordTypeItem {
+            std::string name;
+            int templateParameter;
+        };
         std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
         int type_templateArgNo;
+        std::vector<RangeItemRecordTypeItem> rangeItemRecordType;
         int size_templateArgNo;
         bool arrayLike_indexOp;
         bool stdStringLike;

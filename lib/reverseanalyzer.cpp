@@ -40,6 +40,44 @@ struct ReverseTraversal {
         return true;
     }
 
+    Token* getParentFunction(Token* tok)
+    {
+        if (!tok)
+            return nullptr;
+        if (!tok->astParent())
+            return nullptr;
+        int argn = -1;
+        if (Token* ftok = getTokenArgumentFunction(tok, argn)) {
+            while (!Token::Match(ftok, "(|{")) {
+                if (!ftok)
+                    return nullptr;
+                if (ftok->index() >= tok->index())
+                    return nullptr;
+                if (ftok->link())
+                    ftok = ftok->link()->next();
+                else
+                    ftok = ftok->next();
+            }
+            if (ftok == tok)
+                return nullptr;
+            return ftok;
+        }
+        return nullptr;
+    }
+
+    Token* getTopFunction(Token* tok)
+    {
+        if (!tok)
+            return nullptr;
+        if (!tok->astParent())
+            return tok;
+        Token* parent = tok;
+        Token* top = tok;
+        while ((parent = getParentFunction(parent)))
+            top = parent;
+        return top;
+    }
+
     bool updateRecursive(Token* start) {
         bool continueB = true;
         visitAstNodes(start, [&](Token* tok) {
@@ -121,7 +159,7 @@ struct ReverseTraversal {
         if (start == end)
             return;
         std::size_t i = start->index();
-        for (Token* tok = start->previous(); tok != end; tok = tok->previous()) {
+        for (Token* tok = start->previous(); succedes(tok, end); tok = tok->previous()) {
             if (tok->index() >= i)
                 throw InternalError(tok, "Cyclic reverse analysis.");
             i = tok->index();
@@ -198,6 +236,16 @@ struct ReverseTraversal {
                 tok = previousBeforeAstLeftmostLeaf(assignTop)->next();
                 continue;
             }
+            if (tok->str() == ")" && !isUnevaluated(tok)) {
+                if (Token* top = getTopFunction(tok->link())) {
+                    if (!updateRecursive(top))
+                        break;
+                    Token* next = previousBeforeAstLeftmostLeaf(top);
+                    if (next && precedes(next, tok))
+                        tok = next->next();
+                }
+                continue;
+            }
             if (tok->str() == "}") {
                 Token* condTok = getCondTokFromEnd(tok);
                 if (!condTok)
@@ -254,6 +302,12 @@ struct ReverseTraversal {
                     if (action.isModified())
                         break;
                 }
+                Token* condTok = getCondTokFromEnd(tok->link());
+                if (condTok) {
+                    Analyzer::Result r = valueFlowGenericForward(condTok, analyzer, settings);
+                    if (r.action.isModified())
+                        break;
+                }
                 if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
                     tok = tok->linkAt(-2);
                 if (Token::simpleMatch(tok->previous(), ") {"))
@@ -283,6 +337,8 @@ struct ReverseTraversal {
     }
 
     static Token* assignExpr(Token* tok) {
+        if (Token::Match(tok, ")|}"))
+            tok = tok->link();
         while (tok->astParent() && (astIsRHS(tok) || !tok->astParent()->isBinaryOp())) {
             if (tok->astParent()->isAssignmentOp())
                 return tok->astParent();

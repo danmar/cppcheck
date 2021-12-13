@@ -812,6 +812,7 @@ class Configuration:
     typedefInfo = []
     valueflow = []
     standards = None
+    clang_warnings = []
 
     def __init__(self, name):
         self.name = name
@@ -825,6 +826,7 @@ class Configuration:
         self.typedefInfo = []
         self.valueflow = []
         self.standards = Standards()
+        self.clang_warnings = []
 
     def set_tokens_links(self):
         """Set next/previous links between tokens."""
@@ -1062,6 +1064,12 @@ class CppcheckData:
                     yield cfg
                     cfg = None
                     cfg_arguments = []
+
+            elif node.tag == 'clang-warning' and event == 'start':
+                cfg.clang_warnings.append({'file': node.get('file'),
+                                           'line': int(node.get('line')),
+                                           'column': int(node.get('column')),
+                                           'message': node.get('message')})
 
             # Parse standards
             elif node.tag == "standards" and event == 'start':

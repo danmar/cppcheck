@@ -371,7 +371,7 @@ const char * CppCheck::extraVersion()
     return ExtraVersion;
 }
 
-static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMessage&)> reportErr)
+static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMessage&)> reportErr, std::vector<ErrorMessage> *warnings)
 {
     std::string line;
     while (std::getline(is, line)) {
@@ -381,6 +381,8 @@ static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMe
         std::string::size_type pos3 = line.find(": error: ");
         if (pos3 == std::string::npos)
             pos3 = line.find(": fatal error:");
+        if (warnings && pos3 == std::string::npos)
+            pos3 = line.find(": warning:");
         if (pos3 == std::string::npos)
             continue;
 
@@ -408,6 +410,12 @@ static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMe
                             msg,
                             "syntaxError",
                             Certainty::normal);
+
+        if (line.compare(pos3, 10, ": warning:") == 0) {
+            warnings->push_back(errmsg);
+            continue;
+        }
+
         reportErr(errmsg);
 
         return true;
@@ -459,19 +467,20 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         // Ensure there are not syntax errors...
+        std::vector<ErrorMessage> compilerWarnings;
         if (!mSettings.buildDir.empty()) {
             std::ifstream fin(clangStderr);
             auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
-            if (reportClangErrors(fin, reportError))
+            if (reportClangErrors(fin, reportError, &compilerWarnings))
                 return 0;
         } else {
             std::istringstream istr(output2);
             auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
-            if (reportClangErrors(istr, reportError))
+            if (reportClangErrors(istr, reportError, &compilerWarnings))
                 return 0;
         }
 
@@ -496,6 +505,8 @@ unsigned int CppCheck::check(const std::string &path)
             createDumpFile(mSettings, path, tokenizer.list.getFiles(), nullptr, fdump, dumpFile);
             if (fdump.is_open()) {
                 fdump << "<dump cfg=\"\">" << std::endl;
+                for (const ErrorMessage& errmsg: compilerWarnings)
+                    fdump << "  <clang-warning file=\"" << toxml(errmsg.callStack.front().getfile()) << "\" line=\"" << errmsg.callStack.front().line << "\" column=\"" << errmsg.callStack.front().column << "\" message=\"" << toxml(errmsg.shortMessage()) << "\"/>\n";
                 fdump << "  <standards>" << std::endl;
                 fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
                 fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;

@@ -90,7 +90,8 @@ private:
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl1);
         TEST_CASE(namespaceDecl2);
-        TEST_CASE(recordDecl);
+        TEST_CASE(recordDecl1);
+        TEST_CASE(recordDecl2);
         TEST_CASE(switchStmt);
         TEST_CASE(typedefDecl1);
         TEST_CASE(typedefDecl2);
@@ -881,11 +882,18 @@ private:
                       parse(clang));
     }
 
-    void recordDecl() {
+    void recordDecl1() {
         const char clang[] = "`-RecordDecl 0x354eac8 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
                              "  |-FieldDecl 0x354eb88 <line:2:3, col:7> col:7 x 'int'\n"
                              "  `-FieldDecl 0x354ebe8 <line:3:3, col:7> col:7 y 'int'";
         ASSERT_EQUALS("struct S { int x@1 ; int y@2 ; } ;",
+                      parse(clang));
+    }
+
+    void recordDecl2() {
+        const char clang[] = "`-RecordDecl 0x3befac8 <2.c:2:1, col:22> col:1 struct definition\n"
+                             "  `-FieldDecl 0x3befbf0 <col:10, col:19> col:14 val 'int'";
+        ASSERT_EQUALS("struct { int val@1 ; } ;",
                       parse(clang));
     }
 

@@ -22,14 +22,15 @@
 #include "config.h"
 #include "ctu.h"
 #include "library.h"
+#include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <tinyxml2.h>
 #include <list>
+#include <simplecpp.h>
 #include <string>
-
+#include <tinyxml2.h>
 
 class TestBufferOverrun : public TestFixture {
 public:
@@ -38,7 +39,8 @@ public:
 private:
     Settings settings0;
 
-    void check(const char code[], const char filename[] = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -47,17 +49,17 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun;
         checkBufferOverrun.runChecks(&tokenizer, &settings0, this);
     }
 
-    void check(const char code[], const Settings &settings, const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], const Settings &settings, const char filename[] = "test.cpp") {
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Clear the error buffer..
         errout.str("");
@@ -65,6 +67,45 @@ private:
         // Check for buffer overruns..
         CheckBufferOverrun checkBufferOverrun(&tokenizer, &settings, this);
         checkBufferOverrun.runChecks(&tokenizer, &settings, this);
+    }
+
+    void checkP(const char code[], const char* filename = "test.cpp")
+    {
+        // Clear the error buffer..
+        errout.str("");
+
+        Settings* settings = &settings0;
+        settings->severity.enable(Severity::style);
+        settings->severity.enable(Severity::warning);
+        settings->severity.enable(Severity::portability);
+        settings->severity.enable(Severity::performance);
+        settings->standards.c = Standards::CLatest;
+        settings->standards.cpp = Standards::CPPLatest;
+        settings->certainty.enable(Certainty::inconclusive);
+        settings->certainty.disable(Certainty::experimental);
+
+        // Raw tokens..
+        std::vector<std::string> files(1, filename);
+        std::istringstream istr(code);
+        const simplecpp::TokenList tokens1(istr, files, files[0]);
+
+        // Preprocess..
+        simplecpp::TokenList tokens2(files);
+        std::map<std::string, simplecpp::TokenList*> filedata;
+        simplecpp::preprocess(tokens2, tokens1, files, filedata, simplecpp::DUI());
+
+        Preprocessor preprocessor(*settings, nullptr);
+        preprocessor.setDirectives(tokens1);
+
+        // Tokenizer..
+        Tokenizer tokenizer(settings, this);
+        tokenizer.createTokens(std::move(tokens2));
+        tokenizer.simplifyTokens1("");
+        tokenizer.setPreprocessor(&preprocessor);
+
+        // Check for buffer overruns..
+        CheckBufferOverrun checkBufferOverrun(&tokenizer, settings, this);
+        checkBufferOverrun.runChecks(&tokenizer, settings, this);
     }
 
     void run() OVERRIDE {
@@ -136,6 +177,8 @@ private:
         TEST_CASE(array_index_57); // #10023
         TEST_CASE(array_index_58); // #7524
         TEST_CASE(array_index_59); // #10413
+        TEST_CASE(array_index_60); // #10617, #9824
+        TEST_CASE(array_index_61); // #10621
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1665,6 +1708,42 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void array_index_60()
+    {
+        checkP("#define CKR(B) if (!(B)) { return -1; }\n"
+               "int f(int i) {\n"
+               "  const int A[3] = {};\n"
+               "  CKR(i < 3);\n"
+               "  if (i > 0)\n"
+               "      i = A[i];\n"
+               "  return i;\n"
+               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkP("#define ASSERT(expression, action) if (expression) {action;}\n"
+               "int array[5];\n"
+               "void func (int index) {\n"
+               "    ASSERT(index > 5, return);\n"
+               "    array[index]++;\n"
+               "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:5]: (warning) Either the condition 'index>5' is redundant or the array 'array[5]' is accessed at index 5, which is out of bounds.\n",
+            errout.str());
+    }
+
+    void array_index_61()
+    {
+        check("int f(int i) {\n"
+              "  const int M[] = { 0, 1, 2, 3 };\n"
+              "  if (i > 4)\n"
+              "      return -1;\n"
+              "  if (i < 0 || i == std::size(M))\n"
+              "    return 0; \n"
+              "  return M[i];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void array_index_multidim() {
         check("void f()\n"
               "{\n"
@@ -2036,6 +2115,18 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'data[2]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("int f() {\n" // #9126
+              "    int i, c;\n"
+              "    char* words[100] = {0};\n"
+              "    g(words);\n"
+              "    for (i = c = 0; (i < N) && (c < 1); i++) {\n"
+              "        if (words[i][0] == '|')\n"
+              "            c++;\n"
+              "     }\n"
+              "    return c;\n"
+              "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_for_continue() {
@@ -3385,6 +3476,20 @@ private:
               "  cache[i][0xFFFF] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "  int **a = malloc(2 * sizeof(int*));\n"
+              "  for (int i = 0; i < 3; i++)\n"
+              "    a[i] = NULL;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[2]' accessed at index 2, which is out of bounds.\n", errout.str());
+
+        check("void f() {\n"
+              "  int **a = new int*[2];\n"
+              "  for (int i = 0; i < 3; i++)\n"
+              "    a[i] = NULL;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Array 'a[2]' accessed at index 2, which is out of bounds.\n", "", errout.str());
     }
 
     // statically allocated buffer
@@ -4461,22 +4566,23 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 'arr+20' is out of bounds.\n", errout.str());
     }
 
-    void ctu(const char code[]) {
+#define ctu(code) ctu_(code, __FILE__, __LINE__)
+    void ctu_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 
         // Check code..
         std::list<Check::FileInfo*> fileInfo;
-        CheckBufferOverrun check(&tokenizer, &settings0, this);
-        fileInfo.push_back(check.getFileInfo(&tokenizer, &settings0));
-        check.analyseWholeProgram(ctu, fileInfo, settings0, *this);
+        CheckBufferOverrun checkBO(&tokenizer, &settings0, this);
+        fileInfo.push_back(checkBO.getFileInfo(&tokenizer, &settings0));
+        checkBO.analyseWholeProgram(ctu, fileInfo, settings0, *this);
         while (!fileInfo.empty()) {
             delete fileInfo.back();
             fileInfo.pop_back();

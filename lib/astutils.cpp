@@ -53,10 +53,10 @@ void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
 
         if (c == ChildrenToVisit::done)
             break;
-        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
-            tokens.push(tok->astOperand1());
         if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2)
             tokens.push(tok->astOperand2());
+        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
+            tokens.push(tok->astOperand1());
     }
 }
 
@@ -734,11 +734,25 @@ static bool isInLoopCondition(const Token * tok)
 /// If tok2 comes after tok1
 bool precedes(const Token * tok1, const Token * tok2)
 {
+    if (tok1 == tok2)
+        return false;
     if (!tok1)
         return false;
     if (!tok2)
         return true;
     return tok1->index() < tok2->index();
+}
+
+/// If tok1 comes after tok2
+bool succedes(const Token* tok1, const Token* tok2)
+{
+    if (tok1 == tok2)
+        return false;
+    if (!tok1)
+        return false;
+    if (!tok2)
+        return true;
+    return tok1->index() > tok2->index();
 }
 
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
@@ -1023,6 +1037,9 @@ static bool compareKnownValue(const Token * const tok1, const Token * const tok2
 {
     static const auto isKnownFn = std::mem_fn(&ValueFlow::Value::isKnown);
 
+    if ((tok1->variable() && tok1->variable()->isStatic()) || (tok2->variable() && tok2->variable()->isStatic()))
+        return false;
+
     const auto v1 = std::find_if(tok1->values().begin(), tok1->values().end(), isKnownFn);
     if (v1 == tok1->values().end()) {
         return false;
@@ -1051,7 +1068,7 @@ bool isEqualKnownValue(const Token * const tok1, const Token * const tok2)
     });
 }
 
-bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
+static inline bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
 {
     return compareKnownValue(tok1, tok2, [&](const ValueFlow::Value& v1, const ValueFlow::Value& v2, bool sameLifetime) {
         bool r = v1.equalValue(v2);
@@ -1062,7 +1079,7 @@ bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2)
     });
 }
 
-static bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
+static inline bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
 {
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
@@ -1183,13 +1200,14 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
     if (Token::simpleMatch(tok2, "!") && Token::simpleMatch(tok2->astOperand1(), "!") && !Token::simpleMatch(tok2->astParent(), "=")) {
         return isSameExpression(cpp, macro, tok1, tok2->astOperand1()->astOperand1(), library, pure, followVar, errors);
     }
-    if (tok1->str() != tok2->str() && isDifferentKnownValues(tok1, tok2))
+    const bool tok_str_eq = tok1->str() == tok2->str();
+    if (!tok_str_eq && isDifferentKnownValues(tok1, tok2))
         return false;
     if (isSameConstantValue(macro, tok1, tok2))
         return true;
 
     // Follow variable
-    if (followVar && tok1->str() != tok2->str() && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
+    if (followVar && !tok_str_eq && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
         if ((varTok1->str() == tok2->str()) || isSameConstantValue(macro, varTok1, tok2)) {
             followVariableExpressionError(tok1, varTok1, errors);
@@ -1207,13 +1225,13 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         }
     }
     // Follow references
-    if (tok1->str() != tok2->str()) {
+    if (!tok_str_eq) {
         const Token* refTok1 = followReferences(tok1, errors);
         const Token* refTok2 = followReferences(tok2, errors);
         if (refTok1 != tok1 || refTok2 != tok2)
             return isSameExpression(cpp, macro, refTok1, refTok2, library, pure, followVar, errors);
     }
-    if (tok1->varId() != tok2->varId() || tok1->str() != tok2->str() || tok1->originalName() != tok2->originalName()) {
+    if (tok1->varId() != tok2->varId() || !tok_str_eq || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>") && Token::Match(tok2,"<|>")) ||
             (Token::Match(tok1,"<=|>=") && Token::Match(tok2,"<=|>="))) {
             return isSameExpression(cpp, macro, tok1->astOperand1(), tok2->astOperand2(), library, pure, followVar, errors) &&
@@ -1538,9 +1556,9 @@ bool isOppositeExpression(bool cpp, const Token * const tok1, const Token * cons
         return false;
     if (isOppositeCond(true, cpp, tok1, tok2, library, pure, followVar, errors))
         return true;
-    if (tok1->isUnaryOp("-"))
+    if (tok1->isUnaryOp("-") && !(tok2->astParent() && tok2->astParent()->tokType() == Token::eBitOp))
         return isSameExpression(cpp, true, tok1->astOperand1(), tok2, library, pure, followVar, errors);
-    if (tok2->isUnaryOp("-"))
+    if (tok2->isUnaryOp("-") && !(tok2->astParent() && tok2->astParent()->tokType() == Token::eBitOp))
         return isSameExpression(cpp, true, tok2->astOperand1(), tok1, library, pure, followVar, errors);
     return false;
 }
@@ -1865,11 +1883,12 @@ bool isScopeBracket(const Token* tok)
     return false;
 }
 
-const Token * getTokenArgumentFunction(const Token * tok, int& argn)
+template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+T* getTokenArgumentFunctionImpl(T* tok, int& argn)
 {
     argn = -1;
     {
-        const Token *parent = tok->astParent();
+        T* parent = tok->astParent();
         if (parent && parent->isUnaryOp("&"))
             parent = parent->astParent();
         while (parent && parent->isCast())
@@ -1891,7 +1910,7 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
             return nullptr;
     }
 
-    const Token* argtok = tok;
+    T* argtok = tok;
     while (argtok && argtok->astParent() && (!Token::Match(argtok->astParent(), ",|(|{") || argtok->astParent()->isCast())) {
         argtok = argtok->astParent();
     }
@@ -1933,6 +1952,14 @@ const Token * getTokenArgumentFunction(const Token * tok, int& argn)
     if (!Token::Match(tok, "%name%|(|{"))
         return nullptr;
     return tok;
+}
+
+const Token* getTokenArgumentFunction(const Token* tok, int& argn) {
+    return getTokenArgumentFunctionImpl(tok, argn);
+}
+
+Token* getTokenArgumentFunction(Token* tok, int& argn) {
+    return getTokenArgumentFunctionImpl(tok, argn);
 }
 
 std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)

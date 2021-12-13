@@ -3126,6 +3126,11 @@ class MisraChecker:
                             self.reportError(tok, 17, 2)
                         tok = tok.next
 
+    def misra_17_3(self, cfg):
+        for w in cfg.clang_warnings:
+            if w['message'].endswith('[-Wimplicit-function-declaration]'):
+                self.reportError(cppcheckdata.Location(w), 17, 3)
+
     def misra_17_6(self, rawTokens):
         for token in rawTokens:
             if simpleMatch(token, '[ static'):
@@ -4339,6 +4344,7 @@ class MisraChecker:
             self.executeCheck(1607, self.misra_16_7, cfg)
             self.executeCheck(1701, self.misra_17_1, cfg)
             self.executeCheck(1702, self.misra_17_2, cfg)
+            self.executeCheck(1702, self.misra_17_3, cfg)
             if cfgNumber == 0:
                 self.executeCheck(1706, self.misra_17_6, data.rawTokens)
             self.executeCheck(1707, self.misra_17_7, cfg)

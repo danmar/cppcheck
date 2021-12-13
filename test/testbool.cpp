@@ -75,7 +75,8 @@ private:
         TEST_CASE(returnNonBoolClass);
     }
 
-    void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool experimental = false, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -84,7 +85,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check...
         CheckBool checkBool(&tokenizer, &settings, this);

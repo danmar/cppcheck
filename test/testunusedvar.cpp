@@ -226,7 +226,9 @@ private:
         TEST_CASE(globalData);
     }
 
-    void checkStructMemberUsage(const char code[], const std::list<Directive> *directives=nullptr) {
+#define functionVariableUsage(...) functionVariableUsage_(__FILE__, __LINE__, __VA_ARGS__)
+#define checkStructMemberUsage(...) checkStructMemberUsage_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkStructMemberUsage_(const char* file, int line, const char code[], const std::list<Directive>* directives = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -238,11 +240,11 @@ private:
         Tokenizer tokenizer(&settings, this);
         tokenizer.setPreprocessor(&preprocessor);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);
-        checkUnusedVar.checkStructMemberUsage();
+        (checkUnusedVar.checkStructMemberUsage)();
     }
 
     void isRecordTypeWithoutSideEffects() {
@@ -1572,15 +1574,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::E' is never used.\n", errout.str());
     }
 
-    void functionVariableUsage(const char code[], const char filename[]="test.cpp") {
+    void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        if (!tokenizer.tokenize(istr, filename))
-            return;
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for unused variables..
         CheckUnusedVar checkUnusedVar(&tokenizer, &settings, this);

@@ -402,6 +402,8 @@ std::string clangimport::AstNode::getSpelling() const
         return "";
     if (str.compare(0,8,"<invalid") == 0)
         return "";
+    if (nodeType == RecordDecl && str == "struct")
+        return "";
     return str;
 }
 

@@ -21,7 +21,9 @@ def format_float(a, b=1):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run this script from your branch with proposed Cppcheck patch to verify your patch against current main. It will compare output of testing bunch of opensource packages')
     parser.add_argument('-j', default=1, type=int, help='Concurency execution threads')
-    parser.add_argument('-p', default=256, type=int, help='Count of packages to check')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-p', default=256, type=int, help='Count of packages to check')
+    group.add_argument('--packages', nargs='+', help='Check specific packages and then stop.')
     parser.add_argument('-o', default='my_check_diff.log', help='Filename of result inside a working path dir')
     parser.add_argument('--work-path', '--work-path=', default=lib.work_path, type=str, help='Working directory for reference repo')
     args = parser.parse_args()
@@ -74,20 +76,27 @@ if __name__ == "__main__":
         print('Failed to compile your version of Cppcheck')
         sys.exit(1)
 
-    packages_count = lib.get_packages_count(lib.server_address)
-    if not packages_count:
-        print("network or server might be temporarily down..")
-        sys.exit(1)
+    if args.packages:
+        args.p = len(args.packages)
+        packages_idxs = []
+    else:
+        packages_count = lib.get_packages_count(lib.server_address)
+        if not packages_count:
+            print("network or server might be temporarily down..")
+            sys.exit(1)
 
-    packages_idxs = list(range(packages_count))
-    random.shuffle(packages_idxs)
+        packages_idxs = list(range(packages_count))
+        random.shuffle(packages_idxs)
 
     packages_processed = 0
     crashes = []
     timeouts = []
 
-    while packages_processed < args.p and len(packages_idxs) > 0:
-        package = lib.get_package(lib.server_address, packages_idxs.pop())
+    while (packages_processed < args.p and len(packages_idxs) > 0) or args.packages:
+        if args.packages:
+            package = args.packages.pop()
+        else:
+            package = lib.get_package(lib.server_address, packages_idxs.pop())
 
         tgz = lib.download_package(work_path, package, None)
         if tgz is None:

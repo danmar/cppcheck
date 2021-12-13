@@ -68,9 +68,10 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseSetScopePointers();
     createSymbolDatabaseSetVariablePointers();
     setValueTypeInTokenList(false);
-    createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetTypePointers();
+    createSymbolDatabaseSetFunctionPointers(true);
     createSymbolDatabaseSetSmartPointerType();
+    setValueTypeInTokenList(false);
     createSymbolDatabaseEnums();
     createSymbolDatabaseEscapeFunctions();
     createSymbolDatabaseIncompleteVars();
@@ -5273,8 +5274,15 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
 
     // check for member function
     else if (Token::Match(tok->tokAt(-2), "!!this .")) {
-        const Token *tok1 = tok->tokAt(-2);
-        if (Token::Match(tok1, "%var% .")) {
+        const Token* tok1 = tok->previous()->astOperand1();
+        if (tok1 && tok1->valueType() && tok1->valueType()->typeScope) {
+            return tok1->valueType()->typeScope->findFunction(tok, tok1->valueType()->constness == 1);
+        } else if (tok1 && Token::Match(tok1->previous(), "%name% (") && tok1->previous()->function() &&
+                   tok1->previous()->function()->retDef) {
+            ValueType vt = ValueType::parseDecl(tok1->previous()->function()->retDef, mSettings);
+            if (vt.typeScope)
+                return vt.typeScope->findFunction(tok, vt.constness == 1);
+        } else if (Token::Match(tok1, "%var% .")) {
             const Variable *var = getVariableFromVarId(tok1->varId());
             if (var && var->typeScope())
                 return var->typeScope()->findFunction(tok, var->valueType()->constness == 1);
@@ -5298,6 +5306,12 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
                 return func;
             currScope = currScope->nestedIn;
         }
+    }
+    // Check for contructor
+    if (Token::Match(tok, "%name% (|{")) {
+        ValueType vt = ValueType::parseDecl(tok, mSettings);
+        if (vt.typeScope)
+            return vt.typeScope->findFunction(tok, false);
     }
     return nullptr;
 }
@@ -5698,6 +5712,7 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var)
     valuetype.typeScope = var.typeScope();
     if (var.valueType()) {
         valuetype.container = var.valueType()->container;
+        valuetype.containerTypeToken = var.valueType()->containerTypeToken;
     }
     valuetype.smartPointerType = var.smartPointerType();
     if (parsedecl(var.typeStartToken(), &valuetype, mDefaultSignedness, mSettings)) {
@@ -5817,9 +5832,9 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                               Token::Match(parent->tokAt(-1), "%var% ="))) {
             Token *var1Tok = parent->strAt(-2) == ";" ? parent->tokAt(-3) : parent->tokAt(-1);
             Token *autoTok = nullptr;
-            if (Token::Match(var1Tok->tokAt(-2), ";|{|}|(|const auto"))
+            if (Token::Match(var1Tok->tokAt(-2), ";|{|}|(|const|constexpr auto"))
                 autoTok = var1Tok->previous();
-            else if (Token::Match(var1Tok->tokAt(-3), ";|{|}|(|const auto *"))
+            else if (Token::Match(var1Tok->tokAt(-3), ";|{|}|(|const|constexpr auto *"))
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
                 ValueType vt(*vt2);
@@ -5827,7 +5842,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     vt.constness &= ~(1 << vt.pointer);
                 if (autoTok->strAt(1) == "*" && vt.pointer)
                     vt.pointer--;
-                if (autoTok->strAt(-1) == "const")
+                if (Token::Match(autoTok->tokAt(-1), "const|constexpr"))
                     vt.constness |= 1;
                 setValueType(autoTok, vt);
                 setAutoTokenProperties(autoTok);
@@ -5993,7 +6008,10 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             bool setType = false;
             ValueType autovt;
             const Type *templateArgType = nullptr; // container element type / smart pointer type
-            if (vt2->containerTypeToken) {
+            if (!vt2->container->rangeItemRecordType.empty()) {
+                setType = true;
+                autovt.type = ValueType::Type::RECORD;
+            } else if (vt2->containerTypeToken) {
                 if (mSettings->library.isSmartPointer(vt2->containerTypeToken)) {
                     const Token *smartPointerTypeTok = vt2->containerTypeToken;
                     while (Token::Match(smartPointerTypeTok, "%name%|::"))
@@ -6008,7 +6026,6 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                     setType = true;
                     templateArgType = vt2->containerTypeToken->type();
                 }
-
             }
 
             if (setType) {
@@ -6544,24 +6561,27 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
 
             // library type/function
             else if (tok->previous()) {
+                // Aggregate constructor
+                if (Token::Match(tok->previous(), "%name%")) {
+                    ValueType valuetype;
+                    if (parsedecl(tok->previous(), &valuetype, mDefaultSignedness, mSettings)) {
+                        if (valuetype.typeScope) {
+                            setValueType(tok, valuetype);
+                            continue;
+                        }
+                    }
+                }
                 if (tok->astParent() && Token::Match(tok->astOperand1(), "%name%|::")) {
                     const Token *typeStartToken = tok->astOperand1();
                     while (typeStartToken && typeStartToken->str() == "::")
                         typeStartToken = typeStartToken->astOperand1();
-                    if (const Library::Container *c = mSettings->library.detectContainer(typeStartToken)) {
+                    if (mSettings->library.detectContainer(typeStartToken) ||
+                        mSettings->library.detectSmartPointer(typeStartToken)) {
                         ValueType vt;
-                        vt.pointer = 0;
-                        vt.container = c;
-                        vt.type = ValueType::Type::CONTAINER;
-                        setValueType(tok, vt);
-                        continue;
-                    }
-                    if (const Library::SmartPointer* sp = mSettings->library.detectSmartPointer(typeStartToken)) {
-                        ValueType vt;
-                        vt.type = ValueType::Type::SMART_POINTER;
-                        vt.smartPointer = sp;
-                        setValueType(tok, vt);
-                        continue;
+                        if (parsedecl(typeStartToken, &vt, mDefaultSignedness, mSettings)) {
+                            setValueType(tok, vt);
+                            continue;
+                        }
                     }
 
                     const std::string e = tok->astOperand1()->expressionString();

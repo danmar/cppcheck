@@ -506,6 +506,15 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         if (unstableType.find("insert") != std::string::npos)
                             container.unstableInsert = true;
                     }
+                } else if (containerNodeName == "rangeItemRecordType") {
+                    for (const tinyxml2::XMLElement* memberNode = node->FirstChildElement(); memberNode; memberNode = memberNode->NextSiblingElement()) {
+                        const char *memberName = memberNode->Attribute("name");
+                        const char *memberTemplateParameter = memberNode->Attribute("templateParameter");
+                        struct Container::RangeItemRecordTypeItem member;
+                        member.name = memberName ? memberName : "";
+                        member.templateParameter = memberTemplateParameter ? std::atoi(memberTemplateParameter) : -1;
+                        container.rangeItemRecordType.emplace_back(member);
+                    }
                 } else
                     unknown_elements.insert(containerNodeName);
             }

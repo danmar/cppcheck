@@ -453,6 +453,14 @@
               </optional>
               <empty/>
             </element>
+            <element name="rangeItemRecordType">
+              <oneOrMore>
+                <element name="member">
+                  <attribute name="name"><ref name="DATA-NAME"/></attribute>
+                  <attribute name="templateParameter"><data type="integer"/></attribute>
+                </element>
+              </oneOrMore>
+            </element>
             <element name="size">
               <optional>
                 <attribute name="templateParameter"><data type="integer"/></attribute>

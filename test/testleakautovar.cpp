@@ -201,14 +201,15 @@ private:
         TEST_CASE(functionCallCastConfig); // #9652
     }
 
-    void check(const char code[], bool cpp = false) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool cpp = false) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, cpp?"test.cpp":"test.c");
+        ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -217,14 +218,14 @@ private:
         c.runChecks(&tokenizer, &settings, this);
     }
 
-    void check(const char code[], Settings & settings_) {
+    void check_(const char* file, int line, const char code[], Settings & settings_) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings_, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -470,6 +471,12 @@ private:
               "    TestType *tt = new TestType();\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: tt\n", errout.str());
+
+        check("void f(Bar& b) {\n" // #7622
+              "    char* data = new char[10];\n"
+              "    b = Bar(*new Foo(data));\n"
+              "}", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function Foo() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 
     void realloc1() {
@@ -2307,14 +2314,14 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for leaks..
         CheckLeakAutoVar checkLeak;
@@ -2357,14 +2364,14 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.c");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.c"), file, line);
 
         // Check for leaks..
         CheckLeakAutoVar checkLeak;

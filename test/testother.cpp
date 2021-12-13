@@ -165,6 +165,7 @@ private:
         TEST_CASE(checkSuspiciousSemicolon1);
         TEST_CASE(checkSuspiciousSemicolon2);
         TEST_CASE(checkSuspiciousSemicolon3);
+        TEST_CASE(checkSuspiciousComparison);
 
         TEST_CASE(checkInvalidFree);
 
@@ -259,7 +260,8 @@ private:
         TEST_CASE(constVariableArrayMember); // #10371
     }
 
-    void check(const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const char *filename = nullptr, bool experimental = false, bool inconclusive = true, bool runSimpleChecks=true, bool verbose=false, Settings* settings = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -279,7 +281,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename ? filename : "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, filename ? filename : "test.cpp"), file, line);
 
         // Check..
         CheckOther checkOther(&tokenizer, settings, this);
@@ -288,8 +290,8 @@ private:
         (void)runSimpleChecks; // TODO Remove this
     }
 
-    void check(const char code[], Settings *s) {
-        check(code,"test.cpp",false,true,true,false,s);
+    void check_(const char* file, int line, const char code[], Settings *s) {
+        check_(file, line, code, "test.cpp", false, true, true, false, s);
     }
 
     void checkP(const char code[], const char *filename = "test.cpp") {
@@ -1299,7 +1301,8 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) The scope of the variable 'x' can be reduced.\n", errout.str());
     }
 
-    void checkOldStylePointerCast(const char code[]) {
+#define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
+    void checkOldStylePointerCast_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
@@ -1310,7 +1313,7 @@ private:
         // Tokenize..
         Tokenizer tokenizerCpp(&settings, this);
         std::istringstream istr(code);
-        tokenizerCpp.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizerCpp.tokenize(istr, "test.cpp"), file, line);
 
         CheckOther checkOtherCpp(&tokenizerCpp, &settings, this);
         checkOtherCpp.warningOldStylePointerCast();
@@ -1440,7 +1443,8 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) C-style pointer casting\n", errout.str());
     }
 
-    void checkInvalidPointerCast(const char code[], bool portability = true, bool inconclusive = false) {
+#define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkInvalidPointerCast_(const char* file, int line, const char code[], bool portability = true, bool inconclusive = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -1454,7 +1458,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckOther checkOtherCpp(&tokenizer, &settings, this);
         checkOtherCpp.invalidPointerCast();
@@ -5589,6 +5593,14 @@ private:
               "  std::vector<int> v = b ? bar : baz;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool q) {\n" // #9570
+              "    static int a = 0;\n"
+              "    static int b = 0;\n"
+              "    int& x = q ? a : b;\n"
+              "    ++x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionTemplate() { // #6930
@@ -5761,6 +5773,15 @@ private:
               "    if( *a == !(b) ) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Opposite expression on both sides of '=='.\n", errout.str());
+
+        check("void f(uint16_t u) {\n" // #9342
+              "    if (u != (u & -u))\n"
+              "        return false;\n"
+              "    if (u != (-u & u))\n"
+              "        return false;\n"
+              "    return true;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateVarExpression() {
@@ -6414,6 +6435,14 @@ private:
               "    return i >= 0;\n"
               "}\n", &settings1);
         ASSERT_EQUALS("", errout.str());
+
+        // #10612
+        check("void f(void) {\n"
+              "   const uint32_t x = 0;\n"
+              "   constexpr const auto y = 0xFFFFU;\n"
+              "   if (y < x) {}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Checking if unsigned expression 'y' is less than zero.\n", errout.str());
     }
 
     void checkSignOfPointer() {
@@ -6694,6 +6723,19 @@ private:
                "void foo() {\n"
                "  if (x == 123);\n"
                "  REQUIRE(y=z);\n"
+               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkSuspiciousComparison() {
+        checkP("void f(int a, int b) {\n"
+               "  a > b;\n"
+               "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '>'\n", errout.str());
+
+        checkP("void f() {\n" // #10607
+               "  for (auto p : m)\n"
+               "    std::vector<std::pair<std::string, std::string>> k;\n"
                "}");
         ASSERT_EQUALS("", errout.str());
     }

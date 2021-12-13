@@ -68,7 +68,8 @@ private:
         TEST_CASE(operatorOverload);
     }
 
-    void check(const char code[], Settings::PlatformType platform = Settings::Native) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], Settings::PlatformType platform = Settings::Native) {
         // Clear the error buffer..
         errout.str("");
 
@@ -77,13 +78,13 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
         checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
         // check() returns error if and only if errout is not empty.
-        if (checkUnusedFunctions.check(this, settings)) {
+        if ((checkUnusedFunctions.check)(this, settings)) {
             ASSERT(errout.str() != "");
         } else {
             ASSERT_EQUALS("", errout.str());
@@ -439,13 +440,13 @@ private:
 
             Tokenizer tokenizer2(&settings, this);
             std::istringstream istr(code);
-            tokenizer2.tokenize(istr, fname.str().c_str());
+            ASSERT(tokenizer2.tokenize(istr, fname.str().c_str()));
 
             c.parseTokens(tokenizer2, "someFile.c", &settings);
         }
 
         // Check for unused functions..
-        c.check(this, settings);
+        (c.check)(this, settings);
 
         ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }

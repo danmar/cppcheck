@@ -151,6 +151,7 @@ bool extractForLoopValues(const Token *forToken,
                           long long * const lastValue);
 
 bool precedes(const Token * tok1, const Token * tok2);
+bool succedes(const Token* tok1, const Token* tok2);
 
 bool exprDependsOnThis(const Token* expr, bool onVar = true, nonneg int depth = 0);
 
@@ -169,8 +170,6 @@ const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
-
-bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
 
 /**
  * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
@@ -208,6 +207,7 @@ bool isReturnScope(const Token* const endToken,
 
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);
+Token* getTokenArgumentFunction(Token* tok, int& argn);
 
 std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr);
 
