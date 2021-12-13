@@ -59,12 +59,12 @@ jobs:
           mkdir cmake.output
           cd cmake.output
           cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On ..
-          make -j$(nproc)
+          cmake --build . -- -j$(nproc)
           cd ..
 
       - name: Run CMake test
         run: |
-          make -C cmake.output -j$(nproc) check
+          cmake --build cmake.output --target check -- -j$(nproc)
 
       - name: Run CTest
         run: |

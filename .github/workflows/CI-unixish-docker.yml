@@ -40,7 +40,7 @@ jobs:
           mkdir cmake.output
           cd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On ..
-          make -j$(nproc)
+          cmake --build . -- -j$(nproc)
           cd ..
 
       - name: Test CMake build
@@ -49,7 +49,7 @@ jobs:
           mkdir cmake.output
           cd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On ..
-          make -j$(nproc) check
+          cmake --build . --target check -- -j$(nproc)
           cd ..
 
       - name: Build cppcheck
