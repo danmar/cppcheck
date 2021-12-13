@@ -2583,7 +2583,7 @@ bool isConstVarExpression(const Token *tok, const char* skipMatch)
 {
     if (!tok)
         return false;
-    if (tok->str() == "?" && tok->astOperand2()) // ternary operator
+    if (tok->str() == "?" && tok->astOperand2() && tok->astOperand2()->str() == ":") // ternary operator
         return isConstVarExpression(tok->astOperand2()->astOperand1()) && isConstVarExpression(tok->astOperand2()->astOperand2()); // left and right of ":"
     if (skipMatch && Token::Match(tok, skipMatch))
         return false;
