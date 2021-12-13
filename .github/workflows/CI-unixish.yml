@@ -62,6 +62,12 @@ jobs:
           make -j$(nproc) check
           cd ..
 
+      - name: Run CTest
+        run: |
+          cd cmake.output
+          ctest -j$(nproc)
+          cd ..
+
       - name: Build and test with Unsigned char
         run: |
           make clean
