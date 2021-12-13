@@ -1199,6 +1199,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->addons = temp.addons;
     settings->clang = temp.clang;
     settings->clangTidy = temp.clangTidy;
+    settings->clangTidyChecks = temp.clangTidyChecks;
 
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(p);

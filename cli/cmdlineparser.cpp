@@ -233,6 +233,18 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->addEnabled("information");
             }
 
+            else if (std::strncmp(argv[i], "--clang-tidy-checks=", 20) == 0) {
+                mSettings->clangTidy = true;
+                if (std::strncmp(argv[i] + 20, ".clang-tidy", 11) == 0)
+                    mSettings->clangTidyChecks.clear();
+                else
+                    mSettings->clangTidyChecks = argv[i] + 20;
+            }
+
+            else if (std::strncmp(argv[i], "--clang-tidy", 12) == 0) {
+                mSettings->clangTidy = true;
+            }
+
             else if (std::strncmp(argv[i], "--clang", 7) == 0) {
                 mSettings->clang = true;
                 if (std::strncmp(argv[i], "--clang=", 8) == 0) {
@@ -1003,6 +1015,11 @@ void CmdLineParser::printHelp()
         "                         Cppcheck data. After that the normal Cppcheck analysis is\n"
         "                         used. You must have the executable in PATH if no path is\n"
         "                         given.\n"
+        "    --clang-tidy         Run clang tidy. You must have the executable in PATH.\n"
+        "    --clang-tidy-checks=<checks>\n"
+        "                         Parameter to pass to clang-tidy as -checks= in clang-tidy syntax.\n"
+        "                         Set empty string or \".clang-tidy\" to let clang-tidy search\n"
+        "                         for config files according to default behavior.\n"
         "    --config-exclude=<dir>\n"
         "                         Path (prefix) to be excluded from configuration\n"
         "                         checking. Preprocessor configurations defined in\n"

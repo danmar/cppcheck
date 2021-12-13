@@ -45,6 +45,7 @@ Settings::Settings()
     clang(false),
     clangExecutable("clang"),
     clangTidy(false),
+    clangTidyChecks("*,-clang-analyzer-*,-llvm*"),
     daca(false),
     debugBugHunting(false),
     debugnormal(false),

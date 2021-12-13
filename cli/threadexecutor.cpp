@@ -460,7 +460,7 @@ unsigned int __stdcall ThreadExecutor::threadProc(ThreadExecutor* threadExecutor
             threadExecutor->mFileSync.unlock();
             result += fileChecker.check(fs);
             if (threadExecutor->mSettings.clangTidy)
-                fileChecker.analyseClangTidy(fs);
+                fileChecker.analyseClangTidy(fs, threadExecutor->mSettings.clangTidyChecks);
         }
 
         threadExecutor->mFileSync.lock();

@@ -151,6 +151,9 @@ public:
     /** Use clang-tidy */
     bool clangTidy;
 
+    /** Checks to pass to clang-tidy, if empty, let clang-tidy search for .clang-tidy files */
+    std::string clangTidyChecks;
+
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
 
