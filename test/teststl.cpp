@@ -5389,14 +5389,14 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const std::vector<int>& v, int e) {\n"
-            "	if (!v.empty()) {\n"
-            "		if (e < 0 || true) {\n"
-            "			if (e < 0)\n"
-            "				return;\n"
-            "		}\n"
-            "	}\n"
-            "	for (auto i : v) {}\n"
-            "}\n",
+              "	if (!v.empty()) {\n"
+              "		if (e < 0 || true) {\n"
+              "			if (e < 0)\n"
+              "				return;\n"
+              "		}\n"
+              "	}\n"
+              "	for (auto i : v) {}\n"
+              "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
     }
