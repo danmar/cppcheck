@@ -373,7 +373,7 @@ static const Token *getCastTypeStartToken(const Token *parent)
 
 static bool isComputableValue(const Token* parent, const ValueFlow::Value& value)
 {
-    const bool noninvertible = parent->isComparisonOp() || Token::Match(parent, "%|/|&|%or%");
+    const bool noninvertible = isNonInvertibleOperation(parent);
     if (noninvertible && value.isImpossible())
         return false;
     if (!value.isIntValue() && !value.isFloatValue() && !value.isTokValue() && !value.isIteratorValue())
@@ -383,6 +383,12 @@ static bool isComputableValue(const Token* parent, const ValueFlow::Value& value
     if (value.isTokValue() && (!parent->isComparisonOp() || value.tokvalue->tokType() != Token::eString))
         return false;
     return true;
+}
+
+// does the operation cause a loss of information?
+static bool isNonInvertibleOperation(const Token* tok)
+{
+    return tok->isComparisonOp() || Token::Match(tok, "%|/|&|%or%|<<|>>");
 }
 
 /** Set token value for cast */
@@ -669,7 +675,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
              parent->astOperand1() &&
              parent->astOperand2()) {
 
-        const bool noninvertible = parent->isComparisonOp() || Token::Match(parent, "%|/|&|%or%|<<|>>");
+        const bool noninvertible = isNonInvertibleOperation(parent);
 
         // Skip operators with impossible values that are not invertible
         if (noninvertible && value.isImpossible())
