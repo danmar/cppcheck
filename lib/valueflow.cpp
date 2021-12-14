@@ -4402,8 +4402,13 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
                 (parent->str() == "return" || // MOVED in return statement
                  parent->str() == "(")) // MOVED in self assignment, isOpenParenthesisMemberFunctionCallOfVarId == true
                 continue;
-            if (parent && parent->astOperand1() && parent->astOperand1()->varId() == varId)
-                continue;
+            if (parent && parent->astOperand1()) {
+                if (parent->astOperand1()->varId() == varId)
+                    continue;
+                if (parent->str() == "=" && parent->astOperand1()->str() == "." && // assignment to designated member
+                    parent->astOperand1()->astOperand1() && parent->astOperand1()->astOperand1()->tokType() == Token::eType)
+                    continue;
+            }
             const Variable *var = varTok->variable();
             if (!var)
                 continue;

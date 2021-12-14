@@ -223,6 +223,7 @@ private:
         TEST_CASE(doubleMoveMemberInitialization2);
         TEST_CASE(moveAndAssign1);
         TEST_CASE(moveAndAssign2);
+        TEST_CASE(moveAndAssign3); // #9740
         TEST_CASE(moveAssignMoveAssign);
         TEST_CASE(moveAndReset1);
         TEST_CASE(moveAndReset2);
@@ -8944,6 +8945,14 @@ private:
               "    C c = g(std::move(a));\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'a'.\n", errout.str());
+    }
+
+    void moveAndAssign2() { // #9740
+        check("struct S{ std::string a, b; };\n"
+              "S f(std::string && s) {\n"
+              "    return S({ .a = std::move(s), .b = "" });
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void moveAssignMoveAssign() {
