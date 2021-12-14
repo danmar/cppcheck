@@ -160,7 +160,7 @@ table.summaryTable td { padding: 0 5px 0 5px; }
     padding-right: 6px;
 }
 
-.id-filtered, .severity-filtered, .file-filtered {
+.id-filtered, .severity-filtered, .file-filtered, .tool-filtered {
     visibility: collapse;
 }
 """
@@ -237,6 +237,20 @@ HTML_HEAD = """
         updateFileRows();
       }
 
+      function toggleTool(cb) {
+        var elements;
+        if (cb.id == "clang-tidy")
+            elements = document.querySelectorAll("[class^=clang-tidy-]");
+        else
+            elements = document.querySelectorAll(".issue:not([class^=clang-tidy-])");
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          elements[i].classList.toggle("tool-filtered", !cb.checked);
+        }
+
+        updateFileRows();
+      }
+
       function toggleAll() {
         var elements = document.querySelectorAll(".idToggle");
 
@@ -255,7 +269,7 @@ HTML_HEAD = """
 
         for (var i = 0, len = elements.length; i < len; i++) {
           var issue_count = elements[i].querySelectorAll(".issue").length;
-          var invisible_count = elements[i].querySelectorAll(".id-filtered, .severity-filtered").length;
+          var invisible_count = elements[i].querySelectorAll(".id-filtered, .severity-filtered, .tool-filtered").length;
           elements[i].classList.toggle("file-filtered", (invisible_count == issue_count));
         }
       }
@@ -270,13 +284,17 @@ HTML_HEAD = """
 """
 
 HTML_SEVERITY_FILTER = """
-      <div id="severities"><span class="severityHeader">Severity:</span>
+      <div id="filters">
+        <span class="severityHeader">Severity:</span>
         <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"error\">Error</label>
         <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"warning\">Warning</label>
         <label><input type="checkbox" class="severityToggle" onClick="toggleSeverity(this)" checked id=\"portability\">Portability</label>
         <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"performance\">Performance</label>
         <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"style\">Style</label>
         <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"information\">Information</label>
+        | <span class="severityHeader">Tool:</span>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleTool(this)" checked id=\"cppcheck\">Cppcheck</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleTool(this)" checked id=\"clang-tidy\">clang-tidy</label>
       </div>
 """
 
