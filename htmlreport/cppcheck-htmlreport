@@ -333,9 +333,15 @@ def git_blame(line, path, file, blame_options):
     if path:
         os.chdir(path)
 
+    cmd_args = ['git', 'blame', '-L %d' % line]
+    if '-w' in blame_options:
+        cmd_args.append('-w')
+    if '-M' in blame_options:
+        cmd_args.append('-M')
+    cmd_args = cmd_args + ['--porcelain', '--', file]
+
     try:
-        result = subprocess.check_output('git blame -L %d %s %s --porcelain -- %s' % (
-            line, " -w" if "-w" in blame_options else "", " -M" if "-M" in blame_options else "", file))
+        result = subprocess.check_output(cmd_args)
         result = result.decode(locale.getpreferredencoding())
     except:
         return {}
