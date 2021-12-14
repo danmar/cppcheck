@@ -4344,7 +4344,7 @@ class MisraChecker:
             self.executeCheck(1607, self.misra_16_7, cfg)
             self.executeCheck(1701, self.misra_17_1, cfg)
             self.executeCheck(1702, self.misra_17_2, cfg)
-            self.executeCheck(1702, self.misra_17_3, cfg)
+            self.executeCheck(1703, self.misra_17_3, cfg)
             if cfgNumber == 0:
                 self.executeCheck(1706, self.misra_17_6, data.rawTokens)
             self.executeCheck(1707, self.misra_17_7, cfg)
