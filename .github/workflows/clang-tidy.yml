@@ -41,10 +41,14 @@ jobs:
           cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
           cd ..
 
-      - name: Clang-Tidy
+      - name: Prepare CMake dependencies
         run: |
           # make sure the precompiled headers exist
           make -C cmake.output lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
           make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
+          # make sure the auto-generated GUI sources exist
           make -C cmake.output autogen
+
+      - name: Clang-Tidy
+        run: |
           cmake --build cmake.output --target run-clang-tidy 2> /dev/null
