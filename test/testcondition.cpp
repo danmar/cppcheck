@@ -4201,6 +4201,19 @@ private:
               "  return bFirst;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   void * pool = NULL;\n"
+              "   do {\n"
+              "      pool = malloc(40);\n"
+              "      if (dostuff())\n"
+              "         break;\n"
+              "      pool = NULL;\n"
+              "   }\n"
+              "   while (0);\n"
+              "   if (pool) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueTryCatch()
