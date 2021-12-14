@@ -8947,11 +8947,11 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'a'.\n", errout.str());
     }
 
-    void moveAndAssign2() { // #9740
+    void moveAndAssign3() { // #9740
         check("struct S{ std::string a, b; };\n"
               "S f(std::string && s) {\n"
-              "    return S({ .a = std::move(s), .b = "" });
-              "}");
+              "    return S({ .a = std::move(s), .b = \"\" });\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
