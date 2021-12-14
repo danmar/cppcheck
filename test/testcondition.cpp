@@ -3927,6 +3927,16 @@ private:
               "  if (pD) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9549
+        check("void f(const uint32_t v) {\n"
+              "    const uint32_t v16 = v >> 16;\n"
+              "    if (v16) {\n"
+              "        const uint32_t v8 = v16 >> 8;\n"
+              "        if (v8) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
