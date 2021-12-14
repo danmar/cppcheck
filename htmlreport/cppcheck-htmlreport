@@ -97,12 +97,8 @@ h1 {
 }
 
 table.summaryTable td { padding: 0 5px 0 5px; }
-table.summaryTable th:nth-child(2) { min-width: 150px; }
-table.summaryTable th:nth-child(3) { min-width:  30px; }
-table.summaryTable th:nth-child(4) { min-width:  75px; }
-table.summaryTable th:nth-child(5) { width: 100%; }
 
-.statHeader {
+.statHeader, .severityHeader {
     font-weight: bold;
 }
 
@@ -164,8 +160,8 @@ table.summaryTable th:nth-child(5) { width: 100%; }
     padding-right: 6px;
 }
 
-.id-filtered, .severity-filtered {
-    display: none;
+.id-filtered, .severity-filtered, .file-filtered {
+    visibility: collapse;
 }
 """
 
@@ -260,7 +256,7 @@ HTML_HEAD = """
         for (var i = 0, len = elements.length; i < len; i++) {
           var issue_count = elements[i].querySelectorAll(".issue").length;
           var invisible_count = elements[i].querySelectorAll(".id-filtered, .severity-filtered").length;
-          elements[i].style.display = (invisible_count == issue_count) ? "none" : "";
+          elements[i].classList.toggle("file-filtered", (invisible_count == issue_count));
         }
       }
 
@@ -274,13 +270,13 @@ HTML_HEAD = """
 """
 
 HTML_SEVERITY_FILTER = """
-      <div id="severities">Severity: 
-        <label><input type="checkbox" class=\"severityToggle\" onclick="toggleSeverity(this)" checked id=\"error\">Error</label>
-        <label><input type="checkbox" class=\"severityToggle\" onclick="toggleSeverity(this)" checked id=\"warning\">Warning</label>
-        <label><input type="checkbox" class=\"severityToggle\" onClick="toggleSeverity(this)" checked id=\"portability\">Portability</label>
-        <label><input type="checkbox" class=\"severityToggle\" onclick="toggleSeverity(this)" checked id=\"performance\">Performance</label>
-        <label><input type="checkbox" class=\"severityToggle\" onclick="toggleSeverity(this)" checked id=\"style\">Style</label>
-        <label><input type="checkbox" class=\"severityToggle\" onclick="toggleSeverity(this)" checked id=\"information\">Information</label>
+      <div id="severities"><span class="severityHeader">Severity:</span>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"error\">Error</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"warning\">Warning</label>
+        <label><input type="checkbox" class="severityToggle" onClick="toggleSeverity(this)" checked id=\"portability\">Portability</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"performance\">Performance</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"style\">Style</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"information\">Information</label>
       </div>
 """
 
@@ -299,7 +295,7 @@ HTML_MENU_END = """
 """
 
 HTML_FOOTER = """
-    </div> 
+    </div>
     <div id="footer" class="footer">
       <p>
         Created by Cppcheck %s (<a href="https://cppcheck.sourceforge.io">Sourceforge</a>, <a href="irc://irc.freenode.net/cppcheck">IRC</a>)
