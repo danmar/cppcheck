@@ -2472,7 +2472,7 @@ private:
         check("void func(std::list<std::string> strlist) {\n"
               "    for (std::list<std::string>::iterator str = strlist.begin(); str != strlist.end(); str++) {\n"
               "        if (func2(*str)) {\n"
-              "    	       strlist.erase(str);\n"
+              "            strlist.erase(str);\n"
               "            if (strlist.empty())\n"
               "                 return;\n"
               "        }\n"
@@ -5389,13 +5389,13 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const std::vector<int>& v, int e) {\n"
-              "	if (!v.empty()) {\n"
-              "		if (e < 0 || true) {\n"
-              "			if (e < 0)\n"
-              "				return;\n"
-              "		}\n"
-              "	}\n"
-              "	for (auto i : v) {}\n"
+              " if (!v.empty()) {\n"
+              "     if (e < 0 || true) {\n"
+              "         if (e < 0)\n"
+              "             return;\n"
+              "     }\n"
+              " }\n"
+              " for (auto i : v) {}\n"
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
