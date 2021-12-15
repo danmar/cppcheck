@@ -7206,6 +7206,10 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
         values.remove_if([&](const ValueFlow::Value& v) {
             if (!v.isImpossible())
                 return true;
+            if (!v.condition)
+                return true;
+            if (v.bound != ValueFlow::Value::Bound::Point)
+                return true;
             if (v.isIteratorEndValue() && v.intvalue <= 0)
                 return true;
             if (v.isIteratorStartValue() && v.intvalue >= 0)
