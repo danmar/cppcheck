@@ -4203,8 +4203,8 @@ private:
 
         // #10642
         check("int f(std::vector<int> v) {\n"
-            "    return *(v.begin() + v.size() - 1);\n"
-            "}\n");
+              "    return *(v.begin() + v.size() - 1);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
