@@ -3937,6 +3937,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10649
+        check("void foo(struct diag_msg *msg) {\n"
+              "    msg = msg->next;\n"
+              "    if (msg == NULL)\n"
+              "        return CMD_OK;\n"
+              "    msg = msg->next;\n"
+              "    if (msg == NULL)\n"
+              "        return CMD_OK;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {

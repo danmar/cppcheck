@@ -4578,6 +4578,17 @@ static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0
     return value;
 }
 
+static std::set<nonneg int> getVarIds(const Token* tok)
+{
+    std::set<nonneg int> result;
+    visitAstNodes(tok, [&](const Token* child) {
+        if (child->varId() > 0)
+            result.insert(child->varId());
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return result;
+}
+
 static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
@@ -4607,8 +4618,11 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
             } else if (isDifferentType(tok->astOperand2(), tok->astOperand1())) {
                 continue;
             }
+            const std::set<nonneg int> rhsVarIds = getVarIds(tok->astOperand2());
             const std::vector<const Variable*> vars = getLHSVariables(tok);
-            if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
+            if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
+                if (rhsVarIds.count(var->declarationId()) > 0)
+                    return true;
                 if (var->isLocal())
                     return var->isStatic();
                 return !var->isArgument();
