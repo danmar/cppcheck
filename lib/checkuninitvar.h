@@ -26,7 +26,6 @@
 #include "config.h"
 #include "ctu.h"
 #include "mathlib.h"
-#include "settings.h"
 #include "errortypes.h"
 #include "utils.h"
 
@@ -38,6 +37,8 @@ class Token;
 class Tokenizer;
 class Variable;
 class ErrorLogger;
+class Settings;
+class Library;
 
 
 struct VariableValue {

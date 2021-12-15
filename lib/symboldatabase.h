@@ -28,7 +28,6 @@
 #include "utils.h"
 
 #include <cctype>
-#include <cstddef>
 #include <list>
 #include <map>
 #include <set>

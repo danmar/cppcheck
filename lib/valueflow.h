@@ -21,7 +21,6 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
-#include "astutils.h"
 #include "config.h"
 #include "mathlib.h"
 #include "utils.h"

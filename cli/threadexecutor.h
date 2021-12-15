@@ -27,13 +27,13 @@
 #include <list>
 #include <map>
 #include <string>
-#include <mutex>
 
 #if ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__) && !defined(__CYGWIN__)) || defined(__CPPCHECK__)
 #define THREADING_MODEL_FORK
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
 #include "importproject.h"
+#include <mutex>
 #endif
 
 class Settings;
