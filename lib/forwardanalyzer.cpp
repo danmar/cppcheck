@@ -404,7 +404,6 @@ struct ForwardTraversal {
         if (initTok && updateRecursive(initTok) == Progress::Break)
             return Break();
         const bool isDoWhile = precedes(endBlock, condTok);
-        const bool knownCond = condTok && condTok->hasKnownIntValue();
         bool checkThen = true;
         bool checkElse = false;
         if (condTok && !Token::simpleMatch(condTok, ":"))
