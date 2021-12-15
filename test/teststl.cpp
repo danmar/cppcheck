@@ -4200,6 +4200,12 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:4]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n",
             errout.str());
+
+        // #10642
+        check("int f(std::vector<int> v) {\n"
+            "    return *(v.begin() + v.size() - 1);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
