@@ -660,22 +660,8 @@ void CheckCondition::multiCondition2()
                     const Token * condStartToken = tok->str() == "if" ? tok->next() : tok;
                     const Token * condEndToken = tok->str() == "if" ? condStartToken->link() : Token::findsimplematch(condStartToken, ";");
                     // Does condition modify tracked variables?
-                    if (const Token *op = Token::findmatch(tok, "++|--", condEndToken)) {
-                        bool bailout = false;
-                        while (op) {
-                            if (vars.find(op->astOperand1()->varId()) != vars.end()) {
-                                bailout = true;
-                                break;
-                            }
-                            if (nonlocal && op->astOperand1()->varId() == 0) {
-                                bailout = true;
-                                break;
-                            }
-                            op = Token::findmatch(op->next(), "++|--", condEndToken);
-                        }
-                        if (bailout)
-                            break;
-                    }
+                    if (isExpressionChanged(cond1, condStartToken, condEndToken, mSettings, mTokenizer->isCPP()))
+                        break;
 
                     // Condition..
                     const Token *cond2 = tok->str() == "if" ? condStartToken->astOperand2() : condStartToken->astOperand1();
@@ -707,7 +693,8 @@ void CheckCondition::multiCondition2()
                                 return ChildrenToVisit::op1_and_op2;
 
                             if ((!cond1->hasKnownIntValue() || !secondCondition->hasKnownIntValue()) &&
-                                isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath)) {
+                                isSameExpression(mTokenizer->isCPP(), true, cond1, secondCondition, mSettings->library, true, true, &errorPath) &&
+                                !isExpressionChangedAt(cond1, secondCondition, 0, false, mSettings, mTokenizer->isCPP())) {
                                 if (!isAliased(vars) && !mTokenizer->hasIfdef(cond1, secondCondition)) {
                                     identicalConditionAfterEarlyExitError(cond1, secondCondition, errorPath);
                                     return ChildrenToVisit::done;
