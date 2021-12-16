@@ -6765,6 +6765,13 @@ private:
         // #9301
         ASSERT_NO_THROW(tokenizeAndStringify("template <typename> constexpr char x[] = \"\";\n"
                                              "template <> constexpr char x<int>[] = \"\";\n"));
+
+        // #10951
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class> static void b() {}\n"
+                                             "  ~a();\n"
+                                             "};\n"
+                                             "void d() { a::b<int>(); }\n"));
     }
 
     void checkNamespaces() {
