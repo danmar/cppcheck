@@ -149,10 +149,20 @@ namespace simplecpp {
             return tok;
         }
 
+        void setExpandedFrom(const Token *tok, const void* m) {
+            mExpandedFrom = tok->mExpandedFrom;
+            mExpandedFrom.insert(m);
+        }
+        bool isExpandedFrom(const void* m) const {
+            return mExpandedFrom.find(m) != mExpandedFrom.end();
+        }
+
         void printAll() const;
         void printOut() const;
     private:
         TokenString string;
+
+        std::set<const void*> mExpandedFrom;
 
         // Not implemented - prevent assignment
         Token &operator=(const Token &tok);
