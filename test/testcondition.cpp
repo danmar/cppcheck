@@ -3819,6 +3819,15 @@ private:
               "        return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9720
+        check("bool bar(int &);\n"
+              "void f(int a, int b) {\n"
+              "    if (a + b == 3)\n"
+              "        return;\n"
+              "    if (bar(a) && (a + b == 3)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
