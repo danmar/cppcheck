@@ -4214,7 +4214,7 @@ private:
               "    if (endValue == mValues.end()) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
-        
+
         // #10642
         check("int f(std::vector<int> v) {\n"
               "    return *(v.begin() + v.size() - 1);\n"
