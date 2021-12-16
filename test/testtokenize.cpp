@@ -6767,10 +6767,10 @@ private:
 
         // #10951
         ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
-                                            "  template <class> static void b() {}\n"
-                                            "  ~a();\n"
-                                            "};\n"
-                                            "void d() { a::b<int>(); }\n"));
+                                             "  template <class> static void b() {}\n"
+                                             "  ~a();\n"
+                                             "};\n"
+                                             "void d() { a::b<int>(); }\n"));
     }
 
     void checkNamespaces() {
