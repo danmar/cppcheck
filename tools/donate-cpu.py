@@ -47,7 +47,7 @@ for arg in sys.argv[1:]:
         package_url = arg[arg.find('=')+1:]
         print('Package:' + package_url)
     elif arg.startswith('--work-path='):
-        work_path = arg[arg.find('=')+1:]
+        work_path = os.path.abspath(arg[arg.find('=')+1:])
         print('work_path:' + work_path)
         if not os.path.exists(work_path):
             print('work path does not exist!')
@@ -117,6 +117,7 @@ if max_packages:
 if not os.path.exists(work_path):
     os.mkdir(work_path)
 repo_path = os.path.join(work_path, 'repo')
+# This is a temporary migration step which should be removed in the future
 migrate_repo_path = os.path.join(work_path, 'cppcheck')
 
 packages_processed = 0

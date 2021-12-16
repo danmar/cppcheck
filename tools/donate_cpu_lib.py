@@ -77,6 +77,8 @@ def clone_cppcheck(repo_path, migrate_from_path):
 
 
 def checkout_cppcheck_version(repo_path, version, cppcheck_path):
+    if not os.path.isabs(cppcheck_path):
+        raise ValueError("cppcheck_path is not an absolute path")
     if os.path.exists(cppcheck_path):
         subprocess.check_call(['git', 'checkout' , '-f', version], cwd=cppcheck_path)
         # It is possible to pull branches, not tags
