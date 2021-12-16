@@ -5615,7 +5615,7 @@ private:
               "void f() {\n"
               "    if (std::is_same_v<T, char> || std::is_same_v<T, unsigned char>) {}\n"
               "}\n");
-        
+
         ASSERT_EQUALS("", errout.str());
 
         check("typedef long long int64_t;"
@@ -5623,7 +5623,7 @@ private:
               "void f() {\n"
               "    if (std::is_same_v<T, long> || std::is_same_v<T, int64_t>) {}\n"
               "}\n");
-        
+
         ASSERT_EQUALS("", errout.str());
     }
 
