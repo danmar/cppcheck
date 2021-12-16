@@ -92,6 +92,10 @@ h1 {
     overflow: auto;
 }
 
+label {
+    white-space: nowrap;
+}
+
 .summaryTable {
     width: 100%;
 }
@@ -160,7 +164,7 @@ table.summaryTable td { padding: 0 5px 0 5px; }
     padding-right: 6px;
 }
 
-.id-filtered, .severity-filtered, .file-filtered, .tool-filtered {
+.id-filtered, .severity-filtered, .file-filtered, .tool-filtered, .text-filtered {
     visibility: collapse;
 }
 """
@@ -264,13 +268,40 @@ HTML_HEAD = """
         }
       }
 
+      function filterFile(filter) {
+        var elements = document.querySelectorAll(".fileEntry");
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          var visible = elements[i].querySelector("tr").querySelector("td").textContent.toLowerCase().includes(filter.toLowerCase());
+          elements[i].classList.toggle("text-filtered", !visible);
+        }
+      }
+
+      function filterText(text) {
+        filter = text.toLowerCase();
+        var elements = document.querySelectorAll(".issue");
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          var visible = false;
+          var fields = elements[i].querySelectorAll("td");
+          for (var n = 0, num = fields.length; n < num; n++) {
+            if (fields[n].textContent.toLowerCase().includes(filter)) {
+              visible = true;
+              break;
+            }
+          }
+          elements[i].classList.toggle("text-filtered", !visible);
+        }
+
+        updateFileRows();
+      }
+
       function updateFileRows(element) {
         var elements = document.querySelectorAll(".fileEntry");
 
         for (var i = 0, len = elements.length; i < len; i++) {
-          var issue_count = elements[i].querySelectorAll(".issue").length;
-          var invisible_count = elements[i].querySelectorAll(".id-filtered, .severity-filtered, .tool-filtered").length;
-          elements[i].classList.toggle("file-filtered", (invisible_count == issue_count));
+          var visible = elements[i].querySelector(".issue:not(.id-filtered):not(.severity-filtered):not(.tool-filtered):not(.text-filtered)");
+          elements[i].classList.toggle("file-filtered", !visible);
         }
       }
 
@@ -295,6 +326,8 @@ HTML_SEVERITY_FILTER = """
         | <span class="severityHeader">Tool:</span>
         <label><input type="checkbox" class="severityToggle" onclick="toggleTool(this)" checked id=\"cppcheck\">Cppcheck</label>
         <label><input type="checkbox" class="severityToggle" onclick="toggleTool(this)" checked id=\"clang-tidy\">clang-tidy</label>
+        | <label class="severityHeader">File: <input type="text" oninput="filterFile(this.value)"/></label>
+        <label class="severityHeader">Filter: <input type="text" oninput="filterText(this.value)"/></label>
       </div>
 """
 
