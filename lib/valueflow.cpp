@@ -103,9 +103,6 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <cmath>
-#include <cstddef>
-#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -114,9 +111,7 @@
 #include <map>
 #include <set>
 #include <stack>
-#include <stdexcept>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
@@ -4578,6 +4573,17 @@ static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0
     return value;
 }
 
+static std::set<nonneg int> getVarIds(const Token* tok)
+{
+    std::set<nonneg int> result;
+    visitAstNodes(tok, [&](const Token* child) {
+        if (child->varId() > 0)
+            result.insert(child->varId());
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return result;
+}
+
 static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
@@ -4607,8 +4613,11 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
             } else if (isDifferentType(tok->astOperand2(), tok->astOperand1())) {
                 continue;
             }
+            const std::set<nonneg int> rhsVarIds = getVarIds(tok->astOperand2());
             const std::vector<const Variable*> vars = getLHSVariables(tok);
-            if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
+            if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
+                if (rhsVarIds.count(var->declarationId()) > 0)
+                    return true;
                 if (var->isLocal())
                     return var->isStatic();
                 return !var->isArgument();
@@ -7205,6 +7214,10 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
         std::list<ValueFlow::Value> values = getIteratorValues(tok->values());
         values.remove_if([&](const ValueFlow::Value& v) {
             if (!v.isImpossible())
+                return true;
+            if (!v.condition)
+                return true;
+            if (v.bound != ValueFlow::Value::Bound::Point)
                 return true;
             if (v.isIteratorEndValue() && v.intvalue <= 0)
                 return true;

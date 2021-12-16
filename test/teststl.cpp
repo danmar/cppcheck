@@ -4201,6 +4201,7 @@ private:
             "[test.cpp:4] -> [test.cpp:4]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n",
             errout.str());
 
+        // #10657
         check("std::list<int> mValues;\n"
               "typedef std::list<int>::iterator ValueIterator;\n"
               "void foo(ValueIterator beginValue, ValueIterator endValue) {\n"
@@ -4211,6 +4212,12 @@ private:
               "        prevValue = curValue;\n"
               "    }\n"
               "    if (endValue == mValues.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+        
+        // #10642
+        check("int f(std::vector<int> v) {\n"
+              "    return *(v.begin() + v.size() - 1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

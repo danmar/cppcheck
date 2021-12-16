@@ -133,7 +133,7 @@ namespace {
             if (obj.count("executable")) {
                 if (!obj["executable"].is<std::string>())
                     return "Loading " + fileName + " failed. executable must be a string.";
-                executable = getFullPath(obj["executable"].get<std::string>(), exename);
+                executable = getFullPath(obj["executable"].get<std::string>(), fileName);
                 return "";
             }
 

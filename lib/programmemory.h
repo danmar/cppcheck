@@ -2,14 +2,13 @@
 #define GUARD_PROGRAMMEMORY_H
 
 #include "mathlib.h"
-#include "settings.h"
 #include "utils.h"
 #include "valueflow.h" // needed for alias
-#include <functional>
 #include <map>
 #include <unordered_map>
 
 class Token;
+class Settings;
 
 struct ProgramMemory {
     using Map = std::unordered_map<nonneg int, ValueFlow::Value>;

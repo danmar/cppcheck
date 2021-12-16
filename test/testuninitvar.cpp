@@ -25,8 +25,6 @@
 #include <sstream>
 #include <string>
 
-struct InternalError;
-
 
 class TestUninitVar : public TestFixture {
 public:

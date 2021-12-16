@@ -30,78 +30,80 @@ body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
     font-size: 13px;
     line-height: 1.5;
+    height: 100%;
     margin: 0;
-    width: auto;
+}
+
+#wrapper {
+    position: fixed;
+    height: 100vh;
+    width: 100vw;
+    display: grid;
+    grid-template-rows: fit-content(8rem) auto fit-content(8rem);
+    grid-template-columns: fit-content(25%) 1fr;
+    grid-template-areas:
+      "header header"
+      "menu content"
+      "footer footer";
 }
 
 h1 {
-    margin: 10px;
+    margin: 0 0 8px -2px;
+    font-size: 175%;
 }
 
 .header {
+    padding: 0 0 5px 15px;
+    grid-area: header;
     border-bottom: thin solid #aaa;
 }
 
 .footer {
+    grid-area: footer;
     border-top: thin solid #aaa;
-    font-size: 90%;
-    margin-top: 5px;
-}
+    font-size: 85%;
 
-.footer ul {
-    list-style-type: none;
-    padding-left: 0;
 }
 
 .footer > p {
     margin: 4px;
 }
 
-.wrapper {
-    display: -webkit-box;
-    display: -ms-flexbox;
-    display: flex;
-    -webkit-box-pack: justify;
-    -ms-flex-pack: justify;
-    justify-content: space-between;
-}
-
 #menu,
 #menu_index {
+    grid-area: menu;
     text-align: left;
-    width: 350px;
-    height: 90vh;
-    min-height: 200px;
     overflow: auto;
-    position: -webkit-sticky;
-    position: sticky;
-    top: 0;
     padding: 0 15px 15px 15px;
+    border-right: thin solid #aaa;
+    min-width: 200px;
 }
 
 #menu > a {
     display: block;
     margin-left: 10px;
     font-size: 12px;
-    z-index: 1;
 }
 
 #content,
 #content_index {
-    background-color: #fff;
-    -webkit-box-sizing: content-box;
-    -moz-box-sizing: content-box;
-    box-sizing: content-box;
-    padding: 0 15px 15px 15px;
-    width: calc(100% - 350px);
-    height: 100%;
-    overflow-x: auto;
+    grid-area: content;
+    padding: 0px 5px 15px 15px;
+    overflow: auto;
 }
 
-#filename {
-    margin-left: 10px;
-    font-size: 12px;
-    z-index: 1;
+.summaryTable {
+    width: 100%;
+}
+
+table.summaryTable td { padding: 0 5px 0 5px; }
+
+.statHeader, .severityHeader {
+    font-weight: bold;
+}
+
+.warning {
+    background-color: #ffffa7;
 }
 
 .error {
@@ -148,7 +150,6 @@ h1 {
 
 .highlighttable {
     background-color: #fff;
-    z-index: 10;
     position: relative;
     margin: -10px;
 }
@@ -159,8 +160,8 @@ h1 {
     padding-right: 6px;
 }
 
-.d-none {
-    display: none;
+.id-filtered, .severity-filtered, .file-filtered, .tool-filtered {
+    visibility: collapse;
 }
 """
 
@@ -216,57 +217,108 @@ HTML_HEAD = """
         }
       }
 
-      function toggleDisplay(id) {
-        var elements = document.querySelectorAll("." + id);
+      function toggleDisplay(cb) {
+        var elements = document.querySelectorAll("." + cb.id);
 
         for (var i = 0, len = elements.length; i < len; i++) {
-          elements[i].classList.toggle("d-none");
+          elements[i].classList.toggle("id-filtered", !cb.checked);
         }
+
+        updateFileRows();
+      }
+
+      function toggleSeverity(cb) {
+        var elements = document.querySelectorAll(".sev_" + cb.id);
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          elements[i].classList.toggle("severity-filtered", !cb.checked);
+        }
+
+        updateFileRows();
+      }
+
+      function toggleTool(cb) {
+        var elements;
+        if (cb.id == "clang-tidy")
+            elements = document.querySelectorAll("[class^=clang-tidy-]");
+        else
+            elements = document.querySelectorAll(".issue:not([class^=clang-tidy-])");
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          elements[i].classList.toggle("tool-filtered", !cb.checked);
+        }
+
+        updateFileRows();
       }
 
       function toggleAll() {
-        var elements = document.querySelectorAll("input");
+        var elements = document.querySelectorAll(".idToggle");
 
         // starting from 1 since 0 is the "toggle all" input
         for (var i = 1, len = elements.length; i < len; i++) {
-          var el = elements[i];
-
-          if (el.checked) {
-            el.checked = false;
-          } else {
-            el.checked = true;
+          var changed = elements[i].checked != elements[0].checked;
+          if (changed) {
+            elements[i].checked = elements[0].checked;
+            toggleDisplay(elements[i]);
           }
-
-          toggleDisplay(el.id);
         }
       }
+
+      function updateFileRows(element) {
+        var elements = document.querySelectorAll(".fileEntry");
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          var issue_count = elements[i].querySelectorAll(".issue").length;
+          var invisible_count = elements[i].querySelectorAll(".id-filtered, .severity-filtered, .tool-filtered").length;
+          elements[i].classList.toggle("file-filtered", (invisible_count == issue_count));
+        }
+      }
+
       window.addEventListener("load", initExpandables);
     </script>
   </head>
   <body>
+    <div id="wrapper">
     <div id="header" class="header">
-      <h1>Cppcheck report - %s: %s</h1>
-    </div>
-    <div class="wrapper">
-      <div id="menu">
-       <p id="filename"><a href="index.html">Defects:</a> %s</p>
+      <h1>Cppcheck report - %s%s</h1>
+"""
+
+HTML_SEVERITY_FILTER = """
+      <div id="filters">
+        <span class="severityHeader">Severity:</span>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"error\">Error</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"warning\">Warning</label>
+        <label><input type="checkbox" class="severityToggle" onClick="toggleSeverity(this)" checked id=\"portability\">Portability</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"performance\">Performance</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"style\">Style</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"information\">Information</label>
+        | <span class="severityHeader">Tool:</span>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleTool(this)" checked id=\"cppcheck\">Cppcheck</label>
+        <label><input type="checkbox" class="severityToggle" onclick="toggleTool(this)" checked id=\"clang-tidy\">clang-tidy</label>
+      </div>
 """
 
 HTML_HEAD_END = """
+    </div>
+"""
+
+HTML_MENU = """
+    <div id="menu">
+     <p><a href="index.html">Defects:</a> %s</p>
+"""
+
+HTML_MENU_END = """
     </div>
     <div id="content">
 """
 
 HTML_FOOTER = """
-      </div> <!-- /.wrapper -->
     </div>
     <div id="footer" class="footer">
       <p>
-        Cppcheck %s - a tool for static C/C++ code analysis<br>
-        <br>
-        Internet: <a href="https://cppcheck.sourceforge.io">https://cppcheck.sourceforge.io</a><br>
-        IRC: <a href="irc://irc.freenode.net/cppcheck">irc://irc.freenode.net/cppcheck</a><br>
+        Created by Cppcheck %s (<a href="https://cppcheck.sourceforge.io">Sourceforge</a>, <a href="irc://irc.freenode.net/cppcheck">IRC</a>)
       </p>
+    </div>
     </div>
   </body>
 </html>
@@ -292,21 +344,27 @@ def html_escape(text):
 
 def git_blame(line, path, file, blame_options):
     git_blame_dict = {}
-    head, tail = os.path.split(file)
-    if head != "":
-        path = head
 
-    try:
+    full_path = os.path.join(path, file)
+    path, file = os.path.split(full_path)
+
+    if path:
         os.chdir(path)
-    except:
-        return {}
+
+    cmd_args = ['git', 'blame', '-L %d' % line]
+    if '-w' in blame_options:
+        cmd_args.append('-w')
+    if '-M' in blame_options:
+        cmd_args.append('-M')
+    cmd_args = cmd_args + ['--porcelain', '--', file]
 
     try:
-        result = subprocess.check_output('git blame -L %d %s %s --porcelain -- %s' % (
-            line, " -w" if "-w" in blame_options else "", " -M" if "-M" in blame_options else "", file))
+        result = subprocess.check_output(cmd_args)
         result = result.decode(locale.getpreferredencoding())
     except:
         return {}
+    finally:
+        os.chdir(cwd)
 
     if result.startswith('fatal'):
         return {}
@@ -348,9 +406,14 @@ def tr_str(td_th, line, id, cwe, severity, message, author, author_mail, date, a
         message_attribute = ''
     ret += '<%s%s>%s</%s>' % (td_th, message_attribute, html_escape(message), td_th)
 
-    if add_author:
-        for item in (author, author_mail, date):
-            ret += '<%s>%s</%s>' % (td_th, item, td_th)
+    for field in  add_author:
+        if field == 'name':
+            ret += '<%s>%s</%s>' % (td_th, author, td_th)
+        elif field == 'email':
+            ret += '<%s>%s</%s>' % (td_th, author_mail, td_th)
+        elif field == 'date':
+            ret += '<%s>%s</%s>' % (td_th, date, td_th)
+
     if tr_class:
         tr_attributes = ' class="%s"' % tr_class
     else:
@@ -477,8 +540,10 @@ if __name__ == '__main__':
                       help='Base directory where source code files can be '
                            'found.')
     parser.add_option('--add-author-information', dest='add_author_information',
-                      help='Initially set to false'
-                           'Adds author, author-mail and time to htmlreport')
+                      help='Blame information to include. '
+                           'Adds specified author information. '
+                           'Specify as comma-separated list of either "name", "email", "date" or "n","e","d". '
+                           'Default: "n,e,d"')
     parser.add_option('--source-encoding', dest='source_encoding',
                       help='Encoding of source code.', default='utf-8')
     parser.add_option('--blame-options', dest='blame_options',
@@ -504,14 +569,26 @@ if __name__ == '__main__':
     if options.source_dir:
         source_dir = options.source_dir
 
-    add_author_information = False
+    add_author_information = []
     if options.add_author_information:
-        add_author_information = True
+        fields = [x.strip() for x in options.add_author_information.split(',')]
+        for x in fields:
+            if x.lower() in ['n', 'name']:
+                add_author_information.append('name')
+            elif x.lower() in ['e', 'email']:
+                add_author_information.append('email')
+            elif x.lower() in ['d', 'date']:
+                add_author_information.append('date')
+            else:
+                print('Unrecognized value "%s" for author information, using default (name, email, date)' % x)
+                add_author_information = ['name', 'email', 'date']
+                break
 
     blame_options = ''
     if options.blame_options:
         blame_options = options.blame_options
-        add_author_information = True
+        add_author_information = add_author_information or ['name', 'email', 'date']
+
     # Parse the xml from all files defined in file argument
     # or from stdin. If no input is provided, stdin is used
     # Produce a simple list of errors.
@@ -602,13 +679,14 @@ if __name__ == '__main__':
                               (options.title,
                                htmlFormatter.get_style_defs('.highlight'),
                                options.title,
-                               filename,
-                               filename.split('/')[-1]))
-
-            for error in sorted(errors, key=lambda k: k['line']):
-                output_file.write("<a href=\"%s#line-%d\"> %s %s</a>" % (data['htmlfile'], error['line'], error['id'],   error['line']))
-
+                               ': ' + filename))
             output_file.write(HTML_HEAD_END)
+
+            output_file.write(HTML_MENU % (filename.split('/')[-1]))
+            for error in sorted(errors, key=lambda k: k['line']):
+                output_file.write("<a href=\"%s#line-%d\"> %s %s</a>" % (data['htmlfile'], error['line'], error['id'], error['line']))
+            output_file.write(HTML_MENU_END)
+
             try:
                 lexer = guess_lexer_for_filename(source_filename, '', stripnl=False)
             except ClassNotFound:
@@ -660,75 +738,76 @@ if __name__ == '__main__':
         except IndexError:
             cnt_min = 0
 
-        stat_fmt = "\n            <tr><td><input type=\"checkbox\" onclick=\"toggleDisplay(this.id)\" id=\"{}\" name=\"{}\" checked></td><td>{}</td><td>{}</td></tr>"
+        stat_fmt = "\n            <tr><td><input type=\"checkbox\" class=\"idToggle\" onclick=\"toggleDisplay(this)\" id=\"{}\" name=\"{}\" checked></td><td>{}</td><td>{}</td></tr>"
         for occurrences in reversed(range(cnt_min, cnt_max + 1)):
             for _id in [k for k, v in sorted(counter.items()) if v == occurrences]:
                 stat_html.append(stat_fmt.format(_id, _id, dict(counter.most_common())[_id], _id))
 
-        output_file.write(HTML_HEAD.replace('id="menu"', 'id="menu_index"', 1).replace("Defects:", "Defect summary;", 1) % (options.title, '', options.title, '', ''))
-        output_file.write('\n       <label><input type="checkbox" onclick="toggleAll()" checked> Toggle all</label>')
+        output_file.write(HTML_HEAD % (options.title, '', options.title, ''))
+        output_file.write(HTML_SEVERITY_FILTER)
+        output_file.write(HTML_HEAD_END)
+        output_file.write(HTML_MENU.replace('id="menu"', 'id="menu_index"', 1).replace("Defects:", "Defect summary", 1) % (''))
+        output_file.write('\n       <label><input type="checkbox" class=\"idToggle\" onclick="toggleAll()" checked> Toggle all</label>')
         output_file.write('\n       <table>')
         output_file.write('\n           <tr><th>Show</th><th>#</th><th>Defect ID</th></tr>')
         output_file.write(''.join(stat_html))
         output_file.write('\n           <tr><td></td><td>' + str(stats_count) + '</td><td>total</td></tr>')
         output_file.write('\n       </table>')
         output_file.write('\n       <p><a href="stats.html">Statistics</a></p>')
-        output_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
+        output_file.write(HTML_MENU_END.replace("content", "content_index", 1))
 
-        output_file.write('\n       <table>')
+        output_file.write('\n       <table class=\"summaryTable\">')
         output_file.write(
             '\n       %s' %
             tr_str('th', 'Line', 'Id', 'CWE', 'Severity', 'Message', 'Author', 'Author mail', 'Date (DD/MM/YYYY)', add_author=add_author_information))
 
         for filename, data in sorted(files.items()):
-            if filename in decode_errors:  # don't print a link but a note
-                output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % filename)
-                output_file.write("\n       <tr><td colspan=\"5\"> Could not generated due to UnicodeDecodeError</td></tr>")
-            else:
-                if filename.endswith('*'):  # assume unmatched suppression
-                    output_file.write(
-                        "\n       <tr><td colspan=\"5\">%s</td></tr>" %
-                        filename)
+            file_error = filename in decode_errors or filename.endswith('*')
+
+            row_content = filename if file_error else "<a href=\"%s\">%s</a>" % (data['htmlfile'], filename)
+
+            output_file.write("\n      <tbody class=\"fileEntry\">")
+            output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % row_content)
+
+            if filename in decode_errors:
+                output_file.write("\n       <tr><td colspan=\"5\">Could not generated due to UnicodeDecodeError</td></tr>")
+
+            for error in sorted(data['errors'], key=lambda k: k['line']):
+                if add_author_information:
+                    git_blame_dict = git_blame(error['line'], source_dir, error['file'], blame_options)
                 else:
-                    output_file.write(
-                        "\n       <tr><td colspan=\"5\"><a href=\"%s\">%s</a></td></tr>" %
-                        (data['htmlfile'], filename))
+                    git_blame_dict = {}
+                message_class = None
+                try:
+                    if error['inconclusive'] == 'true':
+                        message_class = 'inconclusive'
+                        error['severity'] += ", inconcl."
+                except KeyError:
+                    pass
 
-                for error in sorted(data['errors'], key=lambda k: k['line']):
-                    if add_author_information:
-                        git_blame_dict = git_blame(error['line'], source_dir, error['file'], blame_options)
-                    else:
-                        git_blame_dict = {}
-                    message_class = None
-                    try:
-                        if error['inconclusive'] == 'true':
-                            message_class = 'inconclusive'
-                            error['severity'] += ", inconcl."
-                    except KeyError:
-                        pass
+                try:
+                    if error['cwe']:
+                        cwe_url = "<a href=\"https://cwe.mitre.org/data/definitions/" + error['cwe'] + ".html\">" + error['cwe'] + "</a>"
+                except KeyError:
+                    cwe_url = ""
 
-                    try:
-                        if error['cwe']:
-                            cwe_url = "<a href=\"https://cwe.mitre.org/data/definitions/" + error['cwe'] + ".html\">" + error['cwe'] + "</a>"
-                    except KeyError:
-                        cwe_url = ""
+                if error['severity'] in ['error', 'warning']:
+                    message_class = error['severity']
 
-                    if error['severity'] == 'error':
-                        message_class = 'error'
+                is_file = filename != '' and not file_error
+                line = error["line"] if is_file else ""
+                htmlfile = data.get('htmlfile') if is_file else None
 
-                    is_file = filename != '' and not filename.endswith('*')
-                    line = error["line"] if is_file else ""
-                    htmlfile = data.get('htmlfile') if is_file else None
-
-                    output_file.write(
-                        '\n         %s' %
-                        tr_str('td', line, error["id"], cwe_url, error["severity"], error["msg"],
-                               git_blame_dict.get('author', 'Unknown'), git_blame_dict.get('author-mail', '---'),
-                               git_blame_dict.get('author-time', '---'),
-                               tr_class=error["id"],
-                               message_class=message_class,
-                               add_author=add_author_information,
-                               htmlfile=htmlfile))
+                output_file.write(
+                    '\n         %s' %
+                    tr_str('td', line, error["id"], cwe_url, error["severity"], error["msg"],
+                           git_blame_dict.get('author', 'Unknown'), git_blame_dict.get('author-mail', '---'),
+                           git_blame_dict.get('author-time', '---'),
+                           tr_class=error["id"] + ' sev_' + error["severity"] + ' issue',
+                           message_class=message_class,
+                           add_author=add_author_information,
+                           htmlfile=htmlfile))
+        output_file.write("\n      </tbody>")
         output_file.write('\n       </table>')
         output_file.write(HTML_FOOTER % contentHandler.versionCppcheck)
 
@@ -758,8 +837,12 @@ if __name__ == '__main__':
 
     with io.open(os.path.join(options.report_dir, 'stats.html'), 'w') as stats_file:
 
-        stats_file.write(HTML_HEAD.replace('id="menu"', 'id="menu_index"', 1).replace("Defects:", "Back to summary", 1) % (options.title, '', options.title, 'Statistics', ''))
-        stats_file.write(HTML_HEAD_END.replace("content", "content_index", 1))
+        stats_file.write(HTML_HEAD % (options.title, '', options.title, ': Statistics'))
+        stats_file.write(HTML_HEAD_END)
+
+        stats_file.write(HTML_MENU.replace('id="menu"', 'id="menu_index"', 1).replace("Defects:", "Back to summary", 1) % (''))
+        stats_file.write(HTML_MENU_END.replace("content", "content_index", 1))
+
 
         for sev in SEVERITIES:
             _sum = 0
@@ -779,7 +862,7 @@ if __name__ == '__main__':
                     continue
             except KeyError:
                 continue
-            stats_file.write("<p>Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "<br>\n")
+            stats_file.write("<p><span class=\"statHeader\">Top 10 files for " + sev + " severity, total findings: " + str(_sum) + "</span><br>\n")
 
             # sort, so that the file with the most severities per type is first
             stats_list_sorted = sorted(stats_templist.items(), key=operator.itemgetter(1, 0), reverse=True)

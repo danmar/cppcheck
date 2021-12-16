@@ -27,8 +27,8 @@ jobs:
           tar xzvf uncrustify-0.72.0.tar.gz && cd uncrustify-uncrustify-0.72.0 
           mkdir build 
           cd build 
-          cmake -DCMAKE_BUILD_TYPE=Release .. 
-          make -j$(nproc) -s 
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build . -- -j$(nproc) -s
           mkdir ~/uncrustify 
           cp uncrustify ~/uncrustify/
 

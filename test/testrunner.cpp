@@ -21,7 +21,9 @@
 #include "testsuite.h"
 
 #include <cstdlib>
+#ifdef NDEBUG
 #include <iostream>
+#endif
 
 int main(int argc, char *argv[])
 {

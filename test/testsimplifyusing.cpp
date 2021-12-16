@@ -24,8 +24,6 @@
 #include "token.h"
 #include "tokenize.h"
 
-struct InternalError;
-
 
 class TestSimplifyUsing : public TestFixture {
 public:

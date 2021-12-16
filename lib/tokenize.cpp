@@ -8734,7 +8734,7 @@ void Tokenizer::simplifyIfSwitchForInit()
 
         Token *semicolon = tok->tokAt(2);
         while (!Token::Match(semicolon, "[;)]")) {
-            if (semicolon->str() == "(")
+            if (Token::Match(semicolon, "(|{|[") && semicolon->link())
                 semicolon = semicolon->link();
             semicolon = semicolon->next();
         }

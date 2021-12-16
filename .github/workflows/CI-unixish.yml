@@ -47,19 +47,41 @@ jobs:
         run: |
           python -m pip install pip --upgrade
           python -m pip install pytest
-          
+
+      # TODO: Qt installation often fails with timeout errors on macos
       - name: Install Qt
-        if: contains(matrix.os, 'ubuntu')
+        if: !contains(matrix.os, 'macos')
         uses: jurplel/install-qt-action@v2
         with:
+          version: '5.15.2'
           modules: 'qtcharts'
 
-      - name: Test CMake build
+      - name: Test CMake build (with GUI)
+        if: !contains(matrix.os, 'macos')
+        run: |
+          mkdir cmake.output
+          cd cmake.output
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On ..
+          cmake --build . -- -j$(nproc)
+          cd ..
+
+      - name: Test CMake build (without GUI)
+        if: contains(matrix.os, 'macos')
         run: |
           mkdir cmake.output
           cd cmake.output
           cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On ..
-          make -j$(nproc) check
+          cmake --build . -- -j$(nproc)
+          cd ..
+
+      - name: Run CMake test
+        run: |
+          cmake --build cmake.output --target check -- -j$(nproc)
+
+      - name: Run CTest
+        run: |
+          cd cmake.output
+          ctest -j$(nproc)
           cd ..
 
       - name: Build and test with Unsigned char
