@@ -1329,7 +1329,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         const Token *end1 = t1->link();
         const Token *end2 = t2->link();
         while (t1 && t2 && t1 != end1 && t2 != end2) {
-            if (t1->str() != t2->str())
+            if (t1->str() != t2->str() || t1->flags() != t2->flags())
                 return false;
             t1 = t1->next();
             t2 = t2->next();
