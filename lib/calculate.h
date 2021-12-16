@@ -20,6 +20,7 @@
 #define calculateH
 
 #include "mathlib.h"
+#include "errortypes.h"
 #include <string>
 
 template<class T>

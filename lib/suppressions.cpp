@@ -28,8 +28,6 @@
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
 #include <functional> // std::bind, std::placeholders
-#include <sstream>
-#include <utility>
 
 static bool isAcceptedErrorIdChar(char c)
 {

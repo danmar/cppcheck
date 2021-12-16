@@ -2,7 +2,6 @@
 #include "programmemory.h"
 #include "astutils.h"
 #include "calculate.h"
-#include "errortypes.h"
 #include "infer.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -12,9 +11,7 @@
 #include "valueptr.h"
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <functional>
-#include <limits>
 #include <memory>
 
 void ProgramMemory::setValue(nonneg int exprid, const ValueFlow::Value& value)

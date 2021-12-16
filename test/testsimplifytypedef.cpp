@@ -28,9 +28,6 @@
 #include <simplecpp.h>
 
 
-struct InternalError;
-
-
 class TestSimplifyTypedef : public TestFixture {
 public:
     TestSimplifyTypedef() : TestFixture("TestSimplifyTypedef") {}

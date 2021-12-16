@@ -3955,6 +3955,17 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10649
+        check("void foo(struct diag_msg *msg) {\n"
+              "    msg = msg->next;\n"
+              "    if (msg == NULL)\n"
+              "        return CMD_OK;\n"
+              "    msg = msg->next;\n"
+              "    if (msg == NULL)\n"
+              "        return CMD_OK;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -4227,6 +4238,19 @@ private:
               "    bFirst = false;\n"
               "  } while (true);\n"
               "  return bFirst;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   void * pool = NULL;\n"
+              "   do {\n"
+              "      pool = malloc(40);\n"
+              "      if (dostuff())\n"
+              "         break;\n"
+              "      pool = NULL;\n"
+              "   }\n"
+              "   while (0);\n"
+              "   if (pool) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

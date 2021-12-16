@@ -442,6 +442,7 @@ private:
         TEST_CASE(simplifyIfSwitchForInit2);
         TEST_CASE(simplifyIfSwitchForInit3);
         TEST_CASE(simplifyIfSwitchForInit4);
+        TEST_CASE(simplifyIfSwitchForInit5);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -6764,6 +6765,13 @@ private:
         // #9301
         ASSERT_NO_THROW(tokenizeAndStringify("template <typename> constexpr char x[] = \"\";\n"
                                              "template <> constexpr char x<int>[] = \"\";\n"));
+
+        // #10951
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class> static void b() {}\n"
+                                             "  ~a();\n"
+                                             "};\n"
+                                             "void d() { a::b<int>(); }\n"));
     }
 
     void checkNamespaces() {
@@ -7140,6 +7148,13 @@ private:
         settings.standards.cpp = Standards::CPP20;
         const char code[] = "void f() { for (a;b:c) {} }";
         ASSERT_EQUALS("void f ( ) { { a ; for ( b : c ) { } } }", tokenizeAndStringify(code, settings));
+    }
+
+    void simplifyIfSwitchForInit5() {
+        Settings settings;
+        settings.standards.cpp = Standards::CPP20;
+        const char code[] = "void f() { if ([] { ; }) {} }";
+        ASSERT_EQUALS("void f ( ) { if ( [ ] { ; } ) { } }", tokenizeAndStringify(code, settings));
     }
 };
 
