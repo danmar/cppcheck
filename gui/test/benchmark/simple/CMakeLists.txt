@@ -1,4 +1,6 @@
 qt5_wrap_cpp(test-benchmark-simple_SRC benchmarksimple.h)
+add_custom_target(build-testbenchmark-simple-deps SOURCES ${test-benchmark-simple_SRC})
+add_dependencies(gui-build-deps build-testbenchmark-simple-deps)
 add_executable(benchmark-simple
         ${test-benchmark-simple_SRC}
         benchmarksimple.cpp

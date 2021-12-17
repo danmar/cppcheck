@@ -1,4 +1,6 @@
 qt5_wrap_cpp(test-projectfile_SRC testprojectfile.h ${CMAKE_SOURCE_DIR}/gui/projectfile.h)
+add_custom_target(build-projectfile-deps SOURCES ${test-projectfile_SRC})
+add_dependencies(gui-build-deps build-projectfile-deps)
 add_executable(test-projectfile
         ${test-projectfile_SRC}
         testprojectfile.cpp

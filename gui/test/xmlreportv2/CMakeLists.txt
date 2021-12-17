@@ -1,4 +1,6 @@
 qt5_wrap_cpp(test-xmlreportv2_SRC testxmlreportv2.h)
+add_custom_target(build-xmlreportv2-deps SOURCES ${test-xmlreportv2_SRC})
+add_dependencies(gui-build-deps build-xmlreportv2-deps)
 if(USE_BUNDLED_TINYXML2)
     list(APPEND test-xmlreportv2_SRC $<TARGET_OBJECTS:tinyxml2_objs>)
 endif()

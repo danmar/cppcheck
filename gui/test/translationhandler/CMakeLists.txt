@@ -1,4 +1,6 @@
 qt5_wrap_cpp(test-translationhandler_SRC testtranslationhandler.h ${CMAKE_SOURCE_DIR}/gui/translationhandler.h)
+add_custom_target(build-translationhandler-deps SOURCES ${test-translationhandler_SRC})
+add_dependencies(gui-build-deps build-translationhandler-deps)
 add_executable(test-translationhandler
         ${test-translationhandler_SRC}
         testtranslationhandler.cpp

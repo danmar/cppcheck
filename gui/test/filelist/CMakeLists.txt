@@ -1,4 +1,6 @@
 qt5_wrap_cpp(test-filelist_SRC testfilelist.h)
+add_custom_target(build-testfilelist-deps SOURCES ${test-filelist_SRC})
+add_dependencies(gui-build-deps build-testfilelist-deps)
 add_executable(test-filelist
         ${test-filelist_SRC}
         testfilelist.cpp
