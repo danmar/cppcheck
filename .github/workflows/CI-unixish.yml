@@ -178,21 +178,25 @@ jobs:
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
 
-      # Run self check after "Build GUI" to include generated headers in analysis
-      - name: Self check
+      - name: Self check (build)
         if: matrix.os == 'ubuntu-20.04'
         run: |
           # compile with verification and ast matchers
           make clean
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
+
+      # Run self check after "Build GUI" to include generated headers in analysis
+      - name: Self check
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
           # self check lib/cli
           mkdir b1
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  cli lib
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  cli lib
           # check gui with qt settings
           mkdir b2
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  gui/*.cpp
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  gui/*.cpp gui/temp/*.cpp
           # self check test and tools
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings  test/*.cpp tools
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  test/*.cpp tools
 
       - name: Build triage on ubuntu
         if: matrix.os == 'ubuntu-20.04'
