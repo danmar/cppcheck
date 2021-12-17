@@ -1833,10 +1833,9 @@ class MisraChecker:
                         continue
 
                     parametersUsed = getArguments(token)
-
-                    checkArgCount = len(functionDeclaration.argument) - 1 if len(parametersUsed) > len(functionDeclaration.argument) else len(parametersUsed)
-                    checkArgCount = max(checkArgCount, 0)
-                    for i in range(checkArgCount):
+                    for i in range(len(parametersUsed)):
+                        if i + 1 >= len(functionDeclaration.argument):
+                            continue
                         usedParameter = parametersUsed[i]
                         parameterDefinition = functionDeclaration.argument.get(i+1)
 
