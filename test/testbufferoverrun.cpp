@@ -1742,6 +1742,17 @@ private:
               "  return M[i];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { enum E { e0 }; };\n"
+            "const S::E M[4] = { S::E:e0, S::E:e0, S::E:e0, S::E:e0 };\n"
+            "int f(int i) {\n"
+            "  if (i > std::size(M) + 1)\n"
+            "	  return -1;\n"
+            "  if (i < 0 || i >= std::size(M))\n"
+            "	  return 0;\n"
+            "  return M[i]; \n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {
