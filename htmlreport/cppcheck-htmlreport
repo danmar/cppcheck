@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-import datetime
+from datetime import date
 import io
 import locale
 import operator
@@ -412,15 +412,13 @@ def filterBar(enabled):
     ,'\n      </div>\n'])
 
 def git_blame(line, path, file, blame_options):
-    git_blame_dict = {}
-
     full_path = os.path.join(path, file)
     path, file = os.path.split(full_path)
 
     if path:
         os.chdir(path)
 
-    cmd_args = ['git', 'blame', '-L %d' % line]
+    cmd_args = ['git', 'blame', '-L %d,%d' % (line, line)]
     if '-w' in blame_options:
         cmd_args.append('-w')
     if '-M' in blame_options:
@@ -438,24 +436,10 @@ def git_blame(line, path, file, blame_options):
     if result.startswith('fatal'):
         return {}
 
-    disallowed_characters = '<>'
-    for line in result.split('\n')[1:]:
-        space_pos = line.find(' ')
-        if space_pos > 30:
-            break
-        key = line[:space_pos]
-        val = line[space_pos + 1:]
+    git_blame_dict = dict(line.split(' ', 1) for line in result.split('\n') if line.startswith('author'))
 
-        for character in disallowed_characters:
-            val = val.replace(character, "")
-        git_blame_dict[key] = val
-
-    datetime_object = datetime.date.fromtimestamp(float(git_blame_dict['author-time']))
-    year = datetime_object.strftime("%Y")
-    month = datetime_object.strftime("%m")
-    day = datetime_object.strftime("%d")
-
-    git_blame_dict['author-time'] = '%s/%s/%s' % (day, month, year)
+    author_date = date.fromtimestamp(int(git_blame_dict['author-time']))
+    git_blame_dict['author-time'] = author_date.strftime("%d/%m/%Y")
 
     return git_blame_dict
 
@@ -477,9 +461,9 @@ def tr_str(td_th, line, id, cwe, severity, message, author, author_mail, date, a
 
     for field in  add_author:
         if field == 'name':
-            ret += '<%s>%s</%s>' % (td_th, author, td_th)
+            ret += '<%s>%s</%s>' % (td_th, html_escape(author), td_th)
         elif field == 'email':
-            ret += '<%s>%s</%s>' % (td_th, author_mail, td_th)
+            ret += '<%s>%s</%s>' % (td_th, html_escape(author_mail), td_th)
         elif field == 'date':
             ret += '<%s>%s</%s>' % (td_th, date, td_th)
 
