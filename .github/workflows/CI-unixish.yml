@@ -50,14 +50,14 @@ jobs:
 
       # TODO: Qt installation often fails with timeout errors on macos
       - name: Install Qt
-        if: !contains(matrix.os, 'macos')
+        if: contains(matrix.os, 'ubuntu')
         uses: jurplel/install-qt-action@v2
         with:
           version: '5.15.2'
           modules: 'qtcharts'
 
       - name: Test CMake build (with GUI)
-        if: !contains(matrix.os, 'macos')
+        if: contains(matrix.os, 'ubuntu')
         run: |
           mkdir cmake.output
           cd cmake.output
