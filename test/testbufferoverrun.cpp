@@ -2032,13 +2032,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void array_index_negative4() {
+    void array_index_negative4()
+    {
         check("void f(void) {\n"
-            "    int buf[64]={};\n"
-            "    int i;\n"
-            "    for(i=0; i <16; ++i){}\n"
-            "    for(; i < 24; ++i){ buf[i] = buf[i-16];}\n"
-            "}\n");
+              "    int buf[64]={};\n"
+              "    int i;\n"
+              "    for(i=0; i <16; ++i){}\n"
+              "    for(; i < 24; ++i){ buf[i] = buf[i-16];}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
