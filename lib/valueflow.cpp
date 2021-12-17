@@ -1235,7 +1235,7 @@ static void valueFlowArray(TokenList *tokenlist)
 
             // pointer = array
             else if (tok->variable() && tok->variable()->isArray() && Token::simpleMatch(tok->astParent(), "=") &&
-                     tok == tok->astParent()->astOperand2() && tok->astParent()->astOperand1() &&
+                     astIsRHS(tok) && tok->astParent()->astOperand1() &&
                      tok->astParent()->astOperand1()->variable() &&
                      tok->astParent()->astOperand1()->variable()->isPointer()) {
                 ValueFlow::Value value;
