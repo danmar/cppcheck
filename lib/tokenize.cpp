@@ -10968,7 +10968,7 @@ void Tokenizer::simplifyAttribute()
             Token *functok = nullptr;
             if (Token::Match(after, "%name%|*")) {
                 Token *ftok = after;
-                while (Token::Match(ftok, "%name%|::|* !!("))
+                while (Token::Match(ftok, "%name%|::|<|>|* !!("))
                     ftok = ftok->next();
                 if (Token::Match(ftok, "%name% ("))
                     functok = ftok;
