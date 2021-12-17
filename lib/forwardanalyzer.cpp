@@ -408,8 +408,16 @@ struct ForwardTraversal {
         bool checkElse = false;
         if (condTok && !Token::simpleMatch(condTok, ":"))
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->previous() : nullptr);
-        if (checkElse && exit && !hasJump(endBlock))
+        // exiting a do while(false)
+        if (checkElse && exit) {
+            if (hasJump(endBlock)) {
+                if (!analyzer->lowerToPossible())
+                    return Break(Analyzer::Terminate::Bail);
+                if (analyzer->isConditional() && stopUpdates())
+                    return Break(Analyzer::Terminate::Conditional);
+            }
             return Progress::Continue;
+        }
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
         Analyzer::Action condAnalysis;
@@ -421,7 +429,7 @@ struct ForwardTraversal {
             allAnalysis |= analyzeRecursive(stepTok);
         actions |= allAnalysis;
         // do while(false) is not really a loop
-        if (checkElse && isDoWhile && !hasJump(endBlock) &&
+        if (checkElse && isDoWhile &&
             (condTok->hasKnownIntValue() ||
              (!bodyAnalysis.isModified() && !condAnalysis.isModified() && condAnalysis.isRead()))) {
             if (updateRange(endBlock->link(), endBlock) == Progress::Break)
