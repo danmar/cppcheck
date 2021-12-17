@@ -178,13 +178,17 @@ jobs:
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
 
-      # Run self check after "Build GUI" to include generated headers in analysis
-      - name: Self check
+      - name: Self check (build)
         if: matrix.os == 'ubuntu-20.04'
         run: |
           # compile with verification and ast matchers
           make clean
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
+
+      # Run self check after "Build GUI" to include generated headers in analysis
+      - name: Self check
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
           # self check lib/cli
           mkdir b1
           ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  cli lib
