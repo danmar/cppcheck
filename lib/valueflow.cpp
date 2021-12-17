@@ -5544,7 +5544,7 @@ struct ConditionHandler {
                 bool dead_if = deadBranch[0];
                 bool dead_else = deadBranch[1];
                 const Token* unknownFunction = nullptr;
-                if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while ("))
+                if (tok->astParent() && Token::Match(top->previous(), "while|for ("))
                     dead_if = !isBreakScope(after);
                 else if (!dead_if)
                     dead_if = isReturnScope(after, &settings->library, &unknownFunction);
