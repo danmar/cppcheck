@@ -395,53 +395,77 @@ html_unescape_table = {v: k for k, v in html_escape_table.items()}
 def html_escape(text):
     return escape(text, html_escape_table)
 
-def filterButton(enabledFilters, id, function):
-    enabled = enabledFilters.get(id, False)
+def filter_button(enabled_filters, id, function):
+    enabled = enabled_filters.get(id, False)
     return '\n        <label class="checkBtn%s"><input type="checkbox" onclick="%s(this)" id="%s"%s/>%s</label>'\
           % (' disabled' if not enabled else '', function, id, 'checked' if enabled else 'disabled', id)
 
-def filterBar(enabled):
+def filter_bar(enabled):
     return ''.join([
      '      <div id="filters">\n'
-    ,''.join([filterButton(enabled, severity, 'toggleSeverity') for severity in ['error', 'warning', 'portability', 'performance', 'style', 'information']])
+    ,''.join([filter_button(enabled, severity, 'toggleSeverity') for severity in ['error', 'warning', 'portability', 'performance', 'style', 'information']])
     ,'\n        | '
-    ,''.join([filterButton(enabled, tool, 'toggleTool') for tool in ['cppcheck', 'clang-tidy']])
+    ,''.join([filter_button(enabled, tool, 'toggleTool') for tool in ['cppcheck', 'clang-tidy']])
     ,'\n        | '
     ,'\n        <label class="severityHeader">File: <input type="text" oninput="filterFile(this.value)"/></label>'
     ,'\n        <label class="severityHeader">Filter: <input type="text" oninput="filterText(this.value)"/></label>'
     ,'\n      </div>\n'])
 
-def git_blame(line, path, file, blame_options):
+def git_blame(errors, path, file, blame_options):
+    last_line= errors[-1]['line']
+    if last_line == 0:
+        return {}
+
+    first_line = next((error for error in errors if error['line'] > 0))['line']
+
     full_path = os.path.join(path, file)
-    path, file = os.path.split(full_path)
+    path, filename = os.path.split(full_path)
 
     if path:
         os.chdir(path)
 
-    cmd_args = ['git', 'blame', '-L %d,%d' % (line, line)]
+    cmd_args = ['git', 'blame', '-L %d,%d' % (first_line, last_line)]
     if '-w' in blame_options:
         cmd_args.append('-w')
     if '-M' in blame_options:
         cmd_args.append('-M')
-    cmd_args = cmd_args + ['--porcelain', '--', file]
+    cmd_args = cmd_args + ['--porcelain', '--incremental', '--', filename]
 
     try:
         result = subprocess.check_output(cmd_args)
         result = result.decode(locale.getpreferredencoding())
     except:
-        return {}
+        return []
     finally:
         os.chdir(cwd)
 
     if result.startswith('fatal'):
-        return {}
+        return []
 
-    git_blame_dict = dict(line.split(' ', 1) for line in result.split('\n') if line.startswith('author'))
+    blame_data = []
+    line_from = 0
+    line_to = 0
+    blame_info = dict()
 
-    author_date = date.fromtimestamp(int(git_blame_dict['author-time']))
-    git_blame_dict['author-time'] = author_date.strftime("%d/%m/%Y")
+    for line_str in result.splitlines():
+        field, _, value = line_str.partition(' ')
+        if len(field) == 40:
+            line_nr, count = value.split(' ')[1:]
+            line_from = int(line_nr)
+            line_to = line_from + int(count)
+        elif field.startswith('author'):
+            blame_info[field] = value
+            if field == 'author-time':
+                author_date = date.fromtimestamp(int(blame_info['author-time']))
+                blame_info['author-time'] = author_date.strftime("%d/%m/%Y")
+        elif field == 'filename':
+            blame_data.append([line_from, line_to, blame_info.copy()])
 
-    return git_blame_dict
+    return blame_data
+
+
+def blame_lookup(blame_data, line):
+    return next((data for start, end, data in blame_data if line >= start and line < end), {})
 
 
 def tr_str(td_th, line, id, cwe, severity, message, author, author_mail, date, add_author, tr_class=None, htmlfile=None, message_class=None):
@@ -662,7 +686,7 @@ if __name__ == '__main__':
     file_no = 0
     for error in contentHandler.errors:
         filename = error['file']
-        if filename not in files.keys():
+        if filename not in files:
             files[filename] = {
                 'errors': [], 'htmlfile': str(file_no) + '.html'}
             file_no = file_no + 1
@@ -800,7 +824,7 @@ if __name__ == '__main__':
                 stat_html.append(stat_fmt.format(_id, _id, dict(counter.most_common())[_id], _id))
 
         output_file.write(HTML_HEAD % (options.title, '', options.title, ''))
-        output_file.write(filterBar(filter_enabled))
+        output_file.write(filter_bar(filter_enabled))
         output_file.write(HTML_HEAD_END)
         output_file.write(HTML_MENU.replace('id="menu"', 'id="menu_index"', 1).replace("Defects:", "Defect summary", 1) % (''))
         output_file.write('\n       <label><input type="checkbox" class=\"idToggle\" onclick="toggleAll()" checked> Toggle all</label>')
@@ -819,8 +843,9 @@ if __name__ == '__main__':
 
         for filename, data in sorted(files.items()):
             file_error = filename in decode_errors or filename.endswith('*')
-
+            is_file = filename != '' and not file_error
             row_content = filename if file_error else "<a href=\"%s\">%s</a>" % (data['htmlfile'], filename)
+            htmlfile = data.get('htmlfile') if is_file else None
 
             output_file.write("\n      <tbody class=\"fileEntry\">")
             output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % row_content)
@@ -828,11 +853,10 @@ if __name__ == '__main__':
             if filename in decode_errors:
                 output_file.write("\n       <tr><td colspan=\"5\">Could not generated due to UnicodeDecodeError</td></tr>")
 
-            for error in sorted(data['errors'], key=lambda k: k['line']):
-                if add_author_information:
-                    git_blame_dict = git_blame(error['line'], source_dir, error['file'], blame_options)
-                else:
-                    git_blame_dict = {}
+            sorted_errors = sorted(data['errors'], key=lambda k: k['line'])
+            blame_data = git_blame(sorted_errors, source_dir, filename, blame_options) if add_author_information else []
+            for error in sorted_errors:
+                git_blame_dict = blame_lookup(blame_data, error['line'])
                 message_class = None
                 try:
                     if error['inconclusive'] == 'true':
@@ -850,9 +874,7 @@ if __name__ == '__main__':
                 if error['severity'] in ['error', 'warning']:
                     message_class = error['severity']
 
-                is_file = filename != '' and not file_error
                 line = error["line"] if is_file else ""
-                htmlfile = data.get('htmlfile') if is_file else None
 
                 output_file.write(
                     '\n         %s' %
