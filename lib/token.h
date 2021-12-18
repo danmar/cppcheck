@@ -1161,8 +1161,6 @@ public:
 
     const ValueFlow::Value * getInvalidValue(const Token *ftok, nonneg int argnr, const Settings *settings) const;
 
-    const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
-
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize(const Settings *settings) const;
 

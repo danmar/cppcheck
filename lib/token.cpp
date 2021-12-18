@@ -2435,16 +2435,6 @@ const ValueFlow::Value* Token::getMovedValue() const
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) const
-{
-    if (!mImpl->mValues)
-        return nullptr;
-    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
-        return value.isContainerSizeValue() && !value.isImpossible() && value.intvalue == val;
-    });
-    return it == mImpl->mValues->end() ? nullptr : &*it;
-}
-
 TokenImpl::~TokenImpl()
 {
     delete mOriginalName;
