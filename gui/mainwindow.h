@@ -268,7 +268,7 @@ private:
     void setLanguage(const QString &code);
 
     /** @brief Event coming when application is about to close. */
-    virtual void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 
     /**
      * @brief Helper function to toggle all show error menu items
