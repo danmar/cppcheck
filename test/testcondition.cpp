@@ -3810,6 +3810,24 @@ private:
               "    uint8_t d0 = message->length > 0 ? data[0] : 0xff;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8266
+        check("void f(bool b) {\n"
+              "    if (b)\n"
+              "        return;\n"
+              "    if (g(&b) || b)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9720
+        check("bool bar(int &);\n"
+              "void f(int a, int b) {\n"
+              "    if (a + b == 3)\n"
+              "        return;\n"
+              "    if (bar(a) && (a + b == 3)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
