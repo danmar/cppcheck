@@ -214,7 +214,7 @@ jobs:
           mkdir b2
           ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  gui/*.cpp gui/temp/*.cpp
           # self check test and tools
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  test/*.cpp tools
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  test/*.cpp tools
 
       - name: Build triage on ubuntu
         if: matrix.os == 'ubuntu-20.04'
