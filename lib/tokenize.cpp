@@ -5487,6 +5487,11 @@ void Tokenizer::dump(std::ostream &out) const
             if (!vt.empty())
                 out << ' ' << vt;
         }
+        if (!tok->varId() && tok->scope()->isExecutable() && Token::Match(tok, "%name% (")) {
+            if (mSettings->library.isnoreturn(tok))
+                out << " noreturn=\"true\"";
+        }
+
         out << "/>" << std::endl;
     }
     out << "  </tokenlist>" << std::endl;
