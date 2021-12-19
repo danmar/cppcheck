@@ -1,0 +1,13 @@
+# we are not using all methods of their interfaces
+unusedFunction:externals/tinyxml2/tinyxml2.cpp
+unusedFunction:externals/simplecpp/simplecpp.cpp
+
+# TODO: fix these
+# false positive - # 10660
+unusedFunction:gui/mainwindow.cpp
+unusedFunction:gui/resultstree.cpp
+unusedFunction:gui/codeeditor.cpp
+# usage is disabled
+unusedFunction:lib/symboldatabase.cpp
+# false positive - #10661
+unusedFunction:oss-fuzz/main.cpp
