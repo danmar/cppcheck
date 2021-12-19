@@ -803,7 +803,14 @@ static void compileTerm(Token *&tok, AST_state& state)
             if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
                 if (Token::Match(tok, "{ !!}")) {
                     Token *const end = tok->link();
-                    compileUnaryOp(tok, state, compileExpression);
+                    if (Token::Match(tok, "{ . %name% =|{")) {
+                        const int inArrayAssignment = state.inArrayAssignment;
+                        state.inArrayAssignment = 1;
+                        compileBinOp(tok, state, compileExpression);
+                        state.inArrayAssignment = inArrayAssignment;
+                    } else {
+                        compileUnaryOp(tok, state, compileExpression);
+                    }
                     if (precedes(tok,end))
                         tok = end;
                 } else {

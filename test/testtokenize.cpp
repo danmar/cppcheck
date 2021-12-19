@@ -6107,6 +6107,7 @@ private:
         ASSERT_EQUALS("a0{,( \"\"abc12:?,", testAst("a(0, {{\"\", (abc) ? 1 : 2}});"));
         ASSERT_EQUALS("a0{,( \'\'abc12:?,", testAst("a(0, {{\'\', (abc) ? 1 : 2}});"));
         ASSERT_EQUALS("x12,{34,{,{56,{78,{,{,{=", testAst("x = { { {1,2}, {3,4} }, { {5,6}, {7,8} } };"));
+        ASSERT_EQUALS("Sa.stdmove::s(=b.1=,{(", testAst("S({.a = std::move(s), .b = 1})"));
 
         // struct initialization hang
         ASSERT_EQUALS("sbar.1{,{(={= forfieldfield++;;(",
