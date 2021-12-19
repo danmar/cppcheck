@@ -1,7 +1,7 @@
 TEMPLATE = app
 TARGET = test-xmlreportv2
 DEPENDPATH += .
-INCLUDEPATH += . ../../../externals/simplecpp ../../../externals/tinyxml
+INCLUDEPATH += . ../../../externals/simplecpp
 OBJECTS_DIR = ../build
 MOC_DIR = ../build
 

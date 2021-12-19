@@ -48,14 +48,6 @@ int main(int argc, char *argv[])
 
     QApplication app(argc, argv);
 
-#if QT_VERSION < 0x050000
-    // Set codecs so that UTF-8 strings in sources are handled correctly.
-    // This is ONLY needed for Qt versions 4.x.
-    // Qt 5.x assumes UTF-8 by default.
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-#endif
-
     QCoreApplication::setOrganizationName("Cppcheck");
     QCoreApplication::setApplicationName("Cppcheck-GUI");
 

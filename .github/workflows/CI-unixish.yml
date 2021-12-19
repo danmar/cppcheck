@@ -156,27 +156,58 @@ jobs:
         if: contains(matrix.os, 'ubuntu')
         run: |
           pushd gui
-          qmake HAVE_QCHART=yes
+          qmake CONFIG+=debug HAVE_QCHART=yes
           make -j$(nproc)
 
       - name: Run GUI tests on ubuntu
         if: contains(matrix.os, 'ubuntu')
         run: |
+          pushd gui/test/cppchecklibrarydata
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          ./test-cppchecklibrarydata
+          popd
+          pushd gui/test/filelist
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-filelist
+          popd
           pushd gui/test/projectfile
-          qmake
+          qmake CONFIG+=debug
           make -j$(nproc)
           ./test-projectfile
           popd
-          pushd gui/test/cppchecklibrarydata
-          qmake
+          pushd gui/test/translationhandler
+          qmake CONFIG+=debug
           make -j$(nproc)
-          ./test-cppchecklibrarydata
+          # TODO: requires X session
+          #./test-translationhandler
+          popd
+          pushd gui/test/xmlreportv2
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-xmlreportv2
 
       - name: Generate Qt help file on ubuntu
         if: contains(matrix.os, 'ubuntu')
         run: |
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
+
+      - name: Build triage on ubuntu
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          pushd tools/triage
+          qmake CONFIG+=debug
+          make -j$(nproc)
+
+      - name: Build Fuzzer
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          pushd oss-fuzz
+          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
 
       - name: Self check (build)
         if: matrix.os == 'ubuntu-20.04'
@@ -196,18 +227,4 @@ jobs:
           mkdir b2
           ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  gui/*.cpp gui/temp/*.cpp
           # self check test and tools
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  test/*.cpp tools
-
-      - name: Build triage on ubuntu
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          pushd tools/triage
-          qmake
-          make -j$(nproc)
-
-      - name: Build Fuzzer
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          pushd oss-fuzz
-          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
-
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  test/*.cpp tools
