@@ -3828,6 +3828,16 @@ private:
               "    if (bar(a) && (a + b == 3)) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10437
+        check("void f() {\n"
+              "  Obj* PObj = nullptr;\n"
+              "  bool b = false;\n"
+              "  if (GetObj(PObj) && PObj != nullptr)\n"
+              "    b = true;\n"
+              "  if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
