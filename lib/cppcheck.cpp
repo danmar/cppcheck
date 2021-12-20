@@ -1638,7 +1638,6 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
         const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);
         const std::string columnNumString = line.substr(endLinePos + 1, endColumnPos - endLinePos - 1);
-        const std::string errorTypeString = line.substr(endColumnPos + 1, endMsgTypePos - endColumnPos - 1);
         const std::string messageString = line.substr(endMsgTypePos + 1, endErrorPos - endMsgTypePos - 1);
         const std::string errorString = line.substr(endErrorPos, line.length());
 
