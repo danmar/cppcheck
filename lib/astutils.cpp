@@ -2940,6 +2940,10 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                         return Result(Result::Type::BAILOUT);
                 }
 
+                // don't check again if the variable only has loop scope
+                if (expr->variable() && tok->link() && expr->variable()->scope() == tok->link()->scope())
+                    return Result(FwdAnalysis::Result::Type::NONE);
+
                 // check loop body again..
                 const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local, inInnerClass, depth);
                 if (result.type == Result::Type::BAILOUT || result.type == Result::Type::READ)
