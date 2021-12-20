@@ -63,7 +63,6 @@ public:
         checkStl.if_find();
         checkStl.checkFindInsert();
         checkStl.iterators();
-        checkStl.mismatchingContainers();
         checkStl.missingComparison();
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
