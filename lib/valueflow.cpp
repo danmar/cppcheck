@@ -1939,8 +1939,6 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
     return false;
 }
 
-static bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
-
 struct ValueFlowAnalyzer : Analyzer {
     const TokenList* tokenlist;
     ProgramMemoryState pms;
@@ -2387,14 +2385,14 @@ struct ValueFlowAnalyzer : Analyzer {
             std::vector<MathLib::bigint> result;
             ProgramMemory pm = pms.get(tok, ctx, getProgramState());
             if (Token::Match(tok, "&&|%oror%")) {
-                if (conditionIsTrue(tok, pm))
+                if (conditionIsTrue(tok, pm, getSettings()))
                     result.push_back(1);
-                if (conditionIsFalse(tok, pm))
+                if (conditionIsFalse(tok, pm, getSettings()))
                     result.push_back(0);
             } else {
                 MathLib::bigint out = 0;
                 bool error = false;
-                execute(tok, &pm, &out, &error);
+                execute(tok, &pm, &out, &error, getSettings());
                 if (!error)
                     result.push_back(out);
             }
@@ -7012,7 +7010,7 @@ static void valueFlowContainerReverse(Token* tok,
     }
 }
 
-static bool isContainerSizeChanged(const Token* tok, const Settings* settings, int depth)
+bool isContainerSizeChanged(const Token* tok, const Settings* settings, int depth)
 {
     if (!tok)
         return false;
