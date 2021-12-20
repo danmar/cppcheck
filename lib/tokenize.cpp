@@ -10968,8 +10968,16 @@ void Tokenizer::simplifyAttribute()
             Token *functok = nullptr;
             if (Token::Match(after, "%name%|*")) {
                 Token *ftok = after;
-                while (Token::Match(ftok, "%name%|::|<|>|* !!("))
+                while (Token::Match(ftok, "%name%|::|<|* !!(")) {
+                    if (ftok->str() == "<") {
+                        Token *tmp = ftok->link();
+                        if (tmp == nullptr)
+                            ftok = ftok->findClosingBracket();
+                        else
+                            ftok = tmp;
+                    }
                     ftok = ftok->next();
+                }
                 if (Token::Match(ftok, "%name% ("))
                     functok = ftok;
             } else if (Token::Match(after, "[;{=:]")) {
