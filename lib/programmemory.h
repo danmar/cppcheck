@@ -61,21 +61,25 @@ struct ProgramMemoryState {
     ProgramMemory get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 };
 
-void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result, bool* error, const Settings* settings = nullptr);
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
+             const Settings* settings = nullptr);
 
 /**
  * Is condition always false when variable has given value?
  * \param condition   top ast token in condition
  * \param programMemory   program memory
  */
-bool conditionIsFalse(const Token *condition, ProgramMemory pm, const Settings* settings = nullptr);
+bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 
 /**
  * Is condition always true when variable has given value?
  * \param condition   top ast token in condition
  * \param programMemory   program memory
  */
-bool conditionIsTrue(const Token *condition, ProgramMemory pm, const Settings* settings = nullptr);
+bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 
 /**
  * Get program memory by looking backwards from given token.

@@ -128,7 +128,11 @@ void ProgramMemory::insert(const ProgramMemory &pm)
         values.insert(p);
 }
 
-bool evaluateCondition(const std::string& op, MathLib::bigint r, const Token* condition, ProgramMemory& pm, const Settings* settings)
+bool evaluateCondition(const std::string& op,
+                       MathLib::bigint r,
+                       const Token* condition,
+                       ProgramMemory& pm,
+                       const Settings* settings)
 {
     if (!condition)
         return false;
@@ -142,12 +146,12 @@ bool evaluateCondition(const std::string& op, MathLib::bigint r, const Token* co
     return !error && result == r;
 }
 
-bool conditionIsFalse(const Token *condition, ProgramMemory pm, const Settings* settings)
+bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings)
 {
     return evaluateCondition("&&", 0, condition, pm, settings);
 }
 
-bool conditionIsTrue(const Token *condition, ProgramMemory pm, const Settings* settings)
+bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings)
 {
     return evaluateCondition("||", 1, condition, pm, settings);
 }
@@ -684,8 +688,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
                 if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
                     if (isContainerSizeChanged(child, settings))
                         v = unknown;
-                }
-                else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
+                } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
                     if (isVariableChanged(child, v.indirect, settings, true))
                         v = unknown;
                 }
@@ -697,7 +700,11 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
     return unknown;
 }
 
-void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result, bool* error, const Settings* settings)
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
+             const Settings* settings)
 {
     ValueFlow::Value v = execute(expr, *programMemory, settings);
     if (!v.isIntValue() || v.isImpossible()) {
