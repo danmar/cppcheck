@@ -3281,6 +3281,13 @@ private:
               "    g(u\"Hello\" + 7);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (portability) Undefined behaviour, pointer arithmetic 'u\"Hello\"+7' is out of bounds.\n", errout.str());
+
+        check("void f() {\n" // #4647
+              "    int val = 5;\n"
+              "    std::string hi = \"hi\" + val;\n"
+              "    std::cout << hi << std::endl;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic '\"hi\"+val' is out of bounds.\n", errout.str());
     }
 
 

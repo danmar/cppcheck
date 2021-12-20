@@ -1204,6 +1204,12 @@ private:
                   "}", true);
             ASSERT_EQUALS("", errout.str());
         }
+
+        check("void f() {\n" // #5979
+              "    int* const crash = 0;\n"
+              "    *crash = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: crash\n", errout.str());
     }
 
     // Ticket #2350
