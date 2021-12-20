@@ -61,7 +61,9 @@
 
 #include "cppcheckexecutor.h"
 
+#ifdef NDEBUG
 #include <iostream>
+#endif
 
 #ifdef _WIN32
 #include <windows.h>

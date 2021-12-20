@@ -3810,6 +3810,34 @@ private:
               "    uint8_t d0 = message->length > 0 ? data[0] : 0xff;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8266
+        check("void f(bool b) {\n"
+              "    if (b)\n"
+              "        return;\n"
+              "    if (g(&b) || b)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9720
+        check("bool bar(int &);\n"
+              "void f(int a, int b) {\n"
+              "    if (a + b == 3)\n"
+              "        return;\n"
+              "    if (bar(a) && (a + b == 3)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10437
+        check("void f() {\n"
+              "  Obj* PObj = nullptr;\n"
+              "  bool b = false;\n"
+              "  if (GetObj(PObj) && PObj != nullptr)\n"
+              "    b = true;\n"
+              "  if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -3935,6 +3963,17 @@ private:
               "        const uint32_t v8 = v16 >> 8;\n"
               "        if (v8) {}\n"
               "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10649
+        check("void foo(struct diag_msg *msg) {\n"
+              "    msg = msg->next;\n"
+              "    if (msg == NULL)\n"
+              "        return CMD_OK;\n"
+              "    msg = msg->next;\n"
+              "    if (msg == NULL)\n"
+              "        return CMD_OK;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4209,6 +4248,19 @@ private:
               "    bFirst = false;\n"
               "  } while (true);\n"
               "  return bFirst;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   void * pool = NULL;\n"
+              "   do {\n"
+              "      pool = malloc(40);\n"
+              "      if (dostuff())\n"
+              "         break;\n"
+              "      pool = NULL;\n"
+              "   }\n"
+              "   while (0);\n"
+              "   if (pool) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

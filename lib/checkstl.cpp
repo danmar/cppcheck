@@ -2870,6 +2870,9 @@ void CheckStl::localMutexError(const Token* tok)
 
 void CheckStl::checkMutexes()
 {
+    if (!mSettings->severity.isEnabled(Severity::warning))
+        return;
+
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         std::set<nonneg int> checkedVars;
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {

@@ -187,6 +187,7 @@ private:
         TEST_CASE(array_index_negative1);
         TEST_CASE(array_index_negative2);    // ticket #3063
         TEST_CASE(array_index_negative3);
+        TEST_CASE(array_index_negative4);
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member. #1576
         TEST_CASE(array_index_for_continue); // for,continue
@@ -1742,6 +1743,17 @@ private:
               "  return M[i];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { enum E { e0 }; };\n"
+              "const S::E M[4] = { S::E:e0, S::E:e0, S::E:e0, S::E:e0 };\n"
+              "int f(int i) {\n"
+              "  if (i > std::size(M) + 1)\n"
+              "	  return -1;\n"
+              "  if (i < 0 || i >= std::size(M))\n"
+              "	  return 0;\n"
+              "  return M[i]; \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {
@@ -2028,6 +2040,17 @@ private:
               "    if( i == 0 )\n"
               "        return f(i);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_negative4()
+    {
+        check("void f(void) {\n"
+              "    int buf[64]={};\n"
+              "    int i;\n"
+              "    for(i=0; i <16; ++i){}\n"
+              "    for(; i < 24; ++i){ buf[i] = buf[i-16];}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -2221,7 +2221,7 @@ void TemplateSimplifier::expandTemplate(
                         mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->column(), tokSemicolon->fileIndex());
                     }
                     brackets.pop();
-                    if (brackets.empty() && !Token::Match(tok3, "} >|,|{|%cop%")) {
+                    if (brackets.empty() && !Token::Match(tok3, "} >|,|{")) {
                         inTemplateDefinition = false;
                         break;
                     }

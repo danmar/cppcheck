@@ -31,6 +31,9 @@ Settings::Settings() : maxCtuDepth(10), maxTemplateRecursion(100) {}
 cppcheck::Platform::Platform() {}
 Library::Library() {}
 ImportProject::ImportProject() {}
+bool ImportProject::sourceFileExists(const std::string & /*file*/) {
+    return true;
+}
 
 void TestProjectFile::loadInexisting()
 {

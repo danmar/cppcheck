@@ -9,6 +9,9 @@ bitwiseOnBoolean
 unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm
 simplifyUsing:lib/valueptr.h
+symbolDatabaseWarning:gui/temp/moc_*.cpp
+simplifyUsing:gui/temp/moc_*.cpp
+symbolDatabaseWarning:tools/triage/moc_*.cpp
 
 # debug suppressions
 valueFlowBailout
