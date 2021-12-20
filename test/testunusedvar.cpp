@@ -3283,6 +3283,22 @@ private:
                               "    h(b);\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f(const std::vector<int>& v) {\n"
+                              "    while (g()) {\n"
+                              "        const std::vector<int>& v2 = h();\n"
+                              "        if (std::vector<int>{ 1, 2, 3 }.size() > v2.size()) {}\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(const std::vector<int>& v) {\n"
+                              "    while (g()) {\n"
+                              "        const std::vector<int>& v2 = h();\n"
+                              "        if (std::vector<int>({ 1, 2, 3 }).size() > v2.size()) {}\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {

@@ -2912,7 +2912,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             }
         }
 
-        if (tok->str() == "}") {
+        if (tok->str() == "}" &&
+            !(tok->link() && (tok->link()->isCpp11init() == TokenImpl::Cpp11init::CPP11INIT ||
+                              (Token::simpleMatch(tok->link()->previous(), "( {") && Token::simpleMatch(tok, "} )"))))) {
             // Known value => possible value
             if (tok->scope() == expr->scope())
                 mValueFlowKnown = false;
