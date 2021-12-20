@@ -3271,6 +3271,18 @@ private:
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'sum' is assigned a value that is never used.\n"
                       "[test.cpp:5]: (style) Variable 'sum' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f(int c) {\n" // #7908
+                              "    int b = 0;\n"
+                              "    while (g()) {\n"
+                              "        int a = c;\n"
+                              "        b = a;\n"
+                              "        if (a == 4)\n"
+                              "            a = 5;\n"
+                              "    }\n"
+                              "    h(b);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvaralias1() {
