@@ -1591,6 +1591,14 @@ private:
                                "    g(t);\n"
                                "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct T { int i; };\n"
+                               "void f() {\n"
+                               "    struct T t{};\n"
+                               "    t.i = 0;\n" // <- used
+                               "    g(t);\n"
+                               "};\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:1]: (style) struct member 'T::i' is never used.\n", errout.str()); // due to removeMacroInClassDef()
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
