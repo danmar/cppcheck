@@ -3293,7 +3293,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
                         if (scope->varlist.size() > 1)
                             return true;
                         scope = scope->nestedIn;
-                        while (scope) {                            
+                        while (scope) {
                             if (!scope->varlist.empty())
                                 return true;
                             scope = scope->nestedIn;
