@@ -10970,11 +10970,9 @@ void Tokenizer::simplifyAttribute()
                 Token *ftok = after;
                 while (Token::Match(ftok, "%name%|::|<|* !!(")) {
                     if (ftok->str() == "<") {
-                        Token *tmp = ftok->link();
-                        if (tmp == nullptr)
-                            ftok = ftok->findClosingBracket();
-                        else
-                            ftok = tmp;
+                        ftok = ftok->findClosingBracket();
+                        if (!ftok)
+                            break;
                     }
                     ftok = ftok->next();
                 }
