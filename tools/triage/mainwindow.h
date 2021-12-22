@@ -30,6 +30,7 @@ public slots:
     void findInFilesClicked();
     void directorytreeDoubleClick();
     void searchResultsDoubleClick();
+    void resultsContextMenu(const QPoint& pos);
 
 private:
     Ui::MainWindow *ui;
