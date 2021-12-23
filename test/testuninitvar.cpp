@@ -5129,6 +5129,17 @@ private:
                         "    return rez;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10553
+        valueFlowUninit("struct CharDataOnly {\n"
+                        "   char data[100];\n"
+                        "};\n"
+                        "CharDataOnly f() {\n"
+                        "   CharDataOnly testData;\n"
+                        "   strcpy(testData.data, \"string smaller than size\");\n"
+                        "   return testData;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
