@@ -679,7 +679,6 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
         if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
             mSettings.nomsg.dump(fdump);
         }
-        tokens1.removeComments();
         preprocessor.removeComments();
 
         if (!mSettings.buildDir.empty()) {
