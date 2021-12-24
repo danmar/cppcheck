@@ -3388,7 +3388,7 @@ static void valueFlowLifetimeConstructor(Token *tok,
                                          ErrorLogger *errorLogger,
                                          const Settings *settings);
 
-static const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars)
+const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars)
 {
     const Token* endOfVarScope = nullptr;
     for (const Variable* var : vars) {

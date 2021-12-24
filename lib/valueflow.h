@@ -511,6 +511,8 @@ std::string lifetimeType(const Token *tok, const ValueFlow::Value *val);
 
 std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, ValueFlow::Value::ErrorPath &errorPath);
 
+const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars);
+
 CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 
 CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive = false, bool subfunction = false);
