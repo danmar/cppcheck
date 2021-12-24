@@ -2912,9 +2912,7 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
             }
         }
 
-        if (tok->str() == "}" &&
-            !(tok->link() && (tok->link()->isCpp11init() == TokenImpl::Cpp11init::CPP11INIT ||
-                              (Token::simpleMatch(tok->link()->previous(), "( {") && Token::simpleMatch(tok, "} )"))))) {
+        if (tok->str() == "}") {
             // Known value => possible value
             if (tok->scope() == expr->scope())
                 mValueFlowKnown = false;
@@ -2942,9 +2940,9 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                         return Result(Result::Type::BAILOUT);
                 }
 
-                // don't check again if the variable only has loop scope
-                if (expr->variable() && tok->link() && expr->variable()->scope() == tok->link()->scope())
-                    return Result(FwdAnalysis::Result::Type::NONE);
+                //// don't check again if the variable only has loop scope
+                //if (expr->variable() && tok->link() && expr->variable()->scope() == tok->link()->scope())
+                //    return Result(FwdAnalysis::Result::Type::NONE);
 
                 // check loop body again..
                 const struct FwdAnalysis::Result &result = checkRecursive(expr, tok->link(), tok, exprVarIds, local, inInnerClass, depth);

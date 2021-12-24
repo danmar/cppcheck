@@ -514,4 +514,6 @@ CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclu
 
 CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive = false, bool subfunction = false);
 
+const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars);
+
 #endif // valueflowH
