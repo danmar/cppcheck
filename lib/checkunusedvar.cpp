@@ -26,7 +26,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
 
 #include <algorithm>
 #include <list>
@@ -1268,7 +1267,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            if (fwdAnalysis.unusedValue(expr, start, getEndOfVarScope(expr, { expr->variable() }))) {
+            if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd)) {
                 if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {
                     if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
                         reportError(tok,
