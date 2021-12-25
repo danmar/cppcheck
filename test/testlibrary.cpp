@@ -665,8 +665,8 @@ private:
                                 "</def>";
 
         Library library;
-        library.loadxmldata(xmldata1, sizeof(xmldata1));
-        library.loadxmldata(xmldata2, sizeof(xmldata2));
+        ASSERT_EQUALS(true, library.loadxmldata(xmldata1, sizeof(xmldata1)));
+        ASSERT_EQUALS(true, library.loadxmldata(xmldata2, sizeof(xmldata2)));
 
         ASSERT_EQUALS(library.deallocId("free"), library.allocId("malloc"));
         ASSERT_EQUALS(library.deallocId("free"), library.allocId("foo"));
