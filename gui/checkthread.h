@@ -73,7 +73,7 @@ public:
      * @brief method that is run in a thread
      *
      */
-    void run();
+    void run() override;
 
     void stop();
 

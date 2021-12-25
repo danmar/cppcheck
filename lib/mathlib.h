@@ -93,6 +93,8 @@ public:
 
     static std::string getSuffix(const std::string& value);
     /**
+     * Only used in unit tests
+     *
      * \param[in] str string
      * \param[in] supportMicrosoftExtensions support Microsoft extension: i64
      *  \return true if str is a non-empty valid integer suffix
@@ -133,13 +135,6 @@ public:
      * \return Whether iCode[iPos] is a C++14 digit separator
      */
     static bool isDigitSeparator(const std::string& iCode, std::string::size_type iPos);
-
-private:
-    /*
-     * \param iLiteral A character literal
-     * \return The equivalent character literal with all escapes interpreted
-     */
-    static std::string normalizeCharacterLiteral(const std::string& iLiteral);
 };
 
 MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2);
