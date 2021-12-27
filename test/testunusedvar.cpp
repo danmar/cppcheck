@@ -3299,6 +3299,14 @@ private:
                               "    }\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(const std::string &c) {\n"
+                              "    std::string s = str();\n"
+                              "    if (s[0] == '>')\n"
+                              "        s[0] = '<';\n"
+                              "    if (s == c) {}\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {
