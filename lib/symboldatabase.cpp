@@ -134,7 +134,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                                          tok->progressValue());
         // Locate next class
         if ((mTokenizer->isCPP() && tok->isKeyword() &&
-             ((Token::Match(tok, "class|struct|union|namespace ::| %name% {|:|::|<") &&
+             ((Token::Match(tok, "class|struct|union|namespace ::| %name% final| {|:|::|<") &&
                !Token::Match(tok->previous(), "new|friend|const|enum|typedef|mutable|volatile|using|)|(|<")) ||
               (Token::Match(tok, "enum class| %name% {") ||
                Token::Match(tok, "enum class| %name% : %name% {"))))

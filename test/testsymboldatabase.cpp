@@ -353,6 +353,7 @@ private:
         TEST_CASE(symboldatabase94); // structured bindings
         TEST_CASE(symboldatabase95); // #10295
         TEST_CASE(symboldatabase96); // #10126
+        TEST_CASE(symboldatabase97); // #10598 - final class
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -4815,6 +4816,19 @@ private:
                       "};\n"
                       "std::map<int, A> m{ { 0, A{0,0} }, {0, A{0,0} } };\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase97() { // #10598 - final class
+        GET_SYMBOL_DB("template<> struct A<void> final {\n"
+                      "    A() {}\n"
+                      "};\n");
+        ASSERT(db);
+        ASSERT_EQUALS(3, db->scopeList.size());
+
+        const Token *functok = Token::findmatch(tokenizer.tokens(), "%name% (");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT_EQUALS(functok->function()->type, Function::Type::eConstructor);
     }
 
     void createSymbolDatabaseFindAllScopes1() {
