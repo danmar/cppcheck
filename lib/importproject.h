@@ -104,7 +104,6 @@ public:
     void ignorePaths(const std::vector<std::string> &ipaths);
     void ignoreOtherConfigs(const std::string &cfg);
 
-
     Type import(const std::string &filename, Settings *settings=nullptr);
 protected:
     bool importCompileCommands(std::istream &istr);

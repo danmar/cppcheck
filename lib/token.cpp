@@ -1185,6 +1185,14 @@ void Token::printOut(const char *title, const std::vector<std::string> &fileName
     std::cout << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
 }
 
+void Token::printLines(int lines) const
+{
+    const Token *end = this;
+    while (end && end->linenr() < lines + linenr())
+        end = end->next();
+    std::cout << stringifyList(stringifyOptions::forDebugExprId(), nullptr, end) << std::endl;
+}
+
 std::string Token::stringify(const stringifyOptions& options) const
 {
     std::string ret;

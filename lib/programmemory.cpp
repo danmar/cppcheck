@@ -28,6 +28,16 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
         return nullptr;
 }
 
+bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint* result) const
+{
+    const ValueFlow::Value* value = getValue(exprid);
+    if (value && value->isIntValue()) {
+        *result = value->intvalue;
+        return true;
+    }
+    return false;
+}
+
 void ProgramMemory::setIntValue(nonneg int exprid, MathLib::bigint value, bool impossible)
 {
     ValueFlow::Value v(value);
@@ -46,6 +56,15 @@ bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
     return false;
 }
 
+bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const
+{
+    const ValueFlow::Value* value = getValue(exprid);
+    if (value && value->isContainerSizeValue()) {
+        *result = value->intvalue;
+        return true;
+    }
+    return false;
+}
 bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid, true);

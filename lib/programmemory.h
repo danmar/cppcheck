@@ -17,8 +17,10 @@ struct ProgramMemory {
     void setValue(nonneg int exprid, const ValueFlow::Value& value);
     const ValueFlow::Value* getValue(nonneg int exprid, bool impossible = false) const;
 
+    bool getIntValue(nonneg int exprid, MathLib::bigint* result) const;
     void setIntValue(nonneg int exprid, MathLib::bigint value, bool impossible = false);
 
+    bool getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const;
     bool getContainerEmptyValue(nonneg int exprid, MathLib::bigint* result) const;
     void setContainerSizeValue(nonneg int exprid, MathLib::bigint value, bool isEqual = true);
 
