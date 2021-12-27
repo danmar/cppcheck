@@ -971,7 +971,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                         bool done = false;
                         while (!done) {
                             if (i == formatString.end()) {
-                                done = true;
                                 break;
                             }
                             switch (*i) {
