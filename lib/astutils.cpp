@@ -2017,6 +2017,17 @@ static bool isTrivialConstructor(const Token* tok)
     return false;
 }
 
+static bool isArray(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (tok->variable())
+        return tok->variable()->isArray();
+    if (Token::simpleMatch(tok, "."))
+        return isArray(tok->astOperand2());
+    return false;
+}
+
 bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
@@ -2056,7 +2067,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
                      argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
                 // With out or inout the direction of the content is specified, not a pointer itself, so ignore pointers for now
                 const ValueType * const valueType = tok1->valueType();
-                if (valueType && valueType->pointer == indirect) {
+                if ((valueType && valueType->pointer == indirect) || (indirect == 0 && isArray(tok1))) {
                     return true;
                 }
             }

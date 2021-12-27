@@ -391,6 +391,8 @@ static int misra_8_2_q
 (); // 8.2
 
 void misra_8_4_foo(void) {} // 8.4
+extern void misra_8_4_func(void);
+void misra_8_4_func(void) {}
 static void misra_8_4_bar(void) {} // Declared in header
 extern int16_t misra_8_4_count; // no-warning
 int16_t misra_8_4_count = 0; // Compliant
