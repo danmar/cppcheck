@@ -3248,16 +3248,6 @@ private:
                               "    var = 2;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'var' is assigned a value that is never used.\n", errout.str());
-
-        functionVariableUsage("int* p{};\n"
-                              "int* g(int& i);\n"
-                              "int f() {\n"
-                              "    int var = 0;\n"
-                              "    p = g(var);\n"
-                              "    var = 2;\n"
-                              "    return *p;\n"
-                              "}\n");
-        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarloops() {
