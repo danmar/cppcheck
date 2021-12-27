@@ -24,7 +24,7 @@
 void QString1(QString s)
 {
     for (int i = 0; i <= s.size(); ++i) {
-        // cppcheck-suppress [stlOutOfBounds,unreadVariable]
+        // cppcheck-suppress stlOutOfBounds
         s[i] = 'x';
     }
 }
@@ -52,7 +52,7 @@ QString::iterator QString3()
 void QByteArray1(QByteArray byteArrayArg)
 {
     for (int i = 0; i <= byteArrayArg.size(); ++i) {
-        // cppcheck-suppress [stlOutOfBounds,unreadVariable]
+        // cppcheck-suppress stlOutOfBounds
         byteArrayArg[i] = 'x';
     }
 
@@ -72,7 +72,7 @@ void QByteArray1(QByteArray byteArrayArg)
 void QList1(QList<int> intListArg)
 {
     for (int i = 0; i <= intListArg.size(); ++i) {
-        // cppcheck-suppress [stlOutOfBounds,unreadVariable]
+        // cppcheck-suppress stlOutOfBounds
         intListArg[i] = 1;
     }
     // cppcheck-suppress containerOutOfBoundsIndexExpression
@@ -173,7 +173,7 @@ QLinkedList<int>::iterator QLinkedList3()
 void QStringList1(QStringList stringlistArg)
 {
     for (int i = 0; i <= stringlistArg.size(); ++i) {
-        // cppcheck-suppress [stlOutOfBounds,unreadVariable]
+        // cppcheck-suppress stlOutOfBounds
         stringlistArg[i] = "abc";
     }
     // cppcheck-suppress containerOutOfBoundsIndexExpression
@@ -229,7 +229,7 @@ QStringList::iterator QStringList2()
 void QVector1(QVector<int> intVectorArg)
 {
     for (int i = 0; i <= intVectorArg.size(); ++i) {
-        // cppcheck-suppress [stlOutOfBounds,unreadVariable]
+        // cppcheck-suppress stlOutOfBounds
         intVectorArg[i] = 1;
     }
     // cppcheck-suppress containerOutOfBoundsIndexExpression
@@ -289,7 +289,7 @@ void duplicateExpression_QString_Compare(QString style) //#8723
 void QStack1(QStack<int> intStackArg)
 {
     for (int i = 0; i <= intStackArg.size(); ++i) {
-        // cppcheck-suppress [stlOutOfBounds,unreadVariable]
+        // cppcheck-suppress stlOutOfBounds
         intStackArg[i] = 1;
     }
     // cppcheck-suppress containerOutOfBoundsIndexExpression

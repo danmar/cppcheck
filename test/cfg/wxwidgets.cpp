@@ -374,7 +374,7 @@ void deprecatedFunctions(wxApp &a,
 void wxString_test1(wxString s)
 {
     for (int i = 0; i <= s.size(); ++i) {
-        // cppcheck-suppress [stlOutOfBounds,unreadVariable]
+        // cppcheck-suppress stlOutOfBounds
         s[i] = 'x';
     }
 }
