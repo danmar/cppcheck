@@ -25,8 +25,6 @@
 #include <sstream>
 #include <string>
 
-struct InternalError;
-
 
 class TestUninitVar : public TestFixture {
 public:
@@ -5114,6 +5112,34 @@ private:
                         "        return -1;\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
+
+        // #9772
+        valueFlowUninit("int func(void) {\n"
+                        "    int rez;\n"
+                        "    struct sccb* ccb;\n"
+                        "    do {\n"
+                        "        if ((ccb = calloc(1, sizeof(*ccb))) == NULL) {\n"
+                        "            rez = 1;\n"
+                        "            break;\n"
+                        "        }\n"
+                        "        rez = 0;\n"
+                        "    } while (0);\n"
+                        "    if (rez != 0)\n"
+                        "        free(ccb);\n"
+                        "    return rez;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10553
+        valueFlowUninit("struct CharDataOnly {\n"
+                        "   char data[100];\n"
+                        "};\n"
+                        "CharDataOnly f() {\n"
+                        "   CharDataOnly testData;\n"
+                        "   strcpy(testData.data, \"string smaller than size\");\n"
+                        "   return testData;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

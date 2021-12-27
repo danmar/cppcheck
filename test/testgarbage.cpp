@@ -243,6 +243,8 @@ private:
         TEST_CASE(garbageCode215); // daca@home script with extension .c
         TEST_CASE(garbageCode216); // #7884
         TEST_CASE(garbageCode217); // #10011
+        TEST_CASE(garbageCode218); // #8763
+        TEST_CASE(garbageCode219); // #10101
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1682,6 +1684,17 @@ private:
                                "    if (g(p)) {}\n"
                                "    assert();\n"
                                "}"), InternalError);
+    }
+
+    void garbageCode218() { // #8763
+        checkCode("d f(){t n0000 const[]n0000+0!=n0000,(0)}"); // don't crash
+    }
+    void garbageCode219() { // #10101
+        checkCode("typedef void (*func) (addr) ;\n"
+                  "void bar(void) {\n"
+                  "    func f;\n"
+                  "    f & = (func)42;\n"
+                  "}\n"); // don't crash
     }
 
     void syntaxErrorFirstToken() {

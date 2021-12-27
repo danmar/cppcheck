@@ -852,6 +852,8 @@ Settings MainWindow::getCppcheckSettings()
 
     Settings result;
 
+    result.exename = QCoreApplication::applicationFilePath().toStdString();
+
     const bool std = tryLoadLibrary(&result.library, "std.cfg");
     bool posix = true;
     if (result.posix())

@@ -25,7 +25,6 @@
 #include "errortypes.h"
 #include "tokenlist.h"
 
-#include <ctime>
 #include <list>
 #include <map>
 #include <string>

@@ -27,8 +27,6 @@
 
 #include <cstring>
 
-struct InternalError;
-
 
 class TestSimplifyTemplate : public TestFixture {
 public:

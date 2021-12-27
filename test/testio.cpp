@@ -2113,6 +2113,11 @@ private:
             ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires a 'char *' but the argument type is 'const char *'.\n"
                           "[test.cpp:3]: (warning) scanf() without field width limits can crash with huge input data.\n", errout.str());
         }
+
+        check("void f() {\n" // #7038
+              "    scanf(\"%i\", \"abc\" + 1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n", errout.str());
     }
 
     void testPrintfArgument() {

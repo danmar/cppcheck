@@ -24,14 +24,13 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "token.h"
 #include "tokenize.h"
 
-#include <list>
 #include <string>
 
 class Settings;
 class ErrorLogger;
+class Token;
 
 // CWE ID used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality

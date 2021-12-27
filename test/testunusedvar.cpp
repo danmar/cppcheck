@@ -61,6 +61,7 @@ private:
         TEST_CASE(structmember15); // #3088 - #pragma pack(1)
         TEST_CASE(structmember_sizeof);
         TEST_CASE(structmember16); // #10485
+        TEST_CASE(structmember17); // #10591
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1572,6 +1573,32 @@ private:
                                "  char E[N];\n" // <- not used
                                "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::E' is never used.\n", errout.str());
+    }
+
+    void structmember17() { // #10591
+        checkStructMemberUsage("struct tagT { int i; };\n"
+                               "void f() {\n"
+                               "    struct tagT t{};\n"
+                               "    t.i = 0;\n" // <- used
+                               "    g(t);\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("typedef struct tagT { int i; } typeT;\n"
+                               "void f() {\n"
+                               "    struct typeT t{};\n"
+                               "    t.i = 0;\n" // <- used
+                               "    g(t);\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct T { int i; };\n"
+                               "void f() {\n"
+                               "    struct T t{};\n"
+                               "    t.i = 0;\n" // <- used
+                               "    g(t);\n"
+                               "};\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:1]: (style) struct member 'T::i' is never used.\n", errout.str()); // due to removeMacroInClassDef()
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {

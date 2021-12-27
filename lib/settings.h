@@ -35,7 +35,6 @@
 #include <set>
 #include <string>
 #include <vector>
-#include <unordered_map>
 
 namespace ValueFlow {
     class Value;
