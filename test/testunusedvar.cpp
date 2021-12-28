@@ -3276,7 +3276,7 @@ private:
                               "    if (y) { x=10; break; }\n"
                               "  }\n"
                               "}");
-        ASSERT_EQUALS("", errout.str()); // TODO : in this special case we can ignore that x is aliased. x is local and there are no function calls after the assignment
+        ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void fun() {\n"
                               "  int x = 0;\n"
