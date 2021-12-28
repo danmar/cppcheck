@@ -1985,7 +1985,7 @@ class MisraChecker:
                 continue
             if not is_source_file(func.token.file):
                 continue
-            if func.token.file != func.tokenDef.file:
+            if func.token != func.tokenDef:
                 continue
             if func.tokenDef.str == 'main':
                 continue

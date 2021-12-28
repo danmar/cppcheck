@@ -32,6 +32,10 @@ MainWindow::MainWindow(QWidget *parent) :
         workFolder.mkdir(WORK_FOLDER);
     }
 
+    ui->results->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->results, &QListWidget::customContextMenuRequested,
+            this, &MainWindow::resultsContextMenu);
+
     mFSmodel.setRootPath(WORK_FOLDER);
     mFSmodel.setReadOnly(true);
     mFSmodel.setFilter(QDir::Dirs | QDir::Files | QDir::NoDotAndDotDot);
@@ -342,3 +346,20 @@ void MainWindow::searchResultsDoubleClick()
     const int line = filename.midRef(idx + 1).toInt();
     showSrcFile(WORK_FOLDER + QString{"/"} + filename.left(idx), "", line);
 }
+
+void MainWindow::resultsContextMenu(const QPoint& pos)
+{
+    if (ui->results->selectedItems().isEmpty())
+        return;
+    QMenu submenu;
+    submenu.addAction("Copy");
+    QAction* menuItem = submenu.exec(ui->results->mapToGlobal(pos));
+    if (menuItem && menuItem->text().contains("Copy"))
+    {
+        QString text;
+        for (const auto *res: ui->results->selectedItems())
+            text += res->text() + "\n";
+        QApplication::clipboard()->setText(text);
+    }
+}
+

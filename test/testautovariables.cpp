@@ -646,14 +646,14 @@ private:
               "    char *p = tmp1;\n"
               "    free(p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of an static variable (tmp1) results in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of a static variable (tmp1) results in undefined behaviour.\n", errout.str());
 
         check("char tmp1[256];\n"
               "void func1() {\n"
               "    char *p; if (x) p = tmp1;\n"
               "    free(p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of an global variable (tmp1) results in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of a global variable (tmp1) results in undefined behaviour.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -804,11 +804,11 @@ private:
               "    p = \"abc\";\n"
               "    free(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an string literal results in undefined behaviour.\n"
-                      "[test.cpp:4]: (error) Deallocation of an string literal results in undefined behaviour.\n"
-                      "[test.cpp:5]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
-                      "[test.cpp:6]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
-                      "[test.cpp:9]: (error) Deallocation of an pointer pointing to a string literal (\"abc\") results in undefined behaviour.\n",
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of a string literal results in undefined behaviour.\n"
+                      "[test.cpp:4]: (error) Deallocation of a string literal results in undefined behaviour.\n"
+                      "[test.cpp:5]: (error) Deallocation of a pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
+                      "[test.cpp:6]: (error) Deallocation of a pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
+                      "[test.cpp:9]: (error) Deallocation of a pointer pointing to a string literal (\"abc\") results in undefined behaviour.\n",
                       errout.str());
 
         check("void f() {\n"

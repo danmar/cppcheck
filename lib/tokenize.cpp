@@ -3952,7 +3952,8 @@ void Tokenizer::setVarIdPass1()
                     } else
                         decl = false;
                 } else if (isCPP() && Token::Match(prev2, "%type% {") && Token::simpleMatch(tok2->link(), "} ;")) { // C++11 initialization style
-                    if (Token::Match(prev2, "do|try|else") || Token::Match(prev2->tokAt(-2), "struct|class|:"))
+                    if (tok2->link() != tok2->next() && // add value-initialized variable T x{};
+                        (Token::Match(prev2, "do|try|else") || Token::Match(prev2->tokAt(-2), "struct|class|:")))
                         continue;
                 } else
                     decl = false;
@@ -5486,6 +5487,11 @@ void Tokenizer::dump(std::ostream &out) const
             if (!vt.empty())
                 out << ' ' << vt;
         }
+        if (!tok->varId() && tok->scope()->isExecutable() && Token::Match(tok, "%name% (")) {
+            if (mSettings->library.isnoreturn(tok))
+                out << " noreturn=\"true\"";
+        }
+
         out << "/>" << std::endl;
     }
     out << "  </tokenlist>" << std::endl;
@@ -8734,7 +8740,7 @@ void Tokenizer::simplifyIfSwitchForInit()
 
         Token *semicolon = tok->tokAt(2);
         while (!Token::Match(semicolon, "[;)]")) {
-            if (semicolon->str() == "(")
+            if (Token::Match(semicolon, "(|{|[") && semicolon->link())
                 semicolon = semicolon->link();
             semicolon = semicolon->next();
         }
@@ -10968,8 +10974,14 @@ void Tokenizer::simplifyAttribute()
             Token *functok = nullptr;
             if (Token::Match(after, "%name%|*")) {
                 Token *ftok = after;
-                while (Token::Match(ftok, "%name%|* !!("))
+                while (Token::Match(ftok, "%name%|::|<|* !!(")) {
+                    if (ftok->str() == "<") {
+                        ftok = ftok->findClosingBracket();
+                        if (!ftok)
+                            break;
+                    }
                     ftok = ftok->next();
+                }
                 if (Token::Match(ftok, "%name% ("))
                     functok = ftok;
             } else if (Token::Match(after, "[;{=:]")) {

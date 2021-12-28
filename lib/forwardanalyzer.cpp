@@ -284,6 +284,10 @@ struct ForwardTraversal {
         return Token::findsimplematch(endBlock->link(), "goto", endBlock);
     }
 
+    bool hasJump(const Token* endBlock) {
+        return Token::findmatch(endBlock->link(), "goto|break", endBlock);
+    }
+
     bool hasInnerReturnScope(const Token* start, const Token* end) const {
         for (const Token* tok=start; tok != end; tok = tok->previous()) {
             if (Token::simpleMatch(tok, "}")) {
@@ -404,8 +408,16 @@ struct ForwardTraversal {
         bool checkElse = false;
         if (condTok && !Token::simpleMatch(condTok, ":"))
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->previous() : nullptr);
-        if (checkElse && exit)
+        // exiting a do while(false)
+        if (checkElse && exit) {
+            if (hasJump(endBlock)) {
+                if (!analyzer->lowerToPossible())
+                    return Break(Analyzer::Terminate::Bail);
+                if (analyzer->isConditional() && stopUpdates())
+                    return Break(Analyzer::Terminate::Conditional);
+            }
             return Progress::Continue;
+        }
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
         Analyzer::Action condAnalysis;

@@ -2,7 +2,6 @@
 #include "programmemory.h"
 #include "astutils.h"
 #include "calculate.h"
-#include "errortypes.h"
 #include "infer.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -12,9 +11,7 @@
 #include "valueptr.h"
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <functional>
-#include <limits>
 #include <memory>
 
 void ProgramMemory::setValue(nonneg int exprid, const ValueFlow::Value& value)
@@ -131,34 +128,32 @@ void ProgramMemory::insert(const ProgramMemory &pm)
         values.insert(p);
 }
 
-bool conditionIsFalse(const Token *condition, const ProgramMemory &programMemory)
+bool evaluateCondition(const std::string& op,
+                       MathLib::bigint r,
+                       const Token* condition,
+                       ProgramMemory& pm,
+                       const Settings* settings)
 {
     if (!condition)
         return false;
-    if (condition->str() == "&&") {
-        return conditionIsFalse(condition->astOperand1(), programMemory) ||
-               conditionIsFalse(condition->astOperand2(), programMemory);
+    if (condition->str() == op) {
+        return evaluateCondition(op, r, condition->astOperand1(), pm, settings) ||
+               evaluateCondition(op, r, condition->astOperand2(), pm, settings);
     }
-    ProgramMemory progmem(programMemory);
     MathLib::bigint result = 0;
     bool error = false;
-    execute(condition, &progmem, &result, &error);
-    return !error && result == 0;
+    execute(condition, &pm, &result, &error, settings);
+    return !error && result == r;
 }
 
-bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
+bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings)
 {
-    if (!condition)
-        return false;
-    if (condition->str() == "||") {
-        return conditionIsTrue(condition->astOperand1(), programMemory) ||
-               conditionIsTrue(condition->astOperand2(), programMemory);
-    }
-    ProgramMemory progmem(programMemory);
-    bool error = false;
-    MathLib::bigint result = 0;
-    execute(condition, &progmem, &result, &error);
-    return !error && result == 1;
+    return evaluateCondition("&&", 0, condition, pm, settings);
+}
+
+bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings)
+{
+    return evaluateCondition("||", 1, condition, pm, settings);
 }
 
 static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
@@ -521,7 +516,7 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     return result;
 }
 
-static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
+static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr)
 {
     ValueFlow::Value unknown = ValueFlow::Value::unknown();
     const ValueFlow::Value* value = nullptr;
@@ -686,12 +681,32 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         return result;
     }
 
+    if (Token::Match(expr->previous(), ">|%name% {|(")) {
+        visitAstNodes(expr->astOperand2(), [&](const Token* child) {
+            if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
+                ValueFlow::Value& v = pm.values.at(child->exprId());
+                if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
+                    if (isContainerSizeChanged(child, settings))
+                        v = unknown;
+                } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
+                    if (isVariableChanged(child, v.indirect, settings, true))
+                        v = unknown;
+                }
+            }
+            return ChildrenToVisit::op1_and_op2;
+        });
+    }
+
     return unknown;
 }
 
-void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result, bool* error)
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
+             const Settings* settings)
 {
-    ValueFlow::Value v = execute(expr, *programMemory);
+    ValueFlow::Value v = execute(expr, *programMemory, settings);
     if (!v.isIntValue() || v.isImpossible()) {
         if (error)
             *error = true;

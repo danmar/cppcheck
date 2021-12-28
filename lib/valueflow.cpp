@@ -103,9 +103,6 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
-#include <cmath>
-#include <cstddef>
-#include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <functional>
@@ -114,9 +111,7 @@
 #include <map>
 #include <set>
 #include <stack>
-#include <stdexcept>
 #include <string>
-#include <tuple>
 #include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
@@ -1230,12 +1225,17 @@ static void valueFlowArray(TokenList *tokenlist)
                 setTokenValue(tok, value, tokenlist->getSettings());
             }
 
+            // const array decl
+            else if (tok->variable() && tok->variable()->isArray() && tok->variable()->isConst() &&
+                     tok->variable()->nameToken() == tok && Token::Match(tok, "%var% [ %num%| ] = {")) {
+                const Token* rhstok = tok->next()->link()->tokAt(2);
+                constantArrays[tok->varId()] = rhstok;
+                tok = rhstok->link();
+            }
+
             // pointer = array
-            else if (tok->variable() &&
-                     tok->variable()->isArray() &&
-                     Token::simpleMatch(tok->astParent(), "=") &&
-                     tok == tok->astParent()->astOperand2() &&
-                     tok->astParent()->astOperand1() &&
+            else if (tok->variable() && tok->variable()->isArray() && Token::simpleMatch(tok->astParent(), "=") &&
+                     astIsRHS(tok) && tok->astParent()->astOperand1() &&
                      tok->astParent()->astOperand1()->variable() &&
                      tok->astParent()->astOperand1()->variable()->isPointer()) {
                 ValueFlow::Value value;
@@ -1939,8 +1939,6 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
     return false;
 }
 
-static bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
-
 struct ValueFlowAnalyzer : Analyzer {
     const TokenList* tokenlist;
     ProgramMemoryState pms;
@@ -2387,14 +2385,14 @@ struct ValueFlowAnalyzer : Analyzer {
             std::vector<MathLib::bigint> result;
             ProgramMemory pm = pms.get(tok, ctx, getProgramState());
             if (Token::Match(tok, "&&|%oror%")) {
-                if (conditionIsTrue(tok, pm))
+                if (conditionIsTrue(tok, pm, getSettings()))
                     result.push_back(1);
-                if (conditionIsFalse(tok, pm))
+                if (conditionIsFalse(tok, pm, getSettings()))
                     result.push_back(0);
             } else {
                 MathLib::bigint out = 0;
                 bool error = false;
-                execute(tok, &pm, &out, &error);
+                execute(tok, &pm, &out, &error, getSettings());
                 if (!error)
                     result.push_back(out);
             }
@@ -4578,6 +4576,17 @@ static ValueFlow::Value makeSymbolic(const Token* tok, MathLib::bigint delta = 0
     return value;
 }
 
+static std::set<nonneg int> getVarIds(const Token* tok)
+{
+    std::set<nonneg int> result;
+    visitAstNodes(tok, [&](const Token* child) {
+        if (child->varId() > 0)
+            result.insert(child->varId());
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return result;
+}
+
 static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldatabase)
 {
     for (const Scope* scope : symboldatabase->functionScopes) {
@@ -4607,8 +4616,11 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
             } else if (isDifferentType(tok->astOperand2(), tok->astOperand1())) {
                 continue;
             }
+            const std::set<nonneg int> rhsVarIds = getVarIds(tok->astOperand2());
             const std::vector<const Variable*> vars = getLHSVariables(tok);
-            if (std::any_of(vars.begin(), vars.end(), [](const Variable* var) {
+            if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
+                if (rhsVarIds.count(var->declarationId()) > 0)
+                    return true;
                 if (var->isLocal())
                     return var->isStatic();
                 return !var->isArgument();
@@ -5535,7 +5547,7 @@ struct ConditionHandler {
                 bool dead_if = deadBranch[0];
                 bool dead_else = deadBranch[1];
                 const Token* unknownFunction = nullptr;
-                if (tok->astParent() && Token::simpleMatch(tok->astParent()->previous(), "while ("))
+                if (tok->astParent() && Token::Match(top->previous(), "while|for ("))
                     dead_if = !isBreakScope(after);
                 else if (!dead_if)
                     dead_if = isReturnScope(after, &settings->library, &unknownFunction);
@@ -6998,7 +7010,7 @@ static void valueFlowContainerReverse(Token* tok,
     }
 }
 
-static bool isContainerSizeChanged(const Token* tok, const Settings* settings, int depth)
+bool isContainerSizeChanged(const Token* tok, const Settings* settings, int depth)
 {
     if (!tok)
         return false;
@@ -7179,7 +7191,7 @@ struct IteratorConditionHandler : SimpleConditionHandler {
             if (!values.empty()) {
                 cond.vartok = tok->astOperand2();
             } else {
-                values = getIteratorValues(tok->astOperand2()->values());
+                values = getIteratorValues(tok->astOperand2()->values(), &kind);
                 if (!values.empty())
                     cond.vartok = tok->astOperand1();
             }
@@ -7205,6 +7217,10 @@ static void valueFlowIteratorInfer(TokenList *tokenlist, const Settings *setting
         std::list<ValueFlow::Value> values = getIteratorValues(tok->values());
         values.remove_if([&](const ValueFlow::Value& v) {
             if (!v.isImpossible())
+                return true;
+            if (!v.condition)
+                return true;
+            if (v.bound != ValueFlow::Value::Bound::Point)
                 return true;
             if (v.isIteratorEndValue() && v.intvalue <= 0)
                 return true;

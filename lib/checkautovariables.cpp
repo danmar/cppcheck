@@ -803,16 +803,16 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueF
 {
     const Variable *var = val ? val->tokvalue->variable() : (tok ? tok->variable() : nullptr);
 
-    std::string type = "auto-variable";
+    std::string type = "an auto-variable";
     if (tok && tok->tokType() == Token::eString)
-        type = "string literal";
+        type = "a string literal";
     else if (val && val->tokvalue->tokType() == Token::eString)
-        type = "pointer pointing to a string literal";
+        type = "a pointer pointing to a string literal";
     else if (var) {
         if (var->isGlobal())
-            type = "global variable";
+            type = "a global variable";
         else if (var->isStatic())
-            type = "static variable";
+            type = "a static variable";
     }
 
     if (val)
@@ -821,7 +821,7 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueF
     reportError(getErrorPath(tok, val, "Deallocating memory that was not dynamically allocated"),
                 Severity::error,
                 "autovarInvalidDeallocation",
-                "Deallocation of an " + type + " results in undefined behaviour.\n"
-                "The deallocation of an " + type + " results in undefined behaviour. You should only free memory "
+                "Deallocation of " + type + " results in undefined behaviour.\n"
+                "The deallocation of " + type + " results in undefined behaviour. You should only free memory "
                 "that has been allocated dynamically.", CWE590, Certainty::normal);
 }

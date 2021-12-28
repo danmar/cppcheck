@@ -18,7 +18,6 @@
 
 #include "settings.h"
 #include "testsuite.h"
-#include "testutils.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -26,9 +25,6 @@
 #include "symboldatabase.h"
 
 #include <string>
-#include <vector>
-
-struct InternalError;
 
 
 class TestTokenRange : public TestFixture {

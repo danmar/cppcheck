@@ -28,6 +28,10 @@ class TestImporter : public ImportProject {
 public:
     using ImportProject::importCompileCommands;
     using ImportProject::importCppcheckGuiProject;
+
+    bool sourceFileExists(const std::string & /*file*/) OVERRIDE {
+        return true;
+    }
 };
 
 

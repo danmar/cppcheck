@@ -30,7 +30,6 @@
 #include "valueflow.h"
 
 #include <algorithm>
-#include <deque>
 #include <functional>
 #include <iterator>
 #include <list>
@@ -1037,9 +1036,6 @@ static bool compareKnownValue(const Token * const tok1, const Token * const tok2
 {
     static const auto isKnownFn = std::mem_fn(&ValueFlow::Value::isKnown);
 
-    if ((tok1->variable() && tok1->variable()->isStatic()) || (tok2->variable() && tok2->variable()->isStatic()))
-        return false;
-
     const auto v1 = std::find_if(tok1->values().begin(), tok1->values().end(), isKnownFn);
     if (v1 == tok1->values().end()) {
         return false;
@@ -2021,6 +2017,17 @@ static bool isTrivialConstructor(const Token* tok)
     return false;
 }
 
+static bool isArray(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (tok->variable())
+        return tok->variable()->isArray();
+    if (Token::simpleMatch(tok, "."))
+        return isArray(tok->astOperand2());
+    return false;
+}
+
 bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
@@ -2060,7 +2067,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
                      argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
                 // With out or inout the direction of the content is specified, not a pointer itself, so ignore pointers for now
                 const ValueType * const valueType = tok1->valueType();
-                if (valueType && valueType->pointer == indirect) {
+                if ((valueType && valueType->pointer == indirect) || (indirect == 0 && isArray(tok1))) {
                     return true;
                 }
             }
@@ -2115,6 +2122,10 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
 {
     if (!tok)
         return false;
+
+    if (indirect == 0 && isConstVarExpression(tok))
+        return false;
+
     const Token *tok2 = tok;
     int derefs = 0;
     while (Token::simpleMatch(tok2->astParent(), "*") ||
@@ -2583,6 +2594,8 @@ bool isConstVarExpression(const Token *tok, const char* skipMatch)
 {
     if (!tok)
         return false;
+    if (tok->str() == "?" && tok->astOperand2() && tok->astOperand2()->str() == ":") // ternary operator
+        return isConstVarExpression(tok->astOperand2()->astOperand1()) && isConstVarExpression(tok->astOperand2()->astOperand2()); // left and right of ":"
     if (skipMatch && Token::Match(tok, skipMatch))
         return false;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))

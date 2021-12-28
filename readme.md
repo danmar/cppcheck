@@ -80,6 +80,14 @@ Use the cppcheck.sln file. The file is configured for Visual Studio 2019, but th
 
 To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration. pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then. A current version of PCRE for Visual Studio can be obtained using [vcpkg](https://github.com/microsoft/vcpkg).
 
+### Visual Studio (from command line)
+
+If you do not wish to use the Visual Studio IDE, you can compile cppcheck from the command line the following command.
+
+```shell
+msbuild cppcheck.sln
+```
+
 ### VS Code (on Windows)
 
 Install MSYS2 to get GNU toolchain with g++ and gdb (https://www.msys2.org/).

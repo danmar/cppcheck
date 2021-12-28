@@ -9,6 +9,10 @@ QT += widgets
 include(../common.pri)
 
 # tests
-SOURCES += testtranslationhandler.cpp
+SOURCES += testtranslationhandler.cpp \
+    ../../translationhandler.cpp \
+    ../../common.cpp
 
-HEADERS += testtranslationhandler.h
+HEADERS += testtranslationhandler.h \
+    ../../translationhandler.h \
+    ../../common.h
