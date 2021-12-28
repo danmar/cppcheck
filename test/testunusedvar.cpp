@@ -3334,6 +3334,17 @@ private:
                               "    if (s == c) {}\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(bool b) {\n"
+                              "    std::map<std::string, std::vector<std::string>> m;\n"
+                              "    if (b) {\n"
+                              "        const std::string n = g();\n"
+                              "        std::vector<std::string> c = h();\n"
+                              "        m[n] = c;\n"
+                              "    }\n"
+                              "    j(m);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {
