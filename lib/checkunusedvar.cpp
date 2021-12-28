@@ -1270,7 +1270,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            const Token* scopeEnd = expr->variable() ? getEndOfVarScope(expr, { expr->variable() }) : scope->bodyEnd;
+            const Token* scopeEnd = expr->variable() ? getEndOfVarScope(expr, getVariables(expr)) : scope->bodyEnd;
             if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {
                 if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {
                     if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {

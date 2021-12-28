@@ -5057,7 +5057,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
     }
 }
 
-static std::vector<const Variable*> getVariables(const Token* tok)
+std::vector<const Variable*> getVariables(const Token* tok)
 {
     std::vector<const Variable*> result;
     visitAstNodes(tok, [&](const Token* child) {
