@@ -1335,7 +1335,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         const Token *end1 = t1->link();
         const Token *end2 = t2->link();
         while (t1 && t2 && t1 != end1 && t2 != end2) {
-            if (t1->str() != t2->str() || flagsDiffer(t1, t2, true))
+            if (t1->str() != t2->str() || flagsDiffer(t1, t2, macro))
                 return false;
             t1 = t1->next();
             t2 = t2->next();
@@ -1356,7 +1356,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         const Token *t2 = tok2->next();
         while (t1 && t2 &&
                t1->str() == t2->str() &&
-               !flagsDiffer(t1, t2, true) &&
+               !flagsDiffer(t1, t2, macro) &&
                (t1->isName() || t1->str() == "*")) {
             t1 = t1->next();
             t2 = t2->next();
