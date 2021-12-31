@@ -3406,7 +3406,7 @@ const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable
                     varScope = varScope->nestedIn;
             }
         }
-        if (varScope && (!endOfVarScope || precedes(varScope->bodyEnd, endOfVarScope)))
+        if (varScope && (!endOfVarScope || precedes(endOfVarScope, varScope->bodyEnd)))
             endOfVarScope = varScope->bodyEnd;
     }
     return endOfVarScope;
