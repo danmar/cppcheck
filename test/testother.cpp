@@ -5603,12 +5603,32 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void duplicateExpressionTemplate() { // #6930
-        check("template <int I> void f() {\n"
+    void duplicateExpressionTemplate() {
+        check("template <int I> void f() {\n" // #6930
               "    if (I >= 0 && I < 3) {}\n"
               "}\n"
               "\n"
               "static auto a = f<0>();");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<typename T>\n" // #7754
+              "void f() {\n"
+              "    if (std::is_same_v<T, char> || std::is_same_v<T, unsigned char>) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typedef long long int64_t;"
+              "template<typename T>\n"
+              "void f() {\n"
+              "    if (std::is_same_v<T, long> || std::is_same_v<T, int64_t>) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkP("#define int32_t int"
+               "template<typename T>\n"
+               "void f() {\n"
+               "    if (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {}\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

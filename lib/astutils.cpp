@@ -1274,16 +1274,22 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         }
         return false;
     }
-    if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
+    auto flagsDiffer = [](const Token* tok1, const Token* tok2, bool macro) {
+        if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
+            return true;
+        if (tok1->isComplex() != tok2->isComplex())
+            return true;
+        if (tok1->isLong() != tok2->isLong())
+            return true;
+        if (tok1->isUnsigned() != tok2->isUnsigned())
+            return true;
+        if (tok1->isSigned() != tok2->isSigned())
+            return true;
         return false;
-    if (tok1->isComplex() != tok2->isComplex())
+    };
+    if (flagsDiffer(tok1, tok2, macro))
         return false;
-    if (tok1->isLong() != tok2->isLong())
-        return false;
-    if (tok1->isUnsigned() != tok2->isUnsigned())
-        return false;
-    if (tok1->isSigned() != tok2->isSigned())
-        return false;
+
     if (pure && tok1->isName() && tok1->next()->str() == "(" && tok1->str() != "sizeof" && !(tok1->variable() && tok1 == tok1->variable()->nameToken())) {
         if (!tok1->function()) {
             if (Token::simpleMatch(tok1->previous(), ".")) {
@@ -1325,7 +1331,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         const Token *end1 = t1->link();
         const Token *end2 = t2->link();
         while (t1 && t2 && t1 != end1 && t2 != end2) {
-            if (t1->str() != t2->str())
+            if (t1->str() != t2->str() || flagsDiffer(t1, t2, macro))
                 return false;
             t1 = t1->next();
             t2 = t2->next();
@@ -1346,9 +1352,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         const Token *t2 = tok2->next();
         while (t1 && t2 &&
                t1->str() == t2->str() &&
-               t1->isLong() == t2->isLong() &&
-               t1->isUnsigned() == t2->isUnsigned() &&
-               t1->isSigned() == t2->isSigned() &&
+               !flagsDiffer(t1, t2, macro) &&
                (t1->isName() || t1->str() == "*")) {
             t1 = t1->next();
             t2 = t2->next();
