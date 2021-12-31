@@ -415,8 +415,8 @@ private:
         // #9052
         TEST_CASE(noCrash1);
         TEST_CASE(noCrash2);
-
         TEST_CASE(noCrash3);
+        TEST_CASE(noCrash4);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -6961,6 +6961,15 @@ private:
 
     void noCrash3() {
         ASSERT_NO_THROW(tokenizeAndStringify("void a(X<int> x, typename Y1::Y2<int, A::B::C, 2> y, Z z = []{});"));
+    }
+
+    void noCrash4()
+    {
+        ASSERT_NO_THROW(tokenizeAndStringify("static int foo() {\n"
+                                             "    zval ref ;\n"
+                                             "    p = &(ref).value;\n"
+                                             "    return result ;\n"
+                                             "}\n"));
     }
 
     void checkConfig(const char code[]) {
