@@ -4883,6 +4883,13 @@ static void valueFlowForwardAssign(Token* const tok,
     if (vars.size() == 1 && vars.front()->isStatic() && init)
         lowerToPossible(values);
 
+    // is volatile
+    if (std::any_of(
+            vars.begin(), vars.end(), [&](const Variable* var) {
+        return var->isVolatile();
+    }))
+        lowerToPossible(values);
+
     // Skip RHS
     const Token * nextExpression = tok->astParent() ? nextAfterAstRightmostLeaf(tok->astParent()) : tok->next();
 
