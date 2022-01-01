@@ -4884,8 +4884,7 @@ static void valueFlowForwardAssign(Token* const tok,
         lowerToPossible(values);
 
     // is volatile
-    if (std::any_of(
-            vars.begin(), vars.end(), [&](const Variable* var) {
+    if (std::any_of(vars.begin(), vars.end(), [&](const Variable* var) {
         return var->isVolatile();
     }))
         lowerToPossible(values);
