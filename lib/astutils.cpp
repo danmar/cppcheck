@@ -846,6 +846,16 @@ static bool hasUnknownVars(const Token* startTok)
     return result;
 }
 
+static bool isStructuredBindingVariable(const Variable* var)
+{
+    if (!var)
+        return false;
+    const Token* tok = var->nameToken();
+    while(Token::Match(tok->astParent(), "[|,"))
+        tok = tok->astParent();
+    return Token::simpleMatch(tok, "[");
+}
+
 /// This takes a token that refers to a variable and it will return the token
 /// to the expression that the variable is assigned to. If its not valid to
 /// make such substitution then it will return the original token.
@@ -878,6 +888,8 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
     if (var->isStatic() && !var->isConst())
         return tok;
     if (var->isArgument())
+        return tok;
+    if (isStructuredBindingVariable(var))
         return tok;
     const Token * lastTok = precedes(tok, end) ? end : tok;
     // If this is in a loop then check if variables are modified in the entire scope
@@ -931,7 +943,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
         return {{tok, std::move(errors)}};
     const Variable *var = tok->variable();
     if (var && var->declarationId() == tok->varId()) {
-        if (var->nameToken() == tok) {
+        if (var->nameToken() == tok || isStructuredBindingVariable(var)) {
             return {{tok, std::move(errors)}};
         } else if (var->isReference() || var->isRValueReference()) {
             if (!var->declEndToken())
