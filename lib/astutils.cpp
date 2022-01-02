@@ -851,7 +851,7 @@ static bool isStructuredBindingVariable(const Variable* var)
     if (!var)
         return false;
     const Token* tok = var->nameToken();
-    while(Token::Match(tok->astParent(), "[|,"))
+    while (Token::Match(tok->astParent(), "[|,"))
         tok = tok->astParent();
     return Token::simpleMatch(tok, "[");
 }

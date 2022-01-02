@@ -3853,10 +3853,10 @@ private:
 
         // #10659
         check("auto func(const std::tuple<int, int>& t) {\n"
-            "  auto& [foo, bar] = t;\n"
-            "  std::cout << foo << bar << std::endl;\n"
-            "  return foo < bar;\n"
-            "}\n");
+              "  auto& [foo, bar] = t;\n"
+              "  std::cout << foo << bar << std::endl;\n"
+              "  return foo < bar;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
