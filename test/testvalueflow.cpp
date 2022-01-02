@@ -6332,11 +6332,11 @@ private:
         valueOfTok(code, "return");
 
         code = "void heapSort() {\n"
-              "    int n = m_size;\n"
-              "    while (n >= 1) {\n"
-              "        swap(0, n - 1);\n"
-              "    }\n"
-              "}\n";
+               "    int n = m_size;\n"
+               "    while (n >= 1) {\n"
+               "        swap(0, n - 1);\n"
+               "    }\n"
+               "}\n";
         valueOfTok(code, "swap");
     }
 
