@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.17"
+CLIENT_VERSION = "1.3.18"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -34,6 +34,11 @@ def check_requirements():
         except OSError:
             print("Error: '{}' is required".format(app))
             result = False
+    try:
+        import psutil
+    except ImportError as e:
+        print("Error: {}. Module is required. ".format(e))
+        result = False
     return result
 
 
@@ -370,21 +375,20 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if has_sig:
             returncode = -sig_num
         stacktrace = ''
-        if cppcheck_path == 'cppcheck':
-            # re-run within gdb to get a stacktrace
-            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 "
-            if sig_file is not None:
-                cmd += sig_file
+        # re-run within gdb to get a stacktrace
+        cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 "
+        if sig_file is not None:
+            cmd += sig_file
+        else:
+            cmd += dir_to_scan
+        _, st_stdout, _, _ = run_command(cmd)
+        gdb_pos = st_stdout.find(" received signal")
+        if not gdb_pos == -1:
+            last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
+            if last_check_pos == -1:
+                stacktrace = st_stdout[gdb_pos:]
             else:
-                cmd += dir_to_scan
-            _, st_stdout, _, _ = run_command(cmd)
-            gdb_pos = st_stdout.find(" received signal")
-            if not gdb_pos == -1:
-                last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
-                if last_check_pos == -1:
-                    stacktrace = st_stdout[gdb_pos:]
-                else:
-                    stacktrace = st_stdout[last_check_pos:]
+                stacktrace = st_stdout[last_check_pos:]
         # if no stacktrace was generated return the original stdout or internal errors list
         if not stacktrace:
             if has_sig:
@@ -455,6 +459,7 @@ def diff_results(ver1, results1, ver2, results2):
 
 
 def send_all(connection, data):
+    print(data)
     bytes_ = data.encode('ascii', 'ignore')
     while bytes_:
         num = connection.send(bytes_)
