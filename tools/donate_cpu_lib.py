@@ -459,7 +459,6 @@ def diff_results(ver1, results1, ver2, results2):
 
 
 def send_all(connection, data):
-    print(data)
     bytes_ = data.encode('ascii', 'ignore')
     while bytes_:
         num = connection.send(bytes_)
