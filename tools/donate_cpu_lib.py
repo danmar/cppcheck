@@ -297,7 +297,7 @@ def run_command(cmd):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, jobs, libraries):
+def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = True):
     print('Analyze..')
     os.chdir(work_path)
     libs = ''
@@ -375,20 +375,21 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if has_sig:
             returncode = -sig_num
         stacktrace = ''
-        # re-run within gdb to get a stacktrace
-        cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 "
-        if sig_file is not None:
-            cmd += sig_file
-        else:
-            cmd += dir_to_scan
-        _, st_stdout, _, _ = run_command(cmd)
-        gdb_pos = st_stdout.find(" received signal")
-        if not gdb_pos == -1:
-            last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
-            if last_check_pos == -1:
-                stacktrace = st_stdout[gdb_pos:]
+        if capture_callstack:
+            # re-run within gdb to get a stacktrace
+            cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 "
+            if sig_file is not None:
+                cmd += sig_file
             else:
-                stacktrace = st_stdout[last_check_pos:]
+                cmd += dir_to_scan
+            _, st_stdout, _, _ = run_command(cmd)
+            gdb_pos = st_stdout.find(" received signal")
+            if not gdb_pos == -1:
+                last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
+                if last_check_pos == -1:
+                    stacktrace = st_stdout[gdb_pos:]
+                else:
+                    stacktrace = st_stdout[last_check_pos:]
         # if no stacktrace was generated return the original stdout or internal errors list
         if not stacktrace:
             if has_sig:
