@@ -2623,6 +2623,10 @@ private:
         check("struct S { void f(); int i; };\n"
               "void call_f(S& s) { (s.*(&S::f))(); }\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int a[1]; };\n"
+            "void f(S& s) { int* p = s.a; *p = 0; }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
