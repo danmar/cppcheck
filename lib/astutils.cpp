@@ -2326,28 +2326,40 @@ static bool isExpressionChangedAt(const F& getExprTok,
                                   bool cpp,
                                   int depth)
 {
+    if (depth < 0)
+        return true;
     if (tok->exprId() != exprid) {
         if (globalvar && Token::Match(tok, "%name% ("))
             // TODO: Is global variable really changed by function call?
             return true;
-        // Is aliased function call or alias passed to function
-        if ((Token::Match(tok, "%var% (") || isVariableChangedByFunctionCall(tok, 1, settings)) &&
-            std::any_of(tok->values().begin(), tok->values().end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
-            bool aliased = false;
-            // If we can't find the expression then assume it was modified
-            if (!getExprTok())
-                return true;
-            visitAstNodes(getExprTok(), [&](const Token* childTok) {
-                if (childTok->varId() > 0 && isAliasOf(tok, childTok->varId())) {
-                    aliased = true;
-                    return ChildrenToVisit::done;
+        const bool pointer = astIsPointer(tok);
+        bool aliased = false;
+        // If we can't find the expression then assume it is an alias
+        if (!getExprTok())
+            aliased = true;
+        if (!aliased) {
+            aliased = findAstNode(getExprTok(), [&](const Token* childTok) {
+                for (const ValueFlow::Value& val : tok->values()) {
+                    if (val.isImpossible())
+                        continue;
+                    if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
+                        if (findAstNode(val.tokvalue,
+                                        [&](const Token* aliasTok) {
+                            return aliasTok->exprId() == childTok->exprId();
+                        }))
+                            return true;
+                    }
                 }
-                return ChildrenToVisit::op1_and_op2;
+                return false;
             });
-            // TODO: Try to traverse the lambda function
-            if (aliased)
-                return true;
         }
+        if (!aliased)
+            return false;
+        if (isVariableChanged(tok, 1, settings, cpp, depth))
+            return true;
+        // TODO: Try to traverse the lambda function
+        if (Token::Match(tok, "%var% ("))
+            return true;
         return false;
     }
     return (isVariableChanged(tok, indirect, settings, cpp, depth));
@@ -2398,7 +2410,7 @@ bool isVariableChanged(const Variable * var, const Settings *settings, bool cpp,
         return false;
     if (Token::Match(start, "; %varid% =", var->declarationId()))
         start = start->tokAt(2);
-    return isVariableChanged(start->next(), var->scope()->bodyEnd, var->declarationId(), var->isGlobal(), settings, cpp, depth);
+    return isExpressionChanged(var->nameToken(), start->next(), var->scope()->bodyEnd, settings, cpp, depth);
 }
 
 bool isVariablesChanged(const Token* start,
@@ -2458,6 +2470,8 @@ bool isThisChanged(const Token* start, const Token* end, int indirect, const Set
 
 bool isExpressionChanged(const Token* expr, const Token* start, const Token* end, const Settings* settings, bool cpp, int depth)
 {
+    if (depth < 0)
+        return true;
     if (!precedes(start, end))
         return false;
     const Token* result = findAstNode(expr, [&](const Token* tok) {
