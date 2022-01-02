@@ -93,6 +93,8 @@ private:
 
         TEST_CASE(isVariableUsageDeref); // *p
 
+        TEST_CASE(uninitvar_memberaccess); // (&(a))->b <=> a.b
+
         // whole program analysis
         TEST_CASE(ctuTest);
     }
@@ -5986,6 +5988,24 @@ private:
                        "    void (*fp[1]) (void) = {function1};\n"
                        "    (*fp[0])();\n"
                        "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void uninitvar_memberaccess() {
+        valueFlowUninit("struct foo{char *bar;};\n"
+                        "void f(unsigned long long *p) {\n"
+                        "    foo a;\n"
+                        "    ((&a)->bar) =  reinterpret_cast<char*>(*p);\n"
+                        "    if ((&a)->bar) ;\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct foo{char *bar;};\n"
+                        "void f(unsigned long long *p) {\n"
+                        "    foo a;\n"
+                        "    ((&(a))->bar) =  reinterpret_cast<char*>(*p);\n"
+                        "    if ((&a)->bar) ;\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
     }
 
