@@ -853,9 +853,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("uint8 outcode(float p) {\n"
-            "    float d = 0.;\n"
-            "    return ((p - xm >= d) << 1) | (x - p > d);\n"
-            "}\n");
+              "    float d = 0.;\n"
+              "    return ((p - xm >= d) << 1) | (x - p > d);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
