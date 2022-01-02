@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.17"
+CLIENT_VERSION = "1.3.18"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -34,6 +34,11 @@ def check_requirements():
         except OSError:
             print("Error: '{}' is required".format(app))
             result = False
+    try:
+        import psutil
+    except ImportError as e:
+        print("Error: {}. Module is required. ".format(e))
+        result = False
     return result
 
 
@@ -292,7 +297,7 @@ def run_command(cmd):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, jobs, libraries):
+def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = True):
     print('Analyze..')
     os.chdir(work_path)
     libs = ''
@@ -370,7 +375,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if has_sig:
             returncode = -sig_num
         stacktrace = ''
-        if cppcheck_path == 'cppcheck':
+        if capture_callstack:
             # re-run within gdb to get a stacktrace
             cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 "
             if sig_file is not None:

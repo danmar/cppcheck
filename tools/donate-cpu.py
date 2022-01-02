@@ -194,10 +194,12 @@ while True:
 
     for ver in cppcheck_versions:
         tree_path = os.path.join(work_path, 'tree-'+ver)
+        capture_callstack = False
         if ver == 'head':
             tree_path = os.path.join(work_path, 'tree-main')
             cppcheck_head_info = get_cppcheck_info(tree_path)
-        c, errout, info, t, cppcheck_options, timing_info = scan_package(work_path, tree_path, jobs, libraries)
+            capture_callstack = True
+        c, errout, info, t, cppcheck_options, timing_info = scan_package(work_path, tree_path, jobs, libraries, capture_callstack)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
