@@ -5307,7 +5307,7 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
             currScope = currScope->nestedIn;
         }
     }
-    // Check for contructor
+    // Check for constructor
     if (Token::Match(tok, "%name% (|{")) {
         ValueType vt = ValueType::parseDecl(tok, mSettings);
         if (vt.typeScope)

@@ -106,7 +106,7 @@ void nullPointer_GetPrivateProfileString(LPCTSTR lpAppName,
 
     // No warning is expected for 1st arg as nullptr
     (void)GetPrivateProfileString(nullptr, lpKeyName, lpDefault, lpReturnedString, nSize, lpFileName);
-    // No warning is expected for 2st arg as nullptr
+    // No warning is expected for 2nd arg as nullptr
     (void)GetPrivateProfileString(lpAppName, nullptr, lpDefault, lpReturnedString, nSize, lpFileName);
 }
 
