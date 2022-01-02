@@ -5100,6 +5100,10 @@ static void valueFlowAfterSwap(TokenList* tokenlist,
             std::vector<Token*> args = astFlatten(tok->next()->astOperand2(), ",");
             if (args.size() != 2)
                 continue;
+            if (args[0]->exprId() == 0)
+                continue;
+            if (args[1]->exprId() == 0)
+                continue;
             for (int i = 0; i < 2; i++) {
                 std::vector<const Variable*> vars = getVariables(args[0]);
                 std::list<ValueFlow::Value> values = args[0]->values();
