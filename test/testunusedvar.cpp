@@ -3345,6 +3345,14 @@ private:
                               "    j(m);\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct S { int i; };\n"
+                              "S f(S s, bool b) {\n"
+                              "    if (b)\n"
+                              "        s.i = 1;\n"
+                              "    return s;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {
