@@ -2324,11 +2324,12 @@ static bool isExpressionChangedAt(const F& getExprTok,
             aliased = true;
         if (!aliased) {
             aliased = findAstNode(getExprTok(), [&](const Token* childTok) {
-                for (const ValueFlow::Value &val : tok->values()) {
+                for (const ValueFlow::Value& val : tok->values()) {
                     if (val.isImpossible())
                         continue;
                     if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
-                        if (findAstNode(val.tokvalue, [&](const Token* aliasTok) {
+                        if (findAstNode(val.tokvalue,
+                                        [&](const Token* aliasTok) {
                             return aliasTok->exprId() == childTok->exprId();
                         }))
                             return true;
