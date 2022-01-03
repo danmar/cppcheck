@@ -1375,6 +1375,7 @@ public:
      */
     const Function *findFunction(const Token *tok) const;
 
+    /** For unit testing only */
     const Scope *findScopeByName(const std::string& name) const;
 
     const Type* findType(const Token *startTok, const Scope *startScope) const;
