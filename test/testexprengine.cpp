@@ -814,7 +814,7 @@ private:
                             "  *x = 1;\n"
                             "}";
         ASSERT_EQUALS("1:28: $2=ArrayValue([$1],[:]=?,null)\n"
-                      "1:28: $1=IntRange(1:ffffffffffffffff)\n"
+                      "1:28: $1=IntRange(1:2147483647)\n"
                       "1:28: D0:memory:{x=($2,[$1],[:]=?)}\n"
                       "2:9: D0:memory:{x=($2,[$1],[:]=?,[0]=2)}\n"
                       "3:9: D0:memory:{x=($2,[$1],[:]=?,[0]=1)}\n",
