@@ -2154,7 +2154,7 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
     else if (const auto *f = data.settings->library.getAllocFuncInfo(tok->astOperand1())) {
         if (!f->initData) {
             const std::string name = data.getNewSymbolName();
-            auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0U);
+            auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, MAX_BUFFER_SIZE);
             auto val = std::make_shared<ExprEngine::UninitValue>();
             auto result = std::make_shared<ExprEngine::ArrayValue>(name, size, val, false, false, false);
             call(data.callbacks, tok, result, &data);
@@ -2826,7 +2826,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                         if (oldValue && oldValue->type == ExprEngine::ValueType::ArrayValue) {
                             // Try to assign "any" value
                             auto arrayValue = std::dynamic_pointer_cast<ExprEngine::ArrayValue>(oldValue);
-                            arrayValue->assign(std::make_shared<ExprEngine::IntRange>(bodyData.getNewSymbolName(), 0, ~0ULL), std::make_shared<ExprEngine::BailoutValue>());
+                            arrayValue->assign(std::make_shared<ExprEngine::IntRange>(bodyData.getNewSymbolName(), 0, MAX_BUFFER_SIZE), std::make_shared<ExprEngine::BailoutValue>());
                             continue;
                         }
                         bodyData.assignValue(tok2, varid, getValueRangeFromValueType(lhs->valueType(), bodyData));
@@ -2941,7 +2941,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     if (valueType->pointer > 0) {
         if (var.isLocal())
             return std::make_shared<ExprEngine::UninitValue>();
-        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, MAX_BUFFER_SIZE);
         ExprEngine::ValuePtr pointerValue;
         if (valueType->type == ValueType::Type::RECORD)
             pointerValue = createStructVal(var.nameToken(), valueType->typeScope, var.isLocal() && !var.isStatic(), data);
@@ -2979,7 +2979,7 @@ static ExprEngine::ValuePtr createVariableValue(const Variable &var, Data &data)
     }
     if (valueType->smartPointerType) {
         auto structValue = createStructVal(var.nameToken(), valueType->smartPointerType->classScope, var.isLocal() && !var.isStatic(), data);
-        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
+        auto size = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, MAX_BUFFER_SIZE);
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), size, structValue, true, true, false);
     }
     return getValueRangeFromValueType(valueType, data);
