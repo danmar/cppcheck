@@ -4905,6 +4905,26 @@ private:
               "    f(&u, N);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("uint32_t f(uint32_t u) {\n" // #10154
+              "    return ((uint8_t*)&u)[3];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str()); 
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    return ((uint8_t*)&u)[4];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str()); 
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    return reinterpret_cast<unsigned char*>(&u)[3];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str()); 
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    return reinterpret_cast<unsigned char*>(&u)[4];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str());
     }
 };
 
