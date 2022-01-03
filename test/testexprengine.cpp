@@ -359,14 +359,14 @@ private:
         ASSERT_EQUALS("1:26: $4=ArrayValue([$3],[:]=$2)\n"
                       "1:26: $3=IntRange(0:2147483647)\n"
                       "1:26: $2=IntRange(-128:127)\n"
-                      "1:27: D0:memory:{s=($4,[$3],[:]=$2)}\n",
+                      "1:27: 0:memory:{s=($4,[$3],[:]=$2)}\n",
                       trackExecution("void foo() { std::string s; }", &settings));
 
 
         ASSERT_EQUALS("1:52: $4=ArrayValue([$3],[:]=$2)\n"
                       "1:52: $3=IntRange(0:2147483647)\n"
                       "1:52: $2=IntRange(-128:127)\n"
-                      "1:66: D0:memory:{s=($4,[$3],[:]=$2)}\n",
+                      "1:66: 0:memory:{s=($4,[$3],[:]=$2)}\n",
                       trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
     }
 
@@ -780,7 +780,7 @@ private:
         ASSERT_EQUALS("2:16: $2:0=IntRange(-2147483648:2147483647)\n"
                       "2:20: $1=ArrayValue([10],[:]=$2)\n"
                       "2:20: $2=IntRange(-2147483648:2147483647)\n"
-                      "2:26: D0:memory:{buf=($1,[10],[:]=$2) x=$2:0}\n",
+                      "2:26: 0:memory:{buf=($1,[10],[:]=$2) x=$2:0}\n",
                       trackExecution(code));
     }
 
@@ -791,10 +791,10 @@ private:
                             "  return buf[0][1][2];\n"
                             "}";
         ASSERT_EQUALS("1:14: $1=IntRange(-2147483648:2147483647)\n"
-                      "1:14: D0:memory:{x=$1}\n"
+                      "1:14: 0:memory:{x=$1}\n"
                       "2:7: $2=ArrayValue([3][4][5],[:]=?)\n"
-                      "2:19: D0:memory:{x=$1 buf=($2,[3][4][5],[:]=?)}\n"
-                      "3:20: D0:memory:{x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
+                      "2:19: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?)}\n"
+                      "3:20: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
                       trackExecution(code));
     }
 
@@ -815,9 +815,9 @@ private:
                             "}";
         ASSERT_EQUALS("1:28: $2=ArrayValue([$1],[:]=?,null)\n"
                       "1:28: $1=IntRange(1:ffffffffffffffff)\n"
-                      "1:28: D0:memory:{x=($2,[$1],[:]=?)}\n"
-                      "2:9: D0:memory:{x=($2,[$1],[:]=?,[0]=2)}\n"
-                      "3:9: D0:memory:{x=($2,[$1],[:]=?,[0]=1)}\n",
+                      "1:28: 0:memory:{x=($2,[$1],[:]=?)}\n"
+                      "2:9: 0:memory:{x=($2,[$1],[:]=?,[0]=2)}\n"
+                      "3:9: 0:memory:{x=($2,[$1],[:]=?,[0]=1)}\n",
                       trackExecution(code));
     }
 
@@ -903,7 +903,7 @@ private:
         ASSERT_EQUALS("1:36: $3=ArrayValue([$2],[:]=bailout,null)\n"
                       "1:36: $2=IntRange(1:2147483647)\n"
                       "1:36: bailout=BailoutValue(bailout)\n"
-                      "1:46: D0:memory:{p=($3,[$2],[:]=bailout)}\n",
+                      "1:46: 0:memory:{p=($3,[$2],[:]=bailout)}\n",
                       trackExecution("char *foo(int); void bar() { char *p = foo(1); }"));
     }
 
