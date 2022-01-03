@@ -150,6 +150,8 @@
 #define Z3_VERSION_INT             GET_VERSION_INT(Z3_MAJOR_VERSION, Z3_MINOR_VERSION, Z3_BUILD_NUMBER)
 #endif
 
+constexpr auto MAX_BUFFER_SIZE = ~0UL;
+
 namespace {
     struct ExprEngineException {
         ExprEngineException(const Token *tok, const std::string &what) : tok(tok), what(what) {}
@@ -201,9 +203,7 @@ static std::string str(ExprEngine::ValuePtr val)
         break;
     }
 
-    std::ostringstream ret;
-    ret << val->name << "=" << typestr << "(" << val->getRange() << ")";
-    return ret.str();
+    return val->name + "=" + std::string(typestr) + "(" + val->getRange() + ")";
 }
 
 static size_t extfind(const std::string &str, const std::string &what, size_t pos)
@@ -341,7 +341,7 @@ namespace {
         }
 
         void ifSplit(const Token *tok, unsigned int thenIndex, unsigned int elseIndex) {
-            mMap[tok].push_back(std::to_string(thenIndex) + ": Split. Then:" + std::to_string(thenIndex) + " Else:" + std::to_string(elseIndex));
+            mMap[tok].push_back("D" + std::to_string(thenIndex) + ": Split. Then:D" + std::to_string(thenIndex) + " Else:D" + std::to_string(elseIndex));
         }
 
     private:
@@ -536,7 +536,7 @@ namespace {
                 return;
             const SymbolDatabase * const symbolDatabase = tokenizer->getSymbolDatabase();
             std::ostringstream s;
-            s << mDataIndex << ":" << "memory:{";
+            s << "D" << mDataIndex << ":" << "memory:{";
             bool first = true;
             for (auto mem : memory) {
                 ExprEngine::ValuePtr value = mem.second;
@@ -1304,6 +1304,32 @@ public:
     }
 };
 #endif
+
+bool ExprEngine::UninitValue::isUninit(const DataBase *dataBase) const {
+    const Data *data = dynamic_cast<const Data *>(dataBase);
+    if (data->constraints.empty())
+        return true;
+#ifdef USE_Z3
+    // Check the value against the constraints
+    ExprData exprData;
+    z3::solver solver(exprData.context);
+    try {
+        exprData.addConstraints(solver, data);
+        exprData.addAssertions(solver);
+        return solver.check() == z3::sat;
+    } catch (const z3::exception &exception) {
+        std::cerr << "z3: " << exception << std::endl;
+        return true;  // Safe option is to return true
+    } catch (const ExprData::BailoutValueException &) {
+        return true;  // Safe option is to return true
+    } catch (const ExprEngineException &) {
+        return true;  // Safe option is to return true
+    }
+#else
+    // The value may or may not be uninitialized
+    return false;
+#endif
+}
 
 bool ExprEngine::IntRange::isEqual(const DataBase *dataBase, int value) const
 {
@@ -2180,7 +2206,7 @@ static ExprEngine::ValuePtr executeCast(const Token *tok, Data &data)
             uninitPointer = std::static_pointer_cast<ExprEngine::ArrayValue>(val)->uninitPointer;
         }
 
-        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, ~0UL);
+        auto bufferSize = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), 1, MAX_BUFFER_SIZE);
         return std::make_shared<ExprEngine::ArrayValue>(data.getNewSymbolName(), bufferSize, range, true, nullPointer, uninitPointer);
     }
 
@@ -2241,6 +2267,11 @@ static void streamReadSetValue(const Token *tok, Data &data)
 {
     if (!tok || !tok->valueType())
         return;
+    if (tok->varId() > 0 && tok->valueType()->pointer) {
+        const auto oldValue = data.getValue(tok->varId(), tok->valueType(), tok);
+        if (oldValue && (oldValue->isUninit(&data)))
+            call(data.callbacks, tok, oldValue, &data);
+    }
     auto rangeValue = getValueRangeFromValueType(tok->valueType(), data);
     if (rangeValue)
         assignExprValue(tok, rangeValue, data);
@@ -2363,7 +2394,8 @@ static ExprEngine::ValuePtr executeVariable(const Token *tok, Data &data)
 
 static ExprEngine::ValuePtr executeKnownMacro(const Token *tok, Data &data)
 {
-    auto val = std::make_shared<ExprEngine::IntRange>(data.getNewSymbolName(), tok->getKnownIntValue(), tok->getKnownIntValue());
+    const auto intval = tok->getKnownIntValue();
+    auto val = std::make_shared<ExprEngine::IntRange>(std::to_string(intval), intval, intval);
     call(data.callbacks, tok, val, &data);
     return val;
 }
@@ -2508,6 +2540,9 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 if (Token::Match(prev, "[;{}] return|throw"))
                     return data.str();
             }
+            while (Token::simpleMatch(tok, "} catch (") && Token::simpleMatch(tok->linkAt(2), ") {")) {
+                tok = tok->linkAt(2)->next()->link();
+            }
             if (std::time(nullptr) > stopTime)
                 return "";
         }
@@ -2530,9 +2565,15 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 return data.str();
         }
 
-        if (Token::simpleMatch(tok, "try"))
-            // TODO this is a bailout
-            throw ExprEngineException(tok, "Unhandled:" + tok->str());
+        if (Token::simpleMatch(tok, "try {") && Token::simpleMatch(tok->linkAt(1), "} catch (")) {
+            const Token *catchTok = tok->linkAt(1);
+            while (Token::simpleMatch(catchTok, "} catch (")) {
+                Data catchData(data);
+                catchTok = catchTok->linkAt(2)->next();
+                execute(catchTok, end, catchData);
+                catchTok = catchTok->link();
+            }
+        }
 
         // Variable declaration..
         if (tok->variable() && tok->variable()->nameToken() == tok) {
@@ -2771,7 +2812,7 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                             continue;
                         changedVariables.insert(varid);
                         auto oldValue = bodyData.getValue(varid, nullptr, nullptr);
-                        if (oldValue && oldValue->isUninit())
+                        if (oldValue && oldValue->isUninit(&bodyData))
                             call(bodyData.callbacks, lhs, oldValue, &bodyData);
                         if (oldValue && oldValue->type == ExprEngine::ValueType::ArrayValue) {
                             // Try to assign "any" value
