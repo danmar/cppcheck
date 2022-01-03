@@ -4925,6 +4925,24 @@ private:
               "    return reinterpret_cast<unsigned char*>(&u)[4];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str());
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    uint8_t* p = (uint8_t*)&u;\n"
+              "    return p[3];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    uint8_t* p = (uint8_t*)&u;\n"
+              "    return p[4];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str());
+
+        check("uint32_t f(uint32_t* pu) {\n"
+              "    uint8_t* p = (uint8_t*)pu;\n"
+              "    return p[4];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
