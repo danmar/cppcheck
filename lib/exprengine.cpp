@@ -150,7 +150,7 @@
 #define Z3_VERSION_INT             GET_VERSION_INT(Z3_MAJOR_VERSION, Z3_MINOR_VERSION, Z3_BUILD_NUMBER)
 #endif
 
-constexpr auto MAX_BUFFER_SIZE = ~0UL;
+const std::uint64_t MAX_BUFFER_SIZE = ~0ULL;
 #define CONTRACT 1
 
 namespace {
