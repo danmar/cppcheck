@@ -151,7 +151,6 @@
 #endif
 
 constexpr auto MAX_BUFFER_SIZE = ~0UL;
-#define CONTRACT 1
 
 namespace {
     struct ExprEngineException {
@@ -413,7 +412,6 @@ namespace {
             return tokenizer->isCPP();
         }
 
-#ifdef CONTRACT
         ExprEngine::ValuePtr executeContract(const Function *function, ExprEngine::ValuePtr (*executeExpression)(const Token*, Data&)) {
             const auto it = settings->functionContracts.find(function->fullName());
             if (it == settings->functionContracts.end())
@@ -441,7 +439,6 @@ namespace {
             if (value)
                 constraints.push_back(value);
         }
-#endif
 
         void assignValue(const Token *tok, unsigned int varId, ExprEngine::ValuePtr value) {
             if (varId == 0)
@@ -620,7 +617,6 @@ namespace {
         }
 
         void addConstraints(ExprEngine::ValuePtr value, const Token *tok) {
-#ifdef CONTRACT
             MathLib::bigint low;
             if (tok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::LOW, &low))
                 addConstraint(std::make_shared<ExprEngine::BinOpResult>(">=", value, std::make_shared<ExprEngine::IntRange>(std::to_string(low), low, low)), true);
@@ -628,7 +624,6 @@ namespace {
             MathLib::bigint high;
             if (tok->getCppcheckAttribute(TokenImpl::CppcheckAttributes::Type::HIGH, &high))
                 addConstraint(std::make_shared<ExprEngine::BinOpResult>("<=", value, std::make_shared<ExprEngine::IntRange>(std::to_string(high), high, high)), true);
-#endif
         }
 
         void reportError(const Token *tok,
@@ -1973,7 +1968,6 @@ static ExprEngine::ValuePtr executeIncDec(const Token *tok, Data &data)
 #ifdef USE_Z3
 static void checkContract(Data &data, const Token *tok, const Function *function, const std::vector<ExprEngine::ValuePtr> &argValues)
 {
-#ifdef CONTRACT
     ExprData exprData;
     z3::solver solver(exprData.context);
     try {
@@ -2043,7 +2037,6 @@ static void checkContract(Data &data, const Token *tok, const Function *function
                          true,
                          functionName);
     }
-#endif
 }
 #endif
 
@@ -2103,7 +2096,6 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
     if (tok->astOperand1()->function()) {
         const Function *function = tok->astOperand1()->function();
         const std::string &functionName = function->fullName();
-#ifdef CONTRACT
         const auto contractIt = data.settings->functionContracts.find(functionName);
         if (contractIt != data.settings->functionContracts.end()) {
 #ifdef USE_Z3
@@ -2116,7 +2108,6 @@ static ExprEngine::ValuePtr executeFunctionCall(const Token *tok, Data &data)
             if (!bailout)
                 data.addMissingContract(functionName);
         }
-#endif
 
         // Execute subfunction..
         if (hasBody) {
@@ -3005,9 +2996,7 @@ void ExprEngine::executeFunction(const Scope *functionScope, ErrorLogger *errorL
     for (const Variable &arg : function->argumentList)
         data.assignValue(functionScope->bodyStart, arg.declarationId(), createVariableValue(arg, data));
 
-#ifdef CONTRACT
     data.contractConstraints(function, executeExpression1);
-#endif
 
     const std::time_t stopTime = data.startTime + data.settings->bugHuntingCheckFunctionMaxTime;
 
