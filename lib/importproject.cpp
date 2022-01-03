@@ -433,6 +433,10 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             return false;
         }
 
+        //LINKER entries contains a "files" array instead of a single file entry. Skip those without a file.
+        if(!(obj["file"].is<std::string>()))
+             continue;
+        
         const std::string command = comm.str();
         const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
