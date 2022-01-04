@@ -3051,6 +3051,16 @@ private:
                               "    std::shared_lock<std::shared_timed_mutex> lock( m );\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n" // #10490
+                              "    std::shared_lock lock = GetLock();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    auto&& g = std::lock_guard<std::mutex> { mutex };\n"
+                              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Variable 'g' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar47() { // #6603
