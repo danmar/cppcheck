@@ -47,7 +47,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
                                     std::list<ValueFlow::Value> lhsValues,
                                     MathLib::bigint rhs);
 
-std::vector<MathLib::bigint> getMinValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values);
+CPPCHECKLIB std::vector<MathLib::bigint> getMinValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values);
 std::vector<MathLib::bigint> getMaxValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values);
 
 std::string toString(const Interval& i);
