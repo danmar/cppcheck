@@ -2057,6 +2057,19 @@ private:
               "        return a[4 - x];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::array<int,6> values;\n"
+              "int get_value();\n"
+              "int compute() {\n"
+              "    int i = get_value();\n"
+              "    if( i < 0 || i > 5)\n"
+              "        return -1;\n"
+              "    int sum = 0;\n"
+              "    for( int j = i+1; j < 7; ++j)\n"
+              "        sum += values[j-1];\n"
+              "    return sum;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
