@@ -130,6 +130,7 @@ private:
         TEST_CASE(nullpointer88); // #9949
         TEST_CASE(nullpointer89); // #10640
         TEST_CASE(nullpointer90); // #6098
+        TEST_CASE(nullpointer91); // #10678
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2664,6 +2665,18 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:7] -> [test.cpp:3]: (warning) Either the condition 'ctx' is redundant or there is possible null pointer dereference: ctx.\n",
             errout.str());
+    }
+
+    void nullpointer91() // #10678
+    {
+        check("void f(const char* PBeg, const char* PEnd) {\n"
+              "  while (PEnd != nullptr) {\n"
+              "    const int N = h(PEnd);\n"
+              "    PEnd = g();\n"
+              "    const int Length = PEnd == nullptr ? 0 : PEnd - PBeg;\n"
+              "  };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
