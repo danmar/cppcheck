@@ -1655,6 +1655,13 @@ private:
               "enum X { a, b, c };"
               "void foo(X x4){}\n");
         ASSERT_EQUALS("", errout.str());
+
+        Settings settings1;
+        settings1.platform(Settings::Win64);
+        check("using ui64 = unsigned __int64;\n"
+              "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
+              /*filename*/ nullptr, /*experimental*/ false, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void passedByValue_nonConst() {
