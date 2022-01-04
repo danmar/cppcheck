@@ -3306,14 +3306,6 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
 }
 
-std::vector<FwdAnalysis::KnownAndToken> FwdAnalysis::valueFlow(const Token *expr, const Token *startToken, const Token *endToken)
-{
-    mWhat = What::ValueFlow;
-    mValueFlowKnown = true;
-    check(expr, startToken, endToken);
-    return mValueFlow;
-}
-
 bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
 {
     if (expr->isUnaryOp("*"))

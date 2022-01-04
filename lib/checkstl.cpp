@@ -2381,31 +2381,6 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
                 "Possible dereference of an invalid iterator: $symbol. Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, Certainty::normal);
 }
 
-
-void CheckStl::readingEmptyStlContainer2()
-{
-    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
-        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
-            if (!tok->isName() || !tok->valueType())
-                continue;
-            const Library::Container *container = tok->valueType()->container;
-            if (!container)
-                continue;
-            const ValueFlow::Value *value = tok->getContainerSizeValue(0);
-            if (!value)
-                continue;
-            if (value->isInconclusive() && !mSettings->certainty.isEnabled(Certainty::inconclusive))
-                continue;
-            if (!value->errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
-                continue;
-            if (Token::Match(tok, "%name% . %name% (")) {
-                if (container->getYield(tok->strAt(2)) == Library::Container::Yield::ITEM)
-                    readingEmptyStlContainerError(tok,value);
-            }
-        }
-    }
-}
-
 void CheckStl::readingEmptyStlContainerError(const Token *tok, const ValueFlow::Value *value)
 {
     const std::string varname = tok ? tok->str() : std::string("var");

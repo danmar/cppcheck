@@ -177,7 +177,7 @@ public:
      */
     ShowTypes mShowSeverities;
 
-    virtual void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) override;
 
 signals:
     /**
@@ -294,7 +294,7 @@ protected slots:
      * @param current Model index to specify new selected item.
      * @param previous Model index to specify previous selected item.
      */
-    virtual void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous) override;
 
 protected:
 
@@ -365,7 +365,7 @@ protected:
      *
      * @param e Event
      */
-    void contextMenuEvent(QContextMenuEvent * e);
+    void contextMenuEvent(QContextMenuEvent * e) override;
 
     /**
      * @brief Add a new error item beneath a file or a backtrace item beneath an error
