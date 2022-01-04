@@ -354,7 +354,7 @@ void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
     state.replace(pm);
 }
 
-static void addVars(ProgramMemory &pm, const ProgramMemory::Map& vars)
+static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
 {
     for (const auto& p:vars) {
         nonneg int exprid = p.first;
