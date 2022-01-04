@@ -1015,6 +1015,15 @@ void CheckBufferOverrun::objectIndex()
                     if (var->valueType()->pointer > obj->valueType()->pointer)
                         continue;
                 }
+                if (obj->valueType() && var->valueType() && (obj->isCast() || (mTokenizer->isCPP() && isCPPCast(obj)) || obj->valueType()->pointer)) { // allow cast to a different type
+                    const auto varSize = var->valueType()->typeSize(*mSettings);
+                    if (varSize == 0)
+                        continue;
+                    if (obj->valueType()->type != var->valueType()->type) {
+                        if (ValueFlow::isOutOfBounds(makeSizeValue(varSize, v.path), idx).empty())
+                            continue;
+                    }
+                }
                 if (v.path != 0) {
                     std::vector<ValueFlow::Value> idxValues;
                     std::copy_if(idx->values().begin(),
