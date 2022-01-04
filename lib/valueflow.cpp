@@ -471,9 +471,6 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     if (!value.isImpossible() && value.isIntValue())
         value = truncateImplicitConversion(tok->astParent(), value, settings);
 
-    if (value.isIntValue() && tok->str() == "j" && value.isImpossible() && value.intvalue == -1)
-        printf("Here\n");
-
     if (!tok->addValue(value))
         return;
 
