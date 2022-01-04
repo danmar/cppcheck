@@ -133,6 +133,8 @@ struct ReverseTraversal {
             }
             if (tok != parent->astOperand2())
                 continue;
+            if (Token::simpleMatch(parent, ":"))
+                parent = parent->astParent();
             if (!Token::Match(parent, "%oror%|&&|?"))
                 continue;
             Token* condTok = parent->astOperand1();
