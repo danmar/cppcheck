@@ -360,3 +360,12 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
 {
     return infer(model, op, std::move(lhsValues), {model->yield(rhs)});
 }
+
+std::vector<MathLib::bigint> getMinValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values)
+{
+    return Interval::fromValues(values, [&](const ValueFlow::Value& v) { return model->match(v); }).minvalue;
+}
+std::vector<MathLib::bigint> getMaxValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values)
+{
+    return Interval::fromValues(values, [&](const ValueFlow::Value& v) { return model->match(v); }).maxvalue;
+}
