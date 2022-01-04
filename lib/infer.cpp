@@ -363,9 +363,13 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
 
 std::vector<MathLib::bigint> getMinValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values)
 {
-    return Interval::fromValues(values, [&](const ValueFlow::Value& v) { return model->match(v); }).minvalue;
+    return Interval::fromValues(values, [&](const ValueFlow::Value& v) {
+        return model->match(v);
+    }).minvalue;
 }
 std::vector<MathLib::bigint> getMaxValue(const ValuePtr<InferModel>& model, const std::list<ValueFlow::Value>& values)
 {
-    return Interval::fromValues(values, [&](const ValueFlow::Value& v) { return model->match(v); }).maxvalue;
+    return Interval::fromValues(values, [&](const ValueFlow::Value& v) {
+        return model->match(v);
+    }).maxvalue;
 }
