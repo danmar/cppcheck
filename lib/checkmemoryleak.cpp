@@ -408,57 +408,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
 }
 
 
-const char *CheckMemoryLeak::functionArgAlloc(const Function *func, nonneg int targetpar, AllocType &allocType) const
-{
-    allocType = No;
-
-    if (!func || !func->functionScope)
-        return "";
-
-    if (!Token::simpleMatch(func->retDef, "void"))
-        return "";
-
-    std::list<Variable>::const_iterator arg = func->argumentList.begin();
-    for (; arg != func->argumentList.end(); ++arg) {
-        if (arg->index() == targetpar-1)
-            break;
-    }
-    if (arg == func->argumentList.end())
-        return "";
-
-    // Is **
-    if (!arg->isPointer())
-        return "";
-    const Token* tok = arg->typeEndToken();
-    tok = tok->previous();
-    if (tok->str() != "*")
-        return "";
-
-    // Check if pointer is allocated.
-    bool realloc = false;
-    for (tok = func->functionScope->bodyStart; tok && tok != func->functionScope->bodyEnd; tok = tok->next()) {
-        if (tok->varId() == arg->declarationId()) {
-            if (Token::Match(tok->tokAt(-3), "free ( * %name% )")) {
-                realloc = true;
-                allocType = No;
-            } else if (Token::Match(tok->previous(), "* %name% =")) {
-                allocType = getAllocationType(tok->tokAt(2), arg->declarationId());
-                if (allocType != No) {
-                    if (realloc)
-                        return "realloc";
-                    return "alloc";
-                }
-            } else {
-                // unhandled variable usage: bailout
-                return "";
-            }
-        }
-    }
-
-    return "";
-}
-
-
 static bool notvar(const Token *tok, nonneg int varid)
 {
     if (!tok)

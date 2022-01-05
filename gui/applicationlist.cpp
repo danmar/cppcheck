@@ -198,6 +198,7 @@ bool ApplicationList::checkAndAddApplication(const QString& appPath, const QStri
     return false;
 }
 
+#ifdef _WIN32
 bool ApplicationList::findDefaultWindowsEditor()
 {
     bool foundOne = false;
@@ -264,3 +265,4 @@ bool ApplicationList::findDefaultWindowsEditor()
 
     return foundOne;
 }
+#endif

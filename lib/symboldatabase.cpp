@@ -1840,6 +1840,7 @@ void SymbolDatabase::validate() const
     if (mSettings->debugwarnings) {
         validateExecutableScopes();
     }
+    // TODO
     //validateVariables();
 }
 
@@ -5323,17 +5324,6 @@ const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
     for (const Scope &scope: scopeList) {
         if (scope.className == name)
             return &scope;
-    }
-    return nullptr;
-}
-
-//---------------------------------------------------------------------------
-
-Scope *Scope::findInNestedList(const std::string & name)
-{
-    for (Scope *scope: nestedList) {
-        if (scope->className == name)
-            return scope;
     }
     return nullptr;
 }
