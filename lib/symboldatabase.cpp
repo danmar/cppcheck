@@ -7089,7 +7089,14 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 
 ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar)
 {
-    ValueType::MatchResult res = ValueType::matchParameter(call, funcVar->valueType());
+    ValueType vt;
+    auto pvt = funcVar->valueType();
+    if (pvt && funcVar->isArray()) {
+        vt = *pvt;
+        ++vt.pointer;
+        pvt = &vt;
+    }
+    ValueType::MatchResult res = ValueType::matchParameter(call, pvt);
     if (callVar && ((res == ValueType::MatchResult::SAME && call->container) || res == ValueType::MatchResult::UNKNOWN)) {
         const std::string type1 = getTypeString(callVar->typeStartToken());
         const std::string type2 = getTypeString(funcVar->typeStartToken());
