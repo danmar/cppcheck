@@ -363,8 +363,6 @@ public:
         const Token *token;
     };
 
-    std::vector<KnownAndToken> valueFlow(const Token *expr, const Token *startToken, const Token *endToken);
-
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;
 

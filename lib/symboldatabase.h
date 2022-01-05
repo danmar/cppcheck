@@ -1128,12 +1128,6 @@ public:
      */
     const Function *findFunction(const Token *tok, bool requireConst=false) const;
 
-    /**
-     * @brief find if name is in nested list
-     * @param name name of nested scope
-     */
-    Scope *findInNestedList(const std::string & name);
-
     const Scope *findRecordInNestedList(const std::string & name) const;
     Scope *findRecordInNestedList(const std::string & name) {
         return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));

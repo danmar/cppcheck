@@ -22,12 +22,14 @@
 
 #include "config.h"
 #include "errortypes.h"
+#include "infer.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueflow.h"
+#include "valueptr.h"
 
 #include <algorithm>
 #include <functional>
@@ -687,9 +689,10 @@ bool extractForLoopValues(const Token *forToken,
     const Token *incExpr  = forToken->next()->astOperand2()->astOperand2()->astOperand2();
     if (!initExpr || !initExpr->isBinaryOp() || initExpr->str() != "=" || !Token::Match(initExpr->astOperand1(), "%var%"))
         return false;
+    std::vector<MathLib::bigint> minInitValue = getMinValue(makeIntegralInferModel(), initExpr->astOperand2()->values());
     *varid = initExpr->astOperand1()->varId();
     *knownInitValue = initExpr->astOperand2()->hasKnownIntValue();
-    *initValue = (*knownInitValue) ? initExpr->astOperand2()->getKnownIntValue() : 0;
+    *initValue = minInitValue.empty() ? 0 : minInitValue.front();
     *partialCond = Token::Match(condExpr, "%oror%|&&");
     visitAstNodes(condExpr, [varid, &condExpr](const Token *tok) {
         if (Token::Match(tok, "%oror%|&&"))
@@ -3301,14 +3304,6 @@ bool FwdAnalysis::unusedValue(const Token *expr, const Token *startToken, const 
     mWhat = What::UnusedValue;
     Result result = check(expr, startToken, endToken);
     return (result.type == FwdAnalysis::Result::Type::NONE || result.type == FwdAnalysis::Result::Type::RETURN) && !possiblyAliased(expr, startToken);
-}
-
-std::vector<FwdAnalysis::KnownAndToken> FwdAnalysis::valueFlow(const Token *expr, const Token *startToken, const Token *endToken)
-{
-    mWhat = What::ValueFlow;
-    mValueFlowKnown = true;
-    check(expr, startToken, endToken);
-    return mValueFlow;
 }
 
 bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) const
