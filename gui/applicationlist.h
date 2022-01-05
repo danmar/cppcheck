@@ -108,11 +108,13 @@ protected:
      */
     void clear();
 
+#ifdef _WIN32
     /**
      * @brief Find editor used by default in Windows.
      * Check if Notepad++ is installed and use it. If not, use Notepad.
      */
     bool findDefaultWindowsEditor();
+#endif
 
 private:
 

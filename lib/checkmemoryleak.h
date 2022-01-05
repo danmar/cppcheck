@@ -145,9 +145,6 @@ public:
 
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Function* func, std::list<const Function*> *callstack = nullptr) const;
-
-    /** Function allocates pointed-to argument (a la asprintf)? */
-    const char *functionArgAlloc(const Function *func, nonneg int targetpar, AllocType &allocType) const;
 };
 
 /// @}

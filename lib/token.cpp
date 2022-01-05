@@ -1915,46 +1915,6 @@ const Token *Token::getValueTokenMaxStrLength() const
     return ret;
 }
 
-static const Scope *getfunctionscope(const Scope *s)
-{
-    while (s && s->type != Scope::eFunction)
-        s = s->nestedIn;
-    return s;
-}
-
-const Token *Token::getValueTokenDeadPointer() const
-{
-    const Scope * const functionscope = getfunctionscope(this->scope());
-
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = values().begin(); it != values().end(); ++it) {
-        // Is this a pointer alias?
-        if (!it->isTokValue() || (it->tokvalue && it->tokvalue->str() != "&"))
-            continue;
-        // Get variable
-        const Token *vartok = it->tokvalue->astOperand1();
-        if (!vartok || !vartok->isName() || !vartok->variable())
-            continue;
-        const Variable * const var = vartok->variable();
-        if (var->isStatic() || var->isReference())
-            continue;
-        if (!var->scope())
-            return nullptr; // #6804
-        if (var->scope()->type == Scope::eUnion && var->scope()->nestedIn == this->scope())
-            continue;
-        // variable must be in same function (not in subfunction)
-        if (functionscope != getfunctionscope(var->scope()))
-            continue;
-        // Is variable defined in this scope or upper scope?
-        const Scope *s = this->scope();
-        while ((s != nullptr) && (s != var->scope()))
-            s = s->nestedIn;
-        if (!s)
-            return it->tokvalue;
-    }
-    return nullptr;
-}
-
 static bool isAdjacent(const ValueFlow::Value& x, const ValueFlow::Value& y)
 {
     if (x.bound != ValueFlow::Value::Bound::Point && x.bound == y.bound)
