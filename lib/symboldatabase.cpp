@@ -7090,7 +7090,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Variable *callVar, const Variable *funcVar)
 {
     ValueType vt;
-    auto pvt = funcVar->valueType();
+    const ValueType* pvt = funcVar->valueType();
     if (pvt && funcVar->isArray()) {
         vt = *pvt;
         ++vt.pointer;
