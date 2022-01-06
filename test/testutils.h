@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,8 @@
 #ifndef TestUtilsH
 #define TestUtilsH
 
+#include "color.h"
+#include "errorlogger.h"
 #include "settings.h"
 #include "tokenize.h"
 
@@ -26,8 +28,8 @@ class Token;
 
 class givenACodeSampleToTokenize {
 private:
-    Settings settings;
     Tokenizer tokenizer;
+    static const Settings settings;
 
 public:
     explicit givenACodeSampleToTokenize(const char sample[], bool createOnly = false, bool cpp = true)
@@ -48,9 +50,8 @@ public:
 class SimpleSuppressor : public ErrorLogger {
 public:
     SimpleSuppressor(Settings &settings, ErrorLogger *next)
-        : settings(settings), next(next) {
-    }
-    void reportOut(const std::string &outmsg) OVERRIDE {
+        : settings(settings), next(next) {}
+    void reportOut(const std::string &outmsg, Color = Color::Reset) OVERRIDE {
         next->reportOut(outmsg);
     }
     void reportErr(const ErrorMessage &msg) OVERRIDE {

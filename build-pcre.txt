@@ -59,10 +59,18 @@ Mac OSX
 
 Install PCRE:
 
+homebre
+  brew install pcre
+
+or macport
   sudo port install pcre
 
 Ensure /path/to/pcre.h is in CXXFLAGS, e.g:
 
+for homebrew
+  export CXXFLAGS=${CXXFLAGS}:/usr/local/include
+
+or macport
   export CXXFLAGS=${CXXFLAGS}:/opt/local/include
 
 Or for MSVC copy pcre.lib and pcre.h in /externals directory.

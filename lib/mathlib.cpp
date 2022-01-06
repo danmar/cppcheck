@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,11 +21,14 @@
 #include "errortypes.h"
 #include "utils.h"
 
+#include <simplecpp.h>
+
 #include <cctype>
 #include <cmath>
 #include <cstdlib>
 #include <limits>
 #include <locale>
+#include <stdexcept>
 
 #if defined(_MSC_VER) && _MSC_VER <= 1700  // VS2012 doesn't have std::isinf and std::isnan
 #define ISINF(x)      (!_finite(x))
@@ -294,14 +297,22 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
-        const biguint ret = std::stoull(str, nullptr, 16);
-        return ret;
+        try {
+            const biguint ret = std::stoull(str, nullptr, 16);
+            return ret;
+        } catch (const std::out_of_range& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
+        }
     }
 
     // octal numbers:
     if (isOct(str)) {
-        const biguint ret = std::stoull(str, nullptr, 8);
-        return ret;
+        try {
+            const biguint ret = std::stoull(str, nullptr, 8);
+            return ret;
+        } catch (const std::out_of_range& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
+        }
     }
 
     // binary numbers:
@@ -329,8 +340,12 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
             return static_cast<biguint>(doubleval);
     }
 
-    const biguint ret = std::stoull(str, nullptr, 10);
-    return ret;
+    try {
+        const biguint ret = std::stoull(str, nullptr, 10);
+        return ret;
+    } catch (const std::out_of_range& e) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toULongNumber: out_of_range: " + str + " (" + e.what() +")");
+    }
 }
 
 unsigned int MathLib::encodeMultiChar(const std::string& str)
@@ -342,151 +357,26 @@ unsigned int MathLib::encodeMultiChar(const std::string& str)
     return retval;
 }
 
-static bool isoctal(int c)
-{
-    return c>='0' && c<='7';
-}
-
-MathLib::bigint MathLib::characterLiteralToLongNumber(const std::string& str)
-{
-    if (str.empty())
-        return 0; // <- only possible in unit testing
-
-    // '\xF6'
-    if (str.size() == 4 && str.compare(0,2,"\\x")==0 && std::isxdigit(str[2]) && std::isxdigit(str[3])) {
-        return std::strtoul(str.substr(2).c_str(), nullptr, 16);
-    }
-
-    // '\123'
-    if (str.size() == 4 && str[0] == '\\' && isoctal(str[1]) && isoctal(str[2]) && isoctal(str[3])) {
-        return (char)std::strtoul(str.substr(1).c_str(), nullptr, 8);
-    }
-
-    // C99 6.4.4.4
-    // The value of an integer character constant containing more than one character (e.g., 'ab'),
-    // or containing a character or escape sequence that does not map to a single-byte execution character,
-    // is implementation-defined.
-    // clang and gcc seem to use the following encoding: 'AB' as (('A' << 8) | 'B')
-    const std::string& normStr = normalizeCharacterLiteral(str);
-    return encodeMultiChar(normStr);
-}
-
-std::string MathLib::normalizeCharacterLiteral(const std::string& iLiteral)
-{
-    std::string normalizedLiteral;
-    const std::string::size_type iLiteralLen = iLiteral.size();
-    for (std::string::size_type idx = 0; idx < iLiteralLen ; ++idx) {
-        if (iLiteral[idx] != '\\') {
-            normalizedLiteral.push_back(iLiteral[idx]);
-            continue;
-        }
-        ++idx;
-        if (idx == iLiteralLen) {
-            throw InternalError(nullptr, "Internal Error. MathLib::normalizeCharacterLiteral: Unhandled char constant '" + iLiteral + "'.");
-        }
-        switch (iLiteral[idx]) {
-        case 'x':
-            // Hexa-decimal number: skip \x and interpret the next two characters
-        {
-            if (++idx == iLiteralLen)
-                throw InternalError(nullptr, "Internal Error. MathLib::normalizeCharacterLiteral: Unhandled char constant '" + iLiteral + "'.");
-            std::string tempBuf;
-            tempBuf.push_back(iLiteral[idx]);
-            if (++idx != iLiteralLen)
-                tempBuf.push_back(iLiteral[idx]);
-            normalizedLiteral.push_back(static_cast<char>(MathLib::toULongNumber("0x" + tempBuf)));
-            continue;
-        }
-        case 'u':
-        case 'U':
-            // Unicode string; just skip the \u or \U
-            if (idx + 1 == iLiteralLen)
-                throw InternalError(nullptr, "Internal Error. MathLib::characterLiteralToLongNumber: Unhandled char constant '" + iLiteral + "'.");
-            continue;
-        }
-        // Single digit octal number
-        if (1 == iLiteralLen - idx) {
-            switch (iLiteral[idx]) {
-            case '0':
-            case '1':
-            case '2':
-            case '3':
-            case '4':
-            case '5':
-            case '6':
-            case '7':
-                normalizedLiteral.push_back(iLiteral[idx]-'0');
-                break;
-            case 'a':
-                normalizedLiteral.push_back('\a');
-                break;
-            case 'b':
-                normalizedLiteral.push_back('\b');
-                break;
-            case 'e':
-                normalizedLiteral.push_back(0x1B); // clang, gcc, tcc interpnormalizedLiteral this as 0x1B - escape character
-                break;
-            case 'f':
-                normalizedLiteral.push_back('\f');
-                break;
-            case 'n':
-                normalizedLiteral.push_back('\n');
-                break;
-            case 'r':
-                normalizedLiteral.push_back('\r');
-                break;
-            case 't':
-                normalizedLiteral.push_back('\t');
-                break;
-            case 'v':
-                normalizedLiteral.push_back('\v');
-                break;
-            case '\\':
-            case '\?':
-            case '\'':
-            case '\"':
-                normalizedLiteral.push_back(iLiteral[idx]);
-                break;
-            default:
-                throw InternalError(nullptr, "Internal Error. MathLib::normalizeCharacterLiteral: Unhandled char constant '" + iLiteral + "'.");
-            }
-            continue;
-        }
-        // 2-3 digit octal number
-        if (!MathLib::isOctalDigit(iLiteral[idx]))
-            throw InternalError(nullptr, "Internal Error. MathLib::normalizeCharacterLiteral: Unhandled char constant '" + iLiteral + "'.");
-        std::string tempBuf;
-        tempBuf.push_back(iLiteral[idx]);
-        ++idx;
-        if (MathLib::isOctalDigit(iLiteral[idx])) {
-            tempBuf.push_back(iLiteral[idx]);
-            ++idx;
-            if (MathLib::isOctalDigit(iLiteral[idx])) {
-                tempBuf.push_back(iLiteral[idx]);
-            }
-        }
-        normalizedLiteral.push_back(static_cast<char>(MathLib::toLongNumber("0" + tempBuf)));
-    }
-    return normalizedLiteral;
-}
-
 MathLib::bigint MathLib::toLongNumber(const std::string & str)
 {
     // hexadecimal numbers:
     if (isIntHex(str)) {
-        if (str[0] == '-') {
-            const bigint ret = std::stoll(str, nullptr, 16);
-            return ret;
-        } else {
+        try {
             const biguint ret = std::stoull(str, nullptr, 16);
             return (bigint)ret;
+        } catch (const std::out_of_range& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
         }
     }
 
     // octal numbers:
     if (isOct(str)) {
-        const bigint ret = std::stoll(str, nullptr, 8);
-        return ret;
+        try {
+            const biguint ret = std::stoull(str, nullptr, 8);
+            return ret;
+        } catch (const std::out_of_range& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
+        }
     }
 
     // binary numbers:
@@ -516,17 +406,15 @@ MathLib::bigint MathLib::toLongNumber(const std::string & str)
             return static_cast<bigint>(doubleval);
     }
 
-    if (isCharLiteral(str)) {
-        return characterLiteralToLongNumber(getCharLiteral(str));
-    }
+    if (isCharLiteral(str))
+        return simplecpp::characterLiteralToLL(str);
 
-    if (str[0] == '-') {
-        const bigint ret = std::stoll(str, nullptr, 10);
+    try {
+        const biguint ret = std::stoull(str, nullptr, 10);
         return ret;
+    } catch (const std::out_of_range& e) {
+        throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: out_of_range: " + str + " (" + e.what() +")");
     }
-
-    const biguint ret = std::stoull(str, nullptr, 10);
-    return ret;
 }
 
 // in-place conversion of (sub)string to double. Requires no heap.
@@ -546,7 +434,7 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
     int distance;
     if (std::string::npos == decimalsep) {
         distance = to - it;
-    } else  if (decimalsep > (to - str.begin()))
+    } else if (decimalsep > (to - str.begin()))
         return 0.; // error handling??
     else
         distance = int(decimalsep)-(from - str.begin());
@@ -581,14 +469,19 @@ static double floatHexToDoubleNumber(const std::string& str)
 
 double MathLib::toDoubleNumber(const std::string &str)
 {
-    if (isCharLiteral(str))
-        return characterLiteralToLongNumber(getCharLiteral(str));
+    if (isCharLiteral(str)) {
+        try {
+            return simplecpp::characterLiteralToLL(str);
+        } catch (const std::exception& e) {
+            throw InternalError(nullptr, "Internal Error. MathLib::toLongNumber: characterLiteralToLL(" + str + ") => " + e.what());
+        }
+    }
     if (isIntHex(str))
         return static_cast<double>(toLongNumber(str));
     // nullcheck
     if (isNullValue(str))
         return 0.0;
-#ifdef __clang__
+#ifdef _LIBCPP_VERSION
     if (isFloat(str)) // Workaround libc++ bug at http://llvm.org/bugs/show_bug.cgi?id=17782
         // TODO : handle locale
         return std::strtod(str.c_str(), nullptr);
@@ -603,7 +496,7 @@ double MathLib::toDoubleNumber(const std::string &str)
     return ret;
 }
 
-template<> std::string MathLib::toString(double value)
+template<> std::string MathLib::toString<double>(double value)
 {
     std::ostringstream result;
     result.precision(12);
@@ -1138,7 +1031,7 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
     }
 
     if (first == second)
-        return "0.0" ;
+        return "0.0";
 
     double d1 = toDoubleNumber(first);
     double d2 = toDoubleNumber(second);

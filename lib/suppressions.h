@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,6 +21,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 
 #include <istream>
 #include <list>
@@ -42,7 +43,7 @@ public:
             return mFileName;
         }
         int lineNumber;
-        bool inconclusive;
+        Certainty::CertaintyLevel certainty;
         std::string symbolNames;
     private:
         std::string mFileName;
@@ -181,7 +182,7 @@ public:
     /**
      * @brief Create an xml dump of suppressions
      * @param out stream to write XML to
-    */
+     */
     void dump(std::ostream &out) const;
 
     /**
@@ -200,7 +201,7 @@ public:
      * @brief Returns list of all suppressions.
      * @return list of suppressions
      */
-    std::list<Suppression> getSuppressions() const;
+    const std::list<Suppression> &getSuppressions() const;
 
 private:
     /** @brief List of error which the user doesn't want to see. */

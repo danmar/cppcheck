@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,6 +43,8 @@ class TokenList;
 
 /** @brief Simplify templates from the preprocessed and partially simplified code. */
 class CPPCHECKLIB TemplateSimplifier {
+    friend class TestSimplifyTemplate;
+
 public:
     explicit TemplateSimplifier(Tokenizer *tokenizer);
     ~TemplateSimplifier();
@@ -168,7 +170,7 @@ public:
         const std::string & fullName() const {
             return mFullName;
         }
-        const Token * nameToken() const  {
+        const Token * nameToken() const {
             return mNameToken;
         }
         const Token * paramEnd() const {
@@ -256,10 +258,11 @@ public:
      * Match template declaration/instantiation
      * @param instance template instantiation
      * @param numberOfArguments number of template arguments
+     * @param variadic last template argument is variadic
      * @param patternAfter pattern that must match the tokens after the ">"
      * @return match => true
      */
-    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, const char patternAfter[]);
+    static bool instantiateMatch(const Token *instance, const std::size_t numberOfArguments, bool variadic, const char patternAfter[]);
 
     /**
      * Match template declaration/instantiation
@@ -437,10 +440,8 @@ private:
      *                        ^ tok
      * @param typeParametersInDeclaration  template < typename T, typename S >
      *                                                         ^ [0]       ^ [1]
-     * @return  template < typename T, typename S >
-     *                                              ^ return
      */
-    static const Token * getTemplateParametersInDeclaration(
+    static void getTemplateParametersInDeclaration(
         const Token * tok,
         std::vector<const Token *> & typeParametersInDeclaration);
 
@@ -450,7 +451,7 @@ private:
     static bool removeTemplate(Token *tok);
 
     /** Syntax error */
-    static void syntaxError(const Token *tok);
+    NORETURN static void syntaxError(const Token *tok);
 
     static bool matchSpecialization(
         const Token *templateDeclarationNameToken,

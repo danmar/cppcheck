@@ -2,7 +2,7 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: Coverage
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
@@ -18,11 +18,13 @@ jobs:
           sudo apt-get install libxml2-utils
           sudo apt-get install libz3-dev libz3-4
           sudo apt-get install lcov
-          pip install lcov_cobertura
+          sudo apt-get install libcppunit-dev
+          python -m pip install pip --upgrade
+          python -m pip install lcov_cobertura
 
       - name: Compile instrumented
         run: |
-          make test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes -j$(nproc)
+          make -j$(nproc) test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes
           
       - name: Generate coverage report
         run: |
@@ -39,7 +41,7 @@ jobs:
          name: Coverage results
          path: coverage_report
          
-      - uses: codecov/codecov-action@v1
+      - uses: codecov/codecov-action@v1.2.1
         with:
           # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           # file: ./coverage.xml # optional

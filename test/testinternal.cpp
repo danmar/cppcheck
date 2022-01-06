@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,8 +25,7 @@
 
 class TestInternal : public TestFixture {
 public:
-    TestInternal() : TestFixture("TestInternal") {
-    }
+    TestInternal() : TestFixture("TestInternal") {}
 
 private:
     Settings settings;
@@ -47,14 +46,15 @@ private:
         TEST_CASE(checkRedundantTokCheck);
     }
 
-    void check(const char code[]) {
+#define check(code) check_(code, __FILE__, __LINE__)
+    void check_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckInternal checkInternal;

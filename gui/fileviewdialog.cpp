@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,11 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "fileviewdialog.h"
+
 #include <QFile>
 #include <QByteArray>
 #include <QMessageBox>
 #include <QTextEdit>
-#include "fileviewdialog.h"
 
 FileViewDialog::FileViewDialog(const QString &file,
                                const QString &title,

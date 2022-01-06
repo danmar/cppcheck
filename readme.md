@@ -12,7 +12,7 @@ Despite the name, Cppcheck is designed for both C and C++.
 
 ## Manual
 
-A manual is available [online](http://cppcheck.sourceforge.net/manual.pdf).
+A manual is available [online](https://cppcheck.sourceforge.io/manual.pdf).
 
 ## Donate CPU
 
@@ -80,6 +80,80 @@ Use the cppcheck.sln file. The file is configured for Visual Studio 2019, but th
 
 To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration. pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then. A current version of PCRE for Visual Studio can be obtained using [vcpkg](https://github.com/microsoft/vcpkg).
 
+### Visual Studio (from command line)
+
+If you do not wish to use the Visual Studio IDE, you can compile cppcheck from the command line the following command.
+
+```shell
+msbuild cppcheck.sln
+```
+
+### VS Code (on Windows)
+
+Install MSYS2 to get GNU toolchain with g++ and gdb (https://www.msys2.org/).
+Create a settings.json file in the .vscode folder with the following content (adjust path as necessary):
+
+```
+{
+    "terminal.integrated.shell.windows": "C:\\msys64\\usr\\bin\\bash.exe",
+    "terminal.integrated.shellArgs.windows": [
+        "--login",
+    ],
+    "terminal.integrated.env.windows": {
+        "CHERE_INVOKING": "1",
+        "MSYSTEM": "MINGW64",
+    }
+}
+```
+
+Run "make" in the terminal to build cppcheck.
+
+For debugging create a launch.json file in the .vscode folder with the following content, which covers configuration for debugging cppcheck and misra.py:
+
+```
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "cppcheck",
+            "type": "cppdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}/cppcheck.exe",
+            "args": [
+                "--dump",
+                "${workspaceFolder}/addons/test/misra/misra-test.c"
+            ],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "externalConsole": true,
+            "MIMode": "gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "setupCommands": [
+                {
+                    "description": "Enable pretty-printing for gdb",
+                    "text": "-enable-pretty-printing",
+                    "ignoreFailures": true
+                }
+            ]
+        },
+        {
+            "name": "misra.py",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/addons/misra.py",
+            "console": "integratedTerminal",
+            "args": [
+                "${workspaceFolder}/addons/test/misra/misra-test.c.dump"
+            ]
+        }
+    ]
+}
+```
+
 ### Qt Creator + MinGW
 
 The PCRE dll is needed to build the CLI. It can be downloaded here:
@@ -118,7 +192,7 @@ Flags:
 If you just want to build Cppcheck without dependencies then you can use this command:
 
 ```shell
-g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
+g++ -o cppcheck -std=c++11 -Iexternals -Iexternals/simplecpp -Iexternals/tinyxml2 -Iexternals/picojson -Ilib cli/*.cpp lib/*.cpp externals/simplecpp/simplecpp.cpp externals/tinyxml2/*.cpp
 ```
 
 If you want to use `--rule` and `--rule-file` then dependencies are needed:
@@ -157,4 +231,4 @@ https://src.fedoraproject.org/rpms/cppcheck/tree/master
 
 ## Webpage
 
-http://cppcheck.sourceforge.net/
+https://cppcheck.sourceforge.io/

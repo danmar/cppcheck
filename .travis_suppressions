@@ -6,10 +6,19 @@ functionStatic
 bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
-missingOverride
-unusedPrivateFunction:lib/checkbufferoverrun.h
 unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm
+simplifyUsing:lib/valueptr.h
+symbolDatabaseWarning:gui/temp/moc_*.cpp
+simplifyUsing:gui/temp/moc_*.cpp
+symbolDatabaseWarning:tools/triage/moc_*.cpp
+
+# debug suppressions
+valueFlowBailout
+valueFlowBailoutIncompleteVar
+varid0
+autoNoType
+bailoutUninitVar
 
 *:gui/test/*
 *:test/test.cxx

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,12 @@
 
 #include "analyzerinfo.h"
 #include "check.h"
+#include "color.h"
 #include "config.h"
 #include "errorlogger.h"
 #include "importproject.h"
 #include "settings.h"
 
-#include <cstddef>
 #include <functional>
 #include <istream>
 #include <list>
@@ -67,27 +67,27 @@ public:
      */
 
     /**
-      * @brief Check the file.
-      * This function checks one given file for errors.
-      * @param path Path to the file to check.
-      * @return amount of errors found or 0 if none were found.
-      * @note You must set settings before calling this function (by calling
-      *  settings()).
-      */
+     * @brief Check the file.
+     * This function checks one given file for errors.
+     * @param path Path to the file to check.
+     * @return amount of errors found or 0 if none were found.
+     * @note You must set settings before calling this function (by calling
+     *  settings()).
+     */
     unsigned int check(const std::string &path);
     unsigned int check(const ImportProject::FileSettings &fs);
 
     /**
-      * @brief Check the file.
-      * This function checks one "virtual" file. The file is not read from
-      * the disk but the content is given in @p content. In errors the @p path
-      * is used as a filename.
-      * @param path Path to the file to check.
-      * @param content File content as a string.
-      * @return amount of errors found or 0 if none were found.
-      * @note You must set settings before calling this function (by calling
-      *  settings()).
-      */
+     * @brief Check the file.
+     * This function checks one "virtual" file. The file is not read from
+     * the disk but the content is given in @p content. In errors the @p path
+     * is used as a filename.
+     * @param path Path to the file to check.
+     * @param content File content as a string.
+     * @return amount of errors found or 0 if none were found.
+     * @note You must set settings before calling this function (by calling
+     *  settings()).
+     */
     unsigned int check(const std::string &path, const std::string &content);
 
     /**
@@ -143,7 +143,6 @@ public:
     bool isUnusedFunctionCheckEnabled() const;
 
 private:
-
     /** Are there "simple" rules */
     bool hasRule(const std::string &tokenlist) const;
 
@@ -172,6 +171,17 @@ private:
     void checkNormalTokens(const Tokenizer &tokenizer);
 
     /**
+     * Execute addons
+     */
+    void executeAddons(const std::vector<std::string>& files);
+    void executeAddons(const std::string &dumpFile);
+
+    /**
+     * Execute addons
+     */
+    void executeAddonsWholeProgram(const std::map<std::string, std::size_t> &files);
+
+    /**
      * @brief Execute rules, if any
      * @param tokenlist token list to use (normal / simple)
      * @param tokenizer tokenizer
@@ -192,7 +202,7 @@ private:
      *
      * @param outmsg Message to show, e.g. "Checking main.cpp..."
      */
-    void reportOut(const std::string &outmsg) OVERRIDE;
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
 
     void bughuntingReport(const std::string &str) OVERRIDE;
 

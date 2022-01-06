@@ -1,6 +1,7 @@
 #include "reverseanalyzer.h"
 #include "analyzer.h"
 #include "astutils.h"
+#include "errortypes.h"
 #include "forwardanalyzer.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -8,7 +9,6 @@
 #include "valueptr.h"
 
 #include <algorithm>
-#include <functional>
 
 struct ReverseTraversal {
     ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
@@ -18,7 +18,7 @@ struct ReverseTraversal {
     const Settings* settings;
 
     std::pair<bool, bool> evalCond(const Token* tok) {
-        std::vector<int> result = analyzer->evaluate(tok);
+        std::vector<MathLib::bigint> result = analyzer->evaluate(tok);
         // TODO: We should convert to bool
         bool checkThen = std::any_of(result.begin(), result.end(), [](int x) {
             return x == 1;
@@ -40,9 +40,52 @@ struct ReverseTraversal {
         return true;
     }
 
+    Token* getParentFunction(Token* tok)
+    {
+        if (!tok)
+            return nullptr;
+        if (!tok->astParent())
+            return nullptr;
+        int argn = -1;
+        if (Token* ftok = getTokenArgumentFunction(tok, argn)) {
+            while (!Token::Match(ftok, "(|{")) {
+                if (!ftok)
+                    return nullptr;
+                if (ftok->index() >= tok->index())
+                    return nullptr;
+                if (ftok->link())
+                    ftok = ftok->link()->next();
+                else
+                    ftok = ftok->next();
+            }
+            if (ftok == tok)
+                return nullptr;
+            return ftok;
+        }
+        return nullptr;
+    }
+
+    Token* getTopFunction(Token* tok)
+    {
+        if (!tok)
+            return nullptr;
+        if (!tok->astParent())
+            return tok;
+        Token* parent = tok;
+        Token* top = tok;
+        while ((parent = getParentFunction(parent)))
+            top = parent;
+        return top;
+    }
+
     bool updateRecursive(Token* start) {
         bool continueB = true;
         visitAstNodes(start, [&](Token* tok) {
+            const Token* parent = tok->astParent();
+            while (Token::simpleMatch(parent, ":"))
+                parent = parent->astParent();
+            if (isUnevaluated(tok) || isDeadCode(tok, parent))
+                return ChildrenToVisit::none;
             continueB &= update(tok);
             if (continueB)
                 return ChildrenToVisit::op1_and_op2;
@@ -74,12 +117,12 @@ struct ReverseTraversal {
         return result;
     }
 
-    Token* isDeadCode(Token* tok) {
+    Token* isDeadCode(Token* tok, const Token* end = nullptr) {
         int opSide = 0;
         for (; tok && tok->astParent(); tok = tok->astParent()) {
+            if (tok == end)
+                break;
             Token* parent = tok->astParent();
-            if (tok != parent->astOperand2())
-                continue;
             if (Token::simpleMatch(parent, ":")) {
                 if (astIsLHS(tok))
                     opSide = 1;
@@ -88,6 +131,10 @@ struct ReverseTraversal {
                 else
                     opSide = 0;
             }
+            if (tok != parent->astOperand2())
+                continue;
+            if (Token::simpleMatch(parent, ":"))
+                parent = parent->astParent();
             if (!Token::Match(parent, "%oror%|&&|?"))
                 continue;
             Token* condTok = parent->astOperand1();
@@ -96,16 +143,10 @@ struct ReverseTraversal {
             bool checkThen, checkElse;
             std::tie(checkThen, checkElse) = evalCond(condTok);
 
-            if (!checkThen && !checkElse) {
-                Analyzer::Action action = analyzeRecursive(condTok);
-                if (action.isRead() || action.isModified())
-                    return parent;
-            }
-
             if (parent->str() == "?") {
-                if (!checkElse && opSide == 1)
+                if (checkElse && opSide == 1)
                     return parent;
-                if (!checkThen && opSide == 2)
+                if (checkThen && opSide == 2)
                     return parent;
             }
             if (!checkThen && parent->str() == "&&")
@@ -116,16 +157,29 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    void traverse(Token* start) {
-        for (Token* tok = start->previous(); tok; tok = tok->previous()) {
+    void traverse(Token* start, const Token* end = nullptr) {
+        if (start == end)
+            return;
+        std::size_t i = start->index();
+        for (Token* tok = start->previous(); succedes(tok, end); tok = tok->previous()) {
+            if (tok->index() >= i)
+                throw InternalError(tok, "Cyclic reverse analysis.");
+            i = tok->index();
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
-                                 tok->scope()->type == Scope::ScopeType::eLambda))) {
+                                                       tok->scope()->type == Scope::ScopeType::eLambda))) {
+                const Function* f = tok->scope()->function;
+                if (f && f->isConstructor()) {
+                    if (const Token* initList = f->constructorMemberInitialization())
+                        traverse(tok->previous(), tok->tokAt(initList->index() - tok->index()));
+                }
                 break;
             }
             if (Token::Match(tok, "return|break|continue"))
                 break;
             if (Token::Match(tok, "%name% :"))
                 break;
+            if (Token::simpleMatch(tok, ":"))
+                continue;
             // Evaluate LHS of assignment before RHS
             if (Token* assignTok = assignExpr(tok)) {
                 // If assignTok has broken ast then stop
@@ -153,7 +207,7 @@ struct ReverseTraversal {
                     Analyzer::Action lhsAction =
                         analyzer->analyze(assignTok->astOperand1(), Analyzer::Direction::Reverse);
                     // Assignment from
-                    if (rhsAction.isRead() && !lhsAction.isInvalid()) {
+                    if (rhsAction.isRead() && !lhsAction.isInvalid() && assignTok->astOperand1()->exprId() > 0) {
                         const std::string info = "Assignment from '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand1(), info);
                         if (a) {
@@ -163,7 +217,9 @@ struct ReverseTraversal {
                                                     settings);
                         }
                         // Assignment to
-                    } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownValue()) {
+                    } else if (lhsAction.matches() && !assignTok->astOperand2()->hasKnownIntValue() &&
+                               assignTok->astOperand2()->exprId() > 0 &&
+                               isConstExpression(assignTok->astOperand2(), settings->library, true, true)) {
                         const std::string info = "Assignment to '" + assignTok->expressionString() + "'";
                         ValuePtr<Analyzer> a = analyzer->reanalyze(assignTok->astOperand2(), info);
                         if (a) {
@@ -171,16 +227,25 @@ struct ReverseTraversal {
                                                     assignTok->astOperand2()->scope()->bodyEnd,
                                                     a,
                                                     settings);
-                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), a, settings);
+                            valueFlowGenericReverse(assignTok->astOperand1()->previous(), end, a, settings);
                         }
                     }
                 }
                 if (!continueB)
                     break;
-                Analyzer::Action a = valueFlowGenericForward(assignTop->astOperand2(), analyzer, settings);
-                if (a.isModified())
+                if (!updateRecursive(assignTop->astOperand2()))
                     break;
                 tok = previousBeforeAstLeftmostLeaf(assignTop)->next();
+                continue;
+            }
+            if (tok->str() == ")" && !isUnevaluated(tok)) {
+                if (Token* top = getTopFunction(tok->link())) {
+                    if (!updateRecursive(top))
+                        break;
+                    Token* next = previousBeforeAstLeftmostLeaf(top);
+                    if (next && precedes(next, tok))
+                        tok = next->next();
+                }
                 continue;
             }
             if (tok->str() == "}") {
@@ -211,9 +276,9 @@ struct ReverseTraversal {
                 if (thenAction.isModified() && inLoop)
                     break;
                 else if (thenAction.isModified() && !elseAction.isModified())
-                    analyzer->assume(condTok, hasElse, condTok);
+                    analyzer->assume(condTok, hasElse);
                 else if (elseAction.isModified() && !thenAction.isModified())
-                    analyzer->assume(condTok, !hasElse, condTok);
+                    analyzer->assume(condTok, !hasElse);
                 // Bail if one of the branches are read to avoid FPs due to over constraints
                 else if (thenAction.isIdempotent() || elseAction.isIdempotent() || thenAction.isRead() ||
                          elseAction.isRead())
@@ -239,6 +304,12 @@ struct ReverseTraversal {
                     if (action.isModified())
                         break;
                 }
+                Token* condTok = getCondTokFromEnd(tok->link());
+                if (condTok) {
+                    Analyzer::Result r = valueFlowGenericForward(condTok, analyzer, settings);
+                    if (r.action.isModified())
+                        break;
+                }
                 if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
                     tok = tok->linkAt(-2);
                 if (Token::simpleMatch(tok->previous(), ") {"))
@@ -253,12 +324,23 @@ struct ReverseTraversal {
                 tok = parent;
                 continue;
             }
+            if (tok->str() == "case") {
+                const Scope* scope = tok->scope();
+                while (scope && scope->type != Scope::eSwitch)
+                    scope = scope->nestedIn;
+                if (!scope || scope->type != Scope::eSwitch)
+                    break;
+                tok = tok->tokAt(scope->bodyStart->index() - tok->index() - 1);
+                continue;
+            }
             if (!update(tok))
                 break;
         }
     }
 
     static Token* assignExpr(Token* tok) {
+        if (Token::Match(tok, ")|}"))
+            tok = tok->link();
         while (tok->astParent() && (astIsRHS(tok) || !tok->astParent()->isBinaryOp())) {
             if (tok->astParent()->isAssignmentOp())
                 return tok->astParent();
@@ -283,4 +365,10 @@ void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Se
 {
     ReverseTraversal rt{a, settings};
     rt.traverse(start);
+}
+
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings)
+{
+    ReverseTraversal rt{a, settings};
+    rt.traverse(start, end);
 }

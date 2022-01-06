@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -149,9 +149,9 @@ public:
     std::string fileLine(const Token *tok) const;
 
     /**
-    * Calculates a 64-bit checksum of the token list used to compare
-    * multiple token lists with each other as quickly as possible.
-    */
+     * Calculates a 64-bit checksum of the token list used to compare
+     * multiple token lists with each other as quickly as possible.
+     */
     unsigned long long calculateChecksum() const;
 
     /**

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,8 +28,6 @@
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
 #include <functional> // std::bind, std::placeholders
-#include <sstream>
-#include <utility>
 
 static bool isAcceptedErrorIdChar(char c)
 {
@@ -441,7 +439,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
     return result;
 }
 
-std::list<Suppressions::Suppression> Suppressions::getSuppressions() const
+const std::list<Suppressions::Suppression> &Suppressions::getSuppressions() const
 {
     return mSuppressions;
 }

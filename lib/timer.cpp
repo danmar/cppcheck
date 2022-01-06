@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@
     - add unit tests
         - for --showtime (needs input file)
         - for Timer* classes
-*/
+ */
 
 namespace {
     using dataElementType = std::pair<std::string, struct TimerResultsData>;
@@ -51,7 +51,7 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     std::sort(data.begin(), data.end(), more_second_sec);
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
-    for (std::vector<dataElementType>::const_iterator iter=data.begin() ; iter!=data.end(); ++iter) {
+    for (std::vector<dataElementType>::const_iterator iter=data.begin(); iter!=data.end(); ++iter) {
         const double sec = iter->second.seconds();
         const double secAverage = sec / (double)(iter->second.mNumberOfResults);
         overallData.mClocks += iter->second.mClocks;

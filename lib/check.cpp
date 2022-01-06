@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "settings.h"
 #include "tokenize.h"
 
+#include <cctype>
 #include <iostream>
 
 //---------------------------------------------------------------------------
@@ -46,18 +47,18 @@ void Check::reportError(const ErrorMessage &errmsg)
 }
 
 
-void Check::reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, bool inconclusive)
+void Check::reportError(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
 {
-    const ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive, mSettings ? mSettings->bugHunting : false);
+    const ErrorMessage errmsg(callstack, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty, mSettings ? mSettings->bugHunting : false);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else
         reportError(errmsg);
 }
 
-void Check::reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, bool inconclusive)
+void Check::reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
 {
-    const ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, inconclusive, mSettings ? mSettings->bugHunting : false);
+    const ErrorMessage errmsg(errorPath, mTokenizer ? &mTokenizer->list : nullptr, severity, id, msg, cwe, certainty, mSettings ? mSettings->bugHunting : false);
     if (mErrorLogger)
         mErrorLogger->reportErr(errmsg);
     else

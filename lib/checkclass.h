@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,12 +33,8 @@
 #include <vector>
 
 class ErrorLogger;
-class Function;
-class Scope;
 class Settings;
-class SymbolDatabase;
 class Token;
-class Type;
 
 /// @addtogroup Checks
 /// @{
@@ -48,8 +44,7 @@ class Type;
 class CPPCHECKLIB CheckClass : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckClass() : Check(myName()), mSymbolDatabase(nullptr) {
-    }
+    CheckClass() : Check(myName()), mSymbolDatabase(nullptr) {}
 
     /** @brief This constructor is used when running checks. */
     CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
@@ -74,8 +69,7 @@ public:
         checkClass.virtualDestructor();
         checkClass.checkConst();
         checkClass.copyconstructors();
-        // FIXME: Only report warnings for inherited classes
-        // checkClass.checkVirtualFunctionCallInConstructor();
+        checkClass.checkVirtualFunctionCallInConstructor();
         checkClass.checkDuplInheritedMembers();
         checkClass.checkExplicitConstructors();
         checkClass.checkCopyCtorAndEqOperator();
@@ -149,6 +143,41 @@ public:
     /** @brief Unsafe class check - const reference member */
     void checkUnsafeClassRefMember();
 
+
+    /* multifile checking; one definition rule violations */
+    class MyFileInfo : public Check::FileInfo {
+    public:
+        struct NameLoc {
+            std::string className;
+            std::string fileName;
+            int lineNumber;
+            int column;
+            std::size_t hash;
+
+            bool operator==(const NameLoc& other) const {
+                return isSameLocation(other) && hash == other.hash;
+            }
+
+            bool isSameLocation(const NameLoc& other) const {
+                return fileName == other.fileName &&
+                       lineNumber == other.lineNumber &&
+                       column == other.column;
+            }
+        };
+        std::vector<NameLoc> classDefinitions;
+
+        /** Convert MyFileInfo data into xml string */
+        std::string toString() const OVERRIDE;
+    };
+
+    /** @brief Parse current TU and extract file info */
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
+
+    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
+
+    /** @brief Analyse all file infos for all TU */
+    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
+
 private:
     const SymbolDatabase *mSymbolDatabase;
 
@@ -160,7 +189,7 @@ private:
     void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
-    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool inconclusive);
+    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
@@ -197,8 +226,10 @@ private:
         c.noCopyConstructorError(nullptr, false, nullptr, false);
         c.noOperatorEqError(nullptr, false, nullptr, false);
         c.noDestructorError(nullptr, false, nullptr);
-        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false);
-        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false);
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false, false);
+        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", true, false);
+        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", true, false);
         c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
         c.memsetError(nullptr, "memfunc", "classname", "class");
@@ -252,7 +283,8 @@ private:
                // disabled for now "- If 'copy constructor' defined, 'operator=' also should be defined and vice versa\n"
                "- Check that arbitrary usage of public interface does not result in division by zero\n"
                "- Delete \"self pointer\" and then access 'this'\n"
-               "- Check that the 'override' keyword is used when overriding virtual functions\n";
+               "- Check that the 'override' keyword is used when overriding virtual functions\n"
+               "- Check that the 'one definition rule' is not violated\n";
     }
 
     // operatorEqRetRefThis helper functions
@@ -261,7 +293,12 @@ private:
 
     // operatorEqToSelf helper functions
     bool hasAllocation(const Function *func, const Scope* scope) const;
-    static bool hasAssignSelf(const Function *func, const Token *rhs);
+    bool hasAllocation(const Function *func, const Scope* scope, const Token *start, const Token *end) const;
+    bool hasAllocationInIfScope(const Function *func, const Scope* scope, const Token *ifStatementScopeStart) const;
+    static bool hasAssignSelf(const Function *func, const Token *rhs, const Token **out_ifStatementScopeStart);
+    enum class Bool { TRUE, FALSE, BAILOUT };
+    static Bool isInverted(const Token *tok, const Token *rhs);
+    static const Token * getIfStmtBodyStart(const Token *tok, const Token *rhs);
 
     // checkConst helper functions
     bool isMemberVar(const Scope *scope, const Token *tok) const;
@@ -272,7 +309,10 @@ private:
     // constructors helper function
     /** @brief Information about a member variable. Used when checking for uninitialized variables */
     struct Usage {
-        Usage() : assign(false), init(false) { }
+        explicit Usage(const Variable *var) : var(var), assign(false), init(false) {}
+
+        /** Variable that this usage is for */
+        const Variable *var;
 
         /** @brief has this variable been assigned? */
         bool assign;
@@ -284,32 +324,37 @@ private:
     static bool isBaseClassFunc(const Token *tok, const Scope *scope);
 
     /**
-     * @brief assign a variable in the varlist
-     * @param varid id of variable to mark assigned
-     * @param scope pointer to variable Scope
-     * @param usage reference to usage vector
+     * @brief Create usage list that contains all scope members and also members
+     * of base classes without constructors.
+     * @param scope current class scope
      */
-    static void assignVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage);
+    static std::vector<Usage> createUsageList(const Scope *scope);
+
+    /**
+     * @brief assign a variable in the varlist
+     * @param usageList reference to usage vector
+     * @param varid id of variable to mark assigned
+     */
+    static void assignVar(std::vector<Usage> &usageList, nonneg int varid);
 
     /**
      * @brief initialize a variable in the varlist
+     * @param usageList reference to usage vector
      * @param varid id of variable to mark initialized
-     * @param scope pointer to variable Scope
-     * @param usage reference to usage vector
      */
-    static void initVar(nonneg int varid, const Scope *scope, std::vector<Usage> &usage);
+    static void initVar(std::vector<Usage> &usageList, nonneg int varid);
 
     /**
      * @brief set all variables in list assigned
-     * @param usage reference to usage vector
+     * @param usageList reference to usage vector
      */
-    static void assignAllVar(std::vector<Usage> &usage);
+    static void assignAllVar(std::vector<Usage> &usageList);
 
     /**
      * @brief set all variables in list not assigned and not initialized
-     * @param usage reference to usage vector
+     * @param usageList reference to usage vector
      */
-    static void clearAllVar(std::vector<Usage> &usage);
+    static void clearAllVar(std::vector<Usage> &usageList);
 
     /**
      * @brief parse a scope for a constructor or member function and set the "init" flags in the provided varlist
@@ -328,7 +373,7 @@ private:
      */
     const std::list<const Token *> & getVirtualFunctionCalls(
         const Function & function,
-        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap);
+        std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap);
 
     /**
      * @brief looks for the first virtual function call stack
@@ -337,7 +382,7 @@ private:
      * @param[in,out] pureFuncStack list to append the stack
      */
     void getFirstVirtualFunctionCallStack(
-        std::map<const Function *, std::list<const Token *> > & virtualFunctionCallsMap,
+        std::map<const Function *, std::list<const Token *>> & virtualFunctionCallsMap,
         const Token *callToken,
         std::list<const Token *> & pureFuncStack);
 
@@ -349,7 +394,6 @@ private:
      * @brief Helper for checkThisUseAfterFree
      */
     bool checkThisUseAfterFreeRecursive(const Scope *classScope, const Function *func, const Variable *selfPointer, std::set<const Function *> callstack, const Token **freeToken);
-
 };
 /// @}
 //---------------------------------------------------------------------------

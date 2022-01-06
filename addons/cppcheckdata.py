@@ -17,6 +17,27 @@ EXIT_CODE = 0
 
 current_dumpfile_suppressions = []
 
+def _load_location(location, element):
+    """Load location from element/dict"""
+    location.file = element.get('file')
+    line = element.get('line')
+    if line is None:
+        line = element.get('linenr')
+    if line is None:
+        line = '0'
+    location.linenr = int(line)
+    location.column = int(element.get('column', '0'))
+
+
+class Location:
+    """Utility location class"""
+    file = None
+    linenr = None
+    column = None
+    def __init__(self, element):
+        _load_location(self, element)
+
+
 class Directive:
     """
     Directive class. Contains information about each preprocessor directive in the source code.
@@ -38,17 +59,67 @@ class Directive:
     str = None
     file = None
     linenr = None
-    column = 0
+    column = None
 
     def __init__(self, element):
         self.str = element.get('str')
-        self.file = element.get('file')
-        self.linenr = int(element.get('linenr'))
+        _load_location(self, element)
 
     def __repr__(self):
         attrs = ["str", "file", "linenr"]
         return "{}({})".format(
             "Directive",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
+class MacroUsage:
+    """
+    Tracks preprocessor macro usage
+    """
+
+    name = None  # Macro name
+    file = None
+    linenr = None
+    column = None
+    usefile = None
+    uselinenr = None
+    usecolumn = None
+
+    def __init__(self, element):
+        self.name = element.get('name')
+        _load_location(self, element)
+        self.usefile = element.get('usefile')
+        self.useline = element.get('useline')
+        self.usecolumn = element.get('usecolumn')
+
+    def __repr__(self):
+        attrs = ["name", "file", "linenr", "column", "usefile", "useline", "usecolumn"]
+        return "{}({})".format(
+            "MacroUsage",
+            ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
+        )
+
+
+class PreprocessorIfCondition:
+    """
+    Information about #if/#elif conditions
+    """
+
+    file = None
+    linenr = None
+    column = None
+    E = None
+    result = None
+
+    def __init__(self, element):
+        _load_location(self, element)
+        self.E = element.get('E')
+        self.result = int(element.get('result'))
+
+    def __repr__(self):
+        attrs = ["file", "linenr", "column", "E", "result"]
+        return "{}({})".format(
+            "PreprocessorIfCondition",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
         )
 
@@ -88,7 +159,7 @@ class ValueType:
 
     def __repr__(self):
         attrs = ["type", "sign", "bits", "typeScopeId", "originalTypeName",
-                 "constness", "constness", "pointer"]
+                 "constness", "pointer"]
         return "{}({})".format(
             "ValueType",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -114,7 +185,7 @@ class Token:
 
     The CppcheckData.tokenlist is a list of Token items
 
-    C++ class: http://cppcheck.net/devinfo/doxyoutput/classToken.html
+    C++ class: https://cppcheck.sourceforge.io/devinfo/doxyoutput/classToken.html
 
     Attributes:
         str                Token string
@@ -127,7 +198,7 @@ class Token:
         isName             Is this token a symbol name
         isNumber           Is this token a number, for example 123, 12.34
         isInt              Is this token a int value such as 1234
-        isFloat            Is this token a int value such as 12.34
+        isFloat            Is this token a float value such as 12.34
         isString           Is this token a string literal such as "hello"
         strlen             string length for string literal
         isChar             Is this token a char literal such as 'x'
@@ -141,11 +212,13 @@ class Token:
         isExpandedMacro    Is this token a expanded macro token
         isSplittedVarDeclComma  Is this a comma changed to semicolon in a splitted variable declaration ('int a,b;' => 'int a; int b;')
         isSplittedVarDeclEq     Is this a '=' changed to semicolon in a splitted variable declaration ('int a=5;' => 'int a; a=5;')
+        isImplicitInt      Is this token an implicit "int"?
         varId              varId for token, each variable has a unique non-zero id
         variable           Variable information for this token. See the Variable class.
         function           If this token points at a function call, this attribute has the Function
                            information. See the Function class.
-        values             Possible values of token
+        values             Possible/Known values of token
+        impossible_values  Impossible values of token
         valueType          type information
         typeScope          type scope (token->type()->classScope)
         astParent          ast parent
@@ -191,6 +264,7 @@ class Token:
     isExpandedMacro = False
     isSplittedVarDeclComma = False
     isSplittedVarDeclEq = False
+    isImplicitInt = False
     varId = None
     variableId = None
     variable = None
@@ -198,6 +272,7 @@ class Token:
     function = None
     valuesId = None
     values = None
+    impossible_values = None
     valueType = None
 
     typeScopeId = None
@@ -255,6 +330,8 @@ class Token:
             self.isSplittedVarDeclComma = True
         if element.get('isSplittedVarDeclEq'):
             self.isSplittedVarDeclEq = True
+        if element.get('isImplicitInt'):
+            self.isImplicitInt = True
         self.linkId = element.get('link')
         self.link = None
         if element.get('varId'):
@@ -277,18 +354,17 @@ class Token:
         self.astOperand1 = None
         self.astOperand2Id = element.get('astOperand2')
         self.astOperand2 = None
-        self.file = element.get('file')
-        self.linenr = int(element.get('linenr'))
-        self.column = int(element.get('column'))
+        _load_location(self, element)
 
     def __repr__(self):
         attrs = ["Id", "str", "scopeId", "isName", "isUnsigned", "isSigned",
                 "isNumber", "isInt", "isFloat", "isString", "strlen",
                 "isChar", "isOp", "isArithmeticalOp", "isComparisonOp",
                 "isLogicalOp", "isExpandedMacro", "isSplittedVarDeclComma",
-                "isSplittedVarDeclEq","linkId", "varId", "variableId",
-                "functionId", "valuesId", "valueType", "typeScopeId",
-                "astParentId", "astOperand1Id", "file", "linenr", "column"]
+                "isSplittedVarDeclEq", "isImplicitInt", "linkId", "varId",
+                "variableId", "functionId", "valuesId", "valueType",
+                "typeScopeId", "astParentId", "astOperand1Id", "file",
+                "linenr", "column"]
         return "{}({})".format(
             "Token",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -299,7 +375,15 @@ class Token:
         self.link = IdMap[self.linkId]
         self.variable = IdMap[self.variableId]
         self.function = IdMap[self.functionId]
-        self.values = IdMap[self.valuesId]
+        self.values = []
+        self.impossible_values = []
+        if IdMap[self.valuesId]:
+            for v in IdMap[self.valuesId]:
+                if v.isImpossible():
+                    self.impossible_values.append(v)
+                else:
+                    self.values.append(v)
+                v.setId(IdMap)
         self.typeScope = IdMap[self.typeScopeId]
         self.astParent = IdMap[self.astParentId]
         self.astOperand1 = IdMap[self.astOperand1Id]
@@ -332,11 +416,16 @@ class Token:
                 return value.intvalue
         return None
 
+    def isUnaryOp(self, op):
+        return self.astOperand1 and (self.astOperand2 is None) and self.str == op
+
+    def isBinaryOp(self):
+        return self.astOperand1 and self.astOperand2
 
 class Scope:
     """
     Scope. Information about global scope, function scopes, class scopes, inner scopes, etc.
-    C++ class: http://cppcheck.net/devinfo/doxyoutput/classScope.html
+    C++ class: https://cppcheck.sourceforge.io/devinfo/doxyoutput/classScope.html
 
     Attributes
         bodyStart      The { Token for this scope
@@ -395,54 +484,60 @@ class Scope:
         self.nestedIn = IdMap[self.nestedInId]
         self.function = IdMap[self.functionId]
         for v in self.varlistId:
-            self.varlist.append(IdMap[v])
+            value = IdMap.get(v)
+            if value:
+                self.varlist.append(value)
 
 
 class Function:
     """
     Information about a function
     C++ class:
-    http://cppcheck.net/devinfo/doxyoutput/classFunction.html
+    https://cppcheck.sourceforge.io/devinfo/doxyoutput/classFunction.html
 
     Attributes
         argument                Argument list
+        token                   Token in function implementation
         tokenDef                Token in function definition
         isVirtual               Is this function is virtual
         isImplicitlyVirtual     Is this function is virtual this in the base classes
-        isStatic                Is this function is static
+        isInlineKeyword         Is inline keyword used
+        isStatic                Is this function static?
     """
 
     Id = None
     argument = None
     argumentId = None
+    token = None
+    tokenId = None
     tokenDef = None
     tokenDefId = None
     name = None
     type = None
     isVirtual = None
     isImplicitlyVirtual = None
+    isInlineKeyword = None
     isStatic = None
     nestedIn = None
 
     def __init__(self, element, nestedIn):
         self.Id = element.get('id')
+        self.tokenId = element.get('token')
         self.tokenDefId = element.get('tokenDef')
         self.name = element.get('name')
         self.type = element.get('type')
-        isVirtual = element.get('isVirtual')
-        self.isVirtual = (isVirtual and isVirtual == 'true')
-        isImplicitlyVirtual = element.get('isImplicitlyVirtual')
-        self.isImplicitlyVirtual = (isImplicitlyVirtual and isImplicitlyVirtual == 'true')
-        isStatic = element.get('isStatic')
-        self.isStatic = (isStatic and isStatic == 'true')
+        self.isImplicitlyVirtual = element.get('isImplicitlyVirtual', 'false') == 'true'
+        self.isVirtual = element.get('isVirtual', 'false') == 'true'
+        self.isInlineKeyword = element.get('isInlineKeyword', 'false') == 'true'
+        self.isStatic = element.get('isStatic', 'false') == 'true'
         self.nestedIn = nestedIn
 
         self.argument = {}
         self.argumentId = {}
 
     def __repr__(self):
-        attrs = ["Id", "tokenDefId", "name", "type", "isVirtual",
-                 "isImplicitlyVirtual", "isStatic", "argumentId"]
+        attrs = ["Id", "tokenId", "tokenDefId", "name", "type", "isVirtual",
+                 "isImplicitlyVirtual", "isInlineKeyword", "isStatic", "argumentId"]
         return "{}({})".format(
             "Function",
             ", ".join(("{}={}".format(a, repr(getattr(self, a))) for a in attrs))
@@ -451,6 +546,7 @@ class Function:
     def setId(self, IdMap):
         for argnr, argid in self.argumentId.items():
             self.argument[argnr] = IdMap[argid]
+        self.token = IdMap.get(self.tokenId, None)
         self.tokenDef = IdMap[self.tokenDefId]
 
 
@@ -458,7 +554,7 @@ class Variable:
     """
     Information about a variable
     C++ class:
-    http://cppcheck.net/devinfo/doxyoutput/classVariable.html
+    https://cppcheck.sourceforge.io/devinfo/doxyoutput/classVariable.html
 
     Attributes:
         nameToken       Name token in variable declaration
@@ -512,13 +608,13 @@ class Variable:
         self.access = element.get('access')
         self.scopeId = element.get('scope')
         self.scope = None
-        self.isArgument = element.get('isArgument') == 'true'
+        self.isArgument = (self.access and self.access == 'Argument')
         self.isArray = element.get('isArray') == 'true'
         self.isClass = element.get('isClass') == 'true'
         self.isConst = element.get('isConst') == 'true'
-        self.isGlobal = element.get('access') == 'Global'
+        self.isGlobal = (self.access and self.access == 'Global')
         self.isExtern = element.get('isExtern') == 'true'
-        self.isLocal = element.get('isLocal') == 'true'
+        self.isLocal = (self.access and self.access == 'Local')
         self.isPointer = element.get('isPointer') == 'true'
         self.isReference = element.get('isReference') == 'true'
         self.isStatic = element.get('isStatic') == 'true'
@@ -542,6 +638,21 @@ class Variable:
         self.typeEndToken = IdMap[self.typeEndTokenId]
         self.scope = IdMap[self.scopeId]
 
+
+class TypedefInfo:
+    """
+    TypedefInfo class -- information about typedefs
+    """
+    name = None
+    used = None
+    file = None
+    linenr = None
+    column = None
+
+    def __init__(self, element):
+        self.name = element.get('name')
+        _load_location(self, element)
+        self.used = (element.get('used') == '1')
 
 class Value:
     """
@@ -571,22 +682,41 @@ class Value:
     def isPossible(self):
         return self.valueKind and self.valueKind == 'possible'
 
+    def isImpossible(self):
+        return self.valueKind and self.valueKind == 'impossible'
+
     def __init__(self, element):
         self.intvalue = element.get('intvalue')
         if self.intvalue:
             self.intvalue = int(self.intvalue)
-        self.tokvalue = element.get('tokvalue')
+        self._tokvalueId = element.get('tokvalue')
         self.floatvalue = element.get('floatvalue')
         self.containerSize = element.get('container-size')
+        self.iteratorStart = element.get('iterator-start')
+        self.iteratorEnd = element.get('iterator-end')
+        self._lifetimeId = element.get('lifetime')
+        self.lifetimeScope = element.get('lifetime-scope')
+        self.lifetimeKind = element.get('lifetime-kind')
+        self._symbolicId = element.get('symbolic')
+        self.symbolicDelta = element.get('symbolic-delta')
         self.condition = element.get('condition-line')
+        self.bound = element.get('bound')
+        self.path = element.get('path')
         if self.condition:
             self.condition = int(self.condition)
         if element.get('known'):
             self.valueKind = 'known'
         elif element.get('possible'):
             self.valueKind = 'possible'
+        elif element.get('impossible'):
+            self.valueKind = 'impossible'
         if element.get('inconclusive'):
             self.inconclusive = True
+
+    def setId(self, IdMap):
+        self.tokvalue = IdMap.get(self._tokvalueId)
+        self.lifetime = IdMap.get(self._lifetimeId)
+        self.symbolic = IdMap.get(self._symbolicId)
 
     def __repr__(self):
         attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",
@@ -603,7 +733,7 @@ class ValueFlow:
     Each possible value has a ValueFlow::Value item.
     Each ValueFlow::Value either has a intvalue or tokvalue
     C++ class:
-    http://cppcheck.net/devinfo/doxyoutput/classValueFlow_1_1Value.html
+    https://cppcheck.sourceforge.io/devinfo/doxyoutput/classValueFlow_1_1Value.html
 
     Attributes:
         values    Possible values
@@ -672,6 +802,8 @@ class Configuration:
     Attributes:
         name          Name of the configuration, "" for default
         directives    List of Directive items
+        macro_usage   List of used macros
+        preprocessor_if_conditions  List of preprocessor if conditions that was evaluated during preprocessing
         tokenlist     List of Token items
         scopes        List of Scope items
         functions     List of Function items
@@ -682,22 +814,30 @@ class Configuration:
 
     name = ''
     directives = []
+    macro_usage = []
+    preprocessor_if_conditions = []
     tokenlist = []
     scopes = []
     functions = []
     variables = []
+    typedefInfo = []
     valueflow = []
     standards = None
+    clang_warnings = []
 
     def __init__(self, name):
         self.name = name
         self.directives = []
+        self.macro_usage = []
+        self.preprocessor_if_conditions = []
         self.tokenlist = []
         self.scopes = []
         self.functions = []
         self.variables = []
+        self.typedefInfo = []
         self.valueflow = []
         self.standards = Standards()
+        self.clang_warnings = []
 
     def set_tokens_links(self):
         """Set next/previous links between tokens."""
@@ -709,7 +849,7 @@ class Configuration:
             prev = token
 
     def set_id_map(self, arguments):
-        IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None}
+        IdMap = {None: None, '0': None, '00000000': None, '0000000000000000': None, '0x0': None}
         for token in self.tokenlist:
             IdMap[token.Id] = token
         for scope in self.scopes:
@@ -918,6 +1058,9 @@ class CppcheckData:
         # Iterating <varlist> in a <scope>.
         iter_scope_varlist = False
 
+        # Iterating <typedef-info>
+        iter_typedef_info = False
+
         # Use iterable objects to traverse XML tree for dump files incrementally.
         # Iterative approach is required to avoid large memory consumption.
         # Calling .clear() is necessary to let the element be garbage collected.
@@ -933,6 +1076,12 @@ class CppcheckData:
                     cfg = None
                     cfg_arguments = []
 
+            elif node.tag == 'clang-warning' and event == 'start':
+                cfg.clang_warnings.append({'file': node.get('file'),
+                                           'line': int(node.get('line')),
+                                           'column': int(node.get('column')),
+                                           'message': node.get('message')})
+
             # Parse standards
             elif node.tag == "standards" and event == 'start':
                 continue
@@ -946,6 +1095,14 @@ class CppcheckData:
             # Parse directives list
             elif node.tag == 'directive' and event == 'start':
                 cfg.directives.append(Directive(node))
+
+            # Parse macro usage
+            elif node.tag == 'macro' and event == 'start':
+                cfg.macro_usage.append(MacroUsage(node))
+
+            # Preprocessor #if/#elif condition
+            elif node.tag == "if-cond" and event == 'start':
+                cfg.preprocessor_if_conditions.append(PreprocessorIfCondition(node))
 
             # Parse tokens
             elif node.tag == 'tokenlist' and event == 'start':
@@ -991,6 +1148,12 @@ class CppcheckData:
                         cfg.variables.append(var)
                     else:
                         cfg_arguments.append(var)
+
+            # Parse typedef info
+            elif node.tag == 'typedef-info':
+                iter_typedef_info = (event == 'start')
+            elif iter_typedef_info and node.tag == 'info' and event == 'start':
+                cfg.typedefInfo.append(TypedefInfo(node))
 
             # Parse valueflows (list of values)
             elif node.tag == 'valueflow' and event == 'start':
@@ -1102,10 +1265,30 @@ def ArgumentParser():
     parser.add_argument("--cli",
                         help="Addon is executed from Cppcheck",
                         action="store_true")
+    parser.add_argument("--file-list", metavar='<text>',
+                        default=None,
+                        help="file list in a text file")
     parser.add_argument("-q", "--quiet",
                         help='do not print "Checking ..." lines',
                         action="store_true")
     return parser
+
+
+def get_files(args):
+    """Return dump_files, ctu_info_files"""
+    all_files = args.dumpfile
+    if args.file_list:
+        with open(args.file_list, 'rt') as f:
+            for line in f.readlines():
+                all_files.append(line.rstrip())
+    dump_files = []
+    ctu_info_files = []
+    for f in all_files:
+        if f.endswith('.ctu-info'):
+            ctu_info_files.append(f)
+        else:
+            dump_files.append(f)
+    return dump_files, ctu_info_files
 
 
 def simpleMatch(token, pattern):
@@ -1115,6 +1298,38 @@ def simpleMatch(token, pattern):
         token = token.next
     return True
 
+def get_function_call_name_args(token):
+    """Get function name and arguments for function call
+    name, args = get_function_call_name_args(tok)
+    """
+    if token is None:
+        return None, None
+    if not token.isName or not token.scope.isExecutable:
+        return None, None
+    if not simpleMatch(token.next, '('):
+        return None, None
+    if token.function:
+        nametok = token.function.token
+        if nametok is None:
+            nametok = token.function.tokenDef
+        if token in (token.function.token, token.function.tokenDef):
+            return None, None
+        name = nametok.str
+        while nametok.previous and nametok.previous.previous and nametok.previous.str == '::' and nametok.previous.previous.isName:
+            name = nametok.previous.previous.str + '::' + name
+            nametok = nametok.previous.previous
+        scope = token.function.nestedIn
+        while scope:
+            if scope.className:
+                name = scope.className + '::' + name
+            scope = scope.nestedIn
+    else:
+        nametok = token
+        name = nametok.str
+        while nametok.previous and nametok.previous.previous and nametok.previous.str == '::' and nametok.previous.previous.isName:
+            name = nametok.previous.previous.str + '::' + name
+            nametok = nametok.previous.previous
+    return name, getArguments(token)
 
 def is_suppressed(location, message, errorId):
     for suppression in current_dumpfile_suppressions:
@@ -1142,3 +1357,10 @@ def reportError(location, severity, message, addon, errorId, extra=''):
         sys.stderr.write('%s (%s) %s [%s-%s]\n' % (loc, severity, message, addon, errorId))
         global EXIT_CODE
         EXIT_CODE = 1
+
+def reportSummary(dumpfile, summary_type, summary_data):
+    # dumpfile ends with ".dump"
+    ctu_info_file = dumpfile[:-4] + "ctu-info"
+    with open(ctu_info_file, 'at') as f:
+        msg = {'summary': summary_type, 'data': summary_data}
+        f.write(json.dumps(msg) + '\n')

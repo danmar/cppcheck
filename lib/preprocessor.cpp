@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 
 #include <algorithm>
 #include <cstdint>
-#include <cstring>
 #include <iterator> // back_inserter
 #include <utility>
 
@@ -51,12 +50,11 @@ static std::string trim(const std::string& s)
     return s.substr(beg, end - beg + 1);
 }
 
-Directive::Directive(const std::string &_file, const int _linenr, const std::string &_str):
+Directive::Directive(const std::string &_file, const int _linenr, const std::string &_str) :
     file(_file),
     linenr(_linenr),
     str(trim(_str))
-{
-}
+{}
 
 std::atomic<bool> Preprocessor::missingIncludeFlag;
 std::atomic<bool> Preprocessor::missingSystemIncludeFlag;
@@ -64,8 +62,7 @@ std::atomic<bool> Preprocessor::missingSystemIncludeFlag;
 char Preprocessor::macroChar = char(1);
 
 Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSettings(settings), mErrorLogger(errorLogger)
-{
-}
+{}
 
 Preprocessor::~Preprocessor()
 {
@@ -97,7 +94,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         return false;
 
     // skip spaces after "cppcheck-suppress"
-    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+17);
+    const std::string::size_type pos2 = comment.find_first_not_of(" ", pos1+cppchecksuppress.size());
     if (pos2 == std::string::npos)
         return false;
 
@@ -130,7 +127,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
     return true;
 }
 
-static void inlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
+static void addinlineSuppressions(const simplecpp::TokenList &tokens, Settings &mSettings, std::list<BadInlineSuppression> *bad)
 {
     for (const simplecpp::Token *tok = tokens.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
@@ -190,10 +187,10 @@ void Preprocessor::inlineSuppressions(const simplecpp::TokenList &tokens)
     if (!mSettings.inlineSuppressions)
         return;
     std::list<BadInlineSuppression> err;
-    ::inlineSuppressions(tokens, mSettings, &err);
+    ::addinlineSuppressions(tokens, mSettings, &err);
     for (std::map<std::string,simplecpp::TokenList*>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         if (it->second)
-            ::inlineSuppressions(*it->second, mSettings, &err);
+            ::addinlineSuppressions(*it->second, mSettings, &err);
     }
     for (const BadInlineSuppression &bad : err) {
         error(bad.location.file(), bad.location.line, bad.errmsg);
@@ -295,13 +292,13 @@ static std::string readcondition(const simplecpp::Token *iftok, const std::set<s
         if (sameline(iftok,dtok) && dtok->name && defined.find(dtok->str()) == defined.end() && undefined.find(dtok->str()) == undefined.end())
             configset.insert(dtok->str());
     }
-    std::string cfg;
+    std::string cfgStr;
     for (const std::string &s : configset) {
-        if (!cfg.empty())
-            cfg += ';';
-        cfg += s;
+        if (!cfgStr.empty())
+            cfgStr += ';';
+        cfgStr += s;
     }
-    return cfg;
+    return cfgStr;
 }
 
 static bool hasDefine(const std::string &userDefines, const std::string &cfg)
@@ -327,16 +324,16 @@ static std::string cfg(const std::vector<std::string> &configs, const std::strin
 {
     std::set<std::string> configs2(configs.begin(), configs.end());
     std::string ret;
-    for (const std::string &cfg : configs2) {
-        if (cfg.empty())
+    for (const std::string &c : configs2) {
+        if (c.empty())
             continue;
-        if (cfg == "0")
+        if (c == "0")
             return "";
-        if (hasDefine(userDefines, cfg))
+        if (hasDefine(userDefines, c))
             continue;
         if (!ret.empty())
             ret += ';';
-        ret += cfg;
+        ret += c;
     }
     return ret;
 }
@@ -361,7 +358,7 @@ static bool isUndefined(const std::string &cfg, const std::set<std::string> &und
 static bool getConfigsElseIsFalse(const std::vector<std::string> &configs_if, const std::string &userDefines)
 {
     return std::any_of(configs_if.cbegin(), configs_if.cend(),
-    [=](const std::string &cfg) {
+                       [=](const std::string &cfg) {
         return hasDefine(userDefines, cfg);
     });
 }
@@ -411,6 +408,37 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
             if (isUndefined(config, undefined))
                 config.clear();
 
+            bool ifndef = false;
+            if (cmdtok->str() == "ifndef")
+                ifndef = true;
+            else {
+                const std::vector<std::string> match{"if", "!", "defined", "(", config, ")"};
+                int i = 0;
+                ifndef = true;
+                for (const simplecpp::Token *t = cmdtok; i < match.size(); t = t->next) {
+                    if (!t || t->str() != match[i++]) {
+                        ifndef = false;
+                        break;
+                    }
+                }
+            }
+
+            // include guard..
+            if (ifndef && tok->location.fileIndex > 0) {
+                bool includeGuard = true;
+                for (const simplecpp::Token *t = tok->previous; t; t = t->previous) {
+                    if (t->location.fileIndex == tok->location.fileIndex) {
+                        includeGuard = false;
+                        break;
+                    }
+                }
+                if (includeGuard) {
+                    configs_if.push_back(std::string());
+                    configs_ifndef.push_back(std::string());
+                    continue;
+                }
+            }
+
             configs_if.push_back((cmdtok->str() == "ifndef") ? std::string() : config);
             configs_ifndef.push_back((cmdtok->str() == "ifndef") ? config : std::string());
             ret.insert(cfg(configs_if,userDefines));
@@ -459,6 +487,16 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 std::vector<std::string> configs(configs_if);
                 configs.push_back(configs_ifndef.back());
                 ret.erase(cfg(configs, userDefines));
+                std::set<std::string> temp;
+                temp.swap(ret);
+                for (const std::string &c: temp) {
+                    if (c.find(configs_ifndef.back()) != std::string::npos)
+                        ret.insert(c);
+                    else if (c.empty())
+                        ret.insert(configs.empty() ? configs_ifndef.back() : "");
+                    else
+                        ret.insert(c + ";" + configs_ifndef.back());
+                }
                 if (!elseError.empty())
                     elseError += ';';
                 elseError += cfg(configs_ifndef, userDefines);
@@ -514,41 +552,11 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
 
     const std::set<std::string> configs = getConfigs(tokens1);
 
-    for (const std::string &cfg : configs) {
-        if (mSettings.userUndefs.find(cfg) == mSettings.userUndefs.end()) {
-            result[cfg] = getcode(tokens1, cfg, files, false);
+    for (const std::string &c : configs) {
+        if (mSettings.userUndefs.find(c) == mSettings.userUndefs.end()) {
+            result[c] = getcode(tokens1, c, files, false);
         }
     }
-}
-
-std::string Preprocessor::removeSpaceNearNL(const std::string &str)
-{
-    std::string tmp;
-    char prev = '\n'; // treat start of file as newline
-    for (std::size_t i = 0; i < str.size(); i++) {
-        if (str[i] == ' ' &&
-            (prev == '\n' ||
-             i + 1 >= str.size() || // treat end of file as newline
-             str[i+1] == '\n'
-            )
-           ) {
-            // Ignore space that has new line in either side of it
-        } else {
-            tmp.append(1, str[i]);
-            prev = str[i];
-        }
-    }
-
-    return tmp;
-}
-
-void Preprocessor::preprocessWhitespaces(std::string &processedFile)
-{
-    // Replace all tabs with spaces..
-    std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
-
-    // Remove space characters that are after or before new line character
-    processedFile = removeSpaceNearNL(processedFile);
 }
 
 void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)
@@ -605,12 +613,11 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         dui.defines.push_back(s);
     }
 
-    if (Path::isCPP(filename))
-        dui.defines.emplace_back("__cplusplus");
-
     dui.undefined = mSettings.userUndefs; // -U
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
+    if (Path::isCPP(filename))
+        dui.std = mSettings.standards.getCPP();
     return dui;
 }
 
@@ -699,8 +706,11 @@ simplecpp::TokenList Preprocessor::preprocess(const simplecpp::TokenList &tokens
 
     simplecpp::OutputList outputList;
     std::list<simplecpp::MacroUsage> macroUsage;
+    std::list<simplecpp::IfCond> ifCond;
     simplecpp::TokenList tokens2(files);
-    simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage);
+    simplecpp::preprocess(tokens2, tokens1, files, mTokenLists, dui, &outputList, &macroUsage, &ifCond);
+    mMacroUsage = macroUsage;
+    mIfCond = ifCond;
 
     handleErrors(outputList, throwError);
 
@@ -760,6 +770,9 @@ std::string Preprocessor::getcode(const std::string &filedata, const std::string
     std::string ret;
     try {
         ret = getcode(tokens1, cfg, files, filedata.find("#file") != std::string::npos);
+        // Since "files" is a local variable the tracking info must be cleared..
+        mMacroUsage.clear();
+        mIfCond.clear();
     } catch (const simplecpp::Output &) {
         ret.clear();
     }
@@ -800,7 +813,11 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
-        const ErrorMessage::FileLocation loc(filename, linenr, 0);
+        std::string file = Path::fromNativeSeparators(filename);
+        if (mSettings.relativePaths)
+            file = Path::getRelativePath(file, mSettings.basePaths);
+
+        const ErrorMessage::FileLocation loc(file, linenr, 0);
         locationList.push_back(loc);
     }
     mErrorLogger->reportErr(ErrorMessage(locationList,
@@ -808,7 +825,7 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
                                          Severity::error,
                                          msg,
                                          "preprocessorErrorDirective",
-                                         false));
+                                         Certainty::normal));
 }
 
 // Report that include is missing
@@ -843,7 +860,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
                             "Include file: <" + header + "> not found. Please note: Cppcheck does not need standard library headers to get proper results." :
                             "Include file: \"" + header + "\" not found.",
                             (headerType==SystemHeader) ? "missingIncludeSystem" : "missingInclude",
-                            false);
+                            Certainty::normal);
         mErrorLogger->reportInfo(errmsg);
     }
 }
@@ -863,12 +880,12 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
             if (mu.macroName != macroName)
                 continue;
             bool directiveLocation = std::any_of(mDirectives.cbegin(), mDirectives.cend(),
-            [=](const Directive &dir) {
+                                                 [=](const Directive &dir) {
                 return mu.useLocation.file() == dir.file && mu.useLocation.line == dir.linenr;
             });
 
             if (!directiveLocation) {
-                if (mSettings.isEnabled(Settings::INFORMATION))
+                if (mSettings.severity.isEnabled(Severity::information))
                     validateCfgError(mu.useLocation.file(), mu.useLocation.line, cfg, macroName);
                 ret = false;
             }
@@ -884,7 +901,7 @@ void Preprocessor::validateCfgError(const std::string &file, const unsigned int 
     std::list<ErrorMessage::FileLocation> locationList;
     const ErrorMessage::FileLocation loc(file, line, 0);
     locationList.push_back(loc);
-    const ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, false);
+    const ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, Certainty::normal);
     mErrorLogger->reportInfo(errmsg);
 }
 
@@ -901,11 +918,9 @@ void Preprocessor::getErrorMessages(ErrorLogger *errorLogger, const Settings *se
 
 void Preprocessor::dump(std::ostream &out) const
 {
-    // Create a xml directive dump.
-    // The idea is not that this will be readable for humans. It's a
-    // data dump that 3rd party tools could load and get useful info from.
-    out << "  <directivelist>" << std::endl;
+    // Create a xml dump.
 
+    out << "  <directivelist>" << std::endl;
     for (const Directive &dir : mDirectives) {
         out << "    <directive "
             << "file=\"" << ErrorLogger::toxml(dir.file) << "\" "
@@ -915,6 +930,37 @@ void Preprocessor::dump(std::ostream &out) const
             << "str=\"" << ErrorLogger::toxml(dir.str) << "\"/>" << std::endl;
     }
     out << "  </directivelist>" << std::endl;
+
+    if (!mMacroUsage.empty()) {
+        out << "  <macro-usage>" << std::endl;
+        for (const simplecpp::MacroUsage &macroUsage: mMacroUsage) {
+            out << "    <macro"
+                << " name=\"" << macroUsage.macroName << "\""
+                << " file=\"" << macroUsage.macroLocation.file() << "\""
+                << " line=\"" << macroUsage.macroLocation.line << "\""
+                << " column=\"" << macroUsage.macroLocation.col << "\""
+                << " usefile=\"" << macroUsage.useLocation.file() << "\""
+                << " useline=\"" << macroUsage.useLocation.line << "\""
+                << " usecolumn=\"" << macroUsage.useLocation.col << "\""
+                << " is-known-value=\"" << (macroUsage.macroValueKnown ? "true" : "false") << "\""
+                << "/>" << std::endl;
+        }
+        out << "  </macro-usage>" << std::endl;
+    }
+
+    if (!mIfCond.empty()) {
+        out << "  <simplecpp-if-cond>" << std::endl;
+        for (const simplecpp::IfCond &ifCond: mIfCond) {
+            out << "    <if-cond"
+                << " file=\"" << ErrorLogger::toxml(ifCond.location.file()) << "\""
+                << " line=\"" << ifCond.location.line << "\""
+                << " column=\"" << ifCond.location.col << "\""
+                << " E=\"" << ErrorLogger::toxml(ifCond.E) << "\""
+                << " result=\"" << ifCond.result << "\""
+                << "/>" << std::endl;
+        }
+        out << "  </simplecpp-if-cond>" << std::endl;
+    }
 }
 
 static const std::uint32_t crc32Table[] = {

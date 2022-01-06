@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -108,13 +108,11 @@ public:
 class CPPCHECKLIB CheckLeakAutoVar : public Check {
 public:
     /** This constructor is used when registering the CheckLeakAutoVar */
-    CheckLeakAutoVar() : Check(myName()) {
-    }
+    CheckLeakAutoVar() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
@@ -133,10 +131,10 @@ private:
                     nonneg int recursiveCount);
 
     /** Check token inside expression.
-    * @param tok token inside expression.
-    * @param varInfo Variable info
-    * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
-    */
+     * @param tok token inside expression.
+     * @param varInfo Variable info
+     * @return next token to process (if no other checks needed for this token). NULL if other checks could be performed.
+     */
     const Token * checkTokenInsideExpression(const Token * const tok, VarInfo *varInfo);
 
     /** parse function call */
@@ -149,7 +147,7 @@ private:
     void changeAllocStatusIfRealloc(std::map<int, VarInfo::AllocInfo> &alloctype, const Token *fTok, const Token *retTok);
 
     /** return. either "return" or end of variable scope is seen */
-    void ret(const Token *tok, const VarInfo &varInfo);
+    void ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope = false);
 
     /** if variable is allocated then there is a leak */
     void leakIfAllocated(const Token *vartok, const VarInfo &varInfo);

@@ -1,10 +1,12 @@
 
 import logging
 import os
-import shutil
 import subprocess
 
 # Create Cppcheck project file
+import sys
+
+
 def create_gui_project_file(project_file, root_path=None, import_project=None, paths=None, exclude_paths=None, suppressions=None, addon=None):
     cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
                     '<project version="1">\n')
@@ -32,7 +34,7 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
         cppcheck_xml += '  </suppressions>\n'
     if addon:
         cppcheck_xml += '  <addons>\n'
-        cppcheck_xml += '    <addon>%s</addon>\n' % (addon)
+        cppcheck_xml += '    <addon>%s</addon>\n' % addon
         cppcheck_xml += '  </addons>\n'
     cppcheck_xml += '</project>\n'
 
@@ -41,25 +43,28 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
     f.close()
 
 
+def lookup_cppcheck_exe():
+    # path the script is located in
+    script_path = os.path.dirname(os.path.realpath(__file__))
+
+    exe_name = "cppcheck"
+
+    if sys.platform == "win32":
+        exe_name += ".exe"
+
+    for base in (script_path + '/../../', './'):
+        for path in ('', 'bin/', 'bin/debug/'):
+            exe_path = base + path + exe_name
+            if os.path.isfile(exe_path):
+                return exe_path
+
+    return None
+
+
 # Run Cppcheck with args
 def cppcheck(args):
-    exe = None
-    if os.path.isfile('../../cppcheck.exe'):
-        exe = '../../cppcheck.exe'
-    elif os.path.isfile('../../../cppcheck.exe'):
-        exe = '../../../cppcheck.exe'
-    elif os.path.isfile('../../bin/cppcheck.exe'):
-        exe = '../../bin/cppcheck.exe'
-    elif os.path.isfile('../../../bin/cppcheck.exe'):
-        exe = '../../../bin/cppcheck.exe'
-    elif os.path.isfile('../../bin/cppcheck'):
-        exe = '../../bin/cppcheck'
-    elif os.path.isfile('../../../bin/cppcheck'):
-        exe = '../../../bin/cppcheck'
-    elif os.path.isfile('../../cppcheck'):
-        exe = '../../cppcheck'
-    else:
-        exe = '../../../cppcheck'
+    exe = lookup_cppcheck_exe()
+    assert exe is not None, 'no cppcheck binary found'
 
     logging.info(exe + ' ' + ' '.join(args))
     p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

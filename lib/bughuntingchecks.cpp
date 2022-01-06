@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -199,7 +199,7 @@ static void divByZero(const Token *tok, const ExprEngine::Value &value, ExprEngi
         return;
     if (tok->isImpossibleIntValue(0))
         return;
-    if (value.isUninit() && value.type != ExprEngine::ValueType::BailoutValue)
+    if (value.isUninit(dataBase) && value.type != ExprEngine::ValueType::BailoutValue)
         return;
     float f = getKnownFloatValue(tok, 0.0f);
     if (f > 0.0f || f < 0.0f)
@@ -315,7 +315,7 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
 
     std::string uninitStructMember;
     if (const auto* structValue = dynamic_cast<const ExprEngine::StructValue*>(&value)) {
-        uninitStructMember = structValue->getUninitStructMember();
+        uninitStructMember = structValue->getUninitStructMember(dataBase);
 
         // uninitialized struct member => is there data copy of struct..
         if (!uninitStructMember.empty()) {
@@ -325,10 +325,10 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     }
 
     bool uninitData = false;
-    if (!value.isUninit() && uninitStructMember.empty()) {
+    if (!value.isUninit(dataBase) && uninitStructMember.empty()) {
         if (Token::Match(tok->astParent(), "[(,]")) {
             if (const auto* arrayValue = dynamic_cast<const ExprEngine::ArrayValue*>(&value)) {
-                uninitData = arrayValue->data.size() >= 1 && arrayValue->data[0].value->isUninit();
+                uninitData = arrayValue->data.size() >= 1 && arrayValue->data[0].value->isUninit(dataBase);
             }
         }
 
@@ -474,7 +474,7 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
             return;
     }
 
-    if (inconclusive && !dataBase->settings->inconclusive)
+    if (inconclusive && !dataBase->settings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
     // Avoid FP for array declaration
@@ -627,7 +627,7 @@ static void checkFunctionCall(const Token *tok, const ExprEngine::Value &value, 
         const ExprEngine::ArrayValue &arrayValue = static_cast<const ExprEngine::ArrayValue &>(value);
         auto index0 = std::make_shared<ExprEngine::IntRange>("0", 0, 0);
         for (const auto &v: arrayValue.read(index0)) {
-            if (v.second->isUninit()) {
+            if (v.second->isUninit(dataBase)) {
                 dataBase->reportError(tok, Severity::SeverityType::error, "bughuntingUninitArg", "There is function call, cannot determine that " + std::to_string(num) + getOrdinalText(num) + " argument is initialized.", CWE_USE_OF_UNINITIALIZED_VARIABLE, false);
                 break;
             }

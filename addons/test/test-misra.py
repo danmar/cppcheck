@@ -10,7 +10,6 @@
 import pytest
 import re
 import sys
-import subprocess
 
 from .util import dump_create, dump_remove, convert_json_output
 
@@ -30,8 +29,9 @@ def teardown_module(module):
 
 @pytest.fixture(scope="function")
 def checker():
-    from addons.misra import MisraChecker, MisraSettings, get_args
-    args = get_args()
+    from addons.misra import MisraChecker, MisraSettings, get_args_parser
+    parser = get_args_parser()
+    args = parser.parse_args([])
     settings = MisraSettings(args)
     return MisraChecker(settings)
 
@@ -136,18 +136,20 @@ def test_arguments_regression():
     # Arguments with expected SystemExit
     args_exit = ["--non-exists", "--non-exists-param=42", "-h", "--help"]
 
-    from addons.misra import get_args
+    from addons.misra import get_args_parser
 
     for arg in args_exit:
         sys.argv.append(arg)
         with pytest.raises(SystemExit):
-            get_args()
+            parser = get_args_parser()
+            parser.parse_args()
         sys.argv.remove(arg)
 
     for arg in args_ok:
         sys.argv.append(arg)
         try:
-            get_args()
+            parser = get_args_parser()
+            parser.parse_args()
         except SystemExit:
             pytest.fail("Unexpected SystemExit with '%s'" % arg)
         sys.argv.remove(arg)

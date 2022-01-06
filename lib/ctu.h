@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -97,9 +97,8 @@ namespace CTU {
 
             NestedCall(const std::string &myId, nonneg int myArgNr, const std::string &callId, nonneg int callArgnr, const std::string &callFunctionName, const Location &location)
                 : CallBase(callId, callArgnr, callFunctionName, location),
-                  myId(myId),
-                  myArgNr(myArgNr) {
-            }
+                myId(myId),
+                myArgNr(myArgNr) {}
 
             NestedCall(const Tokenizer *tokenizer, const Function *myFunction, const Token *callToken);
 
@@ -117,11 +116,11 @@ namespace CTU {
         std::map<std::string, std::list<const CallBase *>> getCallsMap() const;
 
         static std::list<ErrorMessage::FileLocation> getErrorPath(InvalidValueType invalidValue,
-                const UnsafeUsage &unsafeUsage,
-                const std::map<std::string, std::list<const CallBase *>> &callsMap,
-                const char info[],
-                const FunctionCall * * const functionCallPtr,
-                bool warning);
+                                                                  const UnsafeUsage &unsafeUsage,
+                                                                  const std::map<std::string, std::list<const CallBase *>> &callsMap,
+                                                                  const char info[],
+                                                                  const FunctionCall ** const functionCallPtr,
+                                                                  bool warning);
     };
 
     extern int maxCtuDepth;

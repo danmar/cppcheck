@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,47 +73,47 @@ public:
     static void saveSettings(QSettings *settings, const CodeEditorStyle& theStyle);
 
 public:
-    bool            mSystemTheme;
-    QColor          widgetFGColor;
-    QColor          widgetBGColor;
-    QColor          highlightBGColor;
-    QColor          lineNumFGColor;
-    QColor          lineNumBGColor;
-    QColor          keywordColor;
-    QFont::Weight   keywordWeight;
-    QColor          classColor;
-    QFont::Weight   classWeight;
-    QColor          quoteColor;
-    QFont::Weight   quoteWeight;
-    QColor          commentColor;
-    QFont::Weight   commentWeight;
-    QColor          symbolFGColor;
-    QColor          symbolBGColor;
-    QFont::Weight   symbolWeight;
+    bool mSystemTheme;
+    QColor widgetFGColor;
+    QColor widgetBGColor;
+    QColor highlightBGColor;
+    QColor lineNumFGColor;
+    QColor lineNumBGColor;
+    QColor keywordColor;
+    QFont::Weight keywordWeight;
+    QColor classColor;
+    QFont::Weight classWeight;
+    QColor quoteColor;
+    QFont::Weight quoteWeight;
+    QColor commentColor;
+    QFont::Weight commentWeight;
+    QColor symbolFGColor;
+    QColor symbolBGColor;
+    QFont::Weight symbolWeight;
 };
 
 static const CodeEditorStyle defaultStyleLight(
-    /* editor FG/BG */          Qt::black, QColor(240, 240, 240),
-    /* highlight BG */          QColor(255, 220, 220),
-    /* line number FG/BG */     Qt::black, QColor(240, 240, 240),
-    /* keyword FG/Weight */     Qt::darkBlue, QFont::Bold,
-    /* class FG/Weight */       Qt::darkMagenta, QFont::Bold,
-    /* quote FG/Weight */       Qt::darkGreen, QFont::Normal,
-    /* comment FG/Weight */     Qt::gray, QFont::Normal,
-    /* Symbol FG/BG/Weight */   Qt::red, QColor(220, 220, 255), QFont::Normal
-);
+    /* editor FG/BG */ Qt::black, QColor(240, 240, 240),
+    /* highlight BG */ QColor(255, 220, 220),
+    /* line number FG/BG */ Qt::black, QColor(240, 240, 240),
+    /* keyword FG/Weight */ Qt::darkBlue, QFont::Bold,
+    /* class FG/Weight */ Qt::darkMagenta, QFont::Bold,
+    /* quote FG/Weight */ Qt::darkGreen, QFont::Normal,
+    /* comment FG/Weight */ Qt::gray, QFont::Normal,
+    /* Symbol FG/BG/Weight */ Qt::red, QColor(220, 220, 255), QFont::Normal
+    );
 
 // Styling derived from Eclipse Color Theme - 'RecognEyes'
 // http://www.eclipsecolorthemes.org/?view=theme&id=30
 static const CodeEditorStyle defaultStyleDark(
-    /* editor FG/BG */          QColor(218, 218, 218), QColor(16, 16, 32),
-    /* highlight BG */          QColor(64, 64, 64),
-    /* line number FG/BG */     QColor(43, 145, 175), QColor(16, 16, 32),
-    /* keyword FG/Weight */     QColor(0, 204, 204), QFont::Bold,
-    /* class FG/Weight */       QColor(218, 0, 218), QFont::Bold,
-    /* quote FG/Weight */       QColor(0, 204, 0), QFont::Normal,
-    /* comment FG/Weight */     QColor(180, 180, 180), QFont::Normal,
-    /* Symbol FG/BG/Weight */   QColor(218, 32, 32), QColor(32, 32, 108), QFont::Normal
-);
+    /* editor FG/BG */ QColor(218, 218, 218), QColor(16, 16, 32),
+    /* highlight BG */ QColor(64, 64, 64),
+    /* line number FG/BG */ QColor(43, 145, 175), QColor(16, 16, 32),
+    /* keyword FG/Weight */ QColor(0, 204, 204), QFont::Bold,
+    /* class FG/Weight */ QColor(218, 0, 218), QFont::Bold,
+    /* quote FG/Weight */ QColor(0, 204, 0), QFont::Normal,
+    /* comment FG/Weight */ QColor(180, 180, 180), QFont::Normal,
+    /* Symbol FG/BG/Weight */ QColor(218, 32, 32), QColor(32, 32, 108), QFont::Normal
+    );
 
 #endif /* CODEEDITORSTYLE_H */

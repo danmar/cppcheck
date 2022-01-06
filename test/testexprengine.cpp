@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,13 +25,11 @@
 #include "tokenize.h"
 #include "testsuite.h"
 
-#include <limits>
 #include <string>
 
 class TestExprEngine : public TestFixture {
 public:
-    TestExprEngine() : TestFixture("TestExprEngine") {
-    }
+    TestExprEngine() : TestFixture("TestExprEngine") {}
 
 private:
     void run() OVERRIDE {
@@ -177,12 +175,13 @@ private:
         return ret;
     }
 
-    std::string expr(const char code[], const std::string &binop) {
+#define expr(code, binop) expr_(code, binop, __FILE__, __LINE__)
+    std::string expr_(const char code[], const std::string &binop, const char* file, int line) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         std::string ret;
         ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             if (tok->str() != binop)
@@ -199,7 +198,8 @@ private:
         return ret;
     }
 
-    std::string functionCallContractExpr(const char code[], const Settings &s) {
+#define functionCallContractExpr(...) functionCallContractExpr_(code, s, __FILE__, __LINE__)
+    std::string functionCallContractExpr_(const char code[], const Settings &s, const char* file, int line) {
         Settings settings;
         settings.bugHunting = true;
         settings.debugBugHunting = true;
@@ -207,7 +207,7 @@ private:
         settings.platform(cppcheck::Platform::Unix64);
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         std::vector<ExprEngine::Callback> callbacks;
         std::ostringstream trace;
         ExprEngine::executeAllFunctions(this, &tokenizer, &settings, callbacks, trace);
@@ -219,20 +219,21 @@ private:
         return TestExprEngine::cleanupExpr(ret.substr(pos1, pos2+1-pos1));
     }
 
-    std::string getRange(const char code[], const std::string &str, int linenr = 0) {
+#define getRange(...) getRange_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string getRange_(const char* file, int line, const char code[], const std::string &str, int linenr = 0) {
         Settings settings;
         settings.platform(cppcheck::Platform::Unix64);
-        settings.library.smartPointers.insert("std::shared_ptr");
+        settings.library.smartPointers["std::shared_ptr"];
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         std::string ret;
         ExprEngine::Callback f = [&](const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase) {
             (void)dataBase;
             if ((linenr == 0 || linenr == tok->linenr()) && tok->expressionString() == str) {
                 if (!ret.empty())
                     ret += ",";
-                ret += value.getRange();
+                ret += (value.getRange)();
             }
         };
         std::vector<ExprEngine::Callback> callbacks;
@@ -242,17 +243,18 @@ private:
         return ret;
     }
 
-    std::string trackExecution(const char code[], Settings *settings = nullptr) {
+#define trackExecution(...) trackExecution_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string trackExecution_(const char* file, int line, const char code[], Settings *settings = nullptr) {
         Settings s;
         if (!settings)
             settings = &s;
         settings->bugHunting = true;
         settings->debugBugHunting = true;
         settings->platform(cppcheck::Platform::Unix64);
-        settings->library.smartPointers.insert("std::shared_ptr");
+        settings->library.smartPointers["std::shared_ptr"];
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         std::vector<ExprEngine::Callback> callbacks;
         std::ostringstream ret;
         ExprEngine::executeAllFunctions(this, &tokenizer, settings, callbacks, ret);
@@ -357,14 +359,14 @@ private:
         ASSERT_EQUALS("1:26: $4=ArrayValue([$3],[:]=$2)\n"
                       "1:26: $3=IntRange(0:2147483647)\n"
                       "1:26: $2=IntRange(-128:127)\n"
-                      "1:27: 0:memory:{s=($4,[$3],[:]=$2)}\n",
+                      "1:27: D0:memory:{s=($4,[$3],[:]=$2)}\n",
                       trackExecution("void foo() { std::string s; }", &settings));
 
 
         ASSERT_EQUALS("1:52: $4=ArrayValue([$3],[:]=$2)\n"
                       "1:52: $3=IntRange(0:2147483647)\n"
                       "1:52: $2=IntRange(-128:127)\n"
-                      "1:66: 0:memory:{s=($4,[$3],[:]=$2)}\n",
+                      "1:66: D0:memory:{s=($4,[$3],[:]=$2)}\n",
                       trackExecution("std::string getName(int); void foo() { std::string s = getName(1); }", &settings));
     }
 
@@ -778,7 +780,7 @@ private:
         ASSERT_EQUALS("2:16: $2:0=IntRange(-2147483648:2147483647)\n"
                       "2:20: $1=ArrayValue([10],[:]=$2)\n"
                       "2:20: $2=IntRange(-2147483648:2147483647)\n"
-                      "2:26: 0:memory:{buf=($1,[10],[:]=$2) x=$2:0}\n",
+                      "2:26: D0:memory:{buf=($1,[10],[:]=$2) x=$2:0}\n",
                       trackExecution(code));
     }
 
@@ -789,10 +791,10 @@ private:
                             "  return buf[0][1][2];\n"
                             "}";
         ASSERT_EQUALS("1:14: $1=IntRange(-2147483648:2147483647)\n"
-                      "1:14: 0:memory:{x=$1}\n"
+                      "1:14: D0:memory:{x=$1}\n"
                       "2:7: $2=ArrayValue([3][4][5],[:]=?)\n"
-                      "2:19: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?)}\n"
-                      "3:20: 0:memory:{x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
+                      "2:19: D0:memory:{x=$1 buf=($2,[3][4][5],[:]=?)}\n"
+                      "3:20: D0:memory:{x=$1 buf=($2,[3][4][5],[:]=?,[((20)*($1))+(7)]=10)}\n",
                       trackExecution(code));
     }
 
@@ -812,10 +814,10 @@ private:
                             "  *x = 1;\n"
                             "}";
         ASSERT_EQUALS("1:28: $2=ArrayValue([$1],[:]=?,null)\n"
-                      "1:28: $1=IntRange(1:ffffffffffffffff)\n"
-                      "1:28: 0:memory:{x=($2,[$1],[:]=?)}\n"
-                      "2:9: 0:memory:{x=($2,[$1],[:]=?,[0]=2)}\n"
-                      "3:9: 0:memory:{x=($2,[$1],[:]=?,[0]=1)}\n",
+                      "1:28: $1=IntRange(1:2147483647)\n"
+                      "1:28: D0:memory:{x=($2,[$1],[:]=?)}\n"
+                      "2:9: D0:memory:{x=($2,[$1],[:]=?,[0]=2)}\n"
+                      "3:9: D0:memory:{x=($2,[$1],[:]=?,[0]=1)}\n",
                       trackExecution(code));
     }
 
@@ -901,7 +903,7 @@ private:
         ASSERT_EQUALS("1:36: $3=ArrayValue([$2],[:]=bailout,null)\n"
                       "1:36: $2=IntRange(1:2147483647)\n"
                       "1:36: bailout=BailoutValue(bailout)\n"
-                      "1:46: 0:memory:{p=($3,[$2],[:]=bailout)}\n",
+                      "1:46: D0:memory:{p=($3,[$2],[:]=bailout)}\n",
                       trackExecution("char *foo(int); void bar() { char *p = foo(1); }"));
     }
 

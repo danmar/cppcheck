@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,20 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QWidget>
-#include <QDialog>
-#include <QString>
-#include <QStringList>
+#include "projectfiledialog.h"
+
 #include <QFileInfo>
 #include <QFileDialog>
-#include <QInputDialog>
 #include <QDir>
 #include <QSettings>
-#include <QProcess>
-#include <QListView>
 #include "common.h"
 #include "newsuppressiondialog.h"
-#include "projectfiledialog.h"
 #include "checkthread.h"
 #include "projectfile.h"
 #include "library.h"
@@ -315,19 +309,19 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
 
     // Human knowledge..
     /*
-    mUI.mListUnknownFunctionReturn->clear();
-    mUI.mListUnknownFunctionReturn->addItem("rand()");
-    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
+       mUI.mListUnknownFunctionReturn->clear();
+       mUI.mListUnknownFunctionReturn->addItem("rand()");
+       for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
         QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
         const bool unknownValues = projectFile->getCheckUnknownFunctionReturn().contains(item->text());
         item->setCheckState(unknownValues ? Qt::Checked : Qt::Unchecked); // AND initialize check state
-    }
-    mUI.mCheckSafeClasses->setChecked(projectFile->getSafeChecks().classes);
-    mUI.mCheckSafeExternalFunctions->setChecked(projectFile->getSafeChecks().externalFunctions);
-    mUI.mCheckSafeInternalFunctions->setChecked(projectFile->getSafeChecks().internalFunctions);
-    mUI.mCheckSafeExternalVariables->setChecked(projectFile->getSafeChecks().externalVariables);
-    */
+       }
+       mUI.mCheckSafeClasses->setChecked(projectFile->getSafeChecks().classes);
+       mUI.mCheckSafeExternalFunctions->setChecked(projectFile->getSafeChecks().externalFunctions);
+       mUI.mCheckSafeInternalFunctions->setChecked(projectFile->getSafeChecks().internalFunctions);
+       mUI.mCheckSafeExternalVariables->setChecked(projectFile->getSafeChecks().externalVariables);
+     */
 
     // Addons..
     QSettings settings;
@@ -389,20 +383,20 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setSuppressions(getSuppressions());
     // Human knowledge
     /*
-    QStringList unknownReturnValues;
-    for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
+       QStringList unknownReturnValues;
+       for (int row = 0; row < mUI.mListUnknownFunctionReturn->count(); ++row) {
         QListWidgetItem *item = mUI.mListUnknownFunctionReturn->item(row);
         if (item->checkState() == Qt::Checked)
             unknownReturnValues << item->text();
-    }
-    projectFile->setCheckUnknownFunctionReturn(unknownReturnValues);
-    ProjectFile::SafeChecks safeChecks;
-    safeChecks.classes = mUI.mCheckSafeClasses->isChecked();
-    safeChecks.externalFunctions = mUI.mCheckSafeExternalFunctions->isChecked();
-    safeChecks.internalFunctions = mUI.mCheckSafeInternalFunctions->isChecked();
-    safeChecks.externalVariables = mUI.mCheckSafeExternalVariables->isChecked();
-    projectFile->setSafeChecks(safeChecks);
-    */
+       }
+       projectFile->setCheckUnknownFunctionReturn(unknownReturnValues);
+       ProjectFile::SafeChecks safeChecks;
+       safeChecks.classes = mUI.mCheckSafeClasses->isChecked();
+       safeChecks.externalFunctions = mUI.mCheckSafeExternalFunctions->isChecked();
+       safeChecks.internalFunctions = mUI.mCheckSafeInternalFunctions->isChecked();
+       safeChecks.externalVariables = mUI.mCheckSafeExternalVariables->isChecked();
+       projectFile->setSafeChecks(safeChecks);
+     */
     // Addons
     QStringList list;
     if (mUI.mAddonThreadSafety->isChecked())
@@ -431,8 +425,8 @@ QString ProjectFileDialog::getExistingDirectory(const QString &caption, bool tra
     const QFileInfo inf(mProjectFile->getFilename());
     const QString rootpath = inf.absolutePath();
     QString selectedDir = QFileDialog::getExistingDirectory(this,
-                          caption,
-                          rootpath);
+                                                            caption,
+                                                            rootpath);
 
     if (selectedDir.isEmpty())
         return QString();
@@ -497,8 +491,8 @@ void ProjectFileDialog::browseImportProject()
     filters[tr("Compile database")] = "compile_commands.json";
     filters[tr("Borland C++ Builder 6")] = "*.bpr";
     QString fileName = QFileDialog::getOpenFileName(this, tr("Import Project"),
-                       dir.canonicalPath(),
-                       toFilterString(filters));
+                                                    dir.canonicalPath(),
+                                                    toFilterString(filters));
     if (!fileName.isEmpty()) {
         mUI.mEditImportProject->setText(dir.relativeFilePath(fileName));
         updatePathsAndDefines();
@@ -676,17 +670,46 @@ void ProjectFileDialog::setLibraries(const QStringList &libraries)
     }
 }
 
-void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
+void ProjectFileDialog::addSingleSuppression(const Suppressions::Suppression &suppression)
 {
-    mSuppressions = suppressions;
+    QString suppression_name;
+    static char sep = QDir::separator().toLatin1();
+    bool found_relative = false;
 
-    QStringList s;
-    foreach (const Suppressions::Suppression &suppression, mSuppressions) {
-        s << QString::fromStdString(suppression.getText());
+    // Replace relative file path in the suppression with the absolute one
+    if ((suppression.fileName.find("*") == std::string::npos) &&
+        (suppression.fileName.find(sep) == std::string::npos)) {
+        QFileInfo inf(mProjectFile->getFilename());
+        QString rootpath = inf.absolutePath();
+        if (QFile::exists(QString{"%1%2%3"}.arg(rootpath,
+                                                QDir::separator(),
+                                                QString::fromStdString(suppression.fileName)))) {
+            Suppressions::Suppression sup = suppression;
+            sup.fileName = rootpath.toLatin1().constData();
+            sup.fileName += sep;
+            sup.fileName += suppression.fileName;
+            mSuppressions += sup;
+            suppression_name = QString::fromStdString(sup.getText());
+            found_relative = true;
+        }
     }
 
+    if (!found_relative) {
+        mSuppressions += suppression;
+        suppression_name = QString::fromStdString(suppression.getText());
+    }
+
+    mUI.mListSuppressions->addItem(suppression_name);
+}
+
+void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &suppressions)
+{
     mUI.mListSuppressions->clear();
-    mUI.mListSuppressions->addItems(s);
+    QList<Suppressions::Suppression> new_suppressions = suppressions;
+    mSuppressions.clear();
+    foreach (const Suppressions::Suppression &suppression, new_suppressions) {
+        addSingleSuppression(suppression);
+    }
     mUI.mListSuppressions->sortItems();
 }
 
@@ -781,7 +804,7 @@ void ProjectFileDialog::addSuppression()
 {
     NewSuppressionDialog dlg;
     if (dlg.exec() == QDialog::Accepted) {
-        setSuppressions(mSuppressions << dlg.getSuppression());
+        addSingleSuppression(dlg.getSuppression());
     }
 }
 
@@ -826,9 +849,9 @@ int ProjectFileDialog::getSuppressionIndex(const QString &shortText) const
 void ProjectFileDialog::browseMisraFile()
 {
     const QString fileName = QFileDialog::getOpenFileName(this,
-                             tr("Select MISRA rule texts file"),
-                             QDir::homePath(),
-                             tr("Misra rule texts file (%1)").arg("*.txt"));
+                                                          tr("Select MISRA rule texts file"),
+                                                          QDir::homePath(),
+                                                          tr("MISRA rule texts file (%1)").arg("*.txt"));
     if (!fileName.isEmpty()) {
         QSettings settings;
         mUI.mEditMisraFile->setText(fileName);

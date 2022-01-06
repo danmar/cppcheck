@@ -2,11 +2,11 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
-#include <QListWidgetItem>
 #include <QString>
-#include <QTextStream>
 #include <QFileSystemModel>
 
+class QListWidgetItem;
+class QTextStream;
 namespace Ui {
     class MainWindow;
 }
@@ -30,6 +30,7 @@ public slots:
     void findInFilesClicked();
     void directorytreeDoubleClick();
     void searchResultsDoubleClick();
+    void resultsContextMenu(const QPoint& pos);
 
 private:
     Ui::MainWindow *ui;

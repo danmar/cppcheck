@@ -21,17 +21,19 @@
 
 // C++11 override
 #if defined(_MSC_VER) || (defined(__GNUC__) && (__GNUC__ >= 5)) \
-  || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
-  || defined(__CPPCHECK__)
+    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__CPPCHECK__)
 #  define OVERRIDE override
+#  define FINAL final
 #else
 #  define OVERRIDE
+#  define FINAL
 #endif
 
 // C++11 noexcept
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-  || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
-  || defined(__CPPCHECK__)
+    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__CPPCHECK__)
 #  define NOEXCEPT noexcept
 #else
 #  define NOEXCEPT
@@ -39,11 +41,20 @@
 
 // C++11 noreturn
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-  || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
-  || defined(__CPPCHECK__)
+    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__CPPCHECK__)
 #  define NORETURN [[noreturn]]
 #else
 #  define NORETURN
+#endif
+
+// fallthrough
+#if defined(__clang__)
+#  define FALLTHROUGH [[clang::fallthrough]]
+#elif (defined(__GNUC__) && (__GNUC__ >= 7))
+#  define FALLTHROUGH __attribute__((fallthrough))
+#else
+#  define FALLTHROUGH
 #endif
 
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type

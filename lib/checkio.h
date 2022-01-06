@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,13 +43,11 @@ class ErrorLogger;
 class CPPCHECKLIB CheckIO : public Check {
 public:
     /** @brief This constructor is used when registering CheckIO */
-    CheckIO() : Check(myName()) {
-    }
+    CheckIO() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
     CheckIO(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks on the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
@@ -114,13 +112,14 @@ private:
     void writeReadOnlyFileError(const Token *tok);
     void useClosedFileError(const Token *tok);
     void seekOnAppendedFileError(const Token *tok);
+    void incompatibleFileOpenError(const Token *tok, const std::string &filename);
     void invalidScanfError(const Token *tok);
     void wrongPrintfScanfArgumentsError(const Token* tok,
                                         const std::string &functionName,
                                         nonneg int numFormat,
                                         nonneg int numFunction);
     void wrongPrintfScanfPosixParameterPositionError(const Token* tok, const std::string& functionName,
-            nonneg int index, nonneg int numFunction);
+                                                     nonneg int index, nonneg int numFunction);
     void invalidScanfArgTypeError_s(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidScanfArgTypeError_int(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo, bool isUnsigned);
     void invalidScanfArgTypeError_float(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
@@ -131,7 +130,7 @@ private:
     void invalidPrintfArgTypeError_sint(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_float(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidLengthModifierError(const Token* tok, nonneg int numFormat, const std::string& modifier);
-    void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, char c);
+    void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, const std::string& specifier);
     static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
     static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
 
@@ -145,6 +144,7 @@ private:
         c.writeReadOnlyFileError(nullptr);
         c.useClosedFileError(nullptr);
         c.seekOnAppendedFileError(nullptr);
+        c.incompatibleFileOpenError(nullptr, "tmp");
         c.invalidScanfError(nullptr);
         c.wrongPrintfScanfArgumentsError(nullptr, "printf",3,2);
         c.invalidScanfArgTypeError_s(nullptr,  1, "s", nullptr);
@@ -157,8 +157,8 @@ private:
         c.invalidPrintfArgTypeError_sint(nullptr,  1, "i", nullptr);
         c.invalidPrintfArgTypeError_float(nullptr,  1, "f", nullptr);
         c.invalidLengthModifierError(nullptr,  1, "I");
-        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, 's');
-        c.invalidScanfFormatWidthError(nullptr,  99, -1, nullptr, 's');
+        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, "s");
+        c.invalidScanfFormatWidthError(nullptr,  99, -1, nullptr, "s");
         c.wrongPrintfScanfPosixParameterPositionError(nullptr,  "printf", 2, 1);
     }
 
@@ -174,6 +174,7 @@ private:
                "- File input/output without positioning results in undefined behaviour\n"
                "- Read to a file that has only been opened for writing (or vice versa)\n"
                "- Repositioning operation on a file opened in append mode\n"
+               "- The same file can't be open for read and write at the same time on different streams\n"
                "- Using fflush() on an input stream\n"
                "- Invalid usage of output stream. For example: 'std::cout << std::cout;'\n"
                "- Wrong number of arguments given to 'printf' or 'scanf;'\n";

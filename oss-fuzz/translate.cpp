@@ -1,6 +1,6 @@
 
-#include <fstream>
 #include <iostream>
+#include <fstream>
 
 #include "type2.h"
 

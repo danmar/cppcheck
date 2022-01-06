@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -47,13 +47,11 @@ class ValueType;
 class CPPCHECKLIB CheckCondition : public Check {
 public:
     /** This constructor is used when registering the CheckAssignIf */
-    CheckCondition() : Check(myName()) {
-    }
+    CheckCondition() : Check(myName()) {}
 
     /** This constructor is used when running checks. */
     CheckCondition(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger) {}
 
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
         CheckCondition checkCondition(tokenizer, settings, errorLogger);
@@ -70,6 +68,8 @@ public:
         checkCondition.checkBadBitmaskCheck();
         checkCondition.comparison();
         checkCondition.checkModuloAlwaysTrueFalse();
+        checkCondition.checkAssignmentInCondition();
+        checkCondition.checkCompareValueOutOfTypeRange();
     }
 
     /** mismatching assignment / comparison */
@@ -122,6 +122,9 @@ public:
 
     void checkDuplicateConditionalAssign();
 
+    /** @brief Assignment in condition */
+    void checkAssignmentInCondition();
+
 private:
     // The conditions that have been diagnosed
     std::set<const Token*> mCondDiags;
@@ -161,6 +164,11 @@ private:
 
     void duplicateConditionalAssignError(const Token *condTok, const Token* assignTok);
 
+    void assignmentInCondition(const Token *eq);
+
+    void checkCompareValueOutOfTypeRange();
+    void compareValueOutOfTypeRangeError(const Token *comparison, const std::string &type, long long value, bool result);
+
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
         CheckCondition c(nullptr, settings, errorLogger);
 
@@ -183,6 +191,8 @@ private:
         c.invalidTestForOverflow(nullptr, nullptr, "false");
         c.pointerAdditionResultNotNullError(nullptr, nullptr);
         c.duplicateConditionalAssignError(nullptr, nullptr);
+        c.assignmentInCondition(nullptr);
+        c.compareValueOutOfTypeRangeError(nullptr, "unsigned char", 256, true);
     }
 
     static std::string myName() {
@@ -203,7 +213,8 @@ private:
                "- Mutual exclusion over || always evaluating to true\n"
                "- Comparisons of modulo results that are always true/false.\n"
                "- Known variable values => condition is always true/false\n"
-               "- Invalid test for overflow. Some mainstream compilers remove such overflow tests when optimising code.\n";
+               "- Invalid test for overflow. Some mainstream compilers remove such overflow tests when optimising code.\n"
+               "- Suspicious assignment of container/iterator in condition => condition is always true.\n";
     }
 };
 /// @}

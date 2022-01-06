@@ -8,6 +8,7 @@
 #include <QDirIterator>
 #include <QFileInfo>
 #include <QFileDialog>
+#include <QProgressDialog>
 #include <QMimeDatabase>
 #include <ctime>
 #include <cstdlib>
@@ -21,7 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     mVersionRe("^(master|main|your|head|[12].[0-9][0-9]?) (.*)"),
-    hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx"},
+    hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx", "*.ipp", "*.ixx"},
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
     ui->setupUi(this);
@@ -30,6 +31,10 @@ MainWindow::MainWindow(QWidget *parent) :
     if (!workFolder.exists()) {
         workFolder.mkdir(WORK_FOLDER);
     }
+
+    ui->results->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->results, &QListWidget::customContextMenuRequested,
+            this, &MainWindow::resultsContextMenu);
 
     mFSmodel.setRootPath(WORK_FOLDER);
     mFSmodel.setReadOnly(true);
@@ -152,10 +157,29 @@ void MainWindow::filter(QString filter)
 
 bool MainWindow::runProcess(const QString &programName, const QStringList &arguments)
 {
+    QProgressDialog dialog("Running external process: " + programName, "Kill", 0 /*min*/, 1 /*max*/, this);
+    dialog.setWindowModality(Qt::WindowModal);
+    dialog.setMinimumDuration(0 /*msec*/);
+    dialog.setValue(0);
+
     QProcess process;
     process.setWorkingDirectory(WORK_FOLDER);
-    process.start(programName, arguments);
-    bool success = process.waitForFinished(-1);
+    process.start(programName, arguments);  // async action
+
+    bool success = false;
+    bool state = (QProcess::Running == process.state() || QProcess::Starting == process.state());
+    while (!success && state) {
+        success = process.waitForFinished(50 /*msec*/);
+        // Not the best way to keep UI unfreeze, keep work async in other thread much more a Qt style
+        QCoreApplication::processEvents();
+        if (dialog.wasCanceled()) {
+            process.kill();
+            success = false;
+            break;
+        }
+        state = (QProcess::Running == process.state() || QProcess::Starting == process.state());
+    }
+    dialog.setValue(1);
     if (!success) {
         QString errorstr(programName);
         errorstr.append(": ");
@@ -322,3 +346,20 @@ void MainWindow::searchResultsDoubleClick()
     const int line = filename.midRef(idx + 1).toInt();
     showSrcFile(WORK_FOLDER + QString{"/"} + filename.left(idx), "", line);
 }
+
+void MainWindow::resultsContextMenu(const QPoint& pos)
+{
+    if (ui->results->selectedItems().isEmpty())
+        return;
+    QMenu submenu;
+    submenu.addAction("Copy");
+    QAction* menuItem = submenu.exec(ui->results->mapToGlobal(pos));
+    if (menuItem && menuItem->text().contains("Copy"))
+    {
+        QString text;
+        for (const auto *res: ui->results->selectedItems())
+            text += res->text() + "\n";
+        QApplication::clipboard()->setText(text);
+    }
+}
+

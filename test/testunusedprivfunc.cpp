@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,14 +28,13 @@
 
 class TestUnusedPrivateFunction : public TestFixture {
 public:
-    TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction") {
-    }
+    TestUnusedPrivateFunction() : TestFixture("TestUnusedPrivateFunction") {}
 
 private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::style);
 
         TEST_CASE(test1);
         TEST_CASE(test2);
@@ -416,7 +415,7 @@ private:
               "}\n"
               "class A::B {"
               "  B() { A a; a.f(); }\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -663,7 +662,7 @@ private:
               "{"
               "    MountOperation aExample(10);"
               "}"
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -690,7 +689,7 @@ private:
               "{"
               "    MountOperation aExample(10);"
               "}"
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -717,7 +716,7 @@ private:
               "{"
               "    MountOperation aExample(10);"
               "}"
-             );
+              );
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 #include "testsuite.h"
 #include "threadexecutor.h"
 
-#include <cstddef>
 #include <list>
 #include <map>
 #include <string>
@@ -32,8 +31,7 @@
 
 class TestSuppressions : public TestFixture {
 public:
-    TestSuppressions() : TestFixture("TestSuppressions") {
-    }
+    TestSuppressions() : TestFixture("TestSuppressions") {}
 
 private:
 
@@ -83,6 +81,9 @@ private:
     Suppressions::ErrorMessage errorMessage(const std::string &errorId) const {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
+        ret.hash = 0;
+        ret.lineNumber = 0;
+        ret.certainty = Certainty::CertaintyLevel::normal;
         return ret;
     }
 
@@ -184,8 +185,8 @@ private:
         settings.exitCode = 1;
         settings.inlineSuppressions = true;
         if (suppression == "unusedFunction")
-            settings.addEnabled("unusedFunction");
-        settings.addEnabled("information");
+            settings.checks.setEnabled(Checks::unusedFunction, true);
+        settings.severity.enable(Severity::information);
         settings.jointSuppressionReport = true;
         if (!suppression.empty()) {
             std::string r = settings.nomsg.addSuppressionLine(suppression);
@@ -214,7 +215,7 @@ private:
         Settings settings;
         settings.jobs = 1;
         settings.inlineSuppressions = true;
-        settings.addEnabled("information");
+        settings.severity.enable(Severity::information);
         if (!suppression.empty()) {
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
@@ -680,7 +681,7 @@ private:
 
         CppCheck cppCheck(*this, true, nullptr);
         Settings& settings = cppCheck.settings();
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::style);
         settings.inlineSuppressions = true;
         settings.relativePaths = true;
         settings.basePaths.emplace_back("/somewhere");
@@ -710,7 +711,7 @@ private:
                             "_asm\n"
                             "{\n"
                             "   // cppcheck-suppress syntaxError\n"
-                            "   push  EAX               ; save EAX for callers \n"
+                            "   push  EAX               ; save EAX for callers\n"
                             "   mov   EAX,Real10        ; get the address pointed to by Real10\n"
                             "   fld   TBYTE PTR [EAX]   ; load an extended real (10 bytes)\n"
                             "   fstp  QWORD PTR result  ; store a double (8 bytes)\n"

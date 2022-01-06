@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 #include <set>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -62,14 +61,14 @@ public:
         explicit Error(ErrorCode e) : errorcode(e) {}
         template<typename T>
         Error(ErrorCode e, T&& r) : errorcode(e), reason(r) {}
-        ErrorCode     errorcode;
-        std::string   reason;
+        ErrorCode errorcode;
+        std::string reason;
     };
 
-    Error load(const char exename [], const char path []);
+    Error load(const char exename[], const char path[]);
     Error load(const tinyxml2::XMLDocument &doc);
 
-    /** this is primarily meant for unit tests. it only returns true/false */
+    /** this is used for unit tests */
     bool loadxmldata(const char xmldata[], std::size_t len);
 
     struct AllocFunc {
@@ -168,6 +167,14 @@ public:
     bool formatstr_scan(const Token* ftok) const;
     bool formatstr_secure(const Token* ftok) const;
 
+    struct NonOverlappingData {
+        int ptr1Arg;
+        int ptr2Arg;
+        int sizeArg;
+        int strlenArg;
+    };
+    const NonOverlappingData* getNonOverlappingData(const Token *ftok) const;
+
     struct WarnInfo {
         std::string message;
         Standards standards;
@@ -196,8 +203,8 @@ public:
 
     class Container {
     public:
-        Container() :
-            type_templateArgNo(-1),
+        Container()
+            : type_templateArgNo(-1),
             size_templateArgNo(-1),
             arrayLike_indexOp(false),
             stdStringLike(false),
@@ -205,24 +212,47 @@ public:
             opLessAllowed(true),
             hasInitializerListConstructor(false),
             unstableErase(false),
-            unstableInsert(false) {
-        }
+            unstableInsert(false),
+            view(false)
+        {}
 
         enum class Action {
-            RESIZE, CLEAR, PUSH, POP, FIND, INSERT, ERASE, CHANGE_CONTENT, CHANGE, CHANGE_INTERNAL,
+            RESIZE,
+            CLEAR,
+            PUSH,
+            POP,
+            FIND,
+            INSERT,
+            ERASE,
+            CHANGE_CONTENT,
+            CHANGE,
+            CHANGE_INTERNAL,
             NO_ACTION
         };
         enum class Yield {
-            AT_INDEX, ITEM, BUFFER, BUFFER_NT, START_ITERATOR, END_ITERATOR, ITERATOR, SIZE, EMPTY,
+            AT_INDEX,
+            ITEM,
+            BUFFER,
+            BUFFER_NT,
+            START_ITERATOR,
+            END_ITERATOR,
+            ITERATOR,
+            SIZE,
+            EMPTY,
             NO_YIELD
         };
         struct Function {
             Action action;
             Yield yield;
         };
+        struct RangeItemRecordTypeItem {
+            std::string name;
+            int templateParameter;
+        };
         std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
         int type_templateArgNo;
+        std::vector<RangeItemRecordTypeItem> rangeItemRecordType;
         int size_templateArgNo;
         bool arrayLike_indexOp;
         bool stdStringLike;
@@ -231,6 +261,7 @@ public:
         bool hasInitializerListConstructor;
         bool unstableErase;
         bool unstableInsert;
+        bool view;
 
         Action getAction(const std::string& function) const {
             const std::map<std::string, Function>::const_iterator i = functions.find(function);
@@ -245,6 +276,9 @@ public:
                 return i->second.yield;
             return Yield::NO_YIELD;
         }
+
+        static Yield yieldFrom(const std::string& yieldName);
+        static Action actionFrom(const std::string& actionName);
     };
     std::map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
@@ -260,23 +294,22 @@ public:
             optional(false),
             variadic(false),
             iteratorInfo(),
-            direction(Direction::DIR_UNKNOWN) {
-        }
+            direction(Direction::DIR_UNKNOWN) {}
 
-        bool         notbool;
-        bool         notnull;
-        int          notuninit;
-        bool         formatstr;
-        bool         strz;
-        bool         optional;
-        bool         variadic;
-        std::string  valid;
+        bool notbool;
+        bool notnull;
+        int notuninit;
+        bool formatstr;
+        bool strz;
+        bool optional;
+        bool variadic;
+        std::string valid;
 
         class IteratorInfo {
         public:
             IteratorInfo() : container(0), it(false), first(false), last(false) {}
 
-            int  container;
+            int container;
             bool it;
             bool first;
             bool last;
@@ -314,7 +347,21 @@ public:
         bool formatstr;
         bool formatstr_scan;
         bool formatstr_secure;
-        Function() : use(false), leakignore(false), isconst(false), ispure(false), useretval(UseRetValType::NONE), ignore(false), formatstr(false), formatstr_scan(false), formatstr_secure(false) {}
+        Container::Action containerAction;
+        Container::Yield containerYield;
+        Function()
+            : use(false),
+            leakignore(false),
+            isconst(false),
+            ispure(false),
+            useretval(UseRetValType::NONE),
+            ignore(false),
+            formatstr(false),
+            formatstr_scan(false),
+            formatstr_secure(false),
+            containerAction(Container::Action::NO_ACTION),
+            containerYield(Container::Yield::NO_YIELD)
+        {}
     };
 
     const Function *getFunction(const Token *ftok) const;
@@ -411,6 +458,9 @@ public:
 
     bool isimporter(const std::string& file, const std::string &importer) const;
 
+    const Token* getContainerFromYield(const Token* tok, Container::Yield yield) const;
+    const Token* getContainerFromAction(const Token* tok, Container::Action action) const;
+
     bool isreflection(const std::string &token) const {
         return mReflection.find(token) != mReflection.end();
     }
@@ -424,12 +474,18 @@ public:
 
     std::vector<std::string> defines; // to provide some library defines
 
-    std::unordered_set<std::string> smartPointers;
+    struct SmartPointer {
+        std::string name = "";
+        bool unique = false;
+    };
+
+    std::map<std::string, SmartPointer> smartPointers;
     bool isSmartPointer(const Token *tok) const;
+    const SmartPointer* detectSmartPointer(const Token* tok) const;
 
     struct PodType {
-        unsigned int   size;
-        char           sign;
+        unsigned int size;
+        char sign;
         enum class Type { NO, BOOL, CHAR, SHORT, INT, LONG, LONGLONG } stdtype;
     };
     const struct PodType *podtype(const std::string &name) const {
@@ -444,8 +500,7 @@ public:
             , mLong(false)
             , mPointer(false)
             , mPtrPtr(false)
-            , mConstPtr(false) {
-        }
+            , mConstPtr(false) {}
         bool operator == (const PlatformType & type) const {
             return (mSigned == type.mSigned &&
                     mUnsigned == type.mUnsigned &&
@@ -564,7 +619,7 @@ private:
     std::map<std::string, AllocFunc> mAlloc; // allocation functions
     std::map<std::string, AllocFunc> mDealloc; // deallocation functions
     std::map<std::string, AllocFunc> mRealloc; // reallocation functions
-    std::map<std::string, FalseTrueMaybe> mNoReturn; // is function noreturn?
+    std::unordered_map<std::string, FalseTrueMaybe> mNoReturn; // is function noreturn?
     std::map<std::string, std::string> mReturnValue;
     std::map<std::string, std::string> mReturnValueType;
     std::map<std::string, int> mReturnValueContainer;
@@ -572,15 +627,16 @@ private:
     std::map<std::string, bool> mReportErrors;
     std::map<std::string, bool> mProcessAfterCode;
     std::set<std::string> mMarkupExtensions; // file extensions of markup files
-    std::map<std::string, std::set<std::string> > mKeywords; // keywords for code in the library
+    std::map<std::string, std::set<std::string>> mKeywords;  // keywords for code in the library
     std::map<std::string, CodeBlock> mExecutableBlocks; // keywords for blocks of executable code
     std::map<std::string, ExportedFunctions> mExporters; // keywords that export variables/functions to libraries (meta-code/macros)
-    std::map<std::string, std::set<std::string> > mImporters; // keywords that import variables/functions
+    std::map<std::string, std::set<std::string>> mImporters;  // keywords that import variables/functions
     std::map<std::string, int> mReflection; // invocation of reflection
     std::unordered_map<std::string, struct PodType> mPodTypes; // pod types
     std::map<std::string, PlatformType> mPlatformTypes; // platform independent typedefs
     std::map<std::string, Platform> mPlatforms; // platform dependent typedefs
     std::map<std::pair<std::string,std::string>, TypeCheck> mTypeChecks;
+    std::unordered_map<std::string, NonOverlappingData> mNonOverlappingData;
 
     const ArgumentChecks * getarg(const Token *ftok, int argnr) const;
 

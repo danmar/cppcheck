@@ -16,12 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "resultsview.h"
+
 #include <QMessageBox>
 #include <QStandardItemModel>
-#include <QStandardItem>
 #include <QVariant>
-#include <QString>
-#include <QModelIndex>
 #include <QPrinter>
 #include <QPrintDialog>
 #include <QPrintPreviewDialog>
@@ -30,7 +29,6 @@
 #include <QDate>
 #include <QMenu>
 #include <QClipboard>
-#include "resultsview.h"
 #include "common.h"
 #include "erroritem.h"
 #include "txtreport.h"
@@ -38,7 +36,6 @@
 #include "xmlreportv2.h"
 #include "csvreport.h"
 #include "printablereport.h"
-#include "applicationlist.h"
 #include "checkstatistics.h"
 #include "path.h"
 #include "codeeditorstyle.h"
@@ -331,7 +328,7 @@ void ResultsView::checkingFinished()
             msg.exec();
         } //If we have errors but they aren't visible, tell user about it
         else if (!mUI.mTree->hasVisibleResults()) {
-            QString text = tr("Errors were found, but they are configured to be hidden.\n"\
+            QString text = tr("Errors were found, but they are configured to be hidden.\n" \
                               "To toggle what kind of errors are shown, open view menu.");
             QMessageBox msg(QMessageBox::Information,
                             tr("Cppcheck"),

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 #include <QApplication>
 #include <QCoreApplication>
-#include <QTextCodec>
 #include <QMetaType>
 #include <QStringList>
 #include <QSettings>
@@ -48,14 +47,6 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication app(argc, argv);
-
-#if QT_VERSION < 0x050000
-    // Set codecs so that UTF-8 strings in sources are handled correctly.
-    // This is ONLY needed for Qt versions 4.x.
-    // Qt 5.x assumes UTF-8 by default.
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-#endif
 
     QCoreApplication::setOrganizationName("Cppcheck");
     QCoreApplication::setApplicationName("Cppcheck-GUI");
@@ -104,24 +95,24 @@ static bool CheckArgs(const QStringList &args)
 static void ShowUsage()
 {
     QString helpMessage = MainWindow::tr(
-                              "Cppcheck GUI.\n\n"
-                              "Syntax:\n"
-                              "    cppcheck-gui [OPTIONS] [files or paths]\n\n"
-                              "Options:\n"
-                              "    -h, --help              Print this help\n"
-                              "    -p <file>               Open given project file and start checking it\n"
-                              "    -l <file>               Open given results xml file\n"
-                              "    -d <directory>          Specify the directory that was checked to generate the results xml specified with -l\n"
-                              "    -v, --version           Show program version\n"
-                              "    --data-dir=<directory>  This option is for installation scripts so they can configure the directory where\n"
-                              "                            datafiles are located (translations, cfg). The GUI is not started when this option\n"
-                              "                            is used.");
+        "Cppcheck GUI.\n\n"
+        "Syntax:\n"
+        "    cppcheck-gui [OPTIONS] [files or paths]\n\n"
+        "Options:\n"
+        "    -h, --help              Print this help\n"
+        "    -p <file>               Open given project file and start checking it\n"
+        "    -l <file>               Open given results xml file\n"
+        "    -d <directory>          Specify the directory that was checked to generate the results xml specified with -l\n"
+        "    -v, --version           Show program version\n"
+        "    --data-dir=<directory>  This option is for installation scripts so they can configure the directory where\n"
+        "                            datafiles are located (translations, cfg). The GUI is not started when this option\n"
+        "                            is used.");
 #if defined(_WIN32)
     QMessageBox msgBox(QMessageBox::Information,
                        MainWindow::tr("Cppcheck GUI - Command line parameters"),
                        helpMessage,
                        QMessageBox::Ok
-                      );
+                       );
     (void)msgBox.exec();
 #else
     std::cout << helpMessage.toStdString() << std::endl;

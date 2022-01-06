@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,27 +25,27 @@
 
 class TestBoost : public TestFixture {
 public:
-    TestBoost() : TestFixture("TestBoost") {
-    }
+    TestBoost() : TestFixture("TestBoost") {}
 
 private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("style");
-        settings.addEnabled("performance");
+        settings.severity.enable(Severity::style);
+        settings.severity.enable(Severity::performance);
 
         TEST_CASE(BoostForeachContainerModification);
     }
 
-    void check(const char code[]) {
+#define check(code) check_(code, __FILE__, __LINE__)
+    void check_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckBoost checkBoost;

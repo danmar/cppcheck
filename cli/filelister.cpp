@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,8 @@
 
 #include <cstddef>
 #include <cstring>
+// fix NAME_MAX not found on macOS GCC8.1
+#include <climits>
 
 #ifdef _WIN32
 
@@ -69,12 +71,12 @@ static BOOL myFileExists(const std::string& path)
     return result;
 }
 
-void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
+std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
 {
-    addFiles(files, path, extra, true, ignored);
+    return addFiles(files, path, extra, true, ignored);
 }
 
-void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
 {
     const std::string cleanedPath = Path::toNativeSeparators(path);
 
@@ -113,7 +115,7 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
     WIN32_FIND_DATAA ffd;
     HANDLE hFind = myFindFirstFile(searchPattern, &ffd);
     if (INVALID_HANDLE_VALUE == hFind)
-        return;
+        return "";
 
     do {
         if (ffd.cFileName[0] == '.' || ffd.cFileName[0] == '\0')
@@ -141,13 +143,17 @@ void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::
         } else {
             // Directory
             if (recursive) {
-                if (!ignored.match(fname))
-                    FileLister::recursiveAddFiles(files, fname, extra, ignored);
+                if (!ignored.match(fname)) {
+                    std::string err = FileLister::recursiveAddFiles(files, fname, extra, ignored);
+                    if (!err.empty())
+                        return err;
+                }
             }
         }
     } while (FindNextFileA(hFind, &ffd) != FALSE);
 
     FindClose(hFind);
+    return "";
 }
 
 bool FileLister::isDirectory(const std::string &path)
@@ -173,21 +179,28 @@ bool FileLister::fileExists(const std::string &path)
 
 #include <dirent.h>
 #include <sys/stat.h>
+#include <cerrno>
+
+#ifndef NAME_MAX
+#ifdef MAXNAMLEN
+#define NAME_MAX MAXNAMLEN
+#endif
+#endif
 
 
-static void addFiles2(std::map<std::string, std::size_t> &files,
-                      const std::string &path,
-                      const std::set<std::string> &extra,
-                      bool recursive,
-                      const PathMatch& ignored
-                     )
+static std::string addFiles2(std::map<std::string, std::size_t> &files,
+                             const std::string &path,
+                             const std::set<std::string> &extra,
+                             bool recursive,
+                             const PathMatch& ignored
+                             )
 {
     struct stat file_stat;
     if (stat(path.c_str(), &file_stat) != -1) {
         if ((file_stat.st_mode & S_IFMT) == S_IFDIR) {
             DIR * dir = opendir(path.c_str());
             if (!dir)
-                return;
+                return "";
 
             dirent * dir_result;
             // make sure we reserve enough space for the readdir_r() buffer;
@@ -223,12 +236,16 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
 #endif
                 if (path_is_directory) {
                     if (recursive && !ignored.match(new_path)) {
-                        addFiles2(files, new_path, extra, recursive, ignored);
+                        std::string err = addFiles2(files, new_path, extra, recursive, ignored);
+                        if (!err.empty())
+                            return err;
                     }
                 } else {
                     if (Path::acceptFile(new_path, extra) && !ignored.match(new_path)) {
-                        stat(new_path.c_str(), &file_stat);
-                        files[new_path] = file_stat.st_size;
+                        if (stat(new_path.c_str(), &file_stat) != -1)
+                            files[new_path] = file_stat.st_size;
+                        else
+                            return "Can't stat " + new_path + " errno: " + std::to_string(errno);
                     }
                 }
             }
@@ -236,22 +253,25 @@ static void addFiles2(std::map<std::string, std::size_t> &files,
         } else
             files[path] = file_stat.st_size;
     }
+    return "";
 }
 
-void FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
+std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
 {
-    addFiles(files, path, extra, true, ignored);
+    return addFiles(files, path, extra, true, ignored);
 }
 
-void FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
+std::string FileLister::addFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, bool recursive, const PathMatch& ignored)
 {
     if (!path.empty()) {
         std::string corrected_path = path;
         if (endsWith(corrected_path, '/'))
             corrected_path.erase(corrected_path.end() - 1);
 
-        addFiles2(files, corrected_path, extra, recursive, ignored);
+        return addFiles2(files, corrected_path, extra, recursive, ignored);
     }
+
+    return "";
 }
 
 bool FileLister::isDirectory(const std::string &path)

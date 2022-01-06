@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,9 +30,9 @@ SelectColorButton::SelectColorButton(QWidget* parent) :
 void SelectColorButton::updateColor()
 {
     QString btnColorStyle = QString(
-                                "background-color:rgb(%1,%2,%3);"
-                                "border-style:outset;"
-                                "border-width: 1px;")
+        "background-color:rgb(%1,%2,%3);"
+        "border-style:outset;"
+        "border-width: 1px;")
                             .arg(mColor.red())
                             .arg(mColor.green())
                             .arg(mColor.blue());

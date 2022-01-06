@@ -18,13 +18,9 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
     g_assert_cmpstr("test", ==, "test");
 
     // if G_UNLIKELY is not defined this results in a syntax error
-    if G_UNLIKELY(argInt == 1) {
-    } else if (G_UNLIKELY(argInt == 2)) {
-    }
+    if G_UNLIKELY(argInt == 1) {} else if (G_UNLIKELY(argInt == 2)) {}
 
-    if G_LIKELY(argInt == 0) {
-    } else if (G_LIKELY(argInt == -1)) {
-    }
+    if G_LIKELY(argInt == 0) {} else if (G_LIKELY(argInt == -1)) {}
 
     printf("%s", _("test"));
     printf("%s", Q_("a|test"));
@@ -67,6 +63,12 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
     g_hash_table_iter_replace(hash_table_iter, g_strdup("test"));
     g_hash_table_insert(hash_table, g_strdup("key"), g_strdup("value"));
     g_hash_table_replace(hash_table, g_strdup("key"), g_strdup("value"));
+
+    // NULL is handled graciously
+    char* str = g_strdup(NULL);
+    if (g_strcmp0(str, NULL) || g_strcmp0(NULL, str))
+        printf("%s", str);
+    g_free(str);
 }
 
 void g_malloc_test()
@@ -398,15 +400,17 @@ void g_once_init_enter_leave_test()
     gsize * init_val3 = NULL;
     // cppcheck-suppress nullPointer
     if (g_once_init_enter(init_val3)) {
+        gsize* init_val31 = NULL;
         // cppcheck-suppress nullPointer
-        g_once_init_leave(init_val3, 1);
+        g_once_init_leave(init_val31, 1);
     }
 
     gsize * init_val4;
     // cppcheck-suppress uninitvar
     if (g_once_init_enter(init_val4)) {
+        gsize * init_val5;
         // cppcheck-suppress uninitvar
-        g_once_init_leave(init_val4, 1);
+        g_once_init_leave(init_val5, 1);
     }
 }
 

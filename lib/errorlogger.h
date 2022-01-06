@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,12 +24,11 @@
 #include "config.h"
 #include "errortypes.h"
 #include "suppressions.h"
+#include "color.h"
 
-#include <cstddef>
 #include <fstream>
 #include <list>
 #include <string>
-#include <utility>
 #include <vector>
 
 /**
@@ -55,8 +54,8 @@ namespace tinyxml2 {
 /// @{
 
 /**
-     * Wrapper for error messages, provided by reportErr()
-     */
+ * Wrapper for error messages, provided by reportErr()
+ */
 class CPPCHECKLIB ErrorMessage {
 public:
     /**
@@ -67,16 +66,13 @@ public:
     class CPPCHECKLIB FileLocation {
     public:
         FileLocation()
-            : fileIndex(0), line(0), column(0) {
-        }
+            : fileIndex(0), line(0), column(0) {}
 
-        FileLocation(const std::string &file, int line, int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {
-        }
+        FileLocation(const std::string &file, int line, unsigned int column)
+            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file) {}
 
-        FileLocation(const std::string &file, const std::string &info, int line, int column)
-            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {
-        }
+        FileLocation(const std::string &file, const std::string &info, int line, unsigned int column)
+            : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {}
 
         FileLocation(const Token* tok, const TokenList* tokenList);
         FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
@@ -127,27 +123,27 @@ public:
                  const std::string& file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 const std::string &id, bool inconclusive);
+                 const std::string &id, Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<FileLocation> &callStack,
                  const std::string& file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
                  const std::string &id,
                  const CWE &cwe,
-                 bool inconclusive);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
                  const std::string& id,
                  const std::string& msg,
-                 bool inconclusive);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
                  const std::string& id,
                  const std::string& msg,
                  const CWE &cwe,
-                 bool inconclusive,
+                 Certainty::CertaintyLevel certainty,
                  bool bugHunting);
     ErrorMessage(const ErrorPath &errorPath,
                  const TokenList *tokenList,
@@ -155,7 +151,7 @@ public:
                  const char id[],
                  const std::string &msg,
                  const CWE &cwe,
-                 bool inconclusive,
+                 Certainty::CertaintyLevel certainty,
                  bool bugHunting);
     ErrorMessage();
     explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
@@ -175,7 +171,7 @@ public:
      * or template to be used. E.g. "{file}:{line},{severity},{id},{message}"
      * @param templateLocation Format Empty string to use default output format
      * or template to be used. E.g. "{file}:{line},{info}"
-    * @return formatted string
+     * @return formatted string
      */
     std::string toString(bool verbose,
                          const std::string &templateFormat = emptyString,
@@ -196,7 +192,7 @@ public:
 
     Severity::SeverityType severity;
     CWE cwe;
-    bool inconclusive;
+    Certainty::CertaintyLevel certainty;
 
     /** Warning hash */
     std::size_t hash;
@@ -222,15 +218,6 @@ public:
     Suppressions::ErrorMessage toSuppressionsErrorMessage() const;
 
 private:
-    /**
-     * Replace all occurrences of searchFor with replaceWith in the
-     * given source.
-     * @param source The string to modify
-     * @param searchFor What should be searched for
-     * @param replaceWith What will replace the found item
-     */
-    static void findAndReplace(std::string &source, const std::string &searchFor, const std::string &replaceWith);
-
     static std::string fixInvalidChars(const std::string& raw);
 
     /** Short message */
@@ -251,7 +238,7 @@ class CPPCHECKLIB ErrorLogger {
 protected:
     std::ofstream plistFile;
 public:
-    ErrorLogger() { }
+    ErrorLogger() {}
     virtual ~ErrorLogger() {
         if (plistFile.is_open()) {
             plistFile << ErrorLogger::plistFooter();
@@ -265,7 +252,7 @@ public:
      *
      * @param outmsg Message to show e.g. "Checking main.cpp..."
      */
-    virtual void reportOut(const std::string &outmsg) = 0;
+    virtual void reportOut(const std::string &outmsg, Color c = Color::Reset) = 0;
 
     /**
      * Information about found errors and warnings is directed

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstddef>
 #include <set>
 //---------------------------------------------------------------------------
 
@@ -169,7 +168,8 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
     const Token* parent = tok->astParent();
     if (!parent)
         return false;
-    if (parent->str() == "." && parent->astOperand2() == tok)
+    const bool addressOf = parent->astParent() && parent->astParent()->str() == "&";
+    if (parent->str() == "." && astIsRHS(tok))
         return isPointerDeRef(parent, unknown, settings);
     const bool firstOperand = parent->astOperand1() == tok;
     parent = astParentSkipParens(tok);
@@ -177,11 +177,11 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // Dereferencing pointer..
-    if (parent->isUnaryOp("*") && !Token::Match(parent->tokAt(-2), "sizeof|decltype|typeof"))
+    if (parent->isUnaryOp("*") && !addressOf)
         return true;
 
     // array access
-    if (firstOperand && parent->str() == "[" && (!parent->astParent() || parent->astParent()->str() != "&"))
+    if (firstOperand && parent->str() == "[" && !addressOf)
         return true;
 
     // address of member variable / array element
@@ -192,18 +192,8 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // read/write member variable
-    if (firstOperand && parent->originalName() == "->" && (!parent->astParent() || parent->astParent()->str() != "&")) {
-        if (!parent->astParent())
-            return true;
-        if (!Token::Match(parent->astParent()->previous(), "if|while|for|switch ("))
-            return true;
-        if (!Token::Match(parent->astParent()->previous(), "%name% ("))
-            return true;
-        if (parent->astParent() == tok->previous())
-            return true;
-        unknown = true;
-        return false;
-    }
+    if (firstOperand && parent->originalName() == "->" && !addressOf)
+        return true;
 
     // If its a function pointer then check if its called
     if (tok->variable() && tok->variable()->isPointer() && Token::Match(tok->variable()->nameToken(), "%name% ) (") &&
@@ -277,7 +267,7 @@ static bool isNullablePointer(const Token* tok, const Settings* settings)
 
 void CheckNullPointer::nullPointerByDeRefAndChec()
 {
-    const bool printInconclusive = (mSettings->inconclusive);
+    const bool printInconclusive = (mSettings->certainty.isEnabled(Certainty::inconclusive));
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::Match(tok, "sizeof|decltype|typeid|typeof (")) {
@@ -422,14 +412,14 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     const std::string errmsgdefarg("$symbol:" + varname + "\nPossible null pointer dereference if the default parameter value is used: $symbol");
 
     if (!tok) {
-        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, false);
-        reportError(tok, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, false);
-        reportError(tok, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, false);
+        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
+        reportError(tok, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
+        reportError(tok, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
         return;
     }
 
     if (!value) {
-        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, inconclusive);
+        reportError(tok, Severity::error, "nullPointer", "Null pointer dereference", CWE_NULL_POINTER_DEREFERENCE, inconclusive ? Certainty::inconclusive : Certainty::normal);
         return;
     }
 
@@ -439,9 +429,9 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
     const ErrorPath errorPath = getErrorPath(tok, value, "Null pointer dereference");
 
     if (value->condition) {
-        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive());
+        reportError(errorPath, Severity::warning, "nullPointerRedundantCheck", errmsgcond, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else if (value->defaultArg) {
-        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive());
+        reportError(errorPath, Severity::warning, "nullPointerDefaultArg", errmsgdefarg, CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     } else {
         std::string errmsg;
         errmsg = std::string(value->isKnown() ? "Null" : "Possible null") + " pointer dereference";
@@ -452,7 +442,7 @@ void CheckNullPointer::nullPointerError(const Token *tok, const std::string &var
                     value->isKnown() ? Severity::error : Severity::warning,
                     "nullPointer",
                     errmsg,
-                    CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive());
+                    CWE_NULL_POINTER_DEREFERENCE, inconclusive || value->isInconclusive() ? Certainty::inconclusive : Certainty::normal);
     }
 }
 
@@ -478,9 +468,9 @@ void CheckNullPointer::arithmetic()
             const ValueFlow::Value* value = pointerOperand->getValue(0);
             if (!value)
                 continue;
-            if (!mSettings->inconclusive && value->isInconclusive())
+            if (!mSettings->certainty.isEnabled(Certainty::inconclusive) && value->isInconclusive())
                 continue;
-            if (value->condition && !mSettings->isEnabled(Settings::WARNING))
+            if (value->condition && !mSettings->severity.isEnabled(Severity::warning))
                 continue;
             if (value->condition)
                 redundantConditionWarning(tok, value, value->condition, value->isInconclusive());
@@ -515,7 +505,7 @@ void CheckNullPointer::pointerArithmeticError(const Token* tok, const ValueFlow:
                 "nullPointerArithmetic",
                 errmsg,
                 CWE_INCORRECT_CALCULATION,
-                inconclusive);
+                inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFlow::Value *value, const Token *condition, bool inconclusive)
@@ -533,7 +523,7 @@ void CheckNullPointer::redundantConditionWarning(const Token* tok, const ValueFl
                 "nullPointerArithmeticRedundantCheck",
                 errmsg,
                 CWE_INCORRECT_CALCULATION,
-                inconclusive);
+                inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 std::string CheckNullPointer::MyFileInfo::toString() const
@@ -587,7 +577,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
             continue;
         for (const CTU::FileInfo::UnsafeUsage &unsafeUsage : fi->unsafeUsage) {
             for (int warning = 0; warning <= 1; warning++) {
-                if (warning == 1 && !settings.isEnabled(Settings::WARNING))
+                if (warning == 1 && !settings.severity.isEnabled(Severity::warning))
                     break;
 
                 const std::list<ErrorMessage::FileLocation> &locationList =
@@ -605,7 +595,7 @@ bool CheckNullPointer::analyseWholeProgram(const CTU::FileInfo *ctu, const std::
                                           warning ? Severity::warning : Severity::error,
                                           "Null pointer dereference: " + unsafeUsage.myArgumentName,
                                           "ctunullpointer",
-                                          CWE_NULL_POINTER_DEREFERENCE, false);
+                                          CWE_NULL_POINTER_DEREFERENCE, Certainty::normal);
                 errorLogger.reportErr(errmsg);
 
                 foundErrors = true;

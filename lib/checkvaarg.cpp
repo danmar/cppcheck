@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ void CheckVaarg::va_start_argument()
 {
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     const std::size_t functions = symbolDatabase->functionScopes.size();
-    const bool printWarnings = mSettings->isEnabled(Settings::WARNING);
+    const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
 
     for (std::size_t i = 0; i < functions; ++i) {
         const Scope* scope = symbolDatabase->functionScopes[i];
@@ -79,13 +79,13 @@ void CheckVaarg::va_start_argument()
 void CheckVaarg::wrongParameterTo_va_start_error(const Token *tok, const std::string& paramIsName, const std::string& paramShouldName)
 {
     reportError(tok, Severity::warning,
-                "va_start_wrongParameter", "'" + paramIsName + "' given to va_start() is not last named argument of the function. Did you intend to pass '" + paramShouldName + "'?", CWE688, false);
+                "va_start_wrongParameter", "'" + paramIsName + "' given to va_start() is not last named argument of the function. Did you intend to pass '" + paramShouldName + "'?", CWE688, Certainty::normal);
 }
 
 void CheckVaarg::referenceAs_va_start_error(const Token *tok, const std::string& paramName)
 {
     reportError(tok, Severity::error,
-                "va_start_referencePassed", "Using reference '" + paramName + "' as parameter for va_start() results in undefined behaviour.", CWE758, false);
+                "va_start_referencePassed", "Using reference '" + paramName + "' as parameter for va_start() results in undefined behaviour.", CWE758, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -108,7 +108,7 @@ void CheckVaarg::va_list_usage()
         bool exitOnEndOfStatement = false;
 
         const Token* tok = var->nameToken()->next();
-        for (;  tok && tok != var->scope()->bodyEnd; tok = tok->next()) {
+        for (; tok && tok != var->scope()->bodyEnd; tok = tok->next()) {
             // Skip lambdas
             const Token* tok2 = findLambdaEndToken(tok);
             if (tok2)
@@ -158,17 +158,17 @@ void CheckVaarg::va_list_usage()
 void CheckVaarg::va_end_missingError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_end_missing", "va_list '" + varname + "' was opened but not closed by va_end().", CWE664, false);
+                "va_end_missing", "va_list '" + varname + "' was opened but not closed by va_end().", CWE664, Certainty::normal);
 }
 
 void CheckVaarg::va_list_usedBeforeStartedError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_list_usedBeforeStarted", "va_list '" + varname + "' used before va_start() was called.", CWE664, false);
+                "va_list_usedBeforeStarted", "va_list '" + varname + "' used before va_start() was called.", CWE664, Certainty::normal);
 }
 
 void CheckVaarg::va_start_subsequentCallsError(const Token *tok, const std::string& varname)
 {
     reportError(tok, Severity::error,
-                "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.", CWE664, false);
+                "va_start_subsequentCalls", "va_start() or va_copy() called subsequently on '" + varname + "' without va_end() in between.", CWE664, Certainty::normal);
 }

@@ -93,7 +93,7 @@ else
         ${CXX} ${CXX_OPT} ${WXCONFIG} -Wno-deprecated-declarations ${DIR}wxwidgets.cpp
     fi
 fi
-${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets -f ${DIR}wxwidgets.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets,windows -f ${DIR}wxwidgets.cpp
 
 # gtk.c
 set +e
@@ -401,11 +401,7 @@ set -e
 if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
     echo "pkg-config needed to retrieve cppunit configuration is not available, skipping syntax check."
 else
-    set +e
-    CPPUNIT=$(pkg-config cppunit)
-    CPPUNIT_RETURNCODE=$?
-    set -e
-    if [ $CPPUNIT_RETURNCODE -ne 0 ]; then
+    if ! pkg-config cppunit; then
         echo "cppunit not found, skipping syntax check for cppunit"
     else
         echo "cppunit found, checking syntax with ${CXX} now."

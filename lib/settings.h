@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,33 +43,58 @@ namespace ValueFlow {
 /// @addtogroup Core
 /// @{
 
+template<typename T>
+class SimpleEnableGroup {
+    uint32_t mFlags = 0;
+public:
+    uint32_t intValue() const {
+        return mFlags;
+    }
+    void clear() {
+        mFlags = 0;
+    }
+    void fill() {
+        mFlags = 0xFFFFFFFF;
+    }
+    void setEnabledAll(bool enabled) {
+        if (enabled)
+            fill();
+        else
+            clear();
+    }
+    bool isEnabled(T flag) const {
+        return (mFlags & (1U << (uint32_t)flag)) != 0;
+    }
+    void enable(T flag) {
+        mFlags |= (1U << (uint32_t)flag);
+    }
+    void disable(T flag) {
+        mFlags &= ~(1U << (uint32_t)flag);
+    }
+    void setEnabled(T flag, bool enabled) {
+        if (enabled)
+            enable(flag);
+        else
+            disable(flag);
+    }
+};
+
+
 /**
  * @brief This is just a container for general settings so that we don't need
  * to pass individual values to functions or constructors now or in the
  * future when we might have even more detailed settings.
  */
 class CPPCHECKLIB Settings : public cppcheck::Platform {
-public:
-    enum EnabledGroup {
-        WARNING = 0x1,
-        STYLE = 0x2,
-        PERFORMANCE = 0x4,
-        PORTABILITY = 0x8,
-        INFORMATION = 0x10,
-        UNUSED_FUNCTION = 0x20,
-        MISSING_INCLUDE = 0x40,
-        INTERNAL = 0x80
-    };
-
 private:
-    /** @brief enable extra checks by id */
-    int mEnabled;
 
     /** @brief terminate checking */
     static std::atomic<bool> mTerminated;
 
 public:
     Settings();
+
+    void loadCppcheckCfg(const std::string &executable);
 
     /** @brief addons, either filename of python/json file or json data */
     std::list<std::string> addons;
@@ -90,7 +115,7 @@ public:
     /** Filename for bug hunting report */
     std::string bugHuntingReport;
 
-    /** @brief --cppcheck-build-dir */
+    /** @brief --cppcheck-build-dir. Always uses / as path separator. No trailing path separator. */
     std::string buildDir;
 
     /** @brief check all configurations (false if -D or --max-configs is used */
@@ -167,16 +192,8 @@ public:
         Default value is 0. */
     int exitCode;
 
-    /**
-     * When this flag is false (default) then experimental
-     * heuristics and checks are disabled.
-     *
-     * It should not be possible to enable this from any client.
-     */
-    bool experimental;
-
-    /** @brief --file-filter for analyzing special files */
-    std::string fileFilter;
+    /** @brief List of --file-filter for analyzing special files */
+    std::vector<std::string> fileFilters;
 
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool force;
@@ -193,9 +210,6 @@ public:
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;
 
-    /** @brief Inconclusive checks */
-    bool inconclusive;
-
     /** @brief Is --inline-suppr given? */
     bool inlineSuppressions;
 
@@ -204,8 +218,8 @@ public:
     unsigned int jobs;
 
     /** @brief Collect unmatched suppressions in one run.
-      * This delays the reporting until all files are checked.
-      * It is needed by checks that analyse the whole code base. */
+     * This delays the reporting until all files are checked.
+     * It is needed by checks that analyse the whole code base. */
     bool jointSuppressionReport;
 
     /** @brief --library= */
@@ -319,6 +333,10 @@ public:
 
     SafeChecks safeChecks;
 
+    SimpleEnableGroup<Severity::SeverityType> severity;
+    SimpleEnableGroup<Certainty::CertaintyLevel> certainty;
+    SimpleEnableGroup<Checks::CheckList> checks;
+
     /** @brief show timing information (--showtime=file|summary|top5) */
     SHOWTIME_MODES showtime;
 
@@ -373,32 +391,9 @@ public:
     std::string addEnabled(const std::string &str);
 
     /**
-     * @brief Disables all severities, except from error.
+     * @brief Returns true if given value can be shown
+     * @return true if the value can be shown
      */
-    void clearEnabled() {
-        mEnabled = 0;
-    }
-
-    /**
-     * @brief Returns true if given id is in the list of
-     * enabled extra checks (--enable)
-     * @param group group to be enabled
-     * @return true if the check is enabled.
-     */
-    bool isEnabled(EnabledGroup group) const {
-        return (mEnabled & group) == group;
-    }
-
-    /**
-    * @brief Returns true if given severity is enabled
-    * @return true if the check is enabled.
-    */
-    bool isEnabled(Severity::SeverityType severity) const;
-
-    /**
-    * @brief Returns true if given value can be shown
-    * @return true if the value can be shown
-    */
     bool isEnabled(const ValueFlow::Value *value, bool inconclusiveCheck=false) const;
 
     /** Is posix library specified? */

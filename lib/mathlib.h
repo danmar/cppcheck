@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,6 +93,8 @@ public:
 
     static std::string getSuffix(const std::string& value);
     /**
+     * Only used in unit tests
+     *
      * \param[in] str string
      * \param[in] supportMicrosoftExtensions support Microsoft extension: i64
      *  \return true if str is a non-empty valid integer suffix
@@ -128,24 +130,11 @@ public:
     static unsigned int encodeMultiChar(const std::string& str);
 
     /**
-     * \param[in] str character literal
-     * @return Number of internal representation of the character literal
-     * */
-    static MathLib::bigint characterLiteralToLongNumber(const std::string& str);
-
-    /**
      * \param[in] iCode Code being considered
      * \param[in] iPos A posision within iCode
      * \return Whether iCode[iPos] is a C++14 digit separator
      */
     static bool isDigitSeparator(const std::string& iCode, std::string::size_type iPos);
-
-private:
-    /*
-     * \param iLiteral A character literal
-     * \return The equivalent character literal with all escapes interpreted
-     */
-    static std::string normalizeCharacterLiteral(const std::string& iLiteral);
 };
 
 MathLib::value operator+(const MathLib::value &v1, const MathLib::value &v2);
@@ -159,7 +148,7 @@ MathLib::value operator^(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator<<(const MathLib::value &v1, const MathLib::value &v2);
 MathLib::value operator>>(const MathLib::value &v1, const MathLib::value &v2);
 
-template<> CPPCHECKLIB std::string MathLib::toString(double value); // Declare specialization to avoid linker problems
+template<> CPPCHECKLIB std::string MathLib::toString<double>(double value); // Declare specialization to avoid linker problems
 
 /// @}
 //---------------------------------------------------------------------------

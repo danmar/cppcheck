@@ -314,7 +314,7 @@ def str05(data):
 # STR07-C
 # Use the bounds-checking interfaces for string manipulation
 def str07(data):
-    if(data.standards.c=='c89' or data.standards.c=='c99'):
+    if data.standards.c=='c89' or data.standards.c=='c99':
         return
     for token in data.tokenlist:
         if not isFunctionCall(token, ('strcpy', 'strcat')):
@@ -324,7 +324,7 @@ def str07(data):
             continue
         if args[1].isString:
             continue
-        reportError(token, 'style', 'Use the bounds-checking interfaces %s_s()' % (token.str), 'STR07-C')
+        reportError(token, 'style', 'Use the bounds-checking interfaces %s_s()' % token.str, 'STR07-C')
 
 # STR11-C
 # Do not specify the bound of a character array initialized with a string literal
@@ -379,13 +379,14 @@ def api01(data):
             token = token.next
 
 
-def get_args():
+def get_args_parser():
     parser = cppcheckdata.ArgumentParser()
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
-    return parser.parse_args()
+    return parser
 
 if __name__ == '__main__':
-    args = get_args()
+    parser = get_args_parser()
+    args = parser.parse_args()
 
     if args.verify:
         VERIFY = True

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 
 #include <tinyxml2.h>
 #include <map>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -34,7 +33,7 @@
 
 class TestLibrary : public TestFixture {
 public:
-    TestLibrary() : TestFixture("TestLibrary") { }
+    TestLibrary() : TestFixture("TestLibrary") {}
 
 private:
     Settings settings;
@@ -555,14 +554,14 @@ private:
         {
             Tokenizer tokenizer(&settings, nullptr);
             std::istringstream istr("CString str; str.Format();");
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
         }
 
         {
             Tokenizer tokenizer(&settings, nullptr);
             std::istringstream istr("HardDrive hd; hd.Format();");
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(!library.isnotnoreturn(Token::findsimplematch(tokenizer.tokens(), "Format")));
         }
     }
@@ -581,14 +580,14 @@ private:
         {
             Tokenizer tokenizer(&settings, nullptr);
             std::istringstream istr("struct X : public Base { void dostuff() { f(0); } };");
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));
         }
 
         {
             Tokenizer tokenizer(&settings, nullptr);
             std::istringstream istr("struct X : public Base { void dostuff() { f(1,2); } };");
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT(!library.isnullargbad(Token::findsimplematch(tokenizer.tokens(), "f"),1));
         }
     }
@@ -843,32 +842,32 @@ private:
 
     void version() const {
         {
-            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                    "<def>\n"
-                                    "</def>";
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def>\n"
+                                   "</def>";
             Library library;
             const Library::Error err = readLibrary(library, xmldata);
             ASSERT_EQUALS(true, err.errorcode == Library::ErrorCode::OK);
         }
         {
-            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                    "<def format=\"1\">\n"
-                                    "</def>";
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def format=\"1\">\n"
+                                   "</def>";
             Library library;
             const Library::Error err = readLibrary(library, xmldata);
             ASSERT_EQUALS(true, err.errorcode == Library::ErrorCode::OK);
         }
         {
-            const char xmldata [] = "<?xml version=\"1.0\"?>\n"
-                                    "<def format=\"42\">\n"
-                                    "</def>";
+            const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                                   "<def format=\"42\">\n"
+                                   "</def>";
             Library library;
             const Library::Error err = readLibrary(library, xmldata);
             ASSERT_EQUALS(true, err.errorcode == Library::ErrorCode::UNSUPPORTED_FORMAT);
         }
     }
 
-    void loadLibError(const char xmldata [], Library::ErrorCode errorcode, const char* file, unsigned line) const {
+    void loadLibError(const char xmldata[], Library::ErrorCode errorcode, const char* file, unsigned line) const {
         Library library;
         assertEquals(file, line, true, errorcode == readLibrary(library, xmldata).errorcode);
     }

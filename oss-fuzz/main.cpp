@@ -1,4 +1,5 @@
 
+#include "color.h"
 #include "cppcheck.h"
 #include "type2.h"
 
@@ -12,14 +13,14 @@ public:
         : ErrorLogger()
         , cppcheck(*this, false, nullptr) {
         cppcheck.settings().addEnabled("all");
-        cppcheck.settings().inconclusive = true;
+        cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
     }
 
     void run(const std::string &code) {
         cppcheck.check("test.cpp", code);
     }
 
-    void reportOut(const std::string &outmsg) OVERRIDE {
+    void reportOut(const std::string &outmsg, Color) OVERRIDE {
         (void)outmsg;
     }
     void reportErr(const ErrorMessage &msg) OVERRIDE {

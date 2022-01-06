@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,8 +26,7 @@
 
 class TestType : public TestFixture {
 public:
-    TestType() : TestFixture("TestType") {
-    }
+    TestType() : TestFixture("TestType") {}
 
 private:
 
@@ -41,7 +40,8 @@ private:
         TEST_CASE(checkFloatToIntegerOverflow);
     }
 
-    void check(const char code[], Settings* settings = nullptr, const char filename[] = "test.cpp", const std::string& standard = "c++11") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], Settings* settings = nullptr, const char filename[] = "test.cpp", const std::string& standard = "c++11") {
         // Clear the error buffer..
         errout.str("");
 
@@ -49,14 +49,14 @@ private:
             static Settings _settings;
             settings = &_settings;
         }
-        settings->addEnabled("warning");
-        settings->addEnabled("portability");
+        settings->severity.enable(Severity::warning);
+        settings->severity.enable(Severity::portability);
         settings->standards.setCPP(standard);
 
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check..
         CheckType checkType(&tokenizer, settings, this);
@@ -70,7 +70,7 @@ private:
         // unsigned types getting promoted to int sizeof(int) = 4 bytes
         // and unsigned types having already a size of 4 bytes
         {
-            const std::string types[] = {"unsigned char", /*[unsigned]*/"char", "bool", "unsigned short", "unsigned int", "unsigned long"};
+            const std::string types[] = {"unsigned char", /*[unsigned]*/ "char", "bool", "unsigned short", "unsigned int", "unsigned long"};
             for (const std::string& type : types) {
                 check((type + " f(" + type +" x) { return x << 31; }").c_str(), &settings);
                 ASSERT_EQUALS("", errout.str());
@@ -85,7 +85,7 @@ private:
         // signed types getting promoted to int sizeof(int) = 4 bytes
         // and signed types having already a size of 4 bytes
         {
-            const std::string types[] = {"signed char", "signed short", /*[signed]*/"short", "wchar_t", /*[signed]*/"int", "signed int", /*[signed]*/"long", "signed long"};
+            const std::string types[] = {"signed char", "signed short", /*[signed]*/ "short", "wchar_t", /*[signed]*/ "int", "signed int", /*[signed]*/ "long", "signed long"};
             for (const std::string& type : types) {
                 // c++11
                 check((type + " f(" + type +" x) { return x << 33; }").c_str(), &settings);
@@ -143,6 +143,9 @@ private:
             ASSERT_EQUALS("", errout.str());
         }
 
+        check("void f() { int x; x = 1 >> 64; }", &settings);
+        ASSERT_EQUALS("[test.cpp:1]: (error) Shifting 32-bit value by 64 bits is undefined behaviour\n", errout.str());
+
         check("void foo() {\n"
               "  QList<int> someList;\n"
               "  someList << 300;\n"
@@ -164,6 +167,17 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #8640
+        check("int f (void)\n"
+              "{\n"
+              "    constexpr const int a = 1;\n"
+              "    constexpr const int shift[1] = {32};\n"
+              "    constexpr const int ret = a << shift[0];\n" // shift too many bits
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
+                      "[test.cpp:5]: (error) Signed integer overflow for expression 'a<<shift[0]'.\n", errout.str());
+
         // #8885
         check("int f(int k, int rm) {\n"
               "  if (k == 32)\n"
@@ -171,7 +185,7 @@ private:
               "  if (k > 32)\n"
               "    return 0;\n"
               "  return rm>> k;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:6]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n",
             errout.str());
@@ -183,7 +197,7 @@ private:
               "    return 0;\n"
               "  else\n"
               "    return rm>> k;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:7]: (warning) Shifting signed 32-bit value by 31 bits is undefined behaviour. See condition at line 4.\n",
             errout.str());
@@ -195,21 +209,27 @@ private:
               "    return 0;\n"
               "  else\n"
               "    return rm>> k;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
 
         check("static long long f(int x, long long y) {\n"
               "    if (x >= 64)\n"
               "        return 0;\n"
               "    return -(y << (x-1));\n"
-              "}\n");
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f() {\n"
+              "    std::ofstream outfile;\n"
+              "    outfile << vec_points[0](0) << static_cast<int>(d) << ' ';\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 
     void checkIntegerOverflow() {
         Settings settings;
         settings.platform(Settings::Unix32);
-        settings.addEnabled("warning");
+        settings.severity.enable(Severity::warning);
 
         check("x = (int)0x10000 * (int)0x10000;", &settings);
         ASSERT_EQUALS("[test.cpp:1]: (error) Signed integer overflow for expression '(int)0x10000*(int)0x10000'.\n", errout.str());
@@ -249,6 +269,8 @@ private:
     }
 
     void signConversion() {
+        Settings settings;
+        settings.platform(Settings::Unix64);
         check("x = -4 * (unsigned)y;");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Expression '-4' has a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
@@ -258,7 +280,7 @@ private:
         check("unsigned int dostuff(int x) {\n" // x is signed
               "  if (x==0) {}\n"
               "  return (x-1)*sizeof(int);\n"
-              "}\n");
+              "}", &settings);
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Expression 'x-1' can have a negative value. That is converted to an unsigned value and used in an unsigned calculation.\n", errout.str());
 
         check("unsigned int f1(signed int x, unsigned int y) {" // x is signed
@@ -298,7 +320,7 @@ private:
 
     void longCastAssign() {
         Settings settings;
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::style);
         settings.platform(Settings::Unix64);
 
         check("long f(int x, int y) {\n"
@@ -330,7 +352,7 @@ private:
 
     void longCastReturn() {
         Settings settings;
-        settings.addEnabled("style");
+        settings.severity.enable(Severity::style);
 
         check("long f(int x, int y) {\n"
               "  return x * y;\n"
@@ -360,27 +382,27 @@ private:
 
         check("void f(void) {\n"
               "  return (int)1E100;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (int)-1E100;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (short)1E6;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)256.0;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
 
         check("void f(void) {\n"
               "  return (unsigned char)255.5;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", removeFloat(errout.str()));
 
         check("void f(void) {\n"

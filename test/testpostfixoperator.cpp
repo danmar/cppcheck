@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,21 +25,20 @@
 
 class TestPostfixOperator : public TestFixture {
 public:
-    TestPostfixOperator() : TestFixture("TestPostfixOperator") {
-    }
+    TestPostfixOperator() : TestFixture("TestPostfixOperator") {}
 
 private:
     Settings settings;
 
-
-    void check(const char code[]) {
+#define check(code) check_(code, __FILE__, __LINE__)
+    void check_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for postfix operators..
         CheckPostfixOperator checkPostfixOperator(&tokenizer, &settings, this);
@@ -47,7 +46,7 @@ private:
     }
 
     void run() OVERRIDE {
-        settings.addEnabled("performance");
+        settings.severity.enable(Severity::performance);
 
         TEST_CASE(testsimple);
         TEST_CASE(testfor);
@@ -329,7 +328,7 @@ private:
               "\n"
               "void f() {\n"
               "    p++;\n"
-              "}\n");
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

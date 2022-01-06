@@ -2,8 +2,8 @@
 // After a release the DEVMINOR is incremented. MAJOR=x MINOR=y, DEVMINOR=y+1
 
 #define CPPCHECK_MAJOR 2
-#define CPPCHECK_MINOR 3
-#define CPPCHECK_DEVMINOR 3
+#define CPPCHECK_MINOR 6
+#define CPPCHECK_DEVMINOR 7
 
 #define STRINGIFY(x) STRING(x)
 #define STRING(VER) #VER
@@ -14,4 +14,4 @@
 #define CPPCHECK_VERSION_STRING STRINGIFY(CPPCHECK_MAJOR) "." STRINGIFY(CPPCHECK_DEVMINOR) " dev"
 #define CPPCHECK_VERSION CPPCHECK_MAJOR,CPPCHECK_MINOR,99,0
 #endif
-#define LEGALCOPYRIGHT L"Copyright (C) 2007-2020 Cppcheck team."
+#define LEGALCOPYRIGHT L"Copyright (C) 2007-2021 Cppcheck team."

@@ -15,6 +15,7 @@ void validCode()
     int arr[20] = { 0 };
     #pragma omp parallel for
     for (int i = 0; i < 20; ++i) {
+        // cppcheck-suppress unreadVariable
         arr[i] = i * i;
     }
 

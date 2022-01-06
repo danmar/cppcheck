@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "analyzerinfo.h"
 #include "cmdlineparser.h"
+#include "color.h"
 #include "config.h"
 #include "cppcheck.h"
 #include "filelister.h"
@@ -52,7 +53,7 @@
 #   include <ucontext.h>
 
 #   undef _XOPEN_SOURCE
-#elif !defined(__OpenBSD__)
+#elif !defined(__OpenBSD__) && !defined(__HAIKU__)
 #   include <ucontext.h>
 #endif
 #ifdef __linux__
@@ -67,11 +68,19 @@
 #include <execinfo.h>
 #endif
 
+#if defined(_WIN32)
 #if defined(_MSC_VER)
 #define USE_WINDOWS_SEH
-#include <DbgHelp.h>
-#include <TCHAR.H>
-#include <Windows.h>
+#endif
+#if defined (__MINGW32__)
+#   include <windows.h>
+#   include <dbghelp.h>
+#   include <tchar.h>
+#else
+#   include <Windows.h>
+#   include <DbgHelp.h>
+#   include <TCHAR.H>
+#endif
 #include <excpt.h>
 #endif
 
@@ -80,8 +89,7 @@
 
 CppCheckExecutor::CppCheckExecutor()
     : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mBugHuntingReport(nullptr), mShowAllErrors(false)
-{
-}
+{}
 
 CppCheckExecutor::~CppCheckExecutor()
 {
@@ -124,13 +132,13 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     {
         for (std::list<std::string>::iterator iter = settings.includePaths.begin();
              iter != settings.includePaths.end();
-            ) {
+             ) {
             const std::string path(Path::toNativeSeparators(*iter));
             if (FileLister::isDirectory(path))
                 ++iter;
             else {
                 // If the include path is not found, warn user and remove the non-existing path from the list.
-                if (settings.isEnabled(Settings::INFORMATION))
+                if (settings.severity.isEnabled(Severity::information))
                     std::cout << "(information) Couldn't find path given by -I '" << path << '\'' << std::endl;
                 iter = settings.includePaths.erase(iter);
             }
@@ -159,12 +167,12 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!mSettings->project.fileSettings.empty() && !mSettings->fileFilter.empty()) {
+    if (!mSettings->project.fileSettings.empty() && !mSettings->fileFilters.empty()) {
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
         for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
-            if (matchglob(mSettings->fileFilter, fsetting.filename)) {
+            if (matchglobs(mSettings->fileFilters, fsetting.filename)) {
                 newList.emplace_back(fsetting);
             }
         }
@@ -177,8 +185,12 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
     } else if (!pathnames.empty()) {
         // Execute recursiveAddFiles() to each given file parameter
         const PathMatch matcher(ignored, caseSensitive);
-        for (const std::string &pathname : pathnames)
-            FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), mSettings->library.markupExtensions(), matcher);
+        for (const std::string &pathname : pathnames) {
+            std::string err = FileLister::recursiveAddFiles(mFiles, Path::toNativeSeparators(pathname), mSettings->library.markupExtensions(), matcher);
+            if (!err.empty()) {
+                std::cout << "cppcheck: " << err << std::endl;
+            }
+        }
     }
 
     if (mFiles.empty() && settings.project.fileSettings.empty()) {
@@ -186,10 +198,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (!ignored.empty())
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
         return false;
-    } else if (!mSettings->fileFilter.empty() && settings.project.fileSettings.empty()) {
+    } else if (!mSettings->fileFilters.empty() && settings.project.fileSettings.empty()) {
         std::map<std::string, std::size_t> newMap;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
-            if (matchglob(mSettings->fileFilter, i->first)) {
+            if (matchglobs(mSettings->fileFilters, i->first)) {
                 newMap[i->first] = i->second;
             }
         mFiles = newMap;
@@ -245,7 +257,7 @@ void CppCheckExecutor::setSettings(const Settings &settings)
  * \return size of array
  * */
 template<typename T, int size>
-std::size_t getArrayLength(const T(&)[size])
+std::size_t getArrayLength(const T (&)[size])
 {
     return size;
 }
@@ -330,7 +342,11 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
 #endif
 }
 
+#ifdef __USE_DYNAMIC_STACK_SIZE
+static const size_t MYSTACKSIZE = 16*1024+32768; // wild guess about a reasonable buffer
+#else
 static const size_t MYSTACKSIZE = 16*1024+SIGSTKSZ; // wild guess about a reasonable buffer
+#endif
 static char mytstack[MYSTACKSIZE]= {0}; // alternative stack for signal handler
 static bool bStackBelowHeap=false; // lame attempt to locate heap vs. stack address space. See CppCheckExecutor::check_wrapper()
 
@@ -539,7 +555,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
                 (type==0) ? "reading " : "writing ",
                 (unsigned long)info->si_addr,
                 (isAddressOnStack)?" Stackoverflow?":""
-               );
+                );
         break;
     case SIGUSR1:
         fputs("cppcheck received signal ", output);
@@ -580,15 +596,15 @@ namespace {
     };
     typedef BOOL (WINAPI *fpStackWalk64)(DWORD, HANDLE, HANDLE, LPSTACKFRAME64, PVOID, PREAD_PROCESS_MEMORY_ROUTINE64, PFUNCTION_TABLE_ACCESS_ROUTINE64, PGET_MODULE_BASE_ROUTINE64, PTRANSLATE_ADDRESS_ROUTINE64);
     fpStackWalk64 pStackWalk64;
-    typedef DWORD64(WINAPI *fpSymGetModuleBase64)(HANDLE, DWORD64);
+    typedef DWORD64 (WINAPI *fpSymGetModuleBase64)(HANDLE, DWORD64);
     fpSymGetModuleBase64 pSymGetModuleBase64;
     typedef BOOL (WINAPI *fpSymGetSymFromAddr64)(HANDLE, DWORD64, PDWORD64, PIMAGEHLP_SYMBOL64);
     fpSymGetSymFromAddr64 pSymGetSymFromAddr64;
     typedef BOOL (WINAPI *fpSymGetLineFromAddr64)(HANDLE, DWORD64, PDWORD, PIMAGEHLP_LINE64);
     fpSymGetLineFromAddr64 pSymGetLineFromAddr64;
-    typedef DWORD (WINAPI *fpUnDecorateSymbolName)(const TCHAR*, PTSTR, DWORD, DWORD) ;
+    typedef DWORD (WINAPI *fpUnDecorateSymbolName)(const TCHAR*, PTSTR, DWORD, DWORD);
     fpUnDecorateSymbolName pUnDecorateSymbolName;
-    typedef PVOID(WINAPI *fpSymFunctionTableAccess64)(HANDLE, DWORD64);
+    typedef PVOID (WINAPI *fpSymFunctionTableAccess64)(HANDLE, DWORD64);
     fpSymFunctionTableAccess64 pSymFunctionTableAccess64;
     typedef BOOL (WINAPI *fpSymInitialize)(HANDLE, PCSTR, BOOL);
     fpSymInitialize pSymInitialize;
@@ -621,9 +637,9 @@ namespace {
             hProcess,
             nullptr,
             TRUE
-        );
-        CONTEXT             context = *(ex->ContextRecord);
-        STACKFRAME64        stack= {0};
+            );
+        CONTEXT context = *(ex->ContextRecord);
+        STACKFRAME64 stack= {0};
 #ifdef _M_IX86
         stack.AddrPC.Offset    = context.Eip;
         stack.AddrPC.Mode      = AddrModeFlat;
@@ -648,18 +664,18 @@ namespace {
             BOOL result = pStackWalk64
                           (
 #ifdef _M_IX86
-                              IMAGE_FILE_MACHINE_I386,
+                IMAGE_FILE_MACHINE_I386,
 #else
-                              IMAGE_FILE_MACHINE_AMD64,
+                IMAGE_FILE_MACHINE_AMD64,
 #endif
-                              hProcess,
-                              hThread,
-                              &stack,
-                              &context,
-                              nullptr,
-                              pSymFunctionTableAccess64,
-                              pSymGetModuleBase64,
-                              nullptr
+                hProcess,
+                hThread,
+                &stack,
+                &context,
+                nullptr,
+                pSymFunctionTableAccess64,
+                pSymGetModuleBase64,
+                nullptr
                           );
             if (!result)  // official end...
                 break;
@@ -853,7 +869,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         if (!tryLoadLibrary(settings.library, argv[0], lib.c_str())) {
             const std::string msg("Failed to load the library " + lib);
             const std::list<ErrorMessage::FileLocation> callstack;
-            ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", false);
+            ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
             reportErr(errmsg);
             return EXIT_FAILURE;
         }
@@ -879,7 +895,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
 #endif
-        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", false);
+        ErrorMessage errmsg(callstack, emptyString, Severity::information, msg+" "+details, "failedToLoadCfg", Certainty::normal);
         reportErr(errmsg);
         return EXIT_FAILURE;
     }
@@ -963,7 +979,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
 
     cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
 
-    if (settings.isEnabled(Settings::INFORMATION) || settings.checkConfiguration) {
+    if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
 
         if (settings.jointSuppressionReport) {
@@ -982,7 +998,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
     if (!settings.checkConfiguration) {
         cppcheck.tooManyConfigsError("",0U);
 
-        if (settings.isEnabled(Settings::MISSING_INCLUDE) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
+        if (settings.checks.isEnabled(Checks::missingInclude) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
             const std::list<ErrorMessage::FileLocation> callStack;
             ErrorMessage msg(callStack,
                              emptyString,
@@ -994,7 +1010,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
                              "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
                              "--check-config.",
                              Preprocessor::missingIncludeFlag ? "missingInclude" : "missingIncludeSystem",
-                             false);
+                             Certainty::normal);
             reportInfo(msg);
         }
     }
@@ -1035,11 +1051,6 @@ static inline std::string ansiToOEM(const std::string &msg, bool doConvert)
 
 void CppCheckExecutor::reportErr(const std::string &errmsg)
 {
-    // Alert only about unique errors
-    if (mShownErrors.find(errmsg) != mShownErrors.end())
-        return;
-
-    mShownErrors.insert(errmsg);
     if (mErrorOutput)
         *mErrorOutput << errmsg << std::endl;
     else {
@@ -1047,9 +1058,9 @@ void CppCheckExecutor::reportErr(const std::string &errmsg)
     }
 }
 
-void CppCheckExecutor::reportOut(const std::string &outmsg)
+void CppCheckExecutor::reportOut(const std::string &outmsg, Color c)
 {
-    std::cout << ansiToOEM(outmsg, true) << std::endl;
+    std::cout << c << ansiToOEM(outmsg, true) << Color::Reset << std::endl;
 }
 
 void CppCheckExecutor::reportProgress(const std::string &filename, const char stage[], const std::size_t value)
@@ -1088,7 +1099,7 @@ void CppCheckExecutor::reportStatus(std::size_t fileindex, std::size_t filecount
         oss << fileindex << '/' << filecount
             << " files checked " << percentDone
             << "% done";
-        std::cout << oss.str() << std::endl;
+        std::cout << Color::FgBlue << oss.str() << Color::Reset << std::endl;
     }
 }
 
@@ -1096,11 +1107,17 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
 {
     if (mShowAllErrors) {
         reportOut(msg.toXML());
-    } else if (mSettings->xml) {
-        reportErr(msg.toXML());
-    } else {
-        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
+        return;
     }
+
+    // Alert only about unique errors
+    if (!mShownErrors.insert(msg.toString(mSettings->verbose)).second)
+        return;
+
+    if (mSettings->xml)
+        reportErr(msg.toXML());
+    else
+        reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
 }
 
 void CppCheckExecutor::bughuntingReport(const std::string &str)
@@ -1170,9 +1187,9 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath
  * Execute a shell command and read the output from it. Returns true if command terminated successfully.
  */
 // cppcheck-suppress passedByValue - "exe" copy needed in _WIN32 code
-bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output)
+bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output_)
 {
-    output->clear();
+    output_->clear();
 
     std::string joinedArgs;
     for (const std::string &arg : args) {
@@ -1198,7 +1215,7 @@ bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> 
         return false;
     char buffer[1024];
     while (fgets(buffer, sizeof(buffer), pipe.get()) != nullptr)
-        *output += buffer;
+        *output_ += buffer;
     return true;
 }
 

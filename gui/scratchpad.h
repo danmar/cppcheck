@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2017 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,17 +28,22 @@ class MainWindow;
 /// @{
 
 /**
-* @brief A window with a text field that .
-*/
+ * @brief A window with a text field that .
+ */
 class ScratchPad : public QDialog {
     Q_OBJECT
 public:
     explicit ScratchPad(MainWindow& mainWindow);
 
+    /**
+     * @brief Translate dialog
+     */
+    void translate();
+
 private slots:
     /**
-    * @brief Called when check button is clicked.
-    */
+     * @brief Called when check button is clicked.
+     */
     void checkButtonClicked();
 
 private:

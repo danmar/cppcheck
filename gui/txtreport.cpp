@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "txtreport.h"
+
 #include <QDir>
 #include "erroritem.h"
-#include "txtreport.h"
 
 TxtReport::TxtReport(const QString &filename) :
     Report(filename)
-{
-}
+{}
 
 TxtReport::~TxtReport()
-{
-}
+{}
 
 bool TxtReport::create()
 {
@@ -51,9 +50,9 @@ void TxtReport::writeFooter()
 void TxtReport::writeError(const ErrorItem &error)
 {
     /*
-    Error example from the core program in text
-    [gui/test.cpp:23] -> [gui/test.cpp:14]: (error) Mismatching allocation and deallocation: k
-    */
+       Error example from the core program in text
+       [gui/test.cpp:23] -> [gui/test.cpp:14]: (error) Mismatching allocation and deallocation: k
+     */
 
     QString line;
 

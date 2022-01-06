@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,13 +28,16 @@ class TestImporter : public ImportProject {
 public:
     using ImportProject::importCompileCommands;
     using ImportProject::importCppcheckGuiProject;
+
+    bool sourceFileExists(const std::string & /*file*/) OVERRIDE {
+        return true;
+    }
 };
 
 
 class TestImportProject : public TestFixture {
 public:
-    TestImportProject() : TestFixture("TestImportProject") {
-    }
+    TestImportProject() : TestFixture("TestImportProject") {}
 
 private:
 
@@ -44,7 +47,7 @@ private:
         TEST_CASE(setIncludePaths2);
         TEST_CASE(setIncludePaths3); // macro names are case insensitive
         TEST_CASE(importCompileCommands1);
-        TEST_CASE(importCompileCommands2); // #8563
+        TEST_CASE(importCompileCommands2); // #8563, #9567
         TEST_CASE(importCompileCommands3); // check with existing trailing / in directory
         TEST_CASE(importCompileCommands4); // only accept certain file types
         TEST_CASE(importCompileCommands5); // Windows/CMake/Ninja generated comile_commands.json
@@ -116,16 +119,30 @@ private:
     }
 
     void importCompileCommands2() const {
+        // Absolute file path
+#ifdef _WIN32
         const char json[] = R"([{
-                                   "directory": "/tmp",
-                                   "command": "gcc -c src.c",
-                                   "file": "src.c"
+                                   "directory": "C:/foo",
+                                   "command": "gcc -c /bar.c",
+                                   "file": "/bar.c"
                                }])";
         std::istringstream istr(json);
         TestImporter importer;
         importer.importCompileCommands(istr);
         ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
+        ASSERT_EQUALS("C:/bar.c", importer.fileSettings.begin()->filename);
+#else
+        const char json[] = R"([{
+                                   "directory": "/foo",
+                                   "command": "gcc -c bar.c",
+                                   "file": "/bar.c"
+                               }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        ASSERT_EQUALS("/bar.c", importer.fileSettings.begin()->filename);
+#endif
     }
 
     void importCompileCommands3() const {

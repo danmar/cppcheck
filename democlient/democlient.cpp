@@ -37,7 +37,7 @@ public:
         , stoptime(std::time(nullptr)+2U)
         , cppcheck(*this, false, nullptr) {
         cppcheck.settings().addEnabled("all");
-        cppcheck.settings().inconclusive = true;
+        cppcheck.settings().certainty.enable(Certainty::inconclusive);
     }
 
     void run(const char code[]) {
@@ -46,7 +46,7 @@ public:
 
     void bughuntingReport(const std::string&) override {}
 
-    void reportOut(const std::string &outmsg) override { }
+    void reportOut(const std::string &outmsg, Color c) override {}
     void reportErr(const ErrorMessage &msg) override {
         const std::string s = msg.toString(true);
 

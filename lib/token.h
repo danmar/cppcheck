@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,6 +44,8 @@ class ValueType;
 class Variable;
 class TokenList;
 
+class ConstTokenRange;
+
 /**
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
  */
@@ -65,7 +67,7 @@ struct TokenImpl {
     nonneg int mFileIndex;
     nonneg int mLineNumber;
     nonneg int mColumn;
-    MathLib::bigint mExprId;
+    nonneg int mExprId;
 
     // AST..
     Token *mAstOperand1;
@@ -187,29 +189,7 @@ public:
     explicit Token(TokensFrontBack *tokensFrontBack = nullptr);
     ~Token();
 
-    struct TokenEnumeration
-    {
-        Token const* mt;
-        TokenEnumeration(Token const* t) : mt(t) {}
-
-        struct TokenIterator
-        {
-            const Token* mt;
-            TokenIterator(const Token* t) : mt(t) {}
-            TokenIterator& operator++() { mt = mt->next(); return *this; }
-            bool operator==(const TokenIterator& b) { return mt == b.mt; }
-            bool operator!=(const TokenIterator& b) { return mt != b.mt; }
-            const Token* operator*() { return mt; }
-        };
-
-        TokenIterator begin() { return TokenIterator(mt); }
-        TokenIterator end() { return TokenIterator(mt->mTokensFrontBack->back); }
-    };
-
-    TokenEnumeration toend() const
-    {
-        return TokenEnumeration(this);
-    }
+    ConstTokenRange until(const Token * t) const;
 
     template<typename T>
     void str(T&& s) {
@@ -235,8 +215,8 @@ public:
     void deleteNext(nonneg int count = 1);
 
     /**
-    * Unlink and delete the previous 'count' tokens.
-    */
+     * Unlink and delete the previous 'count' tokens.
+     */
     void deletePrevious(nonneg int count = 1);
 
     /**
@@ -404,12 +384,6 @@ public:
         const bool memoizedIsLiteral = (mTokType == eNumber || mTokType == eString || mTokType == eChar ||
                                         mTokType == eBoolean || mTokType == eLiteral || mTokType == eEnumerator);
         setFlag(fIsLiteral, memoizedIsLiteral);
-    }
-    void isKeyword(const bool kwd) {
-        if (kwd)
-            tokType(eKeyword);
-        else if (mTokType == eKeyword)
-            tokType(eName);
     }
     bool isKeyword() const {
         return mTokType == eKeyword;
@@ -653,6 +627,27 @@ public:
         setFlag(fIsSplitVarDeclEq, b);
     }
 
+    bool isImplicitInt() const {
+        return getFlag(fIsImplicitInt);
+    }
+    void isImplicitInt(bool b) {
+        setFlag(fIsImplicitInt, b);
+    }
+
+    bool isInline() const {
+        return getFlag(fIsInline);
+    }
+    void isInline(bool b) {
+        setFlag(fIsInline, b);
+    }
+
+    bool isTemplate() const {
+        return getFlag(fIsTemplate);
+    }
+    void isTemplate(bool b) {
+        setFlag(fIsTemplate, b);
+    }
+
     bool isBitfield() const {
         return mImpl->mBits > 0;
     }
@@ -815,7 +810,12 @@ public:
      * @param prepend Insert the new token before this token when it's not
      * the first one on the tokens list.
      */
-    void insertToken(const std::string &tokenStr, const std::string &originalNameStr=emptyString, bool prepend=false);
+    Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = emptyString, bool prepend = false);
+
+    Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr = emptyString)
+    {
+        return insertToken(tokenStr, originalNameStr, true);
+    }
 
     Token *previous() const {
         return mPrevious;
@@ -835,10 +835,12 @@ public:
         }
     }
 
-    MathLib::bigint exprId() const {
-        return mImpl->mExprId;
+    nonneg int exprId() const {
+        if (mImpl->mExprId)
+            return mImpl->mExprId;
+        return mImpl->mVarId;
     }
-    void exprId(MathLib::bigint id) {
+    void exprId(nonneg int id) {
         mImpl->mExprId = id;
     }
 
@@ -861,7 +863,7 @@ public:
     void printOut(const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
-     * print out tokens
+     * print out tokens - used for debugging
      */
     void printLines(int lines=5) const;
 
@@ -911,16 +913,15 @@ public:
         }
     };
 
-    void stringify(std::string& os, const stringifyOptions& options) const;
+    std::string stringify(const stringifyOptions& options) const;
 
     /**
      * Stringify a token
-     * @param os The result is shifted into that output stream
      * @param varid Print varids. (Style: "varname\@id")
      * @param attributes Print attributes of tokens like "unsigned" in front of it.
      * @param macro Prints $ in front of the token if it was expanded from a macro.
      */
-    void stringify(std::string& os, bool varid, bool attributes, bool macro) const;
+    std::string stringify(bool varid, bool attributes, bool macro) const;
 
     std::string stringifyList(const stringifyOptions& options, const std::vector<std::string>* fileNames = nullptr, const Token* end = nullptr) const;
     std::string stringifyList(const Token* end, bool attributes = true) const;
@@ -1021,27 +1022,27 @@ public:
     }
 
     /**
-    * Associate this token with given type
-    * @param t Type to be associated
-    */
+     * Associate this token with given type
+     * @param t Type to be associated
+     */
     void type(const ::Type *t);
 
     /**
-    * @return a pointer to the type associated with this token.
-    */
+     * @return a pointer to the type associated with this token.
+     */
     const ::Type *type() const {
         return mTokType == eType ? mImpl->mType : nullptr;
     }
 
-    static const ::Type *typeOf(const Token *tok);
+    static const ::Type* typeOf(const Token* tok, const Token** typeTok = nullptr);
 
     static std::pair<const Token*, const Token*> typeDecl(const Token * tok);
 
     static std::string typeStr(const Token* tok);
 
     /**
-    * @return a pointer to the Enumerator associated with this token.
-    */
+     * @return a pointer to the Enumerator associated with this token.
+     */
     const Enumerator *enumerator() const {
         return mTokType == eEnumerator ? mImpl->mEnumerator : nullptr;
     }
@@ -1103,10 +1104,10 @@ public:
     Token* nextArgumentBeforeCreateLinks2() const;
 
     /**
-    * @return the first token of the next template argument. Does only work on template argument
-    * lists. Requires that Tokenizer::createLinks2() has been called before.
-    * Returns 0, if there is no next argument.
-    */
+     * @return the first token of the next template argument. Does only work on template argument
+     * lists. Requires that Tokenizer::createLinks2() has been called before.
+     * Returns 0, if there is no next argument.
+     */
     Token* nextTemplateArgument() const;
 
     /**
@@ -1144,7 +1145,10 @@ public:
 
     bool hasKnownIntValue() const;
     bool hasKnownValue() const;
+    bool hasKnownValue(ValueFlow::Value::ValueType t) const;
+    bool hasKnownSymbolicValue(const Token* tok) const;
 
+    const ValueFlow::Value* getKnownValue(ValueFlow::Value::ValueType t) const;
     MathLib::bigint getKnownIntValue() const {
         return mImpl->mValues->front().intvalue;
     }
@@ -1153,7 +1157,7 @@ public:
 
     const ValueFlow::Value* getValue(const MathLib::bigint val) const;
 
-    const ValueFlow::Value* getMaxValue(bool condition) const;
+    const ValueFlow::Value* getMaxValue(bool condition, MathLib::bigint path = 0) const;
 
     const ValueFlow::Value* getMovedValue() const;
 
@@ -1166,8 +1170,6 @@ public:
 
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize(const Settings *settings) const;
-
-    const Token *getValueTokenDeadPointer() const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
@@ -1215,7 +1217,7 @@ private:
     Token *mPrevious;
     Token *mLink;
 
-    enum {
+    enum : uint64_t {
         fIsUnsigned             = (1 << 0),
         fIsSigned               = (1 << 1),
         fIsPointerCompare       = (1 << 2),
@@ -1246,12 +1248,15 @@ private:
         fConstexpr              = (1 << 27),
         fExternC                = (1 << 28),
         fIsSplitVarDeclComma    = (1 << 29), // set to true when variable declarations are split up ('int a,b;' => 'int a; int b;')
-        fIsSplitVarDeclEq       = (1 << 30)  // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
+        fIsImplicitInt          = (1U << 31),   // Is "int" token implicitly added?
+        fIsInline               = (1ULL << 32), // Is this a inline type
+        fIsTemplate             = (1ULL << 33)
     };
 
     Token::Type mTokType;
 
-    unsigned int mFlags;
+    uint64_t mFlags;
 
     TokenImpl *mImpl;
 
@@ -1260,7 +1265,7 @@ private:
      * @param flag_ flag to get state of
      * @return true if flag set or false in flag not set
      */
-    bool getFlag(unsigned int flag_) const {
+    bool getFlag(uint64_t flag_) const {
         return ((mFlags & flag_) != 0);
     }
 
@@ -1269,7 +1274,7 @@ private:
      * @param flag_ flag to set state
      * @param state_ new state of flag
      */
-    void setFlag(unsigned int flag_, bool state_) {
+    void setFlag(uint64_t flag_, bool state_) {
         mFlags = state_ ? mFlags | flag_ : mFlags & ~flag_;
     }
 
@@ -1289,6 +1294,7 @@ private:
 public:
     void astOperand1(Token *tok);
     void astOperand2(Token *tok);
+    void astParent(Token* tok);
 
     Token * astOperand1() {
         return mImpl->mAstOperand1;
@@ -1391,6 +1397,11 @@ public:
         return mImpl->mCpp11init;
     }
 };
+
+Token* findTypeEnd(Token* tok);
+const Token* findTypeEnd(const Token* tok);
+Token* findLambdaEndScope(Token* tok);
+const Token* findLambdaEndScope(const Token* tok);
 
 /// @}
 //---------------------------------------------------------------------------

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include <utility>
 #include <stack>
+#include <cctype>
 
 
 int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)
@@ -52,7 +53,7 @@ bool matchglob(const std::string& pattern, const std::string& name)
 {
     const char* p = pattern.c_str();
     const char* n = name.c_str();
-    std::stack<std::pair<const char*, const char*> > backtrack;
+    std::stack<std::pair<const char*, const char*>> backtrack;
 
     for (;;) {
         bool matching = true;
@@ -110,4 +111,10 @@ bool matchglob(const std::string& pattern, const std::string& name)
         // Advance name pointer by one because the current position didn't work
         n++;
     }
+}
+
+bool matchglobs(const std::vector<std::string> &patterns, const std::string &name) {
+    return std::any_of(begin(patterns), end(patterns), [&name](const std::string &pattern) {
+        return matchglob(pattern, name);
+    });
 }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,14 +25,13 @@
 
 class Test64BitPortability : public TestFixture {
 public:
-    Test64BitPortability() : TestFixture("Test64BitPortability") {
-    }
+    Test64BitPortability() : TestFixture("Test64BitPortability") {}
 
 private:
     Settings settings;
 
     void run() OVERRIDE {
-        settings.addEnabled("portability");
+        settings.severity.enable(Severity::portability);
 
         TEST_CASE(novardecl);
         TEST_CASE(functionpar);
@@ -40,9 +39,11 @@ private:
         TEST_CASE(ptrcompare);
         TEST_CASE(ptrarithmetic);
         TEST_CASE(returnIssues);
+        TEST_CASE(assignment);
     }
 
-    void check(const char code[]) {
+#define check(code) check_(code, __FILE__, __LINE__)
+    void check_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
@@ -50,11 +51,20 @@ private:
         Tokenizer tokenizer(&settings, this);
         LOAD_LIB_2(settings.library, "std.cfg");
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check char variable usage..
         Check64BitPortability check64BitPortability(&tokenizer, &settings, this);
         check64BitPortability.pointerassignment();
+    }
+
+    void assignment() {
+        // #8631
+        check("using CharArray = char[16];\n"
+              "void f() {\n"
+              "    CharArray foo = \"\";\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void novardecl() {
@@ -248,7 +258,7 @@ private:
 
         // #7451: Lambdas
         check("const int* test(std::vector<int> outputs, const std::string& text) {\n"
-              "  auto it = std::find_if(outputs.begin(), outputs.end(), \n"
+              "  auto it = std::find_if(outputs.begin(), outputs.end(),\n"
               "     [&](int ele) { return \"test\" == text; });\n"
               "  return nullptr;\n"
               "}");

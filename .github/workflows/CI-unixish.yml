@@ -17,6 +17,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
       - name: Install missing software on ubuntu 18.04
         if: matrix.os == 'ubuntu-18.04'
         run: |
@@ -37,19 +42,46 @@ jobs:
         run: |
           brew install coreutils z3
           cp externals/z3_version_old.h externals/z3_version.h
-          
+
+      - name: Install missing Python packages
+        run: |
+          python -m pip install pip --upgrade
+          python -m pip install pytest
+
+      # TODO: Qt installation often fails with timeout errors on macos
       - name: Install Qt
         if: contains(matrix.os, 'ubuntu')
         uses: jurplel/install-qt-action@v2
         with:
+          version: '5.15.2'
           modules: 'qtcharts'
 
-      - name: Test CMake build
+      - name: Test CMake build (with GUI)
+        if: contains(matrix.os, 'ubuntu')
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DBUILD_TESTS=On ..
-          make -j$(nproc) check
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On ..
+          cmake --build . -- -j$(nproc)
+          cd ..
+
+      - name: Test CMake build (without GUI)
+        if: contains(matrix.os, 'macos')
+        run: |
+          mkdir cmake.output
+          cd cmake.output
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On ..
+          cmake --build . -- -j$(nproc)
+          cd ..
+
+      - name: Run CMake test
+        run: |
+          cmake --build cmake.output --target check -- -j$(nproc)
+
+      - name: Run CTest
+        run: |
+          cd cmake.output
+          ctest -j$(nproc)
           cd ..
 
       - name: Build and test with Unsigned char
@@ -57,6 +89,10 @@ jobs:
           make clean
           make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
           ./testrunner TestSymbolDatabase
+
+      - name: Check syntax with NONNEG
+        run: |
+          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
 
       - name: Build cppcheck
         run: |
@@ -71,29 +107,88 @@ jobs:
         run: |
           make -j$(nproc) check USE_Z3=yes HAVE_RULES=yes
 
+      # the script uses sed parameters not supported by MacOS
+      - name: Run extra tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          tools/generate_and_run_more_tests.sh
+
+      - name: Run test/cli
+        run: |
+          cd test/cli
+          pytest test-*.py
+          cd ../../..
+          ln -s cppcheck 'cpp check'
+          cd 'cpp check/test/cli'
+          pytest test-*.py
+
+      # fails on macos since some includes (e.g. sys/epoll.h) are not available
+      - name: Run cfg tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          make -j$(nproc) checkcfg
+
+      # it seems macos has no "wc" command
+      - name: Run showtimetop5 tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          ./tools/test_showtimetop5.sh
+
+      - name: Run --dump test
+        run: |
+          ./cppcheck test/testpreprocessor.cpp --dump
+          xmllint --noout test/testpreprocessor.cpp.dump
+
       - name: Validate
         run: |
-          make -j$(nproc) validateCFG validatePlatforms
-          
+          make -j$(nproc) checkCWEEntries validateXML
+
       - name: Test addons
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
+          ./cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
+          cd addons/test
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
+          ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
 
       - name: Build GUI on ubuntu
         if: contains(matrix.os, 'ubuntu')
         run: |
           pushd gui
-          qmake HAVE_QCHART=yes
+          qmake CONFIG+=debug HAVE_QCHART=yes
           make -j$(nproc)
 
       - name: Run GUI tests on ubuntu
         if: contains(matrix.os, 'ubuntu')
         run: |
+          pushd gui/test/cppchecklibrarydata
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          ./test-cppchecklibrarydata
+          popd
+          pushd gui/test/filelist
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-filelist
+          popd
           pushd gui/test/projectfile
-          qmake
+          qmake CONFIG+=debug
           make -j$(nproc)
           ./test-projectfile
+          popd
+          pushd gui/test/translationhandler
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-translationhandler
+          popd
+          pushd gui/test/xmlreportv2
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-xmlreportv2
 
       - name: Generate Qt help file on ubuntu
         if: contains(matrix.os, 'ubuntu')
@@ -101,27 +196,11 @@ jobs:
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
 
-      # Run self check after "Build GUI" to include generated headers in analysis
-      - name: Self check
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          # compile with verification and ast matchers
-          make clean
-          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
-          # self check lib/cli
-          mkdir b1
-          ./cppcheck -q -j$(nproc) --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling cli lib
-          # check gui with qt settings
-          mkdir b2
-          ./cppcheck -q -j$(nproc) --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling gui/*.cpp
-          # self check test and tools
-          ./cppcheck -q -j$(nproc) --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling test/*.cpp tools
-
       - name: Build triage on ubuntu
         if: matrix.os == 'ubuntu-20.04'
         run: |
           pushd tools/triage
-          qmake
+          qmake CONFIG+=debug
           make -j$(nproc)
 
       - name: Build Fuzzer
@@ -130,17 +209,22 @@ jobs:
           pushd oss-fuzz
           make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
 
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./cppcheck
-    
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./**/cfg/*.cfg
-        
-      - uses: actions/upload-artifact@v2
-        with:
-          name: cppcheck_cli
-          path: ./**/platforms/*.xml
+      - name: Self check (build)
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          # compile with verification and ast matchers
+          make clean
+          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
+
+      # Run self check after "Build GUI" to include generated headers in analysis
+      - name: Self check
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          # self check lib/cli
+          mkdir b1
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  cli lib
+          # check gui with qt settings
+          mkdir b2
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  gui/*.cpp gui/temp/*.cpp
+          # self check test and tools
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  test/*.cpp tools

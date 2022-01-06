@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Include>
-  <?define CliBuildDir = "..\bin" ?>
-  <?define GuiBuildDir = "..\bin" ?>
-  <?define GuiHelpDir = "..\gui\help" ?>
-  <?define TranslationsDir = "..\gui" ?>
-  <?define CfgsDir = "..\cfg" ?>
-  <?define PtfsDir = "..\platforms" ?>
-  <?define AddonsDir = "..\addons" ?>
-  <?define QtDllDir = "..\bin" ?>
-  <?define Z3DllDir = "..\externals\z3\bin" ?>
+  <?define CliBuildDir = "files" ?>
+  <?define GuiBuildDir = "files" ?>
+  <?define GuiHelpDir = "files\help" ?>
+  <?define TranslationsDir = "files\translations" ?>
+  <?define CfgsDir = "files\cfg" ?>
+  <?define PtfsDir = "files\platforms" ?>
+  <?define AddonsDir = "files\addons" ?>
+  <?define QtDllDir = "files" ?>
+  <?define Z3DllDir = "files" ?>
 
   <?if $(var.Platform) = x64 ?>
     <?define CrtMergeModule = "$(env.VCToolsRedistDir)\MergeModules\Microsoft_VC142_CRT_x64.msm" ?>

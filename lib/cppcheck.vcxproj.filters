@@ -188,6 +188,12 @@
     <ClCompile Include="reverseanalyzer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="color.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="infer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="checkbufferoverrun.h">
@@ -359,6 +365,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="bughuntingchecks.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="tokenrange.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="errortypes.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="infer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

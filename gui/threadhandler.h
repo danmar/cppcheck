@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,9 +38,9 @@ class ImportProject;
 
 
 /**
-* @brief This class handles creating threadresult and starting threads
-*
-*/
+ * @brief This class handles creating threadresult and starting threads
+ *
+ */
 class ThreadHandler : public QObject {
     Q_OBJECT
 public:
@@ -48,28 +48,28 @@ public:
     virtual ~ThreadHandler();
 
     /**
-    * @brief Set the number of threads to use
-    * @param count The number of threads to use
-    */
+     * @brief Set the number of threads to use
+     * @param count The number of threads to use
+     */
     void setThreadCount(const int count);
 
     /**
-    * @brief Initialize the threads (connect all signals to resultsview's slots)
-    *
-    * @param view View to show error results
-    */
+     * @brief Initialize the threads (connect all signals to resultsview's slots)
+     *
+     * @param view View to show error results
+     */
     void initialize(ResultsView *view);
 
     /**
-    * @brief Load settings
-    * @param settings QSettings to load settings from
-    */
-    void loadSettings(QSettings &settings);
+     * @brief Load settings
+     * @param settings QSettings to load settings from
+     */
+    void loadSettings(const QSettings &settings);
 
     /**
-    * @brief Save settings
-    * @param settings QSettings to save settings to
-    */
+     * @brief Save settings
+     * @param settings QSettings to save settings to
+     */
     void saveSettings(QSettings &settings) const;
 
     void setAddonsAndTools(const QStringList &addonsAndTools) {
@@ -89,72 +89,72 @@ public:
     }
 
     /**
-    * @brief Clear all files from cppcheck
-    *
-    */
+     * @brief Clear all files from cppcheck
+     *
+     */
     void clearFiles();
 
     /**
-    * @brief Set files to check
-    *
-    * @param files files to check
-    */
+     * @brief Set files to check
+     *
+     * @param files files to check
+     */
     void setFiles(const QStringList &files);
 
     /**
-    * @brief Set project to check
-    *
-    * @param prj project to check
-    */
+     * @brief Set project to check
+     *
+     * @param prj project to check
+     */
     void setProject(const ImportProject &prj);
 
     /**
-    * @brief Start the threads to check the files
-    *
-    * @param settings Settings for checking
-    */
+     * @brief Start the threads to check the files
+     *
+     * @param settings Settings for checking
+     */
     void check(const Settings &settings);
 
     /**
-    * @brief Set files to check
-    *
-    * @param all true if all files, false if modified files
-    */
+     * @brief Set files to check
+     *
+     * @param all true if all files, false if modified files
+     */
     void setCheckFiles(bool all);
 
     /**
-    * @brief Set selected files to check
-    *
-    * @param files list of files to be checked
-    */
+     * @brief Set selected files to check
+     *
+     * @param files list of files to be checked
+     */
     void setCheckFiles(const QStringList& files);
 
     /**
-    * @brief Is checking running?
-    *
-    * @return true if check is running, false otherwise.
-    */
+     * @brief Is checking running?
+     *
+     * @return true if check is running, false otherwise.
+     */
     bool isChecking() const;
 
     /**
-    * @brief Have we checked files already?
-    *
-    * @return true check has been previously run and recheck can be done
-    */
+     * @brief Have we checked files already?
+     *
+     * @return true check has been previously run and recheck can be done
+     */
     bool hasPreviousFiles() const;
 
     /**
-    * @brief Return count of files we checked last time.
-    *
-    * @return count of files that were checked last time.
-    */
+     * @brief Return count of files we checked last time.
+     *
+     * @return count of files that were checked last time.
+     */
     int getPreviousFilesCount() const;
 
     /**
-    * @brief Return the time elapsed while scanning the previous time.
-    *
-    * @return the time elapsed in milliseconds.
-    */
+     * @brief Return the time elapsed while scanning the previous time.
+     *
+     * @return the time elapsed in milliseconds.
+     */
     int getPreviousScanDuration() const;
 
     /**
@@ -164,24 +164,24 @@ public:
     QStringList getReCheckFiles(bool all) const;
 
     /**
-    * @brief Get start time of last check
-    *
-    * @return start time of last check
-    */
+     * @brief Get start time of last check
+     *
+     * @return start time of last check
+     */
     QDateTime getCheckStartTime() const;
 
     /**
-    * @brief Set start time of check
-    *
-    * @param checkStartTime saved start time of the last check
-    */
+     * @brief Set start time of check
+     *
+     * @param checkStartTime saved start time of the last check
+     */
     void setCheckStartTime(QDateTime checkStartTime);
 
 signals:
     /**
-    * @brief Signal that all threads are done
-    *
-    */
+     * @brief Signal that all threads are done
+     *
+     */
     void done();
 
     void log(const QString &msg);
@@ -193,21 +193,21 @@ signals:
 public slots:
 
     /**
-    * @brief Slot to stop all threads
-    *
-    */
+     * @brief Slot to stop all threads
+     *
+     */
     void stop();
 protected slots:
     /**
-    * @brief Slot that a single thread is done
-    *
-    */
+     * @brief Slot that a single thread is done
+     *
+     */
     void threadDone();
 protected:
     /**
-    * @brief List of files checked last time (used when rechecking)
-    *
-    */
+     * @brief List of files checked last time (used when rechecking)
+     *
+     */
     QStringList mLastFiles;
 
     /** @brief date and time when current checking started */
@@ -219,39 +219,39 @@ protected:
     QDateTime mLastCheckTime;
 
     /**
-    * @brief Timer used for measuring scan duration
-    *
-    */
+     * @brief Timer used for measuring scan duration
+     *
+     */
     QTime mTime;
 
     /**
-    * @brief The previous scan duration in milliseconds.
-    *
-    */
+     * @brief The previous scan duration in milliseconds.
+     *
+     */
     int mScanDuration;
 
     /**
-    * @brief Function to delete all threads
-    *
-    */
+     * @brief Function to delete all threads
+     *
+     */
     void removeThreads();
 
     /**
-    * @brief Thread results are stored here
-    *
-    */
+     * @brief Thread results are stored here
+     *
+     */
     ThreadResult mResults;
 
     /**
-    * @brief List of threads currently in use
-    *
-    */
+     * @brief List of threads currently in use
+     *
+     */
     QList<CheckThread *> mThreads;
 
     /**
-    * @brief The amount of threads currently running
-    *
-    */
+     * @brief The amount of threads currently running
+     *
+     */
     int mRunningThreadCount;
 
     bool mAnalyseWholeProgram;

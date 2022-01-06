@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,17 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
-#include <QString>
+#include "checkthread.h"
+
 #include <QDebug>
 #include <QDir>
 #include <QFile>
-#include <QFileInfo>
-#include <QJsonDocument>
-#include <QJsonObject>
 #include <QProcess>
 #include <QSettings>
-#include "checkthread.h"
 #include "erroritem.h"
 #include "threadresult.h"
 #include "cppcheck.h"
@@ -245,12 +241,12 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
 
             if (addon == CLANG_ANALYZER) {
                 /*
-                // Using clang
-                args.insert(0,"--analyze");
-                args.insert(1, "-Xanalyzer");
-                args.insert(2, "-analyzer-output=text");
-                args << fileName;
-                */
+                   // Using clang
+                   args.insert(0,"--analyze");
+                   args.insert(1, "-Xanalyzer");
+                   args.insert(2, "-analyzer-output=text");
+                   args << fileName;
+                 */
                 // Using clang-tidy
                 args.insert(0,"-checks=-*,clang-analyzer-*");
                 args.insert(1, fileName);
@@ -396,7 +392,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();
         const std::string id = e.errorId.toStdString();
-        ErrorMessage errmsg(callstack, f0, e.severity, msg, id, false);
+        ErrorMessage errmsg(callstack, f0, e.severity, msg, id, Certainty::normal);
         mResult.reportErr(errmsg);
     }
 }

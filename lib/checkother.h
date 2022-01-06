@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,6 @@
 #include "errortypes.h"
 #include "utils.h"
 
-#include <cstddef>
 #include <string>
 #include <vector>
 
@@ -51,13 +50,11 @@ class ErrorLogger;
 class CPPCHECKLIB CheckOther : public Check {
 public:
     /** @brief This constructor is used when registering the CheckClass */
-    CheckOther() : Check(myName()) {
-    }
+    CheckOther() : Check(myName()) {}
 
     /** @brief This constructor is used when running checks. */
     CheckOther(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : Check(myName(), tokenizer, settings, errorLogger) {
-    }
+        : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
@@ -96,6 +93,7 @@ public:
         checkOther.clarifyCalculation();
         checkOther.checkPassByReference();
         checkOther.checkConstVariable();
+        checkOther.checkConstPointer();
         checkOther.checkComparisonFunctionIsAlwaysTrueOrFalse();
         checkOther.checkInvalidFree();
         checkOther.clarifyStatement();
@@ -103,7 +101,15 @@ public:
         checkOther.checkMisusedScopedObject();
         checkOther.checkAccessOfMovedVariable();
         checkOther.checkModuloOfOne();
+        checkOther.checkOverlappingWrite();
     }
+
+    /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
+    static bool comparisonNonZeroExpressionLessThanZero(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
+
+    /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is positive? */
+    static bool testIfNonZeroExpressionIsPositive(const Token *tok, const ValueFlow::Value **zeroValue, const Token **nonZeroExpr);
+
 
     /** @brief Clarify calculation for ".. a * b ? .." */
     void clarifyCalculation();
@@ -128,6 +134,7 @@ public:
     void checkPassByReference();
 
     void checkConstVariable();
+    void checkConstPointer();
 
     /** @brief Using char variable as array index / as operand in bit operation */
     void checkCharVariable();
@@ -220,6 +227,10 @@ public:
 
     void checkModuloOfOne();
 
+    void checkOverlappingWrite();
+    void overlappingWriteUnion(const Token *tok);
+    void overlappingWriteFunction(const Token *tok);
+
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);
@@ -292,6 +303,8 @@ private:
         c.checkPipeParameterSizeError(nullptr,  "varname", "dimension");
         c.raceAfterInterlockedDecrementError(nullptr);
         c.invalidFreeError(nullptr, "malloc", false);
+        c.overlappingWriteUnion(nullptr);
+        c.overlappingWriteFunction(nullptr);
 
         //performance
         c.redundantCopyError(nullptr,  "varname");
@@ -370,6 +383,7 @@ private:
                "- cast the return values of getc(),fgetc() and getchar() to character and compare it to EOF\n"
                "- race condition with non-interlocked access after InterlockedDecrement() call\n"
                "- expression 'x = x++;' depends on order of evaluation of side effects\n"
+               "- overlapping write of union\n"
 
                // warning
                "- either division by zero or useless condition\n"

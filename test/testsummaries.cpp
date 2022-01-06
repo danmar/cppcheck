@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,7 +36,8 @@ private:
         TEST_CASE(createSummariesNoreturn);
     }
 
-    std::string createSummaries(const char code[], const char filename[] = "test.cpp") {
+#define createSummaries(...) createSummaries_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string createSummaries_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -44,7 +45,7 @@ private:
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
         return Summaries::create(&tokenizer, "");
     }
 

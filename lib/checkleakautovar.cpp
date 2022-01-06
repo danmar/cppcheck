@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,10 +32,8 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <cstddef>
 #include <iostream>
 #include <list>
-#include <stack>
 #include <utility>
 
 //---------------------------------------------------------------------------
@@ -52,6 +50,8 @@ static const CWE CWE415(415U);
 static const int NEW_ARRAY = -2;
 static const int NEW = -1;
 
+static const std::vector<std::pair<std::string, std::string>> alloc_failed_conds {{"==", "0"}, {"<", "0"}, {"==", "-1"}, {"<=", "-1"}};
+static const std::vector<std::pair<std::string, std::string>> alloc_success_conds {{"!=", "0"}, {">", "0"}, {"!=", "-1"}, {">=", "0"}};
 
 /**
  * @brief Is variable type some class with automatic deallocation?
@@ -73,6 +73,16 @@ static bool isAutoDealloc(const Variable *var)
         return false;
 
     return true;
+}
+
+static bool isVarTokComparison(const Token * tok, const Token ** vartok,
+                               const std::vector<std::pair<std::string, std::string>>& ops)
+{
+    for (const auto & op : ops) {
+        if (astIsVariableComparison(tok, op.first, op.second, vartok))
+            return true;
+    }
+    return false;
 }
 
 //---------------------------------------------------------------------------
@@ -152,12 +162,12 @@ void CheckLeakAutoVar::deallocUseError(const Token *tok, const std::string &varn
 void CheckLeakAutoVar::deallocReturnError(const Token *tok, const Token *deallocTok, const std::string &varname)
 {
     const std::list<const Token *> locations = { deallocTok, tok };
-    reportError(locations, Severity::error, "deallocret", "$symbol:" + varname + "\nReturning/dereferencing '$symbol' after it is deallocated / released", CWE672, false);
+    reportError(locations, Severity::error, "deallocret", "$symbol:" + varname + "\nReturning/dereferencing '$symbol' after it is deallocated / released", CWE672, Certainty::normal);
 }
 
 void CheckLeakAutoVar::configurationInfo(const Token* tok, const std::string &functionName)
 {
-    if (mSettings->checkLibrary && mSettings->isEnabled(Settings::INFORMATION)) {
+    if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
         reportError(tok,
                     Severity::information,
                     "checkLibraryUseIgnore",
@@ -170,9 +180,9 @@ void CheckLeakAutoVar::doubleFreeError(const Token *tok, const Token *prevFreeTo
     const std::list<const Token *> locations = { prevFreeTok, tok };
 
     if (Library::isresource(type))
-        reportError(locations, Severity::error, "doubleFree", "$symbol:" + varname + "\nResource handle '$symbol' freed twice.", CWE415, false);
+        reportError(locations, Severity::error, "doubleFree", "$symbol:" + varname + "\nResource handle '$symbol' freed twice.", CWE415, Certainty::normal);
     else
-        reportError(locations, Severity::error, "doubleFree", "$symbol:" + varname + "\nMemory pointed to by '$symbol' is freed twice.", CWE415, false);
+        reportError(locations, Severity::error, "doubleFree", "$symbol:" + varname + "\nMemory pointed to by '$symbol' is freed twice.", CWE415, Certainty::normal);
 }
 
 
@@ -195,22 +205,6 @@ void CheckLeakAutoVar::check()
         VarInfo varInfo;
 
         checkScope(scope->bodyStart, &varInfo, notzero, 0);
-
-        varInfo.conditionalAlloc.clear();
-
-        // Clear reference arguments from varInfo..
-        std::map<int, VarInfo::AllocInfo>::iterator it = varInfo.alloctype.begin();
-        while (it != varInfo.alloctype.end()) {
-            const Variable *var = symbolDatabase->getVariableFromVarId(it->first);
-            if (!var ||
-                (var->isArgument() && var->isReference()) ||
-                (!var->isArgument() && !var->isLocal()))
-                varInfo.alloctype.erase(it++);
-            else
-                ++it;
-        }
-
-        ret(scope->bodyEnd, varInfo);
     }
 }
 
@@ -263,12 +257,12 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
 }
 
 /** checks if nameToken is a name of a function in a function call:
-*     func(arg)
-* or
-*     func<temp1_arg>(arg)
-* @param nameToken Function name token
-* @return opening parenthesis token or NULL if not a function call
-*/
+ *     func(arg)
+ * or
+ *     func<temp1_arg>(arg)
+ * @param nameToken Function name token
+ * @return opening parenthesis token or NULL if not a function call
+ */
 
 static const Token * isFunctionCall(const Token * nameToken)
 {
@@ -331,6 +325,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         tok = tok->next();
         if (!tok || tok == endToken)
             break;
+
+        if (Token::Match(tok, "const %type%"))
+            tok = tok->tokAt(2);
 
         // parse statement, skip to last member
         const Token *varTok = tok;
@@ -488,12 +485,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                             if (!par->isComparisonOp())
                                 continue;
                             const Token *vartok = nullptr;
-                            if (astIsVariableComparison(par, "!=", "0", &vartok) ||
-                                astIsVariableComparison(par, "==", "0", &vartok) ||
-                                astIsVariableComparison(par, "<", "0", &vartok) ||
-                                astIsVariableComparison(par, ">", "0", &vartok) ||
-                                astIsVariableComparison(par, "==", "-1", &vartok) ||
-                                astIsVariableComparison(par, "!=", "-1", &vartok)) {
+                            if (isVarTokComparison(par, &vartok, alloc_success_conds) ||
+                                (isVarTokComparison(par, &vartok, alloc_failed_conds))) {
                                 varInfo1.erase(vartok->varId());
                                 varInfo2.erase(vartok->varId());
                             }
@@ -502,26 +495,15 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
 
                     const Token *vartok = nullptr;
-                    if (astIsVariableComparison(tok3, "!=", "0", &vartok)) {
+                    if (isVarTokComparison(tok3, &vartok, alloc_success_conds)) {
                         varInfo2.reallocToAlloc(vartok->varId());
                         varInfo2.erase(vartok->varId());
-                        if (notzero.find(vartok->varId()) != notzero.end())
+                        if (astIsVariableComparison(tok3, "!=", "0", &vartok) &&
+                            (notzero.find(vartok->varId()) != notzero.end()))
                             varInfo2.clear();
-                    } else if (astIsVariableComparison(tok3, "==", "0", &vartok)) {
+                    } else if (isVarTokComparison(tok3, &vartok, alloc_failed_conds)) {
                         varInfo1.reallocToAlloc(vartok->varId());
                         varInfo1.erase(vartok->varId());
-                    } else if (astIsVariableComparison(tok3, "<", "0", &vartok)) {
-                        varInfo1.reallocToAlloc(vartok->varId());
-                        varInfo1.erase(vartok->varId());
-                    } else if (astIsVariableComparison(tok3, ">", "0", &vartok)) {
-                        varInfo2.reallocToAlloc(vartok->varId());
-                        varInfo2.erase(vartok->varId());
-                    } else if (astIsVariableComparison(tok3, "==", "-1", &vartok)) {
-                        varInfo1.reallocToAlloc(vartok->varId());
-                        varInfo1.erase(vartok->varId());
-                    } else if (astIsVariableComparison(tok3, "!=", "-1", &vartok)) {
-                        varInfo2.reallocToAlloc(vartok->varId());
-                        varInfo2.erase(vartok->varId());
                     }
                     return ChildrenToVisit::none;
                 });
@@ -741,6 +723,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             changeAllocStatus(varInfo, allocation, vtok, vtok);
         }
     }
+    ret(endToken, *varInfo, true);
 }
 
 
@@ -763,6 +746,9 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                     if (rhs->astParent()->str() == "=")
                         break;
                     rhs = rhs->astParent();
+                }
+                while (rhs->isCast()) {
+                    rhs = rhs->astOperand1();
                 }
                 if (rhs->varId() == tok->varId()) {
                     // simple assignment
@@ -873,10 +859,17 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     int argNr = 1;
     for (const Token *funcArg = tokFirstArg; funcArg; funcArg = funcArg->nextArgument()) {
         const Token* arg = funcArg;
-        if (mTokenizer->isCPP() && arg->str() == "new") {
-            arg = arg->next();
-            if (Token::simpleMatch(arg, "( std :: nothrow )"))
-                arg = arg->tokAt(5);
+        if (mTokenizer->isCPP()) {
+            int tokAdvance = 0;
+            if (arg->str() == "new")
+                tokAdvance = 1;
+            else if (Token::simpleMatch(arg, "* new"))
+                tokAdvance = 2;
+            if (tokAdvance > 0) {
+                arg = arg->tokAt(tokAdvance);
+                if (Token::simpleMatch(arg, "( std :: nothrow )"))
+                    arg = arg->tokAt(5);
+            }
         }
 
         // Skip casts
@@ -970,15 +963,16 @@ void CheckLeakAutoVar::leakIfAllocated(const Token *vartok,
     }
 }
 
-void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
+void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndOfScope)
 {
     const std::map<int, VarInfo::AllocInfo> &alloctype = varInfo.alloctype;
     const std::map<int, std::string> &possibleUsage = varInfo.possibleUsage;
+    std::vector<int> toRemove;
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (std::map<int, VarInfo::AllocInfo>::const_iterator it = alloctype.begin(); it != alloctype.end(); ++it) {
-        // don't warn if variable is conditionally allocated
-        if (!it->second.managed() && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
+        // don't warn if variable is conditionally allocated, unless it leaves the scope
+        if (!isEndOfScope && !it->second.managed() && varInfo.conditionalAlloc.find(it->first) != varInfo.conditionalAlloc.end())
             continue;
 
         // don't warn if there is a reference of the variable
@@ -988,6 +982,9 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
         const int varid = it->first;
         const Variable *var = symbolDatabase->getVariableFromVarId(varid);
         if (var) {
+            // don't warn if we leave an inner scope
+            if (isEndOfScope && var->scope() && tok != var->scope()->bodyEnd)
+                continue;
             bool used = false;
             for (const Token *tok2 = tok; tok2; tok2 = tok2->next()) {
                 if (tok2->str() == ";")
@@ -1025,6 +1022,9 @@ void CheckLeakAutoVar::ret(const Token *tok, const VarInfo &varInfo)
                     configurationInfo(tok, use->second);
                 }
             }
+            toRemove.push_back(varid);
         }
     }
+    for (int varId : toRemove)
+        varInfo.erase(varId);
 }

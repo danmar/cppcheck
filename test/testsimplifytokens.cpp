@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,14 +23,12 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <ostream>
 #include <string>
 
 
 class TestSimplifyTokens : public TestFixture {
 public:
-    TestSimplifyTokens() : TestFixture("TestSimplifyTokens") {
-    }
+    TestSimplifyTokens() : TestFixture("TestSimplifyTokens") {}
 
 
 private:
@@ -42,9 +40,9 @@ private:
     void run() OVERRIDE {
         LOAD_LIB_2(settings_std.library, "std.cfg");
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
-        settings0.addEnabled("portability");
-        settings1.addEnabled("style");
-        settings_windows.addEnabled("portability");
+        settings0.severity.enable(Severity::portability);
+        settings1.severity.enable(Severity::style);
+        settings_windows.severity.enable(Severity::portability);
 
         // If there are unused templates, keep those
         settings0.checkUnusedTemplates = true;
@@ -57,6 +55,8 @@ private:
         // case shall make sure the simplifications are done in the
         // correct order
         TEST_CASE(simplifyTokenList1);
+
+        TEST_CASE(test1); // array access. replace "*(p+1)" => "p[1]"
 
         TEST_CASE(simplifyMathFunctions_sqrt);
         TEST_CASE(simplifyMathFunctions_cbrt);
@@ -176,6 +176,7 @@ private:
         // Simplify calculations
         TEST_CASE(calculations);
         TEST_CASE(comparisons);
+        TEST_CASE(simplifyCalculations);
 
         //remove dead code after flow control statements
         TEST_CASE(simplifyFlowControl);
@@ -203,8 +204,6 @@ private:
         TEST_CASE(while0);
         // ticket #3140
         TEST_CASE(while0for);
-
-        TEST_CASE(duplicateDefinition); // ticket #3565
 
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
@@ -240,6 +239,9 @@ private:
         // remove calling convention __cdecl, __stdcall, ...
         TEST_CASE(simplifyCallingConvention);
 
+        // remove __attribute, __attribute__
+        TEST_CASE(simplifyAttribute);
+
         TEST_CASE(simplifyFunctorCall);
 
         TEST_CASE(simplifyFunctionPointer); // ticket #5339 (simplify function pointer after comma)
@@ -247,9 +249,6 @@ private:
         TEST_CASE(redundant_semicolon);
 
         TEST_CASE(simplifyFunctionReturn);
-
-        // void foo(void) -> void foo()
-        TEST_CASE(removeVoidFromFunction);
 
         TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
 
@@ -266,17 +265,121 @@ private:
         TEST_CASE(simplifyCharAt);
         TEST_CASE(simplifyOverride); // ticket #5069
         TEST_CASE(simplifyNestedNamespace);
-        TEST_CASE(simplifyNamespaceAliases);
+        TEST_CASE(simplifyNamespaceAliases1);
+        TEST_CASE(simplifyNamespaceAliases2); // ticket #10281
+
+        TEST_CASE(simplifyKnownVariables1);
+        TEST_CASE(simplifyKnownVariables2);
+        TEST_CASE(simplifyKnownVariables3);
+        TEST_CASE(simplifyKnownVariables4);
+        TEST_CASE(simplifyKnownVariables5);
+        TEST_CASE(simplifyKnownVariables6);
+        TEST_CASE(simplifyKnownVariables7);
+        TEST_CASE(simplifyKnownVariables8);
+        TEST_CASE(simplifyKnownVariables9);
+        TEST_CASE(simplifyKnownVariables10);
+        TEST_CASE(simplifyKnownVariables11);
+        TEST_CASE(simplifyKnownVariables13);
+        TEST_CASE(simplifyKnownVariables14);
+        TEST_CASE(simplifyKnownVariables15);
+        TEST_CASE(simplifyKnownVariables16);
+        TEST_CASE(simplifyKnownVariables17);
+        TEST_CASE(simplifyKnownVariables18);
+        TEST_CASE(simplifyKnownVariables19);
+        TEST_CASE(simplifyKnownVariables20);
+        TEST_CASE(simplifyKnownVariables21);
+        TEST_CASE(simplifyKnownVariables22);
+        TEST_CASE(simplifyKnownVariables23);
+        TEST_CASE(simplifyKnownVariables25);
+        TEST_CASE(simplifyKnownVariables27);
+        TEST_CASE(simplifyKnownVariables28);
+        TEST_CASE(simplifyKnownVariables29);    // ticket #1811
+        TEST_CASE(simplifyKnownVariables30);
+        TEST_CASE(simplifyKnownVariables31);
+        TEST_CASE(simplifyKnownVariables32);    // const
+        TEST_CASE(simplifyKnownVariables33);    // struct variable
+        TEST_CASE(simplifyKnownVariables34);
+        TEST_CASE(simplifyKnownVariables35);    // ticket #2353 - False positive: Division by zero 'if (x == 0) return 0; return 10 / x;'
+        TEST_CASE(simplifyKnownVariables36);    // ticket #2304 - known value for strcpy parameter
+        TEST_CASE(simplifyKnownVariables37);    // ticket #2398 - false positive caused by no simplification in for loop
+        TEST_CASE(simplifyKnownVariables38);    // ticket #2399 - simplify conditions
+        TEST_CASE(simplifyKnownVariables39);
+        TEST_CASE(simplifyKnownVariables40);
+        TEST_CASE(simplifyKnownVariables41);    // p=&x; if (p) ..
+        TEST_CASE(simplifyKnownVariables42);    // ticket #2031 - known string value after strcpy
+        TEST_CASE(simplifyKnownVariables43);
+        TEST_CASE(simplifyKnownVariables44);    // ticket #3117 - don't simplify static variables
+        TEST_CASE(simplifyKnownVariables45);    // ticket #3281 - static constant variable not simplified
+        TEST_CASE(simplifyKnownVariables46);    // ticket #3587 - >>
+        TEST_CASE(simplifyKnownVariables47);    // ticket #3627 - >>
+        TEST_CASE(simplifyKnownVariables48);    // ticket #3754 - wrong simplification in for loop header
+        TEST_CASE(simplifyKnownVariables49);    // #3691 - continue in switch
+        TEST_CASE(simplifyKnownVariables50);    // #4066 sprintf changes
+        TEST_CASE(simplifyKnownVariables51);    // #4409 hang
+        TEST_CASE(simplifyKnownVariables52);    // #4728 "= x %cop%"
+        TEST_CASE(simplifyKnownVariables53);    // references
+        TEST_CASE(simplifyKnownVariables54);    // #4913 'x' is not 0 after *--x=0;
+        TEST_CASE(simplifyKnownVariables55);    // pointer alias
+        TEST_CASE(simplifyKnownVariables56);    // ticket #5301 - >>
+        TEST_CASE(simplifyKnownVariables57);    // ticket #4724
+        TEST_CASE(simplifyKnownVariables58);    // ticket #5268
+        TEST_CASE(simplifyKnownVariables59);    // skip for header
+        TEST_CASE(simplifyKnownVariables60);    // #6829
+        TEST_CASE(simplifyKnownVariables61);    // #7805
+        TEST_CASE(simplifyKnownVariables62);    // #5666 - p=&str[0]
+        TEST_CASE(simplifyKnownVariablesBailOutAssign1);
+        TEST_CASE(simplifyKnownVariablesBailOutAssign2);
+        TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
+        TEST_CASE(simplifyKnownVariablesBailOutFor1);
+        TEST_CASE(simplifyKnownVariablesBailOutFor2);
+        TEST_CASE(simplifyKnownVariablesBailOutFor3);
+        TEST_CASE(simplifyKnownVariablesBailOutMemberFunction);
+        TEST_CASE(simplifyKnownVariablesBailOutConditionalIncrement);
+        TEST_CASE(simplifyKnownVariablesBailOutSwitchBreak); // ticket #2324
+        TEST_CASE(simplifyKnownVariablesFloat);    // #2454 - float variable
+        TEST_CASE(simplifyKnownVariablesClassMember);  // #2815 - value of class member may be changed by function call
+        TEST_CASE(simplifyKnownVariablesFunctionCalls); // Function calls (don't assume pass by reference)
+        TEST_CASE(simplifyKnownVariablesGlobalVars);
+        TEST_CASE(simplifyKnownVariablesReturn);   // 3500 - return
+        TEST_CASE(simplifyKnownVariablesPointerAliasFunctionCall); // #7440
+
+        TEST_CASE(simplifyCasts1);
+        TEST_CASE(simplifyCasts2);
+        TEST_CASE(simplifyCasts3);
+        TEST_CASE(simplifyCasts4);
+        TEST_CASE(simplifyCasts5);
+        TEST_CASE(simplifyCasts7);
+        TEST_CASE(simplifyCasts8);
+        TEST_CASE(simplifyCasts9);
+        TEST_CASE(simplifyCasts10);
+        TEST_CASE(simplifyCasts11);
+        TEST_CASE(simplifyCasts12);
+        TEST_CASE(simplifyCasts13);
+        TEST_CASE(simplifyCasts14);
+        TEST_CASE(simplifyCasts15); // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
+        TEST_CASE(simplifyCasts16); // #6278
+        TEST_CASE(simplifyCasts17); // #6110 - don't remove any parentheses in 'a(b)(c)'
+
+        TEST_CASE(removeRedundantAssignment);
+
+        TEST_CASE(simplify_constants);
+        TEST_CASE(simplify_constants2);
+        TEST_CASE(simplify_constants3);
+        TEST_CASE(simplify_constants4);
+        TEST_CASE(simplify_constants5);
+        TEST_CASE(simplify_constants6);     // Ticket #5625: Ternary operator as template parameter
+        TEST_CASE(simplifyVarDeclInitLists);
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
+#define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tok_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings0.platform(type);
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -284,14 +387,15 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
-    std::string tokWithWindows(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
+#define tokWithWindows(...) tokWithWindows_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokWithWindows_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings_windows.platform(type);
         Tokenizer tokenizer(&settings_windows, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -299,49 +403,83 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
-    std::string tok(const char code[], const char filename[], bool simplify = true) {
+    std::string tok_(const char* file, int line, const char code[], const char filename[], bool simplify = true) {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
         if (simplify)
             tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-    std::string tokWithNewlines(const char code[]) {
+#define tokWithNewlines(code) tokWithNewlines_(code, __FILE__, __LINE__)
+    std::string tokWithNewlines_(const char code[], const char* file, int line) {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false);
     }
 
-    std::string tokWithStdLib(const char code[]) {
+#define tokWithStdLib(code) tokWithStdLib_(code, __FILE__, __LINE__)
+    std::string tokWithStdLib_(const char code[], const char* file, int line) {
         errout.str("");
 
         Tokenizer tokenizer(&settings_std, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-    std::string tokenizeDebugListing(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
+#define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
+        errout.str("");
+
+        settings1.debugwarnings = true;
+        settings1.platform(platform);
+        settings1.standards.cpp = cpp11 ? Standards::CPP11 : Standards::CPP03;
+
+        // tokenize..
+        Tokenizer tokenizer(&settings1, this);
+        std::istringstream istr(code);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
+        if (simplify)
+            tokenizer.simplifyTokenList2();
+
+        // filter out ValueFlow messages..
+        const std::string debugwarnings = errout.str();
+        errout.str("");
+        std::istringstream istr2(debugwarnings);
+        std::string line;
+        while (std::getline(istr2,line)) {
+            if (line.find("valueflow.cpp") == std::string::npos)
+                errout << line << "\n";
+        }
+
+        if (tokenizer.tokens())
+            return tokenizer.tokens()->stringifyList(false, expand, false, true, false, nullptr, nullptr);
+        else
+            return "";
+    }
+
+#define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeDebugListing_(const char* file, int line, const char code[], bool simplify = false, const char filename[] = "test.cpp") {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -357,12 +495,59 @@ private:
     }
 
 
+
+    void test1() {
+        // "&p[1]" => "p+1"
+        /*
+           ASSERT_EQUALS("; x = p + n ;", tok("; x = & p [ n ] ;"));
+           ASSERT_EQUALS("; x = ( p + n ) [ m ] ;", tok("; x = & p [ n ] [ m ] ;"));
+           ASSERT_EQUALS("; x = y & p [ n ] ;", tok("; x = y & p [ n ] ;"));
+           ASSERT_EQUALS("; x = 10 & p [ n ] ;", tok(";  x = 10 & p [ n ] ;"));
+           ASSERT_EQUALS("; x = y [ 10 ] & p [ n ] ;", tok("; x = y [ 10 ] & p [ n ] ;"));
+           ASSERT_EQUALS("; x = ( a + m ) & p [ n ] ;", tok("; x = ( a + m ) & p [ n ] ;"));
+         */
+        // "*(p+1)" => "p[1]"
+        ASSERT_EQUALS("; x = p [ 1 ] ;", tok("; x = * ( p + 1 ) ;"));
+        ASSERT_EQUALS("; x = p [ 0xA ] ;", tok("; x = * ( p + 0xA ) ;"));
+        ASSERT_EQUALS("; x = p [ n ] ;", tok("; x = * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = y * ( p + n ) ;", tok("; x = y * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = 10 * ( p + n ) ;", tok("; x = 10 * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = y [ 10 ] * ( p + n ) ;", tok("; x = y [ 10 ] * ( p + n ) ;"));
+        ASSERT_EQUALS("; x = ( a + m ) * ( p + n ) ;", tok("; x = ( a + m ) * ( p + n ) ;"));
+
+        // "*(p-1)" => "p[-1]" and "*(p-n)" => "p[-n]"
+        ASSERT_EQUALS("; x = p [ -1 ] ;", tok("; x = *(p - 1);"));
+        ASSERT_EQUALS("; x = p [ -0xA ] ;", tok("; x = *(p - 0xA);"));
+        ASSERT_EQUALS("; x = p [ - n ] ;", tok("; x = *(p - n);"));
+        ASSERT_EQUALS("; x = y * ( p - 1 ) ;", tok("; x = y * (p - 1);"));
+        ASSERT_EQUALS("; x = 10 * ( p - 1 ) ;", tok("; x = 10 * (p - 1);"));
+        ASSERT_EQUALS("; x = y [ 10 ] * ( p - 1 ) ;", tok("; x = y[10] * (p - 1);"));
+        ASSERT_EQUALS("; x = ( a - m ) * ( p - n ) ;", tok("; x = (a - m) * (p - n);"));
+
+        // Test that the array-index simplification is not applied when there's no dereference:
+        // "(x-y)" => "(x-y)" and "(x+y)" => "(x+y)"
+        ASSERT_EQUALS("; a = b * ( x - y ) ;", tok("; a = b * (x - y);"));
+        ASSERT_EQUALS("; a = b * x [ - y ] ;", tok("; a = b * *(x - y);"));
+        ASSERT_EQUALS("; a = a * ( x - y ) ;", tok("; a *= (x - y);"));
+        ASSERT_EQUALS("; z = a ++ * ( x - y ) ;", tok("; z = a++ * (x - y);"));
+        ASSERT_EQUALS("; z = a ++ * ( x + y ) ;", tok("; z = a++ * (x + y);"));
+        ASSERT_EQUALS("; z = a -- * ( x - y ) ;", tok("; z = a-- * (x - y);"));
+        ASSERT_EQUALS("; z = a -- * ( x + y ) ;", tok("; z = a-- * (x + y);"));
+        ASSERT_EQUALS("; z = 'a' * ( x - y ) ;", tok("; z = 'a' * (x - y);"));
+        ASSERT_EQUALS("; z = \"a\" * ( x - y ) ;", tok("; z = \"a\" * (x - y);"));
+        ASSERT_EQUALS("; z = 'a' * ( x + y ) ;", tok("; z = 'a' * (x + y);"));
+        ASSERT_EQUALS("; z = \"a\" * ( x + y ) ;", tok("; z = \"a\" * (x + y);"));
+        ASSERT_EQUALS("; z = foo ( ) * ( x + y ) ;", tok("; z = foo() * (x + y);"));
+    }
+
+
+
     void simplifyMathFunctions_erfc() {
         // verify erfc(), erfcf(), erfcl() - simplifcation
         const char code_erfc[] ="void f(int x) {\n"
-                                " std::cout << erfc(x);\n" // do not simplify
-                                " std::cout << erfc(0L);\n" // simplify to 1
-                                "}";
+                                 " std::cout << erfc(x);\n" // do not simplify
+                                 " std::cout << erfc(0L);\n" // simplify to 1
+                                 "}";
         const char expected_erfc[] = "void f ( int x ) {\n"
                                      "std :: cout << erfc ( x ) ;\n"
                                      "std :: cout << 1 ;\n"
@@ -370,9 +555,9 @@ private:
         ASSERT_EQUALS(expected_erfc, tokWithNewlines(code_erfc));
 
         const char code_erfcf[] ="void f(float x) {\n"
-                                 " std::cout << erfcf(x);\n" // do not simplify
-                                 " std::cout << erfcf(0.0f);\n" // simplify to 1
-                                 "}";
+                                  " std::cout << erfcf(x);\n" // do not simplify
+                                  " std::cout << erfcf(0.0f);\n" // simplify to 1
+                                  "}";
         const char expected_erfcf[] = "void f ( float x ) {\n"
                                       "std :: cout << erfcf ( x ) ;\n"
                                       "std :: cout << 1 ;\n"
@@ -380,9 +565,9 @@ private:
         ASSERT_EQUALS(expected_erfcf, tokWithNewlines(code_erfcf));
 
         const char code_erfcl[] ="void f(long double x) {\n"
-                                 " std::cout << erfcl(x);\n" // do not simplify
-                                 " std::cout << erfcl(0.0f);\n" // simplify to 1
-                                 "}";
+                                  " std::cout << erfcl(x);\n" // do not simplify
+                                  " std::cout << erfcl(0.0f);\n" // simplify to 1
+                                  "}";
         const char expected_erfcl[] = "void f ( double x ) {\n"
                                       "std :: cout << erfcl ( x ) ;\n"
                                       "std :: cout << 1 ;\n"
@@ -393,9 +578,9 @@ private:
     void simplifyMathFunctions_cos() {
         // verify cos(), cosf(), cosl() - simplifcation
         const char code_cos[] ="void f(int x) {\n"
-                               " std::cout << cos(x);\n" // do not simplify
-                               " std::cout << cos(0L);\n" // simplify to 1
-                               "}";
+                                " std::cout << cos(x);\n" // do not simplify
+                                " std::cout << cos(0L);\n" // simplify to 1
+                                "}";
         const char expected_cos[] = "void f ( int x ) {\n"
                                     "std :: cout << cos ( x ) ;\n"
                                     "std :: cout << 1 ;\n"
@@ -403,9 +588,9 @@ private:
         ASSERT_EQUALS(expected_cos, tokWithNewlines(code_cos));
 
         const char code_cosf[] ="void f(float x) {\n"
-                                " std::cout << cosf(x);\n" // do not simplify
-                                " std::cout << cosf(0.0f);\n" // simplify to 1
-                                "}";
+                                 " std::cout << cosf(x);\n" // do not simplify
+                                 " std::cout << cosf(0.0f);\n" // simplify to 1
+                                 "}";
         const char expected_cosf[] = "void f ( float x ) {\n"
                                      "std :: cout << cosf ( x ) ;\n"
                                      "std :: cout << 1 ;\n"
@@ -413,9 +598,9 @@ private:
         ASSERT_EQUALS(expected_cosf, tokWithNewlines(code_cosf));
 
         const char code_cosl[] ="void f(long double x) {\n"
-                                " std::cout << cosl(x);\n" // do not simplify
-                                " std::cout << cosl(0.0f);\n" // simplify to 1
-                                "}";
+                                 " std::cout << cosl(x);\n" // do not simplify
+                                 " std::cout << cosl(0.0f);\n" // simplify to 1
+                                 "}";
         const char expected_cosl[] = "void f ( double x ) {\n"
                                      "std :: cout << cosl ( x ) ;\n"
                                      "std :: cout << 1 ;\n"
@@ -426,9 +611,9 @@ private:
     void simplifyMathFunctions_cosh() {
         // verify cosh(), coshf(), coshl() - simplifcation
         const char code_cosh[] ="void f(int x) {\n"
-                                " std::cout << cosh(x);\n" // do not simplify
-                                " std::cout << cosh(0L);\n" // simplify to 1
-                                "}";
+                                 " std::cout << cosh(x);\n" // do not simplify
+                                 " std::cout << cosh(0L);\n" // simplify to 1
+                                 "}";
         const char expected_cosh[] = "void f ( int x ) {\n"
                                      "std :: cout << cosh ( x ) ;\n"
                                      "std :: cout << 1 ;\n"
@@ -436,9 +621,9 @@ private:
         ASSERT_EQUALS(expected_cosh, tokWithNewlines(code_cosh));
 
         const char code_coshf[] ="void f(float x) {\n"
-                                 " std::cout << coshf(x);\n" // do not simplify
-                                 " std::cout << coshf(0.0f);\n" // simplify to 1
-                                 "}";
+                                  " std::cout << coshf(x);\n" // do not simplify
+                                  " std::cout << coshf(0.0f);\n" // simplify to 1
+                                  "}";
         const char expected_coshf[] = "void f ( float x ) {\n"
                                       "std :: cout << coshf ( x ) ;\n"
                                       "std :: cout << 1 ;\n"
@@ -446,9 +631,9 @@ private:
         ASSERT_EQUALS(expected_coshf, tokWithNewlines(code_coshf));
 
         const char code_coshl[] ="void f(long double x) {\n"
-                                 " std::cout << coshl(x);\n" // do not simplify
-                                 " std::cout << coshl(0.0f);\n" // simplify to 1
-                                 "}";
+                                  " std::cout << coshl(x);\n" // do not simplify
+                                  " std::cout << coshl(0.0f);\n" // simplify to 1
+                                  "}";
         const char expected_coshl[] = "void f ( double x ) {\n"
                                       "std :: cout << coshl ( x ) ;\n"
                                       "std :: cout << 1 ;\n"
@@ -459,9 +644,9 @@ private:
     void simplifyMathFunctions_acos() {
         // verify acos(), acosf(), acosl() - simplifcation
         const char code_acos[] ="void f(int x) {\n"
-                                " std::cout << acos(x);\n" // do not simplify
-                                " std::cout << acos(1L);\n" // simplify to 0
-                                "}";
+                                 " std::cout << acos(x);\n" // do not simplify
+                                 " std::cout << acos(1L);\n" // simplify to 0
+                                 "}";
         const char expected_acos[] = "void f ( int x ) {\n"
                                      "std :: cout << acos ( x ) ;\n"
                                      "std :: cout << 0 ;\n"
@@ -469,9 +654,9 @@ private:
         ASSERT_EQUALS(expected_acos, tokWithNewlines(code_acos));
 
         const char code_acosf[] ="void f(float x) {\n"
-                                 " std::cout << acosf(x);\n" // do not simplify
-                                 " std::cout << acosf(1.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << acosf(x);\n" // do not simplify
+                                  " std::cout << acosf(1.0f);\n" // simplify to 0
+                                  "}";
         const char expected_acosf[] = "void f ( float x ) {\n"
                                       "std :: cout << acosf ( x ) ;\n"
                                       "std :: cout << 0 ;\n"
@@ -479,9 +664,9 @@ private:
         ASSERT_EQUALS(expected_acosf, tokWithNewlines(code_acosf));
 
         const char code_acosl[] ="void f(long double x) {\n"
-                                 " std::cout << acosl(x);\n" // do not simplify
-                                 " std::cout << acosl(1.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << acosl(x);\n" // do not simplify
+                                  " std::cout << acosl(1.0f);\n" // simplify to 0
+                                  "}";
         const char expected_acosl[] = "void f ( double x ) {\n"
                                       "std :: cout << acosl ( x ) ;\n"
                                       "std :: cout << 0 ;\n"
@@ -492,9 +677,9 @@ private:
     void simplifyMathFunctions_acosh() {
         // verify acosh(), acoshf(), acoshl() - simplifcation
         const char code_acosh[] ="void f(int x) {\n"
-                                 " std::cout << acosh(x);\n" // do not simplify
-                                 " std::cout << acosh(1L);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << acosh(x);\n" // do not simplify
+                                  " std::cout << acosh(1L);\n" // simplify to 0
+                                  "}";
         const char expected_acosh[] = "void f ( int x ) {\n"
                                       "std :: cout << acosh ( x ) ;\n"
                                       "std :: cout << 0 ;\n"
@@ -502,9 +687,9 @@ private:
         ASSERT_EQUALS(expected_acosh, tokWithNewlines(code_acosh));
 
         const char code_acoshf[] ="void f(float x) {\n"
-                                  " std::cout << acoshf(x);\n" // do not simplify
-                                  " std::cout << acoshf(1.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << acoshf(x);\n" // do not simplify
+                                   " std::cout << acoshf(1.0f);\n" // simplify to 0
+                                   "}";
         const char expected_acoshf[] = "void f ( float x ) {\n"
                                        "std :: cout << acoshf ( x ) ;\n"
                                        "std :: cout << 0 ;\n"
@@ -512,9 +697,9 @@ private:
         ASSERT_EQUALS(expected_acoshf, tokWithNewlines(code_acoshf));
 
         const char code_acoshl[] ="void f(long double x) {\n"
-                                  " std::cout << acoshl(x);\n" // do not simplify
-                                  " std::cout << acoshl(1.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << acoshl(x);\n" // do not simplify
+                                   " std::cout << acoshl(1.0f);\n" // simplify to 0
+                                   "}";
         const char expected_acoshl[] = "void f ( double x ) {\n"
                                        "std :: cout << acoshl ( x ) ;\n"
                                        "std :: cout << 0 ;\n"
@@ -525,11 +710,11 @@ private:
     void simplifyMathFunctions_sqrt() {
         // verify sqrt(), sqrtf(), sqrtl() - simplifcation
         const char code_sqrt[] ="void f(int x) {\n"
-                                " std::cout << sqrt(x);\n" // do not simplify
-                                " std::cout << sqrt(-1);\n" // do not simplify
-                                " std::cout << sqrt(0L);\n" // simplify to 0
-                                " std::cout << sqrt(1L);\n" // simplify to 1
-                                "}";
+                                 " std::cout << sqrt(x);\n" // do not simplify
+                                 " std::cout << sqrt(-1);\n" // do not simplify
+                                 " std::cout << sqrt(0L);\n" // simplify to 0
+                                 " std::cout << sqrt(1L);\n" // simplify to 1
+                                 "}";
         const char expected_sqrt[] = "void f ( int x ) {\n"
                                      "std :: cout << sqrt ( x ) ;\n"
                                      "std :: cout << sqrt ( -1 ) ;\n"
@@ -539,11 +724,11 @@ private:
         ASSERT_EQUALS(expected_sqrt, tokWithNewlines(code_sqrt));
 
         const char code_sqrtf[] ="void f(float x) {\n"
-                                 " std::cout << sqrtf(x);\n" // do not simplify
-                                 " std::cout << sqrtf(-1.0f);\n" // do not simplify
-                                 " std::cout << sqrtf(0.0f);\n" // simplify to 0
-                                 " std::cout << sqrtf(1.0);\n" // simplify to 1
-                                 "}";
+                                  " std::cout << sqrtf(x);\n" // do not simplify
+                                  " std::cout << sqrtf(-1.0f);\n" // do not simplify
+                                  " std::cout << sqrtf(0.0f);\n" // simplify to 0
+                                  " std::cout << sqrtf(1.0);\n" // simplify to 1
+                                  "}";
         const char expected_sqrtf[] = "void f ( float x ) {\n"
                                       "std :: cout << sqrtf ( x ) ;\n"
                                       "std :: cout << sqrtf ( -1.0f ) ;\n"
@@ -553,11 +738,11 @@ private:
         ASSERT_EQUALS(expected_sqrtf, tokWithNewlines(code_sqrtf));
 
         const char code_sqrtl[] ="void f(long double x) {\n"
-                                 " std::cout << sqrtf(x);\n" // do not simplify
-                                 " std::cout << sqrtf(-1.0);\n" // do not simplify
-                                 " std::cout << sqrtf(0.0);\n" // simplify to 0
-                                 " std::cout << sqrtf(1.0);\n" // simplify to 1
-                                 "}";
+                                  " std::cout << sqrtf(x);\n" // do not simplify
+                                  " std::cout << sqrtf(-1.0);\n" // do not simplify
+                                  " std::cout << sqrtf(0.0);\n" // simplify to 0
+                                  " std::cout << sqrtf(1.0);\n" // simplify to 1
+                                  "}";
         const char expected_sqrtl[] = "void f ( double x ) {\n"
                                       "std :: cout << sqrtf ( x ) ;\n"
                                       "std :: cout << sqrtf ( -1.0 ) ;\n"
@@ -570,11 +755,11 @@ private:
     void simplifyMathFunctions_cbrt() {
         // verify cbrt(), cbrtf(), cbrtl() - simplifcation
         const char code_cbrt[] ="void f(int x) {\n"
-                                " std::cout << cbrt(x);\n" // do not simplify
-                                " std::cout << cbrt(-1);\n" // do not simplify
-                                " std::cout << cbrt(0L);\n" // simplify to 0
-                                " std::cout << cbrt(1L);\n" // simplify to 1
-                                "}";
+                                 " std::cout << cbrt(x);\n" // do not simplify
+                                 " std::cout << cbrt(-1);\n" // do not simplify
+                                 " std::cout << cbrt(0L);\n" // simplify to 0
+                                 " std::cout << cbrt(1L);\n" // simplify to 1
+                                 "}";
         const char expected_cbrt[] = "void f ( int x ) {\n"
                                      "std :: cout << cbrt ( x ) ;\n"
                                      "std :: cout << cbrt ( -1 ) ;\n"
@@ -584,11 +769,11 @@ private:
         ASSERT_EQUALS(expected_cbrt, tokWithNewlines(code_cbrt));
 
         const char code_cbrtf[] ="void f(float x) {\n"
-                                 " std::cout << cbrtf(x);\n" // do not simplify
-                                 " std::cout << cbrtf(-1.0f);\n" // do not simplify
-                                 " std::cout << cbrtf(0.0f);\n" // simplify to 0
-                                 " std::cout << cbrtf(1.0);\n" // simplify to 1
-                                 "}";
+                                  " std::cout << cbrtf(x);\n" // do not simplify
+                                  " std::cout << cbrtf(-1.0f);\n" // do not simplify
+                                  " std::cout << cbrtf(0.0f);\n" // simplify to 0
+                                  " std::cout << cbrtf(1.0);\n" // simplify to 1
+                                  "}";
         const char expected_cbrtf[] = "void f ( float x ) {\n"
                                       "std :: cout << cbrtf ( x ) ;\n"
                                       "std :: cout << cbrtf ( -1.0f ) ;\n"
@@ -598,11 +783,11 @@ private:
         ASSERT_EQUALS(expected_cbrtf, tokWithNewlines(code_cbrtf));
 
         const char code_cbrtl[] ="void f(long double x) {\n"
-                                 " std::cout << cbrtl(x);\n" // do not simplify
-                                 " std::cout << cbrtl(-1.0);\n" // do not simplify
-                                 " std::cout << cbrtl(0.0);\n" // simplify to 0
-                                 " std::cout << cbrtl(1.0);\n" // simplify to 1
-                                 "}";
+                                  " std::cout << cbrtl(x);\n" // do not simplify
+                                  " std::cout << cbrtl(-1.0);\n" // do not simplify
+                                  " std::cout << cbrtl(0.0);\n" // simplify to 0
+                                  " std::cout << cbrtl(1.0);\n" // simplify to 1
+                                  "}";
         const char expected_cbrtl[] = "void f ( double x ) {\n"
                                       "std :: cout << cbrtl ( x ) ;\n"
                                       "std :: cout << cbrtl ( -1.0 ) ;\n"
@@ -615,11 +800,11 @@ private:
     void simplifyMathFunctions_exp2() {
         // verify exp2(), exp2f(), exp2l() - simplifcation
         const char code_exp2[] ="void f(int x) {\n"
-                                " std::cout << exp2(x);\n" // do not simplify
-                                " std::cout << exp2(-1);\n" // do not simplify
-                                " std::cout << exp2(0L);\n" // simplify to 0
-                                " std::cout << exp2(1L);\n" // do not simplify
-                                "}";
+                                 " std::cout << exp2(x);\n" // do not simplify
+                                 " std::cout << exp2(-1);\n" // do not simplify
+                                 " std::cout << exp2(0L);\n" // simplify to 0
+                                 " std::cout << exp2(1L);\n" // do not simplify
+                                 "}";
         const char expected_exp2[] = "void f ( int x ) {\n"
                                      "std :: cout << exp2 ( x ) ;\n"
                                      "std :: cout << exp2 ( -1 ) ;\n"
@@ -629,11 +814,11 @@ private:
         ASSERT_EQUALS(expected_exp2, tokWithNewlines(code_exp2));
 
         const char code_exp2f[] ="void f(float x) {\n"
-                                 " std::cout << exp2f(x);\n" // do not simplify
-                                 " std::cout << exp2f(-1.0);\n" // do not simplify
-                                 " std::cout << exp2f(0.0);\n" // simplify to 1
-                                 " std::cout << exp2f(1.0);\n" // do not simplify
-                                 "}";
+                                  " std::cout << exp2f(x);\n" // do not simplify
+                                  " std::cout << exp2f(-1.0);\n" // do not simplify
+                                  " std::cout << exp2f(0.0);\n" // simplify to 1
+                                  " std::cout << exp2f(1.0);\n" // do not simplify
+                                  "}";
         const char expected_exp2f[] = "void f ( float x ) {\n"
                                       "std :: cout << exp2f ( x ) ;\n"
                                       "std :: cout << exp2f ( -1.0 ) ;\n"
@@ -643,11 +828,11 @@ private:
         ASSERT_EQUALS(expected_exp2f, tokWithNewlines(code_exp2f));
 
         const char code_exp2l[] ="void f(long double x) {\n"
-                                 " std::cout << exp2l(x);\n" // do not simplify
-                                 " std::cout << exp2l(-1.0);\n" // do not simplify
-                                 " std::cout << exp2l(0.0);\n" // simplify to 1
-                                 " std::cout << exp2l(1.0);\n" // do not simplify
-                                 "}";
+                                  " std::cout << exp2l(x);\n" // do not simplify
+                                  " std::cout << exp2l(-1.0);\n" // do not simplify
+                                  " std::cout << exp2l(0.0);\n" // simplify to 1
+                                  " std::cout << exp2l(1.0);\n" // do not simplify
+                                  "}";
         const char expected_exp2l[] = "void f ( double x ) {\n"
                                       "std :: cout << exp2l ( x ) ;\n"
                                       "std :: cout << exp2l ( -1.0 ) ;\n"
@@ -660,11 +845,11 @@ private:
     void simplifyMathFunctions_exp() {
         // verify exp(), expf(), expl() - simplifcation
         const char code_exp[] ="void f(int x) {\n"
-                               " std::cout << exp(x);\n" // do not simplify
-                               " std::cout << exp(-1);\n" // do not simplify
-                               " std::cout << exp(0L);\n" // simplify to 1
-                               " std::cout << exp(1L);\n" // do not simplify
-                               "}";
+                                " std::cout << exp(x);\n" // do not simplify
+                                " std::cout << exp(-1);\n" // do not simplify
+                                " std::cout << exp(0L);\n" // simplify to 1
+                                " std::cout << exp(1L);\n" // do not simplify
+                                "}";
         const char expected_exp[] = "void f ( int x ) {\n"
                                     "std :: cout << exp ( x ) ;\n"
                                     "std :: cout << exp ( -1 ) ;\n"
@@ -674,11 +859,11 @@ private:
         ASSERT_EQUALS(expected_exp, tokWithNewlines(code_exp));
 
         const char code_expf[] ="void f(float x) {\n"
-                                " std::cout << expf(x);\n" // do not simplify
-                                " std::cout << expf(-1.0);\n" // do not simplify
-                                " std::cout << expf(0.0);\n" // simplify to 1
-                                " std::cout << expf(1.0);\n" // do not simplify
-                                "}";
+                                 " std::cout << expf(x);\n" // do not simplify
+                                 " std::cout << expf(-1.0);\n" // do not simplify
+                                 " std::cout << expf(0.0);\n" // simplify to 1
+                                 " std::cout << expf(1.0);\n" // do not simplify
+                                 "}";
         const char expected_expf[] = "void f ( float x ) {\n"
                                      "std :: cout << expf ( x ) ;\n"
                                      "std :: cout << expf ( -1.0 ) ;\n"
@@ -688,11 +873,11 @@ private:
         ASSERT_EQUALS(expected_expf, tokWithNewlines(code_expf));
 
         const char code_expl[] ="void f(long double x) {\n"
-                                " std::cout << expl(x);\n" // do not simplify
-                                " std::cout << expl(-1.0);\n" // do not simplify
-                                " std::cout << expl(0.0);\n" // simplify to 1
-                                " std::cout << expl(1.0);\n" // do not simplify
-                                "}";
+                                 " std::cout << expl(x);\n" // do not simplify
+                                 " std::cout << expl(-1.0);\n" // do not simplify
+                                 " std::cout << expl(0.0);\n" // simplify to 1
+                                 " std::cout << expl(1.0);\n" // do not simplify
+                                 "}";
         const char expected_expl[] = "void f ( double x ) {\n"
                                      "std :: cout << expl ( x ) ;\n"
                                      "std :: cout << expl ( -1.0 ) ;\n"
@@ -705,10 +890,10 @@ private:
     void simplifyMathFunctions_erf() {
         // verify erf(), erff(), erfl() - simplifcation
         const char code_erf[] ="void f(int x) {\n"
-                               " std::cout << erf(x);\n" // do not simplify
-                               " std::cout << erf(10);\n" // do not simplify
-                               " std::cout << erf(0L);\n" // simplify to 0
-                               "}";
+                                " std::cout << erf(x);\n" // do not simplify
+                                " std::cout << erf(10);\n" // do not simplify
+                                " std::cout << erf(0L);\n" // simplify to 0
+                                "}";
         const char expected_erf[] = "void f ( int x ) {\n"
                                     "std :: cout << erf ( x ) ;\n"
                                     "std :: cout << erf ( 10 ) ;\n"
@@ -717,10 +902,10 @@ private:
         ASSERT_EQUALS(expected_erf, tokWithNewlines(code_erf));
 
         const char code_erff[] ="void f(float x) {\n"
-                                " std::cout << erff(x);\n" // do not simplify
-                                " std::cout << erff(10);\n" // do not simplify
-                                " std::cout << erff(0.0f);\n" // simplify to 0
-                                "}";
+                                 " std::cout << erff(x);\n" // do not simplify
+                                 " std::cout << erff(10);\n" // do not simplify
+                                 " std::cout << erff(0.0f);\n" // simplify to 0
+                                 "}";
         const char expected_erff[] = "void f ( float x ) {\n"
                                      "std :: cout << erff ( x ) ;\n"
                                      "std :: cout << erff ( 10 ) ;\n"
@@ -729,10 +914,10 @@ private:
         ASSERT_EQUALS(expected_erff, tokWithNewlines(code_erff));
 
         const char code_erfl[] ="void f(long double x) {\n"
-                                " std::cout << erfl(x);\n" // do not simplify
-                                " std::cout << erfl(10.0f);\n" // do not simplify
-                                " std::cout << erfl(0.0f);\n" // simplify to 0
-                                "}";
+                                 " std::cout << erfl(x);\n" // do not simplify
+                                 " std::cout << erfl(10.0f);\n" // do not simplify
+                                 " std::cout << erfl(0.0f);\n" // simplify to 0
+                                 "}";
         const char expected_erfl[] = "void f ( double x ) {\n"
                                      "std :: cout << erfl ( x ) ;\n"
                                      "std :: cout << erfl ( 10.0f ) ;\n"
@@ -744,10 +929,10 @@ private:
     void simplifyMathFunctions_atanh() {
         // verify atanh(), atanhf(), atanhl() - simplifcation
         const char code_atanh[] ="void f(int x) {\n"
-                                 " std::cout << atanh(x);\n" // do not simplify
-                                 " std::cout << atanh(10);\n" // do not simplify
-                                 " std::cout << atanh(0L);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << atanh(x);\n" // do not simplify
+                                  " std::cout << atanh(10);\n" // do not simplify
+                                  " std::cout << atanh(0L);\n" // simplify to 0
+                                  "}";
         const char expected_atanh[] = "void f ( int x ) {\n"
                                       "std :: cout << atanh ( x ) ;\n"
                                       "std :: cout << atanh ( 10 ) ;\n"
@@ -756,10 +941,10 @@ private:
         ASSERT_EQUALS(expected_atanh, tokWithNewlines(code_atanh));
 
         const char code_atanhf[] ="void f(float x) {\n"
-                                  " std::cout << atanhf(x);\n" // do not simplify
-                                  " std::cout << atanhf(10);\n" // do not simplify
-                                  " std::cout << atanhf(0.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << atanhf(x);\n" // do not simplify
+                                   " std::cout << atanhf(10);\n" // do not simplify
+                                   " std::cout << atanhf(0.0f);\n" // simplify to 0
+                                   "}";
         const char expected_atanhf[] = "void f ( float x ) {\n"
                                        "std :: cout << atanhf ( x ) ;\n"
                                        "std :: cout << atanhf ( 10 ) ;\n"
@@ -768,11 +953,11 @@ private:
         ASSERT_EQUALS(expected_atanhf, tokWithNewlines(code_atanhf));
 
         const char code_atanhl[] ="void f(long double x) {\n"
-                                  " std::cout << atanhl(x);\n" // do not simplify
-                                  " std::cout << atanhl(10.0f);\n" // do not simplify
-                                  " std::cout << atanhl(0.0d);\n" // do not simplify - invalid number!
-                                  " std::cout << atanhl(0.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << atanhl(x);\n" // do not simplify
+                                   " std::cout << atanhl(10.0f);\n" // do not simplify
+                                   " std::cout << atanhl(0.0d);\n" // do not simplify - invalid number!
+                                   " std::cout << atanhl(0.0f);\n" // simplify to 0
+                                   "}";
         const char expected_atanhl[] = "void f ( double x ) {\n"
                                        "std :: cout << atanhl ( x ) ;\n"
                                        "std :: cout << atanhl ( 10.0f ) ;\n"
@@ -785,10 +970,10 @@ private:
     void simplifyMathFunctions_atan() {
         // verify atan(), atanf(), atanl() - simplifcation
         const char code_atan[] ="void f(int x) {\n"
-                                " std::cout << atan(x);\n" // do not simplify
-                                " std::cout << atan(10);\n" // do not simplify
-                                " std::cout << atan(0L);\n" // simplify to 0
-                                "}";
+                                 " std::cout << atan(x);\n" // do not simplify
+                                 " std::cout << atan(10);\n" // do not simplify
+                                 " std::cout << atan(0L);\n" // simplify to 0
+                                 "}";
         const char expected_atan[] = "void f ( int x ) {\n"
                                      "std :: cout << atan ( x ) ;\n"
                                      "std :: cout << atan ( 10 ) ;\n"
@@ -797,10 +982,10 @@ private:
         ASSERT_EQUALS(expected_atan, tokWithNewlines(code_atan));
 
         const char code_atanf[] ="void f(float x) {\n"
-                                 " std::cout << atanf(x);\n" // do not simplify
-                                 " std::cout << atanf(10);\n" // do not simplify
-                                 " std::cout << atanf(0.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << atanf(x);\n" // do not simplify
+                                  " std::cout << atanf(10);\n" // do not simplify
+                                  " std::cout << atanf(0.0f);\n" // simplify to 0
+                                  "}";
         const char expected_atanf[] = "void f ( float x ) {\n"
                                       "std :: cout << atanf ( x ) ;\n"
                                       "std :: cout << atanf ( 10 ) ;\n"
@@ -809,10 +994,10 @@ private:
         ASSERT_EQUALS(expected_atanf, tokWithNewlines(code_atanf));
 
         const char code_atanl[] ="void f(long double x) {\n"
-                                 " std::cout << atanl(x);\n" // do not simplify
-                                 " std::cout << atanl(10.0f);\n" // do not simplify
-                                 " std::cout << atanl(0.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << atanl(x);\n" // do not simplify
+                                  " std::cout << atanl(10.0f);\n" // do not simplify
+                                  " std::cout << atanl(0.0f);\n" // simplify to 0
+                                  "}";
         const char expected_atanl[] = "void f ( double x ) {\n"
                                       "std :: cout << atanl ( x ) ;\n"
                                       "std :: cout << atanl ( 10.0f ) ;\n"
@@ -824,10 +1009,10 @@ private:
     void simplifyMathFunctions_tanh() {
         // verify tanh(), tanhf(), tanhl() - simplifcation
         const char code_tanh[] ="void f(int x) {\n"
-                                " std::cout << tanh(x);\n" // do not simplify
-                                " std::cout << tanh(10);\n" // do not simplify
-                                " std::cout << tanh(0L);\n" // simplify to 0
-                                "}";
+                                 " std::cout << tanh(x);\n" // do not simplify
+                                 " std::cout << tanh(10);\n" // do not simplify
+                                 " std::cout << tanh(0L);\n" // simplify to 0
+                                 "}";
         const char expected_tanh[] = "void f ( int x ) {\n"
                                      "std :: cout << tanh ( x ) ;\n"
                                      "std :: cout << tanh ( 10 ) ;\n"
@@ -836,10 +1021,10 @@ private:
         ASSERT_EQUALS(expected_tanh, tokWithNewlines(code_tanh));
 
         const char code_tanhf[] ="void f(float x) {\n"
-                                 " std::cout << tanhf(x);\n" // do not simplify
-                                 " std::cout << tanhf(10);\n" // do not simplify
-                                 " std::cout << tanhf(0.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << tanhf(x);\n" // do not simplify
+                                  " std::cout << tanhf(10);\n" // do not simplify
+                                  " std::cout << tanhf(0.0f);\n" // simplify to 0
+                                  "}";
         const char expected_tanhf[] = "void f ( float x ) {\n"
                                       "std :: cout << tanhf ( x ) ;\n"
                                       "std :: cout << tanhf ( 10 ) ;\n"
@@ -848,10 +1033,10 @@ private:
         ASSERT_EQUALS(expected_tanhf, tokWithNewlines(code_tanhf));
 
         const char code_tanhl[] ="void f(long double x) {\n"
-                                 " std::cout << tanhl(x);\n" // do not simplify
-                                 " std::cout << tanhl(10.0f);\n" // do not simplify
-                                 " std::cout << tanhl(0.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << tanhl(x);\n" // do not simplify
+                                  " std::cout << tanhl(10.0f);\n" // do not simplify
+                                  " std::cout << tanhl(0.0f);\n" // simplify to 0
+                                  "}";
         const char expected_tanhl[] = "void f ( double x ) {\n"
                                       "std :: cout << tanhl ( x ) ;\n"
                                       "std :: cout << tanhl ( 10.0f ) ;\n"
@@ -863,10 +1048,10 @@ private:
     void simplifyMathFunctions_tan() {
         // verify tan(), tanf(), tanl() - simplifcation
         const char code_tan[] ="void f(int x) {\n"
-                               " std::cout << tan(x);\n" // do not simplify
-                               " std::cout << tan(10);\n" // do not simplify
-                               " std::cout << tan(0L);\n" // simplify to 0
-                               "}";
+                                " std::cout << tan(x);\n" // do not simplify
+                                " std::cout << tan(10);\n" // do not simplify
+                                " std::cout << tan(0L);\n" // simplify to 0
+                                "}";
         const char expected_tan[] = "void f ( int x ) {\n"
                                     "std :: cout << tan ( x ) ;\n"
                                     "std :: cout << tan ( 10 ) ;\n"
@@ -875,10 +1060,10 @@ private:
         ASSERT_EQUALS(expected_tan, tokWithNewlines(code_tan));
 
         const char code_tanf[] ="void f(float x) {\n"
-                                " std::cout << tanf(x);\n" // do not simplify
-                                " std::cout << tanf(10);\n" // do not simplify
-                                " std::cout << tanf(0.0f);\n" // simplify to 0
-                                "}";
+                                 " std::cout << tanf(x);\n" // do not simplify
+                                 " std::cout << tanf(10);\n" // do not simplify
+                                 " std::cout << tanf(0.0f);\n" // simplify to 0
+                                 "}";
         const char expected_tanf[] = "void f ( float x ) {\n"
                                      "std :: cout << tanf ( x ) ;\n"
                                      "std :: cout << tanf ( 10 ) ;\n"
@@ -887,10 +1072,10 @@ private:
         ASSERT_EQUALS(expected_tanf, tokWithNewlines(code_tanf));
 
         const char code_tanl[] ="void f(long double x) {\n"
-                                " std::cout << tanl(x);\n" // do not simplify
-                                " std::cout << tanl(10.0f);\n" // do not simplify
-                                " std::cout << tanl(0.0f);\n" // simplify to 0
-                                "}";
+                                 " std::cout << tanl(x);\n" // do not simplify
+                                 " std::cout << tanl(10.0f);\n" // do not simplify
+                                 " std::cout << tanl(0.0f);\n" // simplify to 0
+                                 "}";
         const char expected_tanl[] = "void f ( double x ) {\n"
                                      "std :: cout << tanl ( x ) ;\n"
                                      "std :: cout << tanl ( 10.0f ) ;\n"
@@ -902,10 +1087,10 @@ private:
     void simplifyMathFunctions_expm1() {
         // verify expm1(), expm1f(), expm1l() - simplifcation
         const char code_expm1[] ="void f(int x) {\n"
-                                 " std::cout << expm1(x);\n" // do not simplify
-                                 " std::cout << expm1(10);\n" // do not simplify
-                                 " std::cout << expm1(0L);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << expm1(x);\n" // do not simplify
+                                  " std::cout << expm1(10);\n" // do not simplify
+                                  " std::cout << expm1(0L);\n" // simplify to 0
+                                  "}";
         const char expected_expm1[] = "void f ( int x ) {\n"
                                       "std :: cout << expm1 ( x ) ;\n"
                                       "std :: cout << expm1 ( 10 ) ;\n"
@@ -914,10 +1099,10 @@ private:
         ASSERT_EQUALS(expected_expm1, tokWithNewlines(code_expm1));
 
         const char code_expm1f[] ="void f(float x) {\n"
-                                  " std::cout << expm1f(x);\n" // do not simplify
-                                  " std::cout << expm1f(10);\n" // do not simplify
-                                  " std::cout << expm1f(0.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << expm1f(x);\n" // do not simplify
+                                   " std::cout << expm1f(10);\n" // do not simplify
+                                   " std::cout << expm1f(0.0f);\n" // simplify to 0
+                                   "}";
         const char expected_expm1f[] = "void f ( float x ) {\n"
                                        "std :: cout << expm1f ( x ) ;\n"
                                        "std :: cout << expm1f ( 10 ) ;\n"
@@ -926,10 +1111,10 @@ private:
         ASSERT_EQUALS(expected_expm1f, tokWithNewlines(code_expm1f));
 
         const char code_expm1l[] ="void f(long double x) {\n"
-                                  " std::cout << expm1l(x);\n" // do not simplify
-                                  " std::cout << expm1l(10.0f);\n" // do not simplify
-                                  " std::cout << expm1l(0.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << expm1l(x);\n" // do not simplify
+                                   " std::cout << expm1l(10.0f);\n" // do not simplify
+                                   " std::cout << expm1l(0.0f);\n" // simplify to 0
+                                   "}";
         const char expected_expm1l[] = "void f ( double x ) {\n"
                                        "std :: cout << expm1l ( x ) ;\n"
                                        "std :: cout << expm1l ( 10.0f ) ;\n"
@@ -941,10 +1126,10 @@ private:
     void simplifyMathFunctions_asinh() {
         // verify asinh(), asinhf(), asinhl() - simplifcation
         const char code_asinh[] ="void f(int x) {\n"
-                                 " std::cout << asinh(x);\n" // do not simplify
-                                 " std::cout << asinh(10);\n" // do not simplify
-                                 " std::cout << asinh(0L);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << asinh(x);\n" // do not simplify
+                                  " std::cout << asinh(10);\n" // do not simplify
+                                  " std::cout << asinh(0L);\n" // simplify to 0
+                                  "}";
         const char expected_asinh[] = "void f ( int x ) {\n"
                                       "std :: cout << asinh ( x ) ;\n"
                                       "std :: cout << asinh ( 10 ) ;\n"
@@ -953,10 +1138,10 @@ private:
         ASSERT_EQUALS(expected_asinh, tokWithNewlines(code_asinh));
 
         const char code_asinhf[] ="void f(float x) {\n"
-                                  " std::cout << asinhf(x);\n" // do not simplify
-                                  " std::cout << asinhf(10);\n" // do not simplify
-                                  " std::cout << asinhf(0.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << asinhf(x);\n" // do not simplify
+                                   " std::cout << asinhf(10);\n" // do not simplify
+                                   " std::cout << asinhf(0.0f);\n" // simplify to 0
+                                   "}";
         const char expected_asinhf[] = "void f ( float x ) {\n"
                                        "std :: cout << asinhf ( x ) ;\n"
                                        "std :: cout << asinhf ( 10 ) ;\n"
@@ -965,10 +1150,10 @@ private:
         ASSERT_EQUALS(expected_asinhf, tokWithNewlines(code_asinhf));
 
         const char code_asinhl[] ="void f(long double x) {\n"
-                                  " std::cout << asinhl(x);\n" // do not simplify
-                                  " std::cout << asinhl(10.0f);\n" // do not simplify
-                                  " std::cout << asinhl(0.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << asinhl(x);\n" // do not simplify
+                                   " std::cout << asinhl(10.0f);\n" // do not simplify
+                                   " std::cout << asinhl(0.0f);\n" // simplify to 0
+                                   "}";
         const char expected_asinhl[] = "void f ( double x ) {\n"
                                        "std :: cout << asinhl ( x ) ;\n"
                                        "std :: cout << asinhl ( 10.0f ) ;\n"
@@ -980,10 +1165,10 @@ private:
     void simplifyMathFunctions_asin() {
         // verify asin(), asinf(), asinl() - simplifcation
         const char code_asin[] ="void f(int x) {\n"
-                                " std::cout << asin(x);\n" // do not simplify
-                                " std::cout << asin(10);\n" // do not simplify
-                                " std::cout << asin(0L);\n" // simplify to 0
-                                "}";
+                                 " std::cout << asin(x);\n" // do not simplify
+                                 " std::cout << asin(10);\n" // do not simplify
+                                 " std::cout << asin(0L);\n" // simplify to 0
+                                 "}";
         const char expected_asin[] = "void f ( int x ) {\n"
                                      "std :: cout << asin ( x ) ;\n"
                                      "std :: cout << asin ( 10 ) ;\n"
@@ -992,10 +1177,10 @@ private:
         ASSERT_EQUALS(expected_asin, tokWithNewlines(code_asin));
 
         const char code_asinf[] ="void f(float x) {\n"
-                                 " std::cout << asinf(x);\n" // do not simplify
-                                 " std::cout << asinf(10);\n" // do not simplify
-                                 " std::cout << asinf(0.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << asinf(x);\n" // do not simplify
+                                  " std::cout << asinf(10);\n" // do not simplify
+                                  " std::cout << asinf(0.0f);\n" // simplify to 0
+                                  "}";
         const char expected_asinf[] = "void f ( float x ) {\n"
                                       "std :: cout << asinf ( x ) ;\n"
                                       "std :: cout << asinf ( 10 ) ;\n"
@@ -1004,10 +1189,10 @@ private:
         ASSERT_EQUALS(expected_asinf, tokWithNewlines(code_asinf));
 
         const char code_asinl[] ="void f(long double x) {\n"
-                                 " std::cout << asinl(x);\n" // do not simplify
-                                 " std::cout << asinl(10.0f);\n" // do not simplify
-                                 " std::cout << asinl(0.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << asinl(x);\n" // do not simplify
+                                  " std::cout << asinl(10.0f);\n" // do not simplify
+                                  " std::cout << asinl(0.0f);\n" // simplify to 0
+                                  "}";
         const char expected_asinl[] = "void f ( double x ) {\n"
                                       "std :: cout << asinl ( x ) ;\n"
                                       "std :: cout << asinl ( 10.0f ) ;\n"
@@ -1019,10 +1204,10 @@ private:
     void simplifyMathFunctions_sinh() {
         // verify sinh(), sinhf(), sinhl() - simplifcation
         const char code_sinh[] ="void f(int x) {\n"
-                                " std::cout << sinh(x);\n" // do not simplify
-                                " std::cout << sinh(10);\n" // do not simplify
-                                " std::cout << sinh(0L);\n" // simplify to 0
-                                "}";
+                                 " std::cout << sinh(x);\n" // do not simplify
+                                 " std::cout << sinh(10);\n" // do not simplify
+                                 " std::cout << sinh(0L);\n" // simplify to 0
+                                 "}";
         const char expected_sinh[] = "void f ( int x ) {\n"
                                      "std :: cout << sinh ( x ) ;\n"
                                      "std :: cout << sinh ( 10 ) ;\n"
@@ -1031,10 +1216,10 @@ private:
         ASSERT_EQUALS(expected_sinh, tokWithNewlines(code_sinh));
 
         const char code_sinhf[] ="void f(float x) {\n"
-                                 " std::cout << sinhf(x);\n" // do not simplify
-                                 " std::cout << sinhf(10);\n" // do not simplify
-                                 " std::cout << sinhf(0.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << sinhf(x);\n" // do not simplify
+                                  " std::cout << sinhf(10);\n" // do not simplify
+                                  " std::cout << sinhf(0.0f);\n" // simplify to 0
+                                  "}";
         const char expected_sinhf[] = "void f ( float x ) {\n"
                                       "std :: cout << sinhf ( x ) ;\n"
                                       "std :: cout << sinhf ( 10 ) ;\n"
@@ -1043,10 +1228,10 @@ private:
         ASSERT_EQUALS(expected_sinhf, tokWithNewlines(code_sinhf));
 
         const char code_sinhl[] ="void f(long double x) {\n"
-                                 " std::cout << sinhl(x);\n" // do not simplify
-                                 " std::cout << sinhl(10.0f);\n" // do not simplify
-                                 " std::cout << sinhl(0.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << sinhl(x);\n" // do not simplify
+                                  " std::cout << sinhl(10.0f);\n" // do not simplify
+                                  " std::cout << sinhl(0.0f);\n" // simplify to 0
+                                  "}";
         const char expected_sinhl[] = "void f ( double x ) {\n"
                                       "std :: cout << sinhl ( x ) ;\n"
                                       "std :: cout << sinhl ( 10.0f ) ;\n"
@@ -1058,10 +1243,10 @@ private:
     void simplifyMathFunctions_sin() {
         // verify sin(), sinf(), sinl() - simplifcation
         const char code_sin[] ="void f(int x) {\n"
-                               " std::cout << sin(x);\n" // do not simplify
-                               " std::cout << sin(10);\n" // do not simplify
-                               " std::cout << sin(0L);\n" // simplify to 0
-                               "}";
+                                " std::cout << sin(x);\n" // do not simplify
+                                " std::cout << sin(10);\n" // do not simplify
+                                " std::cout << sin(0L);\n" // simplify to 0
+                                "}";
         const char expected_sin[] = "void f ( int x ) {\n"
                                     "std :: cout << sin ( x ) ;\n"
                                     "std :: cout << sin ( 10 ) ;\n"
@@ -1070,10 +1255,10 @@ private:
         ASSERT_EQUALS(expected_sin, tokWithNewlines(code_sin));
 
         const char code_sinf[] ="void f(float x) {\n"
-                                " std::cout << sinf(x);\n" // do not simplify
-                                " std::cout << sinf(10);\n" // do not simplify
-                                " std::cout << sinf(0.0f);\n" // simplify to 0
-                                "}";
+                                 " std::cout << sinf(x);\n" // do not simplify
+                                 " std::cout << sinf(10);\n" // do not simplify
+                                 " std::cout << sinf(0.0f);\n" // simplify to 0
+                                 "}";
         const char expected_sinf[] = "void f ( float x ) {\n"
                                      "std :: cout << sinf ( x ) ;\n"
                                      "std :: cout << sinf ( 10 ) ;\n"
@@ -1082,10 +1267,10 @@ private:
         ASSERT_EQUALS(expected_sinf, tokWithNewlines(code_sinf));
 
         const char code_sinl[] ="void f(long double x) {\n"
-                                " std::cout << sinl(x);\n" // do not simplify
-                                " std::cout << sinl(10.0f);\n" // do not simplify
-                                " std::cout << sinl(0.0f);\n" // simplify to 0
-                                "}";
+                                 " std::cout << sinl(x);\n" // do not simplify
+                                 " std::cout << sinl(10.0f);\n" // do not simplify
+                                 " std::cout << sinl(0.0f);\n" // simplify to 0
+                                 "}";
         const char expected_sinl[] = "void f ( double x ) {\n"
                                      "std :: cout << sinl ( x ) ;\n"
                                      "std :: cout << sinl ( 10.0f ) ;\n"
@@ -1102,10 +1287,10 @@ private:
     void simplifyMathFunctions_ilogb() {
         // verify ilogb(), ilogbf(), ilogbl() - simplifcation
         const char code_ilogb[] ="void f(int x) {\n"
-                                 " std::cout << ilogb(x);\n" // do not simplify
-                                 " std::cout << ilogb(10);\n" // do not simplify
-                                 " std::cout << ilogb(1L);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << ilogb(x);\n" // do not simplify
+                                  " std::cout << ilogb(10);\n" // do not simplify
+                                  " std::cout << ilogb(1L);\n" // simplify to 0
+                                  "}";
         const char expected_ilogb[] = "void f ( int x ) {\n"
                                       "std :: cout << ilogb ( x ) ;\n"
                                       "std :: cout << ilogb ( 10 ) ;\n"
@@ -1114,10 +1299,10 @@ private:
         ASSERT_EQUALS(expected_ilogb, tokWithNewlines(code_ilogb));
 
         const char code_ilogbf[] ="void f(float x) {\n"
-                                  " std::cout << ilogbf(x);\n" // do not simplify
-                                  " std::cout << ilogbf(10);\n" // do not simplify
-                                  " std::cout << ilogbf(1.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << ilogbf(x);\n" // do not simplify
+                                   " std::cout << ilogbf(10);\n" // do not simplify
+                                   " std::cout << ilogbf(1.0f);\n" // simplify to 0
+                                   "}";
         const char expected_ilogbf[] = "void f ( float x ) {\n"
                                        "std :: cout << ilogbf ( x ) ;\n"
                                        "std :: cout << ilogbf ( 10 ) ;\n"
@@ -1126,10 +1311,10 @@ private:
         ASSERT_EQUALS(expected_ilogbf, tokWithNewlines(code_ilogbf));
 
         const char code_ilogbl[] ="void f(long double x) {\n"
-                                  " std::cout << ilogbl(x);\n" // do not simplify
-                                  " std::cout << ilogbl(10.0f);\n" // do not simplify
-                                  " std::cout << ilogbl(1.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << ilogbl(x);\n" // do not simplify
+                                   " std::cout << ilogbl(10.0f);\n" // do not simplify
+                                   " std::cout << ilogbl(1.0f);\n" // simplify to 0
+                                   "}";
         const char expected_ilogbl[] = "void f ( double x ) {\n"
                                        "std :: cout << ilogbl ( x ) ;\n"
                                        "std :: cout << ilogbl ( 10.0f ) ;\n"
@@ -1141,10 +1326,10 @@ private:
     void simplifyMathFunctions_logb() {
         // verify logb(), logbf(), logbl() - simplifcation
         const char code_logb[] ="void f(int x) {\n"
-                                " std::cout << logb(x);\n" // do not simplify
-                                " std::cout << logb(10);\n" // do not simplify
-                                " std::cout << logb(1L);\n" // simplify to 0
-                                "}";
+                                 " std::cout << logb(x);\n" // do not simplify
+                                 " std::cout << logb(10);\n" // do not simplify
+                                 " std::cout << logb(1L);\n" // simplify to 0
+                                 "}";
         const char expected_logb[] = "void f ( int x ) {\n"
                                      "std :: cout << logb ( x ) ;\n"
                                      "std :: cout << logb ( 10 ) ;\n"
@@ -1153,10 +1338,10 @@ private:
         ASSERT_EQUALS(expected_logb, tokWithNewlines(code_logb));
 
         const char code_logbf[] ="void f(float x) {\n"
-                                 " std::cout << logbf(x);\n" // do not simplify
-                                 " std::cout << logbf(10);\n" // do not simplify
-                                 " std::cout << logbf(1.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << logbf(x);\n" // do not simplify
+                                  " std::cout << logbf(10);\n" // do not simplify
+                                  " std::cout << logbf(1.0f);\n" // simplify to 0
+                                  "}";
         const char expected_logbf[] = "void f ( float x ) {\n"
                                       "std :: cout << logbf ( x ) ;\n"
                                       "std :: cout << logbf ( 10 ) ;\n"
@@ -1165,10 +1350,10 @@ private:
         ASSERT_EQUALS(expected_logbf, tokWithNewlines(code_logbf));
 
         const char code_logbl[] ="void f(long double x) {\n"
-                                 " std::cout << logbl(x);\n" // do not simplify
-                                 " std::cout << logbl(10.0f);\n" // do not simplify
-                                 " std::cout << logbl(1.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << logbl(x);\n" // do not simplify
+                                  " std::cout << logbl(10.0f);\n" // do not simplify
+                                  " std::cout << logbl(1.0f);\n" // simplify to 0
+                                  "}";
         const char expected_logbl[] = "void f ( double x ) {\n"
                                       "std :: cout << logbl ( x ) ;\n"
                                       "std :: cout << logbl ( 10.0f ) ;\n"
@@ -1180,10 +1365,10 @@ private:
     void simplifyMathFunctions_log1p() {
         // verify log1p(), log1pf(), log1pl() - simplifcation
         const char code_log1p[] ="void f(int x) {\n"
-                                 " std::cout << log1p(x);\n" // do not simplify
-                                 " std::cout << log1p(10);\n" // do not simplify
-                                 " std::cout << log1p(0L);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << log1p(x);\n" // do not simplify
+                                  " std::cout << log1p(10);\n" // do not simplify
+                                  " std::cout << log1p(0L);\n" // simplify to 0
+                                  "}";
         const char expected_log1p[] = "void f ( int x ) {\n"
                                       "std :: cout << log1p ( x ) ;\n"
                                       "std :: cout << log1p ( 10 ) ;\n"
@@ -1192,10 +1377,10 @@ private:
         ASSERT_EQUALS(expected_log1p, tokWithNewlines(code_log1p));
 
         const char code_log1pf[] ="void f(float x) {\n"
-                                  " std::cout << log1pf(x);\n" // do not simplify
-                                  " std::cout << log1pf(10);\n" // do not simplify
-                                  " std::cout << log1pf(0.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << log1pf(x);\n" // do not simplify
+                                   " std::cout << log1pf(10);\n" // do not simplify
+                                   " std::cout << log1pf(0.0f);\n" // simplify to 0
+                                   "}";
         const char expected_log1pf[] = "void f ( float x ) {\n"
                                        "std :: cout << log1pf ( x ) ;\n"
                                        "std :: cout << log1pf ( 10 ) ;\n"
@@ -1204,10 +1389,10 @@ private:
         ASSERT_EQUALS(expected_log1pf, tokWithNewlines(code_log1pf));
 
         const char code_log1pl[] ="void f(long double x) {\n"
-                                  " std::cout << log1pl(x);\n" // do not simplify
-                                  " std::cout << log1pl(10.0f);\n" // do not simplify
-                                  " std::cout << log1pl(0.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << log1pl(x);\n" // do not simplify
+                                   " std::cout << log1pl(10.0f);\n" // do not simplify
+                                   " std::cout << log1pl(0.0f);\n" // simplify to 0
+                                   "}";
         const char expected_log1pl[] = "void f ( double x ) {\n"
                                        "std :: cout << log1pl ( x ) ;\n"
                                        "std :: cout << log1pl ( 10.0f ) ;\n"
@@ -1219,10 +1404,10 @@ private:
     void simplifyMathFunctions_log10() {
         // verify log10(), log10f(), log10l() - simplifcation
         const char code_log10[] ="void f(int x) {\n"
-                                 " std::cout << log10(x);\n" // do not simplify
-                                 " std::cout << log10(10);\n" // do not simplify
-                                 " std::cout << log10(1L);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << log10(x);\n" // do not simplify
+                                  " std::cout << log10(10);\n" // do not simplify
+                                  " std::cout << log10(1L);\n" // simplify to 0
+                                  "}";
         const char expected_log10[] = "void f ( int x ) {\n"
                                       "std :: cout << log10 ( x ) ;\n"
                                       "std :: cout << log10 ( 10 ) ;\n"
@@ -1231,10 +1416,10 @@ private:
         ASSERT_EQUALS(expected_log10, tokWithNewlines(code_log10));
 
         const char code_log10f[] ="void f(float x) {\n"
-                                  " std::cout << log10f(x);\n" // do not simplify
-                                  " std::cout << log10f(10);\n" // do not simplify
-                                  " std::cout << log10f(1.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << log10f(x);\n" // do not simplify
+                                   " std::cout << log10f(10);\n" // do not simplify
+                                   " std::cout << log10f(1.0f);\n" // simplify to 0
+                                   "}";
         const char expected_log10f[] = "void f ( float x ) {\n"
                                        "std :: cout << log10f ( x ) ;\n"
                                        "std :: cout << log10f ( 10 ) ;\n"
@@ -1243,10 +1428,10 @@ private:
         ASSERT_EQUALS(expected_log10f, tokWithNewlines(code_log10f));
 
         const char code_log10l[] ="void f(long double x) {\n"
-                                  " std::cout << log10l(x);\n" // do not simplify
-                                  " std::cout << log10l(10.0f);\n" // do not simplify
-                                  " std::cout << log10l(1.0f);\n" // simplify to 0
-                                  "}";
+                                   " std::cout << log10l(x);\n" // do not simplify
+                                   " std::cout << log10l(10.0f);\n" // do not simplify
+                                   " std::cout << log10l(1.0f);\n" // simplify to 0
+                                   "}";
         const char expected_log10l[] = "void f ( double x ) {\n"
                                        "std :: cout << log10l ( x ) ;\n"
                                        "std :: cout << log10l ( 10.0f ) ;\n"
@@ -1258,10 +1443,10 @@ private:
     void simplifyMathFunctions_log() {
         // verify log(), logf(), logl() - simplifcation
         const char code_log[] ="void f(int x) {\n"
-                               " std::cout << log(x);\n" // do not simplify
-                               " std::cout << log(10);\n" // do not simplify
-                               " std::cout << log(1L);\n" // simplify to 0
-                               "}";
+                                " std::cout << log(x);\n" // do not simplify
+                                " std::cout << log(10);\n" // do not simplify
+                                " std::cout << log(1L);\n" // simplify to 0
+                                "}";
         const char expected_log[] = "void f ( int x ) {\n"
                                     "std :: cout << log ( x ) ;\n"
                                     "std :: cout << log ( 10 ) ;\n"
@@ -1270,10 +1455,10 @@ private:
         ASSERT_EQUALS(expected_log, tokWithNewlines(code_log));
 
         const char code_logf[] ="void f(float x) {\n"
-                                " std::cout << logf(x);\n" // do not simplify
-                                " std::cout << logf(10);\n" // do not simplify
-                                " std::cout << logf(1.0f);\n" // simplify to 0
-                                "}";
+                                 " std::cout << logf(x);\n" // do not simplify
+                                 " std::cout << logf(10);\n" // do not simplify
+                                 " std::cout << logf(1.0f);\n" // simplify to 0
+                                 "}";
         const char expected_logf[] = "void f ( float x ) {\n"
                                      "std :: cout << logf ( x ) ;\n"
                                      "std :: cout << logf ( 10 ) ;\n"
@@ -1282,10 +1467,10 @@ private:
         ASSERT_EQUALS(expected_logf, tokWithNewlines(code_logf));
 
         const char code_logl[] ="void f(long double x) {\n"
-                                " std::cout << logl(x);\n" // do not simplify
-                                " std::cout << logl(10.0f);\n" // do not simplify
-                                " std::cout << logl(1.0f);\n" // simplify to 0
-                                "}";
+                                 " std::cout << logl(x);\n" // do not simplify
+                                 " std::cout << logl(10.0f);\n" // do not simplify
+                                 " std::cout << logl(1.0f);\n" // simplify to 0
+                                 "}";
         const char expected_logl[] = "void f ( double x ) {\n"
                                      "std :: cout << logl ( x ) ;\n"
                                      "std :: cout << logl ( 10.0f ) ;\n"
@@ -1297,10 +1482,10 @@ private:
     void simplifyMathFunctions_log2() {
         // verify log2(), log2f(), log2l() - simplifcation
         const char code_log2[] ="void f(int x) {\n"
-                                " std::cout << log2(x);\n" // do not simplify
-                                " std::cout << log2(10);\n" // do not simplify
-                                " std::cout << log2(1L);\n" // simplify to 0
-                                "}";
+                                 " std::cout << log2(x);\n" // do not simplify
+                                 " std::cout << log2(10);\n" // do not simplify
+                                 " std::cout << log2(1L);\n" // simplify to 0
+                                 "}";
         const char expected_log2[] = "void f ( int x ) {\n"
                                      "std :: cout << log2 ( x ) ;\n"
                                      "std :: cout << log2 ( 10 ) ;\n"
@@ -1309,10 +1494,10 @@ private:
         ASSERT_EQUALS(expected_log2, tokWithNewlines(code_log2));
 
         const char code_log2f[] ="void f(float x) {\n"
-                                 " std::cout << log2f(x);\n" // do not simplify
-                                 " std::cout << log2f(10);\n" // do not simplify
-                                 " std::cout << log2f(1.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << log2f(x);\n" // do not simplify
+                                  " std::cout << log2f(10);\n" // do not simplify
+                                  " std::cout << log2f(1.0f);\n" // simplify to 0
+                                  "}";
         const char expected_log2f[] = "void f ( float x ) {\n"
                                       "std :: cout << log2f ( x ) ;\n"
                                       "std :: cout << log2f ( 10 ) ;\n"
@@ -1321,10 +1506,10 @@ private:
         ASSERT_EQUALS(expected_log2f, tokWithNewlines(code_log2f));
 
         const char code_log2l[] ="void f(long double x) {\n"
-                                 " std::cout << log2l(x);\n" // do not simplify
-                                 " std::cout << log2l(10.0f);\n" // do not simplify
-                                 " std::cout << log2l(1.0f);\n" // simplify to 0
-                                 "}";
+                                  " std::cout << log2l(x);\n" // do not simplify
+                                  " std::cout << log2l(10.0f);\n" // do not simplify
+                                  " std::cout << log2l(1.0f);\n" // simplify to 0
+                                  "}";
         const char expected_log2l[] = "void f ( double x ) {\n"
                                       "std :: cout << log2l ( x ) ;\n"
                                       "std :: cout << log2l ( 10.0f ) ;\n"
@@ -1336,19 +1521,19 @@ private:
     void simplifyMathFunctions_pow() {
         // verify pow(),pow(),powl() - simplifcation
         const char code_pow[] ="void f() {\n"
-                               " std::cout << pow(-1.0,1);\n"
-                               " std::cout << pow(1.0,1);\n"
-                               " std::cout << pow(0,1);\n"
-                               " std::cout << pow(1,-6);\n"
-                               " std::cout << powf(-1.0,1.0f);\n"
-                               " std::cout << powf(1.0,1.0f);\n"
-                               " std::cout << powf(0,1.0f);\n"
-                               " std::cout << powf(1.0,-6.0f);\n"
-                               " std::cout << powl(-1.0,1.0);\n"
-                               " std::cout << powl(1.0,1.0);\n"
-                               " std::cout << powl(0,1.0);\n"
-                               " std::cout << powl(1.0,-6.0d);\n"
-                               "}";
+                                " std::cout << pow(-1.0,1);\n"
+                                " std::cout << pow(1.0,1);\n"
+                                " std::cout << pow(0,1);\n"
+                                " std::cout << pow(1,-6);\n"
+                                " std::cout << powf(-1.0,1.0f);\n"
+                                " std::cout << powf(1.0,1.0f);\n"
+                                " std::cout << powf(0,1.0f);\n"
+                                " std::cout << powf(1.0,-6.0f);\n"
+                                " std::cout << powl(-1.0,1.0);\n"
+                                " std::cout << powl(1.0,1.0);\n"
+                                " std::cout << powl(0,1.0);\n"
+                                " std::cout << powl(1.0,-6.0d);\n"
+                                "}";
 
         const char expected_pow[] = "void f ( ) {\n"
                                     "std :: cout << -1.0 ;\n"
@@ -1388,16 +1573,16 @@ private:
     void simplifyMathFunctions_fmin() {
         // verify fmin,fminl,fminl simplifcation
         const char code_fmin[] ="void f() {\n"
-                                " std::cout << fmin(-1.0,0);\n"
-                                " std::cout << fmin(1.0,0);\n"
-                                " std::cout << fmin(0,0);\n"
-                                " std::cout << fminf(-1.0,0);\n"
-                                " std::cout << fminf(1.0,0);\n"
-                                " std::cout << fminf(0,0);\n"
-                                " std::cout << fminl(-1.0,0);\n"
-                                " std::cout << fminl(1.0,0);\n"
-                                " std::cout << fminl(0,0);\n"
-                                "}";
+                                 " std::cout << fmin(-1.0,0);\n"
+                                 " std::cout << fmin(1.0,0);\n"
+                                 " std::cout << fmin(0,0);\n"
+                                 " std::cout << fminf(-1.0,0);\n"
+                                 " std::cout << fminf(1.0,0);\n"
+                                 " std::cout << fminf(0,0);\n"
+                                 " std::cout << fminl(-1.0,0);\n"
+                                 " std::cout << fminl(1.0,0);\n"
+                                 " std::cout << fminl(0,0);\n"
+                                 "}";
 
         const char expected_fmin[] = "void f ( ) {\n"
                                      "std :: cout << -1.0 ;\n"
@@ -1421,16 +1606,16 @@ private:
     void simplifyMathFunctions_fmax() {
         // verify fmax(),fmax(),fmaxl() simplifcation
         const char code_fmax[] ="void f() {\n"
-                                " std::cout << fmax(-1.0,0);\n"
-                                " std::cout << fmax(1.0,0);\n"
-                                " std::cout << fmax(0,0);\n"
-                                " std::cout << fmaxf(-1.0,0);\n"
-                                " std::cout << fmaxf(1.0,0);\n"
-                                " std::cout << fmaxf(0,0);\n"
-                                " std::cout << fmaxl(-1.0,0);\n"
-                                " std::cout << fmaxl(1.0,0);\n"
-                                " std::cout << fmaxl(0,0);\n"
-                                "}";
+                                 " std::cout << fmax(-1.0,0);\n"
+                                 " std::cout << fmax(1.0,0);\n"
+                                 " std::cout << fmax(0,0);\n"
+                                 " std::cout << fmaxf(-1.0,0);\n"
+                                 " std::cout << fmaxf(1.0,0);\n"
+                                 " std::cout << fmaxf(0,0);\n"
+                                 " std::cout << fmaxl(-1.0,0);\n"
+                                 " std::cout << fmaxl(1.0,0);\n"
+                                 " std::cout << fmaxl(0,0);\n"
+                                 "}";
 
         const char expected_fmax[] = "void f ( ) {\n"
                                      "std :: cout << 0 ;\n"
@@ -1790,21 +1975,21 @@ private:
 
     void combine_strings() {
         const char code1[] =  "void foo()\n"
-                              "{\n"
-                              "const char *a =\n"
-                              "{\n"
-                              "\"hello \"\n"
-                              "\"world\"\n"
-                              "};\n"
-                              "}\n";
+                             "{\n"
+                             "const char *a =\n"
+                             "{\n"
+                             "\"hello \"\n"
+                             "\"world\"\n"
+                             "};\n"
+                             "}\n";
 
         const char code2[] =  "void foo()\n"
-                              "{\n"
-                              "const char *a =\n"
-                              "{\n"
-                              "\"hello world\"\n"
-                              "};\n"
-                              "}\n";
+                             "{\n"
+                             "const char *a =\n"
+                             "{\n"
+                             "\"hello world\"\n"
+                             "};\n"
+                             "}\n";
         ASSERT_EQUALS(tok(code2), tok(code1));
 
         const char code3[] = "x = L\"1\" TEXT(\"2\") L\"3\";";
@@ -1821,7 +2006,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -1833,7 +2018,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -1845,7 +2030,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -1857,7 +2042,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -1869,7 +2054,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -1877,61 +2062,61 @@ private:
     void double_plus() {
         {
             const char code1[] =  "void foo( int a )\n"
-                                  "{\n"
-                                  "a++;\n"
-                                  "a--;\n"
-                                  "++a;\n"
-                                  "--a;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a++;\n"
+                                 "a--;\n"
+                                 "++a;\n"
+                                 "--a;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a ++ ; a -- ; ++ a ; -- a ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a )\n"
-                                  "{\n"
-                                  "a=a+a;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a+a;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a = a + a ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a+++b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a+++b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a ++ + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a---b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a---b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a -- - b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a--+b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a--+b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a -- + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a++-b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a++-b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a ++ - b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a+--b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a+--b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a + -- b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a-++b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a-++b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a - ++ b ; }", tok(code1));
         }
     }
@@ -1939,51 +2124,51 @@ private:
     void redundant_plus() {
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a + + b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a + + b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a + + + b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a + + + b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a + - b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a + - b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a - + b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a - + b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a - - b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a - - b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a - + - b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a - + - b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a + b ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a, int b )\n"
-                                  "{\n"
-                                  "a=a - - - b;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a - - - b;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a , int b ) { a = a - b ; }", tok(code1));
         }
     }
@@ -1991,51 +2176,51 @@ private:
     void redundant_plus_numbers() {
         {
             const char code1[] =  "void foo( int a )\n"
-                                  "{\n"
-                                  "a=a + + 1;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a + + 1;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a = a + 1 ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a )\n"
-                                  "{\n"
-                                  "a=a + + + 1;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a + + + 1;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a = a + 1 ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a )\n"
-                                  "{\n"
-                                  "a=a + - 1;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a + - 1;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a = a - 1 ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a )\n"
-                                  "{\n"
-                                  "a=a - + 1;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a - + 1;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a = a - 1 ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a )\n"
-                                  "{\n"
-                                  "a=a - - 1;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a - - 1;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a = a + 1 ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a )\n"
-                                  "{\n"
-                                  "a=a - + - 1;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a - + - 1;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a = a + 1 ; }", tok(code1));
         }
         {
             const char code1[] =  "void foo( int a )\n"
-                                  "{\n"
-                                  "a=a - - - 1;\n"
-                                  "}\n";
+                                 "{\n"
+                                 "a=a - - - 1;\n"
+                                 "}\n";
             ASSERT_EQUALS("void foo ( int a ) { a = a - 1 ; }", tok(code1));
         }
     }
@@ -2166,14 +2351,14 @@ private:
 
         {
             const char src[] =  "void f(int g,int f) {\n"
-                                "if(g==1) {poo();}\n"
-                                "else if( g == 2 )\n"
-                                "{\n"
-                                " if( f == 0 ){coo();}\n"
-                                " else if( f==1)\n"
-                                "  goo();\n"
-                                "}\n"
-                                "}";
+                               "if(g==1) {poo();}\n"
+                               "else if( g == 2 )\n"
+                               "{\n"
+                               " if( f == 0 ){coo();}\n"
+                               " else if( f==1)\n"
+                               "  goo();\n"
+                               "}\n"
+                               "}";
 
             const char expected[] = "void f ( int g , int f ) "
                                     "{ "
@@ -2383,7 +2568,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char * a , char * b , char * c ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), tok(code));
         }
 
@@ -2392,7 +2577,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char a , char b , char c ) { g ( " <<
-                     sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " ) ; }";
+                sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " ) ; }";
             ASSERT_EQUALS(expected.str(), tok(code));
         }
 
@@ -2401,7 +2586,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( const char * a , const char * b , const char * c ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), tok(code));
         }
 
@@ -2410,7 +2595,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char a [ 10 ] , char b [ 10 ] , char c [ 10 ] ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), tok(code));
         }
 
@@ -2419,9 +2604,9 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( const char a [ 10 ] , "
-                     "const char b [ 10 ] , "
-                     "const char c [ 10 ] ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                "const char b [ 10 ] , "
+                "const char c [ 10 ] ) { g ( " <<
+                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), tok(code));
         }
 
@@ -2430,9 +2615,9 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( const char * a [ 10 ] , "
-                     "const char * b [ 10 ] , "
-                     "const char * c [ 10 ] ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                "const char * b [ 10 ] , "
+                "const char * c [ 10 ] ) { g ( " <<
+                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), tok(code));
         }
 
@@ -2441,7 +2626,7 @@ private:
                                 "{g(sizeof(a),sizeof(b),sizeof(c));}";
             std::ostringstream expected;
             expected << "void f ( char * a [ 10 ] , char * b [ 10 ] , char * c [ 10 ] ) { g ( " <<
-                     sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
+                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
             ASSERT_EQUALS(expected.str(), tok(code));
         }
 
@@ -2923,14 +3108,14 @@ private:
         }
     }
 
-
-    std::string simplifyIfAndWhileAssign(const char code[]) {
+#define simplifyIfAndWhileAssign(code) simplifyIfAndWhileAssign_(code, __FILE__, __LINE__)
+    std::string simplifyIfAndWhileAssign_(const char code[], const char* file, int line) {
         // tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        tokenizer.simplifyIfAndWhileAssign();
+        (tokenizer.simplifyIfAndWhileAssign)();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
@@ -2949,12 +3134,12 @@ private:
 
     void ifAssignWithCast() {
         const char *code =  "void foo()\n"
-                            "{\n"
-                            "FILE *f;\n"
-                            "if( (f = fopen(\"foo\", \"r\")) == ((FILE*)NULL) )\n"
-                            "return(-1);\n"
-                            "fclose(f);\n"
-                            "}\n";
+                           "{\n"
+                           "FILE *f;\n"
+                           "if( (f = fopen(\"foo\", \"r\")) == ((FILE*)NULL) )\n"
+                           "return(-1);\n"
+                           "fclose(f);\n"
+                           "}\n";
         const char *expected = "void foo ( ) "
                                "{ "
                                "FILE * f ; "
@@ -3017,7 +3202,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr("{ while (!(m = q->push<Message>(x))) {} }");
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
         tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS("{ m = q . push < Message > ( x ) ; while ( ! m ) { m = q . push < Message > ( x ) ; } }", tokenizer.tokens()->stringifyList(nullptr, false));
@@ -3165,7 +3350,7 @@ private:
             const char code[] = "void foo()\n"
                                 "{\n"
                                 "    char *a, *b;\n"
-                                "    if (x) \n"
+                                "    if (x)\n"
                                 "        delete a, b;\n"
                                 "}\n";
             ASSERT_EQUALS("void foo ( ) { char * a ; char * b ; if ( x ) { delete a ; b ; } }", tok(code));
@@ -3536,6 +3721,58 @@ private:
         ASSERT_EQUALS("( 5 ) ;", tok("( 1 < 2 && 3 < 4 ? 5 : 6 );"));
         ASSERT_EQUALS("( 6 ) ;", tok("( 1 > 2 && 3 > 4 ? 5 : 6 );"));
     }
+
+    void simplifyCalculations() {
+        ASSERT_EQUALS("void foo ( char str [ ] ) { char x ; x = * str ; }",
+                      tok("void foo ( char str [ ] ) { char x = 0 | ( * str ) ; }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (b + 0) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (0 + b) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (b - 0) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (b * 1) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (1 * b) { } }"));
+        //ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+        //              tok("void foo ( ) { if (b / 1) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (b | 0) { } }"));
+        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
+                      tok("void foo ( ) { if (0 | b) { } }"));
+        ASSERT_EQUALS("void foo ( int b ) { int a ; a = b ; bar ( a ) ; }",
+                      tok("void foo ( int b ) { int a = b | 0 ; bar ( a ) ; }"));
+        ASSERT_EQUALS("void foo ( int b ) { int a ; a = b ; bar ( a ) ; }",
+                      tok("void foo ( int b ) { int a = 0 | b ; bar ( a ) ; }"));
+
+        // ticket #3093
+        ASSERT_EQUALS("int f ( ) { return 15 ; }",
+                      tok("int f() { int a = 10; int b = 5; return a + b; }"));
+        ASSERT_EQUALS("int f ( ) { return a ; }",
+                      tok("int f() { return a * 1; }"));
+        ASSERT_EQUALS("int f ( int a ) { return 0 ; }",
+                      tok("int f(int a) { return 0 * a; }"));
+        ASSERT_EQUALS("bool f ( int i ) { switch ( i ) { case 15 : ; return true ; } }",
+                      tok("bool f(int i) { switch (i) { case 10 + 5: return true; } }"));
+
+        // ticket #3576 - False positives in boolean expressions
+        ASSERT_EQUALS("int foo ( ) { return 1 ; }",
+                      tok("int foo ( ) { int i; int j; i = 1 || j; return i; }"));
+
+        ASSERT_EQUALS("int foo ( ) { return 0 ; }",
+                      tok("int foo ( ) { int i; int j; i = 0 && j; return i; }"));        // ticket #3576 - False positives in boolean expressions
+
+        // ticket #3723 - Simplify condition (0 && a < 123)
+        ASSERT_EQUALS("( 0 ) ;",
+                      tok("( 0 && a < 123 );"));
+        ASSERT_EQUALS("( 0 ) ;",
+                      tok("( 0 && a[123] );"));
+
+        // ticket #4931
+        ASSERT_EQUALS("dostuff ( 1 ) ;", tok("dostuff(9&&8);"));
+    }
+
 
 
     void simplifyFlowControl() {
@@ -4212,14 +4449,6 @@ private:
         ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 0 ; ++ i ) { } return i ; }", tok("void f() { int i; for (i=0;i<0;++i){ dostuff(); } return i; }"));
     }
 
-    void duplicateDefinition() { // #3565 - wrongly detects duplicate definition
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr("{ x ; return a not_eq x; }");
-        tokenizer.tokenize(istr, "test.c");
-        Token *x_token = tokenizer.list.front()->tokAt(5);
-        ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token));
-    }
-
     void removestd() {
         ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
         ASSERT_EQUALS("; strcat ( a , b ) ;", tok("; std::strcat(a,b);"));
@@ -4663,7 +4892,7 @@ private:
         ASSERT_EQUALS("int foo ( ) { }", tok("inline int foo ( ) { }", true));
         ASSERT_EQUALS("int foo ( ) { }", tok("__inline int foo ( ) { }", true));
         ASSERT_EQUALS("int foo ( ) { }", tok("__forceinline int foo ( ) { }", true));
-        ASSERT_EQUALS("const int foo ( ) { }", tok("constexpr int foo() { }", true));
+        ASSERT_EQUALS("constexpr int foo ( ) { }", tok("constexpr int foo() { }", true));
         ASSERT_EQUALS("void f ( ) { int final [ 10 ] ; }", tok("void f() { int final[10]; }", true));
         ASSERT_EQUALS("int * p ;", tok("int * __restrict p;", "test.c"));
         ASSERT_EQUALS("int * * p ;", tok("int * __restrict__ * p;", "test.c"));
@@ -4704,6 +4933,16 @@ private:
 
         // don't simplify Microsoft defines in unix code (#7554)
         ASSERT_EQUALS("enum E { CALLBACK } ;", tok("enum E { CALLBACK } ;", true, Settings::Unix32));
+    }
+
+    void simplifyAttribute() {
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) int f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__((visibility(\"default\"))) int f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute ((visibility(\"default\"))) int f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) __attribute__ ((warn_unused_result)) int f();", true));
+        ASSERT_EQUALS("blah :: blah f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) blah::blah f();", true));
+        ASSERT_EQUALS("template < T > Result < T > f ( ) ;", tok("template<T> __attribute__ ((warn_unused_result)) Result<T> f();", true));
+        ASSERT_EQUALS("template < T , U > Result < T , U > f ( ) ;", tok("template<T, U> __attribute__ ((warn_unused_result)) Result<T, U> f();", true));
     }
 
     void simplifyFunctorCall() {
@@ -4776,10 +5015,6 @@ private:
                                 "}";
             tok(code);
         }
-    }
-
-    void removeVoidFromFunction() {
-        ASSERT_EQUALS("void foo ( ) ;", tok("void foo(void);"));
     }
 
     void return_strncat() {
@@ -4930,7 +5165,7 @@ private:
         ASSERT_EQUALS("namespace A { namespace B { namespace C { int i ; } } }", tok("namespace A::B::C { int i; }"));
     }
 
-    void simplifyNamespaceAliases() {
+    void simplifyNamespaceAliases1() {
         ASSERT_EQUALS(";",
                       tok("namespace ios = boost::iostreams;"));
         ASSERT_EQUALS("boost :: iostreams :: istream foo ( \"foo\" ) ;",
@@ -4994,6 +5229,1856 @@ private:
                           "namespace external::ns {"
                           "    void A::f(const std::string& json) { }"
                           "}"));
+    }
+
+    void simplifyNamespaceAliases2() {
+        ASSERT_EQUALS("void foo ( ) "
+                      "{ "
+                      "int maxResults ; maxResults = :: a :: b :: c :: d :: ef :: MAX ; "
+                      "}",
+                      tok("namespace ef = ::a::b::c::d::ef;"
+                          "void foo()"
+                          "{"
+                          "  int maxResults = ::a::b::c::d::ef::MAX;"
+                          "}"));
+    }
+
+#define simplifyKnownVariables(code) simplifyKnownVariables_(code, __FILE__, __LINE__)
+    std::string simplifyKnownVariables_(const char code[], const char* file, int line) {
+        errout.str("");
+
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+
+        (tokenizer.simplifyKnownVariables)();
+
+        return tokenizer.tokens()->stringifyList(nullptr, false);
+    }
+
+    void simplifyKnownVariables1() {
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    int a = 10;\n"
+                                "    if (a);\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "void f ( ) { int a ; a = 10 ; if ( 10 ) { ; } }",
+                simplifyKnownVariables(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "    int a = 10;\n"
+                                "    if (!a);\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "void f ( ) { int a ; a = 10 ; if ( ! 10 ) { ; } }",
+                simplifyKnownVariables(code));
+        }
+    }
+
+    void simplifyKnownVariables2() {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    int a = 10;\n"
+                            "    a = g();\n"
+                            "    if (a);\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "void f ( ) { int a ; a = 10 ; a = g ( ) ; if ( a ) { ; } }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables3() {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    int a = 4;\n"
+                            "    while(true){\n"
+                            "    break;\n"
+                            "    a = 10;\n"
+                            "    }\n"
+                            "    if (a);\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "void f ( ) { int a ; a = 4 ; while ( true ) { break ; a = 10 ; } if ( a ) { ; } }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables4() {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    int a = 4;\n"
+                            "    if ( g(a));\n"
+                            "}\n";
+
+        // TODO: if a is passed by value is is ok to simplify..
+        ASSERT_EQUALS(
+            "void f ( ) { int a ; a = 4 ; if ( g ( a ) ) { ; } }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables5() {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    int a = 4;\n"
+                            "    if ( a = 5 );\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "void f ( ) { int a ; a = 4 ; if ( a = 5 ) { ; } }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables6() {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    char str[2];"
+                            "    int a = 4;\n"
+                            "    str[a] = 0;\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "void f ( ) { char str [ 2 ] ; int a ; a = 4 ; str [ 4 ] = 0 ; }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables7() {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    int i = 22;\n"
+                            "    abc[i++] = 1;\n"
+                            "    abc[++i] = 2;\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "void foo ( ) { int i ; i = 24 ; abc [ 22 ] = 1 ; abc [ 24 ] = 2 ; }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables8() {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    int i = 22;\n"
+                            "    i++;\n"
+                            "    abc[i] = 0;\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "void foo ( ) { int i ; i = 23 ; abc [ 23 ] = 0 ; }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables9() {
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    int a = 1, b = 2;\n"
+                            "    if (a < b)\n"
+                            "        ;\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "void foo ( ) { int a ; a = 1 ; int b ; b = 2 ; if ( 1 < 2 ) { ; } }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables10() {
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  bool b=false;\n"
+                                "\n"
+                                "  {\n"
+                                "    b = true;\n"
+                                "  }\n"
+                                "\n"
+                                "  if( b )\n"
+                                "  {\n"
+                                "    a();\n"
+                                "  }\n"
+                                "}\n";
+
+            const std::string expected1("void f ( ) {"
+                                        " bool b ; b = false ;"
+                                        " { b = true ; }");
+
+            TODO_ASSERT_EQUALS(
+                expected1 + " if ( true ) { a ( ) ; } }",
+                expected1 + " if ( b ) { a ( ) ; } }",
+                simplifyKnownVariables(code));
+
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  bool b=false;\n"
+                                "  { b = false; }\n"
+                                "  {\n"
+                                "    b = true;\n"
+                                "  }\n"
+                                "\n"
+                                "  if( b )\n"
+                                "  {\n"
+                                "    a();\n"
+                                "  }\n"
+                                "}\n";
+
+            TODO_ASSERT_EQUALS(
+                "void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( true ) { a ( ) ; } }",
+                "void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( b ) { a ( ) ; } }",
+                simplifyKnownVariables(code));
+        }
+
+        {
+            const char code[] = "void f()\n"
+                                "{\n"
+                                "  int b=0;\n"
+                                "  b = 1;\n"
+                                "  for( int i = 0; i < 10; i++ )"
+                                "  {\n"
+                                "  }\n"
+                                "\n"
+                                "  return b;\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } return 1 ; }",
+                simplifyKnownVariables(code));
+        }
+    }
+
+    void simplifyKnownVariables11() {
+        const char code[] = "const int foo = 0;\n"
+                            "int main()\n"
+                            "{\n"
+                            "  int foo=0;\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "int main ( ) { int foo ; foo = 0 ; }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables13() {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    int i = 10;\n"
+                            "    while(--i) {}\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "void f ( ) { int i ; i = 10 ; while ( -- i ) { } }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables14() {
+        // ticket #753
+        const char code[] = "void f ( ) { int n ; n = 1 ; do { ++ n ; } while ( n < 10 ) ; }";
+        ASSERT_EQUALS(code, simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables15() {
+        {
+            const char code[] = "int main()\n"
+                                "{\n"
+                                "  int x=5;\n"
+                                "  std::cout << 10 / x << std::endl;\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "int main ( ) { int x ; x = 5 ; std :: cout << 10 / 5 << std :: endl ; }",
+                simplifyKnownVariables(code));
+        }
+
+        {
+            const char code[] = "int main()\n"
+                                "{\n"
+                                "  int x=5;\n"
+                                "  std::cout << x / ( x == 1 ) << std::endl;\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "int main ( ) { int x ; x = 5 ; std :: cout << 5 / ( 5 == 1 ) << std :: endl ; }",
+                simplifyKnownVariables(code));
+        }
+    }
+
+    void simplifyKnownVariables16() {
+        // ticket #807 - segmentation fault when macro isn't found
+        const char code[] = "void f ( ) { int n = 1; DISPATCH(while); }";
+        ASSERT_THROW(simplifyKnownVariables(code), InternalError);
+    }
+
+    void simplifyKnownVariables17() {
+        // ticket #807 - segmentation fault when macro isn't found
+        const char code[] = "void f ( ) { char *s = malloc(100);mp_ptr p = s; p++; }";
+        ASSERT_EQUALS(
+            "void f ( ) { char * s ; s = malloc ( 100 ) ; mp_ptr p ; p = s ; p ++ ; }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables18() {
+        const char code[] = "void f ( ) { char *s = malloc(100);mp_ptr p = s; ++p; }";
+        ASSERT_EQUALS(
+            "void f ( ) { char * s ; s = malloc ( 100 ) ; mp_ptr p ; p = s ; ++ p ; }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables19() {
+        const char code[] = "void f ( ) { int i=0; do { if (i>0) { a(); } i=b(); } while (i != 12); }";
+        ASSERT_EQUALS(
+            "void f ( ) { int i ; i = 0 ; do { if ( i > 0 ) { a ( ) ; } i = b ( ) ; } while ( i != 12 ) ; }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables20() {
+        const char code[] = "void f()\n"
+                            "{\n"
+                            "    int i = 0;\n"
+                            "    if (x) {\n"
+                            "        if (i) i=0;\n"
+                            "    }\n"
+                            "}\n";
+
+        ASSERT_EQUALS(
+            "void f ( ) { int i ; i = 0 ; if ( x ) { if ( 0 ) { i = 0 ; } } }",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables21() {
+        const char code[] = "void foo() { int n = 10; for (int i = 0; i < n; ++i) { } }";
+
+        ASSERT_EQUALS(
+            "void foo ( ) { int n ; n = 10 ; for ( int i = 0 ; i < 10 ; ++ i ) { } }",
+            simplifyKnownVariables(code));
+
+        ASSERT_EQUALS(
+            "void foo ( int i ) { int n ; n = i ; for ( i = 0 ; i < n ; ++ i ) { } }",
+            simplifyKnownVariables("void foo(int i) { int n = i; for (i = 0; i < n; ++i) { } }"));
+    }
+
+    void simplifyKnownVariables22() {
+        // This testcase is related to ticket #1169
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int n = 10;\n"
+                                "    i = (n >> 1);\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "void foo ( ) { int n ; n = 10 ; i = 10 >> 1 ; }",
+                simplifyKnownVariables(code));
+        }
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int n = 10;\n"
+                                "    i = (n << 1);\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "void foo ( ) { int n ; n = 10 ; i = 10 << 1 ; }",
+                simplifyKnownVariables(code));
+        }
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int n = 10;\n"
+                                "    i = (1 << n);\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "void foo ( ) { int n ; n = 10 ; i = 1 << 10 ; }",
+                simplifyKnownVariables(code));
+        }
+        {
+            const char code[] = "void foo()\n"
+                                "{\n"
+                                "    int n = 10;\n"
+                                "    i = (1 >> n);\n"
+                                "}\n";
+
+            ASSERT_EQUALS(
+                "void foo ( ) { int n ; n = 10 ; i = 1 >> 10 ; }",
+                simplifyKnownVariables(code));
+        }
+    }
+
+    void simplifyKnownVariables23() {
+        // This testcase is related to ticket #1596
+        const char code[] = "void foo(int x)\n"
+                            "{\n"
+                            "    int a[10], c = 0;\n"
+                            "    if (x) {\n"
+                            "        a[c] = 0;\n"
+                            "        c++;\n"
+                            "    } else {\n"
+                            "        a[c] = 0;\n"
+                            "    }\n"
+                            "}\n";
+
+        TODO_ASSERT_EQUALS(
+            "void foo ( int x ) "
+            "{"
+            " int a [ 10 ] ; int c ; c = 0 ;"
+            " if ( x ) { a [ 0 ] = 0 ; c = 1 ; }"
+            " else { a [ 0 ] = 0 ; } "
+            "}",
+
+            "void foo ( int x ) "
+            "{"
+            " int a [ 10 ] ; int c ; c = 0 ;"
+            " if ( x ) { a [ 0 ] = 0 ; c ++ ; }"
+            " else { a [ c ] = 0 ; } "
+            "}",
+
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables25() {
+        {
+            // This testcase is related to ticket #1646
+            const char code[] = "void foo(char *str)\n"
+                                "{\n"
+                                "    int i;\n"
+                                "    for (i=0;i<10;++i) {\n"
+                                "        if (*str == 0) goto label;\n"
+                                "    }\n"
+                                "    return;\n"
+                                "label:\n"
+                                "    str[i] = 0;\n"
+                                "}\n";
+
+            // Current result
+            ASSERT_EQUALS(
+                "void foo ( char * str ) "
+                "{"
+                " int i ;"
+                " for ( i = 0 ; i < 10 ; ++ i ) {"
+                " if ( * str == 0 ) { goto label ; }"
+                " }"
+                " return ;"
+                " label : ;"
+                " str [ i ] = 0 ; "
+                "}",
+                simplifyKnownVariables(code));
+        }
+
+        {
+            // This testcase is related to ticket #1646
+            const char code[] = "void foo(char *str)\n"
+                                "{\n"
+                                "    int i;\n"
+                                "    for (i=0;i<10;++i) { }\n"
+                                "    return;\n"
+                                "    str[i] = 0;\n"
+                                "}\n";
+
+            // Current result
+            ASSERT_EQUALS(
+                "void foo ( char * str ) "
+                "{"
+                " int i ;"
+                " for ( i = 0 ; i < 10 ; ++ i ) { }"
+                " return ;"
+                " str [ i ] = 0 ; "
+                "}",
+                simplifyKnownVariables(code));
+        }
+    }
+
+    void simplifyKnownVariables27() {
+        // This testcase is related to ticket #1633
+        const char code[] = "void foo()\n"
+                            "{\n"
+                            "    int i1 = 1;\n"
+                            "    int i2 = 2;\n"
+                            "    int i3 = (i1 + i2) * 3;\n"
+                            "}\n";
+        ASSERT_EQUALS(
+            "void foo ( ) "
+            "{"
+            " int i1 ; i1 = 1 ;"
+            " int i2 ; i2 = 2 ;"
+            " int i3 ; i3 = ( 1 + 2 ) * 3 ; "
+            "}",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables28() {
+        const char code[] = "void foo(int g)\n"
+                            "{\n"
+                            "  int i = 2;\n"
+                            "  if (g) {\n"
+                            "  }\n"
+                            "  if (i > 0) {\n"
+                            "  }\n"
+                            "}\n";
+        ASSERT_EQUALS(
+            "void foo ( int g ) "
+            "{"
+            " int i ; i = 2 ;"
+            " if ( g ) { }"
+            " if ( 2 > 0 ) { } "
+            "}",
+            simplifyKnownVariables(code));
+    }
+
+    void simplifyKnownVariables29() { // ticket #1811
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h + i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 + v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h - i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 - v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h * i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 * v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h / i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 / v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h & i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 & v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h | i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 | v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h ^ i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 ^ v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h % i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 % v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h >> i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 >> v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "int foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h << i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: int foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 << v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h == i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 == v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h != i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 != v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h > i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 > v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h >= i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 >= v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h < i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 < v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h <= i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 <= v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h && i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 && v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+
+        {
+            const char code[] = "bool foo(int u, int v)\n"
+                                "{\n"
+                                "  int h = u;\n"
+                                "  int i = v;\n"
+                                "  return h || i;\n"
+                                "}\n";
+            const char expected[] = "\n\n"
+                                    "##file 0\n"
+                                    "1: bool foo ( int u@1 , int v@2 )\n"
+                                    "2: {\n"
+                                    "3:\n"
+                                    "4:\n"
+                                    "5: return u@1 || v@2 ;\n"
+                                    "6: }\n";
+            ASSERT_EQUALS(expected, tokenizeDebugListing(code, true));
+        }
+    }
+
+    void simplifyKnownVariables30() {
+        const char code[] = "int foo() {\n"
+                            "  iterator it1 = ints.begin();\n"
+                            "  iterator it2 = it1;\n"
+                            "  for (++it2;it2!=ints.end();++it2);\n"
+                            "}\n";
+        const char expected[] = "int foo ( ) {\n"
+                                "iterator it1 ; it1 = ints . begin ( ) ;\n"
+                                "iterator it2 ; it2 = it1 ;\n"
+                                "for ( ++ it2 ; it2 != ints . end ( ) ; ++ it2 ) { ; }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables31() {
+        const char code[] = "void foo(const char str[]) {\n"
+                            "    const char *p = str;\n"
+                            "    if (p[0] == 0) {\n"
+                            "    }\n"
+                            "}\n";
+        const char expected[] = "void foo ( const char str [ ] ) {\n"
+                                "const char * p ; p = str ;\n"
+                                "if ( str [ 0 ] == 0 ) {\n"
+                                "}\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables32() {
+        {
+            const char code[] = "void foo() {\n"
+                                "    const int x = 0;\n"
+                                "    bar(0,x);\n"
+                                "}\n";
+            const char expected[] = "void foo ( ) {\n\nbar ( 0 , 0 ) ;\n}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "static int const SZ = 22; char str[SZ];\n";
+            ASSERT_EQUALS("char str [ 22 ] ;", tokenizeAndStringify(code,true));
+        }
+    }
+
+    void simplifyKnownVariables33() {
+        const char code[] = "static void foo(struct Foo *foo) {\n"
+                            "    foo->a = 23;\n"
+                            "    x[foo->a] = 0;\n"
+                            "}\n";
+        const char expected[] = "static void foo ( struct Foo * foo ) {\n"
+                                "foo . a = 23 ;\n"
+                                "x [ 23 ] = 0 ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables34() {
+        const char code[] = "void f() {\n"
+                            "    int x = 10;\n"
+                            "    do { cin >> x; } while (x > 5);\n"
+                            "    a[x] = 0;\n"
+                            "}\n";
+        const char expected[] = "void f ( ) {\n"
+                                "int x ; x = 10 ;\n"
+                                "do { cin >> x ; } while ( x > 5 ) ;\n"
+                                "a [ x ] = 0 ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables35() {
+        // Ticket #2353
+        const char code[] = "int f() {"
+                            "    int x = 0;"
+                            "    if (x == 0) {"
+                            "        return 0;"
+                            "    }"
+                            "    return 10 / x;"
+                            "}";
+        const char expected[] = "int f ( ) { int x ; x = 0 ; { return 0 ; } }";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables36() {
+        // Ticket #2304
+        const char code[] = "void f() {"
+                            "    const char *q = \"hello\";"
+                            "    strcpy(p, q);"
+                            "}";
+        const char expected[] = "void f ( ) { const char * q ; q = \"hello\" ; strcpy ( p , \"hello\" ) ; }";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+
+        // Ticket #5972
+        const char code2[] = "void f() {"
+                             "  char buf[10] = \"ab\";"
+                             "    memset(buf, 0, 10);"
+                             "}";
+        const char expected2[] = "void f ( ) { char buf [ 10 ] = \"ab\" ; memset ( buf , 0 , 10 ) ; }";
+        ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, true));
+    }
+
+    void simplifyKnownVariables37() {
+        // Ticket #2398 - no simplification in for loop
+        const char code[] = "void f() {\n"
+                            "    double x = 0;\n"
+                            "    for (int iter=0; iter<42; iter++) {\n"
+                            "        int EvaldF = 1;\n"
+                            "        if (EvaldF)\n"
+                            "            Eval (x);\n"
+                            "    }\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                "double x ; x = 0 ;\n"
+                                "for ( int iter = 0 ; iter < 42 ; iter ++ ) {\n"
+                                "\n"
+                                "\n"
+                                "Eval ( x ) ;\n"
+                                "}\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables38() {
+        // Ticket #2399 - simplify conditions
+        const char code[] = "void f() {\n"
+                            "    int x = 0;\n"
+                            "    int y = 1;\n"
+                            "    if (x || y);\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                "\n"
+                                "\n"
+                                ";\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables39() {
+        // Ticket #2296 - simplify pointer alias 'delete p;'
+        {
+            const char code[] = "void f() {\n"
+                                "    int *x;\n"
+                                "    int *y = x;\n"
+                                "    delete y;\n"
+                                "}";
+            ASSERT_EQUALS("void f ( ) {\nint * x ;\n\ndelete x ;\n}", tokenizeAndStringify(code, true));
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    int *x;\n"
+                                "    int *y = x;\n"
+                                "    delete [] y;\n"
+                                "}";
+            ASSERT_EQUALS("void f ( ) {\nint * x ;\n\ndelete [ ] x ;\n}", tokenizeAndStringify(code, true));
+        }
+    }
+
+
+    void simplifyKnownVariables40() {
+        const char code[] = "void f() {\n"
+                            "    char c1 = 'a';\n"
+                            "    char c2 = { c1 };\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\n\nchar c2 ; c2 = { 'a' } ;\n}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables41() {
+        const char code[] = "void f() {\n"
+                            "    int x = 0;\n"
+                            "    const int *p; p = &x;\n"
+                            "    if (p) { return 0; }\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\nint x ; x = 0 ;\nconst int * p ; p = & x ;\nif ( & x ) { return 0 ; }\n}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables42() {
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[10], str2[10];\n"
+                                "    strcpy(str1, \"abc\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                    "strcpy ( str1 , \"abc\" ) ;\n"
+                                    "strcpy ( str2 , \"abc\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void f() {\n"
+                                "   char a[10];\n"
+                                "   strcpy(a, \"hello\");\n"
+                                "   strcat(a, \"!\");\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char a [ 10 ] ;\n"
+                                    "strcpy ( a , \"hello\" ) ;\n"
+                                    "strcat ( a , \"!\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.c"));
+        }
+
+        {
+            const char code[] = "void f() {"
+                                "    char *s = malloc(10);"
+                                "    strcpy(s, \"\");"
+                                "    free(s);"
+                                "}";
+            const char expected[] = "void f ( ) {"
+                                    " char * s ; s = malloc ( 10 ) ;"
+                                    " strcpy ( s , \"\" ) ;"
+                                    " free ( s ) ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void f(char *p, char *q) {"
+                                "    strcpy(p, \"abc\");"
+                                "    q = p;"
+                                "}";
+            const char expected[] = "void f ( char * p , char * q ) {"
+                                    " strcpy ( p , \"abc\" ) ;"
+                                    " q = p ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        // 3538
+        {
+            const char code[] = "void f() {\n"
+                                "    char s[10];\n"
+                                "    strcpy(s, \"123\");\n"
+                                "    if (s[6] == ' ');\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char s [ 10 ] ;\n"
+                                    "strcpy ( s , \"123\" ) ;\n"
+                                    "if ( s [ 6 ] == ' ' ) { ; }\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+        }
+    }
+
+    void simplifyKnownVariables43() {
+        {
+            const char code[] = "void f() {\n"
+                                "    int a, *p; p = &a;\n"
+                                "    { int a = *p; }\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "int a ; int * p ; p = & a ;\n"
+                                    "{ int a ; a = * p ; }\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+
+        {
+            const char code[] = "void f() {\n"
+                                "    int *a, **p; p = &a;\n"
+                                "    { int *a = *p; }\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "int * a ; int * * p ; p = & a ;\n"
+                                    "{ int * a ; a = * p ; }\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+    }
+
+    void simplifyKnownVariables44() {
+        const char code[] = "void a() {\n"
+                            "    static int i = 10;\n"
+                            "    b(i++);\n"
+                            "}";
+        const char expected[] = "void a ( ) {\n"
+                                "static int i = 10 ;\n"
+                                "b ( i ++ ) ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables45() {
+        const char code[] = "class Fred {\n"
+                            "private:\n"
+                            "    const static int NUM = 2;\n"
+                            "    int array[NUM];\n"
+                            "}";
+        const char expected[] = "class Fred {\n"
+                                "private:\n"
+                                "\n"
+                                "int array [ 2 ] ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables46() {
+        const char code[] = "void f() {\n"
+                            "    int x = 0;\n"
+                            "    cin >> x;\n"
+                            "    return x;\n"
+                            "}";
+
+        {
+            const char expected[] = "void f ( ) {\n"
+                                    "int x ; x = 0 ;\n"
+                                    "cin >> x ;\n"
+                                    "return x ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.cpp"));
+        }
+
+        {
+            const char expected[] = "void f ( ) {\n"
+                                    "\n"
+                                    "cin >> 0 ;\n"
+                                    "return 0 ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.c"));
+        }
+    }
+
+    void simplifyKnownVariables47() {
+        // #3621
+        const char code[] = "void f() {\n"
+                            "    int x = 0;\n"
+                            "    cin >> std::hex >> x;\n"
+                            "}";
+        const char expected[] = "void f ( ) {\n"
+                                "int x ; x = 0 ;\n"
+                                "cin >> std :: hex >> x ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.cpp"));
+    }
+
+    void simplifyKnownVariables48() {
+        // #3754
+        const char code[] = "void f(int sz) {\n"
+                            "    int i;\n"
+                            "    for (i = 0; ((i<sz) && (sz>3)); ++i) { }\n"
+                            "}";
+        const char expected[] = "void f ( int sz ) {\n"
+                                "int i ;\n"
+                                "for ( i = 0 ; ( i < sz ) && ( sz > 3 ) ; ++ i ) { }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.c"));
+    }
+
+    void simplifyKnownVariables49() { // #3691
+        const char code[] = "void f(int sz) {\n"
+                            "    switch (x) {\n"
+                            "    case 1: sz = 2; continue;\n"
+                            "    case 2: x = sz; break;\n"
+                            "    }\n"
+                            "}";
+        const char expected[] = "void f ( int sz ) {\n"
+                                "switch ( x ) {\n"
+                                "case 1 : ; sz = 2 ; continue ;\n"
+                                "case 2 : ; x = sz ; break ;\n"
+                                "}\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true, true, Settings::Native, "test.c"));
+    }
+
+    void simplifyKnownVariables50() { // #4066
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[10], str2[10];\n"
+                                "    sprintf(str1, \"%%\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                    "sprintf ( str1 , \"%%\" ) ;\n"
+                                    "strcpy ( str2 , \"%\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[25], str2[25];\n"
+                                "    sprintf(str1, \"abcdef%%%% and %% and %\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 25 ] ; char str2 [ 25 ] ;\n"
+                                    "sprintf ( str1 , \"abcdef%%%% and %% and %\" ) ;\n"
+                                    "strcpy ( str2 , \"abcdef%% and % and %\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+        {
+            const char code[] = "void f() {\n"
+                                "    char str1[10], str2[10];\n"
+                                "    sprintf(str1, \"abc\");\n"
+                                "    strcpy(str2, str1);\n"
+                                "}";
+            const char expected[] = "void f ( ) {\n"
+                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
+                                    "sprintf ( str1 , \"abc\" ) ;\n"
+                                    "strcpy ( str2 , \"abc\" ) ;\n"
+                                    "}";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        }
+        {
+            //don't simplify '&x'!
+            const char code[] = "const char * foo ( ) {\n"
+                                "const char x1 = 'b' ;\n"
+                                "f ( & x1 ) ;\n"
+                                "const char x2 = 'b' ;\n"
+                                "f ( y , & x2 ) ;\n"
+                                "const char x3 = 'b' ;\n"
+                                "t = & x3 ;\n"
+                                "const char x4 = 'b' ;\n"
+                                "t = y + & x4 ;\n"
+                                "const char x5 = 'b' ;\n"
+                                "z [ & x5 ] = y ;\n"
+                                "const char x6 = 'b' ;\n"
+                                "v = { & x6 } ;\n"
+                                "const char x7 = 'b' ;\n"
+                                "return & x7 ;\n"
+                                "}";
+            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+        }
+        {
+            //don't simplify '&x'!
+            const char code[] = "const int * foo ( ) {\n"
+                                "const int x1 = 1 ;\n"
+                                "f ( & x1 ) ;\n"
+                                "const int x2 = 1 ;\n"
+                                "f ( y , & x2 ) ;\n"
+                                "const int x3 = 1 ;\n"
+                                "t = & x3 ;\n"
+                                "const int x4 = 1 ;\n"
+                                "t = y + & x4 ;\n"
+                                "const int x5 = 1 ;\n"
+                                "z [ & x5 ] = y ;\n"
+                                "const int x6 = 1 ;\n"
+                                "v = { & x6 } ;\n"
+                                "const int x7 = 1 ;\n"
+                                "return & x7 ;\n"
+                                "}";
+            ASSERT_EQUALS(code, tokenizeAndStringify(code, true));
+        }
+    }
+
+    void simplifyKnownVariables51() { // #4409 hang
+        const char code[] = "void mhz_M(int enough) {\n"
+                            "  TYPE *x=&x, **p=x, **q = NULL;\n"
+                            "  BENCH1(q = _mhz_M(n); n = 1;)\n"
+                            "  use_pointer(q);\n"
+                            "}";
+        ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
+    }
+
+    void simplifyKnownVariables52() { // #4728 "= x %op%"
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 + z ; }", tokenizeAndStringify("void f() { int x=34; int y=x+z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 - z ; }", tokenizeAndStringify("void f() { int x=34; int y=x-z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 * z ; }", tokenizeAndStringify("void f() { int x=34; int y=x*z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 / z ; }", tokenizeAndStringify("void f() { int x=34; int y=x/z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 % z ; }", tokenizeAndStringify("void f() { int x=34; int y=x%z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 & z ; }", tokenizeAndStringify("void f() { int x=34; int y=x&z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 | z ; }", tokenizeAndStringify("void f() { int x=34; int y=x|z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 ^ z ; }", tokenizeAndStringify("void f() { int x=34; int y=x^z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 << z ; }", tokenizeAndStringify("void f() { int x=34; int y=x<<z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 >> z ; }", tokenizeAndStringify("void f() { int x=34; int y=x>>z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 && z ; }", tokenizeAndStringify("void f() { int x=34; int y=x&&z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 || z ; }", tokenizeAndStringify("void f() { int x=34; int y=x||z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 > z ; }", tokenizeAndStringify("void f() { int x=34; int y=x>z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 >= z ; }", tokenizeAndStringify("void f() { int x=34; int y=x>=z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 < z ; }", tokenizeAndStringify("void f() { int x=34; int y=x<z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 <= z ; }", tokenizeAndStringify("void f() { int x=34; int y=x<=z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 == z ; }", tokenizeAndStringify("void f() { int x=34; int y=x==z; }", true));
+        ASSERT_EQUALS("void f ( ) { int y ; y = 34 != z ; }", tokenizeAndStringify("void f() { int x=34; int y=x!=z; }", true));
+
+        // #4007
+        ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() { char *p = 0; int result = p && (!*p); }", true));
+        ASSERT_EQUALS("void f ( ) { }", tokenizeAndStringify("void f() { Foo *p = 0; bool b = (p && (p->type() == 1)); }", true));
+    }
+
+    void simplifyKnownVariables53() { // references
+        ASSERT_EQUALS("void f ( ) { int x ; x = abc ( ) ; }", tokenizeAndStringify("void f() { int x; int &ref=x; ref=abc(); }", true));
+        ASSERT_EQUALS("void f ( ) { int * p ; p = abc ( ) ; }", tokenizeAndStringify("void f() { int *p; int *&ref=p; ref=abc(); }", true));
+    }
+
+    void simplifyKnownVariables54() { // #4913
+        ASSERT_EQUALS("void f ( int * p ) { * -- p = 0 ; * p = 0 ; }", tokenizeAndStringify("void f(int*p) { *--p=0; *p=0; }", true));
+    }
+
+    void simplifyKnownVariables55() { // pointer alias
+        ASSERT_EQUALS("void f ( ) { int a ; if ( a > 0 ) { } }", tokenizeAndStringify("void f() { int a; int *p=&a; if (*p>0) {} }", true));
+        ASSERT_EQUALS("void f ( ) { int a ; struct AB ab ; ab . a = & a ; if ( a > 0 ) { } }", tokenizeAndStringify("void f() { int a; struct AB ab; ab.a = &a; if (*ab.a>0) {} }", true));
+        ASSERT_EQUALS("void f ( ) { int a ; if ( x > a ) { } }", tokenizeAndStringify("void f() { int a; int *p=&a; if (x>*p) {} }", true));
+    }
+
+    void simplifyKnownVariables56() { // ticket #5301 - >>
+        ASSERT_EQUALS("void f ( ) { int a ; a = 0 ; int b ; b = 0 ; * p >> a >> b ; return a / b ; }",
+                      tokenizeAndStringify("void f() { int a=0,b=0; *p>>a>>b; return a/b; }", true));
+    }
+
+    void simplifyKnownVariables57() { // #4724
+        ASSERT_EQUALS("unsigned long long x ; x = 9223372036854775808UL ;", tokenizeAndStringify("unsigned long long x = 1UL << 63 ;", true));
+        ASSERT_EQUALS("long long x ; x = -9223372036854775808L ;", tokenizeAndStringify("long long x = 1L << 63 ;", true));
+    }
+
+    void simplifyKnownVariables58() { // #5268
+        const char code[] = "enum e { VAL1 = 1, VAL2 }; "
+                            "typedef char arr_t[VAL2]; "
+                            "int foo(int) ; "
+                            "void bar () { "
+                            "  throw foo (VAL1); "
+                            "} "
+                            "int baz() { "
+                            "  return sizeof(arr_t); "
+                            "}";
+        ASSERT_EQUALS("enum e { VAL1 = 1 , VAL2 } ; "
+                      "int foo ( int ) ; "
+                      "void bar ( ) { "
+                      "throw foo ( VAL1 ) ; "
+                      "} "
+                      "int baz ( ) { "
+                      "return sizeof ( char [ VAL2 ] ) ; "
+                      "}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables59() { // #5062 - for head
+        const char code[] = "void f() {\n"
+                            "  int a[3], i, j;\n"
+                            "  for(i = 0, j = 1; i < 3, j < 12; i++,j++) {\n"
+                            "    a[i] = 0;\n"
+                            "  }\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\n"
+                      "int a [ 3 ] ; int i ; int j ;\n"
+                      "for ( i = 0 , j = 1 ; i < 3 , j < 12 ; i ++ , j ++ ) {\n"
+                      "a [ i ] = 0 ;\n"
+                      "}\n"
+                      "}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables60() { // #6829
+        const char code[] = "void f() {\n"
+                            "  int i = 1;\n"
+                            "  const int * const constPtrToConst = &i;\n"
+                            "  std::cout << *constPtrToConst << std::endl;\n"
+                            "  std::cout << constPtrToConst << std::endl;\n"
+                            "}";
+        ASSERT_EQUALS("void f ( ) {\n"
+                      "int i ; i = 1 ;\n"
+                      "const int * const constPtrToConst ; constPtrToConst = & i ;\n"
+                      "std :: cout << i << std :: endl ;\n"
+                      "std :: cout << & i << std :: endl ;\n"
+                      "}", tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariables61() { // #7805
+        tokenizeAndStringify("static const int XX = 0;\n"
+                             "enum E { XX };\n"
+                             "struct s {\n"
+                             "  enum Bar {\n"
+                             "    XX,\n"
+                             "    Other\n"
+                             "  };\n"
+                             "  enum { XX };\n"
+                             "};", /*simplify=*/ true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void simplifyKnownVariables62() { // #5666
+        ASSERT_EQUALS("void foo ( std :: string str ) {\n"
+                      "char * p ; p = & str [ 0 ] ;\n"
+                      "* p = 0 ;\n"
+                      "}",
+                      tokenizeAndStringify("void foo(std::string str) {\n"
+                                           "  char *p = &str[0];\n"
+                                           "  *p = 0;\n"
+                                           "}", /*simplify=*/ true));
+    }
+
+    void simplifyKnownVariablesBailOutAssign1() {
+        const char code[] = "int foo() {\n"
+                            "    int i; i = 0;\n"
+                            "    if (x) { i = 10; }\n"
+                            "    return i;\n"
+                            "}\n";
+        const char expected[] = "int foo ( ) {\n"
+                                "int i ; i = 0 ;\n"
+                                "if ( x ) { i = 10 ; }\n"
+                                "return i ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutAssign2() {
+        // ticket #3032 - assignment in condition
+        const char code[] = "void f(struct ABC *list) {\n"
+                            "    struct ABC *last = NULL;\n"
+                            "    nr = (last = list->prev)->nr;\n"  // <- don't replace "last" with 0
+                            "}\n";
+        const char expected[] = "void f ( struct ABC * list ) {\n"
+                                "struct ABC * last ; last = NULL ;\n"
+                                "nr = ( last = list . prev ) . nr ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutAssign3() { // #4395 - nested assignments
+        const char code[] = "void f() {\n"
+                            "    int *p = 0;\n"
+                            "    a = p = (VdbeCursor*)pMem->z;\n"
+                            "    return p ;\n"
+                            "}\n";
+        const char expected[] = "void f ( ) {\n"
+                                "int * p ; p = 0 ;\n"
+                                "a = p = pMem . z ;\n"
+                                "return p ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutFor1() {
+        const char code[] = "void foo() {\n"
+                            "    for (int i = 0; i < 10; ++i) { }\n"
+                            "}\n";
+        const char expected[] = "void foo ( ) {\n"
+                                "for ( int i = 0 ; i < 10 ; ++ i ) { }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("", errout.str());    // debug warnings
+    }
+
+    void simplifyKnownVariablesBailOutFor2() {
+        const char code[] = "void foo() {\n"
+                            "    int i = 0;\n"
+                            "    while (i < 10) { ++i; }\n"
+                            "}\n";
+        const char expected[] = "void foo ( ) {\n"
+                                "int i ; i = 0 ;\n"
+                                "while ( i < 10 ) { ++ i ; }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("", errout.str());    // debug warnings
+    }
+
+    void simplifyKnownVariablesBailOutFor3() {
+        const char code[] = "void foo() {\n"
+                            "    for (std::string::size_type pos = 0; pos < 10; ++pos)\n"
+                            "    { }\n"
+                            "}\n";
+        const char expected[] = "void foo ( ) {\n"
+                                "for ( std :: string :: size_type pos = 0 ; pos < 10 ; ++ pos )\n"
+                                "{ }\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+        ASSERT_EQUALS("", errout.str());    // debug warnings
+    }
+
+    void simplifyKnownVariablesBailOutMemberFunction() {
+        const char code[] = "void foo(obj a) {\n"
+                            "    obj b = a;\n"
+                            "    b.f();\n"
+                            "}\n";
+        const char expected[] = "void foo ( obj a ) {\n"
+                                "obj b ; b = a ;\n"
+                                "b . f ( ) ;\n"
+                                "}";
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
+    }
+
+    void simplifyKnownVariablesBailOutConditionalIncrement() {
+        const char code[] = "int f() {\n"
+                            "    int a = 0;\n"
+                            "    if (x) {\n"
+                            "        ++a;\n" // conditional increment
+                            "    }\n"
+                            "    return a;\n"
+                            "}\n";
+        tokenizeAndStringify(code,true);
+        ASSERT_EQUALS("", errout.str());     // no debug warnings
+    }
+
+    void simplifyKnownVariablesBailOutSwitchBreak() {
+        // Ticket #2324
+        const char code[] = "int f(char *x) {\n"
+                            "    char *p;\n"
+                            "    char *q;\n"
+                            "\n"
+                            "    switch (x & 0x3)\n"
+                            "    {\n"
+                            "        case 1:\n"
+                            "            p = x;\n"
+                            "            x = p;\n"
+                            "            break;\n"
+                            "        case 2:\n"
+                            "            q = x;\n" // x is not equal with p
+                            "            x = q;\n"
+                            "            break;\n"
+                            "    }\n"
+                            "}\n";
+
+        const char expected[] = "int f ( char * x ) {\n"
+                                "char * p ;\n"
+                                "char * q ;\n"
+                                "\n"
+                                "switch ( x & 0x3 )\n"
+                                "{\n"
+                                "case 1 : ;\n"
+                                "p = x ;\n"
+                                "x = p ;\n"
+                                "break ;\n"
+                                "case 2 : ;\n"
+                                "q = x ;\n"
+                                "x = q ;\n"
+                                "break ;\n"
+                                "}\n"
+                                "}";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+    }
+
+    void simplifyKnownVariablesFloat() {
+        // Ticket #2454
+        const char code[] = "void f() {\n"
+                            "    float a = 40;\n"
+                            "    x(10 / a);\n"
+                            "}\n";
+
+        const char expected[] = "void f ( ) {\n\nx ( 0.25 ) ;\n}";
+
+        ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+
+        // Ticket #4227
+        const char code2[] = "double f() {"
+                             "    double a = false;"
+                             "    return a;"
+                             "}";
+        ASSERT_EQUALS("double f ( ) { return 0.0 ; }", tokenizeAndStringify(code2,true));
+
+        // Ticket #5485
+        const char code3[] = "void f() {"
+                             "    double a = 1e+007;\n"
+                             "    std::cout << a;\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) {\nstd :: cout << 1e+007 ;\n}", tokenizeAndStringify(code3,true));
+
+        const char code4[] = "void f() {"
+                             "    double a = 1;\n"
+                             "    std::cout << a;\n"
+                             "}";
+        ASSERT_EQUALS("void f ( ) {\nstd :: cout << 1.0 ;\n}", tokenizeAndStringify(code4,true));
+    }
+
+    void simplifyKnownVariablesFunctionCalls() {
+        {
+            const char code[] = "void a(int x);"  // <- x is passed by value
+                                "void b() {"
+                                "    int x = 123;"
+                                "    a(x);"       // <- replace with a(123);
+                                "}";
+            const char expected[] = "void a ( int x ) ; void b ( ) { a ( 123 ) ; }";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+        }
+
+        {
+            const char code[] = "void a(int &x);" // <- x is passed by reference
+                                "void b() {"
+                                "    int x = 123;"
+                                "    a(x);"       // <- don't replace with a(123);
+                                "}";
+            const char expected[] = "void a ( int & x ) ; void b ( ) { int x ; x = 123 ; a ( x ) ; }";
+            ASSERT_EQUALS(expected, tokenizeAndStringify(code,true));
+        }
+    }
+
+    void simplifyKnownVariablesGlobalVars() {
+        // #8054
+        const char code[] = "static int x;"
+                            "void f() {"
+                            "    x = 123;"
+                            "    while (!x) { dostuff(); }"
+                            "}";
+        ASSERT_EQUALS("static int x ; void f ( ) { x = 123 ; while ( ! x ) { dostuff ( ) ; } }", tokenizeAndStringify(code,true));
+    }
+
+    void simplifyKnownVariablesReturn() {
+        const char code[] = "int a() {"
+                            "    int x = 123;"
+                            "    return (x);"
+                            "}";
+        ASSERT_EQUALS("int a ( ) { return 123 ; }", tokenizeAndStringify(code,true));
+    }
+
+    void simplifyKnownVariablesPointerAliasFunctionCall() { // #7440
+        const char code[] = "int main() {\n"
+                            "  char* data = new char[100];\n"
+                            "  char** dataPtr = &data;\n"
+                            "  printf(\"test\");\n"
+                            "  delete [] *dataPtr;\n"
+                            "}";
+        const char exp[]  = "int main ( ) {\n"
+                            "char * data ; data = new char [ 100 ] ;\n"
+                            "char * * dataPtr ; dataPtr = & data ;\n"
+                            "printf ( \"test\" ) ;\n"
+                            "delete [ ] data ;\n"
+                            "}";
+        ASSERT_EQUALS(exp, tokenizeAndStringify(code, /*simplify=*/ true));
+    }
+
+    void simplifyKnownVariablesClassMember() {
+        // Ticket #2815
+        {
+            const char code[] = "char *a;\n"
+                                "void f(const char *s) {\n"
+                                "    a = NULL;\n"
+                                "    x();\n"
+                                "    memcpy(a, s, 10);\n"   // <- don't simplify "a" here
+                                "}\n";
+
+            const std::string s(tokenizeAndStringify(code, true));
+            ASSERT_EQUALS(true, s.find("memcpy ( a , s , 10 ) ;") != std::string::npos);
+        }
+
+        // If the variable is local then perform simplification..
+        {
+            const char code[] = "void f(const char *s) {\n"
+                                "    char *a = NULL;\n"
+                                "    x();\n"
+                                "    memcpy(a, s, 10);\n"   // <- simplify "a"
+                                "}\n";
+
+            const std::string s(tokenizeAndStringify(code, true));
+            TODO_ASSERT_EQUALS(true, false, s.find("memcpy ( 0 , s , 10 ) ;") != std::string::npos);
+        }
+    }
+
+
+    // Don’t remove "(int *)"..
+    void simplifyCasts1() {
+        const char code[] = "int *f(int *);";
+        ASSERT_EQUALS("int * f ( int * ) ;", tok(code));
+    }
+
+    // remove static_cast..
+    void simplifyCasts2() {
+        const char code[] = "t = (static_cast<std::vector<int> *>(&p));\n";
+        ASSERT_EQUALS("t = & p ;", tok(code));
+    }
+
+    void simplifyCasts3() {
+        // ticket #961
+        const char code[] = "assert (iplen >= (unsigned) ipv4->ip_hl * 4 + 20);";
+        const char expected[] = "assert ( iplen >= ipv4 . ip_hl * 4 + 20 ) ;";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyCasts4() {
+        // ticket #970
+        const char code[] = "{if (a >= (unsigned)(b)) {}}";
+        const char expected[] = "{ if ( a >= ( int ) ( b ) ) { } }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyCasts5() {
+        // ticket #1817
+        ASSERT_EQUALS("a . data = f ;", tok("a->data = reinterpret_cast<void*>(static_cast<intptr_t>(f));"));
+    }
+
+    void simplifyCasts7() {
+        ASSERT_EQUALS("str = malloc ( 3 )", tok("str=(char **)malloc(3)"));
+    }
+
+    void simplifyCasts8() {
+        ASSERT_EQUALS("ptr1 = ptr2", tok("ptr1=(int *   **)ptr2"));
+    }
+
+    void simplifyCasts9() {
+        ASSERT_EQUALS("f ( ( double ) ( v1 ) * v2 )", tok("f((double)(v1)*v2)"));
+        ASSERT_EQUALS("int v1 ; f ( ( double ) ( v1 ) * v2 )", tok("int v1; f((double)(v1)*v2)"));
+        ASSERT_EQUALS("f ( ( A ) ( B ) & x )", tok("f((A)(B)&x)")); // #4439
+    }
+
+    void simplifyCasts10() {
+        ASSERT_EQUALS("; ( * f ) ( p ) ;", tok("; (*(void (*)(char *))f)(p);"));
+    }
+
+    void simplifyCasts11() {
+        ASSERT_EQUALS("; x = 0 ;", tok("; *(int *)&x = 0;"));
+    }
+
+    void simplifyCasts12() {
+        // #3935 - don't remove this cast
+        ASSERT_EQUALS("; ( ( short * ) data ) [ 5 ] = 0 ;", tokenizeAndStringify("; ((short*)data)[5] = 0;", true));
+    }
+
+    void simplifyCasts13() {
+        // casting deref / address of
+        ASSERT_EQUALS("; int x ; x = * y ;", tok(";int x=(int)*y;"));
+        ASSERT_EQUALS("; int x ; x = & y ;", tok(";int x=(int)&y;"));
+        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) * y ;",
+                           "; int x ; x = * y ;",
+                           tok(";int x=(INT)*y;")); // INT might be a variable
+        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) & y ;",
+                           "; int x ; x = & y ;",
+                           tok(";int x=(INT)&y;")); // INT might be a variable
+
+        // #4899 - False positive on unused variable
+        ASSERT_EQUALS("; float angle ; angle = tilt ;", tok("; float angle = (float) tilt;")); // status quo
+        ASSERT_EQUALS("; float angle ; angle = ( float ) - tilt ;", tok("; float angle = (float) -tilt;"));
+        ASSERT_EQUALS("; float angle ; angle = ( float ) + tilt ;", tok("; float angle = (float) +tilt;"));
+        ASSERT_EQUALS("; int a ; a = ( int ) ~ c ;", tok("; int a = (int)~c;"));
+    }
+
+    void simplifyCasts14() { // const
+        // #5081
+        ASSERT_EQUALS("( ! ( & s ) . a ) ;", tok("(! ( (struct S const *) &s)->a);"));
+        // #5244
+        ASSERT_EQUALS("bar ( & ptr ) ;", tok("bar((const X**)&ptr);"));
+    }
+
+    void simplifyCasts15() { // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
+        ASSERT_EQUALS("a + ( b ? 60 : 0 ) ;",
+                      tok("a + static_cast<int>(b ? 60 : 0);"));
+    }
+
+    void simplifyCasts16() { // #6278
+        ASSERT_EQUALS("Get ( pArray ) ;",
+                      tok("Get((CObject*&)pArray);"));
+    }
+
+    void simplifyCasts17() { // #6110 - don't remove any parentheses in 'a(b)(c)'
+        ASSERT_EQUALS("{ if ( a ( b ) ( c ) >= 3 ) { } }",
+                      tok("{ if (a(b)(c) >= 3) { } }"));
+    }
+
+
+    void removeRedundantAssignment() {
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { int *p, *q; p = q; }"));
+        ASSERT_EQUALS("void f ( ) { }", tok("void f() { int *p = 0, *q; p = q; }"));
+        ASSERT_EQUALS("int f ( int * x ) { return * x ; }", tok("int f(int *x) { return *x; }"));
+    }
+
+    void simplify_constants() {
+        const char code[] =
+            "void f() {\n"
+            "const int a = 45;\n"
+            "if( a )\n"
+            "{ int b = a; }\n"
+            "}\n"
+            "void g() {\n"
+            "int a = 2;\n"
+            "}";
+        ASSERT_EQUALS("void f ( ) { } void g ( ) { }", tok(code));
+    }
+
+    void simplify_constants2() {
+        const char code[] =
+            "void f( Foo &foo, Foo *foo2 ) {\n"
+            "const int a = 45;\n"
+            "foo.a=a+a;\n"
+            "foo2->a=a;\n"
+            "}";
+        ASSERT_EQUALS("void f ( Foo & foo , Foo * foo2 ) { foo . a = 90 ; foo2 . a = 45 ; }", tok(code));
+    }
+
+    void simplify_constants3() {
+        const char code[] =
+            "static const char str[] = \"abcd\";\n"
+            "static const unsigned int SZ = sizeof(str);\n"
+            "void f() {\n"
+            "a = SZ;\n"
+            "}\n";
+        const char expected[] =
+            "static const char str [ 5 ] = \"abcd\" ; void f ( ) { a = 5 ; }";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplify_constants4() {
+        const char code[] = "static const int bSize = 4;\n"
+                            "static const int aSize = 50;\n"
+                            "x = bSize;\n"
+                            "y = aSize;\n";
+        ASSERT_EQUALS("x = 4 ; y = 50 ;", tok(code));
+    }
+
+    void simplify_constants5() {
+        const char code[] = "int buffer[10];\n"
+                            "static const int NELEMS = sizeof(buffer)/sizeof(int);\n"
+                            "static const int NELEMS2(sizeof(buffer)/sizeof(int));\n"
+                            "x = NELEMS;\n"
+                            "y = NELEMS2;\n";
+        ASSERT_EQUALS("int buffer [ 10 ] ; x = 10 ; y = 10 ;", tok(code));
+    }
+
+    void simplify_constants6() { // Ticket #5625
+        {
+            const char code[] = "template < class T > struct foo ;\n"
+                                "void bar ( ) {\n"
+                                "foo < 1 ? 0 ? 1 : 6 : 2 > x ;\n"
+                                "foo < 1 ? 0 : 2 > y ;\n"
+                                "}";
+            const char exp[] = "template < class T > struct foo ; "
+                               "void bar ( ) { "
+                               "foo < 6 > x ; "
+                               "foo < 0 > y ; "
+                               "}";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+        {
+            const char code[] = "bool b = true ? false : 1 > 2 ;";
+            const char exp[] = "bool b ; b = false ;";
+            ASSERT_EQUALS(exp, tok(code));
+        }
+    }
+
+    void simplifyVarDeclInitLists()
+    {
+        const char code[] = "std::vector<int> v{a * b, 1};";
+        const char exp[] = "std :: vector < int > v { a * b , 1 } ;";
+        ASSERT_EQUALS(exp, tok(code));
     }
 };
 

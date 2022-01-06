@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,7 +33,6 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
-#include <istream>
 #include <utility>
 //---------------------------------------------------------------------------
 
@@ -198,6 +197,10 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
             funcname = tok;
         } else if ((lambdaEndToken || tok->scope()->isExecutable()) && Token::Match(tok, "%name% <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
             funcname = tok;
+        } else if (Token::Match(tok, "< %name%") && tok->link()) {
+            funcname = tok->next();
+            while (Token::Match(funcname, "%name% :: %name%"))
+                funcname = funcname->tokAt(2);
         } else if (Token::Match(tok, "[;{}.,()[=+-/|!?:]")) {
             funcname = tok->next();
             if (funcname && funcname->str() == "&")
@@ -224,7 +227,7 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         }
 
         if (funcname) {
-            FunctionUsage &func = mFunctions[ funcname->str()];
+            FunctionUsage &func = mFunctions[funcname->str()];
             const std::string& called_from_file = tokenizer.list.getSourceFilePath();
 
             if (func.filename.empty() || func.filename == "+" || func.filename != called_from_file)
@@ -306,22 +309,22 @@ bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings
                 filename = func.filename;
             unusedFunctionError(errorLogger, filename, func.lineNumber, it->first);
             errors = true;
-        } else if (! func.usedOtherFile) {
+        } else if (!func.usedOtherFile) {
             /** @todo add error message "function is only used in <file> it can be static" */
             /*
-            std::ostringstream errmsg;
-            errmsg << "The function '" << it->first << "' is only used in the file it was declared in so it should have local linkage.";
-            mErrorLogger->reportErr( errmsg.str() );
-            errors = true;
-            */
+               std::ostringstream errmsg;
+               errmsg << "The function '" << it->first << "' is only used in the file it was declared in so it should have local linkage.";
+               mErrorLogger->reportErr( errmsg.str() );
+               errors = true;
+             */
         }
     }
     return errors;
 }
 
 void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
-        const std::string &filename, unsigned int lineNumber,
-        const std::string &funcname)
+                                               const std::string &filename, unsigned int lineNumber,
+                                               const std::string &funcname)
 {
     std::list<ErrorMessage::FileLocation> locationList;
     if (!filename.empty()) {
@@ -331,7 +334,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
         locationList.push_back(fileLoc);
     }
 
-    const ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, false);
+    const ErrorMessage errmsg(locationList, emptyString, Severity::style, "$symbol:" + funcname + "\nThe function '$symbol' is never used.", "unusedFunction", CWE561, Certainty::normal);
     if (errorLogger)
         errorLogger->reportErr(errmsg);
     else
@@ -340,7 +343,7 @@ void CheckUnusedFunctions::unusedFunctionError(ErrorLogger * const errorLogger,
 
 Check::FileInfo *CheckUnusedFunctions::getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const
 {
-    if (!settings->isEnabled(Settings::UNUSED_FUNCTION))
+    if (!settings->checks.isEnabled(Checks::unusedFunction))
         return nullptr;
     if (settings->jobs == 1 && settings->buildDir.empty())
         instance.parseTokens(*tokenizer, tokenizer->list.getFiles().front().c_str(), settings);
@@ -356,8 +359,7 @@ bool CheckUnusedFunctions::analyseWholeProgram(const CTU::FileInfo *ctu, const s
 
 CheckUnusedFunctions::FunctionDecl::FunctionDecl(const Function *f)
     : functionName(f->name()), lineNumber(f->token->linenr())
-{
-}
+{}
 
 std::string CheckUnusedFunctions::analyzerInfo() const
 {

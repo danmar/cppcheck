@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
 
 #include "symboldatabase.h"
 #include "token.h"
-
-#include <cstddef>
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -59,6 +57,6 @@ void CheckBoost::checkBoostForeachModification()
 void CheckBoost::boostForeachError(const Token *tok)
 {
     reportError(tok, Severity::error, "boostForeachError",
-                "BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.", CWE664, false
-               );
+                "BOOST_FOREACH caches the end() iterator. It's undefined behavior if you modify the container inside.", CWE664, Certainty::normal
+                );
 }

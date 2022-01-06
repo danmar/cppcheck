@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -38,6 +38,20 @@ struct InternalError {
     std::string errorMessage;
     Type type;
     std::string id;
+};
+
+class CPPCHECKLIB Certainty {
+public:
+    enum CertaintyLevel {
+        normal, inconclusive, safe, experimental
+    };
+};
+
+class CPPCHECKLIB Checks {
+public:
+    enum CheckList {
+        unusedFunction, missingInclude, internalCheck
+    };
 };
 
 /** @brief enum class for severity. Used when reporting errors. */

@@ -1,0 +1,23 @@
+<RCC>
+    <qresource prefix="/">
+        <file>files/xml_reader_error.cfg</file>
+        <file>files/mandatory_attribute_missing.cfg</file>
+        <file>files/unhandled_element.cfg</file>
+        <file>files/typechecks_valid.cfg</file>
+        <file>files/podtype_valid.cfg</file>
+        <file>files/smartptr_valid.cfg</file>
+        <file>files/platform_type_valid.cfg</file>
+        <file>files/platform_type_unhandled_element.cfg</file>
+        <file>files/memory_resource_unhandled_element.cfg</file>
+        <file>files/memory_resource_valid.cfg</file>
+        <file>files/define_valid.cfg</file>
+        <file>files/undefine_valid.cfg</file>
+        <file>files/container_unhandled_element.cfg</file>
+        <file>files/reflection_unhandled_element.cfg</file>
+        <file>files/reflection_valid.cfg</file>
+        <file>files/reflection_mandatory_attribute_missing.cfg</file>
+        <file>files/markup_mandatory_attribute_missing.cfg</file>
+        <file>files/markup_valid.cfg</file>
+        <file>files/markup_unhandled_element.cfg</file>
+    </qresource>
+</RCC>

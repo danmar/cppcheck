@@ -28,14 +28,6 @@
 #
 # Quick start: just run this script without any arguments
 
-import shutil
-import os
-import subprocess
-import sys
-import socket
-import time
-import re
-import tarfile
 import platform
 from donate_cpu_lib import *
 
@@ -55,7 +47,7 @@ for arg in sys.argv[1:]:
         package_url = arg[arg.find('=')+1:]
         print('Package:' + package_url)
     elif arg.startswith('--work-path='):
-        work_path = arg[arg.find('=')+1:]
+        work_path = os.path.abspath(arg[arg.find('=')+1:])
         print('work_path:' + work_path)
         if not os.path.exists(work_path):
             print('work path does not exist!')
@@ -124,8 +116,19 @@ if max_packages:
     print('Maximum number of packages to download and analyze: {}'.format(max_packages))
 if not os.path.exists(work_path):
     os.mkdir(work_path)
-cppcheck_path = os.path.join(work_path, 'cppcheck')
+repo_path = os.path.join(work_path, 'repo')
+# This is a temporary migration step which should be removed in the future
+migrate_repo_path = os.path.join(work_path, 'cppcheck')
+
 packages_processed = 0
+
+print('Get Cppcheck..')
+try:
+    try_retry(clone_cppcheck, fargs=(repo_path, migrate_repo_path))
+except:
+    print('Error: Failed to clone Cppcheck, retry later')
+    sys.exit(1)
+
 while True:
     if max_packages:
         if packages_processed >= max_packages:
@@ -138,9 +141,6 @@ while True:
         if stop_time < time.strftime('%H:%M'):
             print('Stopping. Thank you!')
             sys.exit(0)
-    if not get_cppcheck(cppcheck_path, work_path):
-        print('Failed to clone Cppcheck, retry later')
-        sys.exit(1)
     cppcheck_versions = get_cppcheck_versions(server_address)
     if cppcheck_versions is None:
         print('Failed to communicate with server, retry later')
@@ -150,12 +150,25 @@ while True:
         sys.exit(1)
     for ver in cppcheck_versions:
         if ver == 'head':
-            if not compile_cppcheck(cppcheck_path, jobs):
-                print('Failed to compile Cppcheck, retry later')
-                sys.exit(1)
-        elif not compile_version(work_path, jobs, ver):
-            print('Failed to compile Cppcheck-{}, retry later'.format(ver))
+            ver = 'main'
+        current_cppcheck_dir = os.path.join(work_path, 'tree-'+ver)
+        try:
+            print('Fetching Cppcheck-{}..'.format(ver))
+            try_retry(checkout_cppcheck_version, fargs=(repo_path, ver, current_cppcheck_dir))
+        except KeyboardInterrupt as e:
+            # Passthrough for user abort
+            raise e
+        except:
+            print('Failed to update Cppcheck, retry later')
             sys.exit(1)
+        if ver == 'main':
+            if not compile_cppcheck(current_cppcheck_dir, jobs):
+                print('Failed to compile Cppcheck-{}, retry later'.format(ver))
+                sys.exit(1)
+        else:
+            if not compile_version(current_cppcheck_dir, jobs):
+                print('Failed to compile Cppcheck-{}, retry later'.format(ver))
+                sys.exit(1)
     if package_url:
         package = package_url
     else:
@@ -180,12 +193,13 @@ while True:
     libraries = get_libraries()
 
     for ver in cppcheck_versions:
+        tree_path = os.path.join(work_path, 'tree-'+ver)
+        capture_callstack = False
         if ver == 'head':
-            current_cppcheck_dir = 'cppcheck'
-            cppcheck_head_info = get_cppcheck_info(work_path + '/cppcheck')
-        else:
-            current_cppcheck_dir = ver
-        c, errout, info, t, cppcheck_options, timing_info = scan_package(work_path, current_cppcheck_dir, jobs, libraries)
+            tree_path = os.path.join(work_path, 'tree-main')
+            cppcheck_head_info = get_cppcheck_info(tree_path)
+            capture_callstack = True
+        c, errout, info, t, cppcheck_options, timing_info = scan_package(work_path, tree_path, jobs, libraries, capture_callstack)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -211,6 +225,7 @@ while True:
     output += 'platform: ' + platform.platform() + '\n'
     output += 'python: ' + platform.python_version() + '\n'
     output += 'client-version: ' + CLIENT_VERSION + '\n'
+    output += 'compiler: ' + get_compiler_version() + '\n'
     output += 'cppcheck: ' + ' '.join(cppcheck_versions) + '\n'
     output += 'head-info: ' + cppcheck_head_info + '\n'
     output += 'count:' + count + '\n'
@@ -222,7 +237,7 @@ while True:
     if 'head' in cppcheck_versions:
         output += 'head results:\n' + results_to_diff[cppcheck_versions.index('head')]
     if not crash and not timeout:
-        output += 'diff:\n' + diff_results(work_path, cppcheck_versions[0], results_to_diff[0], cppcheck_versions[1], results_to_diff[1]) + '\n'
+        output += 'diff:\n' + diff_results(cppcheck_versions[0], results_to_diff[0], cppcheck_versions[1], results_to_diff[1]) + '\n'
     if package_url:
         print('=========================================================')
         print(output)

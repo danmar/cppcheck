@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,12 @@
 #define CODEEDITSTYLEDIALOG_H
 
 #include <QDialog>
-#include <QPushButton>
 #include "codeeditorstyle.h"
 
 class CodeEditor;
 class SelectColorButton;
 class SelectFontWeightCombo;
+class QPushButton;
 
 class StyleEditDialog : public QDialog {
     Q_OBJECT
@@ -62,8 +62,8 @@ public slots:
     void weightChangedSymbol(const QFont::Weight& newWeight);
 
 private:
-    CodeEditorStyle         mStyleIncoming;
-    CodeEditorStyle         mStyleOutgoing;
+    CodeEditorStyle mStyleIncoming;
+    CodeEditorStyle mStyleOutgoing;
 
     CodeEditor              *mSampleEditor;
 
@@ -87,9 +87,9 @@ private:
     QPushButton             *mBtnDefaultLight;
     QPushButton             *mBtnDefaultDark;
 
-    static const QString     mSampleDocument;
+    static const QString mSampleDocument;
     static const QStringList mErrSymbolsList;
-    static const int         mErrLineNum;
+    static const int mErrLineNum;
 };
 
 #endif  //CODEEDITSTYLEDIALOG_H

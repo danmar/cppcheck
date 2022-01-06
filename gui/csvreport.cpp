@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QString>
+#include "csvreport.h"
+
 #include <QDir>
-#include <QTextStream>
 #include "erroritem.h"
 #include "report.h"
-#include "csvreport.h"
 
 CsvReport::CsvReport(const QString &filename) :
     Report(filename)
-{
-}
+{}
 
 CsvReport::~CsvReport()
-{
-}
+{}
 
 bool CsvReport::create()
 {
@@ -56,9 +52,9 @@ void CsvReport::writeFooter()
 void CsvReport::writeError(const ErrorItem &error)
 {
     /*
-    Error as CSV line
-    gui/test.cpp,23,error,Mismatching allocation and deallocation: k
-    */
+       Error as CSV line
+       gui/test.cpp,23,error,Mismatching allocation and deallocation: k
+     */
 
     const QString file = QDir::toNativeSeparators(error.errorPath.back().file);
     QString line = QString("%1,%2,").arg(file).arg(error.errorPath.back().line);

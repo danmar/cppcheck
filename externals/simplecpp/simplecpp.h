@@ -107,7 +107,8 @@ namespace simplecpp {
         }
 
         void flags() {
-            name = (std::isalpha((unsigned char)string[0]) || string[0] == '_' || string[0] == '$');
+            name = (std::isalpha((unsigned char)string[0]) || string[0] == '_' || string[0] == '$')
+                   && (string.find('\'') == string.npos);
             comment = string.size() > 1U && string[0] == '/' && (string[1] == '/' || string[1] == '*');
             number = std::isdigit((unsigned char)string[0]) || (string.size() > 1U && string[0] == '-' && std::isdigit((unsigned char)string[1]));
             op = (string.size() == 1U) ? string[0] : '\0';
@@ -148,10 +149,20 @@ namespace simplecpp {
             return tok;
         }
 
+        void setExpandedFrom(const Token *tok, const void* m) {
+            mExpandedFrom = tok->mExpandedFrom;
+            mExpandedFrom.insert(m);
+        }
+        bool isExpandedFrom(const void* m) const {
+            return mExpandedFrom.find(m) != mExpandedFrom.end();
+        }
+
         void printAll() const;
         void printOut() const;
     private:
         TokenString string;
+
+        std::set<const void*> mExpandedFrom;
 
         // Not implemented - prevent assignment
         Token &operator=(const Token &tok);
@@ -286,9 +297,17 @@ namespace simplecpp {
         bool        macroValueKnown;
     };
 
+    /** Tracking #if/#elif expressions */
+    struct SIMPLECPP_LIB IfCond {
+        explicit IfCond(const Location& location, const std::string &E, long long result) : location(location), E(E), result(result) {}
+        Location location; // location of #if/#elif
+        std::string E; // preprocessed condition
+        long long result; // condition result
+    };
+
     /**
      * Command line preprocessor settings.
-     * On the command line these are configured by -D, -U, -I, --include
+     * On the command line these are configured by -D, -U, -I, --include, -std
      */
     struct SIMPLECPP_LIB DUI {
         DUI() {}
@@ -296,7 +315,10 @@ namespace simplecpp {
         std::set<std::string> undefined;
         std::list<std::string> includePaths;
         std::list<std::string> includes;
+        std::string std;
     };
+
+    SIMPLECPP_LIB long long characterLiteralToLL(const std::string& str);
 
     SIMPLECPP_LIB std::map<std::string, TokenList*> load(const TokenList &rawtokens, std::vector<std::string> &filenames, const DUI &dui, OutputList *outputList = NULL);
 
@@ -310,8 +332,9 @@ namespace simplecpp {
      * @param dui defines, undefs, and include paths
      * @param outputList output: list that will receive output messages
      * @param macroUsage output: macro usage
+     * @param ifCond output: #if/#elif expressions
      */
-    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = NULL, std::list<MacroUsage> *macroUsage = NULL);
+    SIMPLECPP_LIB void preprocess(TokenList &output, const TokenList &rawtokens, std::vector<std::string> &files, std::map<std::string, TokenList*> &filedata, const DUI &dui, OutputList *outputList = NULL, std::list<MacroUsage> *macroUsage = NULL, std::list<IfCond> *ifCond = NULL);
 
     /**
      * Deallocate data

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,9 +22,10 @@
 struct Analyzer;
 class Settings;
 class Token;
-template <class T>
+template<class T>
 class ValuePtr;
 
 void valueFlowGenericReverse(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings);
+void valueFlowGenericReverse(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings);
 
 #endif

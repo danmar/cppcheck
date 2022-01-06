@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2020 Cppcheck team.
+// Copyright (C) 2007-2021 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -21,11 +21,10 @@
 #include "testsuite.h"
 
 
-class TestClangImport: public TestFixture {
+class TestClangImport : public TestFixture {
 public:
     TestClangImport()
-        :TestFixture("TestClangImport") {
-    }
+        : TestFixture("TestClangImport") {}
 
 
 private:
@@ -91,7 +90,8 @@ private:
         TEST_CASE(memberExpr);
         TEST_CASE(namespaceDecl1);
         TEST_CASE(namespaceDecl2);
-        TEST_CASE(recordDecl);
+        TEST_CASE(recordDecl1);
+        TEST_CASE(recordDecl2);
         TEST_CASE(switchStmt);
         TEST_CASE(typedefDecl1);
         TEST_CASE(typedefDecl2);
@@ -119,6 +119,7 @@ private:
         TEST_CASE(symbolDatabaseVariableRRef);
         TEST_CASE(symbolDatabaseVariablePointerRef);
         TEST_CASE(symbolDatabaseNodeType1);
+        TEST_CASE(symbolDatabaseForVariable);
 
         TEST_CASE(valueFlow1);
         TEST_CASE(valueFlow2);
@@ -881,11 +882,18 @@ private:
                       parse(clang));
     }
 
-    void recordDecl() {
+    void recordDecl1() {
         const char clang[] = "`-RecordDecl 0x354eac8 <1.c:1:1, line:4:1> line:1:8 struct S definition\n"
                              "  |-FieldDecl 0x354eb88 <line:2:3, col:7> col:7 x 'int'\n"
                              "  `-FieldDecl 0x354ebe8 <line:3:3, col:7> col:7 y 'int'";
         ASSERT_EQUALS("struct S { int x@1 ; int y@2 ; } ;",
+                      parse(clang));
+    }
+
+    void recordDecl2() {
+        const char clang[] = "`-RecordDecl 0x3befac8 <2.c:2:1, col:22> col:1 struct definition\n"
+                             "  `-FieldDecl 0x3befbf0 <col:10, col:19> col:14 val 'int'";
+        ASSERT_EQUALS("struct { int val@1 ; } ;",
                       parse(clang));
     }
 
@@ -1208,6 +1216,28 @@ private:
         ASSERT(!!tok);
         ASSERT(!!tok->valueType());
         ASSERT_EQUALS("signed long", tok->valueType()->str());
+    }
+
+    void symbolDatabaseForVariable() {
+        const char clang[] = "`-FunctionDecl 0x38f8bb0 <10100.c:2:1, line:4:1> line:2:6 f 'void (void)'\n"
+                             "  `-CompoundStmt 0x38f8d88 <col:14, line:4:1>\n"
+                             "    `-ForStmt 0x38f8d50 <line:3:5, col:26>\n"
+                             "      |-DeclStmt 0x38f8d28 <col:10, col:19>\n"
+                             "      | `-VarDecl 0x38f8ca8 <col:10, col:18> col:14 i 'int' cinit\n"
+                             "      |   `-IntegerLiteral 0x38f8d08 <col:18> 'int' 0\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      |-<<<NULL>>>\n"
+                             "      `-CompoundStmt 0x38f8d40 <col:25, col:26>";
+
+        ASSERT_EQUALS("void f ( ) { for ( int i@1 = 0 ; ; ) { } }", parse(clang));
+
+        GET_SYMBOL_DB(clang);
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "i");
+        ASSERT(!!tok);
+        ASSERT(!!tok->variable());
+        ASSERT_EQUALS(Scope::ScopeType::eFor, tok->variable()->scope()->type);
     }
 
     void valueFlow1() {

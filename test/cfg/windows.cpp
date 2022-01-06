@@ -11,7 +11,43 @@
 #include <direct.h>
 #include <stdlib.h>
 #include <time.h>
+#include <memory.h>
+#include <mbstring.h>
 
+unsigned char * overlappingWriteFunction__mbscat(unsigned char *src, unsigned char *dest)
+{
+    // No warning shall be shown:
+    (void)_mbscat(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    return _mbscat(src, src);
+}
+
+unsigned char * overlappingWriteFunction__memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
+{
+    // No warning shall be shown:
+    (void)_memccpy(dest, src, c, count);
+    (void)_memccpy(dest, src, 42, count);
+    // cppcheck-suppress overlappingWriteFunction
+    (void) _memccpy(dest, dest, c, 4);
+    // cppcheck-suppress overlappingWriteFunction
+    return _memccpy(dest, dest+3, c, 4);
+}
+
+unsigned char * overlappingWriteFunction__mbscpy(unsigned char *src, unsigned char *dest)
+{
+    // No warning shall be shown:
+    (void)_mbscpy(dest, src);
+    // cppcheck-suppress overlappingWriteFunction
+    return _mbscpy(src, src);
+}
+
+void overlappingWriteFunction__swab(char *src, char *dest, int n)
+{
+    // No warning shall be shown:
+    _swab(dest, src, n);
+    // cppcheck-suppress overlappingWriteFunction
+    _swab(src, src+3, 4);
+}
 
 SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
 {
@@ -20,7 +56,6 @@ SYSTEM_INFO uninitvar_GetSystemInfo(char * envstr)
     GetSystemInfo(&SystemInfo);
     return SystemInfo;
 }
-
 
 void uninitvar__putenv(char * envstr)
 {
@@ -51,6 +86,28 @@ void invalidFunctionArg__getcwd(char * buffer)
         return;
     }
     free(buffer);
+}
+// DWORD GetPrivateProfileString(
+//  [in]  LPCTSTR lpAppName,
+//  [in]  LPCTSTR lpKeyName,
+//  [in]  LPCTSTR lpDefault,
+//  [out] LPTSTR  lpReturnedString,
+//  [in]  DWORD   nSize,
+//  [in]  LPCTSTR lpFileName)
+void nullPointer_GetPrivateProfileString(LPCTSTR lpAppName,
+                                         LPCTSTR lpKeyName,
+                                         LPCTSTR lpDefault,
+                                         LPTSTR lpReturnedString,
+                                         DWORD nSize,
+                                         LPCTSTR lpFileName)
+{
+    // No warning is expected
+    (void)GetPrivateProfileString(lpAppName, lpKeyName, lpDefault, lpReturnedString, nSize, lpFileName);
+
+    // No warning is expected for 1st arg as nullptr
+    (void)GetPrivateProfileString(nullptr, lpKeyName, lpDefault, lpReturnedString, nSize, lpFileName);
+    // No warning is expected for 2nd arg as nullptr
+    (void)GetPrivateProfileString(lpAppName, nullptr, lpDefault, lpReturnedString, nSize, lpFileName);
 }
 
 void nullPointer__get_timezone(long *sec)
@@ -275,7 +332,7 @@ void bufferAccessOutOfBounds()
 
     uint8_t byteBuf[5] = {0};
     uint8_t byteBuf2[10] = {0};
-    // TODO ticket #8412 cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress bufferAccessOutOfBounds
     RtlEqualMemory(byteBuf, byteBuf2, 20);
     // cppcheck-suppress ignoredReturnValue
@@ -403,6 +460,7 @@ void nullPointer()
 
 void memleak_malloca()
 {
+    // cppcheck-suppress unusedAllocatedMemory
     // cppcheck-suppress unreadVariable
     void *pMem = _malloca(10);
     // cppcheck-suppress memleak
@@ -652,15 +710,15 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     CloseHandle(hMutex2);
 
-    HANDLE hEvent;
+    HANDLE hEvent1, hEvent2, hEvent3, hEvent4;
     // cppcheck-suppress uninitvar
-    PulseEvent(hEvent);
+    PulseEvent(hEvent1);
     // cppcheck-suppress uninitvar
-    ResetEvent(hEvent);
+    ResetEvent(hEvent2);
     // cppcheck-suppress uninitvar
-    SetEvent(hEvent);
+    SetEvent(hEvent3);
     // cppcheck-suppress uninitvar
-    CloseHandle(hEvent);
+    CloseHandle(hEvent4);
 
     char buf_uninit1[10];
     char buf_uninit2[10];
@@ -806,32 +864,31 @@ void oppositeInnerCondition_SUCCEEDED_FAILED(HRESULT hr)
 {
     if (SUCCEEDED(hr)) {
         // TODO ticket #8596 cppcheck-suppress oppositeInnerCondition
-        if (FAILED(hr)) {
-        }
+        if (FAILED(hr)) {}
     }
 }
 
 /*HANDLE WINAPI CreateThread(
-  _In_opt_  LPSECURITY_ATTRIBUTES  lpThreadAttributes,
-  _In_      SIZE_T                 dwStackSize,
-  _In_      LPTHREAD_START_ROUTINE lpStartAddress,
-  _In_opt_  LPVOID                 lpParameter,
-  _In_      DWORD                  dwCreationFlags,
-  _Out_opt_ LPDWORD                lpThreadId
-);*/
-HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES  lpThreadAttributes,
-                         SIZE_T                 dwStackSize,
+   _In_opt_  LPSECURITY_ATTRIBUTES  lpThreadAttributes,
+   _In_      SIZE_T                 dwStackSize,
+   _In_      LPTHREAD_START_ROUTINE lpStartAddress,
+   _In_opt_  LPVOID                 lpParameter,
+   _In_      DWORD                  dwCreationFlags,
+   _Out_opt_ LPDWORD                lpThreadId
+   );*/
+HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
+                         SIZE_T dwStackSize,
                          LPTHREAD_START_ROUTINE lpStartAddress,
-                         LPVOID                 lpParameter,
-                         DWORD                  dwCreationFlags,
-                         LPDWORD                lpThreadId)
+                         LPVOID lpParameter,
+                         DWORD dwCreationFlags,
+                         LPDWORD lpThreadId)
 {
     // Create uninitialized variables
-    LPSECURITY_ATTRIBUTES  uninit_lpThreadAttributes;
-    SIZE_T                 uninit_dwStackSize;
+    LPSECURITY_ATTRIBUTES uninit_lpThreadAttributes;
+    SIZE_T uninit_dwStackSize;
     LPTHREAD_START_ROUTINE uninit_lpStartAddress;
-    LPVOID                 uninit_lpParameter;
-    DWORD                  uninit_dwCreationFlags;
+    LPVOID uninit_lpParameter;
+    DWORD uninit_dwCreationFlags;
 
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
@@ -865,13 +922,11 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES  lpThreadAttributes,
 unsigned char * uninitvar_mbscat(unsigned char *strDestination, const unsigned char *strSource)
 {
     unsigned char *uninit_deststr;
-    unsigned char *uninit_srcstr;
+    unsigned char *uninit_srcstr1, *uninit_srcstr2;
     // cppcheck-suppress uninitvar
-    (void)_mbscat(uninit_deststr,uninit_srcstr);
+    (void)_mbscat(uninit_deststr,uninit_srcstr1);
     // cppcheck-suppress uninitvar
-    (void)_mbscat(strDestination,uninit_srcstr);
-    // cppcheck-suppress uninitvar
-    (void)_mbscat(uninit_deststr,uninit_deststr);
+    (void)_mbscat(strDestination,uninit_srcstr2);
 
     // no warning shall be shown for
     return _mbscat(strDestination,strSource);
@@ -962,15 +1017,15 @@ void GetShortPathName_validCode(TCHAR* lpszPath)
     TCHAR* buffer = new TCHAR[length];
     length = GetShortPathName(lpszPath, buffer, length);
     if (length == 0) {
-        delete [] buffer;
+        delete[] buffer;
         _tprintf(TEXT("error"));
         return;
     }
     _tprintf(TEXT("long name = %s short name = %s"), lpszPath, buffer);
-    delete [] buffer;
+    delete[] buffer;
 }
 
-class MyClass :public CObject {
+class MyClass : public CObject {
     DECLARE_DYNAMIC(MyClass)
     DECLARE_DYNCREATE(MyClass)
     DECLARE_SERIAL(MyClass)

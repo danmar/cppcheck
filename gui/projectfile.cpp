@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QString>
-#include <QXmlStreamReader>
-#include <QXmlStreamWriter>
+#include "projectfile.h"
+
 #include <QFile>
 #include <QDir>
-#include "projectfile.h"
+#include <QXmlStreamReader>
 #include "common.h"
 #include "importproject.h"
 
@@ -248,6 +246,7 @@ void ProjectFile::readBuildDir(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::Characters:
             mBuildDir = reader.text().toString();
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return;
         // Not handled
@@ -273,6 +272,7 @@ void ProjectFile::readImportProject(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::Characters:
             mImportProject = reader.text().toString();
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return;
         // Not handled
@@ -298,6 +298,7 @@ bool ProjectFile::readBool(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::Characters:
             ret = (reader.text().toString() == "true");
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return ret;
         // Not handled
@@ -323,6 +324,7 @@ int ProjectFile::readInt(QXmlStreamReader &reader, int defaultValue)
         switch (type) {
         case QXmlStreamReader::Characters:
             ret = reader.text().toString().toInt();
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return ret;
         // Not handled
@@ -617,6 +619,7 @@ void ProjectFile::readPlatform(QXmlStreamReader &reader)
         switch (type) {
         case QXmlStreamReader::Characters:
             mPlatform = reader.text().toString();
+            FALLTHROUGH;
         case QXmlStreamReader::EndElement:
             return;
         // Not handled
@@ -1067,7 +1070,7 @@ QStringList ProjectFile::fromNativeSeparators(const QStringList &paths)
 {
     QStringList ret;
     foreach (const QString &path, paths)
-        ret << QDir::fromNativeSeparators(path);
+    ret << QDir::fromNativeSeparators(path);
     return ret;
 }
 
@@ -1153,9 +1156,9 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
     QStringList searchPaths;
     searchPaths << filesDir << (filesDir + "addons/") << (filesDir + "../addons/")
 #ifdef FILESDIR
-                << (QLatin1String(FILESDIR) + "/addons/")
+        << (QLatin1String(FILESDIR) + "/addons/")
 #endif
-                ;
+    ;
 
     foreach (QString path, searchPaths) {
         QString f = path + addon + ".py";

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include <memory>
 #include <stack>
 #include <vector>
+#include <cctype>
 
 static const std::string AccessSpecDecl = "AccessSpecDecl";
 static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
@@ -186,10 +187,6 @@ static std::vector<std::string> splitString(const std::string &line)
     return ret;
 }
 
-static bool contains(const std::vector<std::string> &haystack, const std::string &needle)
-{
-    return std::find(haystack.begin(), haystack.end(), needle) != haystack.end();
-}
 
 namespace clangimport {
     struct Data {
@@ -247,6 +244,14 @@ namespace clangimport {
             if (def->valueType())
                 var->setValueType(*def->valueType());
             notFound(addr);
+        }
+
+        void replaceVarDecl(const Variable *from, Variable *to) {
+            for (auto &it: mDeclMap) {
+                Decl &decl = it.second;
+                if (decl.var == from)
+                    decl.var = to;
+            }
         }
 
         void ref(const std::string &addr, Token *tok) {
@@ -396,6 +401,8 @@ std::string clangimport::AstNode::getSpelling() const
     if (str.compare(0,4,"col:") == 0)
         return "";
     if (str.compare(0,8,"<invalid") == 0)
+        return "";
+    if (nodeType == RecordDecl && str == "struct")
         return "";
     return str;
 }
@@ -632,6 +639,29 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     scope->type = scopeType;
     scope->classDef = def;
     scope->check = nestedIn->check;
+    if (Token::Match(def, "if|for|while (")) {
+        std::map<const Variable *, const Variable *> replaceVar;
+        for (const Token *vartok = def->tokAt(2); vartok; vartok = vartok->next()) {
+            if (!vartok->variable())
+                continue;
+            if (vartok->variable()->nameToken() == vartok) {
+                const Variable *from = vartok->variable();
+                scope->varlist.emplace_back(*from, scope);
+                Variable *to = &scope->varlist.back();
+                replaceVar[from] = to;
+                mData->replaceVarDecl(from, to);
+            }
+            if (replaceVar.find(vartok->variable()) != replaceVar.end())
+                const_cast<Token *>(vartok)->variable(replaceVar[vartok->variable()]);
+        }
+        std::list<Variable> &varlist = const_cast<Scope *>(def->scope())->varlist;
+        for (std::list<Variable>::iterator var = varlist.begin(); var != varlist.end();) {
+            if (replaceVar.find(&(*var)) != replaceVar.end())
+                varlist.erase(var++);
+            else
+                ++var;
+        }
+    }
     scope->bodyStart = addtoken(tokenList, "{");
     tokenList->back()->scope(scope);
     mData->scopeAccessControl[scope] = scope->defaultAccess();
@@ -1544,7 +1574,7 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
         const std::string nodeType = line.substr(pos1+1, pos2 - pos1 - 1);
         const std::string ext = line.substr(pos2);
 
-        if (pos1 == 1 && endsWith(nodeType, "Decl", 4)) {
+        if (pos1 == 1 && endsWith(nodeType, "Decl")) {
             if (!tree.empty())
                 tree[0]->createTokens1(tokenList);
             tree.clear();
