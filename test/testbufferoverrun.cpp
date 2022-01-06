@@ -4943,6 +4943,14 @@ private:
               "    return p[4];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { uint8_t padding[500]; };\n" // #10133
+              "S s = { 0 };\n"
+              "uint8_t f() {\n"
+              "    uint8_t* p = (uint8_t*)&s;\n"
+              "    return p[10];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

@@ -1256,7 +1256,6 @@ private:
         {
             reset();
             GET_SYMBOL_DB("std::vector<int> v;");
-            //tokenizer.tokens()->tokAt(3)->link(tokenizer.tokens()->tokAt(5));
             const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result);
             Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
