@@ -1610,6 +1610,14 @@ private:
                                "    return p[10];\n"
                                "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { uint8_t padding[500]; };\n"
+                               "uint8_t f(const S& s) {\n"
+                               "    std::cout << &s;\n"
+                               "    auto p = reinterpret_cast<const uint8_t*>(&s);\n"
+                               "    return p[10];\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
