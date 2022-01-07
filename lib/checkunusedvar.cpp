@@ -1416,7 +1416,7 @@ void CheckUnusedVar::checkStructMemberUsage()
                     bailout = true;
                     break;
                 }
-                const std::string addressPattern("!!" + var->typeStartToken()->str() + " & " + var->name());
+                const std::string addressPattern("!!" + scope.className + " & " + var->name()); // cast from struct
                 const Token* addrTok = Token::findmatch(scope.bodyEnd, addressPattern.c_str());
                 if ((addrTok && addrTok->link()->isCast()) || isCPPCast(addrTok)) {
                     bailout = true;
