@@ -62,6 +62,7 @@ private:
         TEST_CASE(structmember_sizeof);
         TEST_CASE(structmember16); // #10485
         TEST_CASE(structmember17); // #10591
+        TEST_CASE(structmember18); // #10684
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1599,6 +1600,16 @@ private:
                                "    g(t);\n"
                                "};\n");
         TODO_ASSERT_EQUALS("", "[test.cpp:1]: (style) struct member 'T::i' is never used.\n", errout.str()); // due to removeMacroInClassDef()
+    }
+
+    void structmember18() { // #10684
+        checkStructMemberUsage("struct S { uint8_t padding[500]; };\n"
+                               "static S s = { 0 };\n"
+                               "uint8_t f() {\n"
+                               "    uint8_t* p = (uint8_t*)&s;\n"
+                               "    return p[10];\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
