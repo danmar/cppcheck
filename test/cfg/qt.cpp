@@ -49,6 +49,12 @@ QString::iterator QString3()
     return it;
 }
 
+void QString4()
+{
+    // cppcheck-suppress unusedVariable
+    QString qs;
+}
+
 void QByteArray1(QByteArray byteArrayArg)
 {
     for (int i = 0; i <= byteArrayArg.size(); ++i) {
