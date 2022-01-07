@@ -1411,9 +1411,17 @@ void CheckUnusedVar::checkStructMemberUsage()
 
         // bail out for extern/global struct
         for (const Variable* var : symbolDatabase->variableList()) {
-            if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic())) && var->typeEndToken()->str() == scope.className) {
-                bailout = true;
-                break;
+            if (var && var->typeEndToken()->str() == scope.className) {
+                if (var->isExtern() || (var->isGlobal() && !var->isStatic())) {
+                    bailout = true;
+                    break;
+                }
+                const std::string addressPattern("!!" + var->typeStartToken()->str() + " & " + var->name());
+                const Token* addrTok = Token::findmatch(scope.bodyEnd, addressPattern.c_str());
+                if ((addrTok && addrTok->link()->isCast()) || isCPPCast(addrTok)) {
+                    bailout = true;
+                    break;
+                }
             }
         }
         if (bailout)
