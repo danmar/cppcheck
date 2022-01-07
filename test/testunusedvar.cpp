@@ -5627,6 +5627,11 @@ private:
                               "  std::array<int, ArraySize> X; X.dostuff();\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n" // #10686
+                              "    std::array<int, 1> a;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: a\n", errout.str());
     }
 
     void localvarFuncPtr() {

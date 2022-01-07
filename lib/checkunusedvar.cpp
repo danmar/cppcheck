@@ -729,7 +729,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     break;
                 }
             }
-            if (i->isArray() && i->isClass()) // Array of class/struct members. Initialized by ctor.
+            if (i->isArray() && i->isClass() && // Array of class/struct members. Initialized by ctor except for std::array
+                !(i->isStlType() && i->valueType() && i->valueType()->containerTypeToken && i->valueType()->containerTypeToken->isStandardType()))
                 variables.write(i->declarationId(), i->nameToken());
             if (i->isArray() && Token::Match(i->nameToken(), "%name% [ %var% ]")) // Array index variable read.
                 variables.read(i->nameToken()->tokAt(2)->varId(), i->nameToken());
