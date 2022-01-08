@@ -2096,6 +2096,7 @@ private:
               "{\n"
               "    A a;\n"
               "    a.data[3] = 0;\n"
+              "    a.b.data[2] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -2110,8 +2111,10 @@ private:
               "{\n"
               "    A a;\n"
               "    a.data[4] = 0;\n"
+              "    a.b.data[3] = 0;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'a.data[4]' accessed at index 4, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'a.data[4]' accessed at index 4, which is out of bounds.\n"
+                      "[test.cpp:11]: (error) Array 'a.b.data[3]' accessed at index 3, which is out of bounds.\n", errout.str());
     }
 
     void array_index_for_andand_oror() {  // #3907 - using && or ||
