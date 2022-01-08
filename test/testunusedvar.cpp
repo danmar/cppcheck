@@ -5230,6 +5230,16 @@ private:
                               "    return s;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    std::string s(\"foo\");\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    std::string s{ \"foo\" };\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarstring2() { // ticket #2929

@@ -1178,7 +1178,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             }
             // not assignment/initialization/increment => continue
             const bool isAssignment = tok->isAssignmentOp() && tok->astOperand1();
-            const bool isInitialization = (Token::Match(tok, "%var% (") && tok->variable() && tok->variable()->nameToken() == tok);
+            const bool isInitialization = (Token::Match(tok, "%var% (|{") && tok->variable() && tok->variable()->nameToken() == tok);
             const bool isIncrementOrDecrement = (tok->tokType() == Token::Type::eIncDecOp);
             if (!isAssignment && !isInitialization && !isIncrementOrDecrement)
                 continue;
