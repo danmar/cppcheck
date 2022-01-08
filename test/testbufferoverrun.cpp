@@ -189,7 +189,7 @@ private:
         TEST_CASE(array_index_negative3);
         TEST_CASE(array_index_negative4);
         TEST_CASE(array_index_for_decr);
-        TEST_CASE(array_index_varnames);     // FP: struct member. #1576
+        TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
         TEST_CASE(array_index_for);          // FN: for,if
         TEST_CASE(array_index_for_neq);      // #2211: Using != in condition
@@ -2098,6 +2098,20 @@ private:
               "    a.data[3] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #1586
+        check("struct A {\n"
+              "    char data[4];\n"
+              "    struct B { char data[3]; };\n"
+              "    B b;\n"
+              "};\n"
+              "\n"
+              "void f()\n"
+              "{\n"
+              "    A a;\n"
+              "    a.data[4] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'a.data[4]' accessed at index 4, which is out of bounds.\n", errout.str());
     }
 
     void array_index_for_andand_oror() {  // #3907 - using && or ||
