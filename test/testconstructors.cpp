@@ -93,6 +93,7 @@ private:
         TEST_CASE(noConstructor10); // ticket #6614
         TEST_CASE(noConstructor11); // ticket #3552
         TEST_CASE(noConstructor12); // #8951 - member initialization
+        TEST_CASE(noConstructor13); // #9998
 
         TEST_CASE(forwardDeclaration); // ticket #4290/#3190
 
@@ -630,6 +631,16 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred { int x[1]{0}; };");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor13() { // #9998
+        check("struct C { int v; };\n"
+              "struct B { C c[5] = {}; };\n"
+              "struct A {\n"
+              "    A() {}\n"
+              "    B b;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3522,6 +3533,18 @@ private:
               "    { }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'A::i' is not initialized in the constructor.\n", errout.str());
+
+        check("class bar {\n" // #9887
+              "    int length;\n"
+              "    bar() { length = 0; }\n"
+              "};\n"
+              "class foo {\n"
+              "    int x;\n"
+              "    foo() { Set(bar()); }\n"
+              "    void Set(int num) { x = 1; }\n"
+              "    void Set(bar num) { x = num.length; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarOperatorEqual() { // ticket #2415
@@ -3585,6 +3608,35 @@ private:
               "    B() { }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+
+        check("class Test {\n" // #8498
+              "public:\n"
+              "    Test() {}\n"
+              "    std::map<int, int>* pMap = nullptr;\n"
+              "    std::string* pStr = nullptr;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename U>\n"
+              "class C1 {}; \n"
+              "template <typename U, typename V>\n"
+              "class C2 {};\n"
+              "namespace A {\n"
+              "    template <typename U>\n"
+              "    class D1 {};\n"
+              "    template <typename U, typename V>\n"
+              "    class D2 {};\n"
+              "}\n"
+              "class Test {\n"
+              "public:\n"
+              "    Test() {}\n"
+              "    C1<int>* c1 = nullptr;\n"
+              "    C2<int, int >* c2 = nullptr;\n"
+              "    A::D1<int>* d1 = nullptr;\n"
+              "    A::D2<int, int >* d2 = nullptr;\n"
+              "    std::map<int, int>* pMap = nullptr;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitConstVar() {
