@@ -142,6 +142,7 @@ QList<int>::iterator QList3()
 
 void QLinkedList1()
 {
+    // cppcheck-suppress unreadVariable
     QLinkedList<QString> qstringLinkedList1{"one", "two"};
 
     QLinkedList<QString> qstringLinkedList2 = {"one", "two"};
