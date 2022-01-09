@@ -438,6 +438,7 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
 
         // TODO: move to configuration files
         // TODO: WinMain, wmain and _tmain only apply to Windows code
+        // TODO: also skip other known entry functions i.e. annotated with "constructor" and "destructor" attributes
         if (functionName == "main" || functionName == "WinMain" || functionName == "wmain" || functionName == "_tmain" ||
             functionName == "if")
             continue;
