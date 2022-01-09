@@ -55,7 +55,6 @@ using std::memset;
 
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : mFiles(files), mSettings(settings), mErrorLogger(errorLogger), mFileCount(0)
-    // Not initialized mFileSync, mErrorSync, mReportSync
 {
 #if defined(THREADING_MODEL_FORK)
     mWpipe = 0;
@@ -68,21 +67,28 @@ ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, 
 }
 
 ThreadExecutor::~ThreadExecutor()
+{}
+
+void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
 {
-    //dtor
+    mFileContents[path] = content;
 }
 
+void ThreadExecutor::reportErr(const ErrorMessage &msg)
+{
+    report(msg, MessageType::REPORT_ERROR);
+}
+
+void ThreadExecutor::reportInfo(const ErrorMessage &msg)
+{
+    report(msg, MessageType::REPORT_INFO);
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is for platforms that support fork() only ////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
 #if defined(THREADING_MODEL_FORK)
-
-void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
-{
-    mFileContents[path] = content;
-}
 
 int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 {
@@ -351,19 +357,24 @@ void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
     writeToPipe(REPORT_OUT, ::toString(c) + outmsg + ::toString(Color::Reset));
 }
 
-void ThreadExecutor::reportErr(const ErrorMessage &msg)
-{
-    writeToPipe(REPORT_ERROR, msg.serialize());
-}
-
-void ThreadExecutor::reportInfo(const ErrorMessage &msg)
-{
-    writeToPipe(REPORT_INFO, msg.serialize());
-}
-
 void ThreadExecutor::bughuntingReport(const std::string &str)
 {
     writeToPipe(REPORT_VERIFICATION, str);
+}
+
+void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
+{
+    PipeSignal pipeSignal;
+    switch (msgType) {
+    case MessageType::REPORT_ERROR:
+        pipeSignal = REPORT_ERROR;
+        break;
+    case MessageType::REPORT_INFO:
+        pipeSignal = REPORT_INFO;
+        break;
+    }
+
+    writeToPipe(pipeSignal, msg.serialize());
 }
 
 void ThreadExecutor::reportInternalChildErr(const std::string &childname, const std::string &msg)
@@ -382,11 +393,6 @@ void ThreadExecutor::reportInternalChildErr(const std::string &childname, const 
 }
 
 #elif defined(THREADING_MODEL_WIN)
-
-void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
-{
-    mFileContents[path] = content;
-}
 
 unsigned int ThreadExecutor::check()
 {
@@ -481,15 +487,6 @@ void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
 
     mErrorLogger.reportOut(outmsg, c);
 }
-void ThreadExecutor::reportErr(const ErrorMessage &msg)
-{
-    report(msg, MessageType::REPORT_ERROR);
-}
-
-void ThreadExecutor::reportInfo(const ErrorMessage &msg)
-{
-    report(msg, MessageType::REPORT_INFO);
-}
 
 void ThreadExecutor::bughuntingReport(const std::string  & /*str*/)
 {
@@ -513,7 +510,6 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
         }
     }
 
-
     if (reportError) {
         std::lock_guard<std::mutex> lg(mReportSync);
 
@@ -527,26 +523,4 @@ void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
         }
     }
 }
-
-#else
-
-void ThreadExecutor::addFileContent(const std::string & /*path*/, const std::string & /*content*/)
-{}
-
-unsigned int ThreadExecutor::check()
-{
-    return 0;
-}
-
-void ThreadExecutor::reportOut(const std::string & /*outmsg*/, Color)
-{}
-void ThreadExecutor::reportErr(const ErrorMessage & /*msg*/)
-{}
-
-void ThreadExecutor::reportInfo(const ErrorMessage & /*msg*/)
-{}
-
-void ThreadExecutor::bughuntingReport(const std::string & /*str*/)
-{}
-
 #endif
