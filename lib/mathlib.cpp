@@ -698,6 +698,7 @@ static bool isValidIntegerSuffixIt(std::string::const_iterator it, std::string::
             (state == Status::SUFFIX_UI64));
 }
 
+// cppcheck-suppress unusedFunction
 bool MathLib::isValidIntegerSuffix(const std::string& str, bool supportMicrosoftExtensions)
 {
     return isValidIntegerSuffixIt(str.begin(), str.end(), supportMicrosoftExtensions);
@@ -1180,16 +1181,19 @@ bool MathLib::isNotEqual(const std::string &first, const std::string &second)
     return !isEqual(first, second);
 }
 
+// cppcheck-suppress unusedFunction
 bool MathLib::isGreater(const std::string &first, const std::string &second)
 {
     return toDoubleNumber(first) > toDoubleNumber(second);
 }
 
+// cppcheck-suppress unusedFunction
 bool MathLib::isGreaterEqual(const std::string &first, const std::string &second)
 {
     return toDoubleNumber(first) >= toDoubleNumber(second);
 }
 
+// cppcheck-suppress unusedFunction
 bool MathLib::isLess(const std::string &first, const std::string &second)
 {
     return toDoubleNumber(first) < toDoubleNumber(second);

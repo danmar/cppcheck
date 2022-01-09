@@ -69,6 +69,7 @@ ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, 
 ThreadExecutor::~ThreadExecutor()
 {}
 
+// cppcheck-suppress unusedFunction - only used in unit tests
 void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
 {
     mFileContents[path] = content;
