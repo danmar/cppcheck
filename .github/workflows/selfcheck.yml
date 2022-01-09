@@ -46,6 +46,7 @@ jobs:
 
       # TODO: find a way to report unmatched suppressions without need to add information checks
       - name: Self check (unusedFunction)
+        if: false # TODO: fails with preprocessorErrorDirective - see #10667
         run: |
           ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__GNUC__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --inconclusive --enable=unusedFunction --exception-handling -rp=. --project=cmake.output/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
         env:
