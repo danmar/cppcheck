@@ -133,7 +133,7 @@ QList<int> QList2() { // #10556
     for (int i = 0; i < 4; ++i)
     {
         v.append(i);
-        std::cout << v.at(i);
+        (void)v.at(i);
     }
     return v;
 }
