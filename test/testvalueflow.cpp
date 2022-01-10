@@ -6187,15 +6187,15 @@ private:
         valueOfTok(code, "last");
 
         code = "struct a {\n"
-            "  void clear();\n"
-            "  int b();\n"
-            "};\n"
-            "struct d {\n"
-            "  void c(int);\n"
-            "  decltype(auto) f() { c(0 != e.b()); }\n"
-            "  a e;\n"
-            "};\n"
-            "void d::c(int) { e.clear(); }\n";
+               "  void clear();\n"
+               "  int b();\n"
+               "};\n"
+               "struct d {\n"
+               "  void c(int);\n"
+               "  decltype(auto) f() { c(0 != e.b()); }\n"
+               "  a e;\n"
+               "};\n"
+               "void d::c(int) { e.clear(); }\n";
         valueOfTok(code, "e");
     }
 

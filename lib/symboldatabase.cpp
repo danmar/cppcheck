@@ -1716,7 +1716,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
                     tok1 = tok1->previous();
                 else if (tok1 && tok1->str() == ">" && tok1->link() && Token::Match(tok1->link()->previous(), "%name%"))
                     tok1 = tok1->link()->tokAt(-2);
-                else if (Token::simpleMatch(tok1, ")") && tok1->link() && Token::Match(tok1->link()->previous(), "decltype ("))
+                else if (Token::simpleMatch(tok1, ")") && tok1->link() &&
+                         Token::Match(tok1->link()->previous(), "decltype ("))
                     tok1 = tok1->link()->tokAt(-2);
             }
 
@@ -2336,7 +2337,7 @@ const Token *Function::setFlags(const Token *tok1, const Scope *scope)
             isConstexpr(true);
         }
 
-        // decltype 
+        // decltype
         else if (tok1->str() == ")" && Token::Match(tok1->link()->previous(), "decltype (")) {
             tok1 = tok1->link()->previous();
         }
