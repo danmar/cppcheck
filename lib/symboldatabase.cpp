@@ -893,7 +893,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                             if (var.isClass()) {
                                 if (var.type()) {
                                     // does this type need initialization?
-                                    if (var.type()->needInitialization == Type::NeedInitialization::True)
+                                    if (var.type()->needInitialization == Type::NeedInitialization::True && !var.hasDefault())
                                         needInitialization = true;
                                     else if (var.type()->needInitialization == Type::NeedInitialization::Unknown) {
                                         if (!(var.valueType() && var.valueType()->type == ValueType::CONTAINER))
@@ -4442,6 +4442,9 @@ static const Token* skipPointersAndQualifiers(const Token* tok)
 
 bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, const Token*& typetok) const
 {
+    if (!tok)
+        return false;
+
     const bool isCPP = check && check->mTokenizer->isCPP();
 
     if (isCPP && Token::Match(tok, "throw|new"))

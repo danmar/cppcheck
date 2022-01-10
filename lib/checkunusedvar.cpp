@@ -709,6 +709,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             else if (mTokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
+                     mSettings->library.detectContainer(i->typeStartToken(), /*iterator*/ false) ||
                      i->isStlType())
                 type = Variables::standard;
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
@@ -727,7 +728,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     break;
                 }
             }
-            if (i->isArray() && i->isClass()) // Array of class/struct members. Initialized by ctor.
+            if (i->isArray() && i->isClass() && // Array of class/struct members. Initialized by ctor except for std::array
+                !(i->isStlType() && i->valueType() && i->valueType()->containerTypeToken && i->valueType()->containerTypeToken->isStandardType()))
                 variables.write(i->declarationId(), i->nameToken());
             if (i->isArray() && Token::Match(i->nameToken(), "%name% [ %var% ]")) // Array index variable read.
                 variables.read(i->nameToken()->tokAt(2)->varId(), i->nameToken());
@@ -1175,7 +1177,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             }
             // not assignment/initialization/increment => continue
             const bool isAssignment = tok->isAssignmentOp() && tok->astOperand1();
-            const bool isInitialization = (Token::Match(tok, "%var% (") && tok->variable() && tok->variable()->nameToken() == tok);
+            const bool isInitialization = (Token::Match(tok, "%var% (|{") && tok->variable() && tok->variable()->nameToken() == tok);
             const bool isIncrementOrDecrement = (tok->tokType() == Token::Type::eIncDecOp);
             if (!isAssignment && !isInitialization && !isIncrementOrDecrement)
                 continue;

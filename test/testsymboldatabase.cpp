@@ -63,12 +63,10 @@ class TestSymbolDatabase : public TestFixture {
 public:
     TestSymbolDatabase()
         : TestFixture("TestSymbolDatabase")
-        ,nullScope(nullptr, nullptr, nullptr)
         ,vartok(nullptr)
         ,typetok(nullptr) {}
 
 private:
-    const Scope nullScope;
     const Token* vartok;
     const Token* typetok;
     Settings settings1;
@@ -527,7 +525,8 @@ private:
 
     void test_isVariableDeclarationCanHandleNull() {
         reset();
-        const bool result = nullScope.isVariableDeclaration(nullptr, vartok, typetok);
+        GET_SYMBOL_DB("void main(){}");
+        const bool result = db->scopeList.front().isVariableDeclaration(nullptr, vartok, typetok);
         ASSERT_EQUALS(false, result);
         ASSERT(nullptr == vartok);
         ASSERT(nullptr == typetok);
@@ -536,8 +535,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesSimpleDeclaration() {
         reset();
-        givenACodeSampleToTokenize simpleDeclaration("int x;");
-        const bool result = nullScope.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("int x;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
@@ -549,8 +548,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesInitialization() {
         reset();
-        givenACodeSampleToTokenize simpleDeclaration("int x (1);");
-        const bool result = nullScope.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("int x (1);");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
@@ -562,8 +561,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesCpp11Initialization() {
         reset();
-        givenACodeSampleToTokenize simpleDeclaration("int x {1};");
-        const bool result = nullScope.isVariableDeclaration(simpleDeclaration.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("int x {1};");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
@@ -575,8 +574,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesScopedDeclaration() {
         reset();
-        givenACodeSampleToTokenize ScopedDeclaration("::int x;");
-        const bool result = nullScope.isVariableDeclaration(ScopedDeclaration.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("::int x;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
@@ -588,8 +587,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesStdDeclaration() {
         reset();
-        givenACodeSampleToTokenize StdDeclaration("std::string x;");
-        const bool result = nullScope.isVariableDeclaration(StdDeclaration.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("std::string x;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
@@ -601,8 +600,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesScopedStdDeclaration() {
         reset();
-        givenACodeSampleToTokenize StdDeclaration("::std::string x;");
-        const bool result = nullScope.isVariableDeclaration(StdDeclaration.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("::std::string x;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
@@ -614,8 +613,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesManyScopes() {
         reset();
-        givenACodeSampleToTokenize manyScopes("AA::BB::CC::DD::EE x;");
-        const bool result = nullScope.isVariableDeclaration(manyScopes.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("AA::BB::CC::DD::EE x;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("x", vartok->str());
         ASSERT_EQUALS("EE", typetok->str());
@@ -626,36 +625,40 @@ private:
     }
 
     void test_isVariableDeclarationIdentifiesPointers() {
-        reset();
-        givenACodeSampleToTokenize pointer("int* p;");
-        const bool result1 = nullScope.isVariableDeclaration(pointer.tokens(), vartok, typetok);
-        ASSERT_EQUALS(true, result1);
-        ASSERT_EQUALS("p", vartok->str());
-        ASSERT_EQUALS("int", typetok->str());
-        Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
-        ASSERT(false == v1.isArray());
-        ASSERT(true == v1.isPointer());
-        ASSERT(false == v1.isReference());
-
-        reset();
-        givenACodeSampleToTokenize constpointer("const int* p;");
-        Variable v2(constpointer.tokens()->tokAt(3), constpointer.tokens()->next(), constpointer.tokens()->tokAt(2), 0, AccessControl::Public, nullptr, nullptr, &settings1);
-        ASSERT(false == v2.isArray());
-        ASSERT(true == v2.isPointer());
-        ASSERT(false == v2.isConst());
-        ASSERT(false == v2.isReference());
-
-        reset();
-        givenACodeSampleToTokenize pointerconst("int* const p;");
-        const bool result2 = nullScope.isVariableDeclaration(pointerconst.tokens(), vartok, typetok);
-        ASSERT_EQUALS(true, result2);
-        ASSERT_EQUALS("p", vartok->str());
-        ASSERT_EQUALS("int", typetok->str());
-        Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
-        ASSERT(false == v3.isArray());
-        ASSERT(true == v3.isPointer());
-        ASSERT(true == v3.isConst());
-        ASSERT(false == v3.isReference());
+        {
+            reset();
+            GET_SYMBOL_DB("int* p;");
+            const bool result1 = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+            ASSERT_EQUALS(true, result1);
+            ASSERT_EQUALS("p", vartok->str());
+            ASSERT_EQUALS("int", typetok->str());
+            Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            ASSERT(false == v1.isArray());
+            ASSERT(true == v1.isPointer());
+            ASSERT(false == v1.isReference());
+        }
+        {
+            reset();
+            givenACodeSampleToTokenize constpointer("const int* p;");
+            Variable v2(constpointer.tokens()->tokAt(3), constpointer.tokens()->next(), constpointer.tokens()->tokAt(2), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            ASSERT(false == v2.isArray());
+            ASSERT(true == v2.isPointer());
+            ASSERT(false == v2.isConst());
+            ASSERT(false == v2.isReference());
+        }
+        {
+            reset();
+            GET_SYMBOL_DB("int* const p;");
+            const bool result2 = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+            ASSERT_EQUALS(true, result2);
+            ASSERT_EQUALS("p", vartok->str());
+            ASSERT_EQUALS("int", typetok->str());
+            Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            ASSERT(false == v3.isArray());
+            ASSERT(true == v3.isPointer());
+            ASSERT(true == v3.isConst());
+            ASSERT(false == v3.isReference());
+        }
     }
 
     void test_isVariableDeclarationIdentifiesPointers2() {
@@ -672,8 +675,8 @@ private:
 
     void test_isVariableDeclarationDoesNotIdentifyConstness() {
         reset();
-        givenACodeSampleToTokenize constness("const int* cp;");
-        const bool result = nullScope.isVariableDeclaration(constness.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("const int* cp;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(false, result);
         ASSERT(nullptr == vartok);
         ASSERT(nullptr == typetok);
@@ -681,8 +684,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesFirstOfManyVariables() {
         reset();
-        givenACodeSampleToTokenize multipleDeclaration("int first, second;");
-        const bool result = nullScope.isVariableDeclaration(multipleDeclaration.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("int first, second;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("first", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
@@ -694,8 +697,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesScopedPointerDeclaration() {
         reset();
-        givenACodeSampleToTokenize manyScopes("AA::BB::CC::DD::EE* p;");
-        const bool result = nullScope.isVariableDeclaration(manyScopes.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("AA::BB::CC::DD::EE* p;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("EE", typetok->str());
@@ -707,8 +710,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesDeclarationWithIndirection() {
         reset();
-        givenACodeSampleToTokenize pointerToPointer("int** pp;");
-        const bool result = nullScope.isVariableDeclaration(pointerToPointer.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("int** pp;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("pp", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
@@ -720,8 +723,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesDeclarationWithMultipleIndirection() {
         reset();
-        givenACodeSampleToTokenize pointerToPointer("int***** p;");
-        const bool result = nullScope.isVariableDeclaration(pointerToPointer.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("int***** p;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("p", vartok->str());
         ASSERT_EQUALS("int", typetok->str());
@@ -733,8 +736,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesArray() {
         reset();
-        givenACodeSampleToTokenize arr("::std::string v[3];");
-        const bool result = nullScope.isVariableDeclaration(arr.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("::std::string v[3];");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("v", vartok->str());
         ASSERT_EQUALS("string", typetok->str());
@@ -747,8 +750,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesPointerArray() {
         reset();
-        givenACodeSampleToTokenize arr("A *a[5];");
-        const bool result = nullScope.isVariableDeclaration(arr.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("A *a[5];");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
@@ -762,8 +765,8 @@ private:
 
     void test_isVariableDeclarationIdentifiesOfArrayPointers() {
         reset();
-        givenACodeSampleToTokenize arr("A (*a)[5];");
-        const bool result = nullScope.isVariableDeclaration(arr.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("A (*a)[5];");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("a", vartok->str());
         ASSERT_EQUALS("A", typetok->str());
@@ -777,8 +780,8 @@ private:
 
     void isVariableDeclarationIdentifiesTemplatedPointerVariable() {
         reset();
-        givenACodeSampleToTokenize var("std::set<char>* chars;");
-        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("std::set<char>* chars;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("chars", vartok->str());
         ASSERT_EQUALS("set", typetok->str());
@@ -790,8 +793,8 @@ private:
 
     void isVariableDeclarationIdentifiesTemplatedPointerToPointerVariable() {
         reset();
-        givenACodeSampleToTokenize var("std::deque<int>*** ints;");
-        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("std::deque<int>*** ints;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("ints", vartok->str());
         ASSERT_EQUALS("deque", typetok->str());
@@ -803,8 +806,8 @@ private:
 
     void isVariableDeclarationIdentifiesTemplatedArrayVariable() {
         reset();
-        givenACodeSampleToTokenize var("std::deque<int> ints[3];");
-        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("std::deque<int> ints[3];");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("ints", vartok->str());
         ASSERT_EQUALS("deque", typetok->str());
@@ -816,8 +819,8 @@ private:
 
     void isVariableDeclarationIdentifiesTemplatedVariable() {
         reset();
-        givenACodeSampleToTokenize var("std::vector<int> ints;");
-        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("std::vector<int> ints;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("ints", vartok->str());
         ASSERT_EQUALS("vector", typetok->str());
@@ -829,8 +832,8 @@ private:
 
     void isVariableDeclarationIdentifiesTemplatedVariableIterator() {
         reset();
-        givenACodeSampleToTokenize var("std::list<int>::const_iterator floats;");
-        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("std::list<int>::const_iterator floats;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("floats", vartok->str());
         ASSERT_EQUALS("const_iterator", typetok->str());
@@ -842,8 +845,8 @@ private:
 
     void isVariableDeclarationIdentifiesNestedTemplateVariable() {
         reset();
-        givenACodeSampleToTokenize var("std::deque<std::set<int> > intsets;");
-        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("std::deque<std::set<int> > intsets;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         ASSERT_EQUALS("intsets", vartok->str());
         ASSERT_EQUALS("deque", typetok->str());
@@ -854,52 +857,56 @@ private:
     }
 
     void isVariableDeclarationIdentifiesReference() {
-        reset();
-        givenACodeSampleToTokenize var1("int& foo;");
-        const bool result1 = nullScope.isVariableDeclaration(var1.tokens(), vartok, typetok);
-        ASSERT_EQUALS(true, result1);
-        Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
-        ASSERT(false == v1.isArray());
-        ASSERT(false == v1.isPointer());
-        ASSERT(true == v1.isReference());
-
-        reset();
-        givenACodeSampleToTokenize var2("foo*& bar;");
-        const bool result2 = nullScope.isVariableDeclaration(var2.tokens(), vartok, typetok);
-        ASSERT_EQUALS(true, result2);
-        Variable v2(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
-        ASSERT(false == v2.isArray());
-        ASSERT(true == v2.isPointer());
-        ASSERT(true == v2.isReference());
-
-        reset();
-        givenACodeSampleToTokenize var3("std::vector<int>& foo;");
-        const bool result3 = nullScope.isVariableDeclaration(var3.tokens(), vartok, typetok);
-        ASSERT_EQUALS(true, result3);
-        Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
-        ASSERT(false == v3.isArray());
-        ASSERT(false == v3.isPointer());
-        ASSERT(true == v3.isReference());
+        {
+            reset();
+            GET_SYMBOL_DB("int& foo;");
+            const bool result1 = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+            ASSERT_EQUALS(true, result1);
+            Variable v1(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            ASSERT(false == v1.isArray());
+            ASSERT(false == v1.isPointer());
+            ASSERT(true == v1.isReference());
+        }
+        {
+            reset();
+            GET_SYMBOL_DB("foo*& bar;");
+            const bool result2 = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+            ASSERT_EQUALS(true, result2);
+            Variable v2(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            ASSERT(false == v2.isArray());
+            ASSERT(true == v2.isPointer());
+            ASSERT(true == v2.isReference());
+        }
+        {
+            reset();
+            GET_SYMBOL_DB("std::vector<int>& foo;");
+            const bool result3 = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
+            ASSERT_EQUALS(true, result3);
+            Variable v3(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            ASSERT(false == v3.isArray());
+            ASSERT(false == v3.isPointer());
+            ASSERT(true == v3.isReference());
+        }
     }
 
     void isVariableDeclarationDoesNotIdentifyTemplateClass() {
         reset();
-        givenACodeSampleToTokenize var("template <class T> class SomeClass{};");
-        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("template <class T> class SomeClass{};");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(false, result);
     }
 
     void isVariableDeclarationDoesNotIdentifyCppCast() {
         reset();
-        givenACodeSampleToTokenize var("reinterpret_cast <char *> (code)[0] = 0;");
-        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("reinterpret_cast <char *> (code)[0] = 0;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(false, result);
     }
 
     void isVariableDeclarationPointerConst() {
         reset();
-        givenACodeSampleToTokenize var("std::string const* s;");
-        const bool result = nullScope.isVariableDeclaration(var.tokens()->next(), vartok, typetok);
+        GET_SYMBOL_DB("std::string const* s;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens()->next(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -909,15 +916,15 @@ private:
 
     void isVariableDeclarationRValueRef() {
         reset();
-        givenACodeSampleToTokenize var("int&& i;");
-        const bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("int&& i;");
+        const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
         ASSERT(false == v.isPointer());
         ASSERT(true == v.isReference());
         ASSERT(true == v.isRValueReference());
-        ASSERT(var.tokens()->tokAt(2)->scope() != nullptr);
+        ASSERT(tokenizer.tokens()->tokAt(2)->scope() != nullptr);
     }
 
     void isVariableDeclarationDoesNotIdentifyCase() {
@@ -1233,12 +1240,10 @@ private:
     void isVariableStlType() {
         {
             reset();
-            std::istringstream code("std::string s;");
-            TokenList list(nullptr);
-            list.createTokens(code, "test.cpp");
-            const bool result = nullScope.isVariableDeclaration(list.front(), vartok, typetok);
+            GET_SYMBOL_DB("std::string s;");
+            const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result);
-            Variable v(vartok, list.front(), list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
             static const std::set<std::string> types = { "string", "wstring" };
             static const std::set<std::string> no_types = { "set" };
             ASSERT_EQUALS(true, v.isStlType());
@@ -1248,13 +1253,10 @@ private:
         }
         {
             reset();
-            std::istringstream code("std::vector<int> v;");
-            TokenList list(nullptr);
-            list.createTokens(code, "test.cpp");
-            list.front()->tokAt(3)->link(list.front()->tokAt(5));
-            const bool result = nullScope.isVariableDeclaration(list.front(), vartok, typetok);
+            GET_SYMBOL_DB("std::vector<int> v;");
+            const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result);
-            Variable v(vartok, list.front(), list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
             static const std::set<std::string> types = { "bitset", "set", "vector", "wstring" };
             static const std::set<std::string> no_types = { "bitset", "map", "set" };
             ASSERT_EQUALS(true, v.isStlType());
@@ -1264,12 +1266,10 @@ private:
         }
         {
             reset();
-            std::istringstream code("SomeClass s;");
-            TokenList list(nullptr);
-            list.createTokens(code, "test.cpp");
-            const bool result = nullScope.isVariableDeclaration(list.front(), vartok, typetok);
+            GET_SYMBOL_DB("SomeClass s;");
+            const bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
             ASSERT_EQUALS(true, result);
-            Variable v(vartok, list.front(), list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
+            Variable v(vartok, tokenizer.tokens(), tokenizer.list.back(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
             static const std::set<std::string> types = { "bitset", "set", "vector" };
             ASSERT_EQUALS(false, v.isStlType());
             ASSERT_EQUALS(false, v.isStlType(types));
@@ -1279,8 +1279,8 @@ private:
 
     void isVariablePointerToConstPointer() {
         reset();
-        givenACodeSampleToTokenize var("char* const * s;");
-        bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("char* const * s;");
+        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1290,8 +1290,8 @@ private:
 
     void isVariablePointerToVolatilePointer() {
         reset();
-        givenACodeSampleToTokenize var("char* volatile * s;");
-        bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("char* volatile * s;");
+        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1301,8 +1301,8 @@ private:
 
     void isVariablePointerToConstVolatilePointer() {
         reset();
-        givenACodeSampleToTokenize var("char* const volatile * s;");
-        bool result = nullScope.isVariableDeclaration(var.tokens(), vartok, typetok);
+        GET_SYMBOL_DB("char* const volatile * s;");
+        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());
@@ -1312,8 +1312,8 @@ private:
 
     void isVariableMultiplePointersAndQualifiers() {
         reset();
-        givenACodeSampleToTokenize var("const char* const volatile * const volatile * const volatile * const volatile s;");
-        bool result = nullScope.isVariableDeclaration(var.tokens()->next(), vartok, typetok);
+        GET_SYMBOL_DB("const char* const volatile * const volatile * const volatile * const volatile s;");
+        bool result = db->scopeList.front().isVariableDeclaration(tokenizer.tokens()->next(), vartok, typetok);
         ASSERT_EQUALS(true, result);
         Variable v(vartok, typetok, vartok->previous(), 0, AccessControl::Public, nullptr, nullptr, &settings1);
         ASSERT(false == v.isArray());

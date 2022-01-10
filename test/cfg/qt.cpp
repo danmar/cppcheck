@@ -49,6 +49,12 @@ QString::iterator QString3()
     return it;
 }
 
+void QString4()
+{
+    // cppcheck-suppress unusedVariable
+    QString qs;
+}
+
 void QByteArray1(QByteArray byteArrayArg)
 {
     for (int i = 0; i <= byteArrayArg.size(); ++i) {
@@ -136,6 +142,7 @@ QList<int>::iterator QList3()
 
 void QLinkedList1()
 {
+    // cppcheck-suppress unreadVariable
     QLinkedList<QString> qstringLinkedList1{"one", "two"};
 
     QLinkedList<QString> qstringLinkedList2 = {"one", "two"};

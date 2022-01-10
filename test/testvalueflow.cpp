@@ -6173,6 +6173,18 @@ private:
                "  ASSERT(!(t4 < t5) && t4 <= t5);\n"
                "}";
         valueOfTok(code, "<=");
+
+        code = "void f() {\n"
+               "    unsigned short Xoff = 10;\n"
+               "    unsigned short Nx = 0;\n"
+               "    int last;\n"
+               "    do {\n"
+               "        last = readData(0);\n"
+               "        if (last && (last - Xoff < Nx))\n"
+               "            Nx = last - Xoff;\n"
+               "    } while (last > 0);\n"
+               "}\n";
+        valueOfTok(code, "last");
     }
 
     void valueFlowHang() {
