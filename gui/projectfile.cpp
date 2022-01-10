@@ -1035,7 +1035,6 @@ bool ProjectFile::write(const QString &filename)
         for (const QString &tag: tags) {
             xmlWriter.writeStartElement(CppcheckXml::TagWarningsElementName);
             xmlWriter.writeAttribute(CppcheckXml::TagAttributeName, tag);
-            QStringList warnings;
             for (const auto& wt: mWarningTags) {
                 if (wt.second == tag) {
                     xmlWriter.writeStartElement(CppcheckXml::WarningElementName);

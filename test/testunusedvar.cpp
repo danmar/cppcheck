@@ -3051,6 +3051,16 @@ private:
                               "    std::shared_lock<std::shared_timed_mutex> lock( m );\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n" // #10490
+                              "    std::shared_lock lock = GetLock();\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    auto&& g = std::lock_guard<std::mutex> { mutex };\n"
+                              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Variable 'g' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar47() { // #6603
@@ -5230,6 +5240,16 @@ private:
                               "    return s;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    std::string s(\"foo\");\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    std::string s{ \"foo\" };\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarstring2() { // ticket #2929
@@ -5627,6 +5647,11 @@ private:
                               "  std::array<int, ArraySize> X; X.dostuff();\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n" // #10686
+                              "    std::array<int, 1> a;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: a\n", errout.str());
     }
 
     void localvarFuncPtr() {

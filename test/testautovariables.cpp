@@ -3296,6 +3296,16 @@ private:
         ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using iterator that is a temporary.\n",
                       errout.str());
 
+        check("void f(bool b) {\n"
+              "  std::vector<int> ints = g();\n"
+              "  auto *ptr = &ints;\n"
+              "  if (b)\n"
+              "    ptr = &ints;\n"
+              "  for (auto it = ptr->begin(); it != ptr->end(); ++it)\n"
+              "  {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct String {\n" // #10469
               "    void Append(uint8_t Val);\n"
               "    String& operator+=(const char s[]);\n"
