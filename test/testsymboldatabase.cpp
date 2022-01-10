@@ -192,6 +192,7 @@ private:
         TEST_CASE(hasMissingInlineClassFunction);
         TEST_CASE(hasClassFunction);
         TEST_CASE(hasClassFunction_trailingReturnType);
+        TEST_CASE(hasClassFunction_decltype_auto);
 
         TEST_CASE(hasRegularFunctionReturningFunctionPointer);
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
@@ -1626,6 +1627,27 @@ private:
         ASSERT(function && function->token == functionToken);
         ASSERT(function && function->hasBody() && !function->isInline());
         ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
+    }
+
+    void hasClassFunction_decltype_auto() {
+        GET_SYMBOL_DB("struct d { decltype(auto) f() {} };");
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3);
+
+        const Token * const functionToken = Token::findsimplematch(tokenizer.tokens(), "f");
+
+        const Scope *scope = findFunctionScopeByToken(db, functionToken);
+
+        ASSERT(scope && scope->className == "f");
+
+        ASSERT(scope->functionOf && scope->functionOf == db->findScopeByName("d"));
+
+        const Function *function = findFunctionByName("f", &db->scopeList.back());
+
+        ASSERT(function && function->token->str() == "f");
+        ASSERT(function && function->token == functionToken);
+        ASSERT(function && function->hasBody());
     }
 
     void hasRegularFunctionReturningFunctionPointer() {
