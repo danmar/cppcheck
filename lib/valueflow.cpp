@@ -4200,11 +4200,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             std::vector<const Token*> toks = {};
             if (tok->isUnaryOp("*") || parent->originalName() == "->") {
                 for (const ValueFlow::Value& v : tok->values()) {
-                    if (!v.isSymbolicValue())
+                    if (!v.isLocalLifetimeValue())
                         continue;
-                    if (v.isKnown())
-                        continue;
-                    if (v.intvalue != 0)
+                    if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
                         continue;
                     if (!v.tokvalue)
                         continue;
