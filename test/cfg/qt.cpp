@@ -127,6 +127,17 @@ void QList1(QList<int> intListArg)
     (void)qstringList4[0];
 }
 
+QList<int> QList2() { // #10556
+    QList<int> v;
+    
+    for (int i = 0; i < 4; ++i)
+    {
+        v.append(i);
+        std::cout << v.at(i);
+    }
+    return v;
+}
+
 QList<int>::iterator QList3()
 {
     QList<int> qlist1;
