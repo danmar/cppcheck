@@ -5921,6 +5921,35 @@ private:
                         "    x = a.m;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S {\n"
+                        "   int t[1];\n"
+                        "};\n"
+                        "int f(const S* ps) {\n"
+                        "   return ps->t[0];\n"
+                        "}\n"
+                        "void g() {\n"
+                        "   S s;\n"
+                        "   s.t[0] = 1;\n"
+                        "   f(&s);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct X {\n"
+                        "   int a, b;\n"
+                        "};\n"
+                        "struct S {\n"
+                        "   X t;\n"
+                        "};\n"
+                        "int f(const S* ps) {\n"
+                        "   return ps->t.a;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "   S s;\n"
+                        "   s.t.a = 1;\n"
+                        "   f(&s);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberfunction() {
