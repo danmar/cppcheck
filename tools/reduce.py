@@ -3,6 +3,7 @@ import subprocess
 import sys
 import time
 
+# TODO: add --hang option to detect code which impacts the analysis time
 def show_syntax():
     print('Syntax:')
     print('  reduce.py --cmd=<full command> --expected=<expected text output> --file=<source file> [--segfault]')
@@ -73,6 +74,8 @@ def runtool(filedata=None):
         if filedata:
             writefile(TIMEOUTFILE, filedata)
         return False
+    #print(p.returncode)
+    #print(comm)
     if SEGFAULT:
         if p.returncode != 0:
             return True
