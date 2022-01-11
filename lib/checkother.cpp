@@ -1225,7 +1225,7 @@ static bool canBeConst(const Variable *var, const Settings* settings)
             // TODO: check how pointer is used
             return false;
         } else if (parent->isConstOp() ||
-            (parent->astOperand2() && settings->library.isFunctionConst(parent->astOperand2())))
+                   (parent->astOperand2() && settings->library.isFunctionConst(parent->astOperand2())))
             continue;
         else if (parent->isAssignmentOp()) {
             if (parent->astOperand1() == tok2)

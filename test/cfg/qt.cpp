@@ -61,7 +61,7 @@ void QString5(QString s) { // #10710
 }
 
 // cppcheck-suppress passedByValue
-QStringList QString7(QString s) {
+QStringList QString6(QString s) {
     return QStringList{ "*" + s + "*" };
 }
 
