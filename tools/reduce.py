@@ -17,6 +17,7 @@ CMD = None
 EXPECTED = None
 SEGFAULT = False
 FILE = None
+ORGFILE = None
 BACKUPFILE = None
 for arg in sys.argv[1:]:
     if arg.startswith('--cmd='):
@@ -25,6 +26,7 @@ for arg in sys.argv[1:]:
         EXPECTED = arg[arg.find('=') + 1:]
     elif arg.startswith('--file='):
         FILE = arg[arg.find('=') + 1:]
+        ORGFILE = FILE + '.org'
         BACKUPFILE = FILE + '.bak'
     elif arg == '--segfault':
         SEGFAULT = True
@@ -257,7 +259,7 @@ f = open(FILE, 'rt')
 filedata = f.readlines()
 f.close()
 
-writefile(BACKUPFILE, filedata)
+writefile(ORGFILE, filedata)
 
 while True:
     filedata1 = list(filedata)
