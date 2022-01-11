@@ -1278,8 +1278,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                                     Severity::information,
                                     "checkLibraryCheckType",
                                     "--check-library: Provide <type-checks><unusedvar> configuration for " + bailoutTypeName);
-                        continue;
                     }
+                    continue;
                 }
 
                 // warn
