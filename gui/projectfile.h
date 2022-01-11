@@ -313,7 +313,7 @@ public:
     void setLibraries(const QStringList &libraries);
 
     /** Set contract for a function */
-    void setFunctionContract(QString function, QString expects);
+    void setFunctionContract(const QString& function, const QString& expects);
 
     /**
      * @brief Set platform.
