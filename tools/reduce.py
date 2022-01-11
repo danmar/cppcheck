@@ -39,6 +39,11 @@ if not SEGFAULT and EXPECTED is None:
     print('Abort: No --expected')
     show_syntax()
 
+# need to add '--error-exitcode=0' so detected issues will not be interpreted as a crash
+if SEGFAULT and not '--error-exitcode=0' in CMD:
+    print("Adding '--error-exitcode=0' to --cmd")
+    CMD = CMD + ' --error-exitcode=0'
+
 if FILE is None:
     print('Abort: No --file')
     show_syntax()
