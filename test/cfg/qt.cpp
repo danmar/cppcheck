@@ -61,12 +61,6 @@ void QString5(QString s) { // #10710
 }
 
 // cppcheck-suppress passedByValue
-void QString6(QString s) {
-    const QString& l = get();
-    return l.startsWith(s);
-}
-
-// cppcheck-suppress passedByValue
 QStringList QString7(QString s) {
     return QStringList{ "*" + s + "*" };
 }
@@ -302,6 +296,7 @@ QVector<int>::iterator QVector2()
     return it;
 }
 
+// cppcheck-suppress passedByValue
 void duplicateExpression_QString_Compare(QString style) //#8723
 {
     // cppcheck-suppress duplicateExpression
