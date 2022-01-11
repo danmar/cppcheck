@@ -55,6 +55,22 @@ void QString4()
     QString qs;
 }
 
+// cppcheck-suppress passedByValue
+void QString5(QString s) { // #10710
+    return s.isEmpty();
+}
+
+// cppcheck-suppress passedByValue
+void QString6(QString s) {
+    const QString& l = get();
+    return l.startsWith(s);
+}
+
+// cppcheck-suppress passedByValue
+QStringList QString7(QString s) {
+    return QStringList{ "*" + s + "*" };
+}
+
 void QByteArray1(QByteArray byteArrayArg)
 {
     for (int i = 0; i <= byteArrayArg.size(); ++i) {

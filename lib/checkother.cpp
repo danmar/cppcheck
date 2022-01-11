@@ -1170,7 +1170,7 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
     return cumulatedSize;
 }
 
-static bool canBeConst(const Variable *var)
+static bool canBeConst(const Variable *var, const Settings* settings)
 {
     {
         // check initializer list. If variable is moved from it can't be const.
@@ -1224,7 +1224,8 @@ static bool canBeConst(const Variable *var)
         } else if (parent->isUnaryOp("&")) {
             // TODO: check how pointer is used
             return false;
-        } else if (parent->isConstOp())
+        } else if (parent->isConstOp() ||
+            (parent->astOperand2() && settings->library.isFunctionConst(parent->astOperand2())))
             continue;
         else if (parent->isAssignmentOp()) {
             if (parent->astOperand1() == tok2)
@@ -1290,7 +1291,7 @@ void CheckOther::checkPassByReference()
         if (!var->scope() || var->scope()->function->hasVirtualSpecifier())
             continue;
 
-        if (canBeConst(var)) {
+        if (canBeConst(var, mSettings)) {
             passedByValueError(var->nameToken(), var->name(), inconclusive);
         }
     }
