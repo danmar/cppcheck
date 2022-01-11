@@ -236,15 +236,15 @@ public:
         return mVariableContracts;
     }
 
-    void setVariableContracts(QString var, QString min, QString max) {
+    void setVariableContracts(QString var, const QString& min, const QString& max) {
         mVariableContracts[var] = Settings::VariableContracts{min.toStdString(), max.toStdString()};
     }
 
-    void deleteFunctionContract(QString function) {
+    void deleteFunctionContract(const QString& function) {
         mFunctionContracts.erase(function.toStdString());
     }
 
-    void deleteVariableContract(QString var) {
+    void deleteVariableContract(const QString& var) {
         mVariableContracts.erase(var);
     }
 
