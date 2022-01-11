@@ -56,7 +56,7 @@ void QString4()
 }
 
 // cppcheck-suppress passedByValue
-void QString5(QString s) { // #10710
+bool QString5(QString s) { // #10710
     return s.isEmpty();
 }
 
