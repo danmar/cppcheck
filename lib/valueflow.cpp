@@ -4200,11 +4200,9 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             std::vector<const Token*> toks = {};
             if (tok->isUnaryOp("*") || parent->originalName() == "->") {
                 for (const ValueFlow::Value& v : tok->values()) {
-                    if (!v.isSymbolicValue())
+                    if (!v.isLocalLifetimeValue())
                         continue;
-                    if (v.isKnown())
-                        continue;
-                    if (v.intvalue != 0)
+                    if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
                         continue;
                     if (!v.tokvalue)
                         continue;
@@ -4449,6 +4447,8 @@ static std::vector<const Token*> getConditions(const Token* tok, const char* op)
             if (tok2->exprId() == 0)
                 return false;
             if (tok2->hasKnownIntValue())
+                return false;
+            if (Token::Match(tok2, "%var%") && !astIsBool(tok2))
                 return false;
             return true;
         });
