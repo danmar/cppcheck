@@ -290,14 +290,14 @@ writefile(ORGFILE, filedata)
 while True:
     filedata1 = list(filedata)
 
-    print('remove comments...')
-    removecomments(filedata)
-
     print('remove preprocessor directives...')
     removedirectives(filedata)
 
     print('remove blocks...')
     filedata = removeblocks(filedata)
+
+    print('remove comments...')
+    removecomments(filedata)
 
     print('combine lines..')
     combinelines(filedata)
