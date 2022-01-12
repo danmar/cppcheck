@@ -208,7 +208,7 @@ def removedirectives(filedata):
         line = filedata[i].lstrip()
         if line.startswith('#'):
             # these cannot be removed on their own so skip them
-            if line.startswith('#if') or line.startswith('#endif'):
+            if line.startswith('#if') or line.startswith('#endif') or line.startswith('#el'):
                 continue
             replaceandrun('remove preprocessor directive', filedata, i, '')
 
