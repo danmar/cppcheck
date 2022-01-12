@@ -312,7 +312,8 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
         for (const Token *tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
             if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand2())
                 continue;
-            if (!tok->astOperand1()->function())
+            const Function* fct = tok->astOperand1()->function();
+            if (!fct)
                 continue;
             const std::vector<const Token *> args(getArguments(tok->previous()));
             for (int argnr = 0; argnr < args.size(); ++argnr) {
@@ -370,14 +371,32 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(functionCall);
                 }
-                // pointer to uninitialized data..
-                if (!argtok->isUnaryOp("&"))
+                // pointer/reference to uninitialized data
+                auto isAddressOfArg = [](const Token* argtok) -> const Token* {
+                    if (!argtok->isUnaryOp("&"))
+                        return nullptr;
+                    argtok = argtok->astOperand1();
+                    if (!argtok || !argtok->valueType() || argtok->valueType()->pointer != 0)
+                        return nullptr;
+                    return argtok;
+                };
+                auto isReferenceArg = [&](const Token* argtok) -> const Token* {
+                    if (fct->argCount() != args.size())
+                        return nullptr;
+                    auto it = fct->argumentList.begin();
+                    std::advance(it, argnr);
+                    if (!it->valueType() || it->valueType()->reference == Reference::None)
+                        return nullptr;
+                    return argtok;
+                };
+                const Token* addr = isAddressOfArg(argtok);
+                if (!addr)
+                    argtok = isReferenceArg(argtok);
+                else
+                    argtok = addr;
+                if (!argtok || argtok->values().size() != 1U)
                     continue;
-                argtok = argtok->astOperand1();
-                if (!argtok || !argtok->valueType() || argtok->valueType()->pointer != 0)
-                    continue;
-                if (argtok->values().size() != 1U)
-                    continue;
+                
                 const ValueFlow::Value &v = argtok->values().front();
                 if (v.valueType == ValueFlow::Value::ValueType::UNINIT && !v.isInconclusive()) {
                     FileInfo::FunctionCall functionCall;
@@ -415,7 +434,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
 {
     std::list<std::pair<const Token *, MathLib::bigint>> ret;
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
-    if (!argvar->isPointer())
+    if (!argvar->isPointer() && !argvar->isReference())
         return ret;
     for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
         if (Token::Match(tok2, ")|else {")) {
