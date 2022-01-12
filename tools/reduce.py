@@ -205,7 +205,11 @@ def combinelines(filedata):
 
 def removedirectives(filedata):
     for i in range(len(filedata)):
-        if filedata[i].lstrip().startswith('#'):
+        line = filedata[i].lstrip()
+        if line.startswith('#'):
+            # these cannot be removed on their own so skip them
+            if line.startswith('#if') or line.startswith('#endif'):
+                continue
             replaceandrun('remove preprocessor directive', filedata, i, '')
 
 
