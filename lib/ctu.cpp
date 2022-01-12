@@ -381,22 +381,16 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     return argtok;
                 };
                 auto isReferenceArg = [&](const Token* argtok) -> const Token* {
-                    if (fct->argCount() != args.size())
-                        return nullptr;
-                    auto it = fct->argumentList.begin();
-                    std::advance(it, argnr);
-                    if (!it->valueType() || it->valueType()->reference == Reference::None)
+                    const Variable* argvar = fct->getArgumentVar(argnr);
+                    if (!argvar || !argvar->valueType() || argvar->valueType()->reference == Reference::None)
                         return nullptr;
                     return argtok;
                 };
                 const Token* addr = isAddressOfArg(argtok);
-                if (!addr)
-                    argtok = isReferenceArg(argtok);
-                else
-                    argtok = addr;
+                argtok = addr ? addr : isReferenceArg(argtok);
                 if (!argtok || argtok->values().size() != 1U)
                     continue;
-                
+
                 const ValueFlow::Value &v = argtok->values().front();
                 if (v.valueType == ValueFlow::Value::ValueType::UNINIT && !v.isInconclusive()) {
                     FileInfo::FunctionCall functionCall;
