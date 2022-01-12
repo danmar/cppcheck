@@ -3305,6 +3305,18 @@ private:
               "  {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct String {\n" // #10469
+              "    void Append(uint8_t Val);\n"
+              "    String& operator+=(const char s[]);\n"
+              "    String& operator+=(const std::string& Str) {\n"
+              "        return operator+=(Str.c_str());\n"
+              "    }\n"
+              "    void operator+=(uint8_t Val) {\n"
+              "        Append(Val);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()
