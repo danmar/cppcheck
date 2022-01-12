@@ -147,7 +147,7 @@ def removecomments(filedata):
     for i in range(len(filedata)):
         line = filedata[i]
         if '//' in line:
-            replaceandrun('remove comment', filedata, i, line[:line.find('//')].rstrip())
+            replaceandrun('remove comment', filedata, i, line[:line.find('//')].rstrip() + '\n')
 
 
 def checkpar(line):
