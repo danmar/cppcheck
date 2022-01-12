@@ -6569,6 +6569,17 @@ private:
         // #10139
         ASSERT_NO_THROW(tokenizeAndStringify("template<typename F>\n"
                                              "void foo(std::enable_if_t<value<F>>* = 0) {}\n"));
+
+        // #10001
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  int c;\n"
+                                             "  template <class b> void d(b e) const { c < e ? c : e; }\n"
+                                             "};\n"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  int c;\n"
+                                             "  template <class b> void d(b e) const { c > e ? c : e; }\n"
+                                             "};\n"));
     }
 
     void checkTemplates() {
