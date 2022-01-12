@@ -3040,6 +3040,19 @@ private:
                               "}");
         ASSERT_EQUALS("", errout.str());
 
+        functionVariableUsage("void f(bool b, bool c, double& r) {\n"
+                              "    double d{};\n"
+                              "    if (b) {\n"
+                              "      d = g();\n"
+                              "      r += d;\n"
+                              "    }\n"
+                              "    if (c) {\n"
+                              "      d = h();\n"
+                              "      r += d;\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         functionVariableUsage("int func() {\n"
                               "    std::mutex m;\n"
                               "    std::unique_lock<std::mutex> l{ m };\n"

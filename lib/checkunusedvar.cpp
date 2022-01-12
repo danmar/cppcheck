@@ -1183,6 +1183,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (!isAssignment && !isInitialization && !isIncrementOrDecrement)
                 continue;
 
+            if (isInitialization && Token::Match(tok, "%var% { }")) // don't warn for trivial initialization
+                continue;
+
             if (isIncrementOrDecrement && tok->astParent() && precedes(tok, tok->astOperand1()))
                 continue;
 
