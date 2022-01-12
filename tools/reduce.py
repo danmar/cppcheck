@@ -316,3 +316,4 @@ while True:
             break
 
 writefile(FILE, filedata)
+print('DONE')
