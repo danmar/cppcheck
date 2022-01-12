@@ -710,8 +710,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
                      mSettings->library.detectContainer(i->typeStartToken(), /*iterator*/ false) ||
-                     (i->isStlType() &&
-                      !Token::Match(i->typeStartToken()->tokAt(2), "lock_guard|unique_lock|shared_ptr|unique_ptr|auto_ptr|shared_lock")))
+                     i->isStlType())
                 type = Variables::standard;
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
                 continue;
