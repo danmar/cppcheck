@@ -319,7 +319,7 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
             // parse this statement and see if the '<' and '>' are matching
             unsigned int level = 0;
             for (const Token *tok2 = tok; tok2 && !Token::simpleMatch(tok2, ";"); tok2 = tok2->next()) {
-                if (Token::simpleMatch(tok2, "{") && 
+                if (Token::simpleMatch(tok2, "{") &&
                     (!Token::Match(tok2->previous(), ">|%type%") || Token::simpleMatch(tok2->link(), "} ;")))
                     break;
                 if (tok2->str() == "(")
