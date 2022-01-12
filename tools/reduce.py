@@ -306,14 +306,8 @@ while True:
     removeline(filedata)
 
     # if filedata and filedata2 are identical then stop
-    if len(filedata1) == len(filedata):
-        i = 0
-        while i < len(filedata1):
-            if filedata[i] != filedata1[i]:
-                break
-            i = i + 1
-        if i == len(filedata1):
-            break
+    if filedata1 == filedata:
+        break
 
 writefile(FILE, filedata)
 print('DONE')
