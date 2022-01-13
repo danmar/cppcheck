@@ -2648,7 +2648,7 @@ private:
     }
 
     void simplifyStdType() { // #4947, #4950, #4951
-        // usigned long long
+        // unsigned long long
         {
             const char code[] = "long long unsigned int x;";
             const char expected[] = "unsigned long long x ;";
@@ -2710,7 +2710,7 @@ private:
             const char expected[] = "signed long long x ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
-        // usigned short
+        // unsigned short
         {
             const char code[] = "short unsigned int x;";
             const char expected[] = "unsigned short x ;";

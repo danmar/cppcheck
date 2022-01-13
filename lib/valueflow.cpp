@@ -6786,7 +6786,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
             for (const Variable& memVar : scope->varlist) {
                 if (!memVar.isPublic())
                     continue;
-                // Skip array since we cant track partial initialization from nested subexpressions
+                // Skip array since we can't track partial initialization from nested subexpressions
                 if (memVar.isArray())
                     continue;
                 if (!needsInitialization(&memVar, tokenlist->isCPP())) {
