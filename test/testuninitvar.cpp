@@ -3873,9 +3873,11 @@ private:
                        "  foo(123, &abc);\n"
                        "  return abc.b;\n"
                        "}");
-        /* TODO ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: abc.a\n"
-                      "[test.cpp:5]: (error) Uninitialized struct member: abc.b\n"
-                      "[test.cpp:5]: (error) Uninitialized struct member: abc.c\n", errout.str()); */
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized struct member: abc.a\n"
+                           "[test.cpp:5]: (error) Uninitialized struct member: abc.b\n"
+                           "[test.cpp:5]: (error) Uninitialized struct member: abc.c\n",
+                           "[test.cpp:6]: (error) Uninitialized struct member: abc.b\n",
+                           errout.str());
 
         checkUninitVar("struct ABC { int a; int b; int c; };\n"
                        "void foo() {\n"
@@ -5950,6 +5952,20 @@ private:
                         "   f(&s);\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("typedef struct { int a; int b; int c; } ABC;\n"
+                        "void setabc(int x, const ABC* const abc) {\n"
+                        "    sum = abc->a + abc->b + abc->c;\n"
+                        "}\n"
+                        "void f(void) {\n"
+                        "    ABC abc;\n"
+                        "    abc.a = 1;\n"
+                        "    setabc(123, &abc);\n"
+                        "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Uninitialized variable: abc->b\n"
+                           "[test.cpp:8] -> [test.cpp:3]: (error) Uninitialized variable: abc->c\n",
+                           "[test.cpp:8] -> [test.cpp:3]: (error) Uninitialized variable: abc->b\n",
+                           errout.str());
     }
 
     void uninitvar_memberfunction() {
@@ -6119,7 +6135,7 @@ private:
             "  int x;\n"
             "  f(&x);\n"
             "}");
-        // TODO ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
