@@ -5953,7 +5953,7 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        valueFlowUninit("typedef struct { int a; int b; int c; } ABC;\n"
+        valueFlowUninit("typedef struct { int a; int b; int c; } ABC;\n" // #5777
                         "void setabc(int x, const ABC* const abc) {\n"
                         "    sum = abc->a + abc->b + abc->c;\n"
                         "}\n"
