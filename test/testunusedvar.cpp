@@ -2348,7 +2348,9 @@ private:
                               "    int &j = i;\n"
                               "    j = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'i' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("double foo()\n"
                               "{\n"
@@ -2449,7 +2451,9 @@ private:
                               "    for (int i = 0; i < 10; )\n"
                               "        a[i++] = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
     }
 
     void localvar10() {
@@ -2738,7 +2742,9 @@ private:
                               "    a = b[c] = 0;\n"
                               "    return a;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
     }
 
     void localvar24() { // ticket #1803
@@ -2828,7 +2834,7 @@ private:
                               "    C c;\n" // possibly some stream class
                               "    if (c >>= x) {}\n"
                               "}");
-        // TODO ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) --check-library: Provide <type-checks><unusedvar> configuration for C\n", errout.str());
 
         functionVariableUsage("void f(int x) {\n"
                               "    C c;\n"
@@ -3333,7 +3339,9 @@ private:
                               "    int *b = &a;\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3341,7 +3349,9 @@ private:
                               "    char *b = (char *)&a;\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3349,7 +3359,9 @@ private:
                               "    char *b = (char *)(&a);\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3357,7 +3369,9 @@ private:
                               "    const char *b = (const char *)&a;\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3365,7 +3379,9 @@ private:
                               "    const char *b = (const char *)(&a);\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3373,7 +3389,9 @@ private:
                               "    char *b = static_cast<char *>(&a);\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3381,7 +3399,9 @@ private:
                               "    const char *b = static_cast<const char *>(&a);\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         // a is not a local variable and b is aliased to it
         functionVariableUsage("int a;\n"
@@ -3441,7 +3461,9 @@ private:
                               "    int *b = a;\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3449,7 +3471,9 @@ private:
                               "    char *b = (char *)a;\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3457,7 +3481,9 @@ private:
                               "    char *b = (char *)(a);\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3465,7 +3491,9 @@ private:
                               "    const char *b = (const char *)a;\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3473,7 +3501,9 @@ private:
                               "    const char *b = (const char *)(a);\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3481,7 +3511,9 @@ private:
                               "    char *b = static_cast<char *>(a);\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3489,7 +3521,9 @@ private:
                               "    const char *b = static_cast<const char *>(a);\n"
                               "    *b = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("int a[10];\n"
                               "void foo()\n"
@@ -3588,7 +3622,9 @@ private:
                               "    int *c = b;\n"
                               "    *c = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'a' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3598,9 +3634,9 @@ private:
                               "    int *d = b;\n"
                               "    *d = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n"
-        // TODO               "[test.cpp:7]: (style) Variable 'b' is assigned a value that is never used.\n"
-        // TODO               "[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'c' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Unused variable: a\n",
+                      errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3610,8 +3646,9 @@ private:
                               "    c = b;\n"
                               "    *c = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n"
-        // TODO               "[test.cpp:7]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: a\n"
+                      "",
+                      errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3623,15 +3660,19 @@ private:
                               "    c = a;\n"
                               "    *c = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:9]: (style) Variable 'a' is assigned a value that is never used.\n"
-        // TODO               "[test.cpp:7]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Variable 'a' is assigned a value that is never used.\n"
+                           "[test.cpp:7]: (style) Variable 'b' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    int a[10], * b = a + 10;\n"
                               "    b[-10] = 1;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b[-10]' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'b[-10]' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3648,7 +3689,9 @@ private:
                               "    int * c = b - 10;\n"
                               "    c[1] = 3;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'c[1]' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'c[1]' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3656,7 +3699,9 @@ private:
                               "    int * c = b - 10;\n"
                               "    c[1] = c[0];\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'c[1]' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'c[1]' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo() {\n" // #4022 - FP (a is assigned a value that is never used)
                               "    int a[2], *b[2];\n"
@@ -3732,8 +3777,8 @@ private:
                               "    d = c;\n"
                               "    *d = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: b\n"
-        // TODO               "[test.cpp:10]: (style) Variable 'c' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Unused variable: b\n",
+                      errout.str());
 
         functionVariableUsage("int a[10];\n"
                               "void foo()\n"
@@ -3745,8 +3790,10 @@ private:
                               "    d = a; *d = 0;\n"
                               "    d = c; *d = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'b' is assigned a value that is never used.\n"
-        // TODO               "[test.cpp:9]: (style) Variable 'c' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'b' is assigned a value that is never used.\n"
+                           "[test.cpp:9]: (style) Variable 'c' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
     }
 
     void localvaralias2() { // ticket 1637
@@ -3869,7 +3916,9 @@ private:
                               "    }\n"
                               "    b(srcdata);\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'buf' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'buf' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3882,7 +3931,9 @@ private:
                               "    srcdata = vdata;\n"
                               "    b(srcdata);\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'buf' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'buf' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo(char *vdata)\n"
                               "{\n"
@@ -3935,7 +3986,9 @@ private:
                               "    }\n"
                               "    b(srcdata);\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'buf' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'buf' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -3949,7 +4002,9 @@ private:
                               "    srcdata = vdata;\n"
                               "    b(srcdata);\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'buf' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'buf' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -4190,7 +4245,9 @@ private:
                               "    ref[0] = 123;\n"
                               "}",
                               "test.c");
-        // TODO ASSERT_EQUALS("[test.c:5]: (style) Variable 'foo' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.c:5]: (style) Variable 'foo' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
     }
 
     void localvaralias10() { // ticket 2004
@@ -4870,20 +4927,26 @@ private:
                               "{\n"
                               "    static int i = 0;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    static int i(0);\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    static int j = 0;\n"
                               "    static int i(j);\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'i' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("int * foo(int x)\n"
                               "{\n"
@@ -4893,7 +4956,9 @@ private:
                               "    b[1] = 1;\n"
                               "    return x ? a : c;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'b' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'b' is assigned a value that is never used.\n",
+                           "",
+                           errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -5160,7 +5225,9 @@ private:
                               "    for ( int i = 0; i < 10; ++i )\n"
                               "        p++;\n"
                               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'p' is modified but its new value is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'p' is modified but its new value is never used.\n",
+                           "",
+                           errout.str());
     }
 
     void localvararray1() {
