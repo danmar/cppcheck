@@ -153,7 +153,10 @@ void CheckStl::outOfBounds()
                         return false;
                     if (v.intvalue < 0)
                         return false;
-                    const Token* containerTok = getContainerFromSize(container, v.tokvalue);
+                    const Token* sizeTok = v.tokvalue;
+                    if (sizeTok && sizeTok->isCast())
+                        sizeTok = sizeTok->astOperand1();
+                    const Token* containerTok = getContainerFromSize(container, sizeTok);
                     if (!containerTok)
                         return false;
                     return containerTok->exprId() == tok->exprId();

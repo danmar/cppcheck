@@ -161,7 +161,7 @@ struct ReverseTraversal {
         if (start == end)
             return;
         std::size_t i = start->index();
-        for (Token* tok = start->previous(); succedes(tok, end); tok = tok->previous()) {
+        for (Token* tok = start->previous(); succeeds(tok, end); tok = tok->previous()) {
             if (tok->index() >= i)
                 throw InternalError(tok, "Cyclic reverse analysis.");
             i = tok->index();

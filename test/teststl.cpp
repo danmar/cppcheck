@@ -682,6 +682,16 @@ private:
                     "    return h(&v[0], v.size()); \n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(int i, std::vector<int> v) {\n" // #9157
+                    "    if (i <= (int)v.size()) {\n"
+                    "        if (v[i]) {}\n"
+                    "    }\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:3:warning:Either the condition 'i<=(int)v.size()' is redundant or 'i' can have the value v.size(). Expression 'v[i]' cause access out of bounds.\n"
+                      "test.cpp:2:note:condition 'i<=(int)v.size()'\n"
+                      "test.cpp:3:note:Access out of bounds\n",
+                      errout.str());
     }
 
     void outOfBoundsSymbolic()
