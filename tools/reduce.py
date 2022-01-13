@@ -147,7 +147,7 @@ def removecomments(filedata):
     for i in range(len(filedata)):
         line = filedata[i]
         if '//' in line:
-            replaceandrun('remove comment', filedata, i, line[:line.find('//')].rstrip())
+            replaceandrun('remove comment', filedata, i, line[:line.find('//')].rstrip() + '\n')
 
 
 def checkpar(line):
@@ -205,7 +205,11 @@ def combinelines(filedata):
 
 def removedirectives(filedata):
     for i in range(len(filedata)):
-        if filedata[i].lstrip().startswith('#'):
+        line = filedata[i].lstrip()
+        if line.startswith('#'):
+            # these cannot be removed on their own so skip them
+            if line.startswith('#if') or line.startswith('#endif') or line.startswith('#el'):
+                continue
             replaceandrun('remove preprocessor directive', filedata, i, '')
 
 
@@ -290,14 +294,14 @@ writefile(ORGFILE, filedata)
 while True:
     filedata1 = list(filedata)
 
-    print('remove comments...')
-    removecomments(filedata)
-
     print('remove preprocessor directives...')
     removedirectives(filedata)
 
     print('remove blocks...')
     filedata = removeblocks(filedata)
+
+    print('remove comments...')
+    removecomments(filedata)
 
     print('combine lines..')
     combinelines(filedata)
@@ -306,13 +310,8 @@ while True:
     removeline(filedata)
 
     # if filedata and filedata2 are identical then stop
-    if len(filedata1) == len(filedata):
-        i = 0
-        while i < len(filedata1):
-            if filedata[i] != filedata1[i]:
-                break
-            i = i + 1
-        if i == len(filedata1):
-            break
+    if filedata1 == filedata:
+        break
 
 writefile(FILE, filedata)
+print('DONE')
