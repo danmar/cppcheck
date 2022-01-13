@@ -1192,7 +1192,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
 
             if (tok->isName()) {
-                if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), true))
+                if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
                     continue;
                 tok = tok->next();
             }
@@ -1223,6 +1223,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 op1tok = op1tok->astOperand1();
 
             const Variable *op1Var = op1tok ? op1tok->variable() : nullptr;
+            if (!op1Var && Token::Match(tok, "(|{") && tok->previous() && tok->previous()->variable())
+                op1Var = tok->previous()->variable();
             std::string bailoutTypeName;
             if (op1Var) {
                 if (op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
@@ -1278,8 +1280,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                                     Severity::information,
                                     "checkLibraryCheckType",
                                     "--check-library: Provide <type-checks><unusedvar> configuration for " + bailoutTypeName);
-                        continue;
                     }
+                    continue;
                 }
 
                 // warn

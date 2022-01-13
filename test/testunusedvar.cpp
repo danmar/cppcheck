@@ -5431,6 +5431,17 @@ private:
                               "    std::unique_lock<std::mutex> lock(m);\n" // #4624
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n" // #7732
+                              "    const std::pair<std::string, std::string> p(\"a\", \"b\");\n"
+                              "    std::pair<std::string, std::string> q{\"a\", \"b\" };\n"
+                              "    auto r = std::pair<std::string, std::string>(\"a\", \"b\");\n"
+                              "    auto s = std::pair<std::string, std::string>{ \"a\", \"b\" };\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Variable 'q' is assigned a value that is never used.\n"
+                      "[test.cpp:4]: (style) Variable 'r' is assigned a value that is never used.\n"
+                      "[test.cpp:5]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
     }
 
     void localVarClass() {
@@ -5610,7 +5621,7 @@ private:
                               "    int buf[6];\n"
                               "    Data data(buf);\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (information) --check-library: Provide <type-checks><unusedvar> configuration for Data\n", errout.str());
     }
 
     void localvarCpp11Initialization() {
