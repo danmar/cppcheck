@@ -5144,6 +5144,19 @@ private:
                         "   return testData;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9425
+        valueFlowUninit("typedef struct {\n"
+                        "    int flags;\n"
+                        "} someType_t;\n"
+                        "void bar(const someType_t* const p) {\n"
+                        "    if ((p->flags & 0xF000) == 0xF000) {}\n" // << 
+                        "}\n"
+                        "void f(void) {\n"
+                        "    someType_t gVar;\n"
+                        "    bar(&gVar);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: p->flags\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
