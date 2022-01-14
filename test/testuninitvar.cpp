@@ -5150,7 +5150,7 @@ private:
                         "    int flags;\n"
                         "} someType_t;\n"
                         "void bar(const someType_t* const p) {\n"
-                        "    if ((p->flags & 0xF000) == 0xF000) {}\n" // << 
+                        "    if ((p->flags & 0xF000) == 0xF000) {}\n"
                         "}\n"
                         "void f(void) {\n"
                         "    someType_t gVar;\n"
