@@ -4554,7 +4554,8 @@ void Tokenizer::createLinks2()
                 }
             } else {
                 type.pop();
-                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <") &&
+                if (Token::Match(token, "> %name%") && !token->next()->isKeyword() &&
+                    Token::Match(top1->tokAt(-2), "%op% %name% <") &&
                     (templateTokens.empty() || top1 != templateTokens.top()))
                     continue;
                 Token::createMutualLinks(top1, token);
