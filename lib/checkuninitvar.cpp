@@ -131,8 +131,11 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             if (tok->isStandardType() || tok->isEnumType())
                 stdtype = true;
         }
-        if (var.isArray() && !stdtype)
+        if (var.isArray() && !stdtype) { // std::array
+            if (!(var.isStlType() && Token::simpleMatch(var.typeStartToken(), "std :: array") && var.valueType() &&
+                var.valueType()->containerTypeToken && var.valueType()->containerTypeToken->isStandardType()))
             continue;
+        }
 
         while (tok && tok->str() != ";")
             tok = tok->next();
