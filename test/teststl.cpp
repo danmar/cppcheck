@@ -4246,16 +4246,17 @@ private:
 
         // #10716
         check("struct a;\n"
-            "class b {\n"
-            "  void c(std::map<std::string, a *> &);\n"
-            "  std::string d;\n"
-            "  std::map<std::string, std::set<std::string>> e;\n"
-            "};\n"
-            "void b::c(std::map<std::string, a *> &) {\n"
-            "  e.clear();\n"
-            "  auto f = *e[d].begin();\n"
-            "}\n");
-        ASSERT_EQUALS("[test.cpp:9]: (error) Out of bounds access in expression 'e[d].begin()' because 'e[d]' is empty.\n", errout.str());
+              "class b {\n"
+              "  void c(std::map<std::string, a *> &);\n"
+              "  std::string d;\n"
+              "  std::map<std::string, std::set<std::string>> e;\n"
+              "};\n"
+              "void b::c(std::map<std::string, a *> &) {\n"
+              "  e.clear();\n"
+              "  auto f = *e[d].begin();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Out of bounds access in expression 'e[d].begin()' because 'e[d]' is empty.\n",
+                      errout.str());
     }
 
     void dereferenceInvalidIterator2() {
