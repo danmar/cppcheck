@@ -2329,7 +2329,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
                 inconclusive = true;
             }
             if (cValue) {
-                const ValueFlow::Value& lValue = getLifetimeObjValue(tok, true);
+                const ValueFlow::Value& lValue = getLifetimeIteratorValue(tok);
                 if (emptyAdvance)
                     outOfBoundsError(emptyAdvance,
                                      lValue.tokvalue->expressionString(),
