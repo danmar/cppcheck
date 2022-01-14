@@ -201,6 +201,7 @@ private:
         TEST_CASE(const_shared_ptr);
         TEST_CASE(constPtrToConstPtr);
         TEST_CASE(constTrailingReturnType);
+        TEST_CASE(staticArrayPtrOverload);
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -6566,6 +6567,23 @@ private:
                    "    int x = 1;\n"
                    "    auto get() -> int & { return x; }\n"
                    "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void staticArrayPtrOverload() {
+        checkConst("struct S {\n"
+                   "    template<size_t N>\n"
+                   "    void f(const std::array<std::string_view, N>& sv);\n"
+                   "    template<long N>\n"
+                   "    void f(const char* const (&StrArr)[N]);\n"
+                   "};\n"
+                   "template<size_t N>\n"
+                   "void S::f(const std::array<std::string_view, N>&sv) {\n"
+                   "    const char* ptrs[N]{};\n"
+                   "    return f(ptrs);\n"
+                   "}\n"
+                   "template void S::f(const std::array<std::string_view, 3>&sv);\n"
+                   "\n");
         ASSERT_EQUALS("", errout.str());
     }
 

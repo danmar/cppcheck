@@ -7094,9 +7094,10 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
 {
     ValueType vt;
     const ValueType* pvt = funcVar->valueType();
-    if (pvt && funcVar->isArray()) {
+    if (pvt && funcVar->isArray() && !(funcVar->isStlType() && Token::simpleMatch(funcVar->typeStartToken(), "std :: array"))) { // std::array doesn't decay to a pointer
         vt = *pvt;
-        ++vt.pointer;
+        if (vt.pointer == 0) // don't bump array of pointers
+            ++vt.pointer;
         pvt = &vt;
     }
     ValueType::MatchResult res = ValueType::matchParameter(call, pvt);
