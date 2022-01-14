@@ -2648,7 +2648,7 @@ private:
     }
 
     void simplifyStdType() { // #4947, #4950, #4951
-        // usigned long long
+        // unsigned long long
         {
             const char code[] = "long long unsigned int x;";
             const char expected[] = "unsigned long long x ;";
@@ -2710,7 +2710,7 @@ private:
             const char expected[] = "signed long long x ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
-        // usigned short
+        // unsigned short
         {
             const char code[] = "short unsigned int x;";
             const char expected[] = "unsigned short x ;";
@@ -6569,6 +6569,17 @@ private:
         // #10139
         ASSERT_NO_THROW(tokenizeAndStringify("template<typename F>\n"
                                              "void foo(std::enable_if_t<value<F>>* = 0) {}\n"));
+
+        // #10001
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  int c;\n"
+                                             "  template <class b> void d(b e) const { c < e ? c : e; }\n"
+                                             "};\n"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  int c;\n"
+                                             "  template <class b> void d(b e) const { c > e ? c : e; }\n"
+                                             "};\n"));
     }
 
     void checkTemplates() {

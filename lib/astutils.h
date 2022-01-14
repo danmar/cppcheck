@@ -151,7 +151,7 @@ bool extractForLoopValues(const Token *forToken,
                           long long * const lastValue);
 
 bool precedes(const Token * tok1, const Token * tok2);
-bool succedes(const Token* tok1, const Token* tok2);
+bool succeeds(const Token* tok1, const Token* tok2);
 
 bool exprDependsOnThis(const Token* expr, bool onVar = true, nonneg int depth = 0);
 
