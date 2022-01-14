@@ -746,7 +746,7 @@ bool precedes(const Token * tok1, const Token * tok2)
 }
 
 /// If tok1 comes after tok2
-bool succedes(const Token* tok1, const Token* tok2)
+bool succeeds(const Token* tok1, const Token* tok2)
 {
     if (tok1 == tok2)
         return false;
