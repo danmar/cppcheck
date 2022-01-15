@@ -10173,7 +10173,7 @@ void Tokenizer::reportUnknownMacros() const
     }
 
     // Report unknown macros without commas or operators inbetween statements: MACRO1() MACRO2()
-    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+    for (const Token* tok = tokens(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
             continue;
         if (isNonMacro(tok))

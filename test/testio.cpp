@@ -4628,7 +4628,10 @@ private:
               "  char str[8];\n"
               "  scanf_s(\"%8c\", str, sizeof(str));\n"
               "  scanf_s(\"%9c\", str, sizeof(str));\n"
-              "}\n", false, false, Settings::Win32A);
+              "}\n",
+              false,
+              false,
+              Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:4]: (error) Width 9 given in format string (no. 1) is larger than destination buffer 'str[8]', use %8c to prevent overflowing it.\n", errout.str());
 
         check("void foo() {\n"

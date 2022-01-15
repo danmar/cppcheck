@@ -6493,7 +6493,6 @@ private:
 
         const char code10[] = "void f(std::exception c) { b(M() M() + N(c.what())); }";
         ASSERT_THROW(tokenizeAndStringify(code10), InternalError);
-
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()

@@ -1698,20 +1698,16 @@ void TokenList::validateAst() const
         // Check member access
         if (Token::Match(tok, "%var% .")) {
             if (!tok->astParent()) {
-                throw InternalError(tok,
-                                    "Syntax Error: AST broken, '" + tok->str() +
-                                    "' doesn't have a parent.",
-                                    InternalError::AST);
+                throw InternalError(
+                          tok, "Syntax Error: AST broken, '" + tok->str() + "' doesn't have a parent.", InternalError::AST);
             }
             if (!tok->next()->astOperand1() || !tok->next()->astOperand2()) {
-                const std::string& op = tok->next()->originalName().empty() ? tok->next()->str() : tok->next()->originalName();
-                throw InternalError(tok,
-                                    "Syntax Error: AST broken, '" + op +
-                                    "' doesn't have two operands.",
-                                    InternalError::AST);
+                const std::string& op =
+                    tok->next()->originalName().empty() ? tok->next()->str() : tok->next()->originalName();
+                throw InternalError(
+                          tok, "Syntax Error: AST broken, '" + op + "' doesn't have two operands.", InternalError::AST);
             }
         }
-
     }
 }
 
