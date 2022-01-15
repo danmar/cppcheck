@@ -6078,7 +6078,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         setValueType(autoTok, *vt2);
         setAutoTokenProperties(autoTok);
         if (parent->previous()->variable())
-            const_cast<Variable *>(parent->previous()->variable())->setValueType(*vt2);
+            const_cast<Variable*>(parent->previous()->variable())->setValueType(*vt2);
         else
             debugMessage(parent->previous(), "debug", "Missing variable class for variable with varid");
         return;

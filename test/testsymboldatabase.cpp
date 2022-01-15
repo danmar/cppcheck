@@ -4877,17 +4877,18 @@ private:
         }
     }
 
-    void createSymbolDatabaseFindAllScopes4() {
+    void createSymbolDatabaseFindAllScopes4()
+    {
         GET_SYMBOL_DB("struct a {\n"
-                    "  void b() {\n"
-                    "    std::set<int> c;\n"
-                    "    a{[&] {\n"
-                    "      auto d{c.lower_bound(0)};\n"
-                    "      c.emplace_hint(d);\n"
-                    "    }};\n"
-                    "  }\n"
-                    "  template <class e> a(e);\n"
-                    "};\n");
+                      "  void b() {\n"
+                      "    std::set<int> c;\n"
+                      "    a{[&] {\n"
+                      "      auto d{c.lower_bound(0)};\n"
+                      "      c.emplace_hint(d);\n"
+                      "    }};\n"
+                      "  }\n"
+                      "  template <class e> a(e);\n"
+                      "};\n");
         ASSERT(db);
         ASSERT_EQUALS(4, db->scopeList.size());
         const Token* const var1 = Token::findsimplematch(tokenizer.tokens(), "d");
