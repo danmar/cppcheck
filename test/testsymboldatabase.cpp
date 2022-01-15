@@ -356,6 +356,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
         TEST_CASE(createSymbolDatabaseFindAllScopes3);
+        TEST_CASE(createSymbolDatabaseFindAllScopes4);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -4874,6 +4875,23 @@ private:
         for (const auto &scope : list) {
             ASSERT_EQUALS(0, scope.varlist.size());
         }
+    }
+
+    void createSymbolDatabaseFindAllScopes4() {
+        GET_SYMBOL_DB("struct a {\n"
+                    "  void b() {\n"
+                    "    std::set<int> c;\n"
+                    "    a{[&] {\n"
+                    "      auto d{c.lower_bound(0)};\n"
+                    "      c.emplace_hint(d);\n"
+                    "    }};\n"
+                    "  }\n"
+                    "  template <class e> a(e);\n"
+                    "};\n");
+        ASSERT(db);
+        ASSERT_EQUALS(4, db->scopeList.size());
+        const Token* const var1 = Token::findsimplematch(tokenizer.tokens(), "d");
+        ASSERT(var1->variable());
     }
 
     void enum1() {
