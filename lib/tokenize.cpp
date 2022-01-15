@@ -1072,7 +1072,7 @@ void Tokenizer::simplifyTypedef()
 
                 removed.clear();
 
-                if (Token::Match(tok2, "typedef"))
+                if (Token::simpleMatch(tok2, "typedef"))
                     inTypeDef = true;
 
                 if (inTypeDef && Token::simpleMatch(tok2, ";"))
