@@ -135,14 +135,17 @@ void TokenList::determineCppC()
         mKeywords.insert("mutable");
         mKeywords.insert("namespace");
         mKeywords.insert("new");
+        mKeywords.insert("noexcept");
         mKeywords.insert("operator");
         mKeywords.insert("private");
         mKeywords.insert("protected");
         mKeywords.insert("public");
         mKeywords.insert("reinterpret_cast");
+        mKeywords.insert("static_assert");
         mKeywords.insert("static_cast");
         mKeywords.insert("template");
         mKeywords.insert("this");
+        mKeywords.insert("thread_local");
         mKeywords.insert("throw");
         //mKeywords.insert("true"); // literal
         mKeywords.insert("try");
@@ -152,6 +155,19 @@ void TokenList::determineCppC()
         mKeywords.insert("using");
         mKeywords.insert("virtual");
         //mKeywords.insert("wchar_t"); // type
+        if (!mSettings || mSettings->standards.cpp >= Standards::CPP20) {
+            mKeywords.insert("alignas");
+            mKeywords.insert("alignof");
+            mKeywords.insert("axiom");
+            mKeywords.insert("co_await");
+            mKeywords.insert("co_return");
+            mKeywords.insert("co_yield");
+            mKeywords.insert("concept");
+            mKeywords.insert("synchronized");
+            mKeywords.insert("consteval");
+            mKeywords.insert("reflexpr");
+            mKeywords.insert("requires");
+        }
     }
 }
 
@@ -1678,6 +1694,24 @@ void TokenList::validateAst() const
                                     "' doesn't have two operands.",
                                     InternalError::AST);
         }
+
+        // Check member access
+        if (Token::Match(tok, "%var% .")) {
+            if (!tok->astParent()) {
+                throw InternalError(tok,
+                                    "Syntax Error: AST broken, '" + tok->str() +
+                                    "' doesn't have a parent.",
+                                    InternalError::AST);
+            }
+            if (!tok->next()->astOperand1() || !tok->next()->astOperand2()) {
+                const std::string& op = tok->next()->originalName().empty() ? tok->next()->str() : tok->next()->originalName();
+                throw InternalError(tok,
+                                    "Syntax Error: AST broken, '" + op +
+                                    "' doesn't have two operands.",
+                                    InternalError::AST);
+            }
+        }
+
     }
 }
 

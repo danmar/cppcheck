@@ -6487,6 +6487,13 @@ private:
 
         const char code8[] = "void foo() { a = [](int x, decltype(vec) y){}; }";
         ASSERT_NO_THROW(tokenizeAndStringify(code8));
+
+        const char code9[] = "void f(std::exception c) { b(M() c.what()); }";
+        ASSERT_THROW(tokenizeAndStringify(code9), InternalError);
+
+        const char code10[] = "void f(std::exception c) { b(M() M() + N(c.what())); }";
+        ASSERT_THROW(tokenizeAndStringify(code10), InternalError);
+
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()

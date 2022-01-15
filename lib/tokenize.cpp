@@ -4823,8 +4823,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Simplify the C alternative tokens (and, or, etc.)
     simplifyCAlternativeTokens();
 
-    reportUnknownMacros();
-
     simplifyFunctionTryCatch();
 
     simplifyHeadersAndUnusedTemplates();
@@ -5018,6 +5016,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Split up variable declarations.
     simplifyVarDecl(false);
+
+    reportUnknownMacros();
 
     // typedef..
     if (mTimerResults) {
@@ -10067,6 +10067,17 @@ static const Token* skipCPPOrAlignAttribute(const Token * tok)
     return tok;
 }
 
+static bool isNonMacro(const Token* tok)
+{
+    if (tok->isKeyword())
+        return true;
+    if (cAlternativeTokens.count(tok->str()) > 0)
+        return true;
+    if (tok->str().compare(0, 2, "__") == 0) // attribute/annotation
+        return true;
+    return false;
+}
+
 void Tokenizer::reportUnknownMacros() const
 {
     // Report unknown macros used in expressions "%name% %num%"
@@ -10159,6 +10170,29 @@ void Tokenizer::reportUnknownMacros() const
                 continue;
             unknownMacroError(tok->next());
         }
+    }
+
+    // Report unknown macros without commas or operators inbetween statements: MACRO1() MACRO2()
+    for (const Token *tok = tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%name% ("))
+            continue;
+        if (isNonMacro(tok))
+            continue;
+
+        const Token* endTok = tok->linkAt(1);
+        if (!Token::Match(endTok, ") %name% (|."))
+            continue;
+
+        const Token* tok2 = endTok->next();
+        if (isNonMacro(tok2))
+            continue;
+
+        if (tok2->next()->str() == "(") {
+            if (Token::Match(tok->previous(), "%name%|::|>"))
+                continue;
+        }
+
+        unknownMacroError(tok);
     }
 }
 
