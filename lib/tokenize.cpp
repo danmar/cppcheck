@@ -1079,7 +1079,8 @@ void Tokenizer::simplifyTypedef()
                     inTypeDef = false;
 
                 // Check for variable declared with the same name
-                if (!inTypeDef && spaceInfo.size() == 1 && Token::Match(tok2->previous(), "%name%") && !tok2->previous()->isKeyword()) {
+                if (!inTypeDef && spaceInfo.size() == 1 && Token::Match(tok2->previous(), "%name%") &&
+                    !tok2->previous()->isKeyword()) {
                     Token* varDecl = tok2;
                     while (Token::Match(varDecl, "*|&|&&|const"))
                         varDecl = varDecl->next();
@@ -1089,7 +1090,7 @@ void Tokenizer::simplifyTypedef()
                             tok2 = varDecl->linkAt(2)->next();
                         } else {
                             tok2 = varDecl;
-                            while(tok2 && !Token::simpleMatch(tok2, "}")) {
+                            while (tok2 && !Token::simpleMatch(tok2, "}")) {
                                 if (Token::Match(tok2, "(|{|["))
                                     tok2 = tok2->link();
                                 tok2 = tok2->next();

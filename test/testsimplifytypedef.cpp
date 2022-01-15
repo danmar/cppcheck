@@ -3007,7 +3007,8 @@ private:
         ASSERT_EQUALS("namespace foo { class Bar ; } class Baz ; namespace bar { class C : Baz { } ; }", tok(code));
     }
 
-    void simplifyTypedef139() {
+    void simplifyTypedef139()
+    {
         const char code[] = "typedef struct c a;\n"
                             "struct {\n"
                             "  a *b;\n"
@@ -3015,7 +3016,9 @@ private:
                             "void e(a *a) {\n"
                             "  if (a < d[0].b) {}\n"
                             "}\n";
-        ASSERT_EQUALS("struct Anonymous0 { struct c * b ; } ; struct Anonymous0 * d ; void e ( struct c * a ) { if ( a < d [ 0 ] . b ) { } }", tok(code));
+        ASSERT_EQUALS(
+            "struct Anonymous0 { struct c * b ; } ; struct Anonymous0 * d ; void e ( struct c * a ) { if ( a < d [ 0 ] . b ) { } }",
+            tok(code));
     }
 
     void simplifyTypedefFunction1() {
