@@ -83,10 +83,13 @@ jobs:
           ctest -j$(nproc)
           cd ..
 
-      - name: Build and test with Unsigned char
+      - name: Build with Unsigned char
         run: |
           make clean
           make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
+
+      - name: Test with Unsigned char
+        run: |
           ./testrunner TestSymbolDatabase
 
       - name: Build with TEST_MATHLIB_VALUE
