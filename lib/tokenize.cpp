@@ -1057,6 +1057,7 @@ void Tokenizer::simplifyTypedef()
             int memberScope = 0;
             bool globalScope = false;
             int classLevel = spaceInfo.size();
+            bool inTypeDef = false;
             std::string removed;
             std::string classPath;
             for (size_t i = 1; i < spaceInfo.size(); ++i) {
@@ -1070,6 +1071,36 @@ void Tokenizer::simplifyTypedef()
                     return;
 
                 removed.clear();
+
+                if (Token::simpleMatch(tok2, "typedef"))
+                    inTypeDef = true;
+
+                if (inTypeDef && Token::simpleMatch(tok2, ";"))
+                    inTypeDef = false;
+
+                // Check for variable declared with the same name
+                if (!inTypeDef && spaceInfo.size() == 1 && Token::Match(tok2->previous(), "%name%") &&
+                    !tok2->previous()->isKeyword()) {
+                    Token* varDecl = tok2;
+                    while (Token::Match(varDecl, "*|&|&&|const"))
+                        varDecl = varDecl->next();
+                    if (Token::Match(varDecl, "%name% ;|,|)|=") && varDecl->str() == typeName->str()) {
+                        // Skip to the next closing brace
+                        if (Token::Match(varDecl, "%name% ) {")) { // is argument variable
+                            tok2 = varDecl->linkAt(2)->next();
+                        } else {
+                            tok2 = varDecl;
+                            while (tok2 && !Token::simpleMatch(tok2, "}")) {
+                                if (Token::Match(tok2, "(|{|["))
+                                    tok2 = tok2->link();
+                                tok2 = tok2->next();
+                            }
+                        }
+                        if (!tok2)
+                            break;
+                        continue;
+                    }
+                }
 
                 if (tok2->link()) { // Pre-check for performance
                     // check for end of scope
