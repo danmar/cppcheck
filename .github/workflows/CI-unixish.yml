@@ -166,7 +166,15 @@ jobs:
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
           ./cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
           pushd addons/test
+          # We'll force C89 standard to enable an additional verification for
+          # rules 5.4 and 5.5 which have standard-dependent options.
           ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
+          # TODO: do we need to verify something here?
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.h
+          ../../cppcheck --dump misra/misra-test.cpp && python3 ../misra.py -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_utf8.txt -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_windows1250.txt -verify misra/misra-test.cpp.dump
           ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
           ../../cppcheck --dump misc-test.cpp && python3 ../misc.py -verify misc-test.cpp.dump
           ../../cppcheck --dump cert-test.c && python3 ../cert.py -verify cert-test.c.dump
