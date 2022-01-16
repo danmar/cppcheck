@@ -181,7 +181,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     const Library::AllocFunc *f = mSettings_->library.getReallocFuncInfo(tok2);
     if (!(f && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(tok2)))
         return No;
-    const Token* arg = getArguments(tok2).at(f->reallocArg - 1);
+    const auto args = getArguments(tok2);
+    if (args.size() < (f->reallocArg))
+        return No;
+    const Token* arg = args.at(f->reallocArg - 1);
     while (arg && arg->isCast())
         arg = arg->astOperand1();
     while (arg && arg->isUnaryOp("*"))
