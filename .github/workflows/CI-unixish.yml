@@ -89,6 +89,16 @@ jobs:
           make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
           ./testrunner TestSymbolDatabase
 
+      - name: Build with TEST_MATHLIB_VALUE
+        run: |
+          make clean
+          touch lib/mathlib.cpp test/testmathlib.cpp
+          make -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE all
+
+      - name: Test with TEST_MATHLIB_VALUE
+        run: |
+          make -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE check
+
       - name: Check syntax with NONNEG
         run: |
           ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
