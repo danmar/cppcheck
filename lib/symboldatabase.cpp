@@ -2338,7 +2338,7 @@ const Token *Function::setFlags(const Token *tok1, const Scope *scope)
         }
 
         // decltype
-        else if (tok1->str() == ")" && Token::Match(tok1->link()->previous(), "decltype (")) {
+        else if (tok1->str() == ")" && Token::simpleMatch(tok1->link()->previous(), "decltype (")) {
             tok1 = tok1->link()->previous();
         }
 
