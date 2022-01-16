@@ -168,6 +168,9 @@ jobs:
           pushd addons/test
           ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
           ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
+          ../../cppcheck --dump misc-test.cpp && python3 ../misc.py -verify misc-test.cpp.dump
+          ../../cppcheck --dump cert-test.c && python3 ../cert.py -verify cert-test.c.dump
+          ../../cppcheck --dump cert-test.cpp && python3 ../cert.py -verify cert-test.cpp.dump
 
       - name: Ensure misra addon does not crash
         if: contains(matrix.os, 'ubuntu')

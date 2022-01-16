@@ -53,11 +53,6 @@ matrix:
         - sudo make MATCHCOMPILER=yes FILESDIR=/usr/share/cppcheck install
 # check if it actually works:
         - /usr/bin/cppcheck -j$(nproc) ./cli
-# check addons/misc.py
-        - cd addons/test
-        - ${CPPCHECK} --dump misc-test.cpp
-        - python3 ../misc.py -verify misc-test.cpp.dump
-        - cd ../../
 # check addons/misra.py
         - cd addons/test
         # We'll force C89 standard to enable an additional verification for
