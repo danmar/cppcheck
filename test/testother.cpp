@@ -6179,17 +6179,16 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-      // #10718
+        // #10718
         check("struct a {\n"
-            "  int b() const;\n"
-            "  auto c() -> decltype(0) {\n"
-            "    a d;\n"
-            "    int e = d.b(), f = d.b();\n"
-            "    return e + f;\n"
-            "  }\n"
-            "};\n");
+              "  int b() const;\n"
+              "  auto c() -> decltype(0) {\n"
+              "    a d;\n"
+              "    int e = d.b(), f = d.b();\n"
+              "    return e + f;\n"
+              "  }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
-
     }
 
     void multiConditionSameExpression() {
