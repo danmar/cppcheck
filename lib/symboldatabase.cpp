@@ -1704,6 +1704,11 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             while (Token::Match(tok1, "%type%|*|&") && !endsWith(tok1->str(), ':') && (!isReservedName(tok1->str()) || tok1->str() == "const"))
                 tok1 = tok1->previous();
 
+            // skip over decltype
+            if (Token::simpleMatch(tok1, ")") && tok1->link() &&
+                Token::simpleMatch(tok1->link()->previous(), "decltype ("))
+                tok1 = tok1->link()->tokAt(-2);
+
             // skip over template
             if (tok1 && tok1->str() == ">") {
                 if (tok1->link())
@@ -1729,6 +1734,9 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
                 if (Token::Match(tok1, "%name%"))
                     tok1 = tok1->previous();
                 else if (tok1 && tok1->str() == ">" && tok1->link() && Token::Match(tok1->link()->previous(), "%name%"))
+                    tok1 = tok1->link()->tokAt(-2);
+                else if (Token::simpleMatch(tok1, ")") && tok1->link() &&
+                         Token::simpleMatch(tok1->link()->previous(), "decltype ("))
                     tok1 = tok1->link()->tokAt(-2);
             }
 
@@ -2346,6 +2354,11 @@ const Token *Function::setFlags(const Token *tok1, const Scope *scope)
         // constexpr function
         else if (tok1->str() == "constexpr") {
             isConstexpr(true);
+        }
+
+        // decltype
+        else if (tok1->str() == ")" && Token::simpleMatch(tok1->link()->previous(), "decltype (")) {
+            tok1 = tok1->link()->previous();
         }
 
         // Function template
