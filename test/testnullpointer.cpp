@@ -2099,9 +2099,7 @@ private:
               "    if (!y) {}\n"
               "  }\n"
               "}\n");
-        ASSERT_EQUALS(
-            "",
-            errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer65() {
