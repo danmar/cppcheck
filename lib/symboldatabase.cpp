@@ -1687,7 +1687,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
                 tok1 = tok1->previous();
 
             // skip over decltype
-            if (Token::simpleMatch(tok1, ")") && tok1->link() && Token::simpleMatch(tok1->link()->previous(), "decltype ("))
+            if (Token::simpleMatch(tok1, ")") && tok1->link() &&
+                Token::simpleMatch(tok1->link()->previous(), "decltype ("))
                 tok1 = tok1->link()->tokAt(-2);
 
             // skip over template
