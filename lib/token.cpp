@@ -1258,6 +1258,9 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
     unsigned int fileIndex = options.files ? ~0U : mImpl->mFileIndex;
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
+        assert(tok && "end precedes token");
+        if (!tok)
+            return ret;
         bool fileChange = false;
         if (tok->mImpl->mFileIndex != fileIndex) {
             if (fileIndex != ~0U) {

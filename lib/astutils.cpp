@@ -1721,7 +1721,7 @@ bool isUniqueExpression(const Token* tok)
             if (f.type != Function::eFunction)
                 continue;
 
-            const std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.tokenDef);
+            const std::string freturnType = f.retType ? f.retType->name() : f.retDef->stringifyList(f.returnDefEnd());
             if (f.argumentList.size() == fun->argumentList.size() &&
                 returnType == freturnType &&
                 f.name() != fun->name()) {
