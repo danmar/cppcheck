@@ -59,19 +59,17 @@ jobs:
         if: contains(matrix.os, 'ubuntu')
         run: |
           mkdir cmake.output
-          cd cmake.output
+          pushd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On ..
           cmake --build . -- -j$(nproc)
-          cd ..
 
       - name: CMake build on macos (with GUI)
         if: contains(matrix.os, 'macos')
         run: |
           mkdir cmake.output
-          cd cmake.output
+          pushd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 ..
           cmake --build . -- -j$(nproc)
-          cd ..
 
       - name: Run CMake test
         run: |
@@ -79,9 +77,8 @@ jobs:
 
       - name: Run CTest
         run: |
-          cd cmake.output
+          pushd cmake.output
           ctest -j$(nproc)
-          cd ..
 
       - name: Build with Unsigned char
         run: |
@@ -125,6 +122,7 @@ jobs:
         run: |
           tools/generate_and_run_more_tests.sh
 
+      # do not use pushd in this step since we go below the working directory
       - name: Run test/cli
         run: |
           cd test/cli
@@ -167,7 +165,7 @@ jobs:
           ./cppcheck --addon=threadsafety addons/test/threadsafety
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
           ./cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
-          cd addons/test
+          pushd addons/test
           ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
           ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
 
