@@ -173,6 +173,7 @@ private:
         TEST_CASE(const68); // ticket #6471
         TEST_CASE(const69); // ticket #9806
         TEST_CASE(const70); // variadic template can receive more arguments than in its definition
+        TEST_CASE(const71); // ticket #10146
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -5769,6 +5770,19 @@ private:
                    "        call(1, 2);\n"
                    "    }\n"
                    "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const71() { // #10146
+        checkConst("struct Bar {\n"
+                   "    int j = 5;\n"
+                   "    void f(int& i) const { i += j; }\n"
+                   "};\n"
+                   "struct Foo {\n"
+                   "    Bar bar;\n"
+                   "    int k{};\n"
+                   "    void g() { bar.f(k); }\n"
+                   "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
