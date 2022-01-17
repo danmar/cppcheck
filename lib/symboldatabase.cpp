@@ -2208,7 +2208,7 @@ Function::Function(const Tokenizer *mTokenizer,
         else
             type = Function::eConstructor;
 
-        isExplicit(tokenDef->strAt(-1) == "explicit" ||  tokenDef->strAt(-2) == "explicit");
+        isExplicit(tokenDef->strAt(-1) == "explicit" || tokenDef->strAt(-2) == "explicit");
     }
 
     const Token *tok1 = setFlags(tok, scope);
