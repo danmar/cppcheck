@@ -5873,15 +5873,6 @@ private:
                    "};\n"
                    "struct C {\n"
                    "    int i{};\n"
-                   "    S f() { return S(&i); }\n"
-                   "};\n");
-        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
-
-        checkConst("struct S {\n"
-                   "    const int* mp{};\n"
-                   "};\n"
-                   "struct C {\n"
-                   "    int i{};\n"
                    "    S f() { return { &i }; }\n"
                    "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
