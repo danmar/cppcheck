@@ -173,6 +173,7 @@ private:
         TEST_CASE(const68); // ticket #6471
         TEST_CASE(const69); // ticket #9806
         TEST_CASE(const70); // variadic template can receive more arguments than in its definition
+        TEST_CASE(const72); // ticket #10520
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -5770,6 +5771,93 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const72() { // #10520
+        checkConst("struct S {\n"
+                   "    explicit S(int* p) : mp(p) {}\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    explicit S(int* p) : mp(p) {}\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S(&i); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return { &i }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    explicit S(const int* p) : mp(p) {}\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    explicit S(const int* p) : mp(p) {}\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S(&i); }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S(&i); }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return { &i }; }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
     }
 
     void const_handleDefaultParameters() {
