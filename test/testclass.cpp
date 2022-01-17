@@ -444,6 +444,19 @@ private:
                                   "    A(int, int y=2) {}"
                                   "};");
         ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
+
+        checkExplicitConstructors("struct Foo {\n"
+                                  "    template <typename T>\n"
+                                  "    explicit constexpr Foo(T) {}\n"
+                                  "};\n"
+                                  "struct Bar {\n"
+                                  "    template <typename T>\n"
+                                  "    constexpr explicit Bar(T) {}\n"
+                                  "};\n"
+                                  "struct Baz {\n"
+                                  "    explicit constexpr Baz(int) {}\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
