@@ -192,6 +192,7 @@ private:
         TEST_CASE(hasMissingInlineClassFunction);
         TEST_CASE(hasClassFunction);
         TEST_CASE(hasClassFunction_trailingReturnType);
+        TEST_CASE(hasClassFunction_decltype_auto);
 
         TEST_CASE(hasRegularFunctionReturningFunctionPointer);
         TEST_CASE(hasInlineClassFunctionReturningFunctionPointer);
@@ -356,6 +357,7 @@ private:
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
         TEST_CASE(createSymbolDatabaseFindAllScopes3);
+        TEST_CASE(createSymbolDatabaseFindAllScopes4);
 
         TEST_CASE(enum1);
         TEST_CASE(enum2);
@@ -1626,6 +1628,28 @@ private:
         ASSERT(function && function->token == functionToken);
         ASSERT(function && function->hasBody() && !function->isInline());
         ASSERT(function && function->functionScope == scope && scope->function == function && function->nestedIn == db->findScopeByName("Fred"));
+    }
+
+    void hasClassFunction_decltype_auto()
+    {
+        GET_SYMBOL_DB("struct d { decltype(auto) f() {} };");
+
+        // 3 scopes: Global, Class, and Function
+        ASSERT(db && db->scopeList.size() == 3);
+
+        const Token* const functionToken = Token::findsimplematch(tokenizer.tokens(), "f");
+
+        const Scope* scope = findFunctionScopeByToken(db, functionToken);
+
+        ASSERT(scope && scope->className == "f");
+
+        ASSERT(scope->functionOf && scope->functionOf == db->findScopeByName("d"));
+
+        const Function* function = findFunctionByName("f", &db->scopeList.back());
+
+        ASSERT(function && function->token->str() == "f");
+        ASSERT(function && function->token == functionToken);
+        ASSERT(function && function->hasBody());
     }
 
     void hasRegularFunctionReturningFunctionPointer() {
@@ -4874,6 +4898,24 @@ private:
         for (const auto &scope : list) {
             ASSERT_EQUALS(0, scope.varlist.size());
         }
+    }
+
+    void createSymbolDatabaseFindAllScopes4()
+    {
+        GET_SYMBOL_DB("struct a {\n"
+                      "  void b() {\n"
+                      "    std::set<int> c;\n"
+                      "    a{[&] {\n"
+                      "      auto d{c.lower_bound(0)};\n"
+                      "      c.emplace_hint(d);\n"
+                      "    }};\n"
+                      "  }\n"
+                      "  template <class e> a(e);\n"
+                      "};\n");
+        ASSERT(db);
+        ASSERT_EQUALS(4, db->scopeList.size());
+        const Token* const var1 = Token::findsimplematch(tokenizer.tokens(), "d");
+        ASSERT(var1->variable());
     }
 
     void enum1() {

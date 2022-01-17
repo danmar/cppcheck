@@ -122,6 +122,14 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
     // pointer to current scope
     Scope *scope = &scopeList.back();
 
+    // Store the edning of init lists
+    std::stack<std::pair<const Token*, const Scope*>> endInitList;
+    auto inInitList = [&] {
+        if (endInitList.empty())
+            return false;
+        return endInitList.top().second == scope;
+    };
+
     // Store current access in each scope (depends on evaluation progress)
     std::map<const Scope*, AccessControl> access;
 
@@ -463,6 +471,11 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             scope = const_cast<Scope*>(scope->nestedIn);
             continue;
         }
+        // check for end of init list
+        else if (inInitList() && tok == endInitList.top().first) {
+            endInitList.pop();
+            continue;
+        }
 
         // check if in class or structure or union
         else if (scope->isClassOrStructOrUnion()) {
@@ -678,7 +691,8 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     scope->checkVariable(tok->tokAt(2), AccessControl::Throw, mSettings); // check for variable declaration and add it to new scope if found
                 tok = scopeStartTok;
             } else if (Token::Match(tok, "%var% {")) {
-                tok = tok->linkAt(1);
+                endInitList.push(std::make_pair(tok->next()->link(), scope));
+                tok = tok->next();
             } else if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
                 const Token *lambdaStartToken = lambdaEndToken->link();
                 const Token * argStart = lambdaStartToken->astParent();
@@ -688,10 +702,14 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     mTokenizer->syntaxError(tok);
                 tok = lambdaStartToken;
             } else if (tok->str() == "{") {
-                if (isExecutableScope(tok)) {
+                if (inInitList()) {
+                    endInitList.push(std::make_pair(tok->link(), scope));
+                } else if (isExecutableScope(tok)) {
                     scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
+                } else if (scope->isExecutable()) {
+                    endInitList.push(std::make_pair(tok->link(), scope));
                 } else {
                     tok = tok->link();
                 }
@@ -1686,6 +1704,11 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             while (Token::Match(tok1, "%type%|*|&") && !endsWith(tok1->str(), ':') && (!isReservedName(tok1->str()) || tok1->str() == "const"))
                 tok1 = tok1->previous();
 
+            // skip over decltype
+            if (Token::simpleMatch(tok1, ")") && tok1->link() &&
+                Token::simpleMatch(tok1->link()->previous(), "decltype ("))
+                tok1 = tok1->link()->tokAt(-2);
+
             // skip over template
             if (tok1 && tok1->str() == ">") {
                 if (tok1->link())
@@ -1711,6 +1734,9 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
                 if (Token::Match(tok1, "%name%"))
                     tok1 = tok1->previous();
                 else if (tok1 && tok1->str() == ">" && tok1->link() && Token::Match(tok1->link()->previous(), "%name%"))
+                    tok1 = tok1->link()->tokAt(-2);
+                else if (Token::simpleMatch(tok1, ")") && tok1->link() &&
+                         Token::simpleMatch(tok1->link()->previous(), "decltype ("))
                     tok1 = tok1->link()->tokAt(-2);
             }
 
@@ -2328,6 +2354,11 @@ const Token *Function::setFlags(const Token *tok1, const Scope *scope)
         // constexpr function
         else if (tok1->str() == "constexpr") {
             isConstexpr(true);
+        }
+
+        // decltype
+        else if (tok1->str() == ")" && Token::simpleMatch(tok1->link()->previous(), "decltype (")) {
+            tok1 = tok1->link()->previous();
         }
 
         // Function template
@@ -6059,7 +6090,10 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
         Token *autoTok = parent->tokAt(-2);
         setValueType(autoTok, *vt2);
         setAutoTokenProperties(autoTok);
-        const_cast<Variable *>(parent->previous()->variable())->setValueType(*vt2);
+        if (parent->previous()->variable())
+            const_cast<Variable*>(parent->previous()->variable())->setValueType(*vt2);
+        else
+            debugMessage(parent->previous(), "debug", "Missing variable class for variable with varid");
         return;
     }
 

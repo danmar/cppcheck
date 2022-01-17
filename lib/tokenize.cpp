@@ -1057,6 +1057,7 @@ void Tokenizer::simplifyTypedef()
             int memberScope = 0;
             bool globalScope = false;
             int classLevel = spaceInfo.size();
+            bool inTypeDef = false;
             std::string removed;
             std::string classPath;
             for (size_t i = 1; i < spaceInfo.size(); ++i) {
@@ -1070,6 +1071,36 @@ void Tokenizer::simplifyTypedef()
                     return;
 
                 removed.clear();
+
+                if (Token::simpleMatch(tok2, "typedef"))
+                    inTypeDef = true;
+
+                if (inTypeDef && Token::simpleMatch(tok2, ";"))
+                    inTypeDef = false;
+
+                // Check for variable declared with the same name
+                if (!inTypeDef && spaceInfo.size() == 1 && Token::Match(tok2->previous(), "%name%") &&
+                    !tok2->previous()->isKeyword()) {
+                    Token* varDecl = tok2;
+                    while (Token::Match(varDecl, "*|&|&&|const"))
+                        varDecl = varDecl->next();
+                    if (Token::Match(varDecl, "%name% ;|,|)|=") && varDecl->str() == typeName->str()) {
+                        // Skip to the next closing brace
+                        if (Token::Match(varDecl, "%name% ) {")) { // is argument variable
+                            tok2 = varDecl->linkAt(2)->next();
+                        } else {
+                            tok2 = varDecl;
+                            while (tok2 && !Token::simpleMatch(tok2, "}")) {
+                                if (Token::Match(tok2, "(|{|["))
+                                    tok2 = tok2->link();
+                                tok2 = tok2->next();
+                            }
+                        }
+                        if (!tok2)
+                            break;
+                        continue;
+                    }
+                }
 
                 if (tok2->link()) { // Pre-check for performance
                     // check for end of scope
@@ -4554,7 +4585,8 @@ void Tokenizer::createLinks2()
                 }
             } else {
                 type.pop();
-                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <") &&
+                if (Token::Match(token, "> %name%") && !token->next()->isKeyword() &&
+                    Token::Match(top1->tokAt(-2), "%op% %name% <") &&
                     (templateTokens.empty() || top1 != templateTokens.top()))
                     continue;
                 Token::createMutualLinks(top1, token);
@@ -4823,8 +4855,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Simplify the C alternative tokens (and, or, etc.)
     simplifyCAlternativeTokens();
 
-    reportUnknownMacros();
-
     simplifyFunctionTryCatch();
 
     simplifyHeadersAndUnusedTemplates();
@@ -5018,6 +5048,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Split up variable declarations.
     simplifyVarDecl(false);
+
+    reportUnknownMacros();
 
     // typedef..
     if (mTimerResults) {
@@ -10067,6 +10099,17 @@ static const Token* skipCPPOrAlignAttribute(const Token * tok)
     return tok;
 }
 
+static bool isNonMacro(const Token* tok)
+{
+    if (tok->isKeyword())
+        return true;
+    if (cAlternativeTokens.count(tok->str()) > 0)
+        return true;
+    if (tok->str().compare(0, 2, "__") == 0) // attribute/annotation
+        return true;
+    return false;
+}
+
 void Tokenizer::reportUnknownMacros() const
 {
     // Report unknown macros used in expressions "%name% %num%"
@@ -10159,6 +10202,29 @@ void Tokenizer::reportUnknownMacros() const
                 continue;
             unknownMacroError(tok->next());
         }
+    }
+
+    // Report unknown macros without commas or operators inbetween statements: MACRO1() MACRO2()
+    for (const Token* tok = tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%name% ("))
+            continue;
+        if (isNonMacro(tok))
+            continue;
+
+        const Token* endTok = tok->linkAt(1);
+        if (!Token::Match(endTok, ") %name% (|."))
+            continue;
+
+        const Token* tok2 = endTok->next();
+        if (isNonMacro(tok2))
+            continue;
+
+        if (tok2->next()->str() == "(") {
+            if (Token::Match(tok->previous(), "%name%|::|>"))
+                continue;
+        }
+
+        unknownMacroError(tok);
     }
 }
 

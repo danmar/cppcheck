@@ -1658,12 +1658,12 @@ private:
               "std::vector<int>& g();\n"
               "void foo() {\n"
               "    auto it = f().end() - 1;\n"
-              "    f().begin() - it\n"
-              "    f().begin()+1 - it\n"
-              "    f().begin() - (it + 1)\n"
-              "    f().begin() - f().end()\n"
-              "    f().begin()+1 - f().end()\n"
-              "    f().begin() - (f().end() + 1)\n"
+              "    f().begin() - it;\n"
+              "    f().begin()+1 - it;\n"
+              "    f().begin() - (it + 1);\n"
+              "    f().begin() - f().end();\n"
+              "    f().begin()+1 - f().end();\n"
+              "    f().begin() - (f().end() + 1);\n"
               "    (void)std::find(f().begin(), it, 0);\n"
               "    (void)std::find(f().begin(), it + 1, 0);\n"
               "    (void)std::find(f().begin() + 1, it + 1, 0);\n"
@@ -4243,6 +4243,20 @@ private:
               "    return *(v.begin() + v.size() - 1);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10716
+        check("struct a;\n"
+              "class b {\n"
+              "  void c(std::map<std::string, a *> &);\n"
+              "  std::string d;\n"
+              "  std::map<std::string, std::set<std::string>> e;\n"
+              "};\n"
+              "void b::c(std::map<std::string, a *> &) {\n"
+              "  e.clear();\n"
+              "  auto f = *e[d].begin();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Out of bounds access in expression 'e[d].begin()' because 'e[d]' is empty.\n",
+                      errout.str());
     }
 
     void dereferenceInvalidIterator2() {

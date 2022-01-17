@@ -135,14 +135,17 @@ void TokenList::determineCppC()
         mKeywords.insert("mutable");
         mKeywords.insert("namespace");
         mKeywords.insert("new");
+        mKeywords.insert("noexcept");
         mKeywords.insert("operator");
         mKeywords.insert("private");
         mKeywords.insert("protected");
         mKeywords.insert("public");
         mKeywords.insert("reinterpret_cast");
+        mKeywords.insert("static_assert");
         mKeywords.insert("static_cast");
         mKeywords.insert("template");
         mKeywords.insert("this");
+        mKeywords.insert("thread_local");
         mKeywords.insert("throw");
         //mKeywords.insert("true"); // literal
         mKeywords.insert("try");
@@ -152,6 +155,19 @@ void TokenList::determineCppC()
         mKeywords.insert("using");
         mKeywords.insert("virtual");
         //mKeywords.insert("wchar_t"); // type
+        if (!mSettings || mSettings->standards.cpp >= Standards::CPP20) {
+            mKeywords.insert("alignas");
+            mKeywords.insert("alignof");
+            mKeywords.insert("axiom");
+            mKeywords.insert("co_await");
+            mKeywords.insert("co_return");
+            mKeywords.insert("co_yield");
+            mKeywords.insert("concept");
+            mKeywords.insert("synchronized");
+            mKeywords.insert("consteval");
+            mKeywords.insert("reflexpr");
+            mKeywords.insert("requires");
+        }
     }
 }
 
@@ -613,7 +629,8 @@ static bool iscpp11init_impl(const Token * const tok)
         nameToken = nameToken->link()->previous();
 
     const Token *endtok = nullptr;
-    if (Token::Match(nameToken, "%name%|return {") && (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
+    if (Token::Match(nameToken, "%name%|return|: {") &&
+        (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
@@ -625,7 +642,7 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     if (Token::simpleMatch(nameToken->previous(), "namespace"))
         return false;
-    if (Token::Match(nameToken, "%any% {")) {
+    if (Token::Match(nameToken, "%any% {") && !Token::Match(nameToken, "return|:")) {
         // If there is semicolon between {..} this is not a initlist
         for (const Token *tok2 = nameToken->next(); tok2 != endtok; tok2 = tok2->next()) {
             if (tok2->str() == ";")
@@ -819,7 +836,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 }
             } else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::Match(tok, "} ,|:"))
+            if (Token::Match(tok, "} ,|:|)"))
                 tok = tok->next();
         } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {") && !Token::findsimplematch(tok, ";", tok->link())) {
             if (Token::simpleMatch(tok, "{ }"))
@@ -1677,6 +1694,20 @@ void TokenList::validateAst() const
                                     "Syntax Error: AST broken, '" + tok->previous()->str() +
                                     "' doesn't have two operands.",
                                     InternalError::AST);
+        }
+
+        // Check member access
+        if (Token::Match(tok, "%var% .")) {
+            if (!tok->astParent()) {
+                throw InternalError(
+                          tok, "Syntax Error: AST broken, '" + tok->str() + "' doesn't have a parent.", InternalError::AST);
+            }
+            if (!tok->next()->astOperand1() || !tok->next()->astOperand2()) {
+                const std::string& op =
+                    tok->next()->originalName().empty() ? tok->next()->str() : tok->next()->originalName();
+                throw InternalError(
+                          tok, "Syntax Error: AST broken, '" + op + "' doesn't have two operands.", InternalError::AST);
+            }
         }
     }
 }

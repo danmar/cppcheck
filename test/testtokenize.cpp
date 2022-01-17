@@ -3375,6 +3375,19 @@ private:
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
+
+        {
+            // #10664
+            const char code[] = "class C1 : public T1<D2<C2>const> {};\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< C2");
+            const Token* tok2 = Token::findsimplematch(tok1, "> const");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
     }
 
     void simplifyString() {
@@ -5892,6 +5905,7 @@ private:
         ASSERT_EQUALS("foryz:(", testAst("for (decltype(x) *y : z);"));
         ASSERT_EQUALS("for(tmpNULL!=tmptmpnext.=;;( tmpa=", testAst("for ( ({ tmp = a; }) ; tmp != NULL; tmp = tmp->next ) {}"));
         ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
+        ASSERT_EQUALS("forae*bc.({:(", testAst("for (a *e : {b->c()});"));
 
         // for with initializer (c++20)
         ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));
@@ -6487,6 +6501,12 @@ private:
 
         const char code8[] = "void foo() { a = [](int x, decltype(vec) y){}; }";
         ASSERT_NO_THROW(tokenizeAndStringify(code8));
+
+        const char code9[] = "void f(std::exception c) { b(M() c.what()); }";
+        ASSERT_THROW(tokenizeAndStringify(code9), InternalError);
+
+        const char code10[] = "void f(std::exception c) { b(M() M() + N(c.what())); }";
+        ASSERT_THROW(tokenizeAndStringify(code10), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()

@@ -6179,6 +6179,17 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #10718
+        // Should probably not be inconclusive
+        check("struct a {\n"
+              "  int b() const;\n"
+              "  auto c() -> decltype(0) {\n"
+              "    a d;\n"
+              "    int e = d.b(), f = d.b();\n"
+              "    return e + f;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (style, inconclusive) Same expression used in consecutive assignments of 'e' and 'f'.\n", errout.str());
     }
 
     void multiConditionSameExpression() {
