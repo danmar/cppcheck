@@ -2210,6 +2210,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 return false;
 
             tok1 = jumpBackToken?jumpBackToken:end; // Jump back to first [ to check inside, or jump to end of expression
+            if (tok1 == end && Token::Match(end->previous(), ". %name% ( !!)"))
+                tok1 = tok1->previous(); // check function call
         }
 
         // streaming: <<
