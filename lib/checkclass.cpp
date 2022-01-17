@@ -2226,7 +2226,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
         }
 
         // function/constructor call, return init list
-        else if ((Token::Match(tok1, "%name% (|{") || Token::Match(tok1->astParent(), "return {")) && !tok1->isStandardType() &&
+        else if ((Token::Match(tok1, "%name% (|{") || Token::simpleMatch(tok1->astParent(), "return {")) && !tok1->isStandardType() &&
                  !Token::Match(tok1, "return|if|string|switch|while|catch|for")) {
             if (isMemberFunc(scope, tok1) && tok1->strAt(-1) != ".") {
                 if (!isConstMemberFunc(scope, tok1))
