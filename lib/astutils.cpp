@@ -42,7 +42,7 @@
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
 {
-    std::stack<T *> tokens;
+    std::stack<T *, std::vector<T *>> tokens;
     tokens.push(ast);
     while (!tokens.empty()) {
         T *tok = tokens.top();
@@ -54,10 +54,16 @@ void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
 
         if (c == ChildrenToVisit::done)
             break;
-        if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2)
-            tokens.push(tok->astOperand2());
-        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2)
-            tokens.push(tok->astOperand1());
+        if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2) {
+            T *t2 = tok->astOperand2();
+            if (t2)
+                tokens.push(t2);
+        }
+        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2) {
+            T *t1 = tok->astOperand1();
+            if (t1)
+                tokens.push(t1);
+        }
     }
 }
 
