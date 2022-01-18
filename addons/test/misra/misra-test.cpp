@@ -18,7 +18,7 @@ private:
 };
 C2::C2() : f(NULL) {}
 
-static bool test_misra_21_1_crash(void)
+static void test_misra_21_1_crash(void)
 {
     auto misra_21_1_C a, b; // 12.3
     a = b;
