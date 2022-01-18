@@ -2426,7 +2426,7 @@ const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path)
             continue;
         if (value.isImpossible())
             continue;
-        if (value.path != 0 && value.path != path)
+        if (path > -0 && value.path != 0 && value.path != path)
             continue;
         if ((!ret || value.intvalue > ret->intvalue) &&
             ((value.condition != nullptr) == condition))
