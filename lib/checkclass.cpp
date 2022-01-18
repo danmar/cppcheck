@@ -2168,10 +2168,15 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                             return false;
                         const Token* assignTok = end->next()->astParent();
                         if (assignTok && assignTok->isAssignmentOp() && assignTok->astOperand1() && assignTok->astOperand1()->variable()) {
-                            // operator[] yielding non-const pointer is likely not const
                             const Variable* assignVar = assignTok->astOperand1()->variable();
-                            if (assignVar->isPointer() && !assignVar->isConst())
-                                return false;
+                            if (assignVar->isPointer() && !assignVar->isConst() && var->typeScope()) {
+                              const auto& funcMap = var->typeScope()->functionMap;
+                              // if there is no operator that is const and returns a non-const pointer, func cannot be const
+                              if (std::none_of(funcMap.begin(), funcMap.end(), [](const auto& fm) {
+                                  return fm.second->isConst() && fm.first == "operator[]" && !Function::returnsConst(fm.second);
+                                  }))
+                                  return false;
+                            }
                         }
                     }
                     if (!jumpBackToken)
