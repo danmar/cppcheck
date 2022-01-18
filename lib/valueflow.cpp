@@ -2973,10 +2973,10 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Error
     return msg;
 }
 
-std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive, MathLib::bigint path)
+std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok, bool inconclusive, MathLib::bigint path)
 {
     std::vector<ValueFlow::Value> result;
-    auto pred = [&](const ValueFlow::Value &v) {
+    auto pred = [&](const ValueFlow::Value& v) {
         if (!v.isLocalLifetimeValue() && !(path != 0 && v.isSubFunctionLifetimeValue()))
             return false;
         if (!inconclusive && v.isInconclusive())

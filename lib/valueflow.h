@@ -513,6 +513,8 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Value
 
 CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 
-CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive = false, MathLib::bigint path = 0);
+CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok,
+                                                               bool inconclusive = false,
+                                                               MathLib::bigint path = 0);
 
 #endif // valueflowH
