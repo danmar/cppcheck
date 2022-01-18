@@ -65,6 +65,12 @@ QStringList QString6(QString s) {
     return QStringList{ "*" + s + "*" };
 }
 
+// cppcheck-suppress passedByValue
+bool QString7(QString s) {
+    const QString& l = get();
+    return l.startsWith(s);
+}
+
 void QByteArray1(QByteArray byteArrayArg)
 {
     for (int i = 0; i <= byteArrayArg.size(); ++i) {

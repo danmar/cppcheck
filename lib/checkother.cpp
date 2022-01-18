@@ -1214,13 +1214,21 @@ static bool canBeConst(const Variable *var, const Settings* settings)
                     argNr++;
                 tok3 = tok3->previous();
             }
-            if (!tok3 || tok3->str() != "(" || !tok3->astOperand1() || !tok3->astOperand1()->function())
+            if (!tok3 || tok3->str() != "(")
                 return false;
-            else {
-                const Variable* argVar = tok3->astOperand1()->function()->getArgumentVar(argNr);
+            const Token* functionTok = tok3->astOperand1();
+            if (!functionTok)
+                return false;
+            const Function* tokFunction = functionTok->function();
+            if (!tokFunction && functionTok->str() == "." && (functionTok = functionTok->astOperand2()))
+                tokFunction = functionTok->function();
+            if (tokFunction) {
+                const Variable* argVar = tokFunction->getArgumentVar(argNr);
                 if (!argVar || (!argVar->isConst() && argVar->isReference()))
                     return false;
             }
+            else if (!settings->library.isFunctionConst(functionTok))
+                return false;            
         } else if (parent->isUnaryOp("&")) {
             // TODO: check how pointer is used
             return false;
