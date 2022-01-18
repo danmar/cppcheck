@@ -2166,6 +2166,13 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                         const Variable *var = end->variable();
                         if (var && var->isStlType(stl_containers_not_const))
                             return false;
+                        const Token* assignTok = end->next()->astParent();
+                        if (assignTok && assignTok->isAssignmentOp() && assignTok->astOperand1() && assignTok->astOperand1()->variable()) {
+                            // operator[] yielding non-const pointer is likely not const
+                            const Variable* assignVar = assignTok->astOperand1()->variable();
+                            if (assignVar->isPointer() && !assignVar->isConst())
+                                return false;
+                        }
                     }
                     if (!jumpBackToken)
                         jumpBackToken = end->next(); // Check inside the [] brackets
