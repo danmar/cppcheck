@@ -1228,7 +1228,7 @@ static bool canBeConst(const Variable *var, const Settings* settings)
                     return false;
             }
             else if (!settings->library.isFunctionConst(functionTok))
-                return false;            
+                return false;
         } else if (parent->isUnaryOp("&")) {
             // TODO: check how pointer is used
             return false;

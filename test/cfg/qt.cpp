@@ -66,8 +66,7 @@ QStringList QString6(QString s) {
 }
 
 // cppcheck-suppress passedByValue
-bool QString7(QString s) {
-    const QString& l = get();
+bool QString7(QString s, const QString& l) {
     return l.startsWith(s);
 }
 
