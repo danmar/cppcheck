@@ -236,15 +236,15 @@ public:
         return mVariableContracts;
     }
 
-    void setVariableContracts(QString var, QString min, QString max) {
+    void setVariableContracts(QString var, const QString& min, const QString& max) {
         mVariableContracts[var] = Settings::VariableContracts{min.toStdString(), max.toStdString()};
     }
 
-    void deleteFunctionContract(QString function) {
+    void deleteFunctionContract(const QString& function) {
         mFunctionContracts.erase(function.toStdString());
     }
 
-    void deleteVariableContract(QString var) {
+    void deleteVariableContract(const QString& var) {
         mVariableContracts.erase(var);
     }
 
@@ -313,7 +313,7 @@ public:
     void setLibraries(const QStringList &libraries);
 
     /** Set contract for a function */
-    void setFunctionContract(QString function, QString expects);
+    void setFunctionContract(const QString& function, const QString& expects);
 
     /**
      * @brief Set platform.
@@ -350,7 +350,7 @@ public:
     }
 
     /** Set tags for a warning */
-    void setWarningTags(std::size_t hash, QString tags);
+    void setWarningTags(std::size_t hash, const QString& tags);
 
     /** Get tags for a warning */
     QString getWarningTags(std::size_t hash) const;

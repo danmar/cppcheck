@@ -1918,7 +1918,7 @@ void MainWindow::editVariableContract(QString var)
     updateVariableContractsTab();
 }
 
-void MainWindow::deleteFunctionContract(QString function)
+void MainWindow::deleteFunctionContract(const QString& function)
 {
     if (mProjectFile) {
         mProjectFile->deleteFunctionContract(function);
@@ -1926,7 +1926,7 @@ void MainWindow::deleteFunctionContract(QString function)
     }
 }
 
-void MainWindow::deleteVariableContract(QString var)
+void MainWindow::deleteVariableContract(const QString& var)
 {
     if (mProjectFile) {
         mProjectFile->deleteVariableContract(var);
