@@ -16,7 +16,7 @@ public:
 private:
 	void* f;
 };
-C2::C2() : f(NULL) {}
+C2::C2(void) : f(NULL) {}
 
 static void test_misra_21_1_crash(void)
 {
