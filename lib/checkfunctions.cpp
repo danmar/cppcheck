@@ -307,7 +307,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 bool reachable = false;
                 for (const Token *switchToken = tok->link()->next(); switchToken != tok; switchToken = switchToken->next()) {
                     if (reachable && Token::simpleMatch(switchToken, "break ;")) {
-                        if (Token::simpleMatch(switchToken->previous(), "}") && !checkMissingReturnScope(switchToken->previous(), library))
+                        if (Token::exactMatch(switchToken->previous(), "}") && !checkMissingReturnScope(switchToken->previous(), library))
                             reachable = false;
                         else
                             return switchToken;

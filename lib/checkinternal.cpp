@@ -94,7 +94,7 @@ void CheckInternal::checkRedundantTokCheck()
             // the first tok->previous() check is redundant
             const Token *astOp1 = tok->astOperand1();
             const Token *astOp2 = getArguments(tok->tokAt(3))[0];
-            if (Token::simpleMatch(astOp1, "&&")) {
+            if (Token::exactMatch(astOp1, "&&")) {
                 astOp1 = astOp1->astOperand2();
             }
             if (astOp1->expressionString() == astOp2->expressionString()) {
@@ -103,11 +103,11 @@ void CheckInternal::checkRedundantTokCheck()
             // if (!tok || !Token::match(tok, "foo"))
         } else if (Token::Match(tok, "%oror% ! Token :: simpleMatch|Match|findsimplematch|findmatch (")) {
             const Token *negTok = tok->next()->astParent()->astOperand1();
-            if (Token::simpleMatch(negTok, "||")) {
+            if (Token::exactMatch(negTok, "||")) {
                 negTok = negTok->astOperand2();
             }
             // the first tok condition is negated
-            if (Token::simpleMatch(negTok, "!")) {
+            if (Token::exactMatch(negTok, "!")) {
                 const Token *astOp1 = negTok->astOperand1();
                 const Token *astOp2 = getArguments(tok->tokAt(4))[0];
 

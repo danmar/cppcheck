@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "matchcompiler.h"
 #include "mathlib.h"
 #include "valueflow.h"
 #include "templatesimplifier.h"
@@ -37,6 +38,9 @@
 #include <string>
 #include <utility>
 #include <vector>
+#ifndef NDEBUG
+#include <cstring>
+#endif
 
 class Enumerator;
 class Function;
@@ -277,6 +281,12 @@ public:
     }
 
     static bool simpleMatch(const Token *tok, const char pattern[], size_t pattern_len);
+
+	template<size_t count>
+	static bool exactMatch(const Token *tok, const char (&pattern)[count]) {
+        assert(std::memchr(pattern, ' ', count-1) == nullptr);
+        return tok && MatchCompiler::equalN<count>(tok->str().c_str(), pattern);
+    }
 
     /**
      * Match given token (or list of tokens) to a pattern list.

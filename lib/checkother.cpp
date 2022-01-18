@@ -795,7 +795,7 @@ void CheckOther::checkUnreachableCode()
             else if (Token::Match(tok, "break|continue ;"))
                 secondBreak = tok->tokAt(2);
             else if (Token::Match(tok, "[;{}:] return|throw") && tok->next()->isKeyword()) {
-                if (Token::simpleMatch(tok->astParent(), "?"))
+                if (Token::exactMatch(tok->astParent(), "?"))
                     continue;
                 tok = tok->next(); // tok should point to return or throw
                 for (const Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
@@ -812,7 +812,7 @@ void CheckOther::checkUnreachableCode()
             } else if (Token::Match(tok, "%name% (") && mSettings->library.isnoreturn(tok) && !Token::Match(tok->next()->astParent(), "?|:")) {
                 if ((!tok->function() || (tok->function()->token != tok && tok->function()->tokenDef != tok)) && tok->linkAt(1)->strAt(1) != "{")
                     secondBreak = tok->linkAt(1)->tokAt(2);
-                if (Token::simpleMatch(secondBreak, "return")) {
+                if (Token::exactMatch(secondBreak, "return")) {
                     // clarification for tools that function returns
                     continue;
                 }
@@ -949,7 +949,7 @@ void CheckOther::checkVariableScope()
                 continue;
         }
         // bailout if initialized with function call that has possible side effects
-        if (Token::Match(tok, "[(=]") && Token::simpleMatch(tok->astOperand2(), "("))
+        if (Token::Match(tok, "[(=]") && Token::exactMatch(tok->astOperand2(), "("))
             continue;
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
@@ -1435,7 +1435,7 @@ void CheckOther::checkConstVariable()
                     return true;
                 while (retTok && retTok->isCast())
                     retTok = retTok->astOperand2();
-                while (Token::simpleMatch(retTok, "."))
+                while (Token::exactMatch(retTok, "."))
                     retTok = retTok->astOperand2();
                 return hasLifetimeToken(getParentLifetime(retTok), var->nameToken());
             }))
@@ -1485,7 +1485,7 @@ void CheckOther::checkConstVariable()
             for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
                 if (tok->variable() == var && Token::Match(tok, "%var% .")) {
                     const Token *parent = tok;
-                    while (Token::simpleMatch(parent->astParent(), ".") && parent == parent->astParent()->astOperand1())
+                    while (Token::exactMatch(parent->astParent(), ".") && parent == parent->astParent()->astOperand1())
                         parent = parent->astParent();
                     if (parent->valueType() &&
                         parent->valueType()->pointer > 0 &&
@@ -1553,12 +1553,12 @@ void CheckOther::checkConstPointer()
         bool deref = false;
         if (parent && parent->isUnaryOp("*"))
             deref = true;
-        else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok)
+        else if (Token::exactMatch(parent, "[") && parent->astOperand1() == tok)
             deref = true;
         if (deref) {
             if (Token::Match(parent->astParent(), "%cop%") && !parent->astParent()->isUnaryOp("&") && !parent->astParent()->isUnaryOp("*"))
                 continue;
-            if (Token::simpleMatch(parent->astParent(), "return"))
+            if (Token::exactMatch(parent->astParent(), "return"))
                 continue;
             else if (Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand2()) {
                 bool takingRef = false;
@@ -1567,12 +1567,12 @@ void CheckOther::checkConstPointer()
                     takingRef = true;
                 if (!takingRef)
                     continue;
-            } else if (Token::simpleMatch(parent->astParent(), "[") && parent->astParent()->astOperand2() == parent)
+            } else if (Token::exactMatch(parent->astParent(), "[") && parent->astParent()->astOperand2() == parent)
                 continue;
         } else {
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
                 continue;
-            else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
+            else if (Token::exactMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
         }
         nonConstPointers.insert(tok->variable());
@@ -1652,7 +1652,7 @@ void CheckOther::checkCharVariable()
                 }
 
                 // is the result stored in a short|int|long?
-                if (warn && Token::simpleMatch(tok->astParent(), "=")) {
+                if (warn && Token::exactMatch(tok->astParent(), "=")) {
                     const Token *lhs = tok->astParent()->astOperand1();
                     if (lhs && lhs->valueType() && lhs->valueType()->type >= ValueType::Type::SHORT)
                         charBitOpError(tok); // This is an error..
@@ -1705,9 +1705,9 @@ static bool isType(const Token * tok, bool unknown)
 {
     if (Token::Match(tok, "%type%"))
         return true;
-    if (Token::simpleMatch(tok, "::"))
+    if (Token::exactMatch(tok, "::"))
         return isType(tok->astOperand2(), unknown);
-    if (Token::simpleMatch(tok, "<") && tok->link())
+    if (Token::exactMatch(tok, "<") && tok->link())
         return true;
     if (unknown && Token::Match(tok, "%name% !!("))
         return true;
@@ -1748,7 +1748,7 @@ static bool isConstStatement(const Token *tok)
         return isConstStatement(tok->astOperand2());
     if (Token::Match(tok, "( %type%"))
         return isConstStatement(tok->astOperand1());
-    if (Token::simpleMatch(tok, ","))
+    if (Token::exactMatch(tok, ","))
         return isConstStatement(tok->astOperand2());
     return false;
 }
@@ -1760,7 +1760,7 @@ static bool isVoidStmt(const Token *tok)
     const Token *tok2 = tok;
     while (tok2->astOperand1())
         tok2 = tok2->astOperand1();
-    if (Token::simpleMatch(tok2->previous(), ")") && Token::simpleMatch(tok2->previous()->link(), "( void"))
+    if (Token::exactMatch(tok2->previous(), ")") && Token::simpleMatch(tok2->previous()->link(), "( void"))
         return true;
     if (Token::simpleMatch(tok2, "( void"))
         return true;
@@ -1773,9 +1773,9 @@ static bool isConstTop(const Token *tok)
         return false;
     if (!tok->astParent())
         return true;
-    if (Token::simpleMatch(tok->astParent(), ";") &&
-        Token::Match(tok->astTop()->previous(), "for|if (") && Token::simpleMatch(tok->astTop()->astOperand2(), ";")) {
-        if (Token::simpleMatch(tok->astParent()->astParent(), ";"))
+    if (Token::exactMatch(tok->astParent(), ";") &&
+        Token::Match(tok->astTop()->previous(), "for|if (") && Token::exactMatch(tok->astTop()->astOperand2(), ";")) {
+        if (Token::exactMatch(tok->astParent()->astParent(), ";"))
             return tok->astParent()->astOperand2() == tok;
         else
             return tok->astParent()->astOperand1() == tok;
@@ -1818,7 +1818,7 @@ void CheckOther::checkIncompleteStatement()
         }
 
         const Token *rtok = nextAfterAstRightmostLeaf(tok);
-        if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
+        if (!Token::exactMatch(tok->astParent(), ";") && !Token::exactMatch(rtok, ";") &&
             !Token::Match(tok->previous(), ";|}|{ %any% ;"))
             continue;
         // Skip statement expressions
@@ -1844,7 +1844,7 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         valueTok = valueTok->astOperand2() ? valueTok->astOperand2() : valueTok->astOperand1();
 
     std::string msg;
-    if (Token::simpleMatch(tok, "=="))
+    if (Token::exactMatch(tok, "=="))
         msg = "Found suspicious equality comparison. Did you intend to assign a value instead?";
     else if (Token::Match(tok, ",|!|~|%cop%"))
         msg = "Found suspicious operator '" + tok->str() + "'";
@@ -1917,7 +1917,7 @@ void CheckOther::checkNanInArithmeticExpression()
             continue;
         if (!Token::Match(tok->astParent(), "[+-]"))
             continue;
-        if (Token::simpleMatch(tok->astOperand2(), "0.0"))
+        if (Token::exactMatch(tok->astOperand2(), "0.0"))
             nanInArithmeticExpressionError(tok);
     }
 }
@@ -2289,7 +2289,7 @@ void CheckOther::checkDuplicateExpression()
                             duplicateExpressionError(tok->astOperand1(), tok->astOperand2(), tok, errorPath);
                         }
                     }
-                } else if (tok->str() == "=" && Token::simpleMatch(tok->astOperand2(), "=") &&
+                } else if (tok->str() == "=" && Token::exactMatch(tok->astOperand2(), "=") &&
                            isSameExpression(mTokenizer->isCPP(),
                                             false,
                                             tok->astOperand1(),
@@ -2532,10 +2532,10 @@ bool CheckOther::testIfNonZeroExpressionIsPositive(const Token *tok, const Value
     const ValueFlow::Value *v1 = tok->astOperand1()->getValue(0);
     const ValueFlow::Value *v2 = tok->astOperand2()->getValue(0);
 
-    if (Token::simpleMatch(tok, ">=") && v2 && v2->isKnown()) {
+    if (Token::exactMatch(tok, ">=") && v2 && v2->isKnown()) {
         *zeroValue = v2;
         *nonZeroExpr = tok->astOperand1();
-    } else if (Token::simpleMatch(tok, "<=") && v1 && v1->isKnown()) {
+    } else if (Token::exactMatch(tok, "<=") && v1 && v1->isKnown()) {
         *zeroValue = v1;
         *nonZeroExpr = tok->astOperand2();
     } else {
@@ -2783,7 +2783,7 @@ void CheckOther::checkVarFuncNullUB()
                     if (f && f->argCount() <= argnr) {
                         const Token *tok2 = f->argDef;
                         tok2 = tok2 ? tok2->link() : nullptr; // goto ')'
-                        if (tok2 && Token::simpleMatch(tok2->tokAt(-1), "..."))
+                        if (tok2 && Token::exactMatch(tok2->tokAt(-1), "..."))
                             varFuncNullUBError(tok);
                     }
                 }
@@ -2984,7 +2984,7 @@ void CheckOther::checkEvaluationOrder()
                     break;
                 if (parent->str() == ",") {
                     const Token *par = parent;
-                    while (Token::simpleMatch(par,","))
+                    while (Token::exactMatch(par,","))
                         par = par->astParent();
                     // not function or in a while clause => break
                     if (!(par && par->str() == "(" && par->astOperand2() && par->strAt(-1) != "while"))
@@ -3019,7 +3019,7 @@ void CheckOther::checkEvaluationOrder()
                               [&](const Token *tok3) {
                     if (tok3->str() == "&" && !tok3->astOperand2())
                         return ChildrenToVisit::none; // don't handle address-of for now
-                    if (tok3->str() == "(" && Token::simpleMatch(tok3->previous(), "sizeof"))
+                    if (tok3->str() == "(" && Token::exactMatch(tok3->previous(), "sizeof"))
                         return ChildrenToVisit::none; // don't care about sizeof usage
                     if (isSameExpression(mTokenizer->isCPP(), false, tok->astOperand1(), tok3, mSettings->library, true, false))
                         foundError = true;
@@ -3175,7 +3175,7 @@ void CheckOther::checkFuncArgNamesDifferent()
                     declarations[j] = decl;
                 decl = decl->next();
             }
-            if (Token::simpleMatch(decl, ","))
+            if (Token::exactMatch(decl, ","))
                 decl = decl->next();
         }
         // check for different argument order
@@ -3325,10 +3325,10 @@ static bool isVariableExpression(const Token* tok)
 {
     if (Token::Match(tok, "%var%"))
         return true;
-    if (Token::simpleMatch(tok, "."))
+    if (Token::exactMatch(tok, "."))
         return isVariableExpression(tok->astOperand1()) &&
                isVariableExpression(tok->astOperand2());
-    if (Token::simpleMatch(tok, "["))
+    if (Token::exactMatch(tok, "["))
         return isVariableExpression(tok->astOperand1()) &&
                tok->astOperand2() && tok->astOperand2()->hasKnownIntValue();
     return false;
@@ -3341,7 +3341,7 @@ void CheckOther::checkKnownArgument()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!Token::simpleMatch(tok->astParent(), "("))
+            if (!Token::exactMatch(tok->astParent(), "("))
                 continue;
             if (!Token::Match(tok->astParent()->previous(), "%name%"))
                 continue;
@@ -3376,11 +3376,11 @@ void CheckOther::checkKnownArgument()
 
                 // hide variable explicitly with 'x * 0' etc
                 if (!isVariableExprHidden) {
-                    if (Token::simpleMatch(child, "*") && (Token::simpleMatch(child->astOperand1(), "0") || Token::simpleMatch(child->astOperand2(), "0")))
+                    if (Token::exactMatch(child, "*") && (Token::exactMatch(child->astOperand1(), "0") || Token::exactMatch(child->astOperand2(), "0")))
                         return ChildrenToVisit::none;
-                    if (Token::simpleMatch(child, "&&") && (Token::simpleMatch(child->astOperand1(), "false") || Token::simpleMatch(child->astOperand2(), "false")))
+                    if (Token::exactMatch(child, "&&") && (Token::exactMatch(child->astOperand1(), "false") || Token::exactMatch(child->astOperand2(), "false")))
                         return ChildrenToVisit::none;
-                    if (Token::simpleMatch(child, "||") && (Token::simpleMatch(child->astOperand1(), "true") || Token::simpleMatch(child->astOperand2(), "true")))
+                    if (Token::exactMatch(child, "||") && (Token::exactMatch(child->astOperand1(), "true") || Token::exactMatch(child->astOperand2(), "true")))
                         return ChildrenToVisit::none;
                 }
 
@@ -3465,7 +3465,7 @@ void CheckOther::comparePointersError(const Token *tok, const ValueFlow::Value *
 {
     ErrorPath errorPath;
     std::string verb = "Comparing";
-    if (Token::simpleMatch(tok, "-"))
+    if (Token::exactMatch(tok, "-"))
         verb = "Subtracting";
     if (v1) {
         errorPath.emplace_back(v1->tokvalue->variable()->nameToken(), "Variable declared here.");
@@ -3513,7 +3513,7 @@ static bool getBufAndOffset(const Token *expr, const Token **buf, MathLib::bigin
     if (!expr)
         return false;
     const Token *bufToken, *offsetToken;
-    if (expr->isUnaryOp("&") && Token::simpleMatch(expr->astOperand1(), "[")) {
+    if (expr->isUnaryOp("&") && Token::exactMatch(expr->astOperand1(), "[")) {
         bufToken = expr->astOperand1()->astOperand1();
         offsetToken = expr->astOperand1()->astOperand2();
     } else if (Token::Match(expr, "+|-") && expr->isBinaryOp()) {
@@ -3552,7 +3552,7 @@ void CheckOther::checkOverlappingWrite()
             if (tok->isAssignmentOp()) {
                 // check if LHS is a union member..
                 const Token * const lhs = tok->astOperand1();
-                if (!Token::simpleMatch(lhs, ".") || !lhs->isBinaryOp())
+                if (!Token::exactMatch(lhs, ".") || !lhs->isBinaryOp())
                     continue;
                 const Variable * const lhsvar = lhs->astOperand1()->variable();
                 if (!lhsvar || !lhsvar->typeScope() || lhsvar->typeScope()->type != Scope::ScopeType::eUnion)
@@ -3564,7 +3564,7 @@ void CheckOther::checkOverlappingWrite()
                 // Is other union member used in RHS?
                 const Token *errorToken = nullptr;
                 visitAstNodes(tok->astOperand2(), [lhsvar, lhsmember, &errorToken](const Token *rhs) {
-                    if (!Token::simpleMatch(rhs, "."))
+                    if (!Token::exactMatch(rhs, "."))
                         return ChildrenToVisit::op1_and_op2;
                     if (!rhs->isBinaryOp() || rhs->astOperand1()->variable() != lhsvar)
                         return ChildrenToVisit::none;

@@ -246,12 +246,12 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
         const Token* containerTok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
         if (containerTok)
             pm.setContainerSizeValue(containerTok, then ? truevalue.intvalue : falsevalue.intvalue, !impossible);
-    } else if (Token::simpleMatch(tok, "!")) {
+    } else if (Token::exactMatch(tok, "!")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, !then);
-    } else if (then && Token::simpleMatch(tok, "&&")) {
+    } else if (then && Token::exactMatch(tok, "&&")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
         programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
-    } else if (!then && Token::simpleMatch(tok, "||")) {
+    } else if (!then && Token::exactMatch(tok, "||")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
         programMemoryParseCondition(pm, tok->astOperand2(), endTok, settings, then);
     } else if (Token::Match(tok, "&&|%oror%")) {
@@ -302,7 +302,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
 {
     int indentlevel = 0;
     for (const Token *tok2 = tok; tok2; tok2 = tok2->previous()) {
-        if ((Token::simpleMatch(tok2, "=") || Token::Match(tok2->previous(), "%var% (|{")) && tok2->astOperand1() &&
+        if ((Token::exactMatch(tok2, "=") || Token::Match(tok2->previous(), "%var% (|{")) && tok2->astOperand1() &&
             tok2->astOperand2()) {
             bool setvar = false;
             const Token* vartok = tok2->astOperand1();
@@ -714,7 +714,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         else
             return execute(child->astOperand1(), pm);
     } else if (expr->str() == "(" && expr->isCast()) {
-        if (Token::simpleMatch(expr->previous(), ">") && expr->previous()->link())
+        if (Token::exactMatch(expr->previous(), ">") && expr->previous()->link())
             return execute(expr->astOperand2(), pm);
         else
             return execute(expr->astOperand1(), pm);

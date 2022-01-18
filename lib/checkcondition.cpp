@@ -834,7 +834,7 @@ void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, c
     if (diag(cond1) & diag(cond2))
         return;
 
-    const bool isReturnValue = cond2 && Token::simpleMatch(cond2->astParent(), "return");
+    const bool isReturnValue = cond2 && Token::exactMatch(cond2->astParent(), "return");
 
     const std::string cond(cond1 ? cond1->expressionString() : "x");
     const std::string value = (cond2 && cond2->valueType() && cond2->valueType()->type == ValueType::Type::BOOL) ? "false" : "0";
@@ -1266,10 +1266,10 @@ void CheckCondition::checkModuloAlwaysTrueFalse()
             if (!tok->isComparisonOp())
                 continue;
             const Token *num, *modulo;
-            if (Token::simpleMatch(tok->astOperand1(), "%") && Token::Match(tok->astOperand2(), "%num%")) {
+            if (Token::exactMatch(tok->astOperand1(), "%") && Token::Match(tok->astOperand2(), "%num%")) {
                 modulo = tok->astOperand1();
                 num = tok->astOperand2();
-            } else if (Token::Match(tok->astOperand1(), "%num%") && Token::simpleMatch(tok->astOperand2(), "%")) {
+            } else if (Token::Match(tok->astOperand1(), "%num%") && Token::exactMatch(tok->astOperand2(), "%")) {
                 num = tok->astOperand1();
                 modulo = tok->astOperand2();
             } else {
@@ -1325,7 +1325,7 @@ void CheckCondition::clarifyCondition()
                         // This might be a template
                         if (!isC && tok2->link())
                             break;
-                        if (Token::simpleMatch(tok2->astParent(), "?"))
+                        if (Token::exactMatch(tok2->astParent(), "?"))
                             break;
                         clarifyConditionError(tok, tok->strAt(2) == "=", false);
                         break;
@@ -1379,7 +1379,7 @@ void CheckCondition::alwaysTrueFalse()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::simpleMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
+            if (Token::exactMatch(tok, "<") && tok->link()) // don't write false positives when templates are used
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
@@ -1400,7 +1400,7 @@ void CheckCondition::alwaysTrueFalse()
                     condition = parent->astOperand1();
                 else if (Token::Match(parent->previous(), "if|while ("))
                     condition = parent->astOperand2();
-                else if (Token::simpleMatch(parent, "return"))
+                else if (Token::exactMatch(parent, "return"))
                     condition = parent->astOperand1();
                 else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() && Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
                     condition = parent->astOperand1();
@@ -1436,8 +1436,8 @@ void CheckCondition::alwaysTrueFalse()
                 (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
             const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
-            const bool ternaryExpression = Token::simpleMatch(tok->astParent(), "?");
-            const bool returnExpression = Token::simpleMatch(tok->astTop(), "return") && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
+            const bool ternaryExpression = Token::exactMatch(tok->astParent(), "?");
+            const bool returnExpression = Token::exactMatch(tok->astTop(), "return") && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
 
             if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression || returnExpression))
                 continue;
@@ -1669,7 +1669,7 @@ void CheckCondition::checkDuplicateConditionalAssign()
             if (!blockTok->next())
                 continue;
             const Token *assignTok = blockTok->next()->astTop();
-            if (!Token::simpleMatch(assignTok, "="))
+            if (!Token::exactMatch(assignTok, "="))
                 continue;
             if (nextAfterAstRightmostLeaf(assignTok) != blockTok->link()->previous())
                 continue;
@@ -1731,7 +1731,7 @@ void CheckCondition::checkAssignmentInCondition()
                 assignmentInCondition(tok);
             else if (Token::Match(tok->astParent(), "%oror%|&&"))
                 assignmentInCondition(tok);
-            else if (Token::simpleMatch(tok->astParent(), "?") && tok == tok->astParent()->astOperand1())
+            else if (Token::exactMatch(tok->astParent(), "?") && tok == tok->astParent()->astOperand1())
                 assignmentInCondition(tok);
         }
     }

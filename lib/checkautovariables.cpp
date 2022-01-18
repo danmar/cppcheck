@@ -108,7 +108,7 @@ static bool isAutoVarArray(const Token *tok)
         return false;
 
     // &x[..]
-    if (tok->isUnaryOp("&") && Token::simpleMatch(tok->astOperand1(), "["))
+    if (tok->isUnaryOp("&") && Token::exactMatch(tok->astOperand1(), "["))
         return isAutoVarArray(tok->astOperand1()->astOperand1());
 
     // x+y
@@ -306,7 +306,7 @@ bool CheckAutoVariables::checkAutoVariableAssignment(const Token *expr, bool inc
             errorAutoVariableAssignment(expr, inconclusive);
             return true;
         }
-        if (Token::simpleMatch(tok, "=")) {
+        if (Token::exactMatch(tok, "=")) {
             const Token *lhs = tok;
             while (Token::Match(lhs->previous(), "%name%|.|*"))
                 lhs = lhs->previous();
@@ -443,7 +443,7 @@ static int getPointerDepth(const Token *tok)
     int n = 0;
     std::pair<const Token*, const Token*> decl = Token::typeDecl(tok);
     for (const Token* tok2 = decl.first; tok2 != decl.second; tok2 = tok2->next())
-        if (Token::simpleMatch(tok, "*"))
+        if (Token::exactMatch(tok, "*"))
             n++;
     return n;
 }
@@ -457,7 +457,7 @@ static bool isDeadTemporary(bool cpp, const Token* tok, const Token* expr, const
             return false;
         const Token* parent = tok->astParent();
         // Is in a for loop
-        if (astIsRHS(tok) && Token::simpleMatch(parent, ":") && Token::simpleMatch(parent->astParent(), "(") && Token::simpleMatch(parent->astParent()->previous(), "for (")) {
+        if (astIsRHS(tok) && Token::exactMatch(parent, ":") && Token::exactMatch(parent->astParent(), "(") && Token::simpleMatch(parent->astParent()->previous(), "for (")) {
             const Token* braces = parent->astParent()->link()->next();
             if (precedes(braces, expr) && precedes(expr, braces->link()))
                 return false;
@@ -474,7 +474,7 @@ static bool isEscapedReference(const Variable* var)
         return false;
     if (!var->declEndToken())
         return false;
-    if (!Token::simpleMatch(var->declEndToken(), "="))
+    if (!Token::exactMatch(var->declEndToken(), "="))
         return false;
     const Token* vartok = var->declEndToken()->astOperand2();
     return !isTemporary(true, vartok, nullptr, false);
@@ -494,7 +494,7 @@ static bool isDanglingSubFunction(const Token* tokvalue, const Token* tok)
     while (parent && !Token::Match(parent->previous(), "%name% (")) {
         parent = parent->astParent();
     }
-    if (!Token::simpleMatch(parent, "("))
+    if (!Token::exactMatch(parent, "("))
         return false;
     return exprDependsOnThis(parent);
 }
@@ -503,14 +503,14 @@ static const Variable* getParentVar(const Token* tok)
 {
     if (!tok)
         return nullptr;
-    if (Token::simpleMatch(tok, "."))
+    if (Token::exactMatch(tok, "."))
         return getParentVar(tok->astOperand1());
     return tok->variable();
 }
 
 static bool isAssignedToNonLocal(const Token* tok)
 {
-    if (!Token::simpleMatch(tok->astParent(), "="))
+    if (!Token::exactMatch(tok->astParent(), "="))
         return false;
     if (!astIsRHS(tok))
         return false;
@@ -524,14 +524,14 @@ static std::vector<const Token*> getParentMembers(const Token* tok)
 {
     if (!tok)
         return {};
-    if (!Token::simpleMatch(tok->astParent(), "."))
+    if (!Token::exactMatch(tok->astParent(), "."))
         return {tok};
     const Token* parent = tok;
-    while (Token::simpleMatch(parent->astParent(), "."))
+    while (Token::exactMatch(parent->astParent(), "."))
         parent = parent->astParent();
     std::vector<const Token*> result;
     for (const Token* tok2 : astFlatten(parent, ".")) {
-        if (Token::simpleMatch(tok2, "(") && Token::simpleMatch(tok2->astOperand1(), ".")) {
+        if (Token::exactMatch(tok2, "(") && Token::exactMatch(tok2->astOperand1(), ".")) {
             std::vector<const Token*> sub = getParentMembers(tok2->astOperand1());
             result.insert(result.end(), sub.begin(), sub.end());
         }
@@ -564,17 +564,17 @@ static const Token* getParentLifetime(bool cpp, const Token* tok, const Library*
             if (astIsSmartPointer(tok2))
                 return true;
             const Token* dotTok = tok2->next();
-            if (!Token::simpleMatch(dotTok, ".")) {
+            if (!Token::exactMatch(dotTok, ".")) {
                 const Token* endTok = nextAfterAstRightmostLeaf(tok2);
                 if (!endTok)
                     dotTok = tok2->next();
-                else if (Token::simpleMatch(endTok, "."))
+                else if (Token::exactMatch(endTok, "."))
                     dotTok = endTok;
-                else if (Token::simpleMatch(endTok->next(), "."))
+                else if (Token::exactMatch(endTok->next(), "."))
                     dotTok = endTok->next();
             }
             // If we are dereferencing the member variable then treat it as borrowed
-            if (Token::simpleMatch(dotTok, ".") && dotTok->originalName() == "->")
+            if (Token::exactMatch(dotTok, ".") && dotTok->originalName() == "->")
                 return true;
         }
         const Variable* var = tok2->variable();
@@ -598,7 +598,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     bool returnRef = Function::returnsReference(scope->function);
     for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
         // Return reference from function
-        if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
+        if (returnRef && Token::exactMatch(tok->astParent(), "return")) {
             for (const LifetimeToken& lt : getLifetimeTokens(tok, true)) {
                 if (!printInconclusive && lt.inconclusive)
                     continue;
@@ -675,7 +675,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                                              (val.isSubFunctionLifetimeValue() && isDanglingSubFunction(tokvalue, tok)))) {
                     const Variable * var = nullptr;
                     const Token * tok2 = tok;
-                    if (Token::simpleMatch(tok->astParent(), "=")) {
+                    if (Token::exactMatch(tok->astParent(), "=")) {
                         if (astIsRHS(tok)) {
                             var = getParentVar(tok->astParent()->astOperand1());
                             tok2 = tok->astParent()->astOperand1();

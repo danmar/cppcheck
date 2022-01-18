@@ -107,7 +107,7 @@ struct ReverseTraversal {
         bool continueB = true;
         visitAstNodes(start, [&](Token* tok) {
             const Token* parent = tok->astParent();
-            while (Token::simpleMatch(parent, ":"))
+            while (Token::exactMatch(parent, ":"))
                 parent = parent->astParent();
             if (isUnevaluated(tok) || isDeadCode(tok, parent))
                 return ChildrenToVisit::none;
@@ -148,7 +148,7 @@ struct ReverseTraversal {
             if (tok == end)
                 break;
             Token* parent = tok->astParent();
-            if (Token::simpleMatch(parent, ":")) {
+            if (Token::exactMatch(parent, ":")) {
                 if (astIsLHS(tok))
                     opSide = 1;
                 else if (astIsRHS(tok))
@@ -158,7 +158,7 @@ struct ReverseTraversal {
             }
             if (tok != parent->astOperand2())
                 continue;
-            if (Token::simpleMatch(parent, ":"))
+            if (Token::exactMatch(parent, ":"))
                 parent = parent->astParent();
             if (!Token::Match(parent, "%oror%|&&|?"))
                 continue;
@@ -203,7 +203,7 @@ struct ReverseTraversal {
                 break;
             if (Token::Match(tok, "%name% :"))
                 break;
-            if (Token::simpleMatch(tok, ":"))
+            if (Token::exactMatch(tok, ":"))
                 continue;
             // Evaluate LHS of assignment before RHS
             if (Token* assignTok = assignExpr(tok)) {
@@ -323,7 +323,7 @@ struct ReverseTraversal {
             }
             if (tok->str() == "{") {
                 if (tok->previous() &&
-                    (Token::simpleMatch(tok->previous(), "do") ||
+                    (Token::exactMatch(tok->previous(), "do") ||
                      (tok->strAt(-1) == ")" && Token::Match(tok->linkAt(-1)->previous(), "for|while (")))) {
                     Analyzer::Action action = analyzeRange(tok, tok->link());
                     if (action.isModified())
@@ -379,7 +379,7 @@ struct ReverseTraversal {
             Token* start = tok->link();
             if (Token::Match(start->previous(), "sizeof|decltype ("))
                 return start->previous();
-            if (Token::simpleMatch(start, "<"))
+            if (Token::exactMatch(start, "<"))
                 return start;
         }
         return nullptr;

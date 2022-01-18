@@ -247,7 +247,7 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
     bool isArrayIndex = tok->str() == "[";
     if (isArrayIndex) {
         const Token* parent = tok;
-        while (Token::simpleMatch(parent, "["))
+        while (Token::exactMatch(parent, "["))
             parent = parent->astParent();
         if (!parent || parent->isUnaryOp("&"))
             isArrayIndex = false;
@@ -291,7 +291,7 @@ void CheckBufferOverrun::arrayIndex()
         if (!array->scope()->isExecutable()) {
             // LHS in non-executable scope => This is just a definition
             const Token *parent = tok;
-            while (parent && !Token::simpleMatch(parent->astParent(), "="))
+            while (parent && !Token::exactMatch(parent->astParent(), "="))
                 parent = parent->astParent();
             if (!parent || parent == parent->astParent()->astOperand1())
                 continue;
@@ -631,7 +631,7 @@ void CheckBufferOverrun::bufferOverflow()
                 // buffer size == 1 => do not warn for dynamic memory
                 if (bufferSize.intvalue == 1) {
                     const Token *tok2 = argtok;
-                    while (Token::simpleMatch(tok2->astParent(), "."))
+                    while (Token::exactMatch(tok2->astParent(), "."))
                         tok2 = tok2->astParent();
                     while (Token::Match(tok2, "[|."))
                         tok2 = tok2->astOperand1();
@@ -855,7 +855,7 @@ bool CheckBufferOverrun::isCtuUnsafeBufferUsage(const Check *check, const Token 
     const Token *indexTok = nullptr;
     if (type == 1 && Token::Match(argtok, "%name% [") && argtok->astParent() == argtok->next() && !Token::simpleMatch(argtok->linkAt(1), "] ["))
         indexTok = argtok->next()->astOperand2();
-    else if (type == 2 && Token::simpleMatch(argtok->astParent(), "+"))
+    else if (type == 2 && Token::exactMatch(argtok->astParent(), "+"))
         indexTok = (argtok == argtok->astParent()->astOperand1()) ?
                    argtok->astParent()->astOperand2() :
                    argtok->astParent()->astOperand1();
@@ -983,7 +983,7 @@ void CheckBufferOverrun::objectIndex()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!Token::simpleMatch(tok, "["))
+            if (!Token::exactMatch(tok, "["))
                 continue;
             const Token *obj = tok->astOperand1();
             const Token *idx = tok->astOperand2();
