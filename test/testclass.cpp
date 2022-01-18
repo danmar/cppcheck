@@ -5784,6 +5784,14 @@ private:
                    "    void g() { bar.f(k); }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    A a;\n"
+                   "    void f(int j, int*& p) {\n"
+                   "        p = &(((a[j])));\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {
