@@ -445,7 +445,7 @@ private:
                                   "};");
         ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
 
-        checkExplicitConstructors("struct Foo {\n"
+        checkExplicitConstructors("struct Foo {\n" // #10515
                                   "    template <typename T>\n"
                                   "    explicit constexpr Foo(T) {}\n"
                                   "};\n"
@@ -5795,6 +5795,14 @@ private:
                    "    Bar bar;\n"
                    "    int k{};\n"
                    "    void g() { bar.f(k); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    A a;\n"
+                   "    void f(int j, int*& p) {\n"
+                   "        p = &(((a[j])));\n"
+                   "    }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
