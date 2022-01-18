@@ -1185,6 +1185,7 @@ void Token::printOut(const char *title, const std::vector<std::string> &fileName
     std::cout << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
 }
 
+// cppcheck-suppress unusedFunction - used for debugging
 void Token::printLines(int lines) const
 {
     const Token *end = this;
@@ -2446,6 +2447,7 @@ const ValueFlow::Value* Token::getMovedValue() const
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
+// cppcheck-suppress unusedFunction
 const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) const
 {
     if (!mImpl->mValues)

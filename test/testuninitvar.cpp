@@ -814,7 +814,7 @@ private:
                                "<def format=\"1\">"
                                "  <podtype name=\"_tm\"/>"
                                "</def>";
-        settings.library.loadxmldata(xmldata, sizeof(xmldata));
+        ASSERT_EQUALS(true, settings.library.loadxmldata(xmldata, sizeof(xmldata)));
         checkUninitVar("void f() {\n"
                        "  Fred _tm;\n"
                        "  _tm.dostuff();\n"

@@ -66,13 +66,6 @@ public:
     virtual ~TranslationHandler();
 
     /**
-     * @brief Get a list of available translation names.
-     * @return List of available translation names.
-     *
-     */
-    const QStringList getNames() const;
-
-    /**
      * @brief Get a list of available translations.
      * @return List of available translations.
      *

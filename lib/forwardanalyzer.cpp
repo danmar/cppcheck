@@ -89,6 +89,7 @@ struct ForwardTraversal {
         return evalCond(tok, ctx).first;
     }
 
+    // cppcheck-suppress unusedFunction
     bool isConditionFalse(const Token* tok, const Token* ctx = nullptr) const {
         return evalCond(tok, ctx).second;
     }

@@ -61,15 +61,6 @@ TranslationHandler::TranslationHandler(QObject *parent) :
 TranslationHandler::~TranslationHandler()
 {}
 
-const QStringList TranslationHandler::getNames() const
-{
-    QStringList names;
-    foreach (TranslationInfo translation, mTranslations) {
-        names.append(translation.mName);
-    }
-    return names;
-}
-
 bool TranslationHandler::setLanguage(const QString &code)
 {
     bool failure = false;
