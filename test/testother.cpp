@@ -6967,6 +6967,18 @@ private:
               "    return f<X>(s);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #7981 - False positive redundantCopyLocalConst - const ref argument to ctor
+        check("class CD {\n"
+              "        public:\n"
+              "        CD(const CD&);\n"
+              "        static const CD& getOne();\n"
+              "};\n"
+              " \n"
+              "void foo() {\n"
+              "  const CD cd(CD::getOne());\n"
+              "}", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkNegativeShift() {
