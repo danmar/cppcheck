@@ -692,6 +692,19 @@ private:
                       "test.cpp:2:note:condition 'i<=(int)v.size()'\n"
                       "test.cpp:3:note:Access out of bounds\n",
                       errout.str());
+
+       check("template<class Iterator>\n"
+            "void b(Iterator d) {\n"
+            "  std::string c = \"a\";\n"
+            "  d + c.length();\n"
+            "}\n"
+            "void f() {\n"
+            "  std::string buf;\n"
+            "  b(buf.begin());\n"
+            "}\n", true);
+        ASSERT_EQUALS(
+            "test.cpp:4:error:Out of bounds access in expression 'd+c.length()' because 'buf' is empty.\n",
+            errout.str());
     }
 
     void outOfBoundsSymbolic()
