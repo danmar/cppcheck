@@ -788,7 +788,7 @@ void ProjectFile::setLibraries(const QStringList &libraries)
     mLibraries = libraries;
 }
 
-void ProjectFile::setFunctionContract(QString function, QString expects)
+void ProjectFile::setFunctionContract(const QString& function, const QString& expects)
 {
     mFunctionContracts[function.toStdString()] = expects.toStdString();
 }
@@ -818,7 +818,7 @@ void ProjectFile::setVSConfigurations(const QStringList &vsConfigs)
     mVsConfigurations = vsConfigs;
 }
 
-void ProjectFile::setWarningTags(std::size_t hash, QString tags)
+void ProjectFile::setWarningTags(std::size_t hash, const QString& tags)
 {
     if (tags.isEmpty())
         mWarningTags.erase(hash);
