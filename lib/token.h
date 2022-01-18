@@ -277,6 +277,7 @@ public:
      */
     template<size_t count>
     static bool simpleMatch(const Token *tok, const char (&pattern)[count]) {
+        assert(std::memchr(pattern, ' ', count-1) != nullptr);
         return simpleMatch(tok, pattern, count-1);
     }
 
