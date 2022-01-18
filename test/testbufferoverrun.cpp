@@ -1093,7 +1093,9 @@ private:
               "    struct s1 obj;\n"
               "    x(obj.delay, 123);\n"
               "}");
-        // TODO CTU ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (error) Array 'obj.delay[3]' accessed at index 4, which is out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (error) Array 'obj.delay[3]' accessed at index 4, which is out of bounds.\n",
+                           "",
+                           errout.str());
 
         check("struct s1 {\n"
               "    float a[0];\n"
@@ -2317,7 +2319,9 @@ private:
               "    char x[2];\n"
               "    f1(x);\n"
               "}");
-        // TODO CTU ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array 'x[2]' accessed at index 4, which is out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array 'x[2]' accessed at index 4, which is out of bounds.\n",
+                           "",
+                           errout.str());
     }
 
     void array_index_string_literal() {
@@ -3780,7 +3784,9 @@ private:
         check("void f() {\n"
               "  mymemset(\"abc\", 0, 20);\n"
               "}", settings);
-        // TODO ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds.\n",
+                           "",
+                           errout.str());
 
         check("void f() {\n"
               "  mymemset(temp, \"abc\", 4);\n"
@@ -3852,7 +3858,9 @@ private:
               "    char buf[5];\n"
               "    a(buf);"
               "}", settings);
-        // TODO CTU ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer is accessed out of bounds: buf\n",
+                           "",
+                           errout.str());
     }
 
     void minsize_strlen() {
