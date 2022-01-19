@@ -88,7 +88,7 @@ void CheckInternal::checkTokenMatchPatterns()
 void CheckInternal::checkRedundantTokCheck()
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "&& Token :: simpleMatch|Match|findsimplematch|findmatch (")) {
+        if (Token::Match(tok, "&& Token :: exactMatch|simpleMatch|Match|findsimplematch|findmatch (")) {
             // in code like
             // if (tok->previous() && Token::match(tok->previous(), "bla")) {}
             // the first tok->previous() check is redundant
@@ -101,7 +101,7 @@ void CheckInternal::checkRedundantTokCheck()
                 checkRedundantTokCheckError(astOp2);
             }
             // if (!tok || !Token::match(tok, "foo"))
-        } else if (Token::Match(tok, "%oror% ! Token :: simpleMatch|Match|findsimplematch|findmatch (")) {
+        } else if (Token::Match(tok, "%oror% ! Token :: exactMatch|simpleMatch|Match|findsimplematch|findmatch (")) {
             const Token *negTok = tok->next()->astParent()->astOperand1();
             if (Token::exactMatch(negTok, "||")) {
                 negTok = negTok->astOperand2();
@@ -322,7 +322,7 @@ void CheckInternal::checkExtraWhitespace()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "Token :: simpleMatch|findsimplematch|Match|findmatch ("))
+            if (!Token::Match(tok, "Token :: exactMatch|simpleMatch|findsimplematch|Match|findmatch ("))
                 continue;
 
             const std::string& funcname = tok->strAt(2);
