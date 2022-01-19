@@ -6546,7 +6546,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
                 if (mSettings->platformType == cppcheck::Platform::Win64)
                     valuetype.type = ValueType::Type::LONGLONG;
-                    
+
                 valuetype.originalTypeName = "size_t";
                 setValueType(tok, valuetype);
 
