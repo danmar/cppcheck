@@ -101,6 +101,7 @@ private:
         TEST_CASE(deallocuse6); // #4034: FP. x = p = f();
         TEST_CASE(deallocuse7); // #6467, #6469, #6473
         TEST_CASE(deallocuse8); // #1765
+        TEST_CASE(deallocuse9); // #9781
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -694,6 +695,15 @@ private:
               "    *ptr = 0;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", errout.str());
+    }
+
+    void deallocuse9() {  // #9781
+        check("void f(Type* p) {\n"
+              "  std::shared_ptr<Type> sp(p);\n"
+              "  bool b = p->foo();\n"
+              "  return b;\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree1() {  // #3895

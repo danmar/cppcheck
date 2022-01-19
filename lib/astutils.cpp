@@ -2136,13 +2136,6 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     return false;
 }
 
-static bool isVariableChangedByFunctionCall(const Token* tok, int indirect, const Settings* settings)
-{
-    bool inconclusive = false;
-    bool r = isVariableChangedByFunctionCall(tok, indirect, settings, &inconclusive);
-    return r || inconclusive;
-}
-
 bool isVariableChanged(const Token *tok, int indirect, const Settings *settings, bool cpp, int depth)
 {
     if (!tok)
