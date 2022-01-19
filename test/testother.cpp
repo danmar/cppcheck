@@ -147,6 +147,7 @@ private:
         TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpression11); // #8916 (function call)
         TEST_CASE(duplicateExpression12); // #10026
+        TEST_CASE(duplicateExpression13); // #7899
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -5449,6 +5450,13 @@ private:
               "        return buffer[index - 1] - var;\n"  // <<
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n", errout.str());
+    }
+
+    void duplicateExpression13() { //#7899
+        check("void f() {\n"
+              "    if (sizeof(long) == sizeof(long long)) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {
