@@ -28,6 +28,10 @@
 #include <set>
 #include <cstring>
 
+// TODO: suggest Token::exactMatch() for patterns like 'tok1 && tok1->str() == "this"'
+// TODO: suggest Token::exactMatch() for Token::simpleMatch() when pattern contains no whitespaces
+// TODO: detect Token::exactMatch() with whitespaces in pattern
+
 // Register this check class (by creating a static instance of it).
 // Disabled in release builds
 namespace {
