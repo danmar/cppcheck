@@ -2177,6 +2177,8 @@ private:
 
         // Test getAllocationType for subfunction
         TEST_CASE(getAllocationType);
+
+        TEST_CASE(crash1); // #10729
     }
 
     void functionParameter() {
@@ -2563,6 +2565,18 @@ private:
               "        delete t;\n"
               "    }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void crash1() { // #10729
+        check("void foo() {\n"
+              "    extern void *realloc (void *ptr, size_t size);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    extern void *malloc (size_t size);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

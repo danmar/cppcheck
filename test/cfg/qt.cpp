@@ -55,6 +55,21 @@ void QString4()
     QString qs;
 }
 
+// cppcheck-suppress passedByValue
+bool QString5(QString s) { // #10710
+    return s.isEmpty();
+}
+
+// cppcheck-suppress passedByValue
+QStringList QString6(QString s) {
+    return QStringList{ "*" + s + "*" };
+}
+
+// cppcheck-suppress passedByValue
+bool QString7(QString s, const QString& l) {
+    return l.startsWith(s);
+}
+
 void QByteArray1(QByteArray byteArrayArg)
 {
     for (int i = 0; i <= byteArrayArg.size(); ++i) {
@@ -297,6 +312,7 @@ QVector<int>::iterator QVector2()
     return it;
 }
 
+// cppcheck-suppress passedByValue
 void duplicateExpression_QString_Compare(QString style) //#8723
 {
     // cppcheck-suppress duplicateExpression

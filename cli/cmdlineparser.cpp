@@ -1041,7 +1041,7 @@ void CmdLineParser::printHelp()
         "                          * information\n"
         "                                  Enable information messages\n"
         "                          * unusedFunction\n"
-        "                                  Check for unused functions. It is recommend\n"
+        "                                  Check for unused functions. It is recommended\n"
         "                                  to only enable this when the whole program is\n"
         "                                  scanned.\n"
         "                          * missingInclude\n"

@@ -234,10 +234,10 @@ protected slots:
     void editVariableContract(QString var);
 
     /** Delete contract for function */
-    void deleteFunctionContract(QString function);
+    void deleteFunctionContract(const QString& function);
 
     /** Edit constraints for variable */
-    void deleteVariableContract(QString var);
+    void deleteVariableContract(const QString& var);
 
 private:
 

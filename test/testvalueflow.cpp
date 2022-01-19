@@ -50,7 +50,7 @@ private:
                            "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
                            "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
                            "</def>";
-        settings.library.loadxmldata(cfg, sizeof(cfg));
+        ASSERT_EQUALS(true, settings.library.loadxmldata(cfg, sizeof(cfg)));
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(valueFlowNumber);

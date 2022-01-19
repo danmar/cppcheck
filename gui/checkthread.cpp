@@ -83,6 +83,7 @@ void CheckThread::analyseWholeProgram(const QStringList &files)
     start();
 }
 
+// cppcheck-suppress unusedFunction - TODO: false positive
 void CheckThread::run()
 {
     mState = Running;

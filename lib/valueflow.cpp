@@ -2973,15 +2973,17 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Error
     return msg;
 }
 
-std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive, bool subfunction)
+std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok, bool inconclusive, MathLib::bigint path)
 {
     std::vector<ValueFlow::Value> result;
-    auto pred = [&](const ValueFlow::Value &v) {
-        if (!v.isLocalLifetimeValue() && !(subfunction && v.isSubFunctionLifetimeValue()))
+    auto pred = [&](const ValueFlow::Value& v) {
+        if (!v.isLocalLifetimeValue() && !(path != 0 && v.isSubFunctionLifetimeValue()))
             return false;
         if (!inconclusive && v.isInconclusive())
             return false;
         if (!v.tokvalue)
+            return false;
+        if (path >= 0 && v.path != 0 && v.path != path)
             return false;
         return true;
     };
@@ -2991,7 +2993,7 @@ std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconc
 
 ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive)
 {
-    std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok, inconclusive, false);
+    std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok, inconclusive);
     // There should only be one lifetime
     if (values.size() != 1)
         return ValueFlow::Value{};

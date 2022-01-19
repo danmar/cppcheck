@@ -814,7 +814,7 @@ private:
                                "<def format=\"1\">"
                                "  <podtype name=\"_tm\"/>"
                                "</def>";
-        settings.library.loadxmldata(xmldata, sizeof(xmldata));
+        ASSERT_EQUALS(true, settings.library.loadxmldata(xmldata, sizeof(xmldata)));
         checkUninitVar("void f() {\n"
                        "  Fred _tm;\n"
                        "  _tm.dostuff();\n"
@@ -6136,6 +6136,22 @@ private:
             "  f(&x);\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        ctu("void increment(int& i) { ++i; }\n" // #6475
+            "int f() {\n"
+            "    int n;\n"
+            "    increment(n);\n"
+            "    return n;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Using argument i that points at uninitialized variable n\n", errout.str());
+
+        ctu("void increment(int* i) { ++(*i); }\n"
+            "int f() {\n"
+            "    int n;\n"
+            "    increment(&n);\n"
+            "    return n;\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Using argument i that points at uninitialized variable n\n", errout.str());
     }
 };
 

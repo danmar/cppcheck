@@ -728,9 +728,9 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     return false;
 }
 
-static ValueFlow::Value getLifetimeIteratorValue(const Token* tok)
+static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
 {
-    std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok);
+    std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok, false, path);
     auto it = std::find_if(values.begin(), values.end(), [](const ValueFlow::Value& v) {
         return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
     });
@@ -2294,6 +2294,8 @@ void CheckStl::checkDereferenceInvalidIterator2()
                 isInvalidIterator = true;
             } else {
                 auto it = std::find_if(contValues.begin(), contValues.end(), [&](const ValueFlow::Value& c) {
+                    if (value.path != c.path)
+                        return false;
                     if (value.isIteratorStartValue() && value.intvalue >= c.intvalue)
                         return true;
                     if (value.isIteratorEndValue() && -value.intvalue > c.intvalue)
@@ -2329,7 +2331,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
                 inconclusive = true;
             }
             if (cValue) {
-                const ValueFlow::Value& lValue = getLifetimeIteratorValue(tok);
+                const ValueFlow::Value& lValue = getLifetimeIteratorValue(tok, cValue->path);
                 if (emptyAdvance)
                     outOfBoundsError(emptyAdvance,
                                      lValue.tokvalue->expressionString(),

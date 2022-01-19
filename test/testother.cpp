@@ -2978,7 +2978,9 @@ private:
               "      strcpy(str, \"b'\");\n"
               "    }\n"
               "}", nullptr, false, false, false);
-        // TODO ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n",
+                           "",
+                           errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -2990,7 +2992,9 @@ private:
               "      strncpy(str, \"b'\");\n"
               "    }\n"
               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n",
+                           "",
+                           errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -3005,7 +3009,9 @@ private:
               "      z++;\n"
               "    }\n"
               "}", nullptr, false, false, false);
-        // TODO ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n",
+                           "",
+                           errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -6966,6 +6972,18 @@ private:
               "    const X s = f<X>(in);\n"
               "    return f<X>(s);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #7981 - False positive redundantCopyLocalConst - const ref argument to ctor
+        check("class CD {\n"
+              "        public:\n"
+              "        CD(const CD&);\n"
+              "        static const CD& getOne();\n"
+              "};\n"
+              " \n"
+              "void foo() {\n"
+              "  const CD cd(CD::getOne());\n"
+              "}", nullptr, false, true);
         ASSERT_EQUALS("", errout.str());
     }
 

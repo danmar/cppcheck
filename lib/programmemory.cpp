@@ -28,6 +28,7 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
         return nullptr;
 }
 
+// cppcheck-suppress unusedFunction
 bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
@@ -56,6 +57,7 @@ bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
     return false;
 }
 
+// cppcheck-suppress unusedFunction
 bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
