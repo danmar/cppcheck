@@ -2174,7 +2174,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                             if (assignVar->isPointer() && !assignVar->isConst() && var->typeScope()) {
                               const auto& funcMap = var->typeScope()->functionMap;
                               // if there is no operator that is const and returns a non-const pointer, func cannot be const
-                              if (std::none_of(funcMap.begin(), funcMap.end(), [](const auto& fm) {
+                              if (std::none_of(funcMap.begin(), funcMap.end(), [](const std::pair<std::string, const Function*>& fm) {
                                   return fm.second->isConst() && fm.first == "operator[]" && !Function::returnsConst(fm.second);
                                   }))
                                   return false;
