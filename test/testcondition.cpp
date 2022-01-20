@@ -3858,6 +3858,14 @@ private:
               "  return foo < bar;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #9256
+        check("bool f() {\n"
+              "    bool b = false;\n"
+              "    b = true;\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
