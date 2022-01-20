@@ -5906,6 +5906,8 @@ private:
         ASSERT_EQUALS("for(tmpNULL!=tmptmpnext.=;;( tmpa=", testAst("for ( ({ tmp = a; }) ; tmp != NULL; tmp = tmp->next ) {}"));
         ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
         ASSERT_EQUALS("forae*bc.({:(", testAst("for (a *e : {b->c()});"));
+        ASSERT_EQUALS("fori0=iasize.(<i++;;( asize.(", testAst("for (decltype(a.size()) i = 0; i < a.size(); ++i);"));
+        ASSERT_EQUALS("foria:( asize.(", testAst("for(decltype(a.size()) i:a);"));
 
         // for with initializer (c++20)
         ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));

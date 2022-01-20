@@ -1424,6 +1424,11 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         }
 
         Token *tok2 = skipDecl(tok->tokAt(2));
+        if (Token::simpleMatch(tok->tokAt(2), "decltype (")) {
+            Token* tok3 = tok->tokAt(4);
+            AST_state state1(cpp);
+            compileExpression(tok3, state1);
+        }
         Token *init1 = nullptr;
         Token * const endPar = tok->next()->link();
         if (tok2 == tok->tokAt(2) && Token::Match(tok2, "%op%|(")) {
