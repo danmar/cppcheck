@@ -179,8 +179,14 @@ jobs:
           # TODO: requires X session
           #./test-xmlreportv2
 
-      - name: Generate Qt help file on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+      - name: Generate Qt help file on ubuntu 18.04
+        if: matrix.os == 'ubuntu-18.04'
+        run: |
+          pushd gui/help
+          qcollectiongenerator online-help.qhcp -o online-help.qhc
+
+      - name: Generate Qt help file on ubuntu 20.04
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
