@@ -22,26 +22,22 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install missing software on ubuntu 18.04
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          sudo apt-get install z3 libz3-dev
+
+      - name: Fix missing z3_version.h
         if: matrix.os == 'ubuntu-18.04'
         run: |
-          sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
           cp externals/z3_version_old.h externals/z3_version.h
-
-      - name: Install missing software on ubuntu 20.04
-        if: matrix.os == 'ubuntu-20.04' 
-        run: |
-          sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
 
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
           brew install coreutils z3
-          cp externals/z3_version_old.h externals/z3_version.h
 
       - name: Install missing Python packages
         run: |
