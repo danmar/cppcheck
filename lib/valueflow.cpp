@@ -4450,7 +4450,7 @@ static std::vector<const Token*> getConditions(const Token* tok, const char* op)
                 return false;
             if (tok2->hasKnownIntValue())
                 return false;
-            if (Token::Match(tok2, "%var%") && !astIsBool(tok2))
+            if (Token::Match(tok2, "%var%|.") && !astIsBool(tok2))
                 return false;
             return true;
         });
