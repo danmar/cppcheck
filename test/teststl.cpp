@@ -706,7 +706,7 @@ private:
         ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 'd+c.length()' because 'buf' is empty.\n",
                       errout.str());
 
-      check("template<class Iterator>\n"
+        check("template<class Iterator>\n"
               "void b(Iterator d) {\n"
               "  std::string c = \"a\";\n"
               "  sort(d, d + c.length());\n"
