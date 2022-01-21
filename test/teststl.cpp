@@ -5469,6 +5469,15 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+                  "    std::vector<int> v;\n"
+                  "    auto& rv = v;\n"
+                  "    rv.push_back(42);\n"
+                  "    for (auto i : v) {}\n"
+                  "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkMutexes() {
