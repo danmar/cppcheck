@@ -6199,17 +6199,17 @@ private:
         valueOfTok(code, "e");
 
         code = "struct a {\n"
-              "  int b;\n"
-              "  int c;\n"
-              "} f;\n"
-              "unsigned g;\n"
-              "struct {\n"
-              "  a d;\n"
-              "} e;\n"
-              "void h() {\n"
-              "  if (g && f.c)\n"
-              "    e.d.b = g - f.c;\n"
-              "}\n";
+               "  int b;\n"
+               "  int c;\n"
+               "} f;\n"
+               "unsigned g;\n"
+               "struct {\n"
+               "  a d;\n"
+               "} e;\n"
+               "void h() {\n"
+               "  if (g && f.c)\n"
+               "    e.d.b = g - f.c;\n"
+               "}\n";
         valueOfTok(code, "e");
     }
 
