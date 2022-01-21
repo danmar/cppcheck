@@ -108,7 +108,7 @@ void CheckFunctions::invalidFunctionUsage()
 
                 // check <valid>...</valid>
                 const ValueFlow::Value *invalidValue = argtok->getInvalidValue(functionToken,argnr,mSettings);
-                if (invalidValue) {
+                if (invalidValue && invalidValue->isKnown()) {
                     invalidFunctionArgError(argtok, functionToken->next()->astOperand1()->expressionString(), argnr, invalidValue, mSettings->library.validarg(functionToken, argnr));
                 }
 

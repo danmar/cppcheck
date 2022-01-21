@@ -464,6 +464,14 @@ private:
 
         check("void f() { strtol(a,b,10); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& v) {\n" //  #10754
+              "    int N = -1;\n"
+              "    for (long i = 0; i < g(); i++)\n"
+              "        N = h(N);\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidFunctionUsageStrings() {
