@@ -471,7 +471,7 @@ private:
               "        N = h(N);\n"
               "    v.resize(N);\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Invalid v.resize() argument nr 1. The value is -1 but the valid values are '0:'.\n", errout.str());
 
         check("void f(std::vector<int>& v, int N) {\n"
               "    if (N < -1)\n"
@@ -479,6 +479,28 @@ private:
               "    v.resize(N);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Either the condition 'N<-1' is redundant or v.resize() argument nr 1 can have invalid value. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v, int N) {\n"
+              "    if (N == -1) {}\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'N==-1' is redundant or v.resize() argument nr 1 can have invalid value. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v, int N, bool b) {\n"
+              "    if (b)\n"
+              "        N = -1;\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Invalid v.resize() argument nr 1. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    int N = -1;\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid v.resize() argument nr 1. The value is -1 but the valid values are '0:'.\n",
                       errout.str());
     }
 
