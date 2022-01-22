@@ -6052,6 +6052,55 @@ private:
                         "    if ((&a)->bar) ;\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct A {\n" // #10200
+                        "    struct B {\n"
+                        "        int i;\n"
+                        "    };\n"
+                        "    int j;\n"
+                        "};\n"
+                        "void f(std::vector<A::B>& x) {\n"
+                        "    A::B b;\n"
+                        "    b.i = 123;\n"
+                        "    x.push_back(b);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct A {\n"
+                        "    struct B {\n"
+                        "        int i;\n"
+                        "    };\n"
+                        "    int j;\n"
+                        "};\n"
+                        "void f(std::vector<A::B>& x) {\n"
+                        "    A::B b;\n"
+                        "    x.push_back(b);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: b\n", errout.str());
+
+        valueFlowUninit("struct A {\n"
+                        "    struct B {\n"
+                        "        int i;\n"
+                        "    };\n"
+                        "    int j;\n"
+                        "};\n"
+                        "void f(std::vector<A>&x) {\n"
+                        "    A a;\n"
+                        "    a.j = 123;\n"
+                        "    x.push_back(a);\n"
+                        "}\n");
+
+        valueFlowUninit("struct A {\n"
+                        "    struct B {\n"
+                        "        int i;\n"
+                        "    };\n"
+                        "    int j;\n"
+                        "};\n"
+                        "void f(std::vector<A>& x) {\n"
+                        "    A a;\n"
+                        "    x.push_back(a);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: a\n", errout.str());
     }
 
     void ctu_(const char* file, int line, const char code[]) {
