@@ -16,6 +16,7 @@
 #                                 --bandwidth-limit=2m => max. 2 megabytes per second
 #  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.
 #  --no-upload          Do not upload anything. Defaults to False.
+#  --packages           Process a list of given packages.
 #
 # What this script does:
 # 1. Check requirements
@@ -31,6 +32,9 @@
 import platform
 from donate_cpu_lib import *
 
+max_packages = None
+package_urls = []
+
 for arg in sys.argv[1:]:
     # --stop-time=12:00 => run until ~12:00 and then stop
     if arg.startswith('--stop-time='):
@@ -44,8 +48,18 @@ for arg in sys.argv[1:]:
         jobs = arg
         print('Jobs:' + jobs[2:])
     elif arg.startswith('--package='):
-        package_url = arg[arg.find('=')+1:]
-        print('Package:' + package_url)
+        pkg = arg[arg.find('=')+1:]
+        package_urls.append(pkg)
+        print('Added Package:' + pkg)
+    elif arg.startswith('--packages='):
+        pkg_cnt = len(package_urls)
+        with open(arg[arg.find('=')+1:], 'rt') as f:
+            for package_url in f:
+                package_url = package_url.strip()
+                if not package_url:
+                    continue
+                package_urls.append(package_url)
+        print('Added Packages:' + str(len(package_urls) - pkg_cnt))
     elif arg.startswith('--work-path='):
         work_path = os.path.abspath(arg[arg.find('=')+1:])
         print('work_path:' + work_path)
@@ -110,8 +124,8 @@ if bandwidth_limit and isinstance(bandwidth_limit, str):
         sys.exit(1)
     else:
         print('Bandwidth-limit: ' + bandwidth_limit)
-if package_url:
-    max_packages = 1
+if package_urls:
+    max_packages = len(package_urls)
 if max_packages:
     print('Maximum number of packages to download and analyze: {}'.format(max_packages))
 if not os.path.exists(work_path):
@@ -169,8 +183,8 @@ while True:
             if not compile_version(current_cppcheck_dir, jobs):
                 print('Failed to compile Cppcheck-{}, retry later'.format(ver))
                 sys.exit(1)
-    if package_url:
-        package = package_url
+    if package_urls:
+        package = package_urls[packages_processed-1]
     else:
         package = get_package(server_address)
     tgz = download_package(work_path, package, bandwidth_limit)
@@ -238,7 +252,7 @@ while True:
         output += 'head results:\n' + results_to_diff[cppcheck_versions.index('head')]
     if not crash and not timeout:
         output += 'diff:\n' + diff_results(cppcheck_versions[0], results_to_diff[0], cppcheck_versions[1], results_to_diff[1]) + '\n'
-    if package_url:
+    if package_urls:
         print('=========================================================')
         print(output)
         print('=========================================================')
