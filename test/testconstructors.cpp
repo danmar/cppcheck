@@ -1688,6 +1688,8 @@ private:
     }
 
     void initvar_smartptr() { // #10237
+        Settings s;
+        s.libraries.emplace_back("std");
         check("struct S {\n"
               "    explicit S(const std::shared_ptr<S>& sp) {\n"
               "        set(*sp);\n"
@@ -1699,7 +1701,7 @@ private:
               "        d = rhs.get();\n"
               "    }\n"
               "    double d;\n"
-              "};");
+              "};", s);
         ASSERT_EQUALS("", errout.str());
     }
 
