@@ -6888,12 +6888,12 @@ private:
 
         // #10739
         ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
-                                                "  std::vector<int> b;\n"
-                                                "};\n"
-                                                "void c() {\n"
-                                                "  a bar;\n"
-                                                "  (decltype(bar.b)::value_type){};\n"
-                                                "}\n"));
+                                             "  std::vector<int> b;\n"
+                                             "};\n"
+                                             "void c() {\n"
+                                             "  a bar;\n"
+                                             "  (decltype(bar.b)::value_type){};\n"
+                                             "}\n"));
     }
     void checkIfCppCast() {
         ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
