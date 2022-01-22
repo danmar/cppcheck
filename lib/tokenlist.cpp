@@ -784,7 +784,13 @@ static void compileTerm(Token *&tok, AST_state& state)
                 tok = tok->tokAt(2);
             }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
+            Token* tok2 = tok;
             tok = skipDecl(tok);
+            if (Token::simpleMatch(tok2, "decltype (")) {
+                Token* tok3 = tok2->next();
+                AST_state state1(state.cpp);
+                compileExpression(tok3, state1);
+            }
             bool repeat = true;
             while (repeat) {
                 repeat = false;

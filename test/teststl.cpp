@@ -705,6 +705,18 @@ private:
               true);
         ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 'd+c.length()' because 'buf' is empty.\n",
                       errout.str());
+
+        check("template<class Iterator>\n"
+              "void b(Iterator d) {\n"
+              "  std::string c = \"a\";\n"
+              "  sort(d, d + c.length());\n"
+              "}\n"
+              "void f() {\n"
+              "  std::string buf;\n"
+              "  b(buf.begin());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsSymbolic()
@@ -5466,6 +5478,15 @@ private:
               "     }\n"
               " }\n"
               " for (auto i : v) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    auto& rv = v;\n"
+              "    rv.push_back(42);\n"
+              "    for (auto i : v) {}\n"
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
