@@ -3006,7 +3006,7 @@ private:
                "    auto x = !i;\n"
                "    return x;\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 1));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
 
         code = "auto f(int i) {\n"
                "    if (i == 1) return;\n"
@@ -3918,7 +3918,8 @@ private:
                "  }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
-        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 9));
+        // Known to be true, but it could also be 9
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
 
         code = "void foo() {\n"
                "  for (int x = 0; x < 10; x++) {\n"
@@ -3936,7 +3937,8 @@ private:
                "  }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
-        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 9));
+        // Known to be true, but it could also be 9
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
 
         // After loop
         code = "void foo() {\n"
@@ -6210,6 +6212,19 @@ private:
                "  if (g && f.c)\n"
                "    e.d.b = g - f.c;\n"
                "}\n";
+        valueOfTok(code, "e");
+
+        code = "struct a {\n"
+               "  std::vector<a> b;\n"
+               "  void c(unsigned d) {\n"
+               "    size_t e = 0;\n"
+               "    size_t f = 0;\n"
+               "    for (auto child : b) {\n"
+               "      f = e;\n"
+               "      e = d - f;\n"
+               "    }\n"
+               "  }\n"
+               "};\n";
         valueOfTok(code, "e");
     }
 

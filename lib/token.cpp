@@ -2126,6 +2126,13 @@ bool Token::addValue(const ValueFlow::Value &value)
         });
     }
 
+    // Dont add a value if its already known
+    if (!value.isKnown() && mImpl->mValues &&
+        std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& x) {
+        return x.isKnown() && sameValueType(x, value) && !x.equalValue(value);
+    }))
+        return false;
+
     // assert(value.isKnown() || !mImpl->mValues || std::none_of(mImpl->mValues->begin(), mImpl->mValues->end(),
     // [&](const ValueFlow::Value& x) {
     //     return x.isKnown() && sameValueType(x, value);
