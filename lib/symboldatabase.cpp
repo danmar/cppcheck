@@ -5220,6 +5220,9 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     if (fallback2Func)
         return fallback2Func;
 
+    // remove pure virtual function
+    matches.erase(std::remove_if(matches.begin(), matches.end(), [](const Function* m) { return m->isPure(); }), matches.end());
+
     // Only one candidate left
     if (matches.size() == 1)
         return matches[0];

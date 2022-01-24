@@ -81,6 +81,7 @@ private:
         TEST_CASE(simple14); // #6253 template base
         TEST_CASE(simple15); // #8942 multiple arguments, decltype
         TEST_CASE(simple16); // copy members with c++11 init
+        TEST_CASE(simple17); // #10360
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -510,6 +511,28 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'S::i' is not initialized in the constructor.\n"
                       "[test.cpp:5]: (warning) Member variable 'S::i' is not assigned a value in 'S::operator='.\n",
                       errout.str());
+    }
+
+    void simple17() { // #10360
+        check("class Base {\n"
+              "public:\n"
+              "    virtual void Copy(const Base& Src) = 0;\n"
+              "};\n"
+              "class Derived : public Base {\n"
+              "public:\n"
+              "    Derived() : i(0) {}\n"
+              "    Derived(const Derived& Src);\n"
+              "    void Copy(const Base& Src) override;\n"
+              "    int i;\n"
+              "};\n"
+              "Derived::Derived(const Derived & Src) {\n"
+              "    Copy(Src);\n"
+              "}\n"
+              "void Derived::Copy(const Base & Src) {\n"
+              "    auto d = dynamic_cast<const Derived&>(Src);\n"
+              "    i = d.i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void simple15() { // #8942
