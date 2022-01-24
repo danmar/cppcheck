@@ -196,7 +196,7 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
 void CheckUninitVar::checkStruct(const Token *tok, const Variable &structvar)
 {
     const Token *typeToken = structvar.typeStartToken();
-    while (typeToken->next() && typeToken->next()->str() == "::")
+    while (Token::Match(typeToken, "%name% ::"))
         typeToken = typeToken->tokAt(2);
     const SymbolDatabase * symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope2 : symbolDatabase->classAndStructScopes) {
