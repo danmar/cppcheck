@@ -80,6 +80,7 @@ private:
         TEST_CASE(simple13); // #5498 - no constructor, c++11 assignments
         TEST_CASE(simple14); // #6253 template base
         TEST_CASE(simple15); // #8942 multiple arguments, decltype
+        TEST_CASE(simple16); // copy members with c++11 init
 
         TEST_CASE(noConstructor1);
         TEST_CASE(noConstructor2);
@@ -487,6 +488,28 @@ private:
               "    int x;\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void simple16() {
+        check("struct S {\n"
+              "    int i{};\n"
+              "    S() = default;\n"
+              "    S(const S & s) {}\n"
+              "    S& operator=(const S & s) { return *this; }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'S::i' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'S::i' is not assigned a value in 'S::operator='.\n",
+                      errout.str());
+
+        check("struct S {\n"
+              "    int i;\n"
+              "    S() : i(0) {}\n"
+              "    S(const S & s) {}\n"
+              "    S& operator=(const S & s) { return *this; }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'S::i' is not initialized in the constructor.\n"
+                      "[test.cpp:5]: (warning) Member variable 'S::i' is not assigned a value in 'S::operator='.\n",
+                      errout.str());
     }
 
     void simple15() { // #8942
