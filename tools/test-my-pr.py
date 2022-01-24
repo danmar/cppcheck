@@ -25,6 +25,7 @@ if __name__ == "__main__":
     group.add_argument('-p', default=256, type=int, help='Count of packages to check')
     group.add_argument('--packages', nargs='+', help='Check specific packages and then stop.')
     parser.add_argument('-o', default='my_check_diff.log', help='Filename of result inside a working path dir')
+    parser.add_argument('--cpp-only', dest='cpp_only', help='Only process c++ packages', action='store_true')
     parser.add_argument('--work-path', '--work-path=', default=lib.work_path, type=str, help='Working directory for reference repo')
     args = parser.parse_args()
 
@@ -117,7 +118,7 @@ if __name__ == "__main__":
             print("No package downloaded")
             continue
 
-        if not lib.unpack_package(work_path, tgz):
+        if not lib.unpack_package(work_path, tgz, args.cpp_only):
             print("No files to process")
             continue
 

@@ -223,7 +223,7 @@ def download_package(work_path, package, bandwidth_limit):
     return destfile
 
 
-def unpack_package(work_path, tgz):
+def unpack_package(work_path, tgz, cpp_only=False):
     print('Unpacking..')
     temp_path = work_path + '/temp'
     remove_tree(temp_path)
@@ -233,7 +233,10 @@ def unpack_package(work_path, tgz):
         with tarfile.open(tgz) as tf:
             for member in tf:
                 header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
-                source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.c', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
+                source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
+                c_source_endings = ('.c',)
+                if not cpp_only:
+                    source_endings = source_endings + c_source_endings
                 if member.name.startswith(('/', '..')):
                     # Skip dangerous file names
                     continue
