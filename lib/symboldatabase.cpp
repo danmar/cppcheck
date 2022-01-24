@@ -5172,7 +5172,12 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 const Token *vartok = arguments[j];
                 while (vartok->isUnaryOp("&") || vartok->isUnaryOp("*"))
                     vartok = vartok->astOperand1();
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), vartok->variable(), funcarg);
+                const Variable* var = vartok->variable();
+                // smart pointer deref?
+                if (var && vartok->astParent() && vartok->astParent()->str() == "*" &&
+                    var->isSmartPointer() && var->valueType() && var->valueType()->smartPointerTypeToken)
+                    var = var->valueType()->smartPointerTypeToken->variable();
+                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), var, funcarg);
                 if (res == ValueType::MatchResult::SAME)
                     ++same;
                 else if (res == ValueType::MatchResult::FALLBACK1)

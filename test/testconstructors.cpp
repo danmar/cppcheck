@@ -130,6 +130,7 @@ private:
         TEST_CASE(initvar_alias); // #6921
 
         TEST_CASE(initvar_templateMember); // #7205
+        TEST_CASE(initvar_smartptr); // #10237
 
         TEST_CASE(operatorEqSTL);
 
@@ -1683,6 +1684,24 @@ private:
               "        Wrapper<dim>::foo(x);\n"
               "    }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void initvar_smartptr() { // #10237
+        Settings s;
+        s.libraries.emplace_back("std");
+        check("struct S {\n"
+              "    explicit S(const std::shared_ptr<S>& sp) {\n"
+              "        set(*sp);\n"
+              "    }\n"
+              "    double get() const {\n"
+              "        return d;\n"
+              "    }\n"
+              "    void set(const S& rhs) {\n"
+              "        d = rhs.get();\n"
+              "    }\n"
+              "    double d;\n"
+              "};", s);
         ASSERT_EQUALS("", errout.str());
     }
 
