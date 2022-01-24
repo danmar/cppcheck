@@ -2635,6 +2635,17 @@ private:
         check("struct S { int a[1]; };\n"
               "void f(S& s) { int* p = s.a; *p = 0; }\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {\n" // #9910
+              "    int* p{};\n"
+              "    int* get() { return p; }\n"
+              "    const int* get() const { return p; }\n"
+              "};\n"
+              "struct Bar {\n"
+              "    int j{};\n"
+              "    void f(Foo& foo) const { int* q = foo.get(); *q = j; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
@@ -4230,6 +4241,17 @@ private:
               "    ref = x;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'ref' to itself.\n", errout.str());
+
+        check("class Foo {\n" // #9850
+              "    int i{};\n"
+              "    void modify();\n"
+              "    void method() {\n"
+              "        Foo copy = *this;\n"
+              "        modify();\n"
+              "        *this = copy;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {
