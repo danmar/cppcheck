@@ -7145,8 +7145,8 @@ private:
                                  "    auto d = dynamic_cast<const Derived&>(Src);\n"
                                  "    i = d.i;\n"
                                  "}\n");
-          ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:9]: (style) Virtual function 'Copy' is called from copy constructor 'Derived(const Derived&Src)' at line 13. Dynamic binding is not used.\n",
-                        errout.str());
+        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:9]: (style) Virtual function 'Copy' is called from copy constructor 'Derived(const Derived&Src)' at line 13. Dynamic binding is not used.\n",
+                      errout.str());
     }
 
     void pureVirtualFunctionCall() {
