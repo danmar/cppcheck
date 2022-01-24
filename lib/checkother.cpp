@@ -479,16 +479,21 @@ void CheckOther::checkRedundantAssignment()
                     // todo: check static variables
                     continue;
 
-                // If there is a custom assignment operator => this is inconclusive
                 bool inconclusive = false;
-                if (mTokenizer->isCPP() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->typeScope) {
-                    const std::string op = "operator" + tok->str();
-                    for (const Function &f : tok->astOperand1()->valueType()->typeScope->functionList) {
-                        if (f.name() == op) {
-                            inconclusive = true;
-                            break;
+                if (mTokenizer->isCPP() && tok->astOperand1()->valueType()) {
+                    // If there is a custom assignment operator => this is inconclusive
+                    if (tok->astOperand1()->valueType()->typeScope) {
+                        const std::string op = "operator" + tok->str();
+                        for (const Function& f : tok->astOperand1()->valueType()->typeScope->functionList) {
+                            if (f.name() == op) {
+                                inconclusive = true;
+                                break;
+                            }
                         }
                     }
+                    // assigning a smart pointer has side effects
+                    if (tok->astOperand1()->valueType()->type == ValueType::SMART_POINTER)
+                        break;
                 }
                 if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                     continue;

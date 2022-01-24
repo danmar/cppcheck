@@ -7875,6 +7875,13 @@ private:
               "    e = dostuff();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #10143
+              "    std::shared_ptr<int> i = g();\n"
+              "    h();\n"
+              "    i = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {
