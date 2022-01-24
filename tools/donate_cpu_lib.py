@@ -232,14 +232,16 @@ def unpack_package(work_path, tgz):
     if tarfile.is_tarfile(tgz):
         with tarfile.open(tgz) as tf:
             for member in tf:
+                header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
+                source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.c', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
                 if member.name.startswith(('/', '..')):
                     # Skip dangerous file names
                     continue
-                elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.ipp', '.ixx', '.qml')):
+                elif member.name.lower().endswith(header_endings + source_endings):
                     try:
                         tf.extract(member.name, temp_path)
-                        found = True
+                        if member.name.lower().endswith(source_endings):
+                            found = True
                     except OSError:
                         pass
                     except AttributeError:
