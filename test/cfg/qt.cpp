@@ -144,7 +144,7 @@ void QList1(QList<int> intListArg)
 
 QList<int> QList2() { // #10556
     QList<int> v;
-    
+
     for (int i = 0; i < 4; ++i)
     {
         v.append(i);
