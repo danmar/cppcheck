@@ -94,6 +94,7 @@ private:
         TEST_CASE(noConstructor11); // ticket #3552
         TEST_CASE(noConstructor12); // #8951 - member initialization
         TEST_CASE(noConstructor13); // #9998
+        TEST_CASE(noConstructor14); // #10770
 
         TEST_CASE(forwardDeclaration); // ticket #4290/#3190
 
@@ -640,6 +641,17 @@ private:
               "struct A {\n"
               "    A() {}\n"
               "    B b;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor14() { // #10770
+        check("typedef void (*Func)();\n"
+              "class C {\n"
+              "public:\n"
+              "    void f();\n"
+              "private:\n"
+              "    Func fp = nullptr;\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }
