@@ -3122,6 +3122,21 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                 // ({ .. })
                 if (hasGccCompoundStatement(parent->astParent()->astOperand2()))
                     return Result(Result::Type::BAILOUT);
+                auto isForLoop = [](const Token* tok) -> const Token* {
+                    for (int i = 0; i < 3 && tok; ++i)
+                        tok = tok->astParent();
+                    return tok && Token::simpleMatch(tok->previous(), "for (") ? tok : nullptr;
+                };
+                if (same) {
+                    const Token* forTok = isForLoop(tok);
+                    if (forTok) {
+                        Result resultFor = checkRecursive(expr, tok->astParent()->astOperand2(), forTok->link(), exprVarIds, local, true, depth);
+                        if (resultFor.type == Result::Type::READ || resultFor.type == Result::Type::BAILOUT) { // check iteration expression
+                            tok = forTok->link();
+                            continue;
+                        }
+                    }
+                }
                 const bool reassign = isSameExpression(mCpp, false, expr, parent, mLibrary, false, false, nullptr);
                 if (reassign)
                     return Result(Result::Type::WRITE, parent->astParent());

@@ -3328,6 +3328,31 @@ private:
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'sum' is assigned a value that is never used.\n"
                       "[test.cpp:5]: (style) Variable 'sum' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f(bool b) {\n"
+                              "    int i = 0;\n"
+                              "    if (b) {\n"
+                              "        for (i = 1; i < N - 1; i++) {}\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(bool b) {\n"
+                              "    int i = 0;\n"
+                              "    if (b) {\n"
+                              "        for (i = 1; ; i++) {}\n"
+                              "    }\n"
+                              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used.\n", "", errout.str());
+
+        functionVariableUsage("void f(bool b) {\n"
+                              "    int i = 0;\n"
+                              "    if (b) {\n"
+                              "        i = 1;\n"
+                              "        for (; i < N - 1; i++) {}\n"
+                              "    }\n"
+                              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvaralias1() {
