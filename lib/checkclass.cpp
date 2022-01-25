@@ -2169,7 +2169,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                         if (var && var->isStlType(stl_containers_not_const))
                             return false;
                         const Token* assignTok = end->next()->astParent();
-                        if (assignTok && assignTok->isAssignmentOp() && assignTok->astOperand1() && assignTok->astOperand1()->variable()) {
+                        if (var && assignTok && assignTok->isAssignmentOp() && assignTok->astOperand1() && assignTok->astOperand1()->variable()) {
                             const Variable* assignVar = assignTok->astOperand1()->variable();
                             if (assignVar->isPointer() && !assignVar->isConst() && var->typeScope()) {
                                 const auto& funcMap = var->typeScope()->functionMap;

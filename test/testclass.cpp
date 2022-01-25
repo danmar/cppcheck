@@ -5900,6 +5900,15 @@ private:
                    "    }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n" // #10758
+                   "    T* h;\n"
+                   "    void f(); \n"
+                   "};\n"
+                   "void S::f() {\n"
+                   "    char* c = h->x[y];\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n", errout.str());
     }
 
     void const_handleDefaultParameters() {
