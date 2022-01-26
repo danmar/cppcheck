@@ -141,6 +141,7 @@ private:
         TEST_CASE(localvaralias16);
         TEST_CASE(localvaralias17); // ticket #8911
         TEST_CASE(localvaralias18); // ticket #9234 - iterator
+        TEST_CASE(localvaralias19); // ticket #9828
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -177,6 +178,7 @@ private:
         TEST_CASE(localvarStruct10);
         TEST_CASE(localvarStruct11); // 10095
         TEST_CASE(localvarStruct12); // #10495
+        TEST_CASE(localvarStruct13); // #10398
         TEST_CASE(localvarStructArray);
         TEST_CASE(localvarUnion1);
 
@@ -4388,6 +4390,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvaralias19() { // #9828
+        functionVariableUsage("void f() {\n"
+                              "    bool b0{}, b1{};\n"
+                              "    struct {\n"
+                              "        bool* pb;\n"
+                              "        int val;\n"
+                              "    } Map[] = { {&b0, 0}, {&b1, 1} };\n"
+                              "    b0 = true;\n"
+                              "    for (auto & m : Map)\n"
+                              "        if (m.pb && *m.pb)\n"
+                              "            m.val = 1;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvarasm() {
 
         functionVariableUsage("void foo(int &b)\n"
@@ -4645,6 +4662,23 @@ private:
                               "    S s;\n"
                               "    s.Ref() = true;\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarStruct13() { // #10398
+        functionVariableUsage("int f() {\n"
+                              "    std::vector<std::string> Mode;\n"
+                              "    Info Block = {\n"
+                              "        {\n"
+                              "            { &Mode  },\n"
+                              "            { &Level }\n"
+                              "        }\n"
+                              "    };\n"
+                              "    Mode.resize(N);\n"
+                              "    for (int i = 0; i < N; ++i)\n"
+                              "        Mode[i] = \"abc\";\n"
+                              "    return Save(&Block);\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
