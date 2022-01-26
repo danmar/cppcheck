@@ -178,6 +178,7 @@ private:
         TEST_CASE(localvarStruct10);
         TEST_CASE(localvarStruct11); // 10095
         TEST_CASE(localvarStruct12); // #10495
+        TEST_CASE(localvarStruct13); // #10398
         TEST_CASE(localvarStructArray);
         TEST_CASE(localvarUnion1);
 
@@ -4661,6 +4662,23 @@ private:
                               "    S s;\n"
                               "    s.Ref() = true;\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarStruct13() { // #10398
+        functionVariableUsage("int f() {\n"
+                              "    std::vector<std::string> Mode;\n"
+                              "    Info Block = {\n"
+                              "        {\n"
+                              "            { &Mode  },\n"
+                              "            { &Level }\n"
+                              "        }\n"
+                              "    };\n"
+                              "    Mode.resize(N);\n"
+                              "    for (int i = 0; i < N; ++i)\n"
+                              "        Mode[i] = \"abc\";\n"
+                              "    return Save(&Block);\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

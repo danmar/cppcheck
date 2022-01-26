@@ -6062,6 +6062,17 @@ private:
                "}\n";
         valueOfTok(code, "x");
 
+        code = "struct a {\n"
+               "  void b();\n"
+               "};\n"
+               "void d(std::vector<a> c) {\n"
+               "  a *e;\n"
+               "  for (auto &child : c)\n"
+               "    e = &child;\n"
+               "  (*e).b();\n"
+               "}\n";
+        valueOfTok(code, "e");
+
         code = "const int& f(int, const int& y = 0);\n"
                "const int& f(int, const int& y) {\n"
                "    return y;\n"
@@ -6226,6 +6237,21 @@ private:
                "  }\n"
                "};\n";
         valueOfTok(code, "e");
+
+        code = "struct a {\n"
+               "  struct b {\n"
+               "    std::unique_ptr<a> c;\n"
+               "  };\n"
+               "  void d(int, void *);\n"
+               "  void e() {\n"
+               "    d(0, [f = b{}] { return f.c.get(); }());\n"
+               "  }\n"
+               "  void g() {\n"
+               "    if (b *h = 0)\n"
+               "      h->c.get();\n"
+               "  }\n"
+               "};\n";
+        valueOfTok(code, "f.c");
     }
 
     void valueFlowHang() {
