@@ -3051,9 +3051,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     while (tok1 && tok1->str() != "{" && tok1->str() != ";") {
         if (tok1->link() && Token::Match(tok1, "(|[|<")) {
             tok1 = tok1->link();
-        } else if (foundInitList &&
-                   Token::Match(tok1, "%name%|> {") &&
-                   Token::Match(tok1->linkAt(1), "} ,|{")) {
+        } else if (foundInitList && Token::Match(tok1, "%name%|> {") && Token::Match(tok1->linkAt(1), "} ,|{")) {
             tok1 = tok1->linkAt(1);
         } else {
             if (tok1->str() == ":")
