@@ -1133,6 +1133,8 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                                                   "noparamend",
                                                   "TemplateSimplifier couldn't find end of template parameter.",
                                                   Certainty::normal);
+                        if (mErrorLogger && mSettings->severity.isEnabled(Severity::debug))
+                            mErrorLogger->reportErr(errmsg);
                     }
                     break;
                 }
