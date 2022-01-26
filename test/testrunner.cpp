@@ -16,11 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "errortypes.h"
 #include "options.h"
 #include "preprocessor.h"
 #include "testsuite.h"
 
 #include <cstdlib>
+#include <exception>
+#include <string>
+
 #ifdef NDEBUG
 #include <iostream>
 #endif

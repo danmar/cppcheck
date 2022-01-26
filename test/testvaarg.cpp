@@ -18,10 +18,13 @@
 
 
 #include "checkvaarg.h"
+#include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 
 class TestVaarg : public TestFixture {
 public:

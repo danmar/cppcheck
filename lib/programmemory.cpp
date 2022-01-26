@@ -1,18 +1,26 @@
 
 #include "programmemory.h"
+
 #include "astutils.h"
 #include "calculate.h"
 #include "infer.h"
+#include "library.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueflow.h"
 #include "valueptr.h"
+
 #include <algorithm>
 #include <cassert>
 #include <functional>
+#include <list>
 #include <memory>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
 void ProgramMemory::setValue(nonneg int exprid, const ValueFlow::Value& value)
 {

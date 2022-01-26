@@ -20,9 +20,16 @@
 #define TestUtilsH
 
 #include "color.h"
+#include "config.h"
 #include "errorlogger.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "tokenize.h"
+#include "tokenlist.h"
+
+#include <iosfwd>
+#include <list>
+#include <string>
 
 class Token;
 

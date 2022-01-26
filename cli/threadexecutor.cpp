@@ -22,6 +22,7 @@
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
+#include "errortypes.h"
 #include "importproject.h"
 #include "settings.h"
 #include "suppressions.h"
@@ -30,6 +31,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <cstring>
+#include <functional>
 #include <iostream>
 #include <utility>
 

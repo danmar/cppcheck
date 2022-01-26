@@ -29,6 +29,8 @@
 #include "utils.h"
 
 #include <algorithm>
+#include <unordered_set>
+#include <vector>
 
 //---------------------------------------------------------------------------
 

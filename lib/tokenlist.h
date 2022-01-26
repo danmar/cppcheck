@@ -23,7 +23,9 @@
 
 #include "config.h"
 #include "token.h"
+#include "utils.h"
 
+#include <iosfwd>
 #include <string>
 #include <unordered_set>
 #include <vector>

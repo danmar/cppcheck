@@ -1,7 +1,9 @@
 #include "color.h"
+
 #ifndef _WIN32
 #include <unistd.h>
 #endif
+#include <cstddef>
 #include <sstream>
 
 #ifdef _WIN32

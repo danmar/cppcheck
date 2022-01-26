@@ -28,7 +28,10 @@
 #include "mathlib.h"
 #include "errortypes.h"
 #include "utils.h"
+#include "valueflow.h"
 
+#include <list>
+#include <map>
 #include <set>
 #include <string>
 
@@ -39,6 +42,10 @@ class Variable;
 class ErrorLogger;
 class Settings;
 class Library;
+
+namespace tinyxml2 {
+    class XMLElement;
+}
 
 
 struct VariableValue {

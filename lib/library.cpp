@@ -22,16 +22,21 @@
 #include "mathlib.h"
 #include "path.h"
 #include "symboldatabase.h"
-#include "tinyxml2.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "valueflow.h"
 
 #include <cctype>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <iosfwd>
 #include <list>
+#include <memory>
 #include <string>
+
+#include <tinyxml2.h>
 
 static std::vector<std::string> getnames(const char *names)
 {

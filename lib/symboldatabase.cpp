@@ -21,10 +21,13 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
+#include "standards.h"
+#include "templatesimplifier.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -37,8 +40,10 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <stack>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)

@@ -17,11 +17,15 @@
  */
 
 #include "checkunusedvar.h"
+#include "config.h"
+#include "errortypes.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
+#include <list>
 #include <string>
 
 class TestUnusedVar : public TestFixture {

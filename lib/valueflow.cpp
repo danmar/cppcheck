@@ -103,12 +103,17 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <functional>
+#include <initializer_list>
+#include <iosfwd>
 #include <iterator>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <stack>
 #include <string>

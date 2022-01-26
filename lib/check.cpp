@@ -22,7 +22,9 @@
 
 #include "errorlogger.h"
 #include "settings.h"
+#include "token.h"
 #include "tokenize.h"
+#include "valueflow.h"
 
 #include <cctype>
 #include <iostream>

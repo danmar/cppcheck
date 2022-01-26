@@ -1,8 +1,17 @@
 #include "infer.h"
+
 #include "calculate.h"
+#include "errortypes.h"
 #include "valueptr.h"
+
+#include <cassert>
+#include <algorithm>
+#include <functional>
 #include <iterator>
 #include <unordered_set>
+#include <utility>
+
+class Token;
 
 template<class Predicate, class Compare>
 static const ValueFlow::Value* getCompareValue(const std::list<ValueFlow::Value>& values, Predicate pred, Compare compare)

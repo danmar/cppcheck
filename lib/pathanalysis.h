@@ -4,6 +4,8 @@
 #include "errortypes.h"
 
 #include <functional>
+#include <list>
+#include <utility>
 
 class Library;
 class Scope;

@@ -17,10 +17,12 @@
  */
 
 
+#include "config.h"
 #include "mathlib.h"
 #include "testsuite.h"
 
 #include <limits>
+#include <string>
 
 struct InternalError;
 

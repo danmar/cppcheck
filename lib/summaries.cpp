@@ -4,7 +4,9 @@
 #include "analyzerinfo.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 
 #include <algorithm>
 #include <fstream>

@@ -18,14 +18,19 @@
 
 
 #include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "templatesimplifier.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 
 #include <cstring>
+#include <iosfwd>
+#include <string>
+#include <vector>
 
 
 class TestSimplifyTemplate : public TestFixture {

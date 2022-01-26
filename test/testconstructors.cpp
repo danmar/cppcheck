@@ -18,9 +18,16 @@
 
 
 #include "checkclass.h"
+#include "config.h"
+#include "errortypes.h"
+#include "standards.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <iosfwd>
+#include <list>
+#include <string>
 
 
 class TestConstructors : public TestFixture {

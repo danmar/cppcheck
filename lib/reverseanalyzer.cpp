@@ -1,14 +1,21 @@
 #include "reverseanalyzer.h"
+
 #include "analyzer.h"
 #include "astutils.h"
 #include "errortypes.h"
 #include "forwardanalyzer.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 struct ReverseTraversal {
     ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)

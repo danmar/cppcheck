@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "library.h"
+#include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -25,16 +27,21 @@
 #include "valueflow.h"
 
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <functional>
 #include <list>
 #include <map>
-#include <simplecpp.h>
+#include <memory>
+#include <ostream>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestValueFlow : public TestFixture {
 public:

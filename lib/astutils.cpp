@@ -33,10 +33,15 @@
 
 #include <algorithm>
 #include <functional>
+#include <initializer_list>
 #include <iterator>
 #include <list>
+#include <map>
+#include <memory>
 #include <set>
 #include <stack>
+#include <type_traits>
+#include <unordered_map>
 #include <utility>
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>

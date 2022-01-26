@@ -20,8 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checkother.h"
 
-#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
-
 #include "astutils.h"
 #include "library.h"
 #include "mathlib.h"
@@ -33,11 +31,18 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
+
 #include <algorithm> // find_if()
+#include <cctype>
 #include <list>
 #include <map>
+#include <memory>
+#include <ostream>
+#include <set>
+#include <type_traits>
 #include <utility>
-#include <cctype>
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

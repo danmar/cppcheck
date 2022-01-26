@@ -36,6 +36,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenize.h"
+#include "utils.h"
 
 #include <list>
 #include <string>

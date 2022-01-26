@@ -20,6 +20,7 @@
 
 #include "check.h"
 #include "cppcheckexecutor.h"
+#include "errortypes.h"
 #include "filelister.h"
 #include "importproject.h"
 #include "path.h"
@@ -32,6 +33,7 @@
 #include "utils.h"
 
 #include <algorithm>
+#include <climits>
 #include <cstdio>
 #include <cstdlib> // EXIT_FAILURE
 #include <cstring>
