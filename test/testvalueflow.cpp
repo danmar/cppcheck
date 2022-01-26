@@ -6062,6 +6062,17 @@ private:
                "}\n";
         valueOfTok(code, "x");
 
+        code = "struct a {\n"
+              "  void b();\n"
+              "};\n"
+              "void d(std::vector<a> c) {\n"
+              "  a *e;\n"
+              "  for (auto &child : c)\n"
+              "    e = &child;\n"
+              "  (*e).b();\n"
+              "}\n";
+        valueOfTok(code, "e");
+        
         code = "const int& f(int, const int& y = 0);\n"
                "const int& f(int, const int& y) {\n"
                "    return y;\n"
