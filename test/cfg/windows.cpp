@@ -106,7 +106,7 @@ void nullPointer_GetPrivateProfileString(LPCTSTR lpAppName,
 
     // No warning is expected for 1st arg as nullptr
     (void)GetPrivateProfileString(nullptr, lpKeyName, lpDefault, lpReturnedString, nSize, lpFileName);
-    // No warning is expected for 2st arg as nullptr
+    // No warning is expected for 2nd arg as nullptr
     (void)GetPrivateProfileString(lpAppName, nullptr, lpDefault, lpReturnedString, nSize, lpFileName);
 }
 
@@ -212,7 +212,7 @@ void validCode()
 
     PSID pEveryoneSID = NULL;
     SID_IDENTIFIER_AUTHORITY SIDAuthWorld = SECURITY_WORLD_SID_AUTHORITY;
-    AllocateAndInitializeSid(&SIDAuthWorld, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pEveryoneSID)
+    AllocateAndInitializeSid(&SIDAuthWorld, 1, SECURITY_WORLD_RID, 0, 0, 0, 0, 0, 0, 0, &pEveryoneSID);
     FreeSid(pEveryoneSID);
 
     LPVOID pMem = HeapAlloc(GetProcessHeap(), 0, 10);
@@ -629,7 +629,7 @@ void ignoredReturnValue()
     GetLastError();
 
     // cppcheck-suppress ignoredReturnValue
-    GetProcessHeap()
+    GetProcessHeap();
     // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     HeapAlloc(GetProcessHeap(), 0, 10);

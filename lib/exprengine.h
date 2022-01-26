@@ -116,7 +116,8 @@ namespace ExprEngine {
             (void)value;
             return false;
         }
-        virtual bool isUninit() const {
+        virtual bool isUninit(const DataBase *dataBase) const {
+            (void)dataBase;
             return false;
         }
 
@@ -132,9 +133,7 @@ namespace ExprEngine {
             (void)value;
             return true;
         }
-        bool isUninit() const OVERRIDE {
-            return true;
-        }
+        bool isUninit(const DataBase *dataBase) const OVERRIDE;
     };
 
     class IntRange : public Value {
@@ -245,9 +244,9 @@ namespace ExprEngine {
             return (it == member.end()) ? ValuePtr() : it->second;
         }
 
-        std::string getUninitStructMember() const {
+        std::string getUninitStructMember(const DataBase *dataBase) const {
             for (auto memberNameValue: member) {
-                if (memberNameValue.second && memberNameValue.second->isUninit())
+                if (memberNameValue.second && memberNameValue.second->isUninit(dataBase))
                     return memberNameValue.first;
             }
             return std::string();
@@ -327,7 +326,8 @@ namespace ExprEngine {
         bool isEqual(const DataBase * /*dataBase*/, int /*value*/) const OVERRIDE {
             return true;
         }
-        bool isUninit() const OVERRIDE {
+        bool isUninit(const DataBase *dataBase) const OVERRIDE {
+            (void)dataBase;
             return true;
         }
     };

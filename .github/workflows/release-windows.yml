@@ -22,17 +22,34 @@ jobs:
 
     runs-on: windows-2019
 
+    env:
+      # see https://www.pcre.org/original/changelog.txt
+      PCRE_VERSION: 8.45
+      # see https://github.com/Z3Prover/z3/releases:
+      Z3_VERSION: 4.8.10
+
     steps:
       - uses: actions/checkout@v2
 
       - name: Setup msbuild.exe
         uses: microsoft/setup-msbuild@v1.0.2
 
+      - name: Cache PCRE
+        id: cache-pcre
+        uses: actions/cache@v2
+        with:
+          path: pcre-${{ env.PCRE_VERSION }}.zip
+          key: pcre-${{ env.PCRE_VERSION }}
+
+      - name: Download PCRE
+        if: steps.cache-pcre.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip
+
       - name: Install PCRE
         run: |
-          curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/8.45.zip -o pcre-8.45.zip
-          7z x pcre-8.45.zip
-          cd pcre-8.45
+          7z x pcre-%PCRE_VERSION%.zip
+          cd pcre-%PCRE_VERSION%
           cmake . -G "Visual Studio 16 2019" -A x64
           msbuild -m PCRE.sln /p:Configuration=Release /p:Platform=x64
           dir
@@ -42,11 +59,22 @@ jobs:
           copy pcre.h ..\externals
           copy Release\pcre.lib ..\externals\pcre64.lib
 
+      - name: Cache Z3 Library
+        id: cache-z3
+        uses: actions/cache@v2
+        with:
+          path: z3-${{ env.Z3_VERSION }}-x64-win.zip
+          key: z3-${{ env.Z3_VERSION }}-x64-win
+
+      - name: Download Z3 library
+        if: steps.cache-z3.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-x64-win.zip -o z3-%Z3_VERSION%-x64-win.zip
+
       - name: Install Z3 library
         run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x64-win.zip -o z3-4.8.7-win.zip
-          7z x z3-4.8.7-win.zip -oexternals -r -y
-          move externals\z3-4.8.7-x64-win externals\z3
+          7z x z3-%Z3_VERSION%-x64-win.zip -oexternals -r -y
+          move externals\z3-%Z3_VERSION%-x64-win externals\z3
 
       - name: Install Qt
         uses: jurplel/install-qt-action@v2

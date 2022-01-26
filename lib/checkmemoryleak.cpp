@@ -181,7 +181,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     const Library::AllocFunc *f = mSettings_->library.getReallocFuncInfo(tok2);
     if (!(f && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(tok2)))
         return No;
-    const Token* arg = getArguments(tok2).at(f->reallocArg - 1);
+    const auto args = getArguments(tok2);
+    if (args.size() < (f->reallocArg))
+        return No;
+    const Token* arg = args.at(f->reallocArg - 1);
     while (arg && arg->isCast())
         arg = arg->astOperand1();
     while (arg && arg->isUnaryOp("*"))
@@ -405,57 +408,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
     }
 
     return allocType;
-}
-
-
-const char *CheckMemoryLeak::functionArgAlloc(const Function *func, nonneg int targetpar, AllocType &allocType) const
-{
-    allocType = No;
-
-    if (!func || !func->functionScope)
-        return "";
-
-    if (!Token::simpleMatch(func->retDef, "void"))
-        return "";
-
-    std::list<Variable>::const_iterator arg = func->argumentList.begin();
-    for (; arg != func->argumentList.end(); ++arg) {
-        if (arg->index() == targetpar-1)
-            break;
-    }
-    if (arg == func->argumentList.end())
-        return "";
-
-    // Is **
-    if (!arg->isPointer())
-        return "";
-    const Token* tok = arg->typeEndToken();
-    tok = tok->previous();
-    if (tok->str() != "*")
-        return "";
-
-    // Check if pointer is allocated.
-    bool realloc = false;
-    for (tok = func->functionScope->bodyStart; tok && tok != func->functionScope->bodyEnd; tok = tok->next()) {
-        if (tok->varId() == arg->declarationId()) {
-            if (Token::Match(tok->tokAt(-3), "free ( * %name% )")) {
-                realloc = true;
-                allocType = No;
-            } else if (Token::Match(tok->previous(), "* %name% =")) {
-                allocType = getAllocationType(tok->tokAt(2), arg->declarationId());
-                if (allocType != No) {
-                    if (realloc)
-                        return "realloc";
-                    return "alloc";
-                }
-            } else {
-                // unhandled variable usage: bailout
-                return "";
-            }
-        }
-    }
-
-    return "";
 }
 
 

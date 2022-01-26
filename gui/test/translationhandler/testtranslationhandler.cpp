@@ -20,10 +20,19 @@
 #include "testtranslationhandler.h"
 #include "translationhandler.h"
 
+static const QStringList getTranslationNames(const TranslationHandler& handler)
+{
+    QStringList names;
+    foreach (TranslationInfo translation, handler.getTranslations()) {
+        names.append(translation.mName);
+    }
+    return names;
+}
+
 void TestTranslationHandler::construct()
 {
     TranslationHandler handler;
-    QCOMPARE(handler.getNames().size(), 13);  // 12 translations + english
+    QCOMPARE(getTranslationNames(handler).size(), 13);  // 12 translations + english
     QCOMPARE(handler.getCurrentLanguage(), QString("en"));
 }
 

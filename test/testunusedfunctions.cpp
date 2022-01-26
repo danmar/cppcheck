@@ -53,6 +53,7 @@ private:
         TEST_CASE(unusedMain);
         TEST_CASE(initializationIsNotAFunction);
         TEST_CASE(operator1);   // #3195
+        TEST_CASE(operator2);   // #7974
         TEST_CASE(returnRef);
         TEST_CASE(attribute); // #3471 - FP __attribute__(constructor)
         TEST_CASE(initializer_list);
@@ -324,6 +325,19 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("struct Foo { operator std::string(int a) {} };");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void operator2() { // #7974
+        check("bool operator==(const data_t& a, const data_t& b) {\n"
+              "    return (a.fd == b.fd);\n"
+              "}\n"
+              "bool operator==(const event& a, const event& b) {\n"
+              "    return ((a.events == b.events) && (a.data == b.data));\n"
+              "}\n"
+              "int main(event a, event b) {\n"
+              "    return a == b;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

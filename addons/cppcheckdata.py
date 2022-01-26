@@ -692,7 +692,16 @@ class Value:
         self._tokvalueId = element.get('tokvalue')
         self.floatvalue = element.get('floatvalue')
         self.containerSize = element.get('container-size')
+        self.iteratorStart = element.get('iterator-start')
+        self.iteratorEnd = element.get('iterator-end')
+        self._lifetimeId = element.get('lifetime')
+        self.lifetimeScope = element.get('lifetime-scope')
+        self.lifetimeKind = element.get('lifetime-kind')
+        self._symbolicId = element.get('symbolic')
+        self.symbolicDelta = element.get('symbolic-delta')
         self.condition = element.get('condition-line')
+        self.bound = element.get('bound')
+        self.path = element.get('path')
         if self.condition:
             self.condition = int(self.condition)
         if element.get('known'):
@@ -706,6 +715,8 @@ class Value:
 
     def setId(self, IdMap):
         self.tokvalue = IdMap.get(self._tokvalueId)
+        self.lifetime = IdMap.get(self._lifetimeId)
+        self.symbolic = IdMap.get(self._symbolicId)
 
     def __repr__(self):
         attrs = ["intvalue", "tokvalue", "floatvalue", "containerSize",

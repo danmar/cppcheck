@@ -184,6 +184,7 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
         return Container::Action::NO_ACTION;
 }
 
+// cppcheck-suppress unusedFunction - only used in unit tests
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
 {
     tinyxml2::XMLDocument doc;
@@ -1577,6 +1578,8 @@ const Token* Library::getContainerFromYield(const Token* tok, Library::Container
     }
     return nullptr;
 }
+
+// cppcheck-suppress unusedFunction
 const Token* Library::getContainerFromAction(const Token* tok, Library::Container::Action action) const
 {
     if (!tok)

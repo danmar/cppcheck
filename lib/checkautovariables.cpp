@@ -563,7 +563,9 @@ static const Token* getParentLifetime(bool cpp, const Token* tok, const Library*
             const Token* dotTok = tok2->next();
             if (!Token::simpleMatch(dotTok, ".")) {
                 const Token* endTok = nextAfterAstRightmostLeaf(tok2);
-                if (Token::simpleMatch(endTok, "."))
+                if (!endTok)
+                    dotTok = tok2->next();
+                else if (Token::simpleMatch(endTok, "."))
                     dotTok = endTok;
                 else if (Token::simpleMatch(endTok->next(), "."))
                     dotTok = endTok->next();

@@ -3838,6 +3838,34 @@ private:
               "  if (b) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10223
+        check("static volatile sig_atomic_t is_running;\n"
+              "static void handler(int signum) {\n"
+              "    is_running = 0;\n"
+              "}\n"
+              "void f() {\n"
+              "    signal(SIGINT, &handler);\n"
+              "    is_running = 1;\n"
+              "    while (is_running) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10659
+        check("auto func(const std::tuple<int, int>& t) {\n"
+              "  auto& [foo, bar] = t;\n"
+              "  std::cout << foo << bar << std::endl;\n"
+              "  return foo < bar;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9256
+        check("bool f() {\n"
+              "    bool b = false;\n"
+              "    b = true;\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()

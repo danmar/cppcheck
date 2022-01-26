@@ -151,7 +151,7 @@ bool extractForLoopValues(const Token *forToken,
                           long long * const lastValue);
 
 bool precedes(const Token * tok1, const Token * tok2);
-bool succedes(const Token* tok1, const Token* tok2);
+bool succeeds(const Token* tok1, const Token* tok2);
 
 bool exprDependsOnThis(const Token* expr, bool onVar = true, nonneg int depth = 0);
 
@@ -362,8 +362,6 @@ public:
         bool known;
         const Token *token;
     };
-
-    std::vector<KnownAndToken> valueFlow(const Token *expr, const Token *startToken, const Token *endToken);
 
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;

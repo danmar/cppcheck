@@ -1057,6 +1057,7 @@ void Tokenizer::simplifyTypedef()
             int memberScope = 0;
             bool globalScope = false;
             int classLevel = spaceInfo.size();
+            bool inTypeDef = false;
             std::string removed;
             std::string classPath;
             for (size_t i = 1; i < spaceInfo.size(); ++i) {
@@ -1070,6 +1071,36 @@ void Tokenizer::simplifyTypedef()
                     return;
 
                 removed.clear();
+
+                if (Token::simpleMatch(tok2, "typedef"))
+                    inTypeDef = true;
+
+                if (inTypeDef && Token::simpleMatch(tok2, ";"))
+                    inTypeDef = false;
+
+                // Check for variable declared with the same name
+                if (!inTypeDef && spaceInfo.size() == 1 && Token::Match(tok2->previous(), "%name%") &&
+                    !tok2->previous()->isKeyword()) {
+                    Token* varDecl = tok2;
+                    while (Token::Match(varDecl, "*|&|&&|const"))
+                        varDecl = varDecl->next();
+                    if (Token::Match(varDecl, "%name% ;|,|)|=") && varDecl->str() == typeName->str()) {
+                        // Skip to the next closing brace
+                        if (Token::Match(varDecl, "%name% ) {")) { // is argument variable
+                            tok2 = varDecl->linkAt(2)->next();
+                        } else {
+                            tok2 = varDecl;
+                            while (tok2 && !Token::simpleMatch(tok2, "}")) {
+                                if (Token::Match(tok2, "(|{|["))
+                                    tok2 = tok2->link();
+                                tok2 = tok2->next();
+                            }
+                        }
+                        if (!tok2)
+                            break;
+                        continue;
+                    }
+                }
 
                 if (tok2->link()) { // Pre-check for performance
                     // check for end of scope
@@ -2776,11 +2807,17 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
     if (!mSettings->buildDir.empty())
         Summaries::create(this, configuration);
 
-    if (mTimerResults) {
-        Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
-        ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
-    } else {
-        ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+    // TODO: do not run valueflow if no checks are being performed at all - e.g. unusedFunctions only
+    const char* disableValueflowEnv = std::getenv("DISABLE_VALUEFLOW");
+    const bool doValueFlow = !disableValueflowEnv || (std::strcmp(disableValueflowEnv, "1") != 0);
+
+    if (doValueFlow) {
+        if (mTimerResults) {
+            Timer t("Tokenizer::simplifyTokens1::ValueFlow", mSettings->showtime, mTimerResults);
+            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+        } else {
+            ValueFlow::setValues(&list, mSymbolDatabase, mErrorLogger, mSettings);
+        }
     }
 
     // Warn about unhandled character literals
@@ -2796,7 +2833,9 @@ bool Tokenizer::simplifyTokens1(const std::string &configuration)
         }
     }
 
-    mSymbolDatabase->setArrayDimensionsUsingValueFlow();
+    if (doValueFlow) {
+        mSymbolDatabase->setArrayDimensionsUsingValueFlow();
+    }
 
     printDebugOutput(1);
 
@@ -4554,7 +4593,8 @@ void Tokenizer::createLinks2()
                 }
             } else {
                 type.pop();
-                if (Token::Match(token, "> %name%") && Token::Match(top1->tokAt(-2), "%op% %name% <") &&
+                if (Token::Match(token, "> %name%") && !token->next()->isKeyword() &&
+                    Token::Match(top1->tokAt(-2), "%op% %name% <") &&
                     (templateTokens.empty() || top1 != templateTokens.top()))
                     continue;
                 Token::createMutualLinks(top1, token);
@@ -4823,8 +4863,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Simplify the C alternative tokens (and, or, etc.)
     simplifyCAlternativeTokens();
 
-    reportUnknownMacros();
-
     simplifyFunctionTryCatch();
 
     simplifyHeadersAndUnusedTemplates();
@@ -5018,6 +5056,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Split up variable declarations.
     simplifyVarDecl(false);
+
+    reportUnknownMacros();
 
     // typedef..
     if (mTimerResults) {
@@ -9187,85 +9227,6 @@ void Tokenizer::simplifyNestedStrcat()
     }
 }
 
-// Check if this statement is a duplicate definition.  A duplicate
-// definition will hide the enumerator within it's scope so just
-// skip the entire scope of the duplicate.
-bool Tokenizer::duplicateDefinition(Token ** tokPtr)
-{
-    // check for an end of definition
-    const Token * tok = *tokPtr;
-    if (tok && Token::Match(tok->next(), ";|,|[|=|)|>")) {
-        const Token * end = tok->next();
-
-        if (end->str() == "[") {
-            end = end->link()->next();
-        } else if (end->str() == ",") {
-            // check for function argument
-            if (Token::Match(tok->previous(), "(|,"))
-                return false;
-
-            // find end of definition
-            int level = 0;
-            while (end->next() && (!Token::Match(end->next(), ";|)|>") ||
-                                   (end->next()->str() == ")" && level == 0))) {
-                if (end->next()->str() == "(")
-                    ++level;
-                else if (end->next()->str() == ")")
-                    --level;
-
-                end = end->next();
-            }
-        } else if (end->str() == ")") {
-            // check for function argument
-            if (tok->previous()->str() == ",")
-                return false;
-        }
-
-        if (end) {
-            if (Token::simpleMatch(end, ") {")) { // function parameter ?
-                // make sure it's not a conditional
-                if (Token::Match(end->link()->previous(), "if|for|while|switch|BOOST_FOREACH") || Token::Match(end->link()->tokAt(-2), ":|,"))
-                    return false;
-
-                // look backwards
-                if (tok->previous()->str() == "enum" ||
-                    (Token::Match(tok->previous(), "%type%") &&
-                     tok->previous()->str() != "return") ||
-                    Token::Match(tok->tokAt(-2), "%type% &|*")) {
-                    // duplicate definition so skip entire function
-                    *tokPtr = end->next()->link();
-                    return true;
-                }
-            } else if (end->str() == ">") { // template parameter ?
-                // look backwards
-                if (tok->previous()->str() == "enum" ||
-                    (Token::Match(tok->previous(), "%type%") &&
-                     tok->previous()->str() != "return")) {
-                    // duplicate definition so skip entire template
-                    while (end && end->str() != "{")
-                        end = end->next();
-                    if (end) {
-                        *tokPtr = end->link();
-                        return true;
-                    }
-                }
-            } else {
-                if (Token::Match(tok->previous(), "enum|,"))
-                    return true;
-                else if (Token::Match(tok->previous(), "%type%")) {
-                    // look backwards
-                    const Token *back = tok;
-                    while (back && back->isName())
-                        back = back->previous();
-                    if (!back || (Token::Match(back, "[(,;{}]") && !Token::Match(back->next(),"return|throw")))
-                        return true;
-                }
-            }
-        }
-    }
-    return false;
-}
-
 static const std::set<std::string> stdFunctionsPresentInC = {
     "strcat",
     "strcpy",
@@ -10146,6 +10107,17 @@ static const Token* skipCPPOrAlignAttribute(const Token * tok)
     return tok;
 }
 
+static bool isNonMacro(const Token* tok)
+{
+    if (tok->isKeyword())
+        return true;
+    if (cAlternativeTokens.count(tok->str()) > 0)
+        return true;
+    if (tok->str().compare(0, 2, "__") == 0) // attribute/annotation
+        return true;
+    return false;
+}
+
 void Tokenizer::reportUnknownMacros() const
 {
     // Report unknown macros used in expressions "%name% %num%"
@@ -10238,6 +10210,29 @@ void Tokenizer::reportUnknownMacros() const
                 continue;
             unknownMacroError(tok->next());
         }
+    }
+
+    // Report unknown macros without commas or operators inbetween statements: MACRO1() MACRO2()
+    for (const Token* tok = tokens(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%name% ("))
+            continue;
+        if (isNonMacro(tok))
+            continue;
+
+        const Token* endTok = tok->linkAt(1);
+        if (!Token::Match(endTok, ") %name% (|."))
+            continue;
+
+        const Token* tok2 = endTok->next();
+        if (isNonMacro(tok2))
+            continue;
+
+        if (tok2->next()->str() == "(") {
+            if (Token::Match(tok->previous(), "%name%|::|>"))
+                continue;
+        }
+
+        unknownMacroError(tok);
     }
 }
 

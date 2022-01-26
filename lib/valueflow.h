@@ -493,7 +493,7 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
 ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok);
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
-ValuePtr<InferModel> makeIntegralInferModel();
+CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
 
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                                              bool escape = false,
@@ -513,9 +513,11 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Value
 
 CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 
-CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive = false, bool subfunction = false);
+CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok,
+                                                               bool inconclusive = false,
+                                                               MathLib::bigint path = 0);
 
-const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars);
+const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars, bool smallestScope = true);
 
 std::vector<const Variable*> getVariables(const Token* tok);
 

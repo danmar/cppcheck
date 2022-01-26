@@ -2,7 +2,7 @@
 
 from __future__ import unicode_literals
 
-import datetime
+from datetime import date
 import io
 import locale
 import operator
@@ -74,7 +74,7 @@ h1 {
     grid-area: menu;
     text-align: left;
     overflow: auto;
-    padding: 0 15px 15px 15px;
+    padding: 0 23px 15px 15px;
     border-right: thin solid #aaa;
     min-width: 200px;
 }
@@ -90,6 +90,45 @@ h1 {
     grid-area: content;
     padding: 0px 5px 15px 15px;
     overflow: auto;
+}
+
+label {
+    white-space: nowrap;
+}
+
+label.checkBtn.disabled {
+    color: #606060;
+    background: #e0e0e0;
+    font-style: italic;
+}
+
+label.checkBtn, input[type="text"] {
+    border: 1px solid grey;
+    border-radius: 4px;
+    box-shadow: 1px 1px inset;
+    padding: 1px 5px;
+}
+
+label.checkBtn {
+    white-space: nowrap;
+    background: #ccddff;
+}
+
+label.unchecked {
+    background: #eff8ff;
+    box-shadow: 1px 1px 1px;
+}
+
+label.checkBtn:hover, label.unchecked:hover{
+    box-shadow: 0 0 2px;
+}
+
+label.disabled:hover {
+    box-shadow: 1px 1px inset;
+}
+
+label.checkBtn > input {
+    display:none;
 }
 
 .summaryTable {
@@ -160,7 +199,7 @@ table.summaryTable td { padding: 0 5px 0 5px; }
     padding-right: 6px;
 }
 
-.id-filtered, .severity-filtered, .file-filtered, .tool-filtered {
+.id-filtered, .severity-filtered, .file-filtered, .tool-filtered, .text-filtered {
     visibility: collapse;
 }
 """
@@ -228,6 +267,7 @@ HTML_HEAD = """
       }
 
       function toggleSeverity(cb) {
+        cb.parentElement.classList.toggle("unchecked", !cb.checked);
         var elements = document.querySelectorAll(".sev_" + cb.id);
 
         for (var i = 0, len = elements.length; i < len; i++) {
@@ -238,6 +278,8 @@ HTML_HEAD = """
       }
 
       function toggleTool(cb) {
+        cb.parentElement.classList.toggle("unchecked", !cb.checked);
+
         var elements;
         if (cb.id == "clang-tidy")
             elements = document.querySelectorAll("[class^=clang-tidy-]");
@@ -264,13 +306,40 @@ HTML_HEAD = """
         }
       }
 
+      function filterFile(filter) {
+        var elements = document.querySelectorAll(".fileEntry");
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          var visible = elements[i].querySelector("tr").querySelector("td").textContent.toLowerCase().includes(filter.toLowerCase());
+          elements[i].classList.toggle("text-filtered", !visible);
+        }
+      }
+
+      function filterText(text) {
+        filter = text.toLowerCase();
+        var elements = document.querySelectorAll(".issue");
+
+        for (var i = 0, len = elements.length; i < len; i++) {
+          var visible = false;
+          var fields = elements[i].querySelectorAll("td");
+          for (var n = 0, num = fields.length; n < num; n++) {
+            if (fields[n].textContent.toLowerCase().includes(filter)) {
+              visible = true;
+              break;
+            }
+          }
+          elements[i].classList.toggle("text-filtered", !visible);
+        }
+
+        updateFileRows();
+      }
+
       function updateFileRows(element) {
         var elements = document.querySelectorAll(".fileEntry");
 
         for (var i = 0, len = elements.length; i < len; i++) {
-          var issue_count = elements[i].querySelectorAll(".issue").length;
-          var invisible_count = elements[i].querySelectorAll(".id-filtered, .severity-filtered, .tool-filtered").length;
-          elements[i].classList.toggle("file-filtered", (invisible_count == issue_count));
+          var visible = elements[i].querySelector(".issue:not(.id-filtered):not(.severity-filtered):not(.tool-filtered):not(.text-filtered)");
+          elements[i].classList.toggle("file-filtered", !visible);
         }
       }
 
@@ -281,21 +350,6 @@ HTML_HEAD = """
     <div id="wrapper">
     <div id="header" class="header">
       <h1>Cppcheck report - %s%s</h1>
-"""
-
-HTML_SEVERITY_FILTER = """
-      <div id="filters">
-        <span class="severityHeader">Severity:</span>
-        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"error\">Error</label>
-        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"warning\">Warning</label>
-        <label><input type="checkbox" class="severityToggle" onClick="toggleSeverity(this)" checked id=\"portability\">Portability</label>
-        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"performance\">Performance</label>
-        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"style\">Style</label>
-        <label><input type="checkbox" class="severityToggle" onclick="toggleSeverity(this)" checked id=\"information\">Information</label>
-        | <span class="severityHeader">Tool:</span>
-        <label><input type="checkbox" class="severityToggle" onclick="toggleTool(this)" checked id=\"cppcheck\">Cppcheck</label>
-        <label><input type="checkbox" class="severityToggle" onclick="toggleTool(this)" checked id=\"clang-tidy\">clang-tidy</label>
-      </div>
 """
 
 HTML_HEAD_END = """
@@ -341,54 +395,77 @@ html_unescape_table = {v: k for k, v in html_escape_table.items()}
 def html_escape(text):
     return escape(text, html_escape_table)
 
+def filter_button(enabled_filters, id, function):
+    enabled = enabled_filters.get(id, False)
+    return '\n        <label class="checkBtn%s"><input type="checkbox" onclick="%s(this)" id="%s"%s/>%s</label>'\
+          % (' disabled' if not enabled else '', function, id, 'checked' if enabled else 'disabled', id)
 
-def git_blame(line, path, file, blame_options):
-    git_blame_dict = {}
+def filter_bar(enabled):
+    return ''.join([
+     '      <div id="filters">\n'
+    ,''.join([filter_button(enabled, severity, 'toggleSeverity') for severity in ['error', 'warning', 'portability', 'performance', 'style', 'information']])
+    ,'\n        | '
+    ,''.join([filter_button(enabled, tool, 'toggleTool') for tool in ['cppcheck', 'clang-tidy']])
+    ,'\n        | '
+    ,'\n        <label class="severityHeader">File: <input type="text" oninput="filterFile(this.value)"/></label>'
+    ,'\n        <label class="severityHeader">Filter: <input type="text" oninput="filterText(this.value)"/></label>'
+    ,'\n      </div>\n'])
+
+def git_blame(errors, path, file, blame_options):
+    last_line= errors[-1]['line']
+    if last_line == 0:
+        return {}
+
+    first_line = next((error for error in errors if error['line'] > 0))['line']
 
     full_path = os.path.join(path, file)
-    path, file = os.path.split(full_path)
+    path, filename = os.path.split(full_path)
 
     if path:
         os.chdir(path)
 
-    cmd_args = ['git', 'blame', '-L %d' % line]
+    cmd_args = ['git', 'blame', '-L %d,%d' % (first_line, last_line)]
     if '-w' in blame_options:
         cmd_args.append('-w')
     if '-M' in blame_options:
         cmd_args.append('-M')
-    cmd_args = cmd_args + ['--porcelain', '--', file]
+    cmd_args = cmd_args + ['--porcelain', '--incremental', '--', filename]
 
     try:
         result = subprocess.check_output(cmd_args)
         result = result.decode(locale.getpreferredencoding())
     except:
-        return {}
+        return []
     finally:
         os.chdir(cwd)
 
     if result.startswith('fatal'):
-        return {}
+        return []
 
-    disallowed_characters = '<>'
-    for line in result.split('\n')[1:]:
-        space_pos = line.find(' ')
-        if space_pos > 30:
-            break
-        key = line[:space_pos]
-        val = line[space_pos + 1:]
+    blame_data = []
+    line_from = 0
+    line_to = 0
+    blame_info = dict()
 
-        for character in disallowed_characters:
-            val = val.replace(character, "")
-        git_blame_dict[key] = val
+    for line_str in result.splitlines():
+        field, _, value = line_str.partition(' ')
+        if len(field) == 40:
+            line_nr, count = value.split(' ')[1:]
+            line_from = int(line_nr)
+            line_to = line_from + int(count)
+        elif field.startswith('author'):
+            blame_info[field] = value
+            if field == 'author-time':
+                author_date = date.fromtimestamp(int(blame_info['author-time']))
+                blame_info['author-time'] = author_date.strftime("%d/%m/%Y")
+        elif field == 'filename':
+            blame_data.append([line_from, line_to, blame_info.copy()])
 
-    datetime_object = datetime.date.fromtimestamp(float(git_blame_dict['author-time']))
-    year = datetime_object.strftime("%Y")
-    month = datetime_object.strftime("%m")
-    day = datetime_object.strftime("%d")
+    return blame_data
 
-    git_blame_dict['author-time'] = '%s/%s/%s' % (day, month, year)
 
-    return git_blame_dict
+def blame_lookup(blame_data, line):
+    return next((data for start, end, data in blame_data if line >= start and line < end), {})
 
 
 def tr_str(td_th, line, id, cwe, severity, message, author, author_mail, date, add_author, tr_class=None, htmlfile=None, message_class=None):
@@ -408,9 +485,9 @@ def tr_str(td_th, line, id, cwe, severity, message, author, author_mail, date, a
 
     for field in  add_author:
         if field == 'name':
-            ret += '<%s>%s</%s>' % (td_th, author, td_th)
+            ret += '<%s>%s</%s>' % (td_th, html_escape(author), td_th)
         elif field == 'email':
-            ret += '<%s>%s</%s>' % (td_th, author_mail, td_th)
+            ret += '<%s>%s</%s>' % (td_th, html_escape(author_mail), td_th)
         elif field == 'date':
             ret += '<%s>%s</%s>' % (td_th, date, td_th)
 
@@ -609,7 +686,7 @@ if __name__ == '__main__':
     file_no = 0
     for error in contentHandler.errors:
         filename = error['file']
-        if filename not in files.keys():
+        if filename not in files:
             files[filename] = {
                 'errors': [], 'htmlfile': str(file_no) + '.html'}
             file_no = file_no + 1
@@ -718,9 +795,12 @@ if __name__ == '__main__':
 
         stats_count = 0
         stats = []
+        filter_enabled = {}
         for filename, data in sorted(files.items()):
             for error in data['errors']:
                 stats.append(error['id'])  # get the stats
+                filter_enabled[error['severity']] = True
+                filter_enabled['clang-tidy' if error['id'].startswith('clang-tidy-') else 'cppcheck'] = True
                 stats_count += 1
 
         counter = Counter(stats)
@@ -744,7 +824,7 @@ if __name__ == '__main__':
                 stat_html.append(stat_fmt.format(_id, _id, dict(counter.most_common())[_id], _id))
 
         output_file.write(HTML_HEAD % (options.title, '', options.title, ''))
-        output_file.write(HTML_SEVERITY_FILTER)
+        output_file.write(filter_bar(filter_enabled))
         output_file.write(HTML_HEAD_END)
         output_file.write(HTML_MENU.replace('id="menu"', 'id="menu_index"', 1).replace("Defects:", "Defect summary", 1) % (''))
         output_file.write('\n       <label><input type="checkbox" class=\"idToggle\" onclick="toggleAll()" checked> Toggle all</label>')
@@ -763,8 +843,9 @@ if __name__ == '__main__':
 
         for filename, data in sorted(files.items()):
             file_error = filename in decode_errors or filename.endswith('*')
-
+            is_file = filename != '' and not file_error
             row_content = filename if file_error else "<a href=\"%s\">%s</a>" % (data['htmlfile'], filename)
+            htmlfile = data.get('htmlfile') if is_file else None
 
             output_file.write("\n      <tbody class=\"fileEntry\">")
             output_file.write("\n       <tr><td colspan=\"5\">%s</td></tr>" % row_content)
@@ -772,11 +853,10 @@ if __name__ == '__main__':
             if filename in decode_errors:
                 output_file.write("\n       <tr><td colspan=\"5\">Could not generated due to UnicodeDecodeError</td></tr>")
 
-            for error in sorted(data['errors'], key=lambda k: k['line']):
-                if add_author_information:
-                    git_blame_dict = git_blame(error['line'], source_dir, error['file'], blame_options)
-                else:
-                    git_blame_dict = {}
+            sorted_errors = sorted(data['errors'], key=lambda k: k['line'])
+            blame_data = git_blame(sorted_errors, source_dir, filename, blame_options) if add_author_information else []
+            for error in sorted_errors:
+                git_blame_dict = blame_lookup(blame_data, error['line'])
                 message_class = None
                 try:
                     if error['inconclusive'] == 'true':
@@ -794,9 +874,7 @@ if __name__ == '__main__':
                 if error['severity'] in ['error', 'warning']:
                     message_class = error['severity']
 
-                is_file = filename != '' and not file_error
                 line = error["line"] if is_file else ""
-                htmlfile = data.get('htmlfile') if is_file else None
 
                 output_file.write(
                     '\n         %s' %

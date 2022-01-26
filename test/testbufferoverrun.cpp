@@ -189,7 +189,7 @@ private:
         TEST_CASE(array_index_negative3);
         TEST_CASE(array_index_negative4);
         TEST_CASE(array_index_for_decr);
-        TEST_CASE(array_index_varnames);     // FP: struct member. #1576
+        TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
         TEST_CASE(array_index_for);          // FN: for,if
         TEST_CASE(array_index_for_neq);      // #2211: Using != in condition
@@ -1093,7 +1093,9 @@ private:
               "    struct s1 obj;\n"
               "    x(obj.delay, 123);\n"
               "}");
-        // TODO CTU ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (error) Array 'obj.delay[3]' accessed at index 4, which is out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:11] -> [test.cpp:6]: (error) Array 'obj.delay[3]' accessed at index 4, which is out of bounds.\n",
+                           "",
+                           errout.str());
 
         check("struct s1 {\n"
               "    float a[0];\n"
@@ -2096,8 +2098,25 @@ private:
               "{\n"
               "    A a;\n"
               "    a.data[3] = 0;\n"
+              "    a.b.data[2] = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #1586
+        check("struct A {\n"
+              "    char data[4];\n"
+              "    struct B { char data[3]; };\n"
+              "    B b;\n"
+              "};\n"
+              "\n"
+              "void f()\n"
+              "{\n"
+              "    A a;\n"
+              "    a.data[4] = 0;\n"
+              "    a.b.data[3] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Array 'a.data[4]' accessed at index 4, which is out of bounds.\n"
+                      "[test.cpp:11]: (error) Array 'a.b.data[3]' accessed at index 3, which is out of bounds.\n", errout.str());
     }
 
     void array_index_for_andand_oror() {  // #3907 - using && or ||
@@ -2300,7 +2319,9 @@ private:
               "    char x[2];\n"
               "    f1(x);\n"
               "}");
-        // TODO CTU ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array 'x[2]' accessed at index 4, which is out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Array 'x[2]' accessed at index 4, which is out of bounds.\n",
+                           "",
+                           errout.str());
     }
 
     void array_index_string_literal() {
@@ -3763,7 +3784,9 @@ private:
         check("void f() {\n"
               "  mymemset(\"abc\", 0, 20);\n"
               "}", settings);
-        // TODO ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Buffer is accessed out of bounds.\n",
+                           "",
+                           errout.str());
 
         check("void f() {\n"
               "  mymemset(temp, \"abc\", 4);\n"
@@ -3835,7 +3858,9 @@ private:
               "    char buf[5];\n"
               "    a(buf);"
               "}", settings);
-        // TODO CTU ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer is accessed out of bounds: buf\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Buffer is accessed out of bounds: buf\n",
+                           "",
+                           errout.str());
     }
 
     void minsize_strlen() {
@@ -4904,6 +4929,52 @@ private:
               "    const uint8_t u = 4;\n"
               "    f(&u, N);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("uint32_t f(uint32_t u) {\n" // #10154
+              "    return ((uint8_t*)&u)[3];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    return ((uint8_t*)&u)[4];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str());
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    return reinterpret_cast<unsigned char*>(&u)[3];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    return reinterpret_cast<unsigned char*>(&u)[4];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str());
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    uint8_t* p = (uint8_t*)&u;\n"
+              "    return p[3];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("uint32_t f(uint32_t u) {\n"
+              "    uint8_t* p = (uint8_t*)&u;\n"
+              "    return p[4];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) The address of local variable 'u' is accessed at non-zero index.\n", errout.str());
+
+        check("uint32_t f(uint32_t* pu) {\n"
+              "    uint8_t* p = (uint8_t*)pu;\n"
+              "    return p[4];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { uint8_t padding[500]; };\n" // #10133
+              "S s = { 0 };\n"
+              "uint8_t f() {\n"
+              "    uint8_t* p = (uint8_t*)&s;\n"
+              "    return p[10];\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

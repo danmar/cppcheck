@@ -22,8 +22,15 @@ jobs:
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      # see https://www.pcre.org/original/changelog.txt
+      PCRE_VERSION: 8.45
+      # see https://github.com/Z3Prover/z3/releases:
+      Z3_VERSION: 4.8.10
+
     steps:
       - uses: actions/checkout@v2
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
 
       - name: Set up Python 3.10
         if: matrix.qt_ver == ''
@@ -35,11 +42,23 @@ jobs:
         if: matrix.qt_ver == ''
         uses: microsoft/setup-msbuild@v1.0.2
 
+      - name: Cache PCRE
+        id: cache-pcre
+        uses: actions/cache@v2
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        with:
+          path: pcre-${{ env.PCRE_VERSION }}.zip
+          key: pcre-${{ env.PCRE_VERSION }}
+
+      - name: Download PCRE
+        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-pcre.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
+
       - name: Install PCRE
-        if: false
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
         run: |
           call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
-          curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
           cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off || exit /b !errorlevel!
@@ -51,18 +70,26 @@ jobs:
             copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
           )
         env:
-          # see https://www.pcre.org/original/changelog.txt
-          PCRE_VERSION: 8.44
           CL: /MP
 
-      - name: Install Z3 library
+      - name: Cache Z3 Library
+        id: cache-z3
+        uses: actions/cache@v2
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        with:
+          path: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win.zip
+          key: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win
+
+      - name: Download Z3 library
+        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-z3.outputs.cache-hit != 'true'
         run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-win.zip || exit /b !errorlevel!
-          7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y || exit /b !errorlevel!
+          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip || exit /b !errorlevel!
+
+      - name: Install Z3 library
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        run: |
+          7z x z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -oexternals -r -y || exit /b !errorlevel!
           move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
-        env:
-          # see https://github.com/Z3Prover/z3/releases:  
-          Z3_VERSION: 4.8.10
 
       # no 32-bit Qt available
       - name: Install Qt ${{ matrix.qt_ver }}

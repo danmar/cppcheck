@@ -3261,6 +3261,7 @@ void uninitvar_setbase(void)
     std::cout << std::setbase(p);
 }
 
+// cppcheck-suppress passedByValue
 void uninitvar_find(std::string s)
 {
     // testing of size_t find (const string& str, size_t pos = 0)
@@ -3341,6 +3342,7 @@ void ignoredReturnValue_abs(int i)
     std::abs(-199);
 }
 
+// cppcheck-suppress passedByValue
 void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwstr)
 {
     // cppcheck-suppress ignoredReturnValue
