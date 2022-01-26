@@ -497,9 +497,9 @@ private:
               "    S() = default;\n"
               "    S(const S & s) {}\n"
               "    S& operator=(const S & s) { return *this; }\n"
-              "};\n");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'S::i' is not initialized in the constructor.\n"
-                      "[test.cpp:5]: (warning) Member variable 'S::i' is not assigned a value in 'S::operator='.\n",
+              "};\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Member variable 'S::i' is not assigned in the copy constructor. Should it be copied?\n"
+                      "[test.cpp:5]: (warning, inconclusive) Member variable 'S::i' is not assigned a value in 'S::operator='.\n",
                       errout.str());
 
         check("struct S {\n"

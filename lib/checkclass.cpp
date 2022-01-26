@@ -73,9 +73,9 @@ static const char * getFunctionTypeName(Function::Type type)
 
 static bool isVariableCopyNeeded(const Variable &var)
 {
-    return var.isPointer() ||
+    return !var.hasDefault() && (var.isPointer() ||
            (var.type() && var.type()->needInitialization == Type::NeedInitialization::True) ||
-           (var.valueType() && var.valueType()->type >= ValueType::Type::CHAR);
+           (var.valueType() && var.valueType()->type >= ValueType::Type::CHAR));
 }
 
 static bool isVcl(const Settings *settings)
