@@ -24,7 +24,6 @@
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
-#include "tokenlist.h"
 
 #include <istream>
 #include <string>
