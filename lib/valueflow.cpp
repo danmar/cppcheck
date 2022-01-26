@@ -526,7 +526,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
 
         else if (Token::Match(parent, ". %name% (") && parent->astParent() == parent->tokAt(2) &&
                  parent->astOperand1() && parent->astOperand1()->valueType()) {
-            const Library::Container *c = getLibraryContainer(parent->astOperand1());
+            const Library::Container* c = getLibraryContainer(parent->astOperand1());
             const Library::Container::Yield yields = c ? c->getYield(parent->strAt(1)) : Library::Container::Yield::NO_YIELD;
             if (yields == Library::Container::Yield::SIZE) {
                 ValueFlow::Value v(value);
