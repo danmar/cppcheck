@@ -717,6 +717,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             // syntax error?
             if (!scope)
                 mTokenizer->syntaxError(tok);
+            // End of scope or list should be handled above
+            if (tok->str() == "}")
+                mTokenizer->syntaxError(tok);
         }
     }
 }
@@ -3046,7 +3049,7 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     // find start of function '{'
     bool foundInitList = false;
     while (tok1 && tok1->str() != "{" && tok1->str() != ";") {
-        if (tok1->link() && Token::Match(tok1, "(|<")) {
+        if (tok1->link() && Token::Match(tok1, "(|[|<")) {
             tok1 = tok1->link();
         } else if (foundInitList &&
                    Token::Match(tok1, "%name%|> {") &&

@@ -6211,6 +6211,21 @@ private:
                "    e.d.b = g - f.c;\n"
                "}\n";
         valueOfTok(code, "e");
+
+        code = "struct a {\n"
+              "  struct b {\n"
+              "    std::unique_ptr<a> c;\n"
+              "  };\n"
+              "  void d(int, void *);\n"
+              "  void e() {\n"
+              "    d(0, [f = b{}] { return f.c.get(); }());\n"
+              "  }\n"
+              "  void g() {\n"
+              "    if (b *h = 0)\n"
+              "      h->c.get();\n"
+              "  }\n"
+              "};\n";
+        valueOfTok(code, "f.c");
     }
 
     void valueFlowHang() {
