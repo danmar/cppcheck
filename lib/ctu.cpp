@@ -306,13 +306,14 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
     for (const Scope &scope : symbolDatabase->scopeList) {
         if (!scope.isExecutable() || scope.type != Scope::eFunction || !scope.function)
             continue;
-        const Function *const function = scope.function;
+        const Function *const scopeFunction = scope.function;
 
         // source function calls
         for (const Token *tok = scope.bodyStart; tok != scope.bodyEnd; tok = tok->next()) {
             if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand2())
                 continue;
-            if (!tok->astOperand1()->function())
+            const Function* tokFunction = tok->astOperand1()->function();
+            if (!tokFunction)
                 continue;
             const std::vector<const Token *> args(getArguments(tok->previous()));
             for (int argnr = 0; argnr < args.size(); ++argnr) {
@@ -327,7 +328,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                         continue;
                     FileInfo::FunctionCall functionCall;
                     functionCall.callValueType = value.valueType;
-                    functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());
+                    functionCall.callId = getFunctionId(tokenizer, tokFunction);
                     functionCall.callFunctionName = tok->astOperand1()->expressionString();
                     functionCall.location = FileInfo::Location(tokenizer,tok);
                     functionCall.callArgNr = argnr + 1;
@@ -348,7 +349,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                 if (argtok->variable() && argtok->variable()->isArray() && argtok->variable()->dimensions().size()==1 && argtok->variable()->dimension(0)>1) {
                     FileInfo::FunctionCall functionCall;
                     functionCall.callValueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
-                    functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());
+                    functionCall.callId = getFunctionId(tokenizer, tokFunction);
                     functionCall.callFunctionName = tok->astOperand1()->expressionString();
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
@@ -361,7 +362,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                 if (argtok->isUnaryOp("&") && argtok->astOperand1()->variable() && argtok->astOperand1()->valueType() && !argtok->astOperand1()->variable()->isArray()) {
                     FileInfo::FunctionCall functionCall;
                     functionCall.callValueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
-                    functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());
+                    functionCall.callId = getFunctionId(tokenizer, tokFunction);
                     functionCall.callFunctionName = tok->astOperand1()->expressionString();
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
@@ -370,19 +371,31 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     functionCall.warning = false;
                     fileInfo->functionCalls.push_back(functionCall);
                 }
-                // pointer to uninitialized data..
-                if (!argtok->isUnaryOp("&"))
+                // pointer/reference to uninitialized data
+                auto isAddressOfArg = [](const Token* argtok) -> const Token* {
+                    if (!argtok->isUnaryOp("&"))
+                        return nullptr;
+                    argtok = argtok->astOperand1();
+                    if (!argtok || !argtok->valueType() || argtok->valueType()->pointer != 0)
+                        return nullptr;
+                    return argtok;
+                };
+                auto isReferenceArg = [&](const Token* argtok) -> const Token* {
+                    const Variable* argvar = tokFunction->getArgumentVar(argnr);
+                    if (!argvar || !argvar->valueType() || argvar->valueType()->reference == Reference::None)
+                        return nullptr;
+                    return argtok;
+                };
+                const Token* addr = isAddressOfArg(argtok);
+                argtok = addr ? addr : isReferenceArg(argtok);
+                if (!argtok || argtok->values().size() != 1U)
                     continue;
-                argtok = argtok->astOperand1();
-                if (!argtok || !argtok->valueType() || argtok->valueType()->pointer != 0)
-                    continue;
-                if (argtok->values().size() != 1U)
-                    continue;
+
                 const ValueFlow::Value &v = argtok->values().front();
                 if (v.valueType == ValueFlow::Value::ValueType::UNINIT && !v.isInconclusive()) {
                     FileInfo::FunctionCall functionCall;
                     functionCall.callValueType = ValueFlow::Value::ValueType::UNINIT;
-                    functionCall.callId = getFunctionId(tokenizer, tok->astOperand1()->function());
+                    functionCall.callId = getFunctionId(tokenizer, tokFunction);
                     functionCall.callFunctionName = tok->astOperand1()->expressionString();
                     functionCall.location = FileInfo::Location(tokenizer, tok);
                     functionCall.callArgNr = argnr + 1;
@@ -396,11 +409,11 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
         }
 
         // Nested function calls
-        for (int argnr = 0; argnr < function->argCount(); ++argnr) {
+        for (int argnr = 0; argnr < scopeFunction->argCount(); ++argnr) {
             const Token *tok;
             const int argnr2 = isCallFunction(&scope, argnr, &tok);
             if (argnr2 > 0) {
-                FileInfo::NestedCall nestedCall(tokenizer, function, tok);
+                FileInfo::NestedCall nestedCall(tokenizer, scopeFunction, tok);
                 nestedCall.myArgNr = argnr + 1;
                 nestedCall.callArgNr = argnr2;
                 fileInfo->nestedCalls.push_back(nestedCall);
@@ -415,7 +428,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
 {
     std::list<std::pair<const Token *, MathLib::bigint>> ret;
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
-    if (!argvar->isPointer())
+    if (!argvar->isPointer() && !argvar->isReference())
         return ret;
     for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
         if (Token::Match(tok2, ")|else {")) {

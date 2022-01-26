@@ -479,16 +479,21 @@ void CheckOther::checkRedundantAssignment()
                     // todo: check static variables
                     continue;
 
-                // If there is a custom assignment operator => this is inconclusive
                 bool inconclusive = false;
-                if (mTokenizer->isCPP() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->typeScope) {
-                    const std::string op = "operator" + tok->str();
-                    for (const Function &f : tok->astOperand1()->valueType()->typeScope->functionList) {
-                        if (f.name() == op) {
-                            inconclusive = true;
-                            break;
+                if (mTokenizer->isCPP() && tok->astOperand1()->valueType()) {
+                    // If there is a custom assignment operator => this is inconclusive
+                    if (tok->astOperand1()->valueType()->typeScope) {
+                        const std::string op = "operator" + tok->str();
+                        for (const Function& f : tok->astOperand1()->valueType()->typeScope->functionList) {
+                            if (f.name() == op) {
+                                inconclusive = true;
+                                break;
+                            }
                         }
                     }
+                    // assigning a smart pointer has side effects
+                    if (tok->astOperand1()->valueType()->type == ValueType::SMART_POINTER)
+                        break;
                 }
                 if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                     continue;
@@ -1170,7 +1175,7 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
     return cumulatedSize;
 }
 
-static bool canBeConst(const Variable *var)
+static bool canBeConst(const Variable *var, const Settings* settings)
 {
     {
         // check initializer list. If variable is moved from it can't be const.
@@ -1214,17 +1219,26 @@ static bool canBeConst(const Variable *var)
                     argNr++;
                 tok3 = tok3->previous();
             }
-            if (!tok3 || tok3->str() != "(" || !tok3->astOperand1() || !tok3->astOperand1()->function())
+            if (!tok3 || tok3->str() != "(")
                 return false;
-            else {
-                const Variable* argVar = tok3->astOperand1()->function()->getArgumentVar(argNr);
+            const Token* functionTok = tok3->astOperand1();
+            if (!functionTok)
+                return false;
+            const Function* tokFunction = functionTok->function();
+            if (!tokFunction && functionTok->str() == "." && (functionTok = functionTok->astOperand2()))
+                tokFunction = functionTok->function();
+            if (tokFunction) {
+                const Variable* argVar = tokFunction->getArgumentVar(argNr);
                 if (!argVar || (!argVar->isConst() && argVar->isReference()))
                     return false;
             }
+            else if (!settings->library.isFunctionConst(functionTok))
+                return false;
         } else if (parent->isUnaryOp("&")) {
             // TODO: check how pointer is used
             return false;
-        } else if (parent->isConstOp())
+        } else if (parent->isConstOp() ||
+                   (parent->astOperand2() && settings->library.isFunctionConst(parent->astOperand2())))
             continue;
         else if (parent->isAssignmentOp()) {
             if (parent->astOperand1() == tok2)
@@ -1290,7 +1304,7 @@ void CheckOther::checkPassByReference()
         if (!var->scope() || var->scope()->function->hasVirtualSpecifier())
             continue;
 
-        if (canBeConst(var)) {
+        if (canBeConst(var, mSettings)) {
             passedByValueError(var->nameToken(), var->name(), inconclusive);
         }
     }

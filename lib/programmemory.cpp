@@ -28,6 +28,7 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
         return nullptr;
 }
 
+// cppcheck-suppress unusedFunction
 bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
@@ -56,6 +57,7 @@ bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
     return false;
 }
 
+// cppcheck-suppress unusedFunction
 bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
@@ -354,9 +356,8 @@ void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
     state.replace(pm);
 }
 
-void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
+static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
 {
-    ProgramMemory pm = state;
     for (const auto& p:vars) {
         nonneg int exprid = p.first;
         const ValueFlow::Value &value = p.second;
@@ -364,9 +365,16 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
         if (value.varId)
             pm.setIntValue(value.varId, value.varvalue);
     }
+}
+
+void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
+{
+    ProgramMemory pm = state;
+    addVars(pm, vars);
     fillProgramMemoryFromConditions(pm, tok, settings);
     ProgramMemory local = pm;
     fillProgramMemoryFromAssignments(pm, tok, local, vars);
+    addVars(pm, vars);
     replace(pm, tok);
 }
 

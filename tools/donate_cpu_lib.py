@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.17"
+CLIENT_VERSION = "1.3.19"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -34,6 +34,11 @@ def check_requirements():
         except OSError:
             print("Error: '{}' is required".format(app))
             result = False
+    try:
+        import psutil
+    except ImportError as e:
+        print("Error: {}. Module is required. ".format(e))
+        result = False
     return result
 
 
@@ -218,7 +223,7 @@ def download_package(work_path, package, bandwidth_limit):
     return destfile
 
 
-def unpack_package(work_path, tgz):
+def unpack_package(work_path, tgz, cpp_only=False):
     print('Unpacking..')
     temp_path = work_path + '/temp'
     remove_tree(temp_path)
@@ -227,14 +232,19 @@ def unpack_package(work_path, tgz):
     if tarfile.is_tarfile(tgz):
         with tarfile.open(tgz) as tf:
             for member in tf:
+                header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
+                source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
+                c_source_endings = ('.c',)
+                if not cpp_only:
+                    source_endings = source_endings + c_source_endings
                 if member.name.startswith(('/', '..')):
                     # Skip dangerous file names
                     continue
-                elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.ipp', '.ixx', '.qml')):
+                elif member.name.lower().endswith(header_endings + source_endings):
                     try:
                         tf.extract(member.name, temp_path)
-                        found = True
+                        if member.name.lower().endswith(source_endings):
+                            found = True
                     except OSError:
                         pass
                     except AttributeError:
@@ -292,7 +302,7 @@ def run_command(cmd):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, jobs, libraries):
+def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = True):
     print('Analyze..')
     os.chdir(work_path)
     libs = ''
@@ -370,7 +380,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if has_sig:
             returncode = -sig_num
         stacktrace = ''
-        if cppcheck_path == 'cppcheck':
+        if capture_callstack:
             # re-run within gdb to get a stacktrace
             cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 "
             if sig_file is not None:

@@ -153,7 +153,10 @@ void CheckStl::outOfBounds()
                         return false;
                     if (v.intvalue < 0)
                         return false;
-                    const Token* containerTok = getContainerFromSize(container, v.tokvalue);
+                    const Token* sizeTok = v.tokvalue;
+                    if (sizeTok && sizeTok->isCast())
+                        sizeTok = sizeTok->astOperand1();
+                    const Token* containerTok = getContainerFromSize(container, sizeTok);
                     if (!containerTok)
                         return false;
                     return containerTok->exprId() == tok->exprId();
@@ -725,9 +728,9 @@ static bool isSameIteratorContainerExpression(const Token* tok1,
     return false;
 }
 
-static ValueFlow::Value getLifetimeIteratorValue(const Token* tok)
+static ValueFlow::Value getLifetimeIteratorValue(const Token* tok, MathLib::bigint path = 0)
 {
-    std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok);
+    std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok, false, path);
     auto it = std::find_if(values.begin(), values.end(), [](const ValueFlow::Value& v) {
         return v.lifetimeKind == ValueFlow::Value::LifetimeKind::Iterator;
     });
@@ -2291,6 +2294,8 @@ void CheckStl::checkDereferenceInvalidIterator2()
                 isInvalidIterator = true;
             } else {
                 auto it = std::find_if(contValues.begin(), contValues.end(), [&](const ValueFlow::Value& c) {
+                    if (value.path != c.path)
+                        return false;
                     if (value.isIteratorStartValue() && value.intvalue >= c.intvalue)
                         return true;
                     if (value.isIteratorEndValue() && -value.intvalue > c.intvalue)
@@ -2326,7 +2331,10 @@ void CheckStl::checkDereferenceInvalidIterator2()
                 inconclusive = true;
             }
             if (cValue) {
-                const ValueFlow::Value& lValue = getLifetimeObjValue(tok, true);
+                const ValueFlow::Value& lValue = getLifetimeIteratorValue(tok, cValue->path);
+                assert(cValue->isInconclusive() || value.isInconclusive() || lValue.isLifetimeValue());
+                if (!lValue.isLifetimeValue())
+                    continue;
                 if (emptyAdvance)
                     outOfBoundsError(emptyAdvance,
                                      lValue.tokvalue->expressionString(),
@@ -2379,31 +2387,6 @@ void CheckStl::dereferenceInvalidIteratorError(const Token* deref, const std::st
                 "$symbol:" + iterName + "\n"
                 "Possible dereference of an invalid iterator: $symbol\n"
                 "Possible dereference of an invalid iterator: $symbol. Make sure to check that the iterator is valid before dereferencing it - not after.", CWE825, Certainty::normal);
-}
-
-
-void CheckStl::readingEmptyStlContainer2()
-{
-    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
-        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
-            if (!tok->isName() || !tok->valueType())
-                continue;
-            const Library::Container *container = tok->valueType()->container;
-            if (!container)
-                continue;
-            const ValueFlow::Value *value = tok->getContainerSizeValue(0);
-            if (!value)
-                continue;
-            if (value->isInconclusive() && !mSettings->certainty.isEnabled(Certainty::inconclusive))
-                continue;
-            if (!value->errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
-                continue;
-            if (Token::Match(tok, "%name% . %name% (")) {
-                if (container->getYield(tok->strAt(2)) == Library::Container::Yield::ITEM)
-                    readingEmptyStlContainerError(tok,value);
-            }
-        }
-    }
 }
 
 void CheckStl::readingEmptyStlContainerError(const Token *tok, const ValueFlow::Value *value)

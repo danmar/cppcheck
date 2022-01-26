@@ -34,6 +34,8 @@
 #define THREADING_MODEL_WIN
 #include "importproject.h"
 #include <mutex>
+#else
+#error "No threading moodel defined"
 #endif
 
 class Settings;
@@ -68,10 +70,14 @@ public:
     void addFileContent(const std::string &path, const std::string &content);
 
 private:
+    enum class MessageType {REPORT_ERROR, REPORT_INFO};
+
     const std::map<std::string, std::size_t> &mFiles;
     Settings &mSettings;
     ErrorLogger &mErrorLogger;
     unsigned int mFileCount;
+
+    void report(const ErrorMessage &msg, MessageType msgType);
 
 #if defined(THREADING_MODEL_FORK)
 
@@ -119,8 +125,6 @@ public:
 #elif defined(THREADING_MODEL_WIN)
 
 private:
-    enum class MessageType {REPORT_ERROR, REPORT_INFO};
-
     std::map<std::string, std::string> mFileContents;
     std::map<std::string, std::size_t>::const_iterator mItNextFile;
     std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
@@ -134,8 +138,6 @@ private:
     std::mutex mErrorSync;
 
     std::mutex mReportSync;
-
-    void report(const ErrorMessage &msg, MessageType msgType);
 
     static unsigned __stdcall threadProc(ThreadExecutor *threadExecutor);
 

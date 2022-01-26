@@ -933,7 +933,7 @@ You can create and use your own .cfg files for your projects. Use `--check-libra
 
 You can use the `Library Editor` in the `Cppcheck GUI` to edit configuration files. It is available in the `View` menu.
 
-The .cfg file format is documented in the `Reference: Cppcheck .cfg format` (https://cppcheck.sf.net/reference-cfg-format.pdf) document.
+The .cfg file format is documented in the `Reference: Cppcheck .cfg format` (https://cppcheck.sourceforge.io/reference-cfg-format.pdf) document.
 
 # HTML Report
 

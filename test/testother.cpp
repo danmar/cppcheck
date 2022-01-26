@@ -147,6 +147,7 @@ private:
         TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpression11); // #8916 (function call)
         TEST_CASE(duplicateExpression12); // #10026
+        TEST_CASE(duplicateExpression13); // #7899
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -1655,6 +1656,13 @@ private:
               "enum X { a, b, c };"
               "void foo(X x4){}\n");
         ASSERT_EQUALS("", errout.str());
+
+        Settings settings1;
+        settings1.platform(Settings::Win64);
+        check("using ui64 = unsigned __int64;\n"
+              "ui64 Test(ui64 one, ui64 two) { return one + two; }\n",
+              /*filename*/ nullptr, /*experimental*/ false, /*inconclusive*/ true, /*runSimpleChecks*/ true, /*verbose*/ false, &settings1);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void passedByValue_nonConst() {
@@ -2623,6 +2631,21 @@ private:
         check("struct S { void f(); int i; };\n"
               "void call_f(S& s) { (s.*(&S::f))(); }\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int a[1]; };\n"
+              "void f(S& s) { int* p = s.a; *p = 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {\n" // #9910
+              "    int* p{};\n"
+              "    int* get() { return p; }\n"
+              "    const int* get() const { return p; }\n"
+              "};\n"
+              "struct Bar {\n"
+              "    int j{};\n"
+              "    void f(Foo& foo) const { int* q = foo.get(); *q = j; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
@@ -2967,7 +2990,9 @@ private:
               "      strcpy(str, \"b'\");\n"
               "    }\n"
               "}", nullptr, false, false, false);
-        // TODO ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n",
+                           "",
+                           errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -2979,7 +3004,9 @@ private:
               "      strncpy(str, \"b'\");\n"
               "    }\n"
               "}");
-        // TODO ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:8]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n",
+                           "",
+                           errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -2994,7 +3021,9 @@ private:
               "      z++;\n"
               "    }\n"
               "}", nullptr, false, false, false);
-        // TODO ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:10]: (style) Buffer 'str' is being written before its old content has been used. 'break;' missing?\n",
+                           "",
+                           errout.str());
 
         check("void foo(int a) {\n"
               "    char str[10];\n"
@@ -4212,6 +4241,17 @@ private:
               "    ref = x;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'ref' to itself.\n", errout.str());
+
+        check("class Foo {\n" // #9850
+              "    int i{};\n"
+              "    void modify();\n"
+              "    void method() {\n"
+              "        Foo copy = *this;\n"
+              "        modify();\n"
+              "        *this = copy;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {
@@ -5434,6 +5474,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n", errout.str());
     }
 
+    void duplicateExpression13() { //#7899
+        check("void f() {\n"
+              "    if (sizeof(long) == sizeof(long long)) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void duplicateExpressionLoop() {
         check("void f() {\n"
               "    int a = 1;\n"
@@ -5603,12 +5650,32 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void duplicateExpressionTemplate() { // #6930
-        check("template <int I> void f() {\n"
+    void duplicateExpressionTemplate() {
+        check("template <int I> void f() {\n" // #6930
               "    if (I >= 0 && I < 3) {}\n"
               "}\n"
               "\n"
               "static auto a = f<0>();");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template<typename T>\n" // #7754
+              "void f() {\n"
+              "    if (std::is_same_v<T, char> || std::is_same_v<T, unsigned char>) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typedef long long int64_t;"
+              "template<typename T>\n"
+              "void f() {\n"
+              "    if (std::is_same_v<T, long> || std::is_same_v<T, int64_t>) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkP("#define int32_t int"
+               "template<typename T>\n"
+               "void f() {\n"
+               "    if (std::is_same_v<T, int> || std::is_same_v<T, int32_t>) {}\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -6148,6 +6215,17 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #10718
+        // Should probably not be inconclusive
+        check("struct a {\n"
+              "  int b() const;\n"
+              "  auto c() -> decltype(0) {\n"
+              "    a d;\n"
+              "    int e = d.b(), f = d.b();\n"
+              "    return e + f;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:5]: (style, inconclusive) Same expression used in consecutive assignments of 'e' and 'f'.\n", errout.str());
     }
 
     void multiConditionSameExpression() {
@@ -6924,6 +7002,18 @@ private:
               "    const X s = f<X>(in);\n"
               "    return f<X>(s);\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #7981 - False positive redundantCopyLocalConst - const ref argument to ctor
+        check("class CD {\n"
+              "        public:\n"
+              "        CD(const CD&);\n"
+              "        static const CD& getOne();\n"
+              "};\n"
+              " \n"
+              "void foo() {\n"
+              "  const CD cd(CD::getOne());\n"
+              "}", nullptr, false, true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -7784,6 +7874,13 @@ private:
               "    N::E e = N::e0;\n" // #9261
               "    e = dostuff();\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #10143
+              "    std::shared_ptr<int> i = g();\n"
+              "    h();\n"
+              "    i = nullptr;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

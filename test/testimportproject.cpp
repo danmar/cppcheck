@@ -224,7 +224,9 @@ private:
         ASSERT_EQUALS("FILESDIR=\"/some/path\"", importer.fileSettings.begin()->defines);
         ASSERT_EQUALS(1, importer.fileSettings.begin()->includePaths.size());
         ASSERT_EQUALS("/home/danielm/cppcheck 2/b/lib/", importer.fileSettings.begin()->includePaths.front());
-        // TODO ASSERT_EQUALS("/home/danielm/cppcheck 2/externals/", importer.fileSettings.begin()->includePaths.back());
+        TODO_ASSERT_EQUALS("/home/danielm/cppcheck 2/externals/",
+                           "/home/danielm/cppcheck 2/b/lib/",
+                           importer.fileSettings.begin()->includePaths.back());
     }
 
     void importCompileCommands8() const {

@@ -205,8 +205,6 @@ private:
         // ticket #3140
         TEST_CASE(while0for);
 
-        TEST_CASE(duplicateDefinition); // ticket #3565
-
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
 
@@ -4449,14 +4447,6 @@ private:
         ASSERT_EQUALS("void f ( ) { }", tok("void f() { int n = 0; for (signed long long i = 0; i < n; i++) { a; } }"));
         // #8059
         ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 0 ; ++ i ) { } return i ; }", tok("void f() { int i; for (i=0;i<0;++i){ dostuff(); } return i; }"));
-    }
-
-    void duplicateDefinition() { // #3565 - wrongly detects duplicate definition
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr("{ x ; return a not_eq x; }");
-        ASSERT(tokenizer.tokenize(istr, "test.c"));
-        Token *x_token = tokenizer.list.front()->tokAt(5);
-        ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token));
     }
 
     void removestd() {
