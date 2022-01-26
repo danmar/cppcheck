@@ -971,13 +971,23 @@ void CheckClass::noExplicitConstructorError(const Token *tok, const std::string 
 
 void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive)
 {
-    std::string message;
-    if (functionType == Function::eCopyConstructor)
-        message = "Member variable '$symbol' is not assigned in the copy constructor. Should it be copied?";
-    else if (functionType == Function::eMoveConstructor)
-        message = "Member variable '$symbol' is not assigned in the move constructor. Should it be moved?";
-    else
-        message = "Member variable '$symbol' is not initialized in the constructor.";
+    std::string message("Member variable '$symbol' is not ");
+    switch (functionType) {
+    case Function::eCopyConstructor:
+        if (inconclusive)
+            message += "assigned in the copy constructor. Should it be copied?";
+        else
+            message += "initialized in the copy constructor.";
+        break;
+    case Function::eMoveConstructor:
+        if (inconclusive)
+            message += "assigned in the move constructor. Should it be moved?";
+        else
+            message += "initialized in the move constructor.";
+        break;
+    default:
+        message += "initialized in the constructor.";
+    }
     if (derived)
         message += " Maybe it should be initialized directly in the class " + classname + "?";
     std::string id = std::string("uninit") + (derived ? "Derived" : "") + "MemberVar" + (isprivate ? "Private" : "");
