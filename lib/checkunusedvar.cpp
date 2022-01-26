@@ -1273,7 +1273,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            const Token* scopeEnd = getEndOfVarScope(expr, getVariables(expr));
+            const Token* scopeEnd = getEndOfVarScope(expr, getVariables(expr), /*smallestScope*/ false);
             if (!scopeEnd)
                 scopeEnd = scope->bodyEnd;
             if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {

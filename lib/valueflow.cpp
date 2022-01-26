@@ -3383,7 +3383,7 @@ static void valueFlowLifetimeConstructor(Token *tok,
                                          ErrorLogger *errorLogger,
                                          const Settings *settings);
 
-const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars)
+const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars, bool smallestScope)
 {
     const Token* endOfVarScope = nullptr;
     for (const Variable* var : vars) {
@@ -3403,7 +3403,7 @@ const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable
         }
         if (varScope && (!endOfVarScope || precedes(endOfVarScope, varScope->bodyEnd))) {
             endOfVarScope = varScope->bodyEnd;
-            if (!endOfVarScope)
+            if (!smallestScope && varScope->type == Scope::eGlobal) // may have bodyEnd == NULL, don't overwrite with smaller scope
                 break;
         }
     }

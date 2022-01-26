@@ -517,7 +517,7 @@ CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok,
                                                                bool inconclusive = false,
                                                                MathLib::bigint path = 0);
 
-const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars);
+const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars, bool smallestScope = true);
 
 std::vector<const Variable*> getVariables(const Token* tok);
 
