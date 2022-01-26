@@ -275,8 +275,8 @@ private:
               "    int i;\n"
               "};");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n"
-                      "[test.cpp:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n"
-                      "[test.cpp:6]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
+                      "[test.cpp:5]: (warning) Member variable 'Fred::i' is not assigned in the copy constructor. Should it be copied?\n"
+                      "[test.cpp:6]: (warning) Member variable 'Fred::i' is not assigned in the move constructor. Should it be moved?\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
@@ -286,8 +286,8 @@ private:
               "    int i;\n"
               "};");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n"
-                      "[test.cpp:4]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n"
-                      "[test.cpp:5]: (warning) Member variable 'Fred::i' is not initialized in the constructor.\n", errout.str());
+                      "[test.cpp:4]: (warning) Member variable 'Fred::i' is not assigned in the copy constructor. Should it be copied?\n"
+                      "[test.cpp:5]: (warning) Member variable 'Fred::i' is not assigned in the move constructor. Should it be moved?\n", errout.str());
     }
 
 
@@ -1314,6 +1314,15 @@ private:
               "Fred::Fred() { };\n"
               "Fred::Fred(const Fred &) { };\n", true);
         ASSERT_EQUALS("[test.cpp:10]: (warning, inconclusive) Member variable 'Fred::var' is not assigned in the copy constructor. Should it be copied?\n", errout.str());
+
+        check("class Baz {};\n" // #8496
+              "class Bar {\n"
+              "public:\n"
+              "    explicit Bar(Baz* pBaz = NULL) : i(0) {}\n"
+              "    Bar(const Bar& bar) {}\n"
+              "    int i;\n"
+              "};\n", true);
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Member variable 'Bar::i' is not assigned in the copy constructor. Should it be copied?\n", errout.str());
     }
 
     void initvar_nested_constructor() { // ticket #1375
@@ -1375,7 +1384,7 @@ private:
         ASSERT_EQUALS("[test.cpp:20]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
                       "[test.cpp:21]: (warning) Member variable 'B::b' is not initialized in the constructor.\n"
                       "[test.cpp:22]: (warning) Member variable 'C::c' is not initialized in the constructor.\n"
-                      "[test.cpp:23]: (warning) Member variable 'D::d' is not initialized in the constructor.\n", errout.str());
+                      "[test.cpp:23]: (warning) Member variable 'D::d' is not assigned in the copy constructor. Should it be copied?\n", errout.str());
 
         check("class A {\n"
               "public:\n"
@@ -1488,7 +1497,7 @@ private:
               "    const B& operator=(const B&){return *this;}\n"
               "};", true);
         ASSERT_EQUALS("[test.cpp:11]: (warning, inconclusive) Member variable 'B::a' is not assigned in the copy constructor. Should it be copied?\n"
-                      "[test.cpp:12]: (warning, inconclusive) Member variable 'B::a' is not assigned in the copy constructor. Should it be copied?\n"
+                      "[test.cpp:12]: (warning, inconclusive) Member variable 'B::a' is not assigned in the move constructor. Should it be moved?\n"
                       "[test.cpp:13]: (warning, inconclusive) Member variable 'B::a' is not assigned a value in 'B::operator='.\n",
                       errout.str());
 
@@ -1507,7 +1516,7 @@ private:
               "    A(A &&){}\n"
               "    const A& operator=(const A&){return *this;}\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned in the move constructor. Should it be moved?\n", errout.str());
 
         check("class B\n"
               "{\n"
@@ -1571,7 +1580,7 @@ private:
               "    const A& operator=(const A&){return *this;}\n"
               "};", true);
         ASSERT_EQUALS("[test.cpp:12]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
-                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not initialized in the constructor.\n"
+                      "[test.cpp:13]: (warning) Member variable 'A::m_SemVar' is not assigned in the copy constructor. Should it be copied?\n"
                       "[test.cpp:14]: (warning) Member variable 'A::m_SemVar' is not assigned a value in 'A::operator='.\n", errout.str());
     }
 
@@ -3593,7 +3602,7 @@ private:
               "        return *this;\n"
               "    }\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::a' is not initialized in the constructor.\n"
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'A::a' is not assigned in the copy constructor. Should it be copied?\n"
                       "[test.cpp:5]: (warning) Member variable 'A::a' is not assigned a value in 'A::operator='.\n", errout.str());
     }
 
@@ -3666,7 +3675,7 @@ private:
               "    B(B& b) { }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'B::a' is not initialized in the constructor.\n"
-                      "[test.cpp:5]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+                      "[test.cpp:5]: (warning) Member variable 'B::a' is not assigned in the copy constructor. Should it be copied?\n", errout.str());
 
         check("struct A;\n"
               "struct B {\n"
@@ -3681,7 +3690,7 @@ private:
               "    B(B& b) { }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'B::a' is not initialized in the constructor.\n"
-                      "[test.cpp:4]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+                      "[test.cpp:4]: (warning) Member variable 'B::a' is not assigned in the copy constructor. Should it be copied?\n", errout.str());
 
         check("struct B {\n"
               "    const int a;\n"
