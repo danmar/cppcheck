@@ -20,7 +20,6 @@
 
 #include "astutils.h"
 #include "check.h"
-#include "checknullpointer.h"
 #include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
@@ -33,14 +32,21 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include "checknullpointer.h"
+
 #include <algorithm>
+#include <cassert>
 #include <iterator>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
+#include <tuple>
+#include <type_traits>
 #include <unordered_map>
 #include <utility>
+#include <vector>
 
 // Register this check class (by creating a static instance of it)
 namespace {

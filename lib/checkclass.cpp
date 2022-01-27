@@ -26,15 +26,26 @@
 #include "symboldatabase.h"
 #include "errorlogger.h"
 #include "errortypes.h"
+#include "mathlib.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
 
-#include "tinyxml2.h"
-
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
+#include <cstring>
+#include <memory>
 #include <utility>
+#include <unordered_map>
+
+#include <tinyxml2.h>
+
+namespace CTU {
+    class FileInfo;
+}
+
 //---------------------------------------------------------------------------
 
 // Register CheckClass..

@@ -26,10 +26,14 @@
 #include "config.h"
 #include "valueflow.h"
 
+#include <list>
+#include <string>
+
 class ErrorLogger;
 class Settings;
 class Token;
 class Tokenizer;
+class ValueType;
 
 /// @addtogroup Checks
 /// @{

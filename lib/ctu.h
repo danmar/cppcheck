@@ -22,13 +22,27 @@
 #define ctuH
 //---------------------------------------------------------------------------
 
+#include "config.h"
 #include "check.h"
 #include "errorlogger.h"
+#include "mathlib.h"
+#include "utils.h"
 #include "valueflow.h"
 
+#include <algorithm>
+#include <list>
 #include <map>
+#include <string>
+#include <vector>
 
 class Function;
+class Settings;
+class Token;
+class Tokenizer;
+
+namespace tinyxml2 {
+    class XMLElement;
+}
 
 /// @addtogroup Core
 /// @{

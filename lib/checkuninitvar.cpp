@@ -21,7 +21,6 @@
 #include "checkuninitvar.h"
 
 #include "astutils.h"
-#include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
 #include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
@@ -31,10 +30,17 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
+#include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
+
+#include <algorithm>
 #include <cassert>
+#include <functional>
+#include <initializer_list>
 #include <list>
 #include <map>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 
 
 namespace tinyxml2 {

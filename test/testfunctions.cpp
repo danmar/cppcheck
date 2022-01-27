@@ -16,15 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <tinyxml2.h>
-
 #include "checkfunctions.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
+#include <list>
+#include <string>
+
+#include <tinyxml2.h>
 
 class TestFunctions : public TestFixture {
 public:

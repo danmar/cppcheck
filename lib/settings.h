@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 #include "importproject.h"
 #include "library.h"
 #include "platform.h"
@@ -31,7 +32,9 @@
 
 #include <algorithm>
 #include <atomic>
+#include <cstdint>
 #include <list>
+#include <map>
 #include <set>
 #include <string>
 #include <vector>

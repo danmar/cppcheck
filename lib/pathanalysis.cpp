@@ -17,11 +17,16 @@
  */
 
 #include "pathanalysis.h"
+
 #include "astutils.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueflow.h"
+
 #include <algorithm>
+#include <memory>
+#include <string>
+#include <tuple>
 
 const Scope* PathAnalysis::findOuterScope(const Scope * scope)
 {

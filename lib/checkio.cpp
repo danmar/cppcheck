@@ -28,11 +28,15 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 

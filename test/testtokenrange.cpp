@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
@@ -24,6 +25,10 @@
 #include "tokenrange.h"
 #include "symboldatabase.h"
 
+#include <algorithm>
+#include <iterator>
+#include <list>
+#include <ostream>
 #include <string>
 
 

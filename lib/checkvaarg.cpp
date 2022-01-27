@@ -19,6 +19,7 @@
 #include "checkvaarg.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -26,6 +27,7 @@
 
 #include <cstddef>
 #include <list>
+#include <vector>
 
 //---------------------------------------------------------------------------
 

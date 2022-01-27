@@ -26,6 +26,7 @@
 #include "suppressions.h"
 #include "color.h"
 
+#include <cstddef>
 #include <fstream>
 #include <list>
 #include <string>

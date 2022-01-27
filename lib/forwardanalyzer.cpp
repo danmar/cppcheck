@@ -17,8 +17,12 @@
  */
 
 #include "forwardanalyzer.h"
+
 #include "analyzer.h"
 #include "astutils.h"
+#include "config.h"
+#include "errortypes.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -27,8 +31,13 @@
 #include <algorithm>
 #include <cstdio>
 #include <functional>
+#include <list>
+#include <memory>
+#include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 struct OnExit {
     std::function<void()> f;

@@ -17,12 +17,17 @@
  */
 
 #include "check.h"
+#include "config.h"
+#include "errortypes.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 #include <list>
+#include <string>
 
 
 class TestGarbage : public TestFixture {

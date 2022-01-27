@@ -28,6 +28,7 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
+#include "utils.h"
 #include "valueflow.h"
 
 #include <list>

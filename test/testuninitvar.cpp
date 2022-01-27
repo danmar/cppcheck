@@ -16,12 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "check.h"
 #include "checkuninitvar.h"
+#include "config.h"
+#include "ctu.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <list>
 #include <sstream>
 #include <string>
 

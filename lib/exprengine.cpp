@@ -134,15 +134,28 @@
 #include "astutils.h"
 #include "bughuntingchecks.h"
 #include "errorlogger.h"
+#include "library.h"
+#include "mathlib.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
+#include "utils.h"
 
 #include <cctype>
-#include <limits>
-#include <memory>
+#include <climits>
+#include <cstdint>
+#include <ctime>
+#include <exception>
 #include <iostream>
+#include <limits>
+#include <list>
+#include <memory>
+#include <set>
 #include <tuple>
+
 #ifdef USE_Z3
 #include <z3++.h>
 #include <z3_version.h>

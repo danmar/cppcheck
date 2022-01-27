@@ -19,6 +19,7 @@
 #include "token.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -30,12 +31,17 @@
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <climits>
+#include <cstdio>
+#include <cstdint>
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <set>
 #include <stack>
+#include <unordered_set>
 #include <utility>
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
