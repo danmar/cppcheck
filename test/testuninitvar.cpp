@@ -1773,6 +1773,18 @@ private:
                        "  fred[1].x = 0;\n"
                        "}", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("char f() {\n"
+                       "    std::array<char, 1> a;\n"
+                       "    return a[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        checkUninitVar("std::string f() {\n"
+                       "    std::array<std::string, 1> a;\n"
+                       "    return a[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_pointertoarray() {
