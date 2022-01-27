@@ -33,7 +33,6 @@
 #include <map>
 #include <memory>
 #include <stack>
-#include <type_traits>
 #include <utility>
 
 static Token *skipRequires(Token *tok)

@@ -22,7 +22,7 @@
 #include <unistd.h>
 #endif
 #include <cstddef>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 
 #ifdef _WIN32
 std::ostream& operator<<(std::ostream& os, const Color& /*c*/)
