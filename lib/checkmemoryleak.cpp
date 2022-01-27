@@ -756,6 +756,32 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
 
     // Check struct..
     int indentlevel2 = 0;
+
+    auto deallocInFunction = [this](const Token* tok, int structid) -> bool {
+        // Calling non-function / function that doesn't deallocate?
+        if (CheckMemoryLeakInFunction::test_white_list(tok->str(), mSettings, mTokenizer->isCPP()))
+            return false;
+
+        // Check if the struct is used..
+        bool deallocated = false;
+        const Token* const end = tok->linkAt(1);
+        for (const Token* tok2 = tok; tok2 != end; tok2 = tok2->next()) {
+            if (Token::Match(tok2, "[(,] &| %varid% [,)]", structid)) {
+                /** @todo check if the function deallocates the memory */
+                deallocated = true;
+                break;
+            }
+
+            if (Token::Match(tok2, "[(,] &| %varid% . %name% [,)]", structid)) {
+                /** @todo check if the function deallocates the memory */
+                deallocated = true;
+                break;
+            }
+        };
+
+        return deallocated;
+    };
+
     for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
         if (tok2->str() == "{")
             ++indentlevel2;
@@ -865,7 +891,8 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
                     // Returning from function without deallocating struct member?
                     if (!Token::Match(tok3, "return %varid% ;", structid) &&
                         !Token::Match(tok3, "return & %varid%", structid) &&
-                        !(Token::Match(tok3, "return %varid% . %var%", structid) && tok3->tokAt(3)->varId() == structmemberid)) {
+                        !(Token::Match(tok3, "return %varid% . %var%", structid) && tok3->tokAt(3)->varId() == structmemberid) &&
+                        !(Token::Match(tok3, "return %name% (") && tok3->astOperand1() && deallocInFunction(tok3->astOperand1(), structid))) {
                         memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), Malloc);
                     }
                     break;
@@ -884,28 +911,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
 
                 // using struct in a function call..
                 else if (Token::Match(tok3, "%name% (")) {
-                    // Calling non-function / function that doesn't deallocate?
-                    if (CheckMemoryLeakInFunction::test_white_list(tok3->str(), mSettings, mTokenizer->isCPP()))
-                        continue;
-
-                    // Check if the struct is used..
-                    bool deallocated = false;
-                    const Token* const end4 = tok3->linkAt(1);
-                    for (const Token *tok4 = tok3; tok4 != end4; tok4 = tok4->next()) {
-                        if (Token::Match(tok4, "[(,] &| %varid% [,)]", structid)) {
-                            /** @todo check if the function deallocates the memory */
-                            deallocated = true;
-                            break;
-                        }
-
-                        if (Token::Match(tok4, "[(,] &| %varid% . %name% [,)]", structid)) {
-                            /** @todo check if the function deallocates the memory */
-                            deallocated = true;
-                            break;
-                        }
-                    }
-
-                    if (deallocated)
+                    if (deallocInFunction(tok3, structid))
                         break;
                 }
             }

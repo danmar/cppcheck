@@ -1685,7 +1685,7 @@ private:
         TEST_CASE(function2);   // #2848: Taking address in function
         TEST_CASE(function3);   // #3024: kernel list
         TEST_CASE(function4);   // #3038: Deallocating in function
-        TEST_CASE(function5);   // #10381, #10382
+        TEST_CASE(function5);   // #10381, #10382, #10158
 
         // Handle if-else
         TEST_CASE(ifelse);
@@ -1934,6 +1934,13 @@ private:
               "    rpc->filter = malloc(1);\n"
               "    return (nc_rpc)rpc;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("T* f(const char *str) {\n" // #10158
+              "    S* s = malloc(sizeof(S));\n"
+              "    s->str = strdup(str);\n"
+              "    return NewT(s);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
