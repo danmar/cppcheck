@@ -15,9 +15,90 @@ include(cmake/cxx11.cmake)
 
 use_cxx11()
 
-file(GLOB addons "addons/*.py")
-file(GLOB cfgs "cfg/*.cfg")
-file(GLOB platforms "platforms/*.xml")
+set(addons
+    __init__.py
+    cert.py
+    cppcheck.py
+    cppcheckdata.py
+    findcasts.py
+    misc.py
+    misra.py
+    misra_9.py
+    naming.py
+    namingng.py
+    runaddon.py
+    threadsafety.py
+    y2038.py
+)
+set(cfgs
+    avr.cfg
+    bento4.cfg
+    boost.cfg
+    bsd.cfg
+    cairo.cfg
+    cppcheck-cfg.rng
+    cppcheck-lib.cfg
+    cppunit.cfg
+    daca.cfg
+    dpdk.cfg
+    embedded_sql.cfg
+    emscripten.cfg
+    ginac.cfg
+    gnu.cfg
+    googletest.cfg
+    gtk.cfg
+    icu.cfg
+    kde.cfg
+    libcerror.cfg
+    libcurl.cfg
+    libsigc++.cfg
+    lua.cfg
+    mfc.cfg
+    microsoft_atl.cfg
+    microsoft_sal.cfg
+    microsoft_unittest.cfg
+    motif.cfg
+    nspr.cfg
+    ntl.cfg
+    opencv2.cfg
+    opengl.cfg
+    openmp.cfg
+    openssl.cfg
+    pcre.cfg
+    posix.cfg
+    python.cfg
+    qt.cfg
+    ruby.cfg
+    sdl.cfg
+    sfml.cfg
+    sqlite3.cfg
+    std.cfg
+    tinyxml2.cfg
+    vcl.cfg
+    windows.cfg
+    wxsqlite3.cfg
+    wxsvg.cfg
+    wxwidgets.cfg
+    zlib.cfg
+)
+set(platforms
+    aix_ppc64.xml
+    arm32-wchar_t2.xml
+    arm32-wchar_t4.xml
+    arm64-wchar_t2.xml
+    arm64-wchar_t4.xml
+    avr8.xml
+    cppcheck-platforms.rng
+    cray_sv1.xml
+    elbrus-e1cp.xml
+    mips32.xml
+    msp430_eabi_large_datamodel.xml
+    pic8.xml
+    pic8-enhanced.xml
+    pic16.xml
+    unix32-unsigned.xml
+    unix64-unsigned.xml
+)
 
 find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)
 if (LIBXML2_XMLLINT_EXECUTABLE)

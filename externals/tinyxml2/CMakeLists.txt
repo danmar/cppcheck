@@ -1,7 +1,4 @@
-file(GLOB hdrs "*.h")
-file(GLOB srcs "*.cpp")
-
-add_library(tinyxml2_objs OBJECT ${srcs} ${hdrs})
+add_library(tinyxml2_objs OBJECT tinyxml2.cpp tinyxml2.h)
 
 # TODO: needs to be fixed upstream
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")

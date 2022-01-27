@@ -1,16 +1,25 @@
-file(GLOB hdrs "*.h")
-file(GLOB srcs "*.cpp")
-file(GLOB mainfile "main.cpp")
-list(REMOVE_ITEM srcs ${mainfile})
-
-add_library(cli_objs OBJECT ${hdrs} ${srcs})
+add_library(cli_objs OBJECT
+    cmdlineparser.cpp
+    cmdlineparser.h
+    cppcheckexecutor.cpp
+    cppcheckexecutor.h
+    filelister.cpp
+    filelister.h
+    threadexecutor.cpp
+    threadexecutor.h
+)
 target_include_directories(cli_objs PRIVATE ${PROJECT_SOURCE_DIR}/lib/)
 if(USE_BUNDLED_TINYXML2)
     target_include_directories(cli_objs PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
 endif()
 target_include_directories(cli_objs PRIVATE ${PROJECT_SOURCE_DIR}/externals/simplecpp/)
 
-list(APPEND cppcheck_SOURCES ${hdrs} ${mainfile} $<TARGET_OBJECTS:cli_objs> $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:simplecpp_objs>)
+list(APPEND cppcheck_SOURCES
+    main.cpp
+    $<TARGET_OBJECTS:cli_objs>
+    $<TARGET_OBJECTS:lib_objs>
+    $<TARGET_OBJECTS:simplecpp_objs>
+)
 if(USE_BUNDLED_TINYXML2)
     list(APPEND cppcheck_SOURCES $<TARGET_OBJECTS:tinyxml2_objs>)
 endif()

@@ -8,17 +8,131 @@ if (BUILD_GUI)
         add_definitions(-DQT_DEBUG)
     endif()
 
-    file(GLOB hdrs "*.h")
-    file(GLOB srcs "*.cpp")
-    file(GLOB uis  "*.ui")
-    file(GLOB tss  "*.ts")
-    QT5_WRAP_UI(uis_hdrs ${uis})
+    list(APPEND cppcheck-gui_HEADERS
+        aboutdialog.h
+        application.h
+        applicationdialog.h
+        applicationlist.h
+        checkstatistics.h
+        checkthread.h
+        codeeditor.h
+        codeeditorstyle.h
+        codeeditstylecontrols.h
+        codeeditstyledialog.h
+        common.h
+        cppchecklibrarydata.h
+        csvreport.h
+        erroritem.h
+        filelist.h
+        fileviewdialog.h
+        functioncontractdialog.h
+        helpdialog.h
+        libraryaddfunctiondialog.h
+        librarydialog.h
+        libraryeditargdialog.h
+        mainwindow.h
+        newsuppressiondialog.h
+        platforms.h
+        precompiled_qmake.h
+        printablereport.h
+        projectfile.h
+        projectfiledialog.h
+        report.h
+        resultstree.h
+        resultsview.h
+        scratchpad.h
+        settingsdialog.h
+        showtypes.h
+        statsdialog.h
+        threadhandler.h
+        threadresult.h
+        translationhandler.h
+        txtreport.h
+        variablecontractsdialog.h
+        xmlreport.h
+        xmlreportv2.h
+    )
+    QT5_WRAP_UI(uis_hdrs
+        about.ui
+        application.ui
+        file.ui
+        functioncontractdialog.ui
+        helpdialog.ui
+        librarydialog.ui
+        libraryaddfunctiondialog.ui
+        libraryeditargdialog.ui
+        mainwindow.ui
+        newsuppressiondialog.ui
+        projectfiledialog.ui
+        resultsview.ui
+        scratchpad.ui
+        settings.ui
+        stats.ui
+        variablecontractsdialog.ui
+    )
     QT5_ADD_RESOURCES(resources "gui.qrc")
-    QT5_ADD_TRANSLATION(qms ${tss})
-    list(APPEND cppcheck-gui-deps ${hdrs} ${uis_hdrs} ${resources} ${qms} )
+    QT5_ADD_TRANSLATION(qms
+        cppcheck_de.ts
+        cppcheck_es.ts
+        cppcheck_fi.ts
+        cppcheck_fr.ts
+        cppcheck_it.ts
+        cppcheck_ja.ts
+        cppcheck_ko.ts
+        cppcheck_nl.ts
+        cppcheck_ru.ts
+        cppcheck_sr.ts
+        cppcheck_sv.ts
+        cppcheck_zh_CN.ts
+    )
+    list(APPEND cppcheck-gui-deps ${cppcheck-gui_HEADERS} ${uis_hdrs} ${resources} ${qms})
     add_custom_target(gui-build-deps SOURCES ${cppcheck-gui-deps})
 
-    list(APPEND cppcheck-gui_SOURCES ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:simplecpp_objs>)
+    list(APPEND cppcheck-gui_SOURCES
+        aboutdialog.cpp
+        application.cpp
+        applicationdialog.cpp
+        applicationlist.cpp
+        checkstatistics.cpp
+        checkthread.cpp
+        codeeditor.cpp
+        codeeditorstyle.cpp
+        codeeditstylecontrols.cpp
+        codeeditstyledialog.cpp
+        common.cpp
+        cppchecklibrarydata.cpp
+        csvreport.cpp
+        erroritem.cpp
+        filelist.cpp
+        fileviewdialog.cpp
+        functioncontractdialog.cpp
+        libraryeditargdialog.cpp
+        libraryaddfunctiondialog.cpp
+        librarydialog.cpp
+        helpdialog.cpp
+        main.cpp
+        mainwindow.cpp
+        newsuppressiondialog.cpp
+        platforms.cpp
+        printablereport.cpp
+        projectfile.cpp
+        projectfiledialog.cpp
+        report.cpp
+        resultstree.cpp
+        resultsview.cpp
+        scratchpad.cpp
+        settingsdialog.cpp
+        showtypes.cpp
+        statsdialog.cpp
+        threadhandler.cpp
+        threadresult.cpp
+        translationhandler.cpp
+        txtreport.cpp
+        variablecontractsdialog.cpp
+        xmlreport.cpp
+        xmlreportv2.cpp
+        $<TARGET_OBJECTS:lib_objs>
+        $<TARGET_OBJECTS:simplecpp_objs>)
     if(USE_BUNDLED_TINYXML2)
         list(APPEND cppcheck-gui_SOURCES $<TARGET_OBJECTS:tinyxml2_objs>)
     endif()
@@ -44,10 +158,8 @@ if (BUILD_GUI)
         target_link_libraries(cppcheck-gui Qt5::Charts)
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            # Q_UNUSED() in generated code
-            target_compile_options(cppcheck-gui PRIVATE -Wno-extra-semi-stmt)
-        endif()
+        # Q_UNUSED() in generated code
+        target_compile_options_safe(cppcheck-gui -Wno-extra-semi-stmt)
     endif()
 
     install(TARGETS cppcheck-gui RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)

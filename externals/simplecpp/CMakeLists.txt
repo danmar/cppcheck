@@ -1,4 +1,1 @@
-file(GLOB hdrs "*.h")
-file(GLOB srcs "*.cpp")
-
-add_library(simplecpp_objs OBJECT ${srcs} ${hdrs})
+add_library(simplecpp_objs OBJECT simplecpp.cpp simplecpp.h)

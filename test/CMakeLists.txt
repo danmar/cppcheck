@@ -1,7 +1,79 @@
 if (BUILD_TESTS)
-    file(GLOB hdrs "*.h")
-    file(GLOB srcs "*.cpp")
-    list(APPEND testrunner_SOURCES ${hdrs} ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:cli_objs> $<TARGET_OBJECTS:simplecpp_objs>)
+    list(APPEND testrunner_SOURCES
+        options.cpp
+        options.h
+        precompiled.h
+        redirect.h
+        test64bit.cpp
+        testassert.cpp
+        testastutils.cpp
+        testautovariables.cpp
+        testbool.cpp
+        testboost.cpp
+        testbufferoverrun.cpp
+        testbughuntingchecks.cpp
+        testcharvar.cpp
+        testclangimport.cpp
+        testclass.cpp
+        testcmdlineparser.cpp
+        testcondition.cpp
+        testconstructors.cpp
+        testcppcheck.cpp
+        testerrorlogger.cpp
+        testexceptionsafety.cpp
+        testexprengine.cpp
+        testfilelister.cpp
+        testfunctions.cpp
+        testgarbage.cpp
+        testimportproject.cpp
+        testincompletestatement.cpp
+        testinternal.cpp
+        testio.cpp
+        testleakautovar.cpp
+        testlibrary.cpp
+        testmathlib.cpp
+        testmemleak.cpp
+        testnullpointer.cpp
+        testoptions.cpp
+        testother.cpp
+        testpath.cpp
+        testpathmatch.cpp
+        testplatform.cpp
+        testpostfixoperator.cpp
+        testpreprocessor.cpp
+        testrunner.cpp
+        testsimplifytemplate.cpp
+        testsimplifytokens.cpp
+        testsimplifytypedef.cpp
+        testsizeof.cpp
+        teststl.cpp
+        teststring.cpp
+        testsuite.cpp
+        testsuite.h
+        testsummaries.cpp
+        testsuppressions.cpp
+        testsymboldatabase.cpp
+        testthreadexecutor.cpp
+        testtimer.cpp
+        testtoken.cpp
+        testtokenize.cpp
+        testtokenlist.cpp
+        testtokenrange.cpp
+        testtype.cpp
+        testuninitvar.cpp
+        testunusedfunctions.cpp
+        testunusedprivfunc.cpp
+        testunusedvar.cpp
+        testutils.cpp
+        testutils.h
+        testvaarg.cpp
+        testvalueflow.cpp
+        testvarid.cpp
+        testsimplifyusing.cpp
+        $<TARGET_OBJECTS:lib_objs>
+        $<TARGET_OBJECTS:cli_objs>
+        $<TARGET_OBJECTS:simplecpp_objs>
+    )
     if(USE_BUNDLED_TINYXML2)
         list(APPEND testrunner_SOURCES $<TARGET_OBJECTS:tinyxml2_objs>)
     endif()
