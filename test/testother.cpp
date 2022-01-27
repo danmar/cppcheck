@@ -9315,6 +9315,15 @@ private:
 
         check("class C { C(); void foo() { static int C = 0; } }"); // #9195 - shadow constructor
         ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n" // #10091 - shadow destructor
+              "    ~C();\n"
+              "    void f() {\n"
+              "        bool C{};\n"
+              "    }\n"
+              "};\n"
+              "C::~C() = default;");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void knownArgument() {
