@@ -51,7 +51,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         // These are not "simplified" because casts can't be ignored
         CheckType checkType(tokenizer, settings, errorLogger);
         checkType.checkTooBigBitwiseShift();
@@ -88,7 +88,7 @@ private:
     void longCastReturnError(const Token *tok);
     void floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckType c(nullptr, settings, errorLogger);
         c.tooBigBitwiseShiftError(nullptr, 32, ValueFlow::Value(64));
         c.tooBigSignedBitwiseShiftError(nullptr, 31, ValueFlow::Value(31));
@@ -106,7 +106,7 @@ private:
         return "Type";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Type checks\n"
                "- bitwise shift by too many bits (only enabled when --platform is used)\n"
                "- signed integer overflow (only enabled when --platform is used)\n"

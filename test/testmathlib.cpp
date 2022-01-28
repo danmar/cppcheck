@@ -33,7 +33,7 @@ public:
 
 private:
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(isint);
         TEST_CASE(isbin);
         TEST_CASE(isdec);

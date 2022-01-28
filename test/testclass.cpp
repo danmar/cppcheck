@@ -41,7 +41,7 @@ private:
     Settings settings0;
     Settings settings1;
 
-    void run() OVERRIDE {
+    void run() override {
         settings0.severity.enable(Severity::style);
         settings1.severity.enable(Severity::warning);
 

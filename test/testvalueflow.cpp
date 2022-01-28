@@ -50,7 +50,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         // strcpy, abort cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"

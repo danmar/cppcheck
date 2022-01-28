@@ -43,7 +43,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(isCompliantValidationExpression);
         TEST_CASE(empty);
         TEST_CASE(function);

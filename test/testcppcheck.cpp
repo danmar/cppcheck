@@ -39,15 +39,15 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) OVERRIDE {}
-        void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
+        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) override {}
+        void bughuntingReport(const std::string & /*str*/) override {}
 
-        void reportErr(const ErrorMessage &msg) OVERRIDE {
+        void reportErr(const ErrorMessage &msg) override {
             id.push_back(msg.id);
         }
     };
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(instancesSorted);
         TEST_CASE(classInfoFormat);
         TEST_CASE(getErrorMessages);

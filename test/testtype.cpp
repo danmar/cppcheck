@@ -35,7 +35,7 @@ public:
 private:
 
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(checkTooBigShift_Unix32);
         TEST_CASE(checkIntegerOverflow);
         TEST_CASE(signConversion);

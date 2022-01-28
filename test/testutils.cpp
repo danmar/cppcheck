@@ -27,7 +27,7 @@ public:
     TestUtils() : TestFixture("TestUtils") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(isValidGlobPattern);
         TEST_CASE(matchglob);
     }

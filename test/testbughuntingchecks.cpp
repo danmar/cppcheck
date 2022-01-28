@@ -36,7 +36,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
 #ifdef USE_Z3
         settings.certainty.setEnabled(Certainty::inconclusive, true);
         LOAD_LIB_2(settings.library, "std.cfg");

@@ -51,14 +51,14 @@ class ThreadExecutor : public ErrorLogger {
 public:
     ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
     ThreadExecutor(const ThreadExecutor &) = delete;
-    ~ThreadExecutor() OVERRIDE;
+    ~ThreadExecutor() override;
     void operator=(const ThreadExecutor &) = delete;
     unsigned int check();
 
-    void reportOut(const std::string &outmsg, Color c) OVERRIDE;
-    void reportErr(const ErrorMessage &msg) OVERRIDE;
-    void reportInfo(const ErrorMessage &msg) OVERRIDE;
-    void bughuntingReport(const std::string &str) OVERRIDE;
+    void reportOut(const std::string &outmsg, Color c) override;
+    void reportErr(const ErrorMessage &msg) override;
+    void reportInfo(const ErrorMessage &msg) override;
+    void bughuntingReport(const std::string &str) override;
 
     /**
      * @brief Add content to a file, to be used in unit testing.

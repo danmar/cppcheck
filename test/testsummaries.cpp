@@ -32,7 +32,7 @@ public:
     TestSummaries() : TestFixture("TestSummaries") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
 
         TEST_CASE(createSummaries1);
         TEST_CASE(createSummariesGlobal);

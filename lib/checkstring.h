@@ -48,7 +48,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckString checkString(tokenizer, settings, errorLogger);
 
         // Checks
@@ -94,7 +94,7 @@ private:
     void suspiciousStringCompareError_char(const Token* tok, const std::string& var);
     void overlappingStrcmpError(const Token* eq0, const Token *ne0);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckString c(nullptr, settings, errorLogger);
 
         c.stringLiteralWriteError(nullptr, nullptr);
@@ -114,7 +114,7 @@ private:
         return "String";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Detect misusage of C-style strings:\n"
                "- overlapping buffers passed to sprintf as source and destination\n"
                "- incorrect length arguments for 'substr' and 'strncmp'\n"

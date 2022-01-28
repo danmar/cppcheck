@@ -44,7 +44,7 @@ private:
     Settings settings0;
     Settings settings1;
 
-    void run() OVERRIDE {
+    void run() override {
         // known platform..
         settings0.platform(cppcheck::Platform::PlatformType::Native);
         settings1.platform(cppcheck::Platform::PlatformType::Native);

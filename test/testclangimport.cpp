@@ -38,7 +38,7 @@ public:
 
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(breakStmt);
         TEST_CASE(callExpr);
         TEST_CASE(caseStmt1);

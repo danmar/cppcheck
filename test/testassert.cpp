@@ -49,7 +49,7 @@ private:
         checkAssert.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
 
         TEST_CASE(assignmentInAssert);

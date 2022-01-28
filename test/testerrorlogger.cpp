@@ -38,7 +38,7 @@ private:
     const ErrorMessage::FileLocation fooCpp5;
     const ErrorMessage::FileLocation barCpp8;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(PatternSearchReplace);
         TEST_CASE(FileLocationDefaults);
         TEST_CASE(FileLocationSetFile);

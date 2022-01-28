@@ -37,7 +37,7 @@ public:
     TestTokenRange() : TestFixture("TestTokenRange") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(enumerationToEnd);
         TEST_CASE(untilHelperToEnd);
         TEST_CASE(untilHelperPartWay);

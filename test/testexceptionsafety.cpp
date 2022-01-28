@@ -33,7 +33,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.fill();
 
         TEST_CASE(destructors);

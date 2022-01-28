@@ -33,7 +33,7 @@ public:
     using ImportProject::importCompileCommands;
     using ImportProject::importCppcheckGuiProject;
 
-    bool sourceFileExists(const std::string & /*file*/) OVERRIDE {
+    bool sourceFileExists(const std::string & /*file*/) override {
         return true;
     }
 };
@@ -45,7 +45,7 @@ public:
 
 private:
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(setDefines);
         TEST_CASE(setIncludePaths1);
         TEST_CASE(setIncludePaths2);

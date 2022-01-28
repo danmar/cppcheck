@@ -46,7 +46,7 @@ public:
 private:
     Settings _settings;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(_settings.library, "std.cfg");
 
 

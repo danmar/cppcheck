@@ -116,7 +116,7 @@ private:
         checkBufferOverrun.runChecks(&tokenizer, settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.severity.enable(Severity::warning);

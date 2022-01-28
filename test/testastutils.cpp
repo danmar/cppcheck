@@ -35,7 +35,7 @@ public:
 
 private:
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(findLambdaEndTokenTest);
         TEST_CASE(findLambdaStartTokenTest);
         TEST_CASE(isNullOperandTest);

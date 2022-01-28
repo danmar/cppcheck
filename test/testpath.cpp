@@ -29,7 +29,7 @@ public:
 
 private:
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(removeQuotationMarks);
         TEST_CASE(acceptFile);
         TEST_CASE(getCurrentPath);

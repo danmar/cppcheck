@@ -40,7 +40,7 @@ private:
     Settings settings_std;
     Settings settings_windows;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings_std.library, "std.cfg");
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
         settings0.severity.enable(Severity::portability);

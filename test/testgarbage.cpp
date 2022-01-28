@@ -37,7 +37,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.debugwarnings = true;
         settings.severity.fill();
         settings.certainty.fill();
