@@ -17,7 +17,6 @@
  */
 
 #include "checkcondition.h"
-#include "config.h"
 #include "errortypes.h"
 #include "library.h"
 #include "platform.h"

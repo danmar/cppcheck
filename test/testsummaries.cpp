@@ -17,7 +17,6 @@
  */
 
 
-#include "config.h"
 #include "settings.h"
 #include "summaries.h"
 #include "testsuite.h"

@@ -17,7 +17,6 @@
  */
 
 #include "check.h"
-#include "config.h"
 #include "errortypes.h"
 #include "mathlib.h"
 #include "settings.h"

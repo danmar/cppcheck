@@ -17,7 +17,6 @@
  */
 
 #include "cmdlineparser.h"
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "redirect.h"

@@ -19,7 +19,6 @@
 
 #include "check.h"
 #include "checkbufferoverrun.h"
-#include "config.h"
 #include "ctu.h"
 #include "errortypes.h"
 #include "standards.h"

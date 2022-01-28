@@ -17,7 +17,6 @@
  */
 
 #include "checkunusedvar.h"
-#include "config.h"
 #include "errortypes.h"
 #include "preprocessor.h"
 #include "settings.h"

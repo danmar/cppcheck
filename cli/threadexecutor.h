@@ -20,7 +20,6 @@
 #define THREADEXECUTOR_H
 
 #include "color.h"
-#include "config.h"
 #include "errorlogger.h"
 
 #include <cstddef>

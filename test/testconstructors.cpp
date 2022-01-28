@@ -18,7 +18,6 @@
 
 
 #include "checkclass.h"
-#include "config.h"
 #include "errortypes.h"
 #include "standards.h"
 #include "settings.h"

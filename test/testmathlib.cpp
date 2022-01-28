@@ -17,7 +17,6 @@
  */
 
 
-#include "config.h"
 #include "mathlib.h"
 #include "testsuite.h"
 

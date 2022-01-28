@@ -18,7 +18,6 @@
 
 
 #include "checkvaarg.h"
-#include "config.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"

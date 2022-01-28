@@ -18,7 +18,6 @@
 
 
 #include "astutils.h"
-#include "config.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"

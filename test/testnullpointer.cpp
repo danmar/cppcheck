@@ -18,7 +18,6 @@
 
 #include "check.h"
 #include "checknullpointer.h"
-#include "config.h"
 #include "ctu.h"
 #include "errortypes.h"
 #include "library.h"

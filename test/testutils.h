@@ -20,7 +20,6 @@
 #define TestUtilsH
 
 #include "color.h"
-#include "config.h"
 #include "errorlogger.h"
 #include "settings.h"
 #include "suppressions.h"

@@ -17,7 +17,6 @@
  */
 
 #include "checkunusedfunctions.h"
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
