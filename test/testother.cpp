@@ -9323,6 +9323,17 @@ private:
 
         check("class C { C(); void foo() { static int C = 0; } }"); // #9195 - shadow constructor
         ASSERT_EQUALS("", errout.str());
+
+        // 10752 - no
+        check("struct S {\n"
+              "    int i;\n"
+              "\n"
+              "    static int foo() {\n"
+              "        int i = 0;\n"
+              "        return i;\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void knownArgument() {
