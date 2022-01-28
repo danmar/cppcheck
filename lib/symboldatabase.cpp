@@ -5171,6 +5171,11 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             // Try to evaluate the apparently more complex expression
             else if (check->isCPP()) {
                 const Token *vartok = arguments[j];
+                if (vartok->str() == ".") {
+                    const Token* rml = nextAfterAstRightmostLeaf(vartok);
+                    if (rml)
+                        vartok = rml->previous();
+                }
                 while (vartok->isUnaryOp("&") || vartok->isUnaryOp("*"))
                     vartok = vartok->astOperand1();
                 const Variable* var = vartok->variable();

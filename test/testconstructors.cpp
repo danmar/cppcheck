@@ -122,6 +122,7 @@ private:
         TEST_CASE(initvar_nocopy1);            // ticket #2474
         TEST_CASE(initvar_nocopy2);            // ticket #2484
         TEST_CASE(initvar_nocopy3);            // ticket #3611
+        TEST_CASE(initvar_nocopy4);            // ticket #9247
         TEST_CASE(initvar_with_member_function_this); // ticket #4824
 
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
@@ -1589,6 +1590,22 @@ private:
               "    A(const A& rhs) {}\n"
               "};", true);
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Member variable 'A::b' is not assigned in the copy constructor. Should it be copied?\n", errout.str());
+    }
+
+    void initvar_nocopy4() { // #9247
+        check("struct S {\n"
+              "    S(const S & s);\n"
+              "    void S::Set(const T& val);\n"
+              "    void S::Set(const U& val);\n"
+              "    T t;\n"
+              "};\n"
+              "S::S(const S& s) {\n"
+              "    Set(s.t);\n"
+              "}\n"
+              "void S::Set(const T& val) {\n"
+              "    t = val;\n"
+              "}", /*inconclusive*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_with_member_function_this() {
