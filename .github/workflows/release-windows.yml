@@ -77,11 +77,19 @@ jobs:
           7z x z3-%Z3_VERSION%-x64-win.zip -oexternals -r -y
           move externals\z3-%Z3_VERSION%-x64-win externals\z3
 
+      - name: Cache Qt ${{ env.QT_VERSION }}
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Windows-QtCache-${{ env.QT_VERSION }}-qtcharts-qthelp
+
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v2
         with:
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts qthelp'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
       - name: Create .qm
         run: |
