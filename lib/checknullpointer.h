@@ -36,6 +36,9 @@ class Settings;
 class Token;
 class Tokenizer;
 
+namespace tinyxml2 {
+    class XMLElement;
+}
 
 /// @addtogroup Checks
 /// @{

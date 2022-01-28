@@ -19,8 +19,10 @@
 #include "templatesimplifier.h"
 
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "settings.h"
+#include "standards.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -29,7 +31,9 @@
 #include <cassert>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <stack>
+#include <type_traits>
 #include <utility>
 
 static Token *skipRequires(Token *tok)

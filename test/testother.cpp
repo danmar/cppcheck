@@ -17,6 +17,8 @@
  */
 
 #include "checkother.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "platform.h"
 #include "preprocessor.h"
@@ -25,11 +27,17 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
+#include <iosfwd>
+#include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
+#include <tinyxml2.h>
+
 
 class TestOther : public TestFixture {
 public:

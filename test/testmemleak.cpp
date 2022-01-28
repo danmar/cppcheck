@@ -15,16 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "checkmemoryleak.h"
 #include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 #include <list>
+#include <memory>
 #include <string>
+
+class TestMemleakInClass;
+class TestMemleakNoVar;
+class TestMemleakStructMember;
 
 
 class TestMemleak : private TestFixture {

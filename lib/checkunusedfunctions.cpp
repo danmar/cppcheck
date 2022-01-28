@@ -22,6 +22,7 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -29,11 +30,22 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <tinyxml2.h>
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <cstring>
+#include <istream>
+#include <memory>
+
 #include <utility>
+#include <vector>
+
+#include <tinyxml2.h>
+
+namespace CTU {
+    class FileInfo;
+}
+
 //---------------------------------------------------------------------------
 
 

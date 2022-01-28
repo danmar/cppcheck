@@ -16,12 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "check.h"
 #include "checkuninitvar.h"
+#include "config.h"
+#include "ctu.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <list>
 #include <sstream>
 #include <string>
 
@@ -1767,6 +1772,18 @@ private:
                        "  struct Fred fred[10];\n"
                        "  fred[1].x = 0;\n"
                        "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("char f() {\n"
+                       "    std::array<char, 1> a;\n"
+                       "    return a[0];\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        checkUninitVar("std::string f() {\n"
+                       "    std::array<std::string, 1> a;\n"
+                       "    return a[0];\n"
+                       "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

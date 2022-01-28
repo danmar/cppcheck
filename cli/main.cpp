@@ -59,7 +59,12 @@
  */
 
 
+#include "errortypes.h"
 #include "cppcheckexecutor.h"
+
+#include <cstdlib>
+#include <exception>
+#include <string>
 
 #ifdef NDEBUG
 #include <iostream>

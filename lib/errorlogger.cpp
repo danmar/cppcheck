@@ -24,16 +24,18 @@
 #include "path.h"
 #include "token.h"
 #include "tokenlist.h"
-#include "utils.h"
 
-#include <string>
-#include <tinyxml2.h>
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
+#include <memory>
+#include <string>
+
+#include <tinyxml2.h>
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg), type(type)

@@ -22,6 +22,7 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -31,7 +32,11 @@
 
 #include <algorithm>
 #include <cctype>
+#include <map>
+#include <memory>
 #include <set>
+#include <vector>
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

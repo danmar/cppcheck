@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "standards.h"
@@ -24,10 +26,13 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <tinyxml2.h>
+#include <iosfwd>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
+#include <tinyxml2.h>
 
 #define ASSERT_EQ(expected, actual)   ASSERT(expected == actual)
 

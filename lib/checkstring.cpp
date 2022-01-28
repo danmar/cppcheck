@@ -21,6 +21,7 @@
 #include "checkstring.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"

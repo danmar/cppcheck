@@ -20,18 +20,25 @@
 
 #include "path.h"
 #include "settings.h"
+#include "standards.h"
 #include "suppressions.h"
-#include "tinyxml2.h"
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
-#define PICOJSON_USE_INT64
-#include <picojson.h>
 
+#include <algorithm>
+#include <cstdlib>
 #include <cstring>
 #include <fstream>
+#include <iostream>
+#include <iterator>
+
 #include <utility>
 
+#include <tinyxml2.h>
+
+#define PICOJSON_USE_INT64
+#include <picojson.h>
 
 ImportProject::ImportProject()
 {

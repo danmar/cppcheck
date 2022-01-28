@@ -25,7 +25,7 @@ import html as html_lib
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.22"
+SERVER_VERSION = "1.3.23"
 
 OLD_VERSION = '2.6'
 
@@ -86,6 +86,8 @@ def overviewReport() -> str:
     html += '<a href="head-cppcheckError">cppcheckError</a><br>\n'
     html += '<a href="head-internalAstError">internalAstError</a><br>\n'
     html += '<a href="head-syntaxError">syntaxError</a><br>\n'
+    html += '<a href="head-DacaWrongData">DacaWrongData</a><br>\n'
+    html += '<a href="head-dacaWrongSplitTemplateRightAngleBrackets">dacaWrongSplitTemplateRightAngleBrackets</a><br>\n'
     html += '<br>\n'
     html += 'version ' + SERVER_VERSION + '\n'
     html += '</body></html>'

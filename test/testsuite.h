@@ -27,6 +27,7 @@
 #include <cstddef>
 #include <set>
 #include <sstream>
+#include <string>
 
 class options;
 

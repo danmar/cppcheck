@@ -38,13 +38,23 @@
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <cstdlib>
 #include <cstring>
 #include <iostream>
+#include <iterator>
+#include <exception>
+#include <memory>
 #include <set>
 #include <stack>
+#include <stdexcept>
+#include <type_traits>
 #include <unordered_map>
+#include <unordered_set>
 #include <utility>
 #include <vector>
+
+#include <simplecpp.h>
+
 //---------------------------------------------------------------------------
 
 namespace {

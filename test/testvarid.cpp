@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+#include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
@@ -23,6 +25,7 @@
 #include "token.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 #include <string>
 
 struct InternalError;

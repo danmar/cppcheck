@@ -18,14 +18,25 @@
 
 
 #include "checkleakautovar.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
+#include <iosfwd>
+#include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
+
+#include <tinyxml2.h>
+
+class TestLeakAutoVarStrcpy;
+class TestLeakAutoVarWindows;
 
 class TestLeakAutoVar : public TestFixture {
 public:
