@@ -33,7 +33,7 @@ of the GNU General Public License version 3</source>
     <message>
         <location filename="about.ui" line="81"/>
         <source>Copyright © 2007-%1 Cppcheck team.</source>
-        <oldsource>Copyright © 2007-2019 Cppcheck team.</oldsource>
+        <oldsource>Copyright © 2007-2021 Cppcheck team.</oldsource>
         <translation type="unfinished"></translation>
     </message>
     <message>
