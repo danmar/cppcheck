@@ -55,7 +55,7 @@ public:
 
     MainWindow(TranslationHandler* th, QSettings* settings);
     MainWindow(const MainWindow &) = delete;
-    virtual ~MainWindow();
+    ~MainWindow() override;
     MainWindow &operator=(const MainWindow &) = delete;
 
     /**

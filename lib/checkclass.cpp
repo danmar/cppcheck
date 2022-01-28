@@ -88,6 +88,7 @@ static bool isVariableCopyNeeded(const Variable &var, Function::Type type)
     switch (type) {
     case Function::eOperatorEqual:
         isOpEqual = true;
+        break;
     case Function::eCopyConstructor:
     case Function::eMoveConstructor:
         break;

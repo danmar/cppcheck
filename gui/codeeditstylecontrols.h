@@ -31,7 +31,7 @@ class SelectColorButton : public QPushButton {
     Q_OBJECT
 public:
     explicit SelectColorButton(QWidget* parent);
-    virtual ~SelectColorButton() {}
+    ~SelectColorButton() override {}
 
     void setColor(const QColor& color);
     const QColor& getColor();
@@ -52,7 +52,7 @@ class SelectFontWeightCombo : public QComboBox {
     Q_OBJECT
 public:
     explicit SelectFontWeightCombo(QWidget* parent);
-    virtual ~SelectFontWeightCombo() {}
+    ~SelectFontWeightCombo() override {}
 
     void setWeight(const QFont::Weight& weight);
     const QFont::Weight& getWeight();

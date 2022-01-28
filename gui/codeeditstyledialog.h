@@ -33,7 +33,7 @@ class StyleEditDialog : public QDialog {
 public:
     explicit StyleEditDialog(const CodeEditorStyle& newStyle,
                              QWidget *parent = nullptr);
-    virtual ~StyleEditDialog() {}
+    ~StyleEditDialog() override {}
 
     CodeEditorStyle getStyle();
 

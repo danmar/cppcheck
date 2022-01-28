@@ -44,7 +44,7 @@ public:
                    TranslationHandler *translator,
                    QWidget *parent = nullptr);
     SettingsDialog(const SettingsDialog &) = delete;
-    virtual ~SettingsDialog();
+    ~SettingsDialog() override;
     SettingsDialog &operator=(const SettingsDialog &) = delete;
 
     /**

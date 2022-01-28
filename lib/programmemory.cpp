@@ -180,11 +180,11 @@ void ProgramMemory::insert(const ProgramMemory &pm)
         mValues.insert(p);
 }
 
-bool evaluateCondition(const std::string& op,
-                       MathLib::bigint r,
-                       const Token* condition,
-                       ProgramMemory& pm,
-                       const Settings* settings)
+static bool evaluateCondition(const std::string& op,
+                              MathLib::bigint r,
+                              const Token* condition,
+                              ProgramMemory& pm,
+                              const Settings* settings)
 {
     if (!condition)
         return false;

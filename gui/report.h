@@ -40,7 +40,7 @@ public:
     };
 
     explicit Report(const QString &filename);
-    virtual ~Report();
+    ~Report() override;
 
     /**
      * @brief Create the report (file).

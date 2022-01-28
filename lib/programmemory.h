@@ -147,14 +147,14 @@ void execute(const Token* expr,
 /**
  * Is condition always false when variable has given value?
  * \param condition   top ast token in condition
- * \param programMemory   program memory
+ * \param pm   program memory
  */
 bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 
 /**
  * Is condition always true when variable has given value?
  * \param condition   top ast token in condition
- * \param programMemory   program memory
+ * \param pm   program memory
  */
 bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 

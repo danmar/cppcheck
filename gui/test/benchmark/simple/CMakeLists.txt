@@ -22,3 +22,12 @@ endif()
 if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
     target_link_libraries(benchmark-simple ${tinyxml2_LIBRARY})
 endif()
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
+        # false positive in up to CLang 13 - caused by QBENCHMARK macro
+        set_source_files_properties(benchmarksimple.cpp PROPERTIES COMPILE_FLAGS -Wno-reserved-identifier)
+    endif()
+    # caused by Q_UNUSED macro
+    set_source_files_properties(moc_benchmarksimple.cpp PROPERTIES COMPILE_FLAGS -Wno-extra-semi-stmt)
+endif()

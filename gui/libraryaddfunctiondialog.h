@@ -35,7 +35,7 @@ class LibraryAddFunctionDialog : public QDialog {
 public:
     explicit LibraryAddFunctionDialog(QWidget *parent = nullptr);
     LibraryAddFunctionDialog(const LibraryAddFunctionDialog &) = delete;
-    ~LibraryAddFunctionDialog();
+    ~LibraryAddFunctionDialog() override;
     LibraryAddFunctionDialog &operator=(const LibraryAddFunctionDialog &) = delete;
 
     QString functionName() const;
