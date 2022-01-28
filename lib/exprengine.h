@@ -128,7 +128,7 @@ namespace ExprEngine {
         ValueType type;
     };
 
-    class UninitValue : public Value {
+    class UninitValue FINAL : public Value {
     public:
         UninitValue() : Value("?", ValueType::UninitValue) {}
         bool isEqual(const DataBase *dataBase, int value) const OVERRIDE {
@@ -139,7 +139,7 @@ namespace ExprEngine {
         bool isUninit(const DataBase *dataBase) const OVERRIDE;
     };
 
-    class IntRange : public Value {
+    class IntRange FINAL : public Value {
     public:
         IntRange(const std::string &name, int128_t minValue, int128_t maxValue)
             : Value(name, ValueType::IntRange)
@@ -160,7 +160,7 @@ namespace ExprEngine {
         const Scope *loopScope;
     };
 
-    class FloatRange : public Value {
+    class FloatRange FINAL : public Value {
     public:
         FloatRange(const std::string &name, long double minValue, long double maxValue)
             : Value(name, ValueType::FloatRange)
@@ -179,7 +179,7 @@ namespace ExprEngine {
         long double maxValue;
     };
 
-    class ConditionalValue : public Value {
+    class ConditionalValue FINAL : public Value {
     public:
         typedef std::vector<std::pair<ValuePtr,ValuePtr>> Vector;
 
@@ -191,7 +191,7 @@ namespace ExprEngine {
     };
 
     // Array or pointer
-    class ArrayValue : public Value {
+    class ArrayValue FINAL : public Value {
     public:
         enum { MAXSIZE = 0x7fffffff };
 
@@ -218,7 +218,7 @@ namespace ExprEngine {
         std::vector<ValuePtr> size;
     };
 
-    class StringLiteralValue : public Value {
+    class StringLiteralValue FINAL : public Value {
     public:
         StringLiteralValue(const std::string &name, const std::string &s) : Value(name, ValueType::StringLiteralValue), string(s) {}
 
@@ -232,7 +232,7 @@ namespace ExprEngine {
         const std::string string;
     };
 
-    class StructValue : public Value {
+    class StructValue FINAL : public Value {
     public:
         explicit StructValue(const std::string &name) : Value(name, ValueType::StructValue) {}
 
@@ -258,7 +258,7 @@ namespace ExprEngine {
         std::map<std::string, ValuePtr> member;
     };
 
-    class AddressOfValue : public Value {
+    class AddressOfValue FINAL : public Value {
     public:
         AddressOfValue(const std::string &name, int varId)
             : Value(name, ValueType::AddressOfValue)
@@ -272,7 +272,7 @@ namespace ExprEngine {
         int varId;
     };
 
-    class BinOpResult : public Value {
+    class BinOpResult FINAL : public Value {
     public:
         BinOpResult(const std::string &binop, ValuePtr op1, ValuePtr op2)
             : Value(getName(binop, op1, op2), ValueType::BinOpResult)
@@ -298,7 +298,7 @@ namespace ExprEngine {
         }
     };
 
-    class IntegerTruncation : public Value {
+    class IntegerTruncation FINAL : public Value {
     public:
         IntegerTruncation(const std::string &name, ValuePtr inputValue, int bits, char sign)
             : Value(name, ValueType::IntegerTruncation)
@@ -313,7 +313,7 @@ namespace ExprEngine {
         char sign;
     };
 
-    class FunctionCallArgumentValues : public Value {
+    class FunctionCallArgumentValues FINAL : public Value {
     public:
         explicit FunctionCallArgumentValues(const std::vector<ExprEngine::ValuePtr> &argValues)
             : Value("argValues", ValueType::FunctionCallArgumentValues)
@@ -323,7 +323,7 @@ namespace ExprEngine {
         const std::vector<ExprEngine::ValuePtr> argValues;
     };
 
-    class BailoutValue : public Value {
+    class BailoutValue FINAL : public Value {
     public:
         BailoutValue() : Value("bailout", ValueType::BailoutValue) {}
         bool isEqual(const DataBase * /*dataBase*/, int /*value*/) const OVERRIDE {

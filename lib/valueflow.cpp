@@ -1971,7 +1971,7 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual ProgramState getProgramState() const = 0;
 
-    virtual int getIndirect(const Token* tok) const {
+    virtual int getIndirect(const Token* tok) const FINAL {
         const ValueFlow::Value* value = getValue(tok);
         if (value)
             return value->indirect;
@@ -2120,7 +2120,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return read;
     }
 
-    virtual Action isAliasModified(const Token* tok) const {
+    virtual Action isAliasModified(const Token* tok) const FINAL {
         // Lambda function call
         if (Token::Match(tok, "%var% ("))
             // TODO: Check if modified in the lambda function
@@ -2133,7 +2133,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual Action isThisModified(const Token* tok) const {
+    virtual Action isThisModified(const Token* tok) const FINAL {
         if (isThisChanged(tok, 0, getSettings(), isCPP()))
             return Action::Invalid;
         return Action::None;
@@ -2351,7 +2351,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual Action analyze(const Token* tok, Direction d) const OVERRIDE {
+    virtual Action analyze(const Token* tok, Direction d) const OVERRIDE FINAL {
         if (invalid())
             return Action::Invalid;
         // Follow references
@@ -2379,7 +2379,7 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const OVERRIDE
+    virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const OVERRIDE FINAL
     {
         if (e == Evaluate::Integral) {
             if (tok->hasKnownIntValue())
@@ -2572,7 +2572,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
         return true;
     }
 
-    virtual bool isConditional() const OVERRIDE {
+    virtual bool isConditional() const OVERRIDE FINAL {
         if (value.conditional)
             return true;
         if (value.condition)
@@ -6091,7 +6091,7 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
     }
 }
 
-struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
+struct MultiValueFlowAnalyzer FINAL : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, ValueFlow::Value> values;
     std::unordered_map<nonneg int, const Variable*> vars;
     SymbolDatabase* symboldatabase;
@@ -6106,7 +6106,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         }
     }
 
-    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const {
+    virtual const std::unordered_map<nonneg int, const Variable*>& getVars() const FINAL {
         return vars;
     }
 
@@ -6174,7 +6174,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         return true;
     }
 
-    virtual bool isConditional() const OVERRIDE {
+    virtual bool isConditional() const OVERRIDE FINAL {
         for (auto&& p:values) {
             if (p.second.conditional)
                 return true;
@@ -6892,7 +6892,7 @@ static bool isContainerSizeChangedByFunction(const Token* tok, const Settings* s
     return (isChanged || inconclusive);
 }
 
-struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
+struct ContainerExpressionAnalyzer FINAL : ExpressionAnalyzer {
     ContainerExpressionAnalyzer() : ExpressionAnalyzer() {}
 
     ContainerExpressionAnalyzer(const Token* expr, const ValueFlow::Value& val, const TokenList* t)

@@ -48,7 +48,7 @@ class Settings;
 /**
  * @brief Importing project settings.
  */
-class CPPCHECKLIB ImportProject {
+class CPPCHECKLIB ImportProject FINAL {
 public:
     enum class Type {
         UNKNOWN,

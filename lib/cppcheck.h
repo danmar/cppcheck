@@ -48,7 +48,7 @@ class Tokenizer;
  * errors or places that could be improved.
  * Usage: See check() for more info.
  */
-class CPPCHECKLIB CppCheck : ErrorLogger {
+class CPPCHECKLIB CppCheck FINAL : ErrorLogger {
 public:
     /**
      * @brief Constructor.

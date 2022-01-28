@@ -50,7 +50,7 @@ namespace tinyxml2 {
 
 /** @brief Whole program analysis (ctu=Cross Translation Unit) */
 namespace CTU {
-    class CPPCHECKLIB FileInfo : public Check::FileInfo {
+    class CPPCHECKLIB FileInfo FINAL : public Check::FileInfo {
     public:
         enum class InvalidValueType { null, uninit, bufferOverflow };
 
@@ -93,7 +93,7 @@ namespace CTU {
             bool loadBaseFromXml(const tinyxml2::XMLElement *xmlElement);
         };
 
-        class FunctionCall : public CallBase {
+        class FunctionCall FINAL : public CallBase {
         public:
             std::string callArgumentExpression;
             MathLib::bigint callArgValue;
@@ -105,7 +105,7 @@ namespace CTU {
             bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
         };
 
-        class NestedCall : public CallBase {
+        class NestedCall FINAL : public CallBase {
         public:
             NestedCall() = default;
 
