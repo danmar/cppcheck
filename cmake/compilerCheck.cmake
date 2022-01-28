@@ -1,6 +1,6 @@
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.6)
-        message(ERROR "GCC >= 4.6 required - detected ${CMAKE_CXX_COMPILER_VERSION} not supported")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.8)
+        message(ERROR "GCC >= 4.8 required - detected ${CMAKE_CXX_COMPILER_VERSION} not supported")
     endif ()
 elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     # TODO: verify this
