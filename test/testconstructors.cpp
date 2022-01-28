@@ -499,7 +499,7 @@ private:
               "    S& operator=(const S & s) { return *this; }\n"
               "};\n", /*inconclusive*/ true);
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Member variable 'S::i' is not assigned in the copy constructor. Should it be copied?\n"
-                      "[test.cpp:5]: (warning, inconclusive) Member variable 'S::i' is not assigned a value in 'S::operator='.\n",
+                      "[test.cpp:5]: (warning) Member variable 'S::i' is not assigned a value in 'S::operator='.\n",
                       errout.str());
 
         check("struct S {\n"
