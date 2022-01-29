@@ -83,6 +83,7 @@
     <ClCompile Include="fwdanalysis.cpp" />
     <ClCompile Include="importproject.cpp" />
     <ClCompile Include="infer.cpp" />
+    <ClCompile Include="keywords.cpp" />
     <ClCompile Include="library.cpp" />
     <ClCompile Include="mathlib.cpp" />
     <ClCompile Include="path.cpp" />
@@ -149,6 +150,7 @@
     <ClInclude Include="fwdanalysis.h" />
     <ClInclude Include="importproject.h" />
     <ClInclude Include="infer.h" />
+    <ClInclude Include="keywords.h" />
     <ClInclude Include="library.h" />
     <ClInclude Include="mathlib.h" />
     <ClInclude Include="path.h" />
