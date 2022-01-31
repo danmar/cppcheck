@@ -1177,8 +1177,10 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
         if (var.isArray())
-            size *= std::accumulate(var.dimensions().begin(), var.dimensions().end(), 1, [](int v, const Dimension& d) { return v *= d.num; });
-        
+            size *= std::accumulate(var.dimensions().begin(), var.dimensions().end(), 1, [](int v, const Dimension& d) {
+                return v *= d.num;
+            });
+
         accumulateSize(cumulatedSize, size, isUnion);
     }
     for (const Type::BaseInfo &baseInfo : type->derivedFrom) {
