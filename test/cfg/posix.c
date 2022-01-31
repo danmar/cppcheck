@@ -272,7 +272,7 @@ void * identicalCondition_mmap(int fd, size_t size) // #9940
 {
     void* buffer = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
     if (buffer == MAP_FAILED) {
-        return nullptr;
+        return NULL;
     }
     return buffer;
 }
