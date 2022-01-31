@@ -2693,7 +2693,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
 
     virtual ProgramState getProgramState() const OVERRIDE {
         ProgramState ps;
-        ps[expr->exprId()] = value;
+        ps[expr] = value;
         return ps;
     }
 
@@ -6228,8 +6228,10 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
 
     virtual ProgramState getProgramState() const OVERRIDE {
         ProgramState ps;
-        for (const auto& p:values)
-            ps[p.first] = p.second;
+        for (const auto& p:values) {
+            const Variable* var = vars.at(p.first);
+            ps[var->nameToken()] = p.second;
+        }
         return ps;
     }
 
