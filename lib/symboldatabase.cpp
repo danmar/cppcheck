@@ -7096,7 +7096,7 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
     if (call->pointer > 0) {
         if ((call->constness | func->constness) != func->constness)
             return ValueType::MatchResult::NOMATCH;
-        if (call->constness != func->constness && call->reference != func->reference && func->reference != Reference::None)
+        if (call->constness == 0 && func->constness != 0 && func->reference != Reference::None)
             return ValueType::MatchResult::NOMATCH;
     }
     if (call->type != func->type) {
