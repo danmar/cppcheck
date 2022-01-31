@@ -12,6 +12,9 @@ jobs:
     container:
       image: "ubuntu:21.10"
 
+    env:
+      QT_VERSION: 5.15.2
+
     steps:
       - uses: actions/checkout@v2
 
@@ -27,12 +30,20 @@ jobs:
           apt-get update
           apt-get install -y clang-tidy-13
 
-      - name: Install Qt
+      - name: Cache Qt ${{ env.QT_VERSION }}
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Linux-QtCache-${{ env.QT_VERSION }}-qtcharts
+
+      - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v2
         with:
           install-deps: 'nosudo'
-          version: '5.15.2'
+          version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
       - name: Prepare CMake
         run: |
