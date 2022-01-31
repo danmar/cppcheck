@@ -23,6 +23,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QDateTime>
+#include <QElapsedTimer>
 #include <set>
 #include "threadresult.h"
 #include "suppressions.h"
@@ -222,7 +223,7 @@ protected:
      * @brief Timer used for measuring scan duration
      *
      */
-    QTime mTime;
+    QElapsedTimer mTimer;
 
     /**
      * @brief The previous scan duration in milliseconds.
