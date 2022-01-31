@@ -1673,6 +1673,10 @@ private:
               "void f(U u) {}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct S { char A[8][8]; };\n"
+              "void f(S s) {}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n", errout.str());
+
         Settings settings1;
         settings1.platform(Settings::Win64);
         check("using ui64 = unsigned __int64;\n"
