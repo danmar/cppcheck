@@ -7094,10 +7094,10 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
         return ValueType::MatchResult::NOMATCH; // TODO
     }
     if (call->pointer > 0) {
-      if ((call->constness | func->constness) != func->constness)
-          return ValueType::MatchResult::NOMATCH;
-      if (call->constness != func->constness && call->reference != func->reference && func->reference != Reference::None)
-          return ValueType::MatchResult::NOMATCH;
+        if ((call->constness | func->constness) != func->constness)
+            return ValueType::MatchResult::NOMATCH;
+        if (call->constness != func->constness && call->reference != func->reference && func->reference != Reference::None)
+            return ValueType::MatchResult::NOMATCH;
     }
     if (call->type != func->type) {
         if (call->type == ValueType::Type::VOID || func->type == ValueType::Type::VOID)
