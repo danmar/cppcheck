@@ -1155,6 +1155,13 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
         return 0;
 
     int cumulatedSize = 0;
+    const bool isUnion = type->classScope->type == Scope::ScopeType::eUnion;
+    const auto accumulateSize = [](int& cumulatedSize, int size, bool isUnion) -> void {
+        if (isUnion)
+            cumulatedSize = std::max(cumulatedSize, size);
+        else
+            cumulatedSize += size;
+    };
     for (const Variable&var : type->classScope->varlist) {
         int size = 0;
         if (var.isStatic())
@@ -1169,9 +1176,9 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
         if (var.isArray())
-            cumulatedSize += size * var.dimension(0);
-        else
-            cumulatedSize += size;
+            size *= var.dimension(0);
+        
+        accumulateSize(cumulatedSize, size, isUnion);
     }
     for (const Type::BaseInfo &baseInfo : type->derivedFrom) {
         if (baseInfo.type && baseInfo.type->classScope)
