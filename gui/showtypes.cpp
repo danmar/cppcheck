@@ -20,9 +20,7 @@
 
 #include "common.h"
 
-#include <QMap>
 #include <QSettings>
-#include <QString>
 
 ShowTypes::ShowTypes()
 {

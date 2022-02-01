@@ -31,6 +31,17 @@
 #include <QTextDocument>
 #include <QWidget>
 
+#ifdef HAVE_QCHART
+#include <QAbstractSeries>
+#include <QChartView>
+#include <QDateTimeAxis>
+#include <QLineSeries>
+#include <QTextStream>
+#include <QValueAxis>
+
+using namespace QtCharts;
+#endif
+
 static const QString CPPCHECK("cppcheck");
 
 StatsDialog::StatsDialog(QWidget *parent)

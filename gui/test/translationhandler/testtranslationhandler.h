@@ -17,7 +17,6 @@
  */
 
 #include <QObject>
-#include <QtTest/QtTest>
 
 class TestTranslationHandler : public QObject {
     Q_OBJECT

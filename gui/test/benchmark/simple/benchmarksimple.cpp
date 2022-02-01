@@ -19,15 +19,14 @@
 #include "benchmarksimple.h"
 
 #include "settings.h"
-#include "token.h"
 #include "tokenize.h"
 
 #include <sstream>
 
 #include <QByteArray>
 #include <QFile>
-#include <QObject>
 #include <QString>
+#include <QtTest>
 
 void BenchmarkSimple::tokenize()
 {

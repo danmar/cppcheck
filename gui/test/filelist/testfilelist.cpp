@@ -21,8 +21,8 @@
 #include "filelist.h"
 
 #include <QDir>
-#include <QObject>
 #include <QString>
+#include <QTest>
 
 void TestFileList::addFile()
 {
