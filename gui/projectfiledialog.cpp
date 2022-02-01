@@ -31,7 +31,8 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
-#include <QRegExp>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 #include <QSettings>
 
 /** Return paths from QListWidget */
@@ -183,10 +184,10 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     platformFiles.sort();
     mUI->mComboBoxPlatform->addItems(platformFiles);
 
-    mUI->mEditTags->setValidator(new QRegExpValidator(QRegExp("[a-zA-Z0-9 ;]*"),this));
+    mUI->mEditTags->setValidator(new QRegularExpressionValidator(QRegularExpression("[a-zA-Z0-9 ;]*"),this));
 
-    const QRegExp undefRegExp("\\s*([a-zA-Z_][a-zA-Z0-9_]*[; ]*)*");
-    mUI->mEditUndefines->setValidator(new QRegExpValidator(undefRegExp, this));
+    const QRegularExpression undefRegExp("\\s*([a-zA-Z_][a-zA-Z0-9_]*[; ]*)*");
+    mUI->mEditUndefines->setValidator(new QRegularExpressionValidator(undefRegExp, this));
 
     connect(mUI->mButtons, &QDialogButtonBox::accepted, this, &ProjectFileDialog::ok);
     connect(mUI->mBtnBrowseBuildDir, &QPushButton::clicked, this, &ProjectFileDialog::browseBuildDir);
@@ -595,9 +596,9 @@ QStringList ProjectFileDialog::getIncludePaths() const
 QStringList ProjectFileDialog::getDefines() const
 {
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
-    return mUI->mEditDefines->text().trimmed().split(QRegExp("\\s*;\\s*"), Qt::SkipEmptyParts);
+    return mUI->mEditDefines->text().trimmed().split(QRegularExpression("\\s*;\\s*"), Qt::SkipEmptyParts);
 #else
-    return mUI->mEditDefines->text().trimmed().split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts);
+    return mUI->mEditDefines->text().trimmed().split(QRegularExpression("\\s*;\\s*"), QString::SkipEmptyParts);
 #endif
 }
 
@@ -605,9 +606,9 @@ QStringList ProjectFileDialog::getUndefines() const
 {
     const QString undefine = mUI->mEditUndefines->text().trimmed();
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
-    QStringList undefines = undefine.split(QRegExp("\\s*;\\s*"), Qt::SkipEmptyParts);
+    QStringList undefines = undefine.split(QRegularExpression("\\s*;\\s*"), Qt::SkipEmptyParts);
 #else
-    QStringList undefines = undefine.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts);
+    QStringList undefines = undefine.split(QRegularExpression("\\s*;\\s*"), QString::SkipEmptyParts);
 #endif
     undefines.removeDuplicates();
     return undefines;
