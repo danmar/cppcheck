@@ -3433,7 +3433,6 @@ static const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScop
                 if (!end || precedes(varEnd, end))
                     end = varEnd;
             }
-
         }
         return ChildrenToVisit::op1_and_op2;
     });
