@@ -3239,7 +3239,7 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
         return nullptr;
     const Token* res = findShadowed(scope->nestedIn, varname, linenr);
     if (!res)
-      res = findShadowed(scope->functionOf, varname, linenr);
+        res = findShadowed(scope->functionOf, varname, linenr);
     return res;
 }
 
