@@ -373,16 +373,19 @@ void CheckSizeof::suspiciousSizeofCalculation()
     if (!mSettings->severity.isEnabled(Severity::warning) || !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
-    // TODO: Use AST here. This should be possible as soon as sizeof without brackets is correctly parsed
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            const Token* const end = tok->linkAt(1);
-            const Variable* var = end->previous()->variable();
-            if (end->strAt(-1) == "*" || (var && var->isPointer() && !var->isArray())) {
-                if (end->strAt(1) == "/")
-                    divideSizeofError(tok);
-            } else if (Token::simpleMatch(end, ") * sizeof") && end->next()->astOperand1() == tok->next())
-                multiplySizeofError(tok);
+            if (const Token* lPar = tok->astParent()) {
+                const Token* const end = lPar ? lPar->link() : nullptr;
+                const Token* const varTok = end ? end->previous() : nullptr;
+                const Variable* var = varTok ? varTok->variable() : nullptr;
+                if ((varTok && varTok->str() == "*") || (var && var->isPointer() && !var->isArray() && !(lPar->astOperand2() && lPar->astOperand2()->str() == "*"))) {
+                    if (lPar->astParent() && lPar->astParent()->str() == "/")
+                        divideSizeofError(tok);
+                }
+                else if (Token::simpleMatch(end, ") * sizeof") && end->next()->astOperand1() == tok->next())
+                    multiplySizeofError(tok);
+            }
         }
     }
 }

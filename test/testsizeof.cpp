@@ -428,6 +428,12 @@ private:
               "  return (end - source) / sizeof(encode_block_type) * sizeof(encode_block_type);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { T *t; };\n"
+              "int f(S* s) {\n"
+              "    return g(sizeof(*s->t) / 4);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPointerSizeof() {
@@ -723,7 +729,9 @@ private:
         check("void foo(memoryMapEntry_t* entry, memoryMapEntry_t* memoryMapEnd) {\n"
               "    memmove(entry, entry + 1, (memoryMapEnd - entry) / sizeof(entry));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Division by result of sizeof(). memmove() expects a size in bytes, did you intend to multiply instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n"
+                      "[test.cpp:2]: (warning) Division by result of sizeof(). memmove() expects a size in bytes, did you intend to multiply instead?\n",
+                      errout.str());
 
         check("Foo* allocFoo(int num) {\n"
               "    return malloc(num / sizeof(Foo));\n"
