@@ -375,9 +375,10 @@ void CheckSizeof::suspiciousSizeofCalculation()
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            if (const Token* lPar = tok->astParent()) {
-                const Token* const end = lPar ? lPar->link() : nullptr;
-                const Token* const varTok = end ? end->previous() : nullptr;
+            const Token* lPar = tok->astParent();
+            if (lPar && lPar->str() == "(") {
+                const Token* const end = lPar->link();
+                const Token* const varTok = end->previous();
                 const Variable* var = varTok ? varTok->variable() : nullptr;
                 if ((varTok && varTok->str() == "*") || (var && var->isPointer() && !var->isArray() && !(lPar->astOperand2() && lPar->astOperand2()->str() == "*"))) {
                     if (lPar->astParent() && lPar->astParent()->str() == "/")
