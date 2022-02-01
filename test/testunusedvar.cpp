@@ -5781,6 +5781,17 @@ private:
                               "    std::array<int, 1> a;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: a\n", errout.str());
+
+        functionVariableUsage("class A {};\n" // #9471
+                              "    namespace std {\n"
+                              "    template<>\n"
+                              "    struct hash<A> {};\n"
+                              "}\n"
+                              "char f() {\n"
+                              "    std::string hash = \"-\";\n"
+                              "    return hash[0];\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarFuncPtr() {
