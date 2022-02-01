@@ -104,5 +104,5 @@ QStringList CheckStatistics::getTools() const
     foreach (QString tool, mPerformance.keys()) ret.insert(tool);
     foreach (QString tool, mPortability.keys()) ret.insert(tool);
     foreach (QString tool, mError.keys()) ret.insert(tool);
-    return QStringList(ret.toList());
+    return QStringList(ret.values());
 }
