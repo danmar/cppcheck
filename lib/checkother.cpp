@@ -3237,7 +3237,10 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
     }
     if (scope->type == Scope::eLambda)
         return nullptr;
-    return findShadowed(scope->nestedIn, varname, linenr);
+    const Token* res = findShadowed(scope->nestedIn, varname, linenr);
+    if (!res)
+      res = findShadowed(scope->functionOf, varname, linenr);
+    return res;
 }
 
 void CheckOther::checkShadowVariables()
@@ -3269,6 +3272,8 @@ void CheckOther::checkShadowVariables()
             }
 
             const Token *shadowed = findShadowed(scope.nestedIn, var.name(), var.nameToken()->linenr());
+            if (!shadowed)
+                shadowed = findShadowed(scope.functionOf, var.name(), var.nameToken()->linenr());
             if (!shadowed)
                 continue;
             if (scope.type == Scope::eFunction && scope.className == var.name())
