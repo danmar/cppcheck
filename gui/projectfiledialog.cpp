@@ -18,17 +18,18 @@
 
 #include "projectfiledialog.h"
 
-#include <QFileInfo>
-#include <QFileDialog>
-#include <QDir>
-#include <QSettings>
-#include "common.h"
-#include "newsuppressiondialog.h"
 #include "checkthread.h"
-#include "projectfile.h"
-#include "library.h"
-#include "platforms.h"
+#include "common.h"
 #include "importproject.h"
+#include "library.h"
+#include "newsuppressiondialog.h"
+#include "platforms.h"
+#include "projectfile.h"
+
+#include <QDir>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QSettings>
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)

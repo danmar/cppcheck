@@ -17,7 +17,9 @@
  */
 
 #include "helpdialog.h"
+
 #include "ui_helpdialog.h"
+
 #include "common.h"
 
 #include <QFileInfo>

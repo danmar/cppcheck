@@ -17,6 +17,7 @@
  */
 
 #include "codeeditorstyle.h"
+
 #include <QSettings>
 
 CodeEditorStyle::CodeEditorStyle(

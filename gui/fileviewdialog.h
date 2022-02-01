@@ -19,9 +19,10 @@
 #ifndef FILEVIEW_DIALOG_H
 #define FILEVIEW_DIALOG_H
 
+#include "ui_file.h"
+
 #include <QDialog>
 #include <QString>
-#include "ui_file.h"
 
 class QWidget;
 class QTextEdit;

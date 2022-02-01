@@ -20,8 +20,8 @@
 
 #include "common.h"
 
-#include <QSettings>
 #include <QMap>
+#include <QSettings>
 #include <QString>
 
 ShowTypes::ShowTypes()

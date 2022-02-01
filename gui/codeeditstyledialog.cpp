@@ -20,8 +20,9 @@
 
 #include "codeeditor.h"
 #include "codeeditstylecontrols.h"
-#include <QFormLayout>
+
 #include <QDialogButtonBox>
+#include <QFormLayout>
 
 const QString StyleEditDialog::mSampleDocument(
     "/*****\n"

@@ -20,12 +20,13 @@
 #ifndef THREADRESULT_H
 #define THREADRESULT_H
 
-#include <QMutex>
-#include <QObject>
-#include <QStringList>
 #include "color.h"
 #include "errorlogger.h"
 #include "importproject.h"
+
+#include <QMutex>
+#include <QObject>
+#include <QStringList>
 
 class ErrorItem;
 

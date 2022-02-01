@@ -19,13 +19,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QFileDialog>
-#include <QStringList>
+#include "ui_mainwindow.h"
 
 #include "settings.h"
 #include "platforms.h"
-#include "ui_mainwindow.h"
+
+#include <QFileDialog>
+#include <QMainWindow>
+#include <QStringList>
 
 class ThreadHandler;
 class TranslationHandler;

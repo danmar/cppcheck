@@ -19,8 +19,9 @@
 #ifndef LIBRARYEDITARGDIALOG_H
 #define LIBRARYEDITARGDIALOG_H
 
-#include <QDialog>
 #include "cppchecklibrarydata.h"
+
+#include <QDialog>
 
 namespace Ui {
     class LibraryEditArgDialog;

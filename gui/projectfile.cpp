@@ -18,13 +18,13 @@
 
 #include "projectfile.h"
 
+#include "common.h"
+#include "importproject.h"
+#include "settings.h"
+
 #include <QFile>
 #include <QDir>
 #include <QXmlStreamReader>
-#include "common.h"
-#include "importproject.h"
-
-#include "settings.h"
 
 ProjectFile *ProjectFile::mActiveProject;
 

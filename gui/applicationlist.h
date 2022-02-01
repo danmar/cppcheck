@@ -19,8 +19,9 @@
 #ifndef APPLICATIONLIST_H
 #define APPLICATIONLIST_H
 
-#include <QObject>
 #include "application.h"
+
+#include <QObject>
 
 /// @addtogroup GUI
 /// @{

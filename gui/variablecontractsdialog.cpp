@@ -17,6 +17,7 @@
  */
 
 #include "variablecontractsdialog.h"
+
 #include "ui_variablecontractsdialog.h"
 
 #include <QRegExpValidator>

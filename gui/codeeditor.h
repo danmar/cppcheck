@@ -19,9 +19,9 @@
 #ifndef CODEEDITOR_H
 #define CODEEDITOR_H
 
-#include <QSyntaxHighlighter>
 #include <QPlainTextEdit>
 #include <QRegularExpression>
+#include <QSyntaxHighlighter>
 
 class CodeEditorStyle;
 class QPaintEvent;

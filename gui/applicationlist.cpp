@@ -18,14 +18,14 @@
 
 #include "applicationlist.h"
 
+#include "application.h"
+#include "common.h"
+
+#include <cstdlib>
+
 #include <QFileInfo>
 #include <QSettings>
 #include <QStringList>
-
-#include "common.h"
-#include "application.h"
-
-#include <cstdlib>
 
 ApplicationList::ApplicationList(QObject *parent) :
     QObject(parent),

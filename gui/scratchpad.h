@@ -19,8 +19,9 @@
 #ifndef SCRATCHPAD_H
 #define SCRATCHPAD_H
 
-#include <QDialog>
 #include "ui_scratchpad.h"
+
+#include <QDialog>
 
 class MainWindow;
 

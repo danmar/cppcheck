@@ -16,22 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
-#include <QCoreApplication>
-#include <QMetaType>
-#include <QStringList>
-#include <QSettings>
-#ifdef _WIN32
-#include <QMessageBox>
-#include "aboutdialog.h"
-#else
-#include <iostream>
-#endif
 #include "cppcheck.h"
 #include "common.h"
 #include "mainwindow.h"
 #include "erroritem.h"
 #include "translationhandler.h"
+
+#ifdef _WIN32
+#include "aboutdialog.h"
+
+#include <QMessageBox>
+#else
+#include <iostream>
+#endif
+
+#include <QApplication>
+#include <QCoreApplication>
+#include <QMetaType>
+#include <QStringList>
+#include <QSettings>
 
 
 static void ShowUsage();

@@ -19,13 +19,13 @@
 #ifndef PROJECTFILE_DIALOG_H
 #define PROJECTFILE_DIALOG_H
 
-#include <QDialog>
-#include <QString>
-#include <QStringList>
+#include "ui_projectfiledialog.h"
 
 #include "suppressions.h"
 
-#include "ui_projectfiledialog.h"
+#include <QDialog>
+#include <QString>
+#include <QStringList>
 
 class QWidget;
 class QCheckBox;

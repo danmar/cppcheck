@@ -19,9 +19,9 @@
 #ifndef LIBRARYDIALOG_H
 #define LIBRARYDIALOG_H
 
-#include <QDialog>
-
 #include "cppchecklibrarydata.h"
+
+#include <QDialog>
 
 class QListWidgetItem;
 

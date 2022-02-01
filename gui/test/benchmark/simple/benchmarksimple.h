@@ -16,9 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtTest/QtTest>
-#include <QObject>
 #include "errorlogger.h"
+
+#include <QObject>
+#include <QtTest/QtTest>
 
 class BenchmarkSimple : public QObject, public ErrorLogger {
     Q_OBJECT
