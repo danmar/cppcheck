@@ -198,7 +198,7 @@ void LibraryDialog::editFunctionName(QListWidgetItem* item)
     QString functionName = item->text();
     CppcheckLibraryData::Function * const function = dynamic_cast<FunctionListItem*>(item)->function;
     if (functionName != function->name) {
-        const QRegularExpressionMatch matchRes = QRegularExpression(QRegularExpression::anchoredPattern(NAMES)).match(functionName);
+        const QRegularExpressionMatch matchRes = QRegularExpression("^" NAMES "$").match(functionName);
         if (matchRes.hasMatch()) {
             function->name = functionName;
             mUi->buttonSave->setEnabled(true);

@@ -43,7 +43,7 @@ const int MAX_ERRORS = 100;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mVersionRe(QRegularExpression::anchoredPattern("^(master|main|your|head|[12].[0-9][0-9]?) (.*)")),
+    mVersionRe("^(master|main|your|head|[12].[0-9][0-9]?) (.*)$"),
     hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx", "*.ipp", "*.ixx"},
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
@@ -111,7 +111,7 @@ void MainWindow::load(QTextStream &textStream)
             if (!errorMessage.isEmpty())
                 mAllErrors << errorMessage;
             errorMessage.clear();
-        } else if (!url.isEmpty() && QRegularExpression(QRegularExpression::anchoredPattern(".*: (error|warning|style|note):.*")).match(line).hasMatch()) {
+        } else if (!url.isEmpty() && QRegularExpression("^.*: (error|warning|style|note):.*$").match(line).hasMatch()) {
             const QRegularExpressionMatch matchRes = mVersionRe.match(line);
             if (matchRes.hasMatch()) {
                 const QString version = matchRes.captured(1);

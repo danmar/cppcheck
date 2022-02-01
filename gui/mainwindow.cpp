@@ -1179,7 +1179,7 @@ void MainWindow::clearResults()
     if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
         QDir dir(QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir());
         for (const QString& f: dir.entryList(QDir::Files)) {
-            if (!f.endsWith("files.txt") && !QRegularExpression(QRegularExpression::anchoredPattern(".*.s[0-9]+$")).match(f).hasMatch())
+            if (!f.endsWith("files.txt") && !QRegularExpression("^.*.s[0-9]+$").match(f).hasMatch())
                 dir.remove(f);
         }
     }

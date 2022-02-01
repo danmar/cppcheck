@@ -307,8 +307,8 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 {
     QList<ErrorItem> errorItems;
     ErrorItem errorItem;
-    QRegularExpression r1(QRegularExpression::anchoredPattern("(.+):([0-9]+):([0-9]+): (note|warning|error|fatal error): (.*)"));
-    QRegularExpression r2(QRegularExpression::anchoredPattern("(.*)\\[([a-zA-Z0-9\\-_\\.]+)\\]"));
+    QRegularExpression r1("^(.+):([0-9]+):([0-9]+): (note|warning|error|fatal error): (.*)$");
+    QRegularExpression r2("^(.*)\\[([a-zA-Z0-9\\-_\\.]+)\\]$");
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
