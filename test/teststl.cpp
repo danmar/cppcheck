@@ -4285,6 +4285,15 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (error) Out of bounds access in expression 'e[d].begin()' because 'e[d]' is empty.\n",
                       errout.str());
+
+        // #10151
+        check("std::set<int>::iterator f(std::set<int>& s) {\n"
+              "for (auto it = s.begin(); it != s.end(); ++it)\n"
+              "    if (*it == 42)\n"
+              "        return s.erase(it);\n"
+              "    return s.end();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
