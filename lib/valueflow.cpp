@@ -3388,17 +3388,6 @@ static void valueFlowLifetimeConstructor(Token *tok,
                                          ErrorLogger *errorLogger,
                                          const Settings *settings);
 
-static const Scope* getVarScope(const Variable* var)
-{
-    if (!var)
-        return nullptr;
-    if (var->isArgument() && var->scope())
-        return var->scope();
-    if (var->typeStartToken())
-        return var->typeStartToken()->scope();
-    return nullptr;
-}
-
 static const Token* getEndOfVarScope(const Variable* var)
 {
     if (!var)
