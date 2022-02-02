@@ -1426,6 +1426,19 @@ void CheckUnusedVar::checkStructMemberUsage()
                 bailout = true;
                 break;
             }
+            if (var && (var->typeStartToken()->str() == scope.className || var->typeEndToken()->str() == scope.className)) {
+                const std::string addressPattern("!!" + scope.className + " & " + var->name()); // cast from struct
+                const Token* addrTok = scope.bodyEnd;
+                do {
+                    addrTok = Token::findmatch(addrTok, addressPattern.c_str());
+                    if ((addrTok && addrTok->str() == ")" && addrTok->link()->isCast()) || isCPPCast(addrTok)) {
+                        bailout = true;
+                        break;
+                    }
+                    if (addrTok)
+                        addrTok = addrTok->next();
+                } while (addrTok);
+            }
         }
         if (bailout)
             continue;
