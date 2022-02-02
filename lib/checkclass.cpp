@@ -256,11 +256,9 @@ void CheckClass::constructors()
 
                 // Don't warn about unknown types in copy constructors since we
                 // don't know if they can be copied or not..
-                if (!isVariableCopyNeeded(var, func.type))
-                    inconclusive = true;
-
-                if (!printInconclusive && inconclusive)
-                    continue;
+                if (!isVariableCopyNeeded(var, func.type)) {
+                    if (!printInconclusive)
+                        continue;
 
                     missingCopy = true;
                 }
