@@ -17,6 +17,8 @@
  */
 
 #include "checkother.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "platform.h"
 #include "preprocessor.h"
@@ -25,11 +27,17 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
+#include <iosfwd>
+#include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
+#include <tinyxml2.h>
+
 
 class TestOther : public TestFixture {
 public:
@@ -147,6 +155,7 @@ private:
         TEST_CASE(duplicateExpression10); // #9485
         TEST_CASE(duplicateExpression11); // #8916 (function call)
         TEST_CASE(duplicateExpression12); // #10026
+        TEST_CASE(duplicateExpression13); // #7899
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -1656,6 +1665,18 @@ private:
               "void foo(X x4){}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("union U {\n"
+              "    char* pc;\n"
+              "    short* ps;\n"
+              "    int* pi;\n"
+              "};\n"
+              "void f(U u) {}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char A[8][8]; };\n"
+              "void f(S s) {}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n", errout.str());
+
         Settings settings1;
         settings1.platform(Settings::Win64);
         check("using ui64 = unsigned __int64;\n"
@@ -2633,6 +2654,17 @@ private:
 
         check("struct S { int a[1]; };\n"
               "void f(S& s) { int* p = s.a; *p = 0; }\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Foo {\n" // #9910
+              "    int* p{};\n"
+              "    int* get() { return p; }\n"
+              "    const int* get() const { return p; }\n"
+              "};\n"
+              "struct Bar {\n"
+              "    int j{};\n"
+              "    void f(Foo& foo) const { int* q = foo.get(); *q = j; }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4229,6 +4261,17 @@ private:
               "    ref = x;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Redundant assignment of 'ref' to itself.\n", errout.str());
+
+        check("class Foo {\n" // #9850
+              "    int i{};\n"
+              "    void modify();\n"
+              "    void method() {\n"
+              "        Foo copy = *this;\n"
+              "        modify();\n"
+              "        *this = copy;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac1132() {
@@ -5449,6 +5492,13 @@ private:
               "        return buffer[index - 1] - var;\n"  // <<
               "}");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) Same expression on both sides of '-'.\n", errout.str());
+    }
+
+    void duplicateExpression13() { //#7899
+        check("void f() {\n"
+              "    if (sizeof(long) == sizeof(long long)) {}\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionLoop() {
@@ -7845,6 +7895,13 @@ private:
               "    e = dostuff();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #10143
+              "    std::shared_ptr<int> i = g();\n"
+              "    h();\n"
+              "    i = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantMemWrite() {
@@ -9277,6 +9334,17 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Local variable 'x' shadows outer argument\n", errout.str());
 
         check("class C { C(); void foo() { static int C = 0; } }"); // #9195 - shadow constructor
+        ASSERT_EQUALS("", errout.str());
+
+        // 10752 - no
+        check("struct S {\n"
+              "    int i;\n"
+              "\n"
+              "    static int foo() {\n"
+              "        int i = 0;\n"
+              "        return i;\n"
+              "    }\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 

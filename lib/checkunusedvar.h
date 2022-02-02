@@ -24,6 +24,7 @@
 #include "check.h"
 #include "config.h"
 
+#include <list>
 #include <map>
 #include <string>
 

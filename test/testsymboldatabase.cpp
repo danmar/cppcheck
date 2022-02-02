@@ -32,14 +32,18 @@
 #include <limits>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <sstream>
 #include <stdexcept>
 #include <string>
-#include <tinyxml2.h>
+#include <unordered_map>
 #include <vector>
 
+#include <tinyxml2.h>
+
 struct InternalError;
+class TestSymbolDatabase;
 
 #define GET_SYMBOL_DB_STD(code) \
     Tokenizer tokenizer(&settings1, this); \

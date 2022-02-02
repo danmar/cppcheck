@@ -21,12 +21,15 @@
 #include "checkbool.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "valueflow.h"
 
 #include <list>
+#include <vector>
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

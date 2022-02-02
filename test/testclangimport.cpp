@@ -15,10 +15,20 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "clangimport.h"
+#include "config.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
 #include "tokenize.h"
 #include "testsuite.h"
+
+#include <cstdint>
+#include <iosfwd>
+#include <list>
+#include <memory>
+#include <string>
+#include <vector>
 
 
 class TestClangImport : public TestFixture {

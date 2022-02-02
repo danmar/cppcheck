@@ -19,6 +19,7 @@
 #include "token.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -30,12 +31,17 @@
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <climits>
+#include <cstdio>
+#include <cstdint>
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <set>
 #include <stack>
+#include <unordered_set>
 #include <utility>
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
@@ -2126,7 +2132,14 @@ bool Token::addValue(const ValueFlow::Value &value)
         });
     }
 
-    // assert(!value.isPossible() || !mImpl->mValues || std::none_of(mImpl->mValues->begin(), mImpl->mValues->end(),
+    // Dont add a value if its already known
+    if (!value.isKnown() && mImpl->mValues &&
+        std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& x) {
+        return x.isKnown() && sameValueType(x, value) && !x.equalValue(value);
+    }))
+        return false;
+
+    // assert(value.isKnown() || !mImpl->mValues || std::none_of(mImpl->mValues->begin(), mImpl->mValues->end(),
     // [&](const ValueFlow::Value& x) {
     //     return x.isKnown() && sameValueType(x, value);
     // }));

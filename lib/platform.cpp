@@ -17,12 +17,16 @@
  */
 
 #include "platform.h"
+
 #include "path.h"
-#include "tinyxml2.h"
+
+#include <algorithm>
 #include <cstdlib>
 #include <cstring>
 #include <limits>
 #include <vector>
+
+#include <tinyxml2.h>
 
 cppcheck::Platform::Platform()
 {

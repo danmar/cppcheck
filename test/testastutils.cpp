@@ -18,6 +18,8 @@
 
 
 #include "astutils.h"
+#include "config.h"
+#include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
@@ -25,6 +27,7 @@
 #include "tokenlist.h"
 
 #include <cstring>
+#include <iosfwd>
 
 class TestAstUtils : public TestFixture {
 public:

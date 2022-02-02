@@ -1058,7 +1058,7 @@ void ResultsTree::suppressSelectedIds()
     }
 
 
-    emit suppressIds(selectedIds.toList());
+    emit suppressIds(selectedIds.values());
 }
 
 void ResultsTree::suppressHash()

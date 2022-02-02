@@ -17,10 +17,15 @@
  */
 
 #include "config.h"
+#include "errortypes.h"
 #include "exprengine.h"
+#include "library.h"
+#include "platform.h"
 #include "settings.h"
 #include "tokenize.h"
 #include "testsuite.h"
+
+#include <iosfwd>
 
 class TestBughuntingChecks : public TestFixture {
 public:

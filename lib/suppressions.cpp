@@ -23,11 +23,13 @@
 #include "path.h"
 #include "utils.h"
 
-#include <tinyxml2.h>
-
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
+#include <cstdlib>
+#include <cstring>
 #include <functional> // std::bind, std::placeholders
+
+#include <tinyxml2.h>
 
 static bool isAcceptedErrorIdChar(char c)
 {

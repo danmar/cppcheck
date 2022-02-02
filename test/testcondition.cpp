@@ -17,16 +17,24 @@
  */
 
 #include "checkcondition.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
+#include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
+#include <iosfwd>
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
+
+#include <tinyxml2.h>
 
 class TestCondition : public TestFixture {
 public:
@@ -3945,6 +3953,14 @@ private:
               "    static Fn logger{ nullptr };\n"
               "    if (logger == nullptr)\n"
               "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9256
+        check("bool f() {\n"
+              "    bool b = false;\n"
+              "    b = true;\n"
+              "    return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

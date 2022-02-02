@@ -35,7 +35,9 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <functional>
 #include <iterator>
+#include <memory>
 #include <numeric> // std::accumulate
 #include <sstream>
 #include <tinyxml2.h>

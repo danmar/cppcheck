@@ -23,6 +23,7 @@
 #include "config.h"
 #include "errortypes.h"
 
+#include <cstddef>
 #include <istream>
 #include <list>
 #include <string>

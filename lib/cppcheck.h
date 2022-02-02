@@ -29,11 +29,13 @@
 #include "importproject.h"
 #include "settings.h"
 
+#include <cstddef>
 #include <functional>
 #include <istream>
 #include <list>
 #include <map>
 #include <string>
+#include <vector>
 
 class Tokenizer;
 

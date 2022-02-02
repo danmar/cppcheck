@@ -23,9 +23,11 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 #include "symboldatabase.h"
+#include "tokenize.h"
+#include "utils.h"
 
+#include <cstddef>
 #include <list>
 #include <map>
 #include <set>
@@ -35,6 +37,14 @@
 class ErrorLogger;
 class Settings;
 class Token;
+
+namespace CTU {
+    class FileInfo;
+}
+
+namespace tinyxml2 {
+    class XMLElement;
+}
 
 /// @addtogroup Checks
 /// @{

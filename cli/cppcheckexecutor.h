@@ -20,13 +20,16 @@
 #define CPPCHECKEXECUTOR_H
 
 #include "color.h"
+#include "config.h"
 #include "errorlogger.h"
 
 #include <cstdio>
 #include <ctime>
+#include <iosfwd>
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 class CppCheck;
 class Library;

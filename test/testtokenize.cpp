@@ -27,9 +27,14 @@
 #include "tokenlist.h"
 
 #include <list>
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
+#include <vector>
+
+#include <simplecpp.h>
 
 struct InternalError;
 
@@ -5906,6 +5911,8 @@ private:
         ASSERT_EQUALS("for(tmpNULL!=tmptmpnext.=;;( tmpa=", testAst("for ( ({ tmp = a; }) ; tmp != NULL; tmp = tmp->next ) {}"));
         ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
         ASSERT_EQUALS("forae*bc.({:(", testAst("for (a *e : {b->c()});"));
+        ASSERT_EQUALS("fori0=iasize.(<i++;;( asize.(", testAst("for (decltype(a.size()) i = 0; i < a.size(); ++i);"));
+        ASSERT_EQUALS("foria:( asize.(", testAst("for(decltype(a.size()) i:a);"));
 
         // for with initializer (c++20)
         ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));
@@ -6882,6 +6889,15 @@ private:
         // #9185
         ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
                                              "  [b = [] { ; }] {};\n"
+                                             "}\n"));
+
+        // #10739
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  std::vector<int> b;\n"
+                                             "};\n"
+                                             "void c() {\n"
+                                             "  a bar;\n"
+                                             "  (decltype(bar.b)::value_type){};\n"
                                              "}\n"));
     }
     void checkIfCppCast() {

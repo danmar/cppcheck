@@ -103,12 +103,17 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <functional>
+#include <initializer_list>
+#include <iosfwd>
 #include <iterator>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <stack>
 #include <string>
@@ -526,7 +531,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
 
         else if (Token::Match(parent, ". %name% (") && parent->astParent() == parent->tokAt(2) &&
                  parent->astOperand1() && parent->astOperand1()->valueType()) {
-            const Library::Container *c = parent->astOperand1()->valueType()->container;
+            const Library::Container* c = getLibraryContainer(parent->astOperand1());
             const Library::Container::Yield yields = c ? c->getYield(parent->strAt(1)) : Library::Container::Yield::NO_YIELD;
             if (yields == Library::Container::Yield::SIZE) {
                 ValueFlow::Value v(value);
@@ -1564,7 +1569,7 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             value.setImpossible();
             setTokenValue(tok->next(), value, settings);
         } else if (Token::Match(tok, ". data|c_str (") && astIsContainerOwned(tok->astOperand1())) {
-            const Library::Container* container = tok->astOperand1()->valueType()->container;
+            const Library::Container* container = getLibraryContainer(tok->astOperand1());
             if (!container)
                 continue;
             if (!container->stdStringLike)
@@ -3383,6 +3388,60 @@ static void valueFlowLifetimeConstructor(Token *tok,
                                          ErrorLogger *errorLogger,
                                          const Settings *settings);
 
+static const Token* getEndOfVarScope(const Variable* var)
+{
+    if (!var)
+        return nullptr;
+    const Scope* innerScope = var->scope();
+    const Scope* outerScope = innerScope;
+    if (var->typeStartToken() && var->typeStartToken()->scope())
+        outerScope = var->typeStartToken()->scope();
+    if (!innerScope && outerScope)
+        innerScope = outerScope;
+    if (!innerScope || !outerScope)
+        return nullptr;
+    if (!innerScope->isExecutable())
+        return nullptr;
+    // If the variable is defined in a for/while initializer then we want to
+    // pick one token after the end so forward analysis can analyze the exit
+    // conditions
+    if (innerScope != outerScope && outerScope->isExecutable() && innerScope->isLocal())
+        return innerScope->bodyEnd->next();
+    return innerScope->bodyEnd;
+}
+
+static const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope = nullptr)
+{
+    const Token* end = nullptr;
+    bool local = false;
+    visitAstNodes(tok, [&](const Token* child) {
+        if (const Variable* var = child->variable()) {
+            local |= var->isLocal();
+            if (var->isLocal() || var->isArgument()) {
+                const Token* varEnd = getEndOfVarScope(var);
+                if (!end || precedes(varEnd, end))
+                    end = varEnd;
+            }
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+    if (!end && defaultScope)
+        end = defaultScope->bodyEnd;
+    if (!end) {
+        const Scope* scope = tok->scope();
+        if (scope)
+            end = scope->bodyEnd;
+        // If there is no local variables then pick the function scope
+        if (!local) {
+            while (scope && scope->isLocal())
+                scope = scope->nestedIn;
+            if (scope && scope->isExecutable())
+                end = scope->bodyEnd;
+        }
+    }
+    return end;
+}
+
 static const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars)
 {
     const Token* endOfVarScope = nullptr;
@@ -4450,7 +4509,7 @@ static std::vector<const Token*> getConditions(const Token* tok, const char* op)
                 return false;
             if (tok2->hasKnownIntValue())
                 return false;
-            if (Token::Match(tok2, "%var%") && !astIsBool(tok2))
+            if (Token::Match(tok2, "%var%|.") && !astIsBool(tok2))
                 return false;
             return true;
         });
@@ -5622,7 +5681,7 @@ struct ConditionHandler {
                 }
                 if (values.empty())
                     return;
-                forward(after, scope->bodyEnd, cond.vartok, values, tokenlist, settings);
+                forward(after, getEndOfExprScope(cond.vartok, scope), cond.vartok, values, tokenlist, settings);
             }
         });
     }
@@ -6838,11 +6897,13 @@ static bool isContainerSizeChanged(nonneg int varId,
 
 static bool isContainerSizeChangedByFunction(const Token* tok, const Settings* settings = nullptr, int depth = 20)
 {
-    if (!tok->valueType() || !tok->valueType()->container)
+    if (!tok->valueType())
+        return false;
+    if (!astIsContainer(tok))
         return false;
     // If we are accessing an element then we are not changing the container size
     if (Token::Match(tok, "%name% . %name% (")) {
-        Library::Container::Yield yield = tok->valueType()->container->getYield(tok->strAt(2));
+        Library::Container::Yield yield = getLibraryContainer(tok)->getYield(tok->strAt(2));
         if (yield != Library::Container::Yield::NO_YIELD)
             return false;
     }
@@ -6903,22 +6964,26 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             return Action::None;
         if (!getValue(tok))
             return Action::None;
-        if (!tok->valueType() || !tok->valueType()->container)
+        if (!tok->valueType())
+            return Action::None;
+        if (!astIsContainer(tok))
             return Action::None;
         const Token* parent = tok->astParent();
+        const Library::Container* container = getLibraryContainer(tok);
 
-        if (tok->valueType()->container->stdStringLike && Token::simpleMatch(parent, "+=") && astIsLHS(tok) && parent->astOperand2()) {
+        if (container->stdStringLike && Token::simpleMatch(parent, "+=") && astIsLHS(tok) && parent->astOperand2()) {
             const Token* rhs = parent->astOperand2();
             if (rhs->tokType() == Token::eString)
                 return Action::Read | Action::Write | Action::Incremental;
-            if (rhs->valueType() && rhs->valueType()->container && rhs->valueType()->container->stdStringLike) {
+            const Library::Container* rhsContainer = getLibraryContainer(rhs);
+            if (rhsContainer && rhsContainer->stdStringLike) {
                 if (std::any_of(rhs->values().begin(), rhs->values().end(), [&](const ValueFlow::Value &rhsval) {
                     return rhsval.isKnown() && rhsval.isContainerSizeValue();
                 }))
                     return Action::Read | Action::Write | Action::Incremental;
             }
         } else if (Token::Match(tok, "%name% . %name% (")) {
-            Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
+            Library::Container::Action action = container->getAction(tok->strAt(2));
             if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP) {
                 std::vector<const Token*> args = getArguments(tok->tokAt(3));
                 if (args.size() < 2)
@@ -6935,15 +7000,19 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
             return;
         if (!tok->astParent())
             return;
-        const Token* parent = tok->astParent();
-        if (!tok->valueType() || !tok->valueType()->container)
+        if (!tok->valueType())
             return;
+        if (!astIsContainer(tok))
+            return;
+        const Token* parent = tok->astParent();
+        const Library::Container* container = getLibraryContainer(tok);
 
-        if (tok->valueType()->container->stdStringLike && Token::simpleMatch(parent, "+=") && parent->astOperand2()) {
+        if (container->stdStringLike && Token::simpleMatch(parent, "+=") && parent->astOperand2()) {
             const Token* rhs = parent->astOperand2();
+            const Library::Container* rhsContainer = getLibraryContainer(rhs);
             if (rhs->tokType() == Token::eString)
                 val->intvalue += Token::getStrLength(rhs);
-            else if (rhs->valueType() && rhs->valueType()->container && rhs->valueType()->container->stdStringLike) {
+            else if (rhsContainer && rhsContainer->stdStringLike) {
                 for (const ValueFlow::Value &rhsval : rhs->values()) {
                     if (rhsval.isKnown() && rhsval.isContainerSizeValue()) {
                         val->intvalue += rhsval.intvalue;
@@ -6951,7 +7020,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
                 }
             }
         } else if (Token::Match(tok, "%name% . %name% (")) {
-            Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
+            Library::Container::Action action = container->getAction(tok->strAt(2));
             if (action == Library::Container::Action::PUSH)
                 val->intvalue++;
             if (action == Library::Container::Action::POP)
@@ -7159,7 +7228,7 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
         if (!astIsContainer(tok))
             continue;
         if (Token::Match(tok->astParent(), ". %name% (")) {
-            Library::Container::Yield yield = tok->valueType()->container->getYield(tok->astParent()->strAt(1));
+            Library::Container::Yield yield = getLibraryContainer(tok)->getYield(tok->astParent()->strAt(1));
             ValueFlow::Value v(0);
             v.setKnown();
             if (yield == Library::Container::Yield::START_ITERATOR) {

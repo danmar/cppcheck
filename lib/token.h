@@ -27,12 +27,15 @@
 #include "templatesimplifier.h"
 #include "utils.h"
 
+#include <cstdint>
 #include <cstddef>
 #include <functional>
 #include <list>
 #include <memory>
 #include <ostream>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Enumerator;
@@ -43,8 +46,8 @@ class Type;
 class ValueType;
 class Variable;
 class TokenList;
-
 class ConstTokenRange;
+class Token;
 
 /**
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.

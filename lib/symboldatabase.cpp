@@ -21,10 +21,13 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
+#include "standards.h"
+#include "templatesimplifier.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -37,8 +40,10 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <stack>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -716,6 +721,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
             // syntax error?
             if (!scope)
+                mTokenizer->syntaxError(tok);
+            // End of scope or list should be handled above
+            if (tok->str() == "}")
                 mTokenizer->syntaxError(tok);
         }
     }
@@ -3046,11 +3054,9 @@ void SymbolDatabase::addNewFunction(Scope **scope, const Token **tok)
     // find start of function '{'
     bool foundInitList = false;
     while (tok1 && tok1->str() != "{" && tok1->str() != ";") {
-        if (tok1->link() && Token::Match(tok1, "(|<")) {
+        if (tok1->link() && Token::Match(tok1, "(|[|<")) {
             tok1 = tok1->link();
-        } else if (foundInitList &&
-                   Token::Match(tok1, "%name%|> {") &&
-                   Token::Match(tok1->linkAt(1), "} ,|{")) {
+        } else if (foundInitList && Token::Match(tok1, "%name%|> {") && Token::Match(tok1->linkAt(1), "} ,|{")) {
             tok1 = tok1->linkAt(1);
         } else {
             if (tok1->str() == ":")
@@ -5170,9 +5176,19 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             // Try to evaluate the apparently more complex expression
             else if (check->isCPP()) {
                 const Token *vartok = arguments[j];
+                if (vartok->str() == ".") {
+                    const Token* rml = nextAfterAstRightmostLeaf(vartok);
+                    if (rml)
+                        vartok = rml->previous();
+                }
                 while (vartok->isUnaryOp("&") || vartok->isUnaryOp("*"))
                     vartok = vartok->astOperand1();
-                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), vartok->variable(), funcarg);
+                const Variable* var = vartok->variable();
+                // smart pointer deref?
+                if (var && vartok->astParent() && vartok->astParent()->str() == "*" &&
+                    var->isSmartPointer() && var->valueType() && var->valueType()->smartPointerTypeToken)
+                    var = var->valueType()->smartPointerTypeToken->variable();
+                ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), var, funcarg);
                 if (res == ValueType::MatchResult::SAME)
                     ++same;
                 else if (res == ValueType::MatchResult::FALLBACK1)
@@ -5858,7 +5874,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             Token *autoTok = nullptr;
             if (Token::Match(var1Tok->tokAt(-2), ";|{|}|(|const|constexpr auto"))
                 autoTok = var1Tok->previous();
-            else if (Token::Match(var1Tok->tokAt(-3), ";|{|}|(|const|constexpr auto *"))
+            else if (Token::Match(var1Tok->tokAt(-3), ";|{|}|(|const|constexpr auto *|&|&&"))
                 autoTok = var1Tok->tokAt(-2);
             if (autoTok) {
                 ValueType vt(*vt2);
@@ -6542,8 +6558,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             }
 
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
-                // TODO: use specified size_t type
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
+                if (mSettings->platformType == cppcheck::Platform::Win64)
+                    valuetype.type = ValueType::Type::LONGLONG;
+
                 valuetype.originalTypeName = "size_t";
                 setValueType(tok, valuetype);
 

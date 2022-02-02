@@ -24,11 +24,15 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenlist.h"
+#include "utils.h"
 
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
 #include <stack>
+#include <utility>
+#include <vector>
 
 class Settings;
 class SymbolDatabase;

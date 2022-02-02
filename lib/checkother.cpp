@@ -20,8 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checkother.h"
 
-#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
-
 #include "astutils.h"
 #include "library.h"
 #include "mathlib.h"
@@ -33,11 +31,18 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
+
 #include <algorithm> // find_if()
+#include <cctype>
 #include <list>
 #include <map>
+#include <memory>
+#include <ostream>
+#include <set>
 #include <utility>
-#include <cctype>
+#include <numeric>
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -479,16 +484,21 @@ void CheckOther::checkRedundantAssignment()
                     // todo: check static variables
                     continue;
 
-                // If there is a custom assignment operator => this is inconclusive
                 bool inconclusive = false;
-                if (mTokenizer->isCPP() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->typeScope) {
-                    const std::string op = "operator" + tok->str();
-                    for (const Function &f : tok->astOperand1()->valueType()->typeScope->functionList) {
-                        if (f.name() == op) {
-                            inconclusive = true;
-                            break;
+                if (mTokenizer->isCPP() && tok->astOperand1()->valueType()) {
+                    // If there is a custom assignment operator => this is inconclusive
+                    if (tok->astOperand1()->valueType()->typeScope) {
+                        const std::string op = "operator" + tok->str();
+                        for (const Function& f : tok->astOperand1()->valueType()->typeScope->functionList) {
+                            if (f.name() == op) {
+                                inconclusive = true;
+                                break;
+                            }
                         }
                     }
+                    // assigning a smart pointer has side effects
+                    if (tok->astOperand1()->valueType()->type == ValueType::SMART_POINTER)
+                        break;
                 }
                 if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                     continue;
@@ -1145,6 +1155,13 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
         return 0;
 
     int cumulatedSize = 0;
+    const bool isUnion = type->classScope->type == Scope::ScopeType::eUnion;
+    const auto accumulateSize = [](int& cumulatedSize, int size, bool isUnion) -> void {
+        if (isUnion)
+            cumulatedSize = std::max(cumulatedSize, size);
+        else
+            cumulatedSize += size;
+    };
     for (const Variable&var : type->classScope->varlist) {
         int size = 0;
         if (var.isStatic())
@@ -1159,9 +1176,11 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
         if (var.isArray())
-            cumulatedSize += size * var.dimension(0);
-        else
-            cumulatedSize += size;
+            size *= std::accumulate(var.dimensions().begin(), var.dimensions().end(), 1, [](int v, const Dimension& d) {
+                return v *= d.num;
+            });
+
+        accumulateSize(cumulatedSize, size, isUnion);
     }
     for (const Type::BaseInfo &baseInfo : type->derivedFrom) {
         if (baseInfo.type && baseInfo.type->classScope)
@@ -3262,6 +3281,8 @@ void CheckOther::checkShadowVariables()
             if (!shadowed)
                 continue;
             if (scope.type == Scope::eFunction && scope.className == var.name())
+                continue;
+            if (functionScope->function && functionScope->function->isStatic() && shadowed->variable() && !shadowed->variable()->isLocal())
                 continue;
             shadowError(var.nameToken(), shadowed, (shadowed->varId() != 0) ? "variable" : "function");
         }

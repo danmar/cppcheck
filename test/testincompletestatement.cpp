@@ -17,13 +17,19 @@
  */
 
 #include "checkother.h"
+#include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
+#include <iosfwd>
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestIncompleteStatement : public TestFixture {
 public:

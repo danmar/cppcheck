@@ -31,6 +31,8 @@
 #include "valueflow.h"
 
 #include <iomanip>
+#include <ostream>
+#include <unordered_map>
 #include <vector>
 
 //---------------------------------------------------------------------------
@@ -154,7 +156,7 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
         errmsg << " The value is 0 or 1 (boolean) but the valid values are '" << validstr << "'.";
     if (invalidValue)
         reportError(getErrorPath(tok, invalidValue, "Invalid argument"),
-                    invalidValue->errorSeverity() ? Severity::error : Severity::warning,
+                    invalidValue->errorSeverity() && invalidValue->isKnown() ? Severity::error : Severity::warning,
                     "invalidFunctionArg",
                     errmsg.str(),
                     CWE628,

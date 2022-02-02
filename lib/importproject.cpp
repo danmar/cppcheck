@@ -20,18 +20,25 @@
 
 #include "path.h"
 #include "settings.h"
+#include "standards.h"
 #include "suppressions.h"
-#include "tinyxml2.h"
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
-#define PICOJSON_USE_INT64
-#include <picojson.h>
 
+#include <algorithm>
+#include <cstdlib>
 #include <cstring>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
+#include <iostream>
+#include <iterator>
+
 #include <utility>
 
+#include <tinyxml2.h>
+
+#define PICOJSON_USE_INT64
+#include <picojson.h>
 
 ImportProject::ImportProject()
 {
@@ -538,6 +545,7 @@ namespace {
             for (const tinyxml2::XMLElement *e1 = idg->FirstChildElement(); e1; e1 = e1->NextSiblingElement()) {
                 if (std::strcmp(e1->Name(), "ClCompile") != 0)
                     continue;
+                enhancedInstructionSet = "StreamingSIMDExtensions2";
                 for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
                     if (e->GetText()) {
                         if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
@@ -555,6 +563,8 @@ namespace {
                                 cppstd = Standards::CPP20;
                             else if (std::strcmp(e->GetText(), "stdcpplatest") == 0)
                                 cppstd = Standards::CPPLatest;
+                        } else if (std::strcmp(e->Name(), "EnableEnhancedInstructionSet") == 0) {
+                            enhancedInstructionSet = e->GetText();
                         }
                     }
                 }
@@ -592,6 +602,7 @@ namespace {
             return false;
         }
         std::string condition;
+        std::string enhancedInstructionSet;
         std::string preprocessorDefinitions;
         std::string additionalIncludePaths;
         Standards::cppstd_t cppstd = Standards::CPPLatest;
@@ -796,6 +807,16 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 else if (i.cppstd == Standards::CPP20)
                     fs.standard = "c++20";
                 fs.defines += ';' + i.preprocessorDefinitions;
+                if (i.enhancedInstructionSet == "StreamingSIMDExtensions")
+                    fs.defines += ";__SSE__";
+                else if (i.enhancedInstructionSet == "StreamingSIMDExtensions2")
+                    fs.defines += ";__SSE2__";
+                else if (i.enhancedInstructionSet == "AdvancedVectorExtensions")
+                    fs.defines += ";__AVX__";
+                else if (i.enhancedInstructionSet == "AdvancedVectorExtensions2")
+                    fs.defines += ";__AVX2__";
+                else if (i.enhancedInstructionSet == "AdvancedVectorExtensions512")
+                    fs.defines += ";__AVX512__";
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
             fs.setDefines(fs.defines);

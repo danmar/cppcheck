@@ -21,18 +21,23 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "path.h"
 #include "settings.h"
 #include "standards.h"
 #include "token.h"
 
-#include <exception>
-#include <simplecpp.h>
+#include <algorithm>
 #include <cctype>
 #include <cstring>
+#include <exception>
+#include <functional>
+#include <utility>
 #include <set>
 #include <stack>
+
+#include <simplecpp.h>
 
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
@@ -784,7 +789,13 @@ static void compileTerm(Token *&tok, AST_state& state)
                 tok = tok->tokAt(2);
             }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
+            Token* tok2 = tok;
             tok = skipDecl(tok);
+            if (Token::simpleMatch(tok2, "decltype (")) {
+                Token* tok3 = tok2->next();
+                AST_state state1(state.cpp);
+                compileExpression(tok3, state1);
+            }
             bool repeat = true;
             while (repeat) {
                 repeat = false;
@@ -1424,6 +1435,11 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         }
 
         Token *tok2 = skipDecl(tok->tokAt(2));
+        if (Token::simpleMatch(tok->tokAt(2), "decltype (")) {
+            Token* tok3 = tok->tokAt(4);
+            AST_state state1(cpp);
+            compileExpression(tok3, state1);
+        }
         Token *init1 = nullptr;
         Token * const endPar = tok->next()->link();
         if (tok2 == tok->tokAt(2) && Token::Match(tok2, "%op%|(")) {

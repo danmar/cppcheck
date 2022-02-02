@@ -22,41 +22,30 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Install missing software on ubuntu 18.04
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          sudo apt-get install z3 libz3-dev
+          sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qt5-default
+
+      - name: Fix missing z3_version.h
         if: matrix.os == 'ubuntu-18.04'
         run: |
-          sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
           cp externals/z3_version_old.h externals/z3_version.h
-
-      - name: Install missing software on ubuntu 20.04
-        if: matrix.os == 'ubuntu-20.04' 
-        run: |
-          sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
 
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
-          brew install coreutils z3
-          cp externals/z3_version_old.h externals/z3_version.h
+          brew install coreutils z3 qt@5
 
       - name: Install missing Python packages
         run: |
           python -m pip install pip --upgrade
           python -m pip install pytest
 
-      # TODO: Qt installation often fails with timeout errors on macos
-      - name: Install Qt
-        if: contains(matrix.os, 'ubuntu')
-        uses: jurplel/install-qt-action@v2
-        with:
-          version: '5.15.2'
-          modules: 'qtcharts'
-
-      - name: Test CMake build (with GUI)
+      - name: CMake build on ubuntu (with GUI)
         if: contains(matrix.os, 'ubuntu')
         run: |
           mkdir cmake.output
@@ -65,12 +54,12 @@ jobs:
           cmake --build . -- -j$(nproc)
           cd ..
 
-      - name: Test CMake build (without GUI)
+      - name: CMake build on macos (with GUI)
         if: contains(matrix.os, 'macos')
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On ..
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 ..
           cmake --build . -- -j$(nproc)
           cd ..
 
@@ -190,8 +179,14 @@ jobs:
           # TODO: requires X session
           #./test-xmlreportv2
 
-      - name: Generate Qt help file on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+      - name: Generate Qt help file on ubuntu 18.04
+        if: matrix.os == 'ubuntu-18.04'
+        run: |
+          pushd gui/help
+          qcollectiongenerator online-help.qhcp -o online-help.qhc
+
+      - name: Generate Qt help file on ubuntu 20.04
+        if: matrix.os == 'ubuntu-20.04'
         run: |
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
