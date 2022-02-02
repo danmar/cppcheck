@@ -43,6 +43,7 @@ class Token;
 class TokenList;
 class ValueType;
 class Variable;
+class Scope;
 
 template<class T>
 class ValuePtr;
@@ -519,8 +520,6 @@ CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok,
                                                                bool inconclusive = false,
                                                                MathLib::bigint path = 0);
 
-const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars, bool smallestScope = true);
-
-std::vector<const Variable*> getVariables(const Token* tok);
+const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope = nullptr, bool smallest = true);
 
 #endif // valueflowH
