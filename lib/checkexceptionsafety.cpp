@@ -21,9 +21,12 @@
 
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
 
+#include <list>
 #include <set>
 #include <utility>
+#include <vector>
 
 //---------------------------------------------------------------------------
 

@@ -27,9 +27,14 @@
 #include "tokenlist.h"
 
 #include <list>
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
+#include <vector>
+
+#include <simplecpp.h>
 
 struct InternalError;
 
@@ -6884,6 +6889,15 @@ private:
         // #9185
         ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
                                              "  [b = [] { ; }] {};\n"
+                                             "}\n"));
+
+        // #10739
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  std::vector<int> b;\n"
+                                             "};\n"
+                                             "void c() {\n"
+                                             "  a bar;\n"
+                                             "  (decltype(bar.b)::value_type){};\n"
                                              "}\n"));
     }
     void checkIfCppCast() {

@@ -16,13 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <tinyxml2.h>
-
+#include "check.h"
 #include "checkclass.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <iosfwd>
+#include <list>
+#include <string>
+#include <vector>
+
+#include <tinyxml2.h>
 
 
 class TestClass : public TestFixture {
@@ -46,6 +54,12 @@ private:
                                    "    <dealloc>free</dealloc>\n"
                                    "  </memory>\n"
                                    "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
+                                   "  <container id=\"stdVector\" startPattern=\"std :: vector &lt;\" itEndPattern=\"&gt; :: const_iterator\">\n"
+                                   "    <access>\n"
+                                   "      <function name=\"begin\" yields=\"start-iterator\"/>\n"
+                                   "      <function name=\"end\" yields=\"end-iterator\"/>\n"
+                                   "    </access>\n"
+                                   "  </container>\n"
                                    "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
@@ -175,6 +189,8 @@ private:
         TEST_CASE(const70); // variadic template can receive more arguments than in its definition
         TEST_CASE(const71); // ticket #10146
         TEST_CASE(const72); // ticket #10520
+        TEST_CASE(const73); // ticket #10735
+        TEST_CASE(const74); // ticket #10671
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -5886,6 +5902,42 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
     }
 
+    void const73() {
+        checkConst("struct A {\n"
+                   "    int* operator[](int i);\n"
+                   "    const int* operator[](int i) const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    A a;\n"
+                   "    void f(int j) {\n"
+                   "        int* p = a[j];\n"
+                   "        *p = 0;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n" // #10758
+                   "    T* h;\n"
+                   "    void f(); \n"
+                   "};\n"
+                   "void S::f() {\n"
+                   "    char* c = h->x[y];\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n", errout.str());
+    }
+
+    void const74() { // #10671
+        checkConst("class A {\n"
+                   "    std::vector<std::string> m_str;\n"
+                   "public:\n"
+                   "    A() {}\n"
+                   "    void bar(void) {\n"
+                   "        for(std::vector<std::string>::const_iterator it = m_str.begin(); it != m_str.end(); ++it) {;}\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'A::bar' can be const.\n", errout.str());
+    }
+
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
@@ -6692,12 +6744,11 @@ private:
                    "    void f(const char* const (&StrArr)[N]);\n"
                    "};\n"
                    "template<size_t N>\n"
-                   "void S::f(const std::array<std::string_view, N>&sv) {\n"
+                   "void S::f(const std::array<std::string_view, N>& sv) {\n"
                    "    const char* ptrs[N]{};\n"
                    "    return f(ptrs);\n"
                    "}\n"
-                   "template void S::f(const std::array<std::string_view, 3>&sv);\n"
-                   "\n");
+                   "template void S::f(const std::array<std::string_view, 3>& sv);\n");
         ASSERT_EQUALS("", errout.str());
     }
 

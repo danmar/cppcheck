@@ -17,6 +17,7 @@
  */
 
 #include "scratchpad.h"
+
 #include "mainwindow.h"
 
 ScratchPad::ScratchPad(MainWindow& mainWindow)

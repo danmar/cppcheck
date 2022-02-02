@@ -20,17 +20,22 @@
 #include "checknullpointer.h"
 #include "config.h"
 #include "ctu.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestNullPointer : public TestFixture {
 public:
@@ -2688,6 +2693,16 @@ private:
               "  if (addr == &x->y.z[0]) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        checkP("typedef int Count;\n" // #10018
+               "#define offsetof(TYPE, MEMBER) ((Count) & ((TYPE*)0)->MEMBER)\n"
+               "struct S {\n"
+               "    int a[20];\n"
+               "};\n"
+               "int g(int i) {\n"
+               "    return offsetof(S, a[i]);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointerSwitch() { // #2626
@@ -3501,11 +3516,13 @@ private:
 
         check("std::string f() {\n" // #9827
               "  char* p = NULL;\n"
-              "  const int rc = ::g(p);\n"
+              "  int r = g(p);\n"
+              "  if (!r)\n"
+              "    return \"\";\n"
               "  std::string s(p);\n"
               "  return s;\n"
               "}\n", /*inconclusive*/ true);
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (warning, inconclusive) Possible null pointer dereference: p\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointerStdStream() {

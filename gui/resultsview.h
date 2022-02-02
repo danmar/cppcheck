@@ -20,10 +20,10 @@
 #ifndef RESULTSVIEW_H
 #define RESULTSVIEW_H
 
+#include "ui_resultsview.h"
 
 #include "report.h"
 #include "showtypes.h"
-#include "ui_resultsview.h"
 
 class ErrorItem;
 class ApplicationList;

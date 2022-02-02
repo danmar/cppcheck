@@ -17,11 +17,15 @@
  */
 
 #include "checkunusedvar.h"
+#include "config.h"
+#include "errortypes.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
+#include <list>
 #include <string>
 
 class TestUnusedVar : public TestFixture {
@@ -62,6 +66,7 @@ private:
         TEST_CASE(structmember_sizeof);
         TEST_CASE(structmember16); // #10485
         TEST_CASE(structmember17); // #10591
+        TEST_CASE(structmember18); // #10684
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -141,6 +146,7 @@ private:
         TEST_CASE(localvaralias16);
         TEST_CASE(localvaralias17); // ticket #8911
         TEST_CASE(localvaralias18); // ticket #9234 - iterator
+        TEST_CASE(localvaralias19); // ticket #9828
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -177,6 +183,7 @@ private:
         TEST_CASE(localvarStruct10);
         TEST_CASE(localvarStruct11); // 10095
         TEST_CASE(localvarStruct12); // #10495
+        TEST_CASE(localvarStruct13); // #10398
         TEST_CASE(localvarStructArray);
         TEST_CASE(localvarUnion1);
 
@@ -1599,6 +1606,24 @@ private:
                                "    g(t);\n"
                                "};\n");
         TODO_ASSERT_EQUALS("", "[test.cpp:1]: (style) struct member 'T::i' is never used.\n", errout.str()); // due to removeMacroInClassDef()
+    }
+
+    void structmember18() { // #10684
+        checkStructMemberUsage("struct S { uint8_t padding[500]; };\n"
+                               "static S s = { 0 };\n"
+                               "uint8_t f() {\n"
+                               "    uint8_t* p = (uint8_t*)&s;\n"
+                               "    return p[10];\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { uint8_t padding[500]; };\n"
+                               "uint8_t f(const S& s) {\n"
+                               "    std::cout << &s;\n"
+                               "    auto p = reinterpret_cast<const uint8_t*>(&s);\n"
+                               "    return p[10];\n"
+                               "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
@@ -4388,6 +4413,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvaralias19() { // #9828
+        functionVariableUsage("void f() {\n"
+                              "    bool b0{}, b1{};\n"
+                              "    struct {\n"
+                              "        bool* pb;\n"
+                              "        int val;\n"
+                              "    } Map[] = { {&b0, 0}, {&b1, 1} };\n"
+                              "    b0 = true;\n"
+                              "    for (auto & m : Map)\n"
+                              "        if (m.pb && *m.pb)\n"
+                              "            m.val = 1;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void localvarasm() {
 
         functionVariableUsage("void foo(int &b)\n"
@@ -4645,6 +4685,23 @@ private:
                               "    S s;\n"
                               "    s.Ref() = true;\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvarStruct13() { // #10398
+        functionVariableUsage("int f() {\n"
+                              "    std::vector<std::string> Mode;\n"
+                              "    Info Block = {\n"
+                              "        {\n"
+                              "            { &Mode  },\n"
+                              "            { &Level }\n"
+                              "        }\n"
+                              "    };\n"
+                              "    Mode.resize(N);\n"
+                              "    for (int i = 0; i < N; ++i)\n"
+                              "        Mode[i] = \"abc\";\n"
+                              "    return Save(&Block);\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5743,6 +5800,17 @@ private:
                               "    std::array<int, 1> a;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Unused variable: a\n", errout.str());
+
+        functionVariableUsage("class A {};\n" // #9471
+                              "    namespace std {\n"
+                              "    template<>\n"
+                              "    struct hash<A> {};\n"
+                              "}\n"
+                              "char f() {\n"
+                              "    std::string hash = \"-\";\n"
+                              "    return hash[0];\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarFuncPtr() {

@@ -21,15 +21,23 @@
 #include "checkbufferoverrun.h"
 #include "config.h"
 #include "ctu.h"
+#include "errortypes.h"
+#include "standards.h"
 #include "library.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
+#include <map>
 #include <list>
-#include <simplecpp.h>
 #include <string>
+#include <utility>
+#include <vector>
+
+#include <simplecpp.h>
+
 #include <tinyxml2.h>
 
 class TestBufferOverrun : public TestFixture {

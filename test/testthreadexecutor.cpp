@@ -16,11 +16,14 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
 
+#include <cstddef>
 #include <map>
+#include <ostream>
 #include <string>
 #include <utility>
 

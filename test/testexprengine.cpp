@@ -25,7 +25,12 @@
 #include "tokenize.h"
 #include "testsuite.h"
 
+#include <algorithm>
+#include <cstddef>
+#include <istream>
+#include <map>
 #include <string>
+#include <vector>
 
 class TestExprEngine : public TestFixture {
 public:

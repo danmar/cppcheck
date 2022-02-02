@@ -17,6 +17,7 @@
  */
 
 #include "codeeditstylecontrols.h"
+
 #include <QColorDialog>
 
 SelectColorButton::SelectColorButton(QWidget* parent) :

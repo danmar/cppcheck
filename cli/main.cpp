@@ -62,7 +62,12 @@
 #include "cppcheckexecutor.h"
 
 #ifdef NDEBUG
+#include "errortypes.h"
+
+#include <cstdlib>
+#include <exception>
 #include <iostream>
+#include <string>
 #endif
 
 #ifdef _WIN32

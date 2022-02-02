@@ -35,6 +35,10 @@ class Function;
 class Settings;
 class Tokenizer;
 
+namespace CTU {
+    class FileInfo;
+}
+
 /// @addtogroup Checks
 /** @brief Check for functions never called */
 /// @{

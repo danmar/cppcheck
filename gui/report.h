@@ -19,9 +19,9 @@
 #ifndef REPORT_H
 #define REPORT_H
 
+#include <QFile>
 #include <QObject>
 #include <QString>
-#include <QFile>
 
 class ErrorItem;
 

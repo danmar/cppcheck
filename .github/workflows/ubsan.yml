@@ -9,23 +9,32 @@ jobs:
 
     runs-on: ubuntu-20.04
 
+    container:
+      image: "ubuntu:21.10"
+
     env:
       UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
 
     steps:
       - uses: actions/checkout@v2
 
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
       - name: Install missing software on ubuntu
         run: |
-          sudo apt-get update
-          sudo apt-get install libz3-4 libz3-dev
+          apt-get update
+          apt-get install -y make libz3-dev libpcre3-dev
+          apt-get install -y clang-13
 
       - name: Build
         run: make -j$(nproc) cppcheck testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes VERIFY=1
         env:
-          CC: clang
-          CXX: clang++
-          CXXFLAGS: "-fsanitize=undefined -fsanitize=nullability -fno-sanitize=signed-integer-overflow -O1 -g3 -DCPPCHK_GLIBCXX_DEBUG"
+          CC: clang-13
+          CXX: clang++-13
+          CXXFLAGS: "-fsanitize=undefined -fsanitize=nullability -fno-sanitize=signed-integer-overflow -O2 -g3 -DCPPCHK_GLIBCXX_DEBUG"
           CPPFLAGS: "-DCHECK_INTERNAL"
 
       - name: Run tests
@@ -37,7 +46,7 @@ jobs:
           ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings gui/*.cpp
           ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings test/*.cpp tools
 
-# This takes too long time right now
+# TODO: This does takes too long to run
 #      - name: Bughunting lib
 #        run: ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
 

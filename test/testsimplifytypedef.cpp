@@ -17,6 +17,8 @@
  */
 
 
+#include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -24,7 +26,12 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <map>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <simplecpp.h>
 
 

@@ -18,9 +18,11 @@
 
 #include "utils.h"
 
-#include <utility>
-#include <stack>
 #include <cctype>
+#include <iterator>
+#include <memory>
+#include <stack>
+#include <utility>
 
 
 int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)

@@ -20,10 +20,11 @@
 #ifndef RESULTSTREE_H
 #define RESULTSTREE_H
 
-#include <QTreeView>
-#include <QStandardItemModel>
 #include "errortypes.h"
 #include "showtypes.h"
+
+#include <QStandardItemModel>
+#include <QTreeView>
 
 class ApplicationList;
 class Report;

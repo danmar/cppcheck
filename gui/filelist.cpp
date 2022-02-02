@@ -18,8 +18,9 @@
 
 #include "filelist.h"
 
-#include <QDir>
 #include "pathmatch.h"
+
+#include <QDir>
 
 QStringList FileList::getDefaultFilters()
 {

@@ -16,13 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "testutils.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+#include "valueflow.h"
 
+#include <algorithm>
+#include <iosfwd>
 #include <string>
 #include <vector>
 

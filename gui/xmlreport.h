@@ -19,9 +19,10 @@
 #ifndef XML_REPORT_H
 #define XML_REPORT_H
 
+#include "report.h"
+
 #include <QString>
 #include <QList>
-#include "report.h"
 
 class ErrorItem;
 

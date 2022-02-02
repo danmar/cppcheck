@@ -17,11 +17,15 @@
  */
 
 #include "checktype.h"
+#include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
+#include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 #include <string>
 
 class TestType : public TestFixture {

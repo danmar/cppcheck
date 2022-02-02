@@ -19,12 +19,16 @@
 #ifndef inferH
 #define inferH
 
+#include "config.h"
 #include "mathlib.h"
 #include "valueflow.h"
 
+#include <list>
+#include <string>
+#include <vector>
+
 struct Interval;
-template<class T>
-class ValuePtr;
+template<class T> class ValuePtr;
 
 struct InferModel {
     virtual bool match(const ValueFlow::Value& value) const = 0;

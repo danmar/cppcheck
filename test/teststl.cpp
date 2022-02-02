@@ -17,12 +17,15 @@
  */
 
 #include "checkstl.h"
+#include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
 #include <cstddef>
+#include <iosfwd>
 #include <string>
 
 

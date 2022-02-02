@@ -19,6 +19,7 @@
 #include "printablereport.h"
 
 #include "erroritem.h"
+
 #include <QDir>
 
 PrintableReport::PrintableReport() :

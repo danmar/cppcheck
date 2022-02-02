@@ -33,23 +33,26 @@
 
 #include <algorithm>
 #include <functional>
+#include <initializer_list>
 #include <iterator>
 #include <list>
+#include <map>
+#include <memory>
 #include <set>
 #include <stack>
+#include <type_traits>
+#include <unordered_map>
 #include <utility>
 
 template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
 void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
 {
-    std::stack<T *, std::vector<T *>> tokens;
-    tokens.push(ast);
-    while (!tokens.empty()) {
-        T *tok = tokens.top();
-        tokens.pop();
-        if (!tok)
-            continue;
+    if (!ast)
+        return;
 
+    std::stack<T *, std::vector<T *>> tokens;
+    T *tok = ast;
+    do {
         ChildrenToVisit c = visitor(tok);
 
         if (c == ChildrenToVisit::done)
@@ -64,7 +67,13 @@ void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
             if (t1)
                 tokens.push(t1);
         }
-    }
+
+        if (tokens.empty())
+            break;
+
+        tok = tokens.top();
+        tokens.pop();
+    } while (true);
 }
 
 void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor)
@@ -3314,7 +3323,7 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
     const bool pure = false;
     const bool followVar = false;
     for (const Token *tok = startToken; tok; tok = tok->previous()) {
-        if (tok->str() == "{" && tok->scope()->type == Scope::eFunction)
+        if (tok->str() == "{" && tok->scope()->type == Scope::eFunction && !(tok->astParent() && tok->astParent()->str() == ","))
             break;
 
         if (Token::Match(tok, "%name% (") && !Token::Match(tok, "if|while|for")) {

@@ -19,9 +19,10 @@
 #ifndef TXT_REPORT_H
 #define TXT_REPORT_H
 
+#include "report.h"
+
 #include <QString>
 #include <QTextStream>
-#include "report.h"
 
 /// @addtogroup GUI
 /// @{

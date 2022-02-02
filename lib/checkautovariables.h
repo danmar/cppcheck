@@ -34,6 +34,10 @@ class Tokenizer;
 class ErrorLogger;
 class Variable;
 
+namespace ValueFlow {
+    class Value;
+}
+
 /// @addtogroup Checks
 /** @brief Various small checks for automatic variables */
 /// @{

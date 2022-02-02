@@ -27,12 +27,13 @@
 #include <cstdlib>
 #include <cstring>
 #include <exception>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
 #include <limits>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
+#include <type_traits>
 #include <utility>
 
 #ifdef SIMPLECPP_WINDOWS

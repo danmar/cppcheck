@@ -18,8 +18,8 @@
 
 #include "fileviewdialog.h"
 
-#include <QFile>
 #include <QByteArray>
+#include <QFile>
 #include <QMessageBox>
 #include <QTextEdit>
 

@@ -18,10 +18,13 @@
 
 
 #include "check64bit.h"
+#include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 
 class Test64BitPortability : public TestFixture {
 public:
@@ -140,6 +143,15 @@ private:
               "void g(int i) {\n"
               "    Array a = f();\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #9951
+              "    enum E { E0 };\n"
+              "    std::array<double, 1> g(S::E);\n"
+              "};\n"
+              "void f() {\n"
+              "    std::array<double, 1> a = S::g(S::E::E0);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

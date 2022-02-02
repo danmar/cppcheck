@@ -18,18 +18,18 @@
 
 #include "statsdialog.h"
 
-#include <QPrinter>
+#include "checkstatistics.h"
+#include "common.h"
+#include "projectfile.h"
+
+#include <QClipboard>
 #include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMimeData>
+#include <QPrinter>
 #include <QTextDocument>
 #include <QWidget>
-#include <QClipboard>
-#include <QMimeData>
-
-#include "projectfile.h"
-#include "checkstatistics.h"
-#include "common.h"
 
 static const QString CPPCHECK("cppcheck");
 
@@ -157,7 +157,7 @@ void StatsDialog::pdfExport()
     }
     QPrinter printer(QPrinter::PrinterResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setPaperSize(QPrinter::A4);
+    printer.setPageSize(QPageSize(QPageSize::A4));
     printer.setOutputFileName(fileName);
 
     QTextDocument doc;
