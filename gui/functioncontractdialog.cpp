@@ -17,6 +17,7 @@
  */
 
 #include "functioncontractdialog.h"
+
 #include "ui_functioncontractdialog.h"
 
 static QString formatFunctionName(QString f)

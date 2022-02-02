@@ -18,9 +18,10 @@
 
 #include "xmlreport.h"
 
+#include "report.h"
+
 #include <QFile>
 #include <QXmlStreamReader>
-#include "report.h"
 
 static const char ResultElementName[] = "results";
 static const char VersionAttribute[] = "version";

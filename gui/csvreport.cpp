@@ -18,9 +18,10 @@
 
 #include "csvreport.h"
 
-#include <QDir>
 #include "erroritem.h"
 #include "report.h"
+
+#include <QDir>
 
 CsvReport::CsvReport(const QString &filename) :
     Report(filename)

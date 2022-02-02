@@ -19,11 +19,12 @@
 #ifndef STATSDIALOG_H
 #define STATSDIALOG_H
 
+#include "ui_stats.h"
+
 #include <QDialog>
 #ifdef HAVE_QCHART
 #include <QtCharts>
 #endif
-#include "ui_stats.h"
 
 class ProjectFile;
 class CheckStatistics;

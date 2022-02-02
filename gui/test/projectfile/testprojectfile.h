@@ -16,8 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtTest/QtTest>
 #include <QObject>
+#include <QtTest/QtTest>
 
 class TestProjectFile : public QObject {
     Q_OBJECT

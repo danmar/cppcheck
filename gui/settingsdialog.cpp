@@ -18,18 +18,19 @@
 
 #include "settingsdialog.h"
 
-#include <QWidget>
-#include <QList>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QThread>
-#include <QSettings>
 #include "applicationdialog.h"
 #include "applicationlist.h"
-#include "translationhandler.h"
 #include "codeeditorstyle.h"
 #include "codeeditstyledialog.h"
 #include "common.h"
+#include "translationhandler.h"
+
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QList>
+#include <QSettings>
+#include <QThread>
+#include <QWidget>
 
 SettingsDialog::SettingsDialog(ApplicationList *list,
                                TranslationHandler *translator,

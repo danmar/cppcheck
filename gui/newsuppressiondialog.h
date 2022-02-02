@@ -19,8 +19,9 @@
 #ifndef NEWSUPPRESSIONDIALOG_H
 #define NEWSUPPRESSIONDIALOG_H
 
-#include <QDialog>
 #include "suppressions.h"
+
+#include <QDialog>
 
 namespace Ui {
     class NewSuppressionDialog;

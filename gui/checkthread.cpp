@@ -18,15 +18,16 @@
 
 #include "checkthread.h"
 
+#include "common.h"
+#include "cppcheck.h"
+#include "erroritem.h"
+#include "threadresult.h"
+
 #include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QProcess>
 #include <QSettings>
-#include "erroritem.h"
-#include "threadresult.h"
-#include "cppcheck.h"
-#include "common.h"
 
 static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
 {

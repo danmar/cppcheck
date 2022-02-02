@@ -639,7 +639,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 }
                 // function prototype?
                 else if (declEnd && declEnd->str() == ";") {
-                    if (tok->previous() && tok->previous()->str() == "::" &&
+                    if (tok->astParent() && tok->astParent()->str() == "::" &&
                         Token::Match(declEnd->previous(), "default|delete")) {
                         addClassFunction(&scope, &tok, argStart);
                         continue;
@@ -7098,12 +7098,16 @@ ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const Va
             return ValueType::MatchResult::FALLBACK2;
         return ValueType::MatchResult::NOMATCH; // TODO
     }
-    if (call->pointer > 0 && ((call->constness | func->constness) != func->constness))
-        return ValueType::MatchResult::NOMATCH;
+    if (call->pointer > 0) {
+        if ((call->constness | func->constness) != func->constness)
+            return ValueType::MatchResult::NOMATCH;
+        if (call->constness == 0 && func->constness != 0 && func->reference != Reference::None)
+            return ValueType::MatchResult::NOMATCH;
+    }
     if (call->type != func->type) {
         if (call->type == ValueType::Type::VOID || func->type == ValueType::Type::VOID)
             return ValueType::MatchResult::FALLBACK1;
-        if (call->pointer > 0 && func->pointer > 0)
+        if (call->pointer > 0)
             return func->type == ValueType::UNKNOWN_TYPE ? ValueType::MatchResult::UNKNOWN : ValueType::MatchResult::NOMATCH;
         if (call->isIntegral() && func->isIntegral())
             return call->type < func->type ?

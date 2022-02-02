@@ -20,13 +20,15 @@
 #ifndef THREADHANDLER_H
 #define THREADHANDLER_H
 
-#include <QObject>
-#include <QStringList>
+#include "suppressions.h"
+#include "threadresult.h"
+
+#include <set>
+
 #include <QDateTime>
 #include <QElapsedTimer>
-#include <set>
-#include "threadresult.h"
-#include "suppressions.h"
+#include <QObject>
+#include <QStringList>
 
 class ResultsView;
 class CheckThread;

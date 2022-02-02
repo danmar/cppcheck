@@ -18,13 +18,13 @@
 
 #include "applicationdialog.h"
 
+#include "application.h"
+#include "common.h"
+
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
-
-#include "application.h"
-#include "common.h"
 
 
 ApplicationDialog::ApplicationDialog(const QString &title,

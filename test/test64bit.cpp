@@ -144,6 +144,15 @@ private:
               "    Array a = f();\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #9951
+              "    enum E { E0 };\n"
+              "    std::array<double, 1> g(S::E);\n"
+              "};\n"
+              "void f() {\n"
+              "    std::array<double, 1> a = S::g(S::E::E0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void structmember() {

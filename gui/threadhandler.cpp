@@ -18,13 +18,14 @@
 
 #include "threadhandler.h"
 
-#include <QFileInfo>
-#include <QDebug>
-#include <QSettings>
-#include "common.h"
-#include "settings.h"
 #include "checkthread.h"
+#include "common.h"
 #include "resultsview.h"
+#include "settings.h"
+
+#include <QDebug>
+#include <QFileInfo>
+#include <QSettings>
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent),

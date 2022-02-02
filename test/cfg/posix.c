@@ -268,6 +268,15 @@ void * memleak_mmap2() // #8327
     return NULL;
 }
 
+void * identicalCondition_mmap(int fd, size_t size) // #9940
+{
+    void* buffer = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (buffer == MAP_FAILED) {
+        return NULL;
+    }
+    return buffer;
+}
+
 void resourceLeak_fdopen(int fd)
 {
     // cppcheck-suppress unreadVariable

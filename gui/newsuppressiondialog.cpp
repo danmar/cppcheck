@@ -17,7 +17,9 @@
  */
 
 #include "newsuppressiondialog.h"
+
 #include "ui_newsuppressiondialog.h"
+
 #include "cppcheck.h"
 #include "color.h"
 #include "errorlogger.h"

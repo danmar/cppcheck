@@ -18,13 +18,14 @@
 
 #include "xmlreportv2.h"
 
+#include "cppcheck.h"
+#include "erroritem.h"
+#include "report.h"
+#include "xmlreport.h"
+
+#include <QDebug>
 #include <QDir>
 #include <QXmlStreamWriter>
-#include <QDebug>
-#include "report.h"
-#include "erroritem.h"
-#include "xmlreport.h"
-#include "cppcheck.h"
 
 static const QString ResultElementName = "results";
 static const QString CppcheckElementName = "cppcheck";

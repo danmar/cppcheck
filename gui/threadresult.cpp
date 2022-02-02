@@ -18,10 +18,11 @@
 
 #include "threadresult.h"
 
-#include <QFile>
 #include "common.h"
 #include "erroritem.h"
 #include "errorlogger.h"
+
+#include <QFile>
 
 ThreadResult::ThreadResult() : QObject(), ErrorLogger(), mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
 {

@@ -19,9 +19,10 @@
 #ifndef APPLICATIONDIALOG_H
 #define APPLICATIONDIALOG_H
 
+#include "ui_application.h"
+
 #include <QDialog>
 #include <QString>
-#include "ui_application.h"
 
 class QWidget;
 class Application;

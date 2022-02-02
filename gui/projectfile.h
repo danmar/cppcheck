@@ -19,14 +19,14 @@
 #ifndef PROJECT_FILE_H
 #define PROJECT_FILE_H
 
+#include "settings.h"
+#include "suppressions.h"
+
 #include <map>
+
 #include <QObject>
 #include <QString>
 #include <QStringList>
-
-#include "suppressions.h"
-
-#include <settings.h>
 
 class QXmlStreamReader;
 class QXmlStreamWriter;

@@ -18,10 +18,11 @@
 
 
 #include "common.h"
+
 #include <QCoreApplication>
-#include <QSettings>
-#include <QFileInfo>
 #include <QDir>
+#include <QFileInfo>
+#include <QSettings>
 
 
 QString getPath(const QString &type)
