@@ -19,9 +19,10 @@
 #ifndef CSV_REPORT_H
 #define CSV_REPORT_H
 
+#include "report.h"
+
 #include <QString>
 #include <QTextStream>
-#include "report.h"
 
 /// @addtogroup GUI
 /// @{

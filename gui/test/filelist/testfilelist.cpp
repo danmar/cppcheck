@@ -16,11 +16,13 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
-#include <QDir>
-#include <QString>
 #include "testfilelist.h"
+
 #include "filelist.h"
+
+#include <QDir>
+#include <QObject>
+#include <QString>
 
 void TestFileList::addFile()
 {

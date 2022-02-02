@@ -17,16 +17,18 @@
  */
 
 #include "librarydialog.h"
+
 #include "ui_librarydialog.h"
+
+#include "common.h"
 #include "libraryaddfunctiondialog.h"
 #include "libraryeditargdialog.h"
-#include "common.h"
 #include "path.h"
 
 #include <QFile>
 #include <QFileDialog>
-#include <QTextStream>
 #include <QMessageBox>
+#include <QTextStream>
 
 // TODO: get/compare functions from header
 

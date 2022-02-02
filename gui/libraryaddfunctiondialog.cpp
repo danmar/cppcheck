@@ -17,6 +17,7 @@
  */
 
 #include "libraryaddfunctiondialog.h"
+
 #include "ui_libraryaddfunctiondialog.h"
 
 #include <QRegExp>

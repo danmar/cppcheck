@@ -18,9 +18,10 @@
 
 #include "codeeditor.h"
 
-#include <QShortcut>
-#include <QPainter>
 #include "codeeditorstyle.h"
+
+#include <QPainter>
+#include <QShortcut>
 
 
 Highlighter::Highlighter(QTextDocument *parent,

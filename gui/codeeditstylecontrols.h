@@ -22,10 +22,10 @@
 #ifndef CODEEDITORSTYLECONTROLS_H
 #define CODEEDITORSTYLECONTROLS_H
 
-#include <QPushButton>
-#include <QComboBox>
 #include <QColor>
+#include <QComboBox>
 #include <QFont>
+#include <QPushButton>
 
 class SelectColorButton : public QPushButton {
     Q_OBJECT

@@ -17,6 +17,7 @@
  */
 
 #include "erroritem.h"
+
 #include "common.h"
 
 QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation &loc)

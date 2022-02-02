@@ -19,11 +19,11 @@
 #ifndef CHECKSTATISTICS_H
 #define CHECKSTATISTICS_H
 
-#include <QObject>
-#include <QMap>
-#include <QString>
-
 #include "showtypes.h"
+
+#include <QMap>
+#include <QObject>
+#include <QString>
 
 /// @addtogroup GUI
 /// @{

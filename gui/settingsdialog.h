@@ -20,8 +20,9 @@
 #ifndef SETTINGSDIALOG_H
 #define SETTINGSDIALOG_H
 
-#include <QDialog>
 #include "ui_settings.h"
+
+#include <QDialog>
 
 class QSettings;
 class QWidget;

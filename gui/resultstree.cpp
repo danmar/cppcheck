@@ -18,34 +18,35 @@
 
 #include "resultstree.h"
 
-#include <QApplication>
-#include <QDebug>
-#include <QList>
-#include <QMap>
-#include <QVariant>
-#include <QMenu>
-#include <QSignalMapper>
-#include <QProcess>
-#include <QDir>
-#include <QMessageBox>
-#include <QAction>
-#include <QFileInfo>
-#include <QFileDialog>
-#include <QClipboard>
-#include <QDesktopServices>
-#include <QUrl>
-#include <QKeyEvent>
-#include <QSettings>
+#include "application.h"
+#include "applicationlist.h"
 #include "common.h"
 #include "erroritem.h"
-#include "applicationlist.h"
-#include "report.h"
-#include "application.h"
+#include "path.h"
 #include "projectfile.h"
+#include "report.h"
 #include "showtypes.h"
 #include "threadhandler.h"
-#include "path.h"
 #include "xmlreportv2.h"
+
+#include <QAction>
+#include <QApplication>
+#include <QClipboard>
+#include <QDebug>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QKeyEvent>
+#include <QList>
+#include <QMap>
+#include <QMenu>
+#include <QMessageBox>
+#include <QProcess>
+#include <QSettings>
+#include <QSignalMapper>
+#include <QUrl>
+#include <QVariant>
 
 static const char COLUMN[] = "column";
 static const char CWE[] = "cwe";

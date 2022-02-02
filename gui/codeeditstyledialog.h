@@ -19,8 +19,9 @@
 #ifndef CODEEDITSTYLEDIALOG_H
 #define CODEEDITSTYLEDIALOG_H
 
-#include <QDialog>
 #include "codeeditorstyle.h"
+
+#include <QDialog>
 
 class CodeEditor;
 class SelectColorButton;

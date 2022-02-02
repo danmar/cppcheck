@@ -19,10 +19,11 @@
 #ifndef PLATFORMS_H
 #define PLATFORMS_H
 
+#include "settings.h"
+
+#include <QList>
 #include <QObject>
 #include <QString>
-#include <QList>
-#include "settings.h"
 
 class QAction;
 

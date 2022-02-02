@@ -19,9 +19,9 @@
 #ifndef CODEEDITORSTYLE_H
 #define CODEEDITORSTYLE_H
 
-#include <QString>
 #include <QColor>
 #include <QFont>
+#include <QString>
 
 const QString SETTINGS_STYLE_GROUP("EditorStyle");
 const QString SETTINGS_STYLE_TYPE("StyleType");
