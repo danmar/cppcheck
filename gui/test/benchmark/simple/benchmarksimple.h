@@ -19,7 +19,6 @@
 #include "errorlogger.h"
 
 #include <QObject>
-#include <QtTest/QtTest>
 
 class BenchmarkSimple : public QObject, public ErrorLogger {
     Q_OBJECT

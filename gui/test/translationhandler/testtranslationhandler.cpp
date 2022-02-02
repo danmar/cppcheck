@@ -20,7 +20,7 @@
 
 #include "translationhandler.h"
 
-#include <QObject>
+#include <QtTest>
 
 static const QStringList getTranslationNames(const TranslationHandler& handler)
 {

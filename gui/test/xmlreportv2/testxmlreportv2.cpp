@@ -21,7 +21,7 @@
 #include "erroritem.h"
 #include "xmlreportv2.h"
 
-#include <QObject>
+#include <QtTest>
 
 void TestXmlReportV2::readXml()
 {

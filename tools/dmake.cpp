@@ -19,7 +19,7 @@
 // Generate Makefile for cppcheck
 
 #include <algorithm>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
 #include <string>
 #include <vector>

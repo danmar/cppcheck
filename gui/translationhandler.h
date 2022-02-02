@@ -21,7 +21,6 @@
 
 #include <QList>
 #include <QObject>
-#include <QStringList>
 
 class QTranslator;
 

@@ -32,7 +32,6 @@
 
 #include <QApplication>
 #include <QCoreApplication>
-#include <QMetaType>
 #include <QStringList>
 #include <QSettings>
 

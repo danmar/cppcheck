@@ -21,8 +21,6 @@
 #include "application.h"
 #include "common.h"
 
-#include <cstdlib>
-
 #include <QFileInfo>
 #include <QSettings>
 #include <QStringList>
