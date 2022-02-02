@@ -3506,11 +3506,13 @@ private:
 
         check("std::string f() {\n" // #9827
               "  char* p = NULL;\n"
-              "  const int rc = ::g(p);\n"
+              "  int r = g(p);\n"
+              "  if (!r)\n"
+              "    return \"\";\n"
               "  std::string s(p);\n"
               "  return s;\n"
               "}\n", /*inconclusive*/ true);
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (warning, inconclusive) Possible null pointer dereference: p\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointerStdStream() {
