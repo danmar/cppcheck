@@ -7419,6 +7419,16 @@ private:
                       "   void foo(int);\n"
                       "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct B {\n" // #9092
+                      "    virtual int f(int i) const = 0;\n"
+                      "};\n"
+                      "namespace N {\n"
+                      "    struct D : B {\n"
+                      "        virtual int f(int i) const;\n"
+                      "    };\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
     }
 
     void overrideCVRefQualifiers() {

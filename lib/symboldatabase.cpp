@@ -5538,6 +5538,9 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
                 type = scope1->definedType;
                 if (type)
                     return type;
+            } else if (scope->type == Scope::ScopeType::eNamespace) {
+                scope = scope->nestedIn;
+                continue;
             } else
                 break;
         }
