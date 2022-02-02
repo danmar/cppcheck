@@ -1,11 +1,11 @@
 #!/usr/bin/env python
-from tools.reduce import Reduce
+from reduce import Reduce
 
 
 class ReduceTest(Reduce):
     def __init__(self):
         # we do not want the super __init__ to be called
-        #super().__init__('', '', '')
+        # super().__init__('', '', '')
         pass
 
     def runtool(self, filedata=None):
