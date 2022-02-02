@@ -2666,6 +2666,16 @@ private:
               "    void f(Foo& foo) const { int* q = foo.get(); *q = j; }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #10679
+              "    void g(long L, const C*& PC) const;\n"
+              "    void g(long L, C*& PC);\n"
+              "};\n"
+              "void f(S& s) {\n"
+              "    C* PC{};\n"
+              "    s.g(0, PC);\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {

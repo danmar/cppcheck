@@ -6744,12 +6744,11 @@ private:
                    "    void f(const char* const (&StrArr)[N]);\n"
                    "};\n"
                    "template<size_t N>\n"
-                   "void S::f(const std::array<std::string_view, N>&sv) {\n"
+                   "void S::f(const std::array<std::string_view, N>& sv) {\n"
                    "    const char* ptrs[N]{};\n"
                    "    return f(ptrs);\n"
                    "}\n"
-                   "template void S::f(const std::array<std::string_view, 3>&sv);\n"
-                   "\n");
+                   "template void S::f(const std::array<std::string_view, 3>& sv);\n");
         ASSERT_EQUALS("", errout.str());
     }
 
