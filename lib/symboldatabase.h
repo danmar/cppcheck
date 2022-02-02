@@ -1375,9 +1375,9 @@ public:
     /** For unit testing only */
     const Scope *findScopeByName(const std::string& name) const;
 
-    const Type* findType(const Token *startTok, const Scope *startScope) const;
-    Type* findType(const Token *startTok, Scope *startScope) const {
-        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope)));
+    const Type* findType(const Token *startTok, const Scope *startScope, bool lookOutside = false) const;
+    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) const {
+        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope), lookOutside));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
