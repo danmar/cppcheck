@@ -25,6 +25,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 /// @addtogroup Core
 /// @{

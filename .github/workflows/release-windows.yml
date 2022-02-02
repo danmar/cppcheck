@@ -27,6 +27,7 @@ jobs:
       PCRE_VERSION: 8.45
       # see https://github.com/Z3Prover/z3/releases:
       Z3_VERSION: 4.8.10
+      QT_VERSION: 5.15.2
 
     steps:
       - uses: actions/checkout@v2
@@ -50,12 +51,8 @@ jobs:
         run: |
           7z x pcre-%PCRE_VERSION%.zip
           cd pcre-%PCRE_VERSION%
-          cmake . -G "Visual Studio 16 2019" -A x64
+          cmake . -G "Visual Studio 16 2019" -A x64 -DPCRE_BUILD_PCRECPP=OFF -DPCRE_BUILD_PCREGREP=OFF -DPCRE_BUILD_TESTS=OFF
           msbuild -m PCRE.sln /p:Configuration=Release /p:Platform=x64
-          dir
-          dir Release
-          dir x64
-          dir x64\Release
           copy pcre.h ..\externals
           copy Release\pcre.lib ..\externals\pcre64.lib
 
@@ -76,11 +73,19 @@ jobs:
           7z x z3-%Z3_VERSION%-x64-win.zip -oexternals -r -y
           move externals\z3-%Z3_VERSION%-x64-win externals\z3
 
-      - name: Install Qt
+      - name: Cache Qt ${{ env.QT_VERSION }}
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Windows-QtCache-${{ env.QT_VERSION }}-qtcharts-qthelp
+
+      - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v2
         with:
-          version: '5.15.2'
+          version: ${{ env.QT_VERSION }}
           modules: 'qtcharts qthelp'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
       - name: Create .qm
         run: |

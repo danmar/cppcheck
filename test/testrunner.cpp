@@ -21,8 +21,13 @@
 #include "testsuite.h"
 
 #include <cstdlib>
+
 #ifdef NDEBUG
+#include "errortypes.h"    // for InternalError
+
+#include <exception>
 #include <iostream>
+#include <string>
 #endif
 
 int main(int argc, char *argv[])

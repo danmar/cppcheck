@@ -21,10 +21,13 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
+#include "standards.h"
+#include "templatesimplifier.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -37,8 +40,10 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <stack>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 //---------------------------------------------------------------------------
 
 SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -5171,6 +5176,11 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
             // Try to evaluate the apparently more complex expression
             else if (check->isCPP()) {
                 const Token *vartok = arguments[j];
+                if (vartok->str() == ".") {
+                    const Token* rml = nextAfterAstRightmostLeaf(vartok);
+                    if (rml)
+                        vartok = rml->previous();
+                }
                 while (vartok->isUnaryOp("&") || vartok->isUnaryOp("*"))
                     vartok = vartok->astOperand1();
                 const Variable* var = vartok->variable();
@@ -6548,8 +6558,10 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             }
 
             else if (Token::simpleMatch(tok->previous(), "sizeof (")) {
-                // TODO: use specified size_t type
                 ValueType valuetype(ValueType::Sign::UNSIGNED, ValueType::Type::LONG, 0U);
+                if (mSettings->platformType == cppcheck::Platform::Win64)
+                    valuetype.type = ValueType::Type::LONGLONG;
+
                 valuetype.originalTypeName = "size_t";
                 setValueType(tok, valuetype);
 

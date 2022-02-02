@@ -24,11 +24,14 @@
 #include "config.h"
 #include "errortypes.h"
 
+#include <algorithm>
 #include <functional>
+#include <iosfwd>
 #include <map>
 #include <memory>
 #include <string>
 #include <vector>
+#include <utility>
 
 class ErrorLogger;
 class Tokenizer;

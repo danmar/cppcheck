@@ -17,11 +17,14 @@
  */
 
 #include "checkunusedfunctions.h"
+#include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <sstream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {

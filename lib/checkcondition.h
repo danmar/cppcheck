@@ -37,6 +37,10 @@ class Tokenizer;
 class ErrorLogger;
 class ValueType;
 
+namespace ValueFlow {
+    class Value;
+}
+
 /// @addtogroup Checks
 /// @{
 

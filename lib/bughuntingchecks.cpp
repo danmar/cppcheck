@@ -17,12 +17,25 @@
  */
 
 #include "bughuntingchecks.h"
+
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
+#include "library.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "utils.h"
+#include "valueflow.h"
+
+#include <algorithm>
 #include <cstring>
+#include <list>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
 
 static const CWE CWE_BUFFER_UNDERRUN(786U);  // Access of Memory Location Before Start of Buffer
 static const CWE CWE_BUFFER_OVERRUN(788U);   // Access of Memory Location After End of Buffer

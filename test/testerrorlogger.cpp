@@ -19,13 +19,16 @@
 #include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "suppressions.h"
 #include "testsuite.h"
 
-#include <tinyxml2.h>
+#include <iosfwd>
 #include <list>
+#include <memory>
 #include <string>
 
+#include <tinyxml2.h>
 
 class TestErrorLogger : public TestFixture {
 public:

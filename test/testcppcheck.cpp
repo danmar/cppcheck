@@ -18,11 +18,13 @@
 
 #include "check.h"
 #include "color.h"
+#include "config.h"
 #include "cppcheck.h"
 #include "errorlogger.h"
 #include "testsuite.h"
 
 #include <algorithm>
+#include <functional>
 #include <list>
 #include <string>
 

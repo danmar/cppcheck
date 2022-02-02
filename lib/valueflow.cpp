@@ -103,12 +103,17 @@
 #include <algorithm>
 #include <array>
 #include <cassert>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <exception>
 #include <functional>
+#include <initializer_list>
+#include <iosfwd>
 #include <iterator>
 #include <limits>
 #include <map>
+#include <memory>
 #include <set>
 #include <stack>
 #include <string>
@@ -3383,7 +3388,61 @@ static void valueFlowLifetimeConstructor(Token *tok,
                                          ErrorLogger *errorLogger,
                                          const Settings *settings);
 
-const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars, bool smallestScope)
+static const Token* getEndOfVarScope(const Variable* var)
+{
+    if (!var)
+        return nullptr;
+    const Scope* innerScope = var->scope();
+    const Scope* outerScope = innerScope;
+    if (var->typeStartToken() && var->typeStartToken()->scope())
+        outerScope = var->typeStartToken()->scope();
+    if (!innerScope && outerScope)
+        innerScope = outerScope;
+    if (!innerScope || !outerScope)
+        return nullptr;
+    if (!innerScope->isExecutable())
+        return nullptr;
+    // If the variable is defined in a for/while initializer then we want to
+    // pick one token after the end so forward analysis can analyze the exit
+    // conditions
+    if (innerScope != outerScope && outerScope->isExecutable() && innerScope->isLocal())
+        return innerScope->bodyEnd->next();
+    return innerScope->bodyEnd;
+}
+
+static const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope = nullptr)
+{
+    const Token* end = nullptr;
+    bool local = false;
+    visitAstNodes(tok, [&](const Token* child) {
+        if (const Variable* var = child->variable()) {
+            local |= var->isLocal();
+            if (var->isLocal() || var->isArgument()) {
+                const Token* varEnd = getEndOfVarScope(var);
+                if (!end || precedes(varEnd, end))
+                    end = varEnd;
+            }
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+    if (!end && defaultScope)
+        end = defaultScope->bodyEnd;
+    if (!end) {
+        const Scope* scope = tok->scope();
+        if (scope)
+            end = scope->bodyEnd;
+        // If there is no local variables then pick the function scope
+        if (!local) {
+            while (scope && scope->isLocal())
+                scope = scope->nestedIn;
+            if (scope && scope->isExecutable())
+                end = scope->bodyEnd;
+        }
+    }
+    return end;
+}
+
+static const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars)
 {
     const Token* endOfVarScope = nullptr;
     for (const Variable* var : vars) {
@@ -5625,7 +5684,7 @@ struct ConditionHandler {
                 }
                 if (values.empty())
                     return;
-                forward(after, scope->bodyEnd, cond.vartok, values, tokenlist, settings);
+                forward(after, getEndOfExprScope(cond.vartok, scope), cond.vartok, values, tokenlist, settings);
             }
         });
     }

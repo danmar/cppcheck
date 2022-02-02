@@ -19,8 +19,10 @@
 #include "templatesimplifier.h"
 
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "settings.h"
+#include "standards.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -29,6 +31,7 @@
 #include <cassert>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <stack>
 #include <utility>
 
@@ -2129,7 +2132,7 @@ void TemplateSimplifier::expandTemplate(
                             addNamespace(templateDeclaration, tok3);
                         }
                         mTokenList.addtoken(newName, tok3);
-                    } else if (!Token::Match(tok3->next(), ":|{|=|;"))
+                    } else if (!Token::Match(tok3->next(), ":|{|=|;|["))
                         tok3->str(newName);
                     continue;
                 }

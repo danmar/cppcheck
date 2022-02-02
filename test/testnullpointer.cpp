@@ -20,17 +20,22 @@
 #include "checknullpointer.h"
 #include "config.h"
 #include "ctu.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestNullPointer : public TestFixture {
 public:

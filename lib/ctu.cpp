@@ -19,13 +19,22 @@
 
 //---------------------------------------------------------------------------
 #include "ctu.h"
+
 #include "astutils.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
+
+#include <cstdint>
+#include <cstring>
+#include <iterator>  // back_inserter
+#include <ostream>
+#include <utility>
 
 #include <tinyxml2.h>
-#include <iterator>  // back_inserter
 //---------------------------------------------------------------------------
 
 static const char ATTR_CALL_ID[] = "call-id";

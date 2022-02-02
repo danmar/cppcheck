@@ -23,6 +23,8 @@
 #include "checkcondition.h"
 
 #include "astutils.h"
+#include "library.h"
+#include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -34,8 +36,11 @@
 #include <algorithm>
 #include <limits>
 #include <list>
+#include <memory>
+#include <ostream>
 #include <set>
 #include <utility>
+#include <vector>
 
 // CWE ids used
 static const struct CWE uncheckedErrorConditionCWE(391U);
