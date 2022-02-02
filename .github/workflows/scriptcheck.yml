@@ -120,6 +120,12 @@ jobs:
           cd htmlreport
           ./check.sh
 
+      - name: test reduce
+        run: |
+          python -m pytest tools/test_reduce.py
+        env:
+          PYTHONPATH: ./tools
+
       - name: dmake
         if: matrix.python-version == '3.10'
         run: |
