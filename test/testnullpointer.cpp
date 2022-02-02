@@ -2695,13 +2695,13 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         checkP("typedef int Count;\n" // #10018
-              "#define offsetof(TYPE, MEMBER) ((Count) & ((TYPE*)0)->MEMBER)\n"
-              "struct S {\n"
-              "    int a[20];\n"
-              "};\n"
-              "int g(int i) {\n"
-              "    return offsetof(S, a[i]);\n"
-              "}\n");
+               "#define offsetof(TYPE, MEMBER) ((Count) & ((TYPE*)0)->MEMBER)\n"
+               "struct S {\n"
+               "    int a[20];\n"
+               "};\n"
+               "int g(int i) {\n"
+               "    return offsetof(S, a[i]);\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
