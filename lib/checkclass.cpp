@@ -279,11 +279,11 @@ void CheckClass::constructors()
                             func.functionScope->bodyStart->link() == func.functionScope->bodyStart->next()) {
                             // don't warn about user defined default constructor when there are other constructors
                             if (printInconclusive)
-                                uninitVarError(func.token, func.access == AccessControl::Private, var.scope()->className, var.name(), derived, true);
+                                uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, true);
                         } else if (missingCopy)
-                            missingMemberCopyError(func.token, var.scope()->className, var.name());
+                            missingMemberCopyError(func.token, func.type, var.scope()->className, var.name());
                         else
-                            uninitVarError(func.token, func.access == AccessControl::Private, var.scope()->className, var.name(), derived, false);
+                            uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, false);
                     }
                 }
             }
@@ -985,36 +985,27 @@ void CheckClass::noExplicitConstructorError(const Token *tok, const std::string 
     reportError(tok, Severity::style, "noExplicitConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
-void CheckClass::uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool derived, bool inconclusive)
+void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive)
 {
-    std::string message("Member variable '$symbol' is not ");
-    switch (functionType) {
-    case Function::eCopyConstructor:
-        if (inconclusive)
-            message += "assigned in the copy constructor. Should it be copied?";
-        else
-            message += "initialized in the copy constructor.";
-        break;
-    case Function::eMoveConstructor:
-        if (inconclusive)
-            message += "assigned in the move constructor. Should it be moved?";
-        else
-            message += "initialized in the move constructor.";
-        break;
-    default:
-        message += "initialized in the constructor.";
-    }
+    std::string ctor;
+    if (functionType == Function::eCopyConstructor)
+        ctor = "copy ";
+    else if (functionType == Function::eMoveConstructor)
+        ctor = "move ";
+    std::string message("Member variable '$symbol' is not initialized in the " + ctor + "constructor.");
     if (derived)
         message += " Maybe it should be initialized directly in the class " + classname + "?";
     std::string id = std::string("uninit") + (derived ? "Derived" : "") + "MemberVar" + (isprivate ? "Private" : "");
     reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + "\n" + message, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
-void CheckClass::missingMemberCopyError(const Token *tok, const std::string& classname, const std::string& varname)
+void CheckClass::missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname)
 {
+    const std::string ctor(functionType == Function::Type::eCopyConstructor ? "copy" : "move");
+    const std::string action(functionType == Function::Type::eCopyConstructor ? "copied?" : "moved?");
     const std::string message =
         "$symbol:" + classname + "::" + varname + "\n" +
-        "Member variable '$symbol' is not assigned in the copy constructor. Should it be copied?";
+        "Member variable '$symbol' is not assigned in the " + ctor + " constructor. Should it be " + action;
     const char id[] = "missingMemberCopy";
     reportError(tok, Severity::warning, id, message, CWE398, Certainty::inconclusive);
 }
