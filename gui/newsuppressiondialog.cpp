@@ -18,12 +18,12 @@
 
 #include "newsuppressiondialog.h"
 
-#include "ui_newsuppressiondialog.h"
-
 #include "cppcheck.h"
 #include "color.h"
 #include "errorlogger.h"
 #include "suppressions.h"
+
+#include "ui_newsuppressiondialog.h"
 
 NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     QDialog(parent),

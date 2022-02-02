@@ -25,6 +25,8 @@
 #include "common.h"
 #include "translationhandler.h"
 
+#include "ui_settings.h"
+
 #include <QFileDialog>
 #include <QFileInfo>
 #include <QList>
@@ -38,71 +40,72 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
     QDialog(parent),
     mApplications(list),
     mTempApplications(new ApplicationList(this)),
-    mTranslator(translator)
+    mTranslator(translator),
+    mUI(new Ui::Settings)
 {
-    mUI.setupUi(this);
-    mUI.mPythonPathWarning->setStyleSheet("color: red");
+    mUI->setupUi(this);
+    mUI->mPythonPathWarning->setStyleSheet("color: red");
     QSettings settings;
     mTempApplications->copy(list);
 
-    mUI.mJobs->setText(settings.value(SETTINGS_CHECK_THREADS, 1).toString());
-    mUI.mForce->setCheckState(boolToCheckState(settings.value(SETTINGS_CHECK_FORCE, false).toBool()));
-    mUI.mShowFullPath->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
-    mUI.mShowNoErrorsMessage->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_NO_ERRORS, false).toBool()));
-    mUI.mShowDebugWarnings->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool()));
-    mUI.mSaveAllErrors->setCheckState(boolToCheckState(settings.value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
-    mUI.mSaveFullPath->setCheckState(boolToCheckState(settings.value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
-    mUI.mInlineSuppressions->setCheckState(boolToCheckState(settings.value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
-    mUI.mEnableInconclusive->setCheckState(boolToCheckState(settings.value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
-    mUI.mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
-    mUI.mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
-    mUI.mEditPythonPath->setText(settings.value(SETTINGS_PYTHON_PATH, QString()).toString());
+    mUI->mJobs->setText(settings.value(SETTINGS_CHECK_THREADS, 1).toString());
+    mUI->mForce->setCheckState(boolToCheckState(settings.value(SETTINGS_CHECK_FORCE, false).toBool()));
+    mUI->mShowFullPath->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_FULL_PATH, false).toBool()));
+    mUI->mShowNoErrorsMessage->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_NO_ERRORS, false).toBool()));
+    mUI->mShowDebugWarnings->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_DEBUG_WARNINGS, false).toBool()));
+    mUI->mSaveAllErrors->setCheckState(boolToCheckState(settings.value(SETTINGS_SAVE_ALL_ERRORS, false).toBool()));
+    mUI->mSaveFullPath->setCheckState(boolToCheckState(settings.value(SETTINGS_SAVE_FULL_PATH, false).toBool()));
+    mUI->mInlineSuppressions->setCheckState(boolToCheckState(settings.value(SETTINGS_INLINE_SUPPRESSIONS, false).toBool()));
+    mUI->mEnableInconclusive->setCheckState(boolToCheckState(settings.value(SETTINGS_INCONCLUSIVE_ERRORS, false).toBool()));
+    mUI->mShowStatistics->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_STATISTICS, false).toBool()));
+    mUI->mShowErrorId->setCheckState(boolToCheckState(settings.value(SETTINGS_SHOW_ERROR_ID, false).toBool()));
+    mUI->mEditPythonPath->setText(settings.value(SETTINGS_PYTHON_PATH, QString()).toString());
     validateEditPythonPath();
-    mUI.mEditMisraFile->setText(settings.value(SETTINGS_MISRA_FILE, QString()).toString());
+    mUI->mEditMisraFile->setText(settings.value(SETTINGS_MISRA_FILE, QString()).toString());
 
 #ifdef Q_OS_WIN
-    //mUI.mTabClang->setVisible(true);
-    mUI.mEditClangPath->setText(settings.value(SETTINGS_CLANG_PATH, QString()).toString());
-    mUI.mEditVsIncludePaths->setText(settings.value(SETTINGS_VS_INCLUDE_PATHS, QString()).toString());
-    connect(mUI.mBtnBrowseClangPath, &QPushButton::released, this, &SettingsDialog::browseClangPath);
+    //mUI->mTabClang->setVisible(true);
+    mUI->mEditClangPath->setText(settings.value(SETTINGS_CLANG_PATH, QString()).toString());
+    mUI->mEditVsIncludePaths->setText(settings.value(SETTINGS_VS_INCLUDE_PATHS, QString()).toString());
+    connect(mUI->mBtnBrowseClangPath, &QPushButton::released, this, &SettingsDialog::browseClangPath);
 #else
-    mUI.mTabClang->setVisible(false);
+    mUI->mTabClang->setVisible(false);
 #endif
     mCurrentStyle = new CodeEditorStyle(CodeEditorStyle::loadSettings(&settings));
     manageStyleControls();
 
-    connect(mUI.mEditPythonPath, SIGNAL(textEdited(const QString&)),
+    connect(mUI->mEditPythonPath, SIGNAL(textEdited(const QString&)),
             this, SLOT(validateEditPythonPath()));
 
-    connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
-    connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
-    connect(mUI.mBtnAddApplication, SIGNAL(clicked()),
+    connect(mUI->mButtons, &QDialogButtonBox::accepted, this, &SettingsDialog::ok);
+    connect(mUI->mButtons, &QDialogButtonBox::rejected, this, &SettingsDialog::reject);
+    connect(mUI->mBtnAddApplication, SIGNAL(clicked()),
             this, SLOT(addApplication()));
-    connect(mUI.mBtnRemoveApplication, SIGNAL(clicked()),
+    connect(mUI->mBtnRemoveApplication, SIGNAL(clicked()),
             this, SLOT(removeApplication()));
-    connect(mUI.mBtnEditApplication, SIGNAL(clicked()),
+    connect(mUI->mBtnEditApplication, SIGNAL(clicked()),
             this, SLOT(editApplication()));
-    connect(mUI.mBtnDefaultApplication, SIGNAL(clicked()),
+    connect(mUI->mBtnDefaultApplication, SIGNAL(clicked()),
             this, SLOT(defaultApplication()));
-    connect(mUI.mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
+    connect(mUI->mListWidget, SIGNAL(itemDoubleClicked(QListWidgetItem*)),
             this, SLOT(editApplication()));
 
-    connect(mUI.mBtnBrowsePythonPath, &QPushButton::clicked, this, &SettingsDialog::browsePythonPath);
-    connect(mUI.mBtnBrowseMisraFile, &QPushButton::clicked, this, &SettingsDialog::browseMisraFile);
-    connect(mUI.mBtnEditTheme, SIGNAL(clicked()), this, SLOT(editCodeEditorStyle()));
-    connect(mUI.mThemeSystem, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
-    connect(mUI.mThemeDark, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
-    connect(mUI.mThemeLight, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
-    connect(mUI.mThemeCustom, SIGNAL(toggled(bool)), mUI.mBtnEditTheme, SLOT(setEnabled(bool)));
+    connect(mUI->mBtnBrowsePythonPath, &QPushButton::clicked, this, &SettingsDialog::browsePythonPath);
+    connect(mUI->mBtnBrowseMisraFile, &QPushButton::clicked, this, &SettingsDialog::browseMisraFile);
+    connect(mUI->mBtnEditTheme, SIGNAL(clicked()), this, SLOT(editCodeEditorStyle()));
+    connect(mUI->mThemeSystem, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
+    connect(mUI->mThemeDark, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
+    connect(mUI->mThemeLight, SIGNAL(released()), this, SLOT(setCodeEditorStyleDefault()));
+    connect(mUI->mThemeCustom, SIGNAL(toggled(bool)), mUI->mBtnEditTheme, SLOT(setEnabled(bool)));
 
-    mUI.mListWidget->setSortingEnabled(false);
+    mUI->mListWidget->setSortingEnabled(false);
     populateApplicationList();
 
     const int count = QThread::idealThreadCount();
     if (count != -1)
-        mUI.mLblIdealThreads->setText(QString::number(count));
+        mUI->mLblIdealThreads->setText(QString::number(count));
     else
-        mUI.mLblIdealThreads->setText(tr("N/A"));
+        mUI->mLblIdealThreads->setText(tr("N/A"));
 
     loadSettings();
     initTranslationsList();
@@ -111,6 +114,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 SettingsDialog::~SettingsDialog()
 {
     saveSettings();
+    delete mUI;
 }
 
 void SettingsDialog::initTranslationsList()
@@ -121,9 +125,9 @@ void SettingsDialog::initTranslationsList()
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(translation.mName);
         item->setData(mLangCodeRole, QVariant(translation.mCode));
-        mUI.mListLanguages->addItem(item);
+        mUI->mListLanguages->addItem(item);
         if (translation.mCode == current || translation.mCode == current.mid(0, 2))
-            mUI.mListLanguages->setCurrentItem(item);
+            mUI->mListLanguages->setCurrentItem(item);
     }
 }
 
@@ -160,32 +164,32 @@ void SettingsDialog::saveSettings() const
 
 void SettingsDialog::saveSettingValues() const
 {
-    int jobs = mUI.mJobs->text().toInt();
+    int jobs = mUI->mJobs->text().toInt();
     if (jobs <= 0) {
         jobs = 1;
     }
 
     QSettings settings;
     settings.setValue(SETTINGS_CHECK_THREADS, jobs);
-    saveCheckboxValue(&settings, mUI.mForce, SETTINGS_CHECK_FORCE);
-    saveCheckboxValue(&settings, mUI.mSaveAllErrors, SETTINGS_SAVE_ALL_ERRORS);
-    saveCheckboxValue(&settings, mUI.mSaveFullPath, SETTINGS_SAVE_FULL_PATH);
-    saveCheckboxValue(&settings, mUI.mShowFullPath, SETTINGS_SHOW_FULL_PATH);
-    saveCheckboxValue(&settings, mUI.mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
-    saveCheckboxValue(&settings, mUI.mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
-    saveCheckboxValue(&settings, mUI.mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
-    saveCheckboxValue(&settings, mUI.mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
-    saveCheckboxValue(&settings, mUI.mShowStatistics, SETTINGS_SHOW_STATISTICS);
-    saveCheckboxValue(&settings, mUI.mShowErrorId, SETTINGS_SHOW_ERROR_ID);
-    settings.setValue(SETTINGS_PYTHON_PATH, mUI.mEditPythonPath->text());
-    settings.setValue(SETTINGS_MISRA_FILE, mUI.mEditMisraFile->text());
+    saveCheckboxValue(&settings, mUI->mForce, SETTINGS_CHECK_FORCE);
+    saveCheckboxValue(&settings, mUI->mSaveAllErrors, SETTINGS_SAVE_ALL_ERRORS);
+    saveCheckboxValue(&settings, mUI->mSaveFullPath, SETTINGS_SAVE_FULL_PATH);
+    saveCheckboxValue(&settings, mUI->mShowFullPath, SETTINGS_SHOW_FULL_PATH);
+    saveCheckboxValue(&settings, mUI->mShowNoErrorsMessage, SETTINGS_SHOW_NO_ERRORS);
+    saveCheckboxValue(&settings, mUI->mShowDebugWarnings, SETTINGS_SHOW_DEBUG_WARNINGS);
+    saveCheckboxValue(&settings, mUI->mInlineSuppressions, SETTINGS_INLINE_SUPPRESSIONS);
+    saveCheckboxValue(&settings, mUI->mEnableInconclusive, SETTINGS_INCONCLUSIVE_ERRORS);
+    saveCheckboxValue(&settings, mUI->mShowStatistics, SETTINGS_SHOW_STATISTICS);
+    saveCheckboxValue(&settings, mUI->mShowErrorId, SETTINGS_SHOW_ERROR_ID);
+    settings.setValue(SETTINGS_PYTHON_PATH, mUI->mEditPythonPath->text());
+    settings.setValue(SETTINGS_MISRA_FILE, mUI->mEditMisraFile->text());
 
 #ifdef Q_OS_WIN
-    settings.setValue(SETTINGS_CLANG_PATH, mUI.mEditClangPath->text());
-    settings.setValue(SETTINGS_VS_INCLUDE_PATHS, mUI.mEditVsIncludePaths->text());
+    settings.setValue(SETTINGS_CLANG_PATH, mUI->mEditClangPath->text());
+    settings.setValue(SETTINGS_VS_INCLUDE_PATHS, mUI->mEditVsIncludePaths->text());
 #endif
 
-    const QListWidgetItem *currentLang = mUI.mListLanguages->currentItem();
+    const QListWidgetItem *currentLang = mUI->mListLanguages->currentItem();
     if (currentLang) {
         const QString langcode = currentLang->data(mLangCodeRole).toString();
         settings.setValue(SETTINGS_LANGUAGE, langcode);
@@ -201,10 +205,10 @@ void SettingsDialog::saveCheckboxValue(QSettings *settings, QCheckBox *box,
 
 void SettingsDialog::validateEditPythonPath()
 {
-    const auto pythonPath = mUI.mEditPythonPath->text();
+    const auto pythonPath = mUI->mEditPythonPath->text();
     if (pythonPath.isEmpty()) {
-        mUI.mEditPythonPath->setStyleSheet("");
-        mUI.mPythonPathWarning->hide();
+        mUI->mEditPythonPath->setStyleSheet("");
+        mUI->mPythonPathWarning->hide();
         return;
     }
 
@@ -212,12 +216,12 @@ void SettingsDialog::validateEditPythonPath()
     if (!pythonPathInfo.exists() ||
         !pythonPathInfo.isFile() ||
         !pythonPathInfo.isExecutable()) {
-        mUI.mEditPythonPath->setStyleSheet("QLineEdit {border: 1px solid red}");
-        mUI.mPythonPathWarning->setText(tr("The executable file \"%1\" is not available").arg(pythonPath));
-        mUI.mPythonPathWarning->show();
+        mUI->mEditPythonPath->setStyleSheet("QLineEdit {border: 1px solid red}");
+        mUI->mPythonPathWarning->setText(tr("The executable file \"%1\" is not available").arg(pythonPath));
+        mUI->mPythonPathWarning->show();
     } else {
-        mUI.mEditPythonPath->setStyleSheet("");
-        mUI.mPythonPathWarning->hide();
+        mUI->mEditPythonPath->setStyleSheet("");
+        mUI->mPythonPathWarning->hide();
     }
 }
 
@@ -228,15 +232,15 @@ void SettingsDialog::addApplication()
 
     if (dialog.exec() == QDialog::Accepted) {
         mTempApplications->addApplication(app);
-        mUI.mListWidget->addItem(app.getName());
+        mUI->mListWidget->addItem(app.getName());
     }
 }
 
 void SettingsDialog::removeApplication()
 {
-    QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
+    QList<QListWidgetItem *> selected = mUI->mListWidget->selectedItems();
     foreach (QListWidgetItem *item, selected) {
-        const int removeIndex = mUI.mListWidget->row(item);
+        const int removeIndex = mUI->mListWidget->row(item);
         const int currentDefault = mTempApplications->getDefaultApplication();
         mTempApplications->removeApplication(removeIndex);
         if (removeIndex == currentDefault)
@@ -246,16 +250,16 @@ void SettingsDialog::removeApplication()
             // Move default app one up if earlier app was removed
             mTempApplications->setDefault(currentDefault - 1);
     }
-    mUI.mListWidget->clear();
+    mUI->mListWidget->clear();
     populateApplicationList();
 }
 
 void SettingsDialog::editApplication()
 {
-    QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
+    QList<QListWidgetItem *> selected = mUI->mListWidget->selectedItems();
     QListWidgetItem *item = nullptr;
     foreach (item, selected) {
-        int row = mUI.mListWidget->row(item);
+        int row = mUI->mListWidget->row(item);
         Application& app = mTempApplications->getApplication(row);
         ApplicationDialog dialog(tr("Modify an application"), app, this);
 
@@ -270,11 +274,11 @@ void SettingsDialog::editApplication()
 
 void SettingsDialog::defaultApplication()
 {
-    QList<QListWidgetItem *> selected = mUI.mListWidget->selectedItems();
+    QList<QListWidgetItem *> selected = mUI->mListWidget->selectedItems();
     if (!selected.isEmpty()) {
-        int index = mUI.mListWidget->row(selected[0]);
+        int index = mUI->mListWidget->row(selected[0]);
         mTempApplications->setDefault(index);
-        mUI.mListWidget->clear();
+        mUI->mListWidget->clear();
         populateApplicationList();
     }
 }
@@ -289,18 +293,18 @@ void SettingsDialog::populateApplicationList()
             name += " ";
             name += tr("[Default]");
         }
-        mUI.mListWidget->addItem(name);
+        mUI->mListWidget->addItem(name);
     }
 
     // Select default application, or if there is no default app then the
     // first item.
     if (defapp == -1)
-        mUI.mListWidget->setCurrentRow(0);
+        mUI->mListWidget->setCurrentRow(0);
     else {
         if (mTempApplications->getApplicationCount() > defapp)
-            mUI.mListWidget->setCurrentRow(defapp);
+            mUI->mListWidget->setCurrentRow(defapp);
         else
-            mUI.mListWidget->setCurrentRow(0);
+            mUI->mListWidget->setCurrentRow(0);
     }
 }
 
@@ -312,56 +316,56 @@ void SettingsDialog::ok()
 
 bool SettingsDialog::showFullPath() const
 {
-    return checkStateToBool(mUI.mShowFullPath->checkState());
+    return checkStateToBool(mUI->mShowFullPath->checkState());
 }
 
 bool SettingsDialog::saveFullPath() const
 {
-    return checkStateToBool(mUI.mSaveFullPath->checkState());
+    return checkStateToBool(mUI->mSaveFullPath->checkState());
 }
 
 bool SettingsDialog::saveAllErrors() const
 {
-    return checkStateToBool(mUI.mSaveAllErrors->checkState());
+    return checkStateToBool(mUI->mSaveAllErrors->checkState());
 }
 
 bool SettingsDialog::showNoErrorsMessage() const
 {
-    return checkStateToBool(mUI.mShowNoErrorsMessage->checkState());
+    return checkStateToBool(mUI->mShowNoErrorsMessage->checkState());
 }
 
 bool SettingsDialog::showErrorId() const
 {
-    return checkStateToBool(mUI.mShowErrorId->checkState());
+    return checkStateToBool(mUI->mShowErrorId->checkState());
 }
 
 bool SettingsDialog::showInconclusive() const
 {
-    return checkStateToBool(mUI.mEnableInconclusive->checkState());
+    return checkStateToBool(mUI->mEnableInconclusive->checkState());
 }
 
 void SettingsDialog::browsePythonPath()
 {
     QString fileName = QFileDialog::getOpenFileName(this, tr("Select python binary"), QDir::rootPath());
     if (fileName.contains("python", Qt::CaseInsensitive))
-        mUI.mEditPythonPath->setText(fileName);
+        mUI->mEditPythonPath->setText(fileName);
 }
 
 void SettingsDialog::browseMisraFile()
 {
     const QString fileName = QFileDialog::getOpenFileName(this, tr("Select MISRA File"), QDir::homePath(), "Misra File (*.pdf *.txt)");
     if (!fileName.isEmpty())
-        mUI.mEditMisraFile->setText(fileName);
+        mUI->mEditMisraFile->setText(fileName);
 }
 
 // Slot to set default light style
 void SettingsDialog::setCodeEditorStyleDefault()
 {
-    if (mUI.mThemeSystem->isChecked())
+    if (mUI->mThemeSystem->isChecked())
         *mCurrentStyle = CodeEditorStyle::getSystemTheme();
-    if (mUI.mThemeLight->isChecked())
+    if (mUI->mThemeLight->isChecked())
         *mCurrentStyle = defaultStyleLight;
-    if (mUI.mThemeDark->isChecked())
+    if (mUI->mThemeDark->isChecked())
         *mCurrentStyle = defaultStyleDark;
     manageStyleControls();
 }
@@ -384,7 +388,7 @@ void SettingsDialog::browseClangPath()
                                                             QDir::rootPath());
 
     if (!selectedDir.isEmpty()) {
-        mUI.mEditClangPath->setText(selectedDir);
+        mUI->mEditClangPath->setText(selectedDir);
     }
 }
 
@@ -393,10 +397,10 @@ void SettingsDialog::manageStyleControls()
     bool isSystemTheme = mCurrentStyle->isSystemTheme();
     bool isDefaultLight = !isSystemTheme && *mCurrentStyle == defaultStyleLight;
     bool isDefaultDark =  !isSystemTheme && *mCurrentStyle == defaultStyleDark;
-    mUI.mThemeSystem->setChecked(isSystemTheme);
-    mUI.mThemeLight->setChecked(isDefaultLight && !isDefaultDark);
-    mUI.mThemeDark->setChecked(!isDefaultLight && isDefaultDark);
-    mUI.mThemeCustom->setChecked(!isSystemTheme && !isDefaultLight && !isDefaultDark);
-    mUI.mBtnEditTheme->setEnabled(!isSystemTheme && !isDefaultLight && !isDefaultDark);
+    mUI->mThemeSystem->setChecked(isSystemTheme);
+    mUI->mThemeLight->setChecked(isDefaultLight && !isDefaultDark);
+    mUI->mThemeDark->setChecked(!isDefaultLight && isDefaultDark);
+    mUI->mThemeCustom->setChecked(!isSystemTheme && !isDefaultLight && !isDefaultDark);
+    mUI->mBtnEditTheme->setEnabled(!isSystemTheme && !isDefaultLight && !isDefaultDark);
 }
 

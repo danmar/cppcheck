@@ -18,12 +18,12 @@
 
 #include "librarydialog.h"
 
-#include "ui_librarydialog.h"
-
 #include "common.h"
 #include "libraryaddfunctiondialog.h"
 #include "libraryeditargdialog.h"
 #include "path.h"
+
+#include "ui_librarydialog.h"
 
 #include <QFile>
 #include <QFileDialog>

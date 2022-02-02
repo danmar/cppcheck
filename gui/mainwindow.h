@@ -19,8 +19,6 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include "ui_mainwindow.h"
-
 #include "settings.h"
 #include "platforms.h"
 
@@ -32,10 +30,15 @@ class ThreadHandler;
 class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
+class ApplicationList;
 class QAction;
 class QActionGroup;
 class QSettings;
 class QTimer;
+class QLineEdit;
+namespace Ui {
+    class MainWindow;
+};
 
 /// @addtogroup GUI
 /// @{
@@ -431,7 +434,7 @@ private:
     TranslationHandler *mTranslation;
 
     /** @brief Class holding all UI components */
-    Ui::MainWindow mUI;
+    Ui::MainWindow *mUI;
 
     /** @brief Current analyzed directory. */
     QString mCurrentDirectory;

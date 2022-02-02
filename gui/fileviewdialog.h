@@ -19,13 +19,14 @@
 #ifndef FILEVIEW_DIALOG_H
 #define FILEVIEW_DIALOG_H
 
-#include "ui_file.h"
-
 #include <QDialog>
 #include <QString>
 
 class QWidget;
 class QTextEdit;
+namespace Ui {
+    class Fileview;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -44,6 +45,7 @@ public:
                    const QString &title,
                    QWidget *parent = nullptr);
 
+    ~FileViewDialog() override;
 
 protected:
 
@@ -55,7 +57,7 @@ protected:
      */
     void loadTextFile(const QString &filename, QTextEdit *edit);
 
-    Ui::Fileview mUI;
+    Ui::Fileview* mUI;
 };
 /// @}
 #endif // FILEVIEW_DIALOG_H
