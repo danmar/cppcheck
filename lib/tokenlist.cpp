@@ -21,18 +21,23 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "path.h"
 #include "settings.h"
 #include "standards.h"
 #include "token.h"
 
-#include <exception>
-#include <simplecpp.h>
+#include <algorithm>
 #include <cctype>
 #include <cstring>
+#include <exception>
+#include <functional>
+#include <utility>
 #include <set>
 #include <stack>
+
+#include <simplecpp.h>
 
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test

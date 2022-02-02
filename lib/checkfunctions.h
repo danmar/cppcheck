@@ -24,9 +24,10 @@
 
 #include "check.h"
 #include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
-#include "errortypes.h"
+#include "utils.h"
 
 #include <map>
 #include <string>

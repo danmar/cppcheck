@@ -20,16 +20,21 @@
 #include "preprocessor.h"
 
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "path.h"
 #include "settings.h"
-#include "simplecpp.h"
+#include "standards.h"
 #include "suppressions.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator> // back_inserter
+#include <memory>
 #include <utility>
+
+#include <simplecpp.h>
 
 static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
 {

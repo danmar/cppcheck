@@ -21,7 +21,6 @@
 #include "checkuninitvar.h"
 
 #include "astutils.h"
-#include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
 #include "errorlogger.h"
 #include "library.h"
 #include "mathlib.h"
@@ -31,10 +30,17 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
+#include "checknullpointer.h"   // CheckNullPointer::isPointerDeref
+
+#include <algorithm>
 #include <cassert>
+#include <functional>
+#include <initializer_list>
 #include <list>
 #include <map>
+#include <unordered_set>
 #include <utility>
+#include <vector>
 
 
 namespace tinyxml2 {
@@ -131,8 +137,11 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             if (tok->isStandardType() || tok->isEnumType())
                 stdtype = true;
         }
-        if (var.isArray() && !stdtype)
-            continue;
+        if (var.isArray() && !stdtype) { // std::array
+            if (!(var.isStlType() && Token::simpleMatch(var.typeStartToken(), "std :: array") && var.valueType() &&
+                  var.valueType()->containerTypeToken && var.valueType()->containerTypeToken->isStandardType()))
+                continue;
+        }
 
         while (tok && tok->str() != ";")
             tok = tok->next();
@@ -1254,8 +1263,13 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
         if (isLikelyStreamRead(cpp, vartok->previous()))
             return nullptr;
 
-        if (valueExpr->valueType() && valueExpr->valueType()->type == ValueType::Type::VOID)
-            return nullptr;
+        if (const auto* vt = valueExpr->valueType()) {
+            if (vt->type == ValueType::Type::VOID)
+                return nullptr;
+            // passing a char* to a stream will dereference it
+            if ((alloc == CTOR_CALL || alloc == ARRAY) && vt->pointer && vt->type != ValueType::Type::CHAR && vt->type != ValueType::Type::WCHAR_T)
+                return nullptr;
+        }
     }
     if (astIsRhs(derefValue) && isLikelyStreamRead(cpp, derefValue->astParent()))
         return nullptr;

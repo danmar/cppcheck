@@ -18,13 +18,19 @@
 
 #include "config.h"
 #include "cppcheck.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "suppressions.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
 
+#include <algorithm>
+#include <cstddef>
+#include <functional>
+#include <iosfwd>
 #include <list>
 #include <map>
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>

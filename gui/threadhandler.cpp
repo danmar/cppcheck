@@ -112,7 +112,7 @@ void ThreadHandler::check(const Settings &settings)
 
     mAnalyseWholeProgram = true;
 
-    mTime.start();
+    mTimer.start();
 }
 
 bool ThreadHandler::isChecking() const
@@ -168,7 +168,7 @@ void ThreadHandler::threadDone()
     if (mRunningThreadCount == 0) {
         emit done();
 
-        mScanDuration = mTime.elapsed();
+        mScanDuration = mTimer.elapsed();
 
         // Set date/time used by the recheck
         if (!mCheckStartTime.isNull()) {

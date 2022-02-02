@@ -27,9 +27,14 @@
 #include "tokenlist.h"
 
 #include <list>
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
+#include <vector>
+
+#include <simplecpp.h>
 
 struct InternalError;
 

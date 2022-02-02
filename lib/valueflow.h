@@ -25,7 +25,9 @@
 #include "mathlib.h"
 #include "utils.h"
 
+#include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <functional>
 #include <list>
 #include <string>

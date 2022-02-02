@@ -17,6 +17,8 @@
  */
 
 #include "checkother.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "platform.h"
 #include "preprocessor.h"
@@ -25,11 +27,17 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
+#include <iosfwd>
+#include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
+#include <tinyxml2.h>
+
 
 class TestOther : public TestFixture {
 public:
@@ -1656,6 +1664,18 @@ private:
               "enum X { a, b, c };"
               "void foo(X x4){}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("union U {\n"
+              "    char* pc;\n"
+              "    short* ps;\n"
+              "    int* pi;\n"
+              "};\n"
+              "void f(U u) {}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char A[8][8]; };\n"
+              "void f(S s) {}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n", errout.str());
 
         Settings settings1;
         settings1.platform(Settings::Win64);
@@ -9314,6 +9334,17 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Local variable 'x' shadows outer argument\n", errout.str());
 
         check("class C { C(); void foo() { static int C = 0; } }"); // #9195 - shadow constructor
+        ASSERT_EQUALS("", errout.str());
+
+        // 10752 - no
+        check("struct S {\n"
+              "    int i;\n"
+              "\n"
+              "    static int foo() {\n"
+              "        int i = 0;\n"
+              "        return i;\n"
+              "    }\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -22,11 +22,13 @@
 
 #include "check64bit.h"
 
+#include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
 
+#include <vector>
 
 //---------------------------------------------------------------------------
 

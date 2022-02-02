@@ -21,14 +21,19 @@
 #include "checkunusedvar.h"
 
 #include "astutils.h"
+#include "errortypes.h"
+#include "library.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <list>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>

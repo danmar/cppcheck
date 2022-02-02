@@ -17,11 +17,14 @@
  */
 
 
+#include "config.h"
+#include "settings.h"
 #include "summaries.h"
 #include "testsuite.h"
-
-#include "settings.h"
 #include "tokenize.h"
+
+#include <iosfwd>       // for istringstream, ostringstream
+#include <string>
 
 
 class TestSummaries : public TestFixture {

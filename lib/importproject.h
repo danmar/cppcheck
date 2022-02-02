@@ -25,6 +25,7 @@
 #include "platform.h"
 #include "utils.h"
 
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <set>

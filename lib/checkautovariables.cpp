@@ -28,10 +28,14 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 #include "valueflow.h"
 
 #include <algorithm>
 #include <list>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 //---------------------------------------------------------------------------
 
