@@ -51,12 +51,8 @@ jobs:
         run: |
           7z x pcre-%PCRE_VERSION%.zip
           cd pcre-%PCRE_VERSION%
-          cmake . -G "Visual Studio 16 2019" -A x64
+          cmake . -G "Visual Studio 16 2019" -A x64 -DPCRE_BUILD_PCRECPP=OFF -DPCRE_BUILD_PCREGREP=OFF -DPCRE_BUILD_TESTS=OFF
           msbuild -m PCRE.sln /p:Configuration=Release /p:Platform=x64
-          dir
-          dir Release
-          dir x64
-          dir x64\Release
           copy pcre.h ..\externals
           copy Release\pcre.lib ..\externals\pcre64.lib
 
