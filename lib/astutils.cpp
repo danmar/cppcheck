@@ -2699,7 +2699,7 @@ static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const T
 std::vector<const Variable*> getLHSVariables(const Token* tok)
 {
     std::vector<const Variable*> result;
-    if (!Token::Match(tok, "%assign%"))
+    if (!Token::Match(tok, "%assign%|(|{"))
         return result;
     if (!tok->astOperand1())
         return result;
