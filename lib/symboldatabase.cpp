@@ -639,7 +639,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 }
                 // function prototype?
                 else if (declEnd && declEnd->str() == ";") {
-                    if (tok->previous() && tok->previous()->str() == "::" &&
+                    if (tok->astParent() && tok->astParent()->str() == "::" &&
                         Token::Match(declEnd->previous(), "default|delete")) {
                         addClassFunction(&scope, &tok, argStart);
                         continue;

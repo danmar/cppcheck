@@ -381,6 +381,9 @@ private:
         check("void f1(int x) { x; }", true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unused variable value 'x'\n", errout.str());
 
+        check("void f() { if (Type t; g(t)) {} }"); // #9776
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void vardecl() {
