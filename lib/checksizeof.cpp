@@ -378,7 +378,9 @@ void CheckSizeof::suspiciousSizeofCalculation()
             const Token* lPar = tok->astParent();
             if (lPar && lPar->str() == "(") {
                 const Token* const end = lPar->link();
-                const Token* const varTok = end->previous();
+                const Token* varTok = end->previous();
+                while (varTok && varTok->str() == "]")
+                    varTok = varTok->link()->previous();
                 const Variable* var = varTok ? varTok->variable() : nullptr;
                 if ((varTok && varTok->str() == "*") || (var && var->isPointer() && !var->isArray() && !(lPar->astOperand2() && lPar->astOperand2()->str() == "*"))) {
                     if (lPar->astParent() && lPar->astParent()->str() == "/")

@@ -429,11 +429,17 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("struct S { T *t; };\n"
+        check("struct S { T *t; };\n" // #10179
               "int f(S* s) {\n"
               "    return g(sizeof(*s->t) / 4);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(const S& s) {\n"
+              "    int** p;\n"
+              "    return sizeof(p[0]) / 4;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
     }
 
     void checkPointerSizeof() {
