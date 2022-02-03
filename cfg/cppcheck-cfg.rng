@@ -598,7 +598,7 @@
   <define name="ARGNO">
     <data type="integer">
       <param name="minInclusive">1</param>
-      <param name="maxInclusive">20</param>
+      <param name="maxInclusive">40</param>
     </data>
   </define>
 
