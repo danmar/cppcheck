@@ -15,7 +15,7 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-2019, windows-2022]
         arch: [x64, x86]
         qt_ver: ['', 5.15.2]
       fail-fast: false
