@@ -38,7 +38,7 @@ void invalidFunctionArg_std_string_substr(const std::string &str, std::size_t po
     (void)str.substr(pos,-1);
     // no warning is expected for
     (void)str.substr(pos,len);
-    (void)str.substr(pos, std::wstring::npos);
+    (void)str.substr(pos, std::string::npos);
 }
 
 void invalidFunctionArg_std_wstring_substr(const std::wstring &str, std::size_t pos, std::size_t len) {
@@ -48,7 +48,7 @@ void invalidFunctionArg_std_wstring_substr(const std::wstring &str, std::size_t 
     (void)str.substr(pos,-1);
     // no warning is expected for
     (void)str.substr(pos,len);
-    (void)str.substr(pos, std::string::npos);
+    (void)str.substr(pos, std::wstring::npos);
 }
 
 double invalidFunctionArg_log10(double d = 0.0) {
