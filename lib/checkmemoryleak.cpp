@@ -579,6 +579,8 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
             }
             continue;
         }
+        if (!func.functionScope) // defaulted destructor
+            continue;
         bool body = false;
         const Token *end = func.functionScope->bodyEnd;
         for (const Token *tok = func.arg->link(); tok != end; tok = tok->next()) {

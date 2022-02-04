@@ -521,6 +521,7 @@ private:
         TEST_CASE(class23); // ticket #3303
         TEST_CASE(class24); // ticket #3806 - false positive in copy constructor
         TEST_CASE(class25); // ticket #4367 - false positive implementation for destructor is not seen
+        TEST_CASE(class26); // ticket #10789
 
         TEST_CASE(staticvar);
 
@@ -1448,6 +1449,17 @@ private:
               "    ~Fred();\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void class26() { // ticket #10789 - crash
+        check("class C;\n"
+              "struct S {\n"
+              "    S() { p = new C; }\n"
+              "    ~S();\n"
+              "    C* p;\n"
+              "};\n"
+              "S::~S() = default;\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'S' is unsafe, 'S::p' can leak by wrong usage.\n", errout.str());
     }
 
     void staticvar() {
