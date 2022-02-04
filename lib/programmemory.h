@@ -46,7 +46,8 @@ struct ExprIdToken {
     }
 
     template<class T, class U>
-    friend bool operator!=(const T& lhs, const U& rhs) {
+    friend bool operator!=(const T& lhs, const U& rhs)
+    {
         return !(lhs == rhs);
     }
 
@@ -108,7 +109,7 @@ struct ProgramMemory {
         return values.end();
     }
 
-    private:
+private:
     Map values;
 };
 
@@ -156,7 +157,7 @@ bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* s
 /**
  * Get program memory by looking backwards from given token.
  */
-ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings *settings);
+ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings);
 
 ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars);
 

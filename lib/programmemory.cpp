@@ -38,8 +38,7 @@
 #include <utility>
 #include <vector>
 
-nonneg int ExprIdToken::getExpressionId() const
-{
+nonneg int ExprIdToken::getExpressionId() const {
     return tok ? tok->exprId() : exprid;
 }
 
@@ -48,8 +47,7 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
     return std::hash<nonneg int>()(etok.getExpressionId());
 }
 
-void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value)
-{
+void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     values[expr] = value;
 }
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
@@ -126,8 +124,7 @@ void ProgramMemory::setContainerSizeValue(const Token* expr, MathLib::bigint val
     values[expr] = v;
 }
 
-void ProgramMemory::setUnknown(const Token* expr)
-{
+void ProgramMemory::setUnknown(const Token* expr) {
     values[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
@@ -136,12 +133,10 @@ bool ProgramMemory::hasValue(nonneg int exprid)
     return values.find(exprid) != values.end();
 }
 
-const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const
-{
+const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const {
     return values.at(exprid);
 }
-ValueFlow::Value& ProgramMemory::at(nonneg int exprid)
-{
+ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
     return values.at(exprid);
 }
 
@@ -179,7 +174,7 @@ void ProgramMemory::replace(const ProgramMemory &pm)
 
 void ProgramMemory::insert(const ProgramMemory &pm)
 {
-    for (auto&& p:pm)
+    for (auto&& p : pm)
         values.insert(p);
 }
 
@@ -392,7 +387,7 @@ ProgramMemoryState::ProgramMemoryState(const Settings* s) : state(), origins(), 
 void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
 {
     if (origin)
-        for (auto&& p:pm)
+        for (auto&& p : pm)
             origins.insert(std::make_pair(p.first.getExpressionId(), origin));
     state.insert(pm);
 }
@@ -400,7 +395,7 @@ void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
 void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
 {
     if (origin)
-        for (auto&& p:pm)
+        for (auto&& p : pm)
             origins[p.first.getExpressionId()] = origin;
     state.replace(pm);
 }
@@ -498,7 +493,7 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     return programMemory;
 }
 
-ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings *settings)
+ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings)
 {
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));
