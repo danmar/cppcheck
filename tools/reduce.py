@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import subprocess
 import sys
+import time
 
+# TODO: add --hang option to detect code which impacts the analysis time
 def show_syntax():
     print('Syntax:')
     print('  reduce.py --cmd=<full command> --expected=<expected text output> --file=<source file> [--segfault]')
@@ -17,7 +19,9 @@ CMD = None
 EXPECTED = None
 SEGFAULT = False
 FILE = None
+ORGFILE = None
 BACKUPFILE = None
+TIMEOUTFILE = None
 for arg in sys.argv[1:]:
     if arg.startswith('--cmd='):
         CMD = arg[arg.find('=') + 1:]
@@ -25,7 +29,9 @@ for arg in sys.argv[1:]:
         EXPECTED = arg[arg.find('=') + 1:]
     elif arg.startswith('--file='):
         FILE = arg[arg.find('=') + 1:]
+        ORGFILE = FILE + '.org'
         BACKUPFILE = FILE + '.bak'
+        TIMEOUTFILE = FILE + '.timeout'
     elif arg == '--segfault':
         SEGFAULT = True
 
@@ -36,6 +42,11 @@ if CMD is None:
 if not SEGFAULT and EXPECTED is None:
     print('Abort: No --expected')
     show_syntax()
+
+# need to add '--error-exitcode=0' so detected issues will not be interpreted as a crash
+if SEGFAULT and not '--error-exitcode=0' in CMD:
+    print("Adding '--error-exitcode=0' to --cmd")
+    CMD = CMD + ' --error-exitcode=0'
 
 if FILE is None:
     print('Abort: No --file')
@@ -49,9 +60,22 @@ else:
 print('FILE=' + FILE)
 
 
-def runtool():
+def runtool(filedata=None):
+    timeout = None
+    if elapsed_time:
+        timeout = elapsed_time * 2
     p = subprocess.Popen(CMD.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    comm = p.communicate()
+    try:
+        comm = p.communicate(timeout=timeout, universal_newlines=True)
+    except subprocess.TimeoutExpired:
+        print('timeout')
+        p.kill()
+        p.communicate()
+        if filedata:
+            writefile(TIMEOUTFILE, filedata)
+        return False
+    #print(p.returncode)
+    #print(comm)
     if SEGFAULT:
         if p.returncode != 0:
             return True
@@ -78,7 +102,7 @@ def replaceandrun(what, filedata, i, line):
     bak = filedata[i]
     filedata[i] = line
     writefile(FILE, filedata)
-    if runtool():
+    if runtool(filedata):
         print('pass')
         writefile(BACKUPFILE, filedata)
         return True
@@ -94,7 +118,7 @@ def replaceandrun2(what, filedata, i, line1, line2):
     filedata[i] = line1
     filedata[i + 1] = line2
     writefile(FILE, filedata)
-    if runtool():
+    if runtool(filedata):
         print('pass')
         writefile(BACKUPFILE, filedata)
     else:
@@ -111,7 +135,7 @@ def clearandrun(what, filedata, i1, i2):
         filedata2[i] = ''
         i = i + 1
     writefile(FILE, filedata2)
-    if runtool():
+    if runtool(filedata2):
         print('pass')
         writefile(BACKUPFILE, filedata2)
         return filedata2
@@ -253,15 +277,19 @@ def removeline(filedata):
 
 # reduce..
 print('Make sure error can be reproduced...')
+elapsed_time = None
+t = time.time()
 if not runtool():
     print("Cannot reproduce")
     sys.exit(1)
+elapsed_time = time.time() - t
+print('elapsed_time: {}'.format(elapsed_time))
 
 f = open(FILE, 'rt')
 filedata = f.readlines()
 f.close()
 
-writefile(BACKUPFILE, filedata)
+writefile(ORGFILE, filedata)
 
 while True:
     filedata1 = list(filedata)
