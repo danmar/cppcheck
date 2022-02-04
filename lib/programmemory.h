@@ -28,7 +28,7 @@
 class Token;
 class Settings;
 
-// Class used to handle hetrogeneous keys in unordered_map(since we can't use C++20 yet)
+// Class used to handle hetrogeneous lookup in unordered_map(since we can't use C++20 yet)
 struct ExprIdToken {
     const Token* tok = nullptr;
     nonneg int exprid = 0;
