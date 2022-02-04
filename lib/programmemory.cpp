@@ -410,8 +410,6 @@ static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
     for (const auto& p:vars) {
         const ValueFlow::Value &value = p.second;
         pm.setValue(p.first.tok, value);
-        // if (value.varId)
-            // pm.setIntValue(value.varId, value.varvalue);
     }
 }
 
@@ -494,8 +492,6 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     for (const auto& p:vars) {
         const ValueFlow::Value &value = p.second;
         programMemory.setValue(p.first.tok, value);
-        // if (value.varId)
-            // programMemory.setIntValue(value.varId, value.varvalue);
     }
     state = programMemory;
     fillProgramMemoryFromAssignments(programMemory, tok, state, vars);
@@ -509,8 +505,6 @@ ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueF
     programMemory.replace(getInitialProgramState(tok, value.condition));
     fillProgramMemoryFromConditions(programMemory, tok, settings);
     programMemory.setValue(expr, value);
-    // if (value.varId)
-        // programMemory.setIntValue(value.varId, value.varvalue);
     const ProgramMemory state = programMemory;
     fillProgramMemoryFromAssignments(programMemory, tok, state, {{expr, value}});
     return programMemory;
