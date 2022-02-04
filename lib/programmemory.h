@@ -28,12 +28,15 @@
 class Token;
 class Settings;
 
+// Class used to handle hetrogeneous keys in unordered_map(since we can't use C++20 yet)
 struct ExprIdToken {
     const Token* tok = nullptr;
     nonneg int exprid = 0;
 
     ExprIdToken() = default;
+    // cppcheck-suppress noExplicitConstructor
     ExprIdToken(const Token* tok) : tok(tok) {}
+    // cppcheck-suppress noExplicitConstructor
     ExprIdToken(nonneg int exprid) : exprid(exprid) {}
 
     nonneg int getExpressionId() const;
