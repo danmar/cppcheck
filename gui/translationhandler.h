@@ -19,9 +19,8 @@
 #ifndef TRANSLATIONHANDLER_H
 #define TRANSLATIONHANDLER_H
 
-#include <QStringList>
-#include <QObject>
 #include <QList>
+#include <QObject>
 
 class QTranslator;
 

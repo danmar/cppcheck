@@ -1370,7 +1370,7 @@ void CheckStl::eraseCheckLoopVar(const Scope &scope, const Variable *var)
         // Vector erases are handled by invalidContainer check
         if (isVector(tok->tokAt(-3)))
             continue;
-        if (Token::simpleMatch(tok->astParent(), "="))
+        if (Token::Match(tok->astParent(), "=|return"))
             continue;
         // Iterator is invalid..
         int indentlevel = 0U;

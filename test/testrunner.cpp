@@ -16,17 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "errortypes.h"
 #include "options.h"
 #include "preprocessor.h"
 #include "testsuite.h"
 
 #include <cstdlib>
-#include <exception>
-#include <string>
 
 #ifdef NDEBUG
+#include "errortypes.h"    // for InternalError
+
+#include <exception>
 #include <iostream>
+#include <string>
 #endif
 
 int main(int argc, char *argv[])

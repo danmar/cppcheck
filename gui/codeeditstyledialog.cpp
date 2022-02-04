@@ -20,8 +20,9 @@
 
 #include "codeeditor.h"
 #include "codeeditstylecontrols.h"
-#include <QFormLayout>
+
 #include <QDialogButtonBox>
+#include <QFormLayout>
 
 const QString StyleEditDialog::mSampleDocument(
     "/*****\n"
@@ -119,7 +120,11 @@ StyleEditDialog::StyleEditDialog(const CodeEditorStyle& newStyle,
     mSampleEditor = new CodeEditor(this);
     QFont sampleFont("Monospace");
     QFontMetrics fm(sampleFont);
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    mSampleEditor->setMinimumWidth(fm.horizontalAdvance(QString(40, 'W')));
+#else
     mSampleEditor->setMinimumWidth(fm.width(QString(40, 'W')));
+#endif
     // designate highlight, errors, and symbols
     mSampleEditor->setError(mSampleDocument, mErrLineNum, mErrSymbolsList);
     // End Controls

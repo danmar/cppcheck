@@ -40,8 +40,8 @@
 #include <memory>
 #include <ostream>
 #include <set>
-#include <type_traits>
 #include <utility>
+#include <numeric>
 
 //---------------------------------------------------------------------------
 
@@ -1155,6 +1155,13 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
         return 0;
 
     int cumulatedSize = 0;
+    const bool isUnion = type->classScope->type == Scope::ScopeType::eUnion;
+    const auto accumulateSize = [](int& cumulatedSize, int size, bool isUnion) -> void {
+        if (isUnion)
+            cumulatedSize = std::max(cumulatedSize, size);
+        else
+            cumulatedSize += size;
+    };
     for (const Variable&var : type->classScope->varlist) {
         int size = 0;
         if (var.isStatic())
@@ -1169,9 +1176,11 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
         if (var.isArray())
-            cumulatedSize += size * var.dimension(0);
-        else
-            cumulatedSize += size;
+            size *= std::accumulate(var.dimensions().begin(), var.dimensions().end(), 1, [](int v, const Dimension& d) {
+                return v *= d.num;
+            });
+
+        accumulateSize(cumulatedSize, size, isUnion);
     }
     for (const Type::BaseInfo &baseInfo : type->derivedFrom) {
         if (baseInfo.type && baseInfo.type->classScope)
@@ -3272,6 +3281,8 @@ void CheckOther::checkShadowVariables()
             if (!shadowed)
                 continue;
             if (scope.type == Scope::eFunction && scope.className == var.name())
+                continue;
+            if (functionScope->function && functionScope->function->isStatic() && shadowed->variable() && !shadowed->variable()->isLocal())
                 continue;
             shadowError(var.nameToken(), shadowed, (shadowed->varId() != 0) ? "variable" : "function");
         }

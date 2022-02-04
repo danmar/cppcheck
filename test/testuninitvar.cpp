@@ -525,6 +525,24 @@ private:
                                "}");
                 ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
 
+                checkUninitVar("void f() {\n" // #9696
+                               "  int *p = new int[10];\n"
+                               "  std::cout << p << 1;\n"
+                               "}");
+                ASSERT_EQUALS("", errout.str());
+
+                checkUninitVar("void f() {\n"
+                               "  int i[10];\n"
+                               "  std::cout << i;\n"
+                               "  char c[10];\n"
+                               "  std::cout << c;\n"
+                               "  wchar_t w[10];\n"
+                               "  std::cout << w;\n"
+                               "}");
+                ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: c\n"
+                              "[test.cpp:7]: (error) Uninitialized variable: w\n",
+                              errout.str());
+
                 checkUninitVar("void f() {\n"
                                "  char p[10];\n"
                                "  std::cout << p << 1;\n"

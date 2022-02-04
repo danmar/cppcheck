@@ -29,7 +29,7 @@
 #include <algorithm>
 #include <cstdlib>
 #include <cstring>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
 #include <iterator>
 

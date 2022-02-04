@@ -1665,6 +1665,18 @@ private:
               "void foo(X x4){}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("union U {\n"
+              "    char* pc;\n"
+              "    short* ps;\n"
+              "    int* pi;\n"
+              "};\n"
+              "void f(U u) {}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char A[8][8]; };\n"
+              "void f(S s) {}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n", errout.str());
+
         Settings settings1;
         settings1.platform(Settings::Win64);
         check("using ui64 = unsigned __int64;\n"
@@ -2652,6 +2664,16 @@ private:
               "struct Bar {\n"
               "    int j{};\n"
               "    void f(Foo& foo) const { int* q = foo.get(); *q = j; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #10679
+              "    void g(long L, const C*& PC) const;\n"
+              "    void g(long L, C*& PC);\n"
+              "};\n"
+              "void f(S& s) {\n"
+              "    C* PC{};\n"
+              "    s.g(0, PC);\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -9322,6 +9344,26 @@ private:
         ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:1]: (style) Local variable 'x' shadows outer argument\n", errout.str());
 
         check("class C { C(); void foo() { static int C = 0; } }"); // #9195 - shadow constructor
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct C {\n" // #10091 - shadow destructor
+              "    ~C();\n"
+              "    void f() {\n"
+              "        bool C{};\n"
+              "    }\n"
+              "};\n"
+              "C::~C() = default;");
+        ASSERT_EQUALS("", errout.str());
+
+        // 10752 - no
+        check("struct S {\n"
+              "    int i;\n"
+              "\n"
+              "    static int foo() {\n"
+              "        int i = 0;\n"
+              "        return i;\n"
+              "    }\n"
+              "};");
         ASSERT_EQUALS("", errout.str());
     }
 

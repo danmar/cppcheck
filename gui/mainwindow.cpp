@@ -18,23 +18,10 @@
 
 #include "mainwindow.h"
 
-#include <QApplication>
-#include <QDebug>
-#include <QMessageBox>
-#include <QFileInfo>
-#include <QDir>
-#include <QAction>
-#include <QActionGroup>
-#include <QFile>
-#include <QInputDialog>
-#include <QTimer>
-#include <QSettings>
-
-#include "cppcheck.h"
-
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "common.h"
+#include "cppcheck.h"
 #include "filelist.h"
 #include "fileviewdialog.h"
 #include "functioncontractdialog.h"
@@ -51,6 +38,18 @@
 #include "threadresult.h"
 #include "translationhandler.h"
 #include "variablecontractsdialog.h"
+
+#include <QApplication>
+#include <QAction>
+#include <QActionGroup>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QSettings>
+#include <QTimer>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");

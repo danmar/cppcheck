@@ -24,6 +24,7 @@
 #include "path.h"
 #include "token.h"
 #include "tokenlist.h"
+#include "utils.h"
 
 #include <algorithm>
 #include <array>

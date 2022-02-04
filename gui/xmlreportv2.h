@@ -19,8 +19,9 @@
 #ifndef XML_REPORTV2_H
 #define XML_REPORTV2_H
 
-#include <QString>
 #include "xmlreport.h"
+
+#include <QString>
 
 class QXmlStreamReader;
 class QXmlStreamWriter;

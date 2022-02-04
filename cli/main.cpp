@@ -59,15 +59,15 @@
  */
 
 
-#include "errortypes.h"
 #include "cppcheckexecutor.h"
+
+#ifdef NDEBUG
+#include "errortypes.h"
 
 #include <cstdlib>
 #include <exception>
-#include <string>
-
-#ifdef NDEBUG
 #include <iostream>
+#include <string>
 #endif
 
 #ifdef _WIN32

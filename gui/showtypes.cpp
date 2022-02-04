@@ -21,8 +21,6 @@
 #include "common.h"
 
 #include <QSettings>
-#include <QMap>
-#include <QString>
 
 ShowTypes::ShowTypes()
 {

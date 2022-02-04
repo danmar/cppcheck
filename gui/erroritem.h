@@ -19,10 +19,11 @@
 #ifndef ERRORITEM_H
 #define ERRORITEM_H
 
-#include <QString>
-#include <QMetaType>
-#include <QList>
 #include "errorlogger.h"
+
+#include <QList>
+#include <QMetaType>
+#include <QString>
 
 /// @addtogroup GUI
 /// @{

@@ -18,6 +18,9 @@
 
 #include "testcppchecklibrarydata.h"
 
+#include <QDebug>
+#include <QTest>
+
 const QString TestCppcheckLibraryData::TempCfgFile = "./tmp.cfg";
 
 void TestCppcheckLibraryData::init()

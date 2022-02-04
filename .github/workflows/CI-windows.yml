@@ -91,6 +91,14 @@ jobs:
           7z x z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -oexternals -r -y || exit /b !errorlevel!
           move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
 
+      - name: Cache Qt ${{ matrix.qt_ver }}
+        if: matrix.qt_ver != '' && matrix.arch == 'x64'
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Windows-QtCache-${{ matrix.qt_ver }}-qtcharts
+
       # no 32-bit Qt available
       - name: Install Qt ${{ matrix.qt_ver }}
         if: matrix.qt_ver != '' && matrix.arch == 'x64'
@@ -98,6 +106,7 @@ jobs:
         with:
           version: ${{ matrix.qt_ver }}
           modules: 'qtcharts'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
       - name: Install missing Python packages
         if: matrix.qt_ver == ''

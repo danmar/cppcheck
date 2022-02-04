@@ -5561,6 +5561,24 @@ private:
                                     "class C<int> { } ;";
             ASSERT_EQUALS(expected, tok(code));
         }
+        {
+            const char code[] = "class A {};\n"
+                                "template<typename T> struct B;\n"
+                                "template<> struct B<A> {};\n"
+                                "int f() {\n"
+                                "    int B[1] = {};\n"
+                                "    return B[0];\n"
+                                "}\n";
+            const char expected[] = "class A { } ; "
+                                    "struct B<A> ; "
+                                    "template < typename T > struct B ; "
+                                    "struct B<A> { } ; "
+                                    "int f ( ) { "
+                                    "int B [ 1 ] = { } ; "
+                                    "return B [ 0 ] ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
     }
 
     void templateAlias1() {

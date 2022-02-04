@@ -150,7 +150,7 @@
               <optional>
                 <attribute name="type">
                   <data type="string">
-                    <param name="pattern">([a-zA-Z_][a-zA-Z_0-9:]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*([a-zA-Z_][a-zA-Z_0-9]*([ ]?[*&amp;])*)+</param>
+                    <param name="pattern">(::)?([a-zA-Z_:][a-zA-Z_0-9:]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*([a-zA-Z_][a-zA-Z_0-9]*([ ]?[*&amp; ])*)+</param>
                   </data>
                 </attribute>
               </optional>
@@ -598,7 +598,7 @@
   <define name="ARGNO">
     <data type="integer">
       <param name="minInclusive">1</param>
-      <param name="maxInclusive">20</param>
+      <param name="maxInclusive">40</param>
     </data>
   </define>
 

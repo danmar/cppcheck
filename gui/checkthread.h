@@ -20,9 +20,10 @@
 #ifndef CHECKTHREAD_H
 #define CHECKTHREAD_H
 
-#include <QThread>
 #include "cppcheck.h"
 #include "suppressions.h"
+
+#include <QThread>
 
 class Settings;
 class ThreadResult;
