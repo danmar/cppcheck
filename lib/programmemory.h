@@ -61,7 +61,7 @@ struct ProgramMemory {
 
     ProgramMemory() = default;
 
-    ProgramMemory(const Map& values) : values(values) {}
+    explicit ProgramMemory(const Map& values) : values(values) {}
 
     void setValue(const Token* expr, const ValueFlow::Value& value);
     const ValueFlow::Value* getValue(nonneg int exprid, bool impossible = false) const;

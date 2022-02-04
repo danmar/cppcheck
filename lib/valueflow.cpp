@@ -6303,7 +6303,7 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
     }
 
     virtual void forkScope(const Token* endBlock) OVERRIDE {
-        ProgramMemory pm = {getProgramState()};
+        ProgramMemory pm{getProgramState()};
         const Scope* scope = endBlock->scope();
         const Token* condTok = getCondTokFromEnd(endBlock);
         if (scope && condTok)
