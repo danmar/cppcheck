@@ -444,16 +444,6 @@ void ProgramMemoryState::removeModifiedVars(const Token* tok)
         }
         return false;
     });
-    // for (auto i = state.values.begin(), last = state.values.end(); i != last;) {
-    //     const Token* start = origins[i->first.getExpressionId()];
-    //     const Token* expr = i->first.tok;
-    //     if (!expr || isExpressionChanged(expr, start, tok, settings, true)) {
-    //         origins.erase(i->first.getExpressionId());
-    //         i = state.values.erase(i);
-    //     } else {
-    //         ++i;
-    //     }
-    // }
 }
 
 ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const

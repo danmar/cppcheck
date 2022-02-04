@@ -866,8 +866,8 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
                     ValueFlow::Value result(0);
                     result.condition = value1.condition ? value1.condition : value2.condition;
                     result.setInconclusive(value1.isInconclusive() | value2.isInconclusive());
-                    // result.varId = (value1.varId != 0) ? value1.varId : value2.varId;
-                    // result.varvalue = (result.varId == value1.varId) ? value1.intvalue : value2.intvalue;
+                    result.varId = (value1.varId != 0) ? value1.varId : value2.varId;
+                    result.varvalue = (result.varId == value1.varId) ? value1.intvalue : value2.intvalue;
                     if (value1.valueKind == value2.valueKind)
                         result.valueKind = value1.valueKind;
                     if (value1.tokvalue->tokType() == Token::eString) {
