@@ -15,9 +15,9 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-2019, windows-2022]
         arch: [x64, x86]
-        qt_ver: ['', 5.9.9, 5.15.2]
+        qt_ver: ['', 5.15.2]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -38,9 +38,10 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Setup msbuild.exe
-        if: matrix.qt_ver == ''
-        uses: microsoft/setup-msbuild@v1.0.2
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
 
       - name: Cache PCRE
         id: cache-pcre
@@ -58,7 +59,6 @@ jobs:
       - name: Install PCRE
         if: matrix.arch == 'x64' || matrix.qt_ver == ''
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
           cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off || exit /b !errorlevel!
@@ -118,7 +118,6 @@ jobs:
       - name: Build GUI release
         if: matrix.qt_ver != '' && matrix.arch == 'x64'
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           cd gui || exit /b !errorlevel!
           qmake HAVE_QCHART=yes || exit /b !errorlevel!
           nmake release || exit /b !errorlevel!
@@ -132,10 +131,9 @@ jobs:
           del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
 
-      - name: Configure MSBuild
-        if: matrix.qt_ver == ''
+      - name: Run CMake
+        if: false && matrix.qt_ver == ''
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
@@ -148,28 +146,38 @@ jobs:
       - name: Build CLI debug configuration using MSBuild
         if: matrix.qt_ver == ''
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          cmake --build build --target check --config Debug || exit /b !errorlevel!
+          :: cmake --build build --target check --config Debug || exit /b !errorlevel!
+          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
+
+      - name: Run Debug test
+        if: matrix.qt_ver == ''
+        run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
 
       - name: Build CLI release configuration using MSBuild
         if: matrix.qt_ver == ''
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          cmake --build build --target check --config Release || exit /b !errorlevel!
+          :: cmake --build build --target check --config Release || exit /b !errorlevel!
+          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
+
+      - name: Run Release test
+        if: matrix.qt_ver == ''
+        run: .\bin\testrunner.exe || exit /b !errorlevel!
 
       - name: Run test/cli
         if: matrix.qt_ver == ''
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
-          copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          :: copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          copy .\bin\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
           cd test/cli || exit /b !errorlevel!
           :: python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
           python -m pytest test-helloworld.py || exit /b !errorlevel!
