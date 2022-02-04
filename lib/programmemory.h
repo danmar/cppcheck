@@ -36,6 +36,7 @@ struct ExprIdToken {
     ExprIdToken() = default;
     // cppcheck-suppress noExplicitConstructor
     ExprIdToken(const Token* tok) : tok(tok) {}
+    // TODO: Make this constructor only available from ProgramMemory
     // cppcheck-suppress noExplicitConstructor
     ExprIdToken(nonneg int exprid) : exprid(exprid) {}
 
