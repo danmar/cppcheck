@@ -99,10 +99,10 @@ unsigned CheckStatistics::getCount(const QString &tool, ShowTypes::ShowType type
 QStringList CheckStatistics::getTools() const
 {
     QSet<QString> ret;
-    foreach (QString tool, mStyle.keys()) ret.insert(tool);
-    foreach (QString tool, mWarning.keys()) ret.insert(tool);
-    foreach (QString tool, mPerformance.keys()) ret.insert(tool);
-    foreach (QString tool, mPortability.keys()) ret.insert(tool);
-    foreach (QString tool, mError.keys()) ret.insert(tool);
+    for (const QString& tool: mStyle.keys()) ret.insert(tool);
+    for (const QString& tool: mWarning.keys()) ret.insert(tool);
+    for (const QString& tool: mPerformance.keys()) ret.insert(tool);
+    for (const QString& tool: mPortability.keys()) ret.insert(tool);
+    for (const QString& tool: mError.keys()) ret.insert(tool);
     return QStringList(ret.values());
 }

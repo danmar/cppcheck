@@ -515,8 +515,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (!checkSettings.buildDir.empty()) {
         checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
-        foreach (QString s, fileNames)
-        sourcefiles.push_back(s.toStdString());
+        for (const QString& s: fileNames)
+            sourcefiles.push_back(s.toStdString());
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
     }
 
