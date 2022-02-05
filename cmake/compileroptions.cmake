@@ -51,6 +51,12 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     add_compile_options(-Wsuggest-attribute=noreturn)
     add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14)
+        if (CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+            # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
+            add_compile_options(-mllvm -inline-deferral)
+        endif()
+    endif()
 
    add_compile_options_safe(-Wno-documentation-unknown-command)
 
