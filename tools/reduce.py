@@ -3,6 +3,18 @@ import subprocess
 import sys
 import time
 
+if sys.version_info[0] < 3:
+    class TimeoutExpired(Exception):
+        pass
+else:
+    TimeoutExpired = subprocess.TimeoutExpired
+
+def communicate(p, timeout=None, **kwargs):
+    if sys.version_info[0] < 3:
+        return p.communicate(**kwargs)
+    else:
+        return p.communicate(timeout=timeout)
+
 # TODO: add --hang option to detect code which impacts the analysis time
 def show_syntax():
     print('Syntax:')
@@ -59,15 +71,14 @@ else:
     print('EXPECTED=' + EXPECTED)
 print('FILE=' + FILE)
 
-
 def runtool(filedata=None):
     timeout = None
     if elapsed_time:
         timeout = elapsed_time * 2
-    p = subprocess.Popen(CMD.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    p = subprocess.Popen(CMD.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     try:
-        comm = p.communicate(timeout=timeout)
-    except subprocess.TimeoutExpired:
+        comm = communicate(p, timeout=timeout)
+    except TimeoutExpired:
         print('timeout')
         p.kill()
         p.communicate()
@@ -278,11 +289,11 @@ def removeline(filedata):
 # reduce..
 print('Make sure error can be reproduced...')
 elapsed_time = None
-t = time.perf_counter()
+t = time.time()
 if not runtool():
     print("Cannot reproduce")
     sys.exit(1)
-elapsed_time = time.perf_counter() - t
+elapsed_time = time.time() - t
 print('elapsed_time: {}'.format(elapsed_time))
 
 f = open(FILE, 'rt')
