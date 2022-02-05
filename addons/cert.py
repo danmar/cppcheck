@@ -195,7 +195,9 @@ def int31(data, platform):
         if to_value_type is None or not from_values:
             continue
         bits = None
-        if to_value_type.type == 'char':
+        if token.valueType.pointer > 0:
+            bits = platform.pointer_bit
+        elif to_value_type.type == 'char':
             bits = platform.char_bit
         elif to_value_type.type == 'short':
             bits = platform.short_bit

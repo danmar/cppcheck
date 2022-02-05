@@ -82,6 +82,11 @@ void int31(int x)
     unsigned char c;
     c = 256;
     c = -1;
+
+    // issue #10782
+    uint16_t * ptr;
+    uint32_t   var = 65536;
+    ptr = (uint16_t *)var;
 }
 
 void env33()
