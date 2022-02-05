@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,7 +31,6 @@
 #include <set>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -69,7 +68,7 @@ public:
     Error load(const char exename[], const char path[]);
     Error load(const tinyxml2::XMLDocument &doc);
 
-    /** this is primarily meant for unit tests. it only returns true/false */
+    /** this is used for unit tests */
     bool loadxmldata(const char xmldata[], std::size_t len);
 
     struct AllocFunc {

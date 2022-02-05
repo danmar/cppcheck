@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,18 @@
 
 #include "projectfiledialog.h"
 
-#include <QFileInfo>
-#include <QFileDialog>
-#include <QDir>
-#include <QSettings>
-#include "common.h"
-#include "newsuppressiondialog.h"
 #include "checkthread.h"
-#include "projectfile.h"
-#include "library.h"
-#include "platforms.h"
+#include "common.h"
 #include "importproject.h"
+#include "library.h"
+#include "newsuppressiondialog.h"
+#include "platforms.h"
+#include "projectfile.h"
+
+#include <QDir>
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QSettings>
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
@@ -410,7 +411,11 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setAddons(list);
     projectFile->setClangAnalyzer(mUI.mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI.mToolClangTidy->isChecked());
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+    projectFile->setTags(mUI.mEditTags->text().split(";", Qt::SkipEmptyParts));
+#else
     projectFile->setTags(mUI.mEditTags->text().split(";", QString::SkipEmptyParts));
+#endif
 }
 
 void ProjectFileDialog::ok()
@@ -584,13 +589,21 @@ QStringList ProjectFileDialog::getIncludePaths() const
 
 QStringList ProjectFileDialog::getDefines() const
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+    return mUI.mEditDefines->text().trimmed().split(QRegExp("\\s*;\\s*"), Qt::SkipEmptyParts);
+#else
     return mUI.mEditDefines->text().trimmed().split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts);
+#endif
 }
 
 QStringList ProjectFileDialog::getUndefines() const
 {
     const QString undefine = mUI.mEditUndefines->text().trimmed();
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+    QStringList undefines = undefine.split(QRegExp("\\s*;\\s*"), Qt::SkipEmptyParts);
+#else
     QStringList undefines = undefine.split(QRegExp("\\s*;\\s*"), QString::SkipEmptyParts);
+#endif
     undefines.removeDuplicates();
     return undefines;
 }

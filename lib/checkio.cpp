@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,11 +28,15 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include <algorithm>
 #include <cctype>
 #include <cstdlib>
+#include <functional>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
+#include <unordered_set>
 #include <utility>
 #include <vector>
 
@@ -1386,6 +1390,8 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
             for (int p = 0; p < valuetype->pointer; p++)
                 tempToken->insertToken("*");
             tempToken = const_cast<Token*>(typeToken);
+            if (top->isBinaryOp() && valuetype->pointer == 1 && (valuetype->type == ValueType::CHAR || valuetype->type == ValueType::WCHAR_T))
+                tempToken->tokType(Token::eString);
             return;
         }
     }

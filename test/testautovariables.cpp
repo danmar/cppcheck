@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,13 @@
 
 
 #include "checkautovariables.h"
+#include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 
 class TestAutoVariables : public TestFixture {
 public:
@@ -646,14 +649,14 @@ private:
               "    char *p = tmp1;\n"
               "    free(p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of an static variable (tmp1) results in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of a static variable (tmp1) results in undefined behaviour.\n", errout.str());
 
         check("char tmp1[256];\n"
               "void func1() {\n"
               "    char *p; if (x) p = tmp1;\n"
               "    free(p);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of an global variable (tmp1) results in undefined behaviour.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Deallocation of a global variable (tmp1) results in undefined behaviour.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -804,11 +807,11 @@ private:
               "    p = \"abc\";\n"
               "    free(p);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of an string literal results in undefined behaviour.\n"
-                      "[test.cpp:4]: (error) Deallocation of an string literal results in undefined behaviour.\n"
-                      "[test.cpp:5]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
-                      "[test.cpp:6]: (error) Deallocation of an pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
-                      "[test.cpp:9]: (error) Deallocation of an pointer pointing to a string literal (\"abc\") results in undefined behaviour.\n",
+        ASSERT_EQUALS("[test.cpp:3]: (error) Deallocation of a string literal results in undefined behaviour.\n"
+                      "[test.cpp:4]: (error) Deallocation of a string literal results in undefined behaviour.\n"
+                      "[test.cpp:5]: (error) Deallocation of a pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
+                      "[test.cpp:6]: (error) Deallocation of a pointer pointing to a string literal (\"a\") results in undefined behaviour.\n"
+                      "[test.cpp:9]: (error) Deallocation of a pointer pointing to a string literal (\"abc\") results in undefined behaviour.\n",
                       errout.str());
 
         check("void f() {\n"
@@ -3295,6 +3298,28 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using iterator that is a temporary.\n",
                       errout.str());
+
+        check("void f(bool b) {\n"
+              "  std::vector<int> ints = g();\n"
+              "  auto *ptr = &ints;\n"
+              "  if (b)\n"
+              "    ptr = &ints;\n"
+              "  for (auto it = ptr->begin(); it != ptr->end(); ++it)\n"
+              "  {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct String {\n" // #10469
+              "    void Append(uint8_t Val);\n"
+              "    String& operator+=(const char s[]);\n"
+              "    String& operator+=(const std::string& Str) {\n"
+              "        return operator+=(Str.c_str());\n"
+              "    }\n"
+              "    void operator+=(uint8_t Val) {\n"
+              "        Append(Val);\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,9 @@
 
 #include <iostream>
 #include <list>
+#include <memory>
 #include <utility>
+#include <vector>
 
 //---------------------------------------------------------------------------
 
@@ -836,7 +838,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
             var->second.type = allocation.type;
             var->second.allocTok = allocation.allocTok;
         }
-    } else if (allocation.status != VarInfo::NOALLOC) {
+    } else if (allocation.status != VarInfo::NOALLOC && allocation.status != VarInfo::OWNED) {
         alloctype[arg->varId()].status = VarInfo::DEALLOC;
         alloctype[arg->varId()].allocTok = tok;
     }

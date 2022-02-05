@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,14 @@
 
 #include "threadhandler.h"
 
-#include <QFileInfo>
-#include <QDebug>
-#include <QSettings>
-#include "common.h"
-#include "settings.h"
 #include "checkthread.h"
+#include "common.h"
 #include "resultsview.h"
+#include "settings.h"
+
+#include <QDebug>
+#include <QFileInfo>
+#include <QSettings>
 
 ThreadHandler::ThreadHandler(QObject *parent) :
     QObject(parent),
@@ -112,7 +113,7 @@ void ThreadHandler::check(const Settings &settings)
 
     mAnalyseWholeProgram = true;
 
-    mTime.start();
+    mTimer.start();
 }
 
 bool ThreadHandler::isChecking() const
@@ -168,7 +169,7 @@ void ThreadHandler::threadDone()
     if (mRunningThreadCount == 0) {
         emit done();
 
-        mScanDuration = mTime.elapsed();
+        mScanDuration = mTimer.elapsed();
 
         // Set date/time used by the recheck
         if (!mCheckStartTime.isNull()) {

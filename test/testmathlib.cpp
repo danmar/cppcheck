@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,10 +17,12 @@
  */
 
 
+#include "config.h"
 #include "mathlib.h"
 #include "testsuite.h"
 
 #include <limits>
+#include <string>
 
 struct InternalError;
 
@@ -62,7 +64,6 @@ private:
         TEST_CASE(tan);
         TEST_CASE(abs);
         TEST_CASE(toString);
-        TEST_CASE(characterLiteralsNormalization);
         TEST_CASE(CPP14DigitSeparators);
     }
 
@@ -1244,27 +1245,6 @@ private:
         // double (tailing l or L)
         ASSERT_EQUALS("0",  MathLib::toString(+0.0l));
         ASSERT_EQUALS("-0", MathLib::toString(-0.0L));
-    }
-
-    void characterLiteralsNormalization() const {
-        // `A` is 0x41 and 0101
-        ASSERT_EQUALS("A", MathLib::normalizeCharacterLiteral("\\x41"));
-        ASSERT_EQUALS("A", MathLib::normalizeCharacterLiteral("\\101"));
-        // Hexa and octal numbers should not only be interpreted in byte 1
-        ASSERT_EQUALS("TESTATEST", MathLib::normalizeCharacterLiteral("TEST\\x41TEST"));
-        ASSERT_EQUALS("TESTATEST", MathLib::normalizeCharacterLiteral("TEST\\101TEST"));
-        ASSERT_EQUALS("TESTTESTA", MathLib::normalizeCharacterLiteral("TESTTEST\\x41"));
-        ASSERT_EQUALS("TESTTESTA", MathLib::normalizeCharacterLiteral("TESTTEST\\101"));
-        // Single escape sequences
-        ASSERT_EQUALS("\?", MathLib::normalizeCharacterLiteral("\\?"));
-        ASSERT_EQUALS("\'", MathLib::normalizeCharacterLiteral("\\'"));
-        // Incomplete hexa and octal sequences
-        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\"), InternalError);
-        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\x"), InternalError);
-        // No octal digit in an octal sequence
-        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\9"), InternalError);
-        // Unsupported single escape sequence
-        ASSERT_THROW(MathLib::normalizeCharacterLiteral("\\c"), InternalError);
     }
 
     void CPP14DigitSeparators() const { // Ticket #7137, #7565

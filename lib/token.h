@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,15 @@
 #include "templatesimplifier.h"
 #include "utils.h"
 
+#include <cstdint>
 #include <cstddef>
 #include <functional>
 #include <list>
 #include <memory>
 #include <ostream>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Enumerator;
@@ -43,8 +46,8 @@ class Type;
 class ValueType;
 class Variable;
 class TokenList;
-
 class ConstTokenRange;
+class Token;
 
 /**
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
@@ -863,7 +866,7 @@ public:
     void printOut(const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
-     * print out tokens
+     * print out tokens - used for debugging
      */
     void printLines(int lines=5) const;
 
@@ -1170,8 +1173,6 @@ public:
 
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize(const Settings *settings) const;
-
-    const Token *getValueTokenDeadPointer() const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);

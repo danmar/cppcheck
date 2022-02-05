@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,9 @@
 #ifndef APPLICATIONLIST_H
 #define APPLICATIONLIST_H
 
-#include <QObject>
 #include "application.h"
+
+#include <QObject>
 
 /// @addtogroup GUI
 /// @{
@@ -108,11 +109,13 @@ protected:
      */
     void clear();
 
+#ifdef _WIN32
     /**
      * @brief Find editor used by default in Windows.
      * Check if Notepad++ is installed and use it. If not, use Notepad.
      */
     bool findDefaultWindowsEditor();
+#endif
 
 private:
 

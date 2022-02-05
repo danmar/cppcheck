@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,24 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
-#include <QCoreApplication>
-#include <QMetaType>
-#include <QStringList>
-#include <QSettings>
-#ifdef _WIN32
-#include <QMessageBox>
-#include "aboutdialog.h"
-#else
-#include <iostream>
-#endif
 #include "cppcheck.h"
 #include "common.h"
 #include "mainwindow.h"
 #include "erroritem.h"
 #include "translationhandler.h"
+
+#ifdef _WIN32
+#include "aboutdialog.h"
+
+#include <QMessageBox>
+#else
+#include <iostream>
+#endif
+
+#include <QApplication>
+#include <QCoreApplication>
+#include <QStringList>
+#include <QSettings>
 
 
 static void ShowUsage();
@@ -47,14 +49,6 @@ int main(int argc, char *argv[])
 #endif
 
     QApplication app(argc, argv);
-
-#if QT_VERSION < 0x050000
-    // Set codecs so that UTF-8 strings in sources are handled correctly.
-    // This is ONLY needed for Qt versions 4.x.
-    // Qt 5.x assumes UTF-8 by default.
-    QTextCodec::setCodecForTr(QTextCodec::codecForName("UTF-8"));
-    QTextCodec::setCodecForCStrings(QTextCodec::codecForName("UTF-8"));
-#endif
 
     QCoreApplication::setOrganizationName("Cppcheck");
     QCoreApplication::setApplicationName("Cppcheck-GUI");

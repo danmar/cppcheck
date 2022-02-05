@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,16 @@
 
 
 #include "checkclass.h"
+#include "config.h"
+#include "errortypes.h"
+#include "standards.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <iosfwd>
+#include <list>
+#include <string>
 
 
 class TestConstructors : public TestFixture {
@@ -93,6 +100,7 @@ private:
         TEST_CASE(noConstructor10); // ticket #6614
         TEST_CASE(noConstructor11); // ticket #3552
         TEST_CASE(noConstructor12); // #8951 - member initialization
+        TEST_CASE(noConstructor13); // #9998
 
         TEST_CASE(forwardDeclaration); // ticket #4290/#3190
 
@@ -121,6 +129,7 @@ private:
         TEST_CASE(initvar_nocopy1);            // ticket #2474
         TEST_CASE(initvar_nocopy2);            // ticket #2484
         TEST_CASE(initvar_nocopy3);            // ticket #3611
+        TEST_CASE(initvar_nocopy4);            // ticket #9247
         TEST_CASE(initvar_with_member_function_this); // ticket #4824
 
         TEST_CASE(initvar_destructor);      // No variables need to be initialized in a destructor
@@ -129,6 +138,7 @@ private:
         TEST_CASE(initvar_alias); // #6921
 
         TEST_CASE(initvar_templateMember); // #7205
+        TEST_CASE(initvar_smartptr); // #10237
 
         TEST_CASE(operatorEqSTL);
 
@@ -232,14 +242,14 @@ private:
               "private:\n"
               "    int i;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not have a constructor although it has private member variables.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not declare a constructor although it has private member variables which likely require initialization.\n", errout.str());
 
         check("struct Fred\n"
               "{\n"
               "private:\n"
               "    int i;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The struct 'Fred' does not have a constructor although it has private member variables.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The struct 'Fred' does not declare a constructor although it has private member variables which likely require initialization.\n", errout.str());
     }
 
 
@@ -393,8 +403,8 @@ private:
         check("struct Fred { int x; };\n"
               "class Barney { Fred fred; };\n"
               "class Wilma { struct Betty { int x; } betty; };");
-        ASSERT_EQUALS("[test.cpp:2]: (style) The class 'Barney' does not have a constructor although it has private member variables.\n"
-                      "[test.cpp:3]: (style) The class 'Wilma' does not have a constructor although it has private member variables.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) The class 'Barney' does not declare a constructor although it has private member variables which likely require initialization.\n"
+                      "[test.cpp:3]: (style) The class 'Wilma' does not declare a constructor although it has private member variables which likely require initialization.\n", errout.str());
     }
 
     void simple9() { // ticket #4574
@@ -511,7 +521,7 @@ private:
               "{\n"
               "    int i;\n"
               "};");
-        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not have a constructor although it has private member variables.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'Fred' does not declare a constructor although it has private member variables which likely require initialization.\n", errout.str());
     }
 
     void noConstructor2() {
@@ -630,6 +640,16 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("class Fred { int x[1]{0}; };");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor13() { // #9998
+        check("struct C { int v; };\n"
+              "struct B { C c[5] = {}; };\n"
+              "struct A {\n"
+              "    A() {}\n"
+              "    B b;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1579,6 +1599,22 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) Member variable 'A::b' is not assigned in the copy constructor. Should it be copied?\n", errout.str());
     }
 
+    void initvar_nocopy4() { // #9247
+        check("struct S {\n"
+              "    S(const S & s);\n"
+              "    void S::Set(const T& val);\n"
+              "    void S::Set(const U& val);\n"
+              "    T t;\n"
+              "};\n"
+              "S::S(const S& s) {\n"
+              "    Set(s.t);\n"
+              "}\n"
+              "void S::Set(const T& val) {\n"
+              "    t = val;\n"
+              "}", /*inconclusive*/ true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void initvar_with_member_function_this() {
         check("struct Foo {\n"
               "  Foo(int m) { this->setMember(m); }\n"
@@ -1672,6 +1708,24 @@ private:
               "        Wrapper<dim>::foo(x);\n"
               "    }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void initvar_smartptr() { // #10237
+        Settings s;
+        s.libraries.emplace_back("std");
+        check("struct S {\n"
+              "    explicit S(const std::shared_ptr<S>& sp) {\n"
+              "        set(*sp);\n"
+              "    }\n"
+              "    double get() const {\n"
+              "        return d;\n"
+              "    }\n"
+              "    void set(const S& rhs) {\n"
+              "        d = rhs.get();\n"
+              "    }\n"
+              "    double d;\n"
+              "};", s);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3522,6 +3576,18 @@ private:
               "    { }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Member variable 'A::i' is not initialized in the constructor.\n", errout.str());
+
+        check("class bar {\n" // #9887
+              "    int length;\n"
+              "    bar() { length = 0; }\n"
+              "};\n"
+              "class foo {\n"
+              "    int x;\n"
+              "    foo() { Set(bar()); }\n"
+              "    void Set(int num) { x = 1; }\n"
+              "    void Set(bar num) { x = num.length; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVarOperatorEqual() { // ticket #2415
@@ -3585,6 +3651,35 @@ private:
               "    B() { }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
+
+        check("class Test {\n" // #8498
+              "public:\n"
+              "    Test() {}\n"
+              "    std::map<int, int>* pMap = nullptr;\n"
+              "    std::string* pStr = nullptr;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename U>\n"
+              "class C1 {}; \n"
+              "template <typename U, typename V>\n"
+              "class C2 {};\n"
+              "namespace A {\n"
+              "    template <typename U>\n"
+              "    class D1 {};\n"
+              "    template <typename U, typename V>\n"
+              "    class D2 {};\n"
+              "}\n"
+              "class Test {\n"
+              "public:\n"
+              "    Test() {}\n"
+              "    C1<int>* c1 = nullptr;\n"
+              "    C2<int, int >* c2 = nullptr;\n"
+              "    A::D1<int>* d1 = nullptr;\n"
+              "    A::D2<int, int >* d2 = nullptr;\n"
+              "    std::map<int, int>* pMap = nullptr;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitConstVar() {

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,15 +18,16 @@
 
 #include "checkthread.h"
 
+#include "common.h"
+#include "cppcheck.h"
+#include "erroritem.h"
+#include "threadresult.h"
+
 #include <QDebug>
 #include <QDir>
 #include <QFile>
 #include <QProcess>
 #include <QSettings>
-#include "erroritem.h"
-#include "threadresult.h"
-#include "cppcheck.h"
-#include "common.h"
 
 static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
 {
@@ -83,6 +84,7 @@ void CheckThread::analyseWholeProgram(const QStringList &files)
     start();
 }
 
+// cppcheck-suppress unusedFunction - TODO: false positive
 void CheckThread::run()
 {
     mState = Running;

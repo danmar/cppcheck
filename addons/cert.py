@@ -179,32 +179,45 @@ def int31(data, platform):
     if not platform:
         return
     for token in data.tokenlist:
-        if not isCast(token):
+        to_value_type = None
+        from_values = None
+        action = ''
+        if isCast(token):
+            to_value_type = token.valueType
+            from_values = token.astOperand1.values
+            action = 'casting'
+        elif token.str == '=' and token.astOperand1 and token.astOperand2:
+            to_value_type = token.astOperand1.valueType
+            from_values = token.astOperand2.values
+            action = 'assign'
+        else:
             continue
-        if not token.valueType or not token.astOperand1.values:
+        if to_value_type is None or not from_values:
             continue
         bits = None
-        if token.valueType.type == 'char':
+        if token.valueType.pointer > 0:
+            bits = platform.pointer_bit
+        elif to_value_type.type == 'char':
             bits = platform.char_bit
-        elif token.valueType.type == 'short':
+        elif to_value_type.type == 'short':
             bits = platform.short_bit
-        elif token.valueType.type == 'int':
+        elif to_value_type.type == 'int':
             bits = platform.int_bit
-        elif token.valueType.type == 'long':
+        elif to_value_type.type == 'long':
             bits = platform.long_bit
-        elif token.valueType.type == 'long long':
+        elif to_value_type.type == 'long long':
             bits = platform.long_long_bit
         else:
             continue
-        if token.valueType.sign == 'unsigned':
+        if to_value_type.sign == 'unsigned':
             found = False
-            for value in token.astOperand1.values:
+            for value in from_values:
                 if value.intvalue and value.intvalue < 0:
                     found = True
                     reportError(
                         token,
                         'style',
-                        'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to unsigned ' + token.valueType.type + ')',
+                        'Ensure that integer conversions do not result in lost or misinterpreted data (' + action + ' ' + str(value.intvalue) + ' to unsigned ' + token.valueType.type + ')',
                         'INT31-c')
                 break
             if found:
@@ -219,7 +232,7 @@ def int31(data, platform):
         else:
             minval = 0
             maxval = ((1 << bits) - 1)
-        for value in token.astOperand1.values:
+        for value in from_values:
             if value.intvalue and (value.intvalue < minval or value.intvalue > maxval):
                 destType = ''
                 if token.valueType.sign:
@@ -229,7 +242,7 @@ def int31(data, platform):
                 reportError(
                     token,
                     'style',
-                    'Ensure that integer conversions do not result in lost or misinterpreted data (casting ' + str(value.intvalue) + ' to ' + destType + ')',
+                    'Ensure that integer conversions do not result in lost or misinterpreted data (' + action + ' ' + str(value.intvalue) + ' to ' + destType + ')',
                     'INT31-c')
                 break
 

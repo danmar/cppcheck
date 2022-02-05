@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -29,11 +30,22 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <tinyxml2.h>
 #include <algorithm>
+#include <cctype>
 #include <cstdlib>
 #include <cstring>
+#include <istream>
+#include <memory>
+
 #include <utility>
+#include <vector>
+
+#include <tinyxml2.h>
+
+namespace CTU {
+    class FileInfo;
+}
+
 //---------------------------------------------------------------------------
 
 
@@ -436,7 +448,10 @@ void CheckUnusedFunctions::analyseWholeProgram(ErrorLogger * const errorLogger, 
     for (std::map<std::string, Location>::const_iterator decl = decls.begin(); decl != decls.end(); ++decl) {
         const std::string &functionName = decl->first;
 
-        if (functionName == "main" || functionName == "WinMain" || functionName == "_tmain" ||
+        // TODO: move to configuration files
+        // TODO: WinMain, wmain and _tmain only apply to Windows code
+        // TODO: also skip other known entry functions i.e. annotated with "constructor" and "destructor" attributes
+        if (functionName == "main" || functionName == "WinMain" || functionName == "wmain" || functionName == "_tmain" ||
             functionName == "if")
             continue;
 

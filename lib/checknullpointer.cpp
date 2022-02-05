@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,7 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -31,7 +32,11 @@
 
 #include <algorithm>
 #include <cctype>
+#include <map>
+#include <memory>
 #include <set>
+#include <vector>
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)

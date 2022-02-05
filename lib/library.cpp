@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,21 @@
 #include "mathlib.h"
 #include "path.h"
 #include "symboldatabase.h"
-#include "tinyxml2.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "valueflow.h"
 
 #include <cctype>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <iosfwd>
 #include <list>
+#include <memory>
 #include <string>
+
+#include <tinyxml2.h>
 
 static std::vector<std::string> getnames(const char *names)
 {
@@ -184,6 +189,7 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
         return Container::Action::NO_ACTION;
 }
 
+// cppcheck-suppress unusedFunction - only used in unit tests
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
 {
     tinyxml2::XMLDocument doc;
@@ -1577,6 +1583,8 @@ const Token* Library::getContainerFromYield(const Token* tok, Library::Container
     }
     return nullptr;
 }
+
+// cppcheck-suppress unusedFunction
 const Token* Library::getContainerFromAction(const Token* tok, Library::Container::Action action) const
 {
     if (!tok)

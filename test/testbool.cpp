@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,13 @@
 
 
 #include "checkbool.h"
+#include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 
 class TestBool : public TestFixture {
 public:
@@ -849,6 +852,12 @@ private:
         check("bool f();\n"
               "bool g() {\n"
               "  return f() | f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("uint8 outcode(float p) {\n"
+              "    float d = 0.;\n"
+              "    return ((p - xm >= d) << 1) | (x - p > d);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

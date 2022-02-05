@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,25 @@
 
 
 #include "checkleakautovar.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
+#include <iosfwd>
+#include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
+
+#include <tinyxml2.h>
+
+class TestLeakAutoVarStrcpy;
+class TestLeakAutoVarWindows;
 
 class TestLeakAutoVar : public TestFixture {
 public:
@@ -101,6 +112,7 @@ private:
         TEST_CASE(deallocuse6); // #4034: FP. x = p = f();
         TEST_CASE(deallocuse7); // #6467, #6469, #6473
         TEST_CASE(deallocuse8); // #1765
+        TEST_CASE(deallocuse9); // #9781
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -694,6 +706,25 @@ private:
               "    *ptr = 0;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", errout.str());
+    }
+
+    void deallocuse9() {
+        check("void f(Type* p) {\n" // #9781
+              "  std::shared_ptr<Type> sp(p);\n"
+              "  bool b = p->foo();\n"
+              "  return b;\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n" // #8635
+              "    std::vector<std::unique_ptr<A>> array_;\n"
+              "    A* foo() {\n"
+              "        A* a = new A();\n"
+              "        array_.push_back(std::unique_ptr<A>(a));\n"
+              "        return a;\n"
+              "    }\n"
+              "};\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree1() {  // #3895
@@ -1830,13 +1861,15 @@ private:
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) { free(f); }};\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
 
         check("void f() {\n"
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) {}};\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
 
         check("class C;\n"
               "void f() {\n"

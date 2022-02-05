@@ -1,21 +1,42 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "programmemory.h"
+
 #include "astutils.h"
 #include "calculate.h"
-#include "errortypes.h"
 #include "infer.h"
+#include "library.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueflow.h"
 #include "valueptr.h"
+
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <functional>
-#include <limits>
+#include <list>
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 void ProgramMemory::setValue(nonneg int exprid, const ValueFlow::Value& value)
 {
@@ -31,6 +52,7 @@ const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossib
         return nullptr;
 }
 
+// cppcheck-suppress unusedFunction
 bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
@@ -59,6 +81,7 @@ bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
     return false;
 }
 
+// cppcheck-suppress unusedFunction
 bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
@@ -131,34 +154,32 @@ void ProgramMemory::insert(const ProgramMemory &pm)
         values.insert(p);
 }
 
-bool conditionIsFalse(const Token *condition, const ProgramMemory &programMemory)
+bool evaluateCondition(const std::string& op,
+                       MathLib::bigint r,
+                       const Token* condition,
+                       ProgramMemory& pm,
+                       const Settings* settings)
 {
     if (!condition)
         return false;
-    if (condition->str() == "&&") {
-        return conditionIsFalse(condition->astOperand1(), programMemory) ||
-               conditionIsFalse(condition->astOperand2(), programMemory);
+    if (condition->str() == op) {
+        return evaluateCondition(op, r, condition->astOperand1(), pm, settings) ||
+               evaluateCondition(op, r, condition->astOperand2(), pm, settings);
     }
-    ProgramMemory progmem(programMemory);
     MathLib::bigint result = 0;
     bool error = false;
-    execute(condition, &progmem, &result, &error);
-    return !error && result == 0;
+    execute(condition, &pm, &result, &error, settings);
+    return !error && result == r;
 }
 
-bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
+bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings)
 {
-    if (!condition)
-        return false;
-    if (condition->str() == "||") {
-        return conditionIsTrue(condition->astOperand1(), programMemory) ||
-               conditionIsTrue(condition->astOperand2(), programMemory);
-    }
-    ProgramMemory progmem(programMemory);
-    bool error = false;
-    MathLib::bigint result = 0;
-    execute(condition, &progmem, &result, &error);
-    return !error && result == 1;
+    return evaluateCondition("&&", 0, condition, pm, settings);
+}
+
+bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings)
+{
+    return evaluateCondition("||", 1, condition, pm, settings);
 }
 
 static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
@@ -359,9 +380,8 @@ void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
     state.replace(pm);
 }
 
-void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
+static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
 {
-    ProgramMemory pm = state;
     for (const auto& p:vars) {
         nonneg int exprid = p.first;
         const ValueFlow::Value &value = p.second;
@@ -369,9 +389,16 @@ void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& va
         if (value.varId)
             pm.setIntValue(value.varId, value.varvalue);
     }
+}
+
+void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
+{
+    ProgramMemory pm = state;
+    addVars(pm, vars);
     fillProgramMemoryFromConditions(pm, tok, settings);
     ProgramMemory local = pm;
     fillProgramMemoryFromAssignments(pm, tok, local, vars);
+    addVars(pm, vars);
     replace(pm, tok);
 }
 
@@ -521,7 +548,7 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     return result;
 }
 
-static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
+static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr)
 {
     ValueFlow::Value unknown = ValueFlow::Value::unknown();
     const ValueFlow::Value* value = nullptr;
@@ -686,12 +713,32 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         return result;
     }
 
+    if (Token::Match(expr->previous(), ">|%name% {|(")) {
+        visitAstNodes(expr->astOperand2(), [&](const Token* child) {
+            if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
+                ValueFlow::Value& v = pm.values.at(child->exprId());
+                if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
+                    if (isContainerSizeChanged(child, settings))
+                        v = unknown;
+                } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
+                    if (isVariableChanged(child, v.indirect, settings, true))
+                        v = unknown;
+                }
+            }
+            return ChildrenToVisit::op1_and_op2;
+        });
+    }
+
     return unknown;
 }
 
-void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result, bool* error)
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
+             const Settings* settings)
 {
-    ValueFlow::Value v = execute(expr, *programMemory);
+    ValueFlow::Value v = execute(expr, *programMemory, settings);
     if (!v.isIntValue() || v.isImpossible()) {
         if (error)
             *error = true;

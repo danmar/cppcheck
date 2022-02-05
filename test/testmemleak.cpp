@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,16 +15,24 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "checkmemoryleak.h"
 #include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 #include <list>
+#include <memory>
 #include <string>
+
+class TestMemleakInClass;
+class TestMemleakNoVar;
+class TestMemleakStructMember;
 
 
 class TestMemleak : private TestFixture {
@@ -513,6 +521,7 @@ private:
         TEST_CASE(class23); // ticket #3303
         TEST_CASE(class24); // ticket #3806 - false positive in copy constructor
         TEST_CASE(class25); // ticket #4367 - false positive implementation for destructor is not seen
+        TEST_CASE(class26); // ticket #10789
 
         TEST_CASE(staticvar);
 
@@ -1442,6 +1451,17 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void class26() { // ticket #10789 - crash
+        check("class C;\n"
+              "struct S {\n"
+              "    S() { p = new C; }\n"
+              "    ~S();\n"
+              "    C* p;\n"
+              "};\n"
+              "S::~S() = default;\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'S' is unsafe, 'S::p' can leak by wrong usage.\n", errout.str());
+    }
+
     void staticvar() {
         check("class A\n"
               "{\n"
@@ -1685,7 +1705,7 @@ private:
         TEST_CASE(function2);   // #2848: Taking address in function
         TEST_CASE(function3);   // #3024: kernel list
         TEST_CASE(function4);   // #3038: Deallocating in function
-        TEST_CASE(function5);   // #10381, #10382
+        TEST_CASE(function5);   // #10381, #10382, #10158
 
         // Handle if-else
         TEST_CASE(ifelse);
@@ -1935,6 +1955,13 @@ private:
               "    return (nc_rpc)rpc;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("T* f(const char *str) {\n" // #10158
+              "    S* s = malloc(sizeof(S));\n"
+              "    s->str = strdup(str);\n"
+              "    return NewT(s);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ifelse() {
@@ -2177,6 +2204,8 @@ private:
 
         // Test getAllocationType for subfunction
         TEST_CASE(getAllocationType);
+
+        TEST_CASE(crash1); // #10729
     }
 
     void functionParameter() {
@@ -2563,6 +2592,18 @@ private:
               "        delete t;\n"
               "    }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void crash1() { // #10729
+        check("void foo() {\n"
+              "    extern void *realloc (void *ptr, size_t size);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    extern void *malloc (size_t size);\n"
+              "}");
         ASSERT_EQUALS("", errout.str());
     }
 };

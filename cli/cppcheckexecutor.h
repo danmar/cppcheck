@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,16 @@
 #define CPPCHECKEXECUTOR_H
 
 #include "color.h"
+#include "config.h"
 #include "errorlogger.h"
 
 #include <cstdio>
 #include <ctime>
+#include <iosfwd>
 #include <map>
 #include <set>
 #include <string>
+#include <vector>
 
 class CppCheck;
 class Library;

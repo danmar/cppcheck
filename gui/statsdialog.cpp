@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,18 +18,29 @@
 
 #include "statsdialog.h"
 
-#include <QPrinter>
+#include "checkstatistics.h"
+#include "common.h"
+#include "projectfile.h"
+
+#include <QClipboard>
 #include <QDate>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QMimeData>
+#include <QPrinter>
 #include <QTextDocument>
 #include <QWidget>
-#include <QClipboard>
-#include <QMimeData>
 
-#include "projectfile.h"
-#include "checkstatistics.h"
-#include "common.h"
+#ifdef HAVE_QCHART
+#include <QAbstractSeries>
+#include <QChartView>
+#include <QDateTimeAxis>
+#include <QLineSeries>
+#include <QTextStream>
+#include <QValueAxis>
+
+using namespace QtCharts;
+#endif
 
 static const QString CPPCHECK("cppcheck");
 
@@ -157,7 +168,7 @@ void StatsDialog::pdfExport()
     }
     QPrinter printer(QPrinter::PrinterResolution);
     printer.setOutputFormat(QPrinter::PdfFormat);
-    printer.setPaperSize(QPrinter::A4);
+    printer.setPageSize(QPageSize(QPageSize::A4));
     printer.setOutputFileName(fileName);
 
     QTextDocument doc;

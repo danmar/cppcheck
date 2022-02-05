@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,10 +28,14 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 #include "valueflow.h"
 
 #include <algorithm>
 #include <list>
+#include <unordered_set>
+#include <utility>
+#include <vector>
 
 //---------------------------------------------------------------------------
 
@@ -563,7 +567,9 @@ static const Token* getParentLifetime(bool cpp, const Token* tok, const Library*
             const Token* dotTok = tok2->next();
             if (!Token::simpleMatch(dotTok, ".")) {
                 const Token* endTok = nextAfterAstRightmostLeaf(tok2);
-                if (Token::simpleMatch(endTok, "."))
+                if (!endTok)
+                    dotTok = tok2->next();
+                else if (Token::simpleMatch(endTok, "."))
                     dotTok = endTok;
                 else if (Token::simpleMatch(endTok->next(), "."))
                     dotTok = endTok->next();
@@ -803,16 +809,16 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueF
 {
     const Variable *var = val ? val->tokvalue->variable() : (tok ? tok->variable() : nullptr);
 
-    std::string type = "auto-variable";
+    std::string type = "an auto-variable";
     if (tok && tok->tokType() == Token::eString)
-        type = "string literal";
+        type = "a string literal";
     else if (val && val->tokvalue->tokType() == Token::eString)
-        type = "pointer pointing to a string literal";
+        type = "a pointer pointing to a string literal";
     else if (var) {
         if (var->isGlobal())
-            type = "global variable";
+            type = "a global variable";
         else if (var->isStatic())
-            type = "static variable";
+            type = "a static variable";
     }
 
     if (val)
@@ -821,7 +827,7 @@ void CheckAutoVariables::errorInvalidDeallocation(const Token *tok, const ValueF
     reportError(getErrorPath(tok, val, "Deallocating memory that was not dynamically allocated"),
                 Severity::error,
                 "autovarInvalidDeallocation",
-                "Deallocation of an " + type + " results in undefined behaviour.\n"
-                "The deallocation of an " + type + " results in undefined behaviour. You should only free memory "
+                "Deallocation of " + type + " results in undefined behaviour.\n"
+                "The deallocation of " + type + " results in undefined behaviour. You should only free memory "
                 "that has been allocated dynamically.", CWE590, Certainty::normal);
 }

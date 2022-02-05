@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,12 @@
 #include "config.h"
 #include "ctu.h"
 #include "mathlib.h"
-#include "settings.h"
 #include "errortypes.h"
 #include "utils.h"
+#include "valueflow.h"
 
+#include <list>
+#include <map>
 #include <set>
 #include <string>
 
@@ -38,6 +40,12 @@ class Token;
 class Tokenizer;
 class Variable;
 class ErrorLogger;
+class Settings;
+class Library;
+
+namespace tinyxml2 {
+    class XMLElement;
+}
 
 
 struct VariableValue {

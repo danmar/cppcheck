@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -155,12 +155,6 @@ public:
     std::string getcode(const std::string &filedata, const std::string &cfg, const std::string &filename);
 
     /**
-     * preprocess all whitespaces
-     * @param processedFile The data to be processed
-     */
-    static void preprocessWhitespaces(std::string &processedFile);
-
-    /**
      * make sure empty configuration macros are not used in code. the given code must be a single configuration
      * @param cfg configuration
      * @param macroUsageList macro usage list
@@ -183,14 +177,6 @@ public:
 private:
 
     static void simplifyPragmaAsmPrivate(simplecpp::TokenList *tokenList);
-
-    /**
-     * Remove space that has new line character on left or right side of it.
-     *
-     * @param str The string to be converted
-     * @return The string where space characters have been removed.
-     */
-    static std::string removeSpaceNearNL(const std::string &str);
 
 public:
 

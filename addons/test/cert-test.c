@@ -73,12 +73,20 @@ void exp46(int x, int y, int z)
     if ((x == y) & z) {} // cert-EXP46-c
 }
 
-unsigned char int31(int x)
+void int31(int x)
 {
     x = (unsigned char)1000; // cert-INT31-c
     x = (signed char)0xff; // cert-INT31-c
     x = (unsigned char)-1; // cert-INT31-c
     x = (unsigned long long)-1; // cert-INT31-c
+    unsigned char c;
+    c = 256;
+    c = -1;
+
+    // issue #10782
+    uint16_t * ptr;
+    uint32_t   var = 65536;
+    ptr = (uint16_t *)var;
 }
 
 void env33()

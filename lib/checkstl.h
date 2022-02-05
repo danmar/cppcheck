@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -63,7 +63,6 @@ public:
         checkStl.if_find();
         checkStl.checkFindInsert();
         checkStl.iterators();
-        checkStl.mismatchingContainers();
         checkStl.missingComparison();
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
@@ -178,9 +177,6 @@ public:
      * @param inconclusive inconclusive flag
      */
     void dereferenceErasedError(const Token* erased, const Token* deref, const std::string& itername, bool inconclusive);
-
-    /** @brief Reading from empty stl container (using valueflow) */
-    void readingEmptyStlContainer2();
 
     /** @brief Look for loops that can replaced with std algorithms */
     void useStlAlgorithm();

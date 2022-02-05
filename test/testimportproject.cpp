@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,18 +16,26 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "importproject.h"
 #include "settings.h"
 #include "testsuite.h"
 
+#include <iosfwd>
 #include <list>
+#include <memory>
 #include <map>
 #include <string>
+#include <vector>
 
 class TestImporter : public ImportProject {
 public:
     using ImportProject::importCompileCommands;
     using ImportProject::importCppcheckGuiProject;
+
+    bool sourceFileExists(const std::string & /*file*/) OVERRIDE {
+        return true;
+    }
 };
 
 
@@ -220,7 +228,9 @@ private:
         ASSERT_EQUALS("FILESDIR=\"/some/path\"", importer.fileSettings.begin()->defines);
         ASSERT_EQUALS(1, importer.fileSettings.begin()->includePaths.size());
         ASSERT_EQUALS("/home/danielm/cppcheck 2/b/lib/", importer.fileSettings.begin()->includePaths.front());
-        // TODO ASSERT_EQUALS("/home/danielm/cppcheck 2/externals/", importer.fileSettings.begin()->includePaths.back());
+        TODO_ASSERT_EQUALS("/home/danielm/cppcheck 2/externals/",
+                           "/home/danielm/cppcheck 2/b/lib/",
+                           importer.fileSettings.begin()->includePaths.back());
     }
 
     void importCompileCommands8() const {

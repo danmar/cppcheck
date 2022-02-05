@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,12 +24,15 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenlist.h"
+#include "utils.h"
 
-#include <ctime>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
 #include <stack>
+#include <utility>
+#include <vector>
 
 class Settings;
 class SymbolDatabase;
@@ -810,11 +813,6 @@ private:
      * Prepare ternary operators with parentheses so that the AST can be created
      * */
     void prepareTernaryOpForAST();
-
-    /**
-     * check for duplicate enum definition
-     */
-    static bool duplicateDefinition(Token **tokPtr);
 
     /**
      * report error message

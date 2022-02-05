@@ -1,15 +1,32 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef GUARD_PROGRAMMEMORY_H
 #define GUARD_PROGRAMMEMORY_H
 
 #include "mathlib.h"
-#include "settings.h"
 #include "utils.h"
 #include "valueflow.h" // needed for alias
-#include <functional>
 #include <map>
 #include <unordered_map>
 
 class Token;
+class Settings;
 
 struct ProgramMemory {
     using Map = std::unordered_map<nonneg int, ValueFlow::Value>;
@@ -62,21 +79,25 @@ struct ProgramMemoryState {
     ProgramMemory get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const;
 };
 
-void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result, bool* error);
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
+             const Settings* settings = nullptr);
 
 /**
  * Is condition always false when variable has given value?
  * \param condition   top ast token in condition
  * \param programMemory   program memory
  */
-bool conditionIsFalse(const Token *condition, const ProgramMemory &programMemory);
+bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 
 /**
  * Is condition always true when variable has given value?
  * \param condition   top ast token in condition
  * \param programMemory   program memory
  */
-bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory);
+bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 
 /**
  * Get program memory by looking backwards from given token.

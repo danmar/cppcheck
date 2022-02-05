@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,17 +20,22 @@
 #include "checknullpointer.h"
 #include "config.h"
 #include "ctu.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestNullPointer : public TestFixture {
 public:
@@ -130,6 +135,7 @@ private:
         TEST_CASE(nullpointer88); // #9949
         TEST_CASE(nullpointer89); // #10640
         TEST_CASE(nullpointer90); // #6098
+        TEST_CASE(nullpointer91); // #10678
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -1204,6 +1210,12 @@ private:
                   "}", true);
             ASSERT_EQUALS("", errout.str());
         }
+
+        check("void f() {\n" // #5979
+              "    int* const crash = 0;\n"
+              "    *crash = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: crash\n", errout.str());
     }
 
     // Ticket #2350
@@ -2092,9 +2104,7 @@ private:
               "    if (!y) {}\n"
               "  }\n"
               "}\n");
-        ASSERT_EQUALS(
-            "[test.cpp:13] -> [test.cpp:9]: (warning) Either the condition '!y' is redundant or there is possible null pointer dereference: x->g().\n",
-            errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer65() {
@@ -2659,6 +2669,18 @@ private:
             errout.str());
     }
 
+    void nullpointer91() // #10678
+    {
+        check("void f(const char* PBeg, const char* PEnd) {\n"
+              "  while (PEnd != nullptr) {\n"
+              "    const int N = h(PEnd);\n"
+              "    PEnd = g();\n"
+              "    const int Length = PEnd == nullptr ? 0 : PEnd - PBeg;\n"
+              "  };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -2670,6 +2692,16 @@ private:
               "  struct X *x = 0;\n"
               "  if (addr == &x->y.z[0]) {}\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkP("typedef int Count;\n" // #10018
+               "#define offsetof(TYPE, MEMBER) ((Count) & ((TYPE*)0)->MEMBER)\n"
+               "struct S {\n"
+               "    int a[20];\n"
+               "};\n"
+               "int g(int i) {\n"
+               "    return offsetof(S, a[i]);\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3484,11 +3516,13 @@ private:
 
         check("std::string f() {\n" // #9827
               "  char* p = NULL;\n"
-              "  const int rc = ::g(p);\n"
+              "  int r = g(p);\n"
+              "  if (!r)\n"
+              "    return \"\";\n"
               "  std::string s(p);\n"
               "  return s;\n"
               "}\n", /*inconclusive*/ true);
-        TODO_ASSERT_EQUALS("", "[test.cpp:4]: (warning, inconclusive) Possible null pointer dereference: p\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointerStdStream() {

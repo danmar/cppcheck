@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@
 
 #include "projectfile.h"
 
+#include "common.h"
+#include "importproject.h"
+#include "settings.h"
+
 #include <QFile>
 #include <QDir>
 #include <QXmlStreamReader>
-#include "common.h"
-#include "importproject.h"
-
-#include "settings.h"
 
 ProjectFile *ProjectFile::mActiveProject;
 
@@ -788,7 +788,7 @@ void ProjectFile::setLibraries(const QStringList &libraries)
     mLibraries = libraries;
 }
 
-void ProjectFile::setFunctionContract(QString function, QString expects)
+void ProjectFile::setFunctionContract(const QString& function, const QString& expects)
 {
     mFunctionContracts[function.toStdString()] = expects.toStdString();
 }
@@ -818,7 +818,7 @@ void ProjectFile::setVSConfigurations(const QStringList &vsConfigs)
     mVsConfigurations = vsConfigs;
 }
 
-void ProjectFile::setWarningTags(std::size_t hash, QString tags)
+void ProjectFile::setWarningTags(std::size_t hash, const QString& tags)
 {
     if (tags.isEmpty())
         mWarningTags.erase(hash);
@@ -1035,7 +1035,6 @@ bool ProjectFile::write(const QString &filename)
         for (const QString &tag: tags) {
             xmlWriter.writeStartElement(CppcheckXml::TagWarningsElementName);
             xmlWriter.writeAttribute(CppcheckXml::TagAttributeName, tag);
-            QStringList warnings;
             for (const auto& wt: mWarningTags) {
                 if (wt.second == tag) {
                     xmlWriter.writeStartElement(CppcheckXml::WarningElementName);

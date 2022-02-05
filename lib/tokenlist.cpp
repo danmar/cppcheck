@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,18 +21,23 @@
 
 #include "astutils.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "path.h"
 #include "settings.h"
 #include "standards.h"
 #include "token.h"
 
-#include <exception>
-#include <simplecpp.h>
+#include <algorithm>
 #include <cctype>
 #include <cstring>
+#include <exception>
+#include <functional>
+#include <utility>
 #include <set>
 #include <stack>
+
+#include <simplecpp.h>
 
 // How many compileExpression recursions are allowed?
 // For practical code this could be endless. But in some special torture test
@@ -135,14 +140,17 @@ void TokenList::determineCppC()
         mKeywords.insert("mutable");
         mKeywords.insert("namespace");
         mKeywords.insert("new");
+        mKeywords.insert("noexcept");
         mKeywords.insert("operator");
         mKeywords.insert("private");
         mKeywords.insert("protected");
         mKeywords.insert("public");
         mKeywords.insert("reinterpret_cast");
+        mKeywords.insert("static_assert");
         mKeywords.insert("static_cast");
         mKeywords.insert("template");
         mKeywords.insert("this");
+        mKeywords.insert("thread_local");
         mKeywords.insert("throw");
         //mKeywords.insert("true"); // literal
         mKeywords.insert("try");
@@ -152,6 +160,19 @@ void TokenList::determineCppC()
         mKeywords.insert("using");
         mKeywords.insert("virtual");
         //mKeywords.insert("wchar_t"); // type
+        if (!mSettings || mSettings->standards.cpp >= Standards::CPP20) {
+            mKeywords.insert("alignas");
+            mKeywords.insert("alignof");
+            mKeywords.insert("axiom");
+            mKeywords.insert("co_await");
+            mKeywords.insert("co_return");
+            mKeywords.insert("co_yield");
+            mKeywords.insert("concept");
+            mKeywords.insert("synchronized");
+            mKeywords.insert("consteval");
+            mKeywords.insert("reflexpr");
+            mKeywords.insert("requires");
+        }
     }
 }
 
@@ -613,7 +634,8 @@ static bool iscpp11init_impl(const Token * const tok)
         nameToken = nameToken->link()->previous();
 
     const Token *endtok = nullptr;
-    if (Token::Match(nameToken, "%name%|return {") && (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
+    if (Token::Match(nameToken, "%name%|return|: {") &&
+        (!Token::simpleMatch(nameToken->tokAt(2), "[") || findLambdaEndScope(nameToken->tokAt(2))))
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
@@ -625,7 +647,7 @@ static bool iscpp11init_impl(const Token * const tok)
         return false;
     if (Token::simpleMatch(nameToken->previous(), "namespace"))
         return false;
-    if (Token::Match(nameToken, "%any% {")) {
+    if (Token::Match(nameToken, "%any% {") && !Token::Match(nameToken, "return|:")) {
         // If there is semicolon between {..} this is not a initlist
         for (const Token *tok2 = nameToken->next(); tok2 != endtok; tok2 = tok2->next()) {
             if (tok2->str() == ";")
@@ -767,7 +789,13 @@ static void compileTerm(Token *&tok, AST_state& state)
                 tok = tok->tokAt(2);
             }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
+            Token* tok2 = tok;
             tok = skipDecl(tok);
+            if (Token::simpleMatch(tok2, "decltype (")) {
+                Token* tok3 = tok2->next();
+                AST_state state1(state.cpp);
+                compileExpression(tok3, state1);
+            }
             bool repeat = true;
             while (repeat) {
                 repeat = false;
@@ -803,7 +831,14 @@ static void compileTerm(Token *&tok, AST_state& state)
             if (state.op.empty() || Token::Match(tok->previous(), "[{,]") || Token::Match(tok->tokAt(-2), "%name% (")) {
                 if (Token::Match(tok, "{ !!}")) {
                     Token *const end = tok->link();
-                    compileUnaryOp(tok, state, compileExpression);
+                    if (Token::Match(tok, "{ . %name% =|{")) {
+                        const int inArrayAssignment = state.inArrayAssignment;
+                        state.inArrayAssignment = 1;
+                        compileBinOp(tok, state, compileExpression);
+                        state.inArrayAssignment = inArrayAssignment;
+                    } else {
+                        compileUnaryOp(tok, state, compileExpression);
+                    }
                     if (precedes(tok,end))
                         tok = end;
                 } else {
@@ -812,7 +847,7 @@ static void compileTerm(Token *&tok, AST_state& state)
                 }
             } else
                 compileBinOp(tok, state, compileExpression);
-            if (Token::Match(tok, "} ,|:"))
+            if (Token::Match(tok, "} ,|:|)"))
                 tok = tok->next();
         } else if (state.cpp && Token::Match(tok->tokAt(-2), "%name% ( {") && !Token::findsimplematch(tok, ";", tok->link())) {
             if (Token::simpleMatch(tok, "{ }"))
@@ -1400,6 +1435,11 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         }
 
         Token *tok2 = skipDecl(tok->tokAt(2));
+        if (Token::simpleMatch(tok->tokAt(2), "decltype (")) {
+            Token* tok3 = tok->tokAt(4);
+            AST_state state1(cpp);
+            compileExpression(tok3, state1);
+        }
         Token *init1 = nullptr;
         Token * const endPar = tok->next()->link();
         if (tok2 == tok->tokAt(2) && Token::Match(tok2, "%op%|(")) {
@@ -1670,6 +1710,20 @@ void TokenList::validateAst() const
                                     "Syntax Error: AST broken, '" + tok->previous()->str() +
                                     "' doesn't have two operands.",
                                     InternalError::AST);
+        }
+
+        // Check member access
+        if (Token::Match(tok, "%var% .")) {
+            if (!tok->astParent()) {
+                throw InternalError(
+                          tok, "Syntax Error: AST broken, '" + tok->str() + "' doesn't have a parent.", InternalError::AST);
+            }
+            if (!tok->next()->astOperand1() || !tok->next()->astOperand2()) {
+                const std::string& op =
+                    tok->next()->originalName().empty() ? tok->next()->str() : tok->next()->originalName();
+                throw InternalError(
+                          tok, "Syntax Error: AST broken, '" + op + "' doesn't have two operands.", InternalError::AST);
+            }
         }
     }
 }

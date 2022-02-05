@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,8 @@
 #include "utils.h"
 
 #include <algorithm>
+#include <unordered_set>
+#include <vector>
 
 //---------------------------------------------------------------------------
 
@@ -181,7 +183,10 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::getReallocationType(const Token *tok
     const Library::AllocFunc *f = mSettings_->library.getReallocFuncInfo(tok2);
     if (!(f && f->reallocArg > 0 && f->reallocArg <= numberOfArguments(tok2)))
         return No;
-    const Token* arg = getArguments(tok2).at(f->reallocArg - 1);
+    const auto args = getArguments(tok2);
+    if (args.size() < (f->reallocArg))
+        return No;
+    const Token* arg = args.at(f->reallocArg - 1);
     while (arg && arg->isCast())
         arg = arg->astOperand1();
     while (arg && arg->isUnaryOp("*"))
@@ -408,57 +413,6 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
 }
 
 
-const char *CheckMemoryLeak::functionArgAlloc(const Function *func, nonneg int targetpar, AllocType &allocType) const
-{
-    allocType = No;
-
-    if (!func || !func->functionScope)
-        return "";
-
-    if (!Token::simpleMatch(func->retDef, "void"))
-        return "";
-
-    std::list<Variable>::const_iterator arg = func->argumentList.begin();
-    for (; arg != func->argumentList.end(); ++arg) {
-        if (arg->index() == targetpar-1)
-            break;
-    }
-    if (arg == func->argumentList.end())
-        return "";
-
-    // Is **
-    if (!arg->isPointer())
-        return "";
-    const Token* tok = arg->typeEndToken();
-    tok = tok->previous();
-    if (tok->str() != "*")
-        return "";
-
-    // Check if pointer is allocated.
-    bool realloc = false;
-    for (tok = func->functionScope->bodyStart; tok && tok != func->functionScope->bodyEnd; tok = tok->next()) {
-        if (tok->varId() == arg->declarationId()) {
-            if (Token::Match(tok->tokAt(-3), "free ( * %name% )")) {
-                realloc = true;
-                allocType = No;
-            } else if (Token::Match(tok->previous(), "* %name% =")) {
-                allocType = getAllocationType(tok->tokAt(2), arg->declarationId());
-                if (allocType != No) {
-                    if (realloc)
-                        return "realloc";
-                    return "alloc";
-                }
-            } else {
-                // unhandled variable usage: bailout
-                return "";
-            }
-        }
-    }
-
-    return "";
-}
-
-
 static bool notvar(const Token *tok, nonneg int varid)
 {
     if (!tok)
@@ -625,6 +579,8 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
             }
             continue;
         }
+        if (!func.functionScope) // defaulted destructor
+            continue;
         bool body = false;
         const Token *end = func.functionScope->bodyEnd;
         for (const Token *tok = func.arg->link(); tok != end; tok = tok->next()) {
@@ -804,6 +760,32 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
 
     // Check struct..
     int indentlevel2 = 0;
+
+    auto deallocInFunction = [this](const Token* tok, int structid) -> bool {
+        // Calling non-function / function that doesn't deallocate?
+        if (CheckMemoryLeakInFunction::test_white_list(tok->str(), mSettings, mTokenizer->isCPP()))
+            return false;
+
+        // Check if the struct is used..
+        bool deallocated = false;
+        const Token* const end = tok->linkAt(1);
+        for (const Token* tok2 = tok; tok2 != end; tok2 = tok2->next()) {
+            if (Token::Match(tok2, "[(,] &| %varid% [,)]", structid)) {
+                /** @todo check if the function deallocates the memory */
+                deallocated = true;
+                break;
+            }
+
+            if (Token::Match(tok2, "[(,] &| %varid% . %name% [,)]", structid)) {
+                /** @todo check if the function deallocates the memory */
+                deallocated = true;
+                break;
+            }
+        };
+
+        return deallocated;
+    };
+
     for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
         if (tok2->str() == "{")
             ++indentlevel2;
@@ -913,7 +895,8 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
                     // Returning from function without deallocating struct member?
                     if (!Token::Match(tok3, "return %varid% ;", structid) &&
                         !Token::Match(tok3, "return & %varid%", structid) &&
-                        !(Token::Match(tok3, "return %varid% . %var%", structid) && tok3->tokAt(3)->varId() == structmemberid)) {
+                        !(Token::Match(tok3, "return %varid% . %var%", structid) && tok3->tokAt(3)->varId() == structmemberid) &&
+                        !(Token::Match(tok3, "return %name% (") && tok3->astOperand1() && deallocInFunction(tok3->astOperand1(), structid))) {
                         memoryLeak(tok3, variable->name() + "." + tok2->strAt(2), Malloc);
                     }
                     break;
@@ -932,28 +915,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
 
                 // using struct in a function call..
                 else if (Token::Match(tok3, "%name% (")) {
-                    // Calling non-function / function that doesn't deallocate?
-                    if (CheckMemoryLeakInFunction::test_white_list(tok3->str(), mSettings, mTokenizer->isCPP()))
-                        continue;
-
-                    // Check if the struct is used..
-                    bool deallocated = false;
-                    const Token* const end4 = tok3->linkAt(1);
-                    for (const Token *tok4 = tok3; tok4 != end4; tok4 = tok4->next()) {
-                        if (Token::Match(tok4, "[(,] &| %varid% [,)]", structid)) {
-                            /** @todo check if the function deallocates the memory */
-                            deallocated = true;
-                            break;
-                        }
-
-                        if (Token::Match(tok4, "[(,] &| %varid% . %name% [,)]", structid)) {
-                            /** @todo check if the function deallocates the memory */
-                            deallocated = true;
-                            break;
-                        }
-                    }
-
-                    if (deallocated)
+                    if (deallocInFunction(tok3, structid))
                         break;
                 }
             }

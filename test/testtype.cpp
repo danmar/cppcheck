@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,15 @@
  */
 
 #include "checktype.h"
+#include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
+#include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 #include <string>
 
 class TestType : public TestFixture {
@@ -166,6 +170,17 @@ private:
               "    UINFO(x << 1234);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #8640
+        check("int f (void)\n"
+              "{\n"
+              "    constexpr const int a = 1;\n"
+              "    constexpr const int shift[1] = {32};\n"
+              "    constexpr const int ret = a << shift[0];\n" // shift too many bits
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
+                      "[test.cpp:5]: (error) Signed integer overflow for expression 'a<<shift[0]'.\n", errout.str());
 
         // #8885
         check("int f(int k, int rm) {\n"

@@ -12,6 +12,9 @@ jobs:
     container:
       image: "ubuntu:21.10"
 
+    env:
+      QT_VERSION: 5.15.2
+
     steps:
       - uses: actions/checkout@v2
 
@@ -19,32 +22,41 @@ jobs:
         run: |
           apt-get update
           apt-get install -y cmake g++ make
-          apt-get install -y z3 libz3-dev
+          apt-get install -y libz3-dev
           apt-get install -y libpcre3-dev
           apt-get install -y libffi7 # work around missing dependency for Qt install step
-          apt-get install -y software-properties-common
-          add-apt-repository universe
-          apt-get update
           apt-get install -y clang-tidy-13
 
-      - name: Install Qt
+      - name: Cache Qt ${{ env.QT_VERSION }}
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Linux-QtCache-${{ env.QT_VERSION }}-qtcharts
+
+      - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v2
         with:
           install-deps: 'nosudo'
-          version: '5.15.2'
+          version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
       - name: Prepare CMake
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off ..
           cd ..
 
-      - name: Clang-Tidy
+      - name: Prepare CMake dependencies
         run: |
           # make sure the precompiled headers exist
           make -C cmake.output lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
           make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
+          # make sure the auto-generated GUI sources exist
           make -C cmake.output autogen
+
+      - name: Clang-Tidy
+        run: |
           cmake --build cmake.output --target run-clang-tidy 2> /dev/null

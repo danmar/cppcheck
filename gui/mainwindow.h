@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,13 +19,14 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QFileDialog>
-#include <QStringList>
+#include "ui_mainwindow.h"
 
 #include "settings.h"
 #include "platforms.h"
-#include "ui_mainwindow.h"
+
+#include <QFileDialog>
+#include <QMainWindow>
+#include <QStringList>
 
 class ThreadHandler;
 class TranslationHandler;
@@ -234,10 +235,10 @@ protected slots:
     void editVariableContract(QString var);
 
     /** Delete contract for function */
-    void deleteFunctionContract(QString function);
+    void deleteFunctionContract(const QString& function);
 
     /** Edit constraints for variable */
-    void deleteVariableContract(QString var);
+    void deleteVariableContract(const QString& var);
 
 private:
 
@@ -268,7 +269,7 @@ private:
     void setLanguage(const QString &code);
 
     /** @brief Event coming when application is about to close. */
-    virtual void closeEvent(QCloseEvent *event);
+    void closeEvent(QCloseEvent *event) override;
 
     /**
      * @brief Helper function to toggle all show error menu items

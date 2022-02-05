@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,7 @@
 
 #include "check.h"
 #include "cppcheckexecutor.h"
+#include "errortypes.h"
 #include "filelister.h"
 #include "importproject.h"
 #include "path.h"
@@ -32,6 +33,7 @@
 #include "utils.h"
 
 #include <algorithm>
+#include <climits>
 #include <cstdio>
 #include <cstdlib> // EXIT_FAILURE
 #include <cstring>
@@ -644,11 +646,15 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     }
                 }
                 if (projType == ImportProject::Type::MISSING) {
-                    printError("failed to open project '" + projectFile + "'.");
+                    printError("failed to open project '" + projectFile + "'. The file does not exist.");
                     return false;
                 }
                 if (projType == ImportProject::Type::UNKNOWN) {
                     printError("failed to load project '" + projectFile + "'. The format is unknown.");
+                    return false;
+                }
+                if (projType == ImportProject::Type::FAILURE) {
+                    printError("failed to load project '" + projectFile + "'. An error occurred.");
                     return false;
                 }
             }
@@ -1037,7 +1043,7 @@ void CmdLineParser::printHelp()
         "                          * information\n"
         "                                  Enable information messages\n"
         "                          * unusedFunction\n"
-        "                                  Check for unused functions. It is recommend\n"
+        "                                  Check for unused functions. It is recommended\n"
         "                                  to only enable this when the whole program is\n"
         "                                  scanned.\n"
         "                          * missingInclude\n"

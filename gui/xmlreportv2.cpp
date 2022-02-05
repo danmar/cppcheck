@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,14 @@
 
 #include "xmlreportv2.h"
 
+#include "cppcheck.h"
+#include "erroritem.h"
+#include "report.h"
+#include "xmlreport.h"
+
+#include <QDebug>
 #include <QDir>
 #include <QXmlStreamWriter>
-#include <QDebug>
-#include "report.h"
-#include "erroritem.h"
-#include "xmlreport.h"
-#include "cppcheck.h"
 
 static const QString ResultElementName = "results";
 static const QString CppcheckElementName = "cppcheck";

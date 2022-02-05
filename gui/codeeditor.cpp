@@ -1,8 +1,27 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "codeeditor.h"
 
-#include <QShortcut>
-#include <QPainter>
 #include "codeeditorstyle.h"
+
+#include <QPainter>
+#include <QShortcut>
 
 
 Highlighter::Highlighter(QTextDocument *parent,
@@ -318,7 +337,11 @@ int CodeEditor::lineNumberAreaWidth()
         ++digits;
     }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+#else
     int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+#endif
     return space;
 }
 

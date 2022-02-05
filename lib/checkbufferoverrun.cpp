@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,9 @@
 
 #include <algorithm>
 #include <cstdlib>
+#include <functional>
 #include <iterator>
+#include <memory>
 #include <numeric> // std::accumulate
 #include <sstream>
 #include <tinyxml2.h>
@@ -994,7 +996,7 @@ void CheckBufferOverrun::objectIndex()
             if (idx->hasKnownIntValue() && idx->getKnownIntValue() == 0)
                 continue;
 
-            std::vector<ValueFlow::Value> values = getLifetimeObjValues(obj, false, true);
+            std::vector<ValueFlow::Value> values = getLifetimeObjValues(obj, false, -1);
             for (const ValueFlow::Value& v:values) {
                 if (v.lifetimeKind != ValueFlow::Value::LifetimeKind::Address)
                     continue;
@@ -1014,6 +1016,15 @@ void CheckBufferOverrun::objectIndex()
                         continue;
                     if (var->valueType()->pointer > obj->valueType()->pointer)
                         continue;
+                }
+                if (obj->valueType() && var->valueType() && (obj->isCast() || (mTokenizer->isCPP() && isCPPCast(obj)) || obj->valueType()->pointer)) { // allow cast to a different type
+                    const auto varSize = var->valueType()->typeSize(*mSettings);
+                    if (varSize == 0)
+                        continue;
+                    if (obj->valueType()->type != var->valueType()->type) {
+                        if (ValueFlow::isOutOfBounds(makeSizeValue(varSize, v.path), idx).empty())
+                            continue;
+                    }
                 }
                 if (v.path != 0) {
                     std::vector<ValueFlow::Value> idxValues;

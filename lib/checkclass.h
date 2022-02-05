@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,9 +23,11 @@
 
 #include "check.h"
 #include "config.h"
-#include "tokenize.h"
 #include "symboldatabase.h"
+#include "tokenize.h"
+#include "utils.h"
 
+#include <cstddef>
 #include <list>
 #include <map>
 #include <set>
@@ -35,6 +37,14 @@
 class ErrorLogger;
 class Settings;
 class Token;
+
+namespace CTU {
+    class FileInfo;
+}
+
+namespace tinyxml2 {
+    class XMLElement;
+}
 
 /// @addtogroup Checks
 /// @{
@@ -189,7 +199,8 @@ private:
     void noCopyConstructorError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noOperatorEqError(const Scope *scope, bool isdefault, const Token *alloc, bool inconclusive);
     void noDestructorError(const Scope *scope, bool isdefault, const Token *alloc);
-    void uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
+    void uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool derived, bool inconclusive);
+    void missingMemberCopyError(const Token *tok, const std::string& classname, const std::string& varname);
     void operatorEqVarError(const Token *tok, const std::string &classname, const std::string &varname, bool inconclusive);
     void unusedPrivateFunctionError(const Token *tok, const std::string &classname, const std::string &funcname);
     void memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type);
@@ -226,10 +237,11 @@ private:
         c.noCopyConstructorError(nullptr, false, nullptr, false);
         c.noOperatorEqError(nullptr, false, nullptr, false);
         c.noDestructorError(nullptr, false, nullptr);
-        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", false, false);
-        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", false, false);
-        c.uninitVarError(nullptr, false, Function::eConstructor, "classname", "varname", true, false);
-        c.uninitVarError(nullptr, true, Function::eConstructor, "classname", "varnamepriv", true, false);
+        c.uninitVarError(nullptr, false, "classname", "varname", false, false);
+        c.uninitVarError(nullptr, true, "classname", "varnamepriv", false, false);
+        c.uninitVarError(nullptr, false, "classname", "varname", true, false);
+        c.uninitVarError(nullptr, true, "classname", "varnamepriv", true, false);
+        c.missingMemberCopyError(nullptr, "classname", "varnamepriv");
         c.operatorEqVarError(nullptr, "classname", emptyString, false);
         c.unusedPrivateFunctionError(nullptr, "classname", "funcname");
         c.memsetError(nullptr, "memfunc", "classname", "class");

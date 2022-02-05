@@ -1,6 +1,28 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "forwardanalyzer.h"
+
 #include "analyzer.h"
 #include "astutils.h"
+#include "config.h"
+#include "errortypes.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -9,8 +31,13 @@
 #include <algorithm>
 #include <cstdio>
 #include <functional>
+#include <list>
+#include <memory>
+#include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 struct OnExit {
     std::function<void()> f;
@@ -89,6 +116,7 @@ struct ForwardTraversal {
         return evalCond(tok, ctx).first;
     }
 
+    // cppcheck-suppress unusedFunction
     bool isConditionFalse(const Token* tok, const Token* ctx = nullptr) const {
         return evalCond(tok, ctx).second;
     }
@@ -284,6 +312,10 @@ struct ForwardTraversal {
         return Token::findsimplematch(endBlock->link(), "goto", endBlock);
     }
 
+    bool hasJump(const Token* endBlock) {
+        return Token::findmatch(endBlock->link(), "goto|break", endBlock);
+    }
+
     bool hasInnerReturnScope(const Token* start, const Token* end) const {
         for (const Token* tok=start; tok != end; tok = tok->previous()) {
             if (Token::simpleMatch(tok, "}")) {
@@ -404,8 +436,16 @@ struct ForwardTraversal {
         bool checkElse = false;
         if (condTok && !Token::simpleMatch(condTok, ":"))
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->previous() : nullptr);
-        if (checkElse && exit)
+        // exiting a do while(false)
+        if (checkElse && exit) {
+            if (hasJump(endBlock)) {
+                if (!analyzer->lowerToPossible())
+                    return Break(Analyzer::Terminate::Bail);
+                if (analyzer->isConditional() && stopUpdates())
+                    return Break(Analyzer::Terminate::Conditional);
+            }
             return Progress::Continue;
+        }
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
         Analyzer::Action condAnalysis;

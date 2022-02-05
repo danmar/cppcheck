@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,33 +22,45 @@
 #include "clangimport.h"
 #include "color.h"
 #include "ctu.h"
+#include "errortypes.h"
+#include "exprengine.h"
 #include "library.h"
 #include "mathlib.h"
 #include "path.h"
 #include "platform.h"
 #include "preprocessor.h" // Preprocessor
+#include "standards.h"
 #include "suppressions.h"
 #include "timer.h"
+#include "token.h"
 #include "tokenize.h" // Tokenizer
 #include "tokenlist.h"
+#include "utils.h"
+#include "valueflow.h"
 #include "version.h"
 
-#include "exprengine.h"
-#include <string>
-
-#define PICOJSON_USE_INT64
-#include <picojson.h>
-#include <simplecpp.h>
-#include <tinyxml2.h>
 #include <algorithm>
+#include <cstdio>
+#include <cstdint>
 #include <cstring>
+#include <cctype>
+#include <cstdlib>
+#include <exception>
+#include <iostream> // <- TEMPORARY
+#include <memory>
 #include <new>
 #include <set>
 #include <stdexcept>
+#include <string>
+#include <utility>
 #include <vector>
-#include <memory>
-#include <iostream> // <- TEMPORARY
-#include <cstdio>
+
+#define PICOJSON_USE_INT64
+#include <picojson.h>
+
+#include <simplecpp.h>
+
+#include <tinyxml2.h>
 
 #ifdef HAVE_RULES
 #ifdef _WIN32
@@ -56,6 +68,8 @@
 #endif
 #include <pcre.h>
 #endif
+
+class SymbolDatabase;
 
 static const char Version[] = CPPCHECK_VERSION_STRING;
 static const char ExtraVersion[] = "";
@@ -133,7 +147,7 @@ namespace {
             if (obj.count("executable")) {
                 if (!obj["executable"].is<std::string>())
                     return "Loading " + fileName + " failed. executable must be a string.";
-                executable = getFullPath(obj["executable"].get<std::string>(), exename);
+                executable = getFullPath(obj["executable"].get<std::string>(), fileName);
                 return "";
             }
 

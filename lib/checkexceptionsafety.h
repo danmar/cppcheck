@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,14 +24,13 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "token.h"
 #include "tokenize.h"
 
-#include <list>
 #include <string>
 
 class Settings;
 class ErrorLogger;
+class Token;
 
 // CWE ID used:
 static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality

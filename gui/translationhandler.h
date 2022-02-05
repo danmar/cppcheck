@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,8 @@
 #ifndef TRANSLATIONHANDLER_H
 #define TRANSLATIONHANDLER_H
 
-#include <QStringList>
-#include <QObject>
 #include <QList>
+#include <QObject>
 
 class QTranslator;
 
@@ -64,13 +63,6 @@ class TranslationHandler : QObject {
 public:
     explicit TranslationHandler(QObject *parent = nullptr);
     virtual ~TranslationHandler();
-
-    /**
-     * @brief Get a list of available translation names.
-     * @return List of available translation names.
-     *
-     */
-    const QStringList getNames() const;
 
     /**
      * @brief Get a list of available translations.

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,16 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
+#include "standards.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
-#include "tokenlist.h"
 
+#include <istream>
 #include <string>
 
 
@@ -205,8 +208,6 @@ private:
         // ticket #3140
         TEST_CASE(while0for);
 
-        TEST_CASE(duplicateDefinition); // ticket #3565
-
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
 
@@ -240,6 +241,9 @@ private:
 
         // remove calling convention __cdecl, __stdcall, ...
         TEST_CASE(simplifyCallingConvention);
+
+        // remove __attribute, __attribute__
+        TEST_CASE(simplifyAttribute);
 
         TEST_CASE(simplifyFunctorCall);
 
@@ -4448,14 +4452,6 @@ private:
         ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 0 ; ++ i ) { } return i ; }", tok("void f() { int i; for (i=0;i<0;++i){ dostuff(); } return i; }"));
     }
 
-    void duplicateDefinition() { // #3565 - wrongly detects duplicate definition
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr("{ x ; return a not_eq x; }");
-        ASSERT(tokenizer.tokenize(istr, "test.c"));
-        Token *x_token = tokenizer.list.front()->tokAt(5);
-        ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token));
-    }
-
     void removestd() {
         ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
         ASSERT_EQUALS("; strcat ( a , b ) ;", tok("; std::strcat(a,b);"));
@@ -4940,6 +4936,16 @@ private:
 
         // don't simplify Microsoft defines in unix code (#7554)
         ASSERT_EQUALS("enum E { CALLBACK } ;", tok("enum E { CALLBACK } ;", true, Settings::Unix32));
+    }
+
+    void simplifyAttribute() {
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) int f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__((visibility(\"default\"))) int f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute ((visibility(\"default\"))) int f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) __attribute__ ((warn_unused_result)) int f();", true));
+        ASSERT_EQUALS("blah :: blah f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) blah::blah f();", true));
+        ASSERT_EQUALS("template < T > Result < T > f ( ) ;", tok("template<T> __attribute__ ((warn_unused_result)) Result<T> f();", true));
+        ASSERT_EQUALS("template < T , U > Result < T , U > f ( ) ;", tok("template<T, U> __attribute__ ((warn_unused_result)) Result<T, U> f();", true));
     }
 
     void simplifyFunctorCall() {

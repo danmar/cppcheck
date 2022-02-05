@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,15 @@
  */
 
 #include "checkstl.h"
+#include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
 #include <cstddef>
+#include <iosfwd>
 #include <string>
 
 
@@ -681,6 +684,41 @@ private:
                     "        g(\"\", c[0]);\n"
                     "    return h(&v[0], v.size()); \n"
                     "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("void f(int i, std::vector<int> v) {\n" // #9157
+                    "    if (i <= (int)v.size()) {\n"
+                    "        if (v[i]) {}\n"
+                    "    }\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:3:warning:Either the condition 'i<=(int)v.size()' is redundant or 'i' can have the value v.size(). Expression 'v[i]' cause access out of bounds.\n"
+                      "test.cpp:2:note:condition 'i<=(int)v.size()'\n"
+                      "test.cpp:3:note:Access out of bounds\n",
+                      errout.str());
+
+        check("template<class Iterator>\n"
+              "void b(Iterator d) {\n"
+              "  std::string c = \"a\";\n"
+              "  d + c.length();\n"
+              "}\n"
+              "void f() {\n"
+              "  std::string buf;\n"
+              "  b(buf.begin());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in expression 'd+c.length()' because 'buf' is empty.\n",
+                      errout.str());
+
+        check("template<class Iterator>\n"
+              "void b(Iterator d) {\n"
+              "  std::string c = \"a\";\n"
+              "  sort(d, d + c.length());\n"
+              "}\n"
+              "void f() {\n"
+              "  std::string buf;\n"
+              "  b(buf.begin());\n"
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1648,12 +1686,12 @@ private:
               "std::vector<int>& g();\n"
               "void foo() {\n"
               "    auto it = f().end() - 1;\n"
-              "    f().begin() - it\n"
-              "    f().begin()+1 - it\n"
-              "    f().begin() - (it + 1)\n"
-              "    f().begin() - f().end()\n"
-              "    f().begin()+1 - f().end()\n"
-              "    f().begin() - (f().end() + 1)\n"
+              "    f().begin() - it;\n"
+              "    f().begin()+1 - it;\n"
+              "    f().begin() - (it + 1);\n"
+              "    f().begin() - f().end();\n"
+              "    f().begin()+1 - f().end();\n"
+              "    f().begin() - (f().end() + 1);\n"
               "    (void)std::find(f().begin(), it, 0);\n"
               "    (void)std::find(f().begin(), it + 1, 0);\n"
               "    (void)std::find(f().begin() + 1, it + 1, 0);\n"
@@ -2056,6 +2094,19 @@ private:
               "    else\n"
               "        return a[4 - x];\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::array<int,6> values;\n"
+              "int get_value();\n"
+              "int compute() {\n"
+              "    int i = get_value();\n"
+              "    if( i < 0 || i > 5)\n"
+              "        return -1;\n"
+              "    int sum = 0;\n"
+              "    for( int j = i+1; j < 7; ++j)\n"
+              "        sum += values[j-1];\n"
+              "    return sum;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4200,6 +4251,49 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:4]: (warning) Either the condition 'i==v.end()' is redundant or there is possible dereference of an invalid iterator: i+1.\n",
             errout.str());
+
+        // #10657
+        check("std::list<int> mValues;\n"
+              "typedef std::list<int>::iterator ValueIterator;\n"
+              "void foo(ValueIterator beginValue, ValueIterator endValue) {\n"
+              "    ValueIterator prevValue = beginValue;\n"
+              "    ValueIterator curValue = beginValue;\n"
+              "    for (++curValue; prevValue != endValue && curValue != mValues.end(); ++curValue) {\n"
+              "        a = bar(*curValue);\n"
+              "        prevValue = curValue;\n"
+              "    }\n"
+              "    if (endValue == mValues.end()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10642
+        check("int f(std::vector<int> v) {\n"
+              "    return *(v.begin() + v.size() - 1);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10716
+        check("struct a;\n"
+              "class b {\n"
+              "  void c(std::map<std::string, a *> &);\n"
+              "  std::string d;\n"
+              "  std::map<std::string, std::set<std::string>> e;\n"
+              "};\n"
+              "void b::c(std::map<std::string, a *> &) {\n"
+              "  e.clear();\n"
+              "  auto f = *e[d].begin();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:9]: (error) Out of bounds access in expression 'e[d].begin()' because 'e[d]' is empty.\n",
+                      errout.str());
+
+        // #10151
+        check("std::set<int>::iterator f(std::set<int>& s) {\n"
+              "for (auto it = s.begin(); it != s.end(); ++it)\n"
+              "    if (*it == 42)\n"
+              "        return s.erase(it);\n"
+              "    return s.end();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
@@ -5396,6 +5490,15 @@ private:
               "     }\n"
               " }\n"
               " for (auto i : v) {}\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    auto& rv = v;\n"
+              "    rv.push_back(42);\n"
+              "    for (auto i : v) {}\n"
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());

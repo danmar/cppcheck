@@ -31,6 +31,26 @@
 #include <iterator>
 #include <vector>
 
+void invalidFunctionArg_std_string_substr(const std::string &str, std::size_t pos, std::size_t len) {
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(-1,len);
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(pos,-1);
+    // no warning is expected for
+    (void)str.substr(pos,len);
+    (void)str.substr(pos, std::string::npos);
+}
+
+void invalidFunctionArg_std_wstring_substr(const std::wstring &str, std::size_t pos, std::size_t len) {
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(-1,len);
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(pos,-1);
+    // no warning is expected for
+    (void)str.substr(pos,len);
+    (void)str.substr(pos, std::wstring::npos);
+}
+
 double invalidFunctionArg_log10(double d = 0.0) {
     // cppcheck-suppress invalidFunctionArg
     return log10(d);
@@ -3261,6 +3281,7 @@ void uninitvar_setbase(void)
     std::cout << std::setbase(p);
 }
 
+// cppcheck-suppress passedByValue
 void uninitvar_find(std::string s)
 {
     // testing of size_t find (const string& str, size_t pos = 0)
@@ -3341,6 +3362,7 @@ void ignoredReturnValue_abs(int i)
     std::abs(-199);
 }
 
+// cppcheck-suppress passedByValue
 void ignoredReturnValue_string_compare(std::string teststr, std::wstring testwstr)
 {
     // cppcheck-suppress ignoredReturnValue

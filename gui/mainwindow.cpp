@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,10 @@
 
 #include "mainwindow.h"
 
-#include <QApplication>
-#include <QDebug>
-#include <QMessageBox>
-#include <QFileInfo>
-#include <QDir>
-#include <QAction>
-#include <QActionGroup>
-#include <QFile>
-#include <QInputDialog>
-#include <QTimer>
-#include <QSettings>
-
-#include "cppcheck.h"
-
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "common.h"
+#include "cppcheck.h"
 #include "filelist.h"
 #include "fileviewdialog.h"
 #include "functioncontractdialog.h"
@@ -51,6 +38,18 @@
 #include "threadresult.h"
 #include "translationhandler.h"
 #include "variablecontractsdialog.h"
+
+#include <QApplication>
+#include <QAction>
+#include <QActionGroup>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QSettings>
+#include <QTimer>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -516,8 +515,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (!checkSettings.buildDir.empty()) {
         checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
-        foreach (QString s, fileNames)
-        sourcefiles.push_back(s.toStdString());
+        for (const QString& s: fileNames)
+            sourcefiles.push_back(s.toStdString());
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
     }
 
@@ -851,6 +850,8 @@ Settings MainWindow::getCppcheckSettings()
     saveSettings(); // Save settings
 
     Settings result;
+
+    result.exename = QCoreApplication::applicationFilePath().toStdString();
 
     const bool std = tryLoadLibrary(&result.library, "std.cfg");
     bool posix = true;
@@ -1916,7 +1917,7 @@ void MainWindow::editVariableContract(QString var)
     updateVariableContractsTab();
 }
 
-void MainWindow::deleteFunctionContract(QString function)
+void MainWindow::deleteFunctionContract(const QString& function)
 {
     if (mProjectFile) {
         mProjectFile->deleteFunctionContract(function);
@@ -1924,7 +1925,7 @@ void MainWindow::deleteFunctionContract(QString function)
     }
 }
 
-void MainWindow::deleteVariableContract(QString var)
+void MainWindow::deleteVariableContract(const QString& var)
 {
     if (mProjectFile) {
         mProjectFile->deleteVariableContract(var);

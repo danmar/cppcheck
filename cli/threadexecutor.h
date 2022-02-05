@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,13 +27,15 @@
 #include <list>
 #include <map>
 #include <string>
-#include <mutex>
 
 #if ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__) && !defined(__CYGWIN__)) || defined(__CPPCHECK__)
 #define THREADING_MODEL_FORK
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
 #include "importproject.h"
+#include <mutex>
+#else
+#error "No threading moodel defined"
 #endif
 
 class Settings;
@@ -68,10 +70,14 @@ public:
     void addFileContent(const std::string &path, const std::string &content);
 
 private:
+    enum class MessageType {REPORT_ERROR, REPORT_INFO};
+
     const std::map<std::string, std::size_t> &mFiles;
     Settings &mSettings;
     ErrorLogger &mErrorLogger;
     unsigned int mFileCount;
+
+    void report(const ErrorMessage &msg, MessageType msgType);
 
 #if defined(THREADING_MODEL_FORK)
 
@@ -119,8 +125,6 @@ public:
 #elif defined(THREADING_MODEL_WIN)
 
 private:
-    enum class MessageType {REPORT_ERROR, REPORT_INFO};
-
     std::map<std::string, std::string> mFileContents;
     std::map<std::string, std::size_t>::const_iterator mItNextFile;
     std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
@@ -134,8 +138,6 @@ private:
     std::mutex mErrorSync;
 
     std::mutex mReportSync;
-
-    void report(const ErrorMessage &msg, MessageType msgType);
 
     static unsigned __stdcall threadProc(ThreadExecutor *threadExecutor);
 

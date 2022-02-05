@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,7 @@
 /**
  *
  * @mainpage Cppcheck
- * @version 2.6.99
+ * @version 2.7
  *
  * @section overview_sec Overview
  * Cppcheck is a simple tool for static analysis of C/C++ code.
@@ -61,7 +61,14 @@
 
 #include "cppcheckexecutor.h"
 
+#ifdef NDEBUG
+#include "errortypes.h"
+
+#include <cstdlib>
+#include <exception>
 #include <iostream>
+#include <string>
+#endif
 
 #ifdef _WIN32
 #include <windows.h>

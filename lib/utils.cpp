@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,11 @@
 
 #include "utils.h"
 
-#include <utility>
-#include <stack>
 #include <cctype>
+#include <iterator>
+#include <memory>
+#include <stack>
+#include <utility>
 
 
 int caseInsensitiveStringCompare(const std::string &lhs, const std::string &rhs)

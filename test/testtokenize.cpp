@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,9 +27,14 @@
 #include "tokenlist.h"
 
 #include <list>
+#include <map>
 #include <set>
 #include <sstream>
 #include <string>
+#include <utility>
+#include <vector>
+
+#include <simplecpp.h>
 
 struct InternalError;
 
@@ -415,8 +420,8 @@ private:
         // #9052
         TEST_CASE(noCrash1);
         TEST_CASE(noCrash2);
-
         TEST_CASE(noCrash3);
+        TEST_CASE(noCrash4);
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -442,6 +447,7 @@ private:
         TEST_CASE(simplifyIfSwitchForInit2);
         TEST_CASE(simplifyIfSwitchForInit3);
         TEST_CASE(simplifyIfSwitchForInit4);
+        TEST_CASE(simplifyIfSwitchForInit5);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -2647,7 +2653,7 @@ private:
     }
 
     void simplifyStdType() { // #4947, #4950, #4951
-        // usigned long long
+        // unsigned long long
         {
             const char code[] = "long long unsigned int x;";
             const char expected[] = "unsigned long long x ;";
@@ -2709,7 +2715,7 @@ private:
             const char expected[] = "signed long long x ;";
             ASSERT_EQUALS(expected, tokenizeAndStringify(code));
         }
-        // usigned short
+        // unsigned short
         {
             const char code[] = "short unsigned int x;";
             const char expected[] = "unsigned short x ;";
@@ -3371,6 +3377,19 @@ private:
             ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< >");
             const Token* tok2 = Token::findsimplematch(tok1, "> { } >");
+            ASSERT_EQUALS(true, tok1->link() == tok2);
+            ASSERT_EQUALS(true, tok2->link() == tok1);
+        }
+
+        {
+            // #10664
+            const char code[] = "class C1 : public T1<D2<C2>const> {};\n";
+            errout.str("");
+            Tokenizer tokenizer(&settings0, this);
+            std::istringstream istr(code);
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+            const Token* tok1 = Token::findsimplematch(tokenizer.tokens(), "< C2");
+            const Token* tok2 = Token::findsimplematch(tok1, "> const");
             ASSERT_EQUALS(true, tok1->link() == tok2);
             ASSERT_EQUALS(true, tok2->link() == tok1);
         }
@@ -5891,6 +5910,9 @@ private:
         ASSERT_EQUALS("foryz:(", testAst("for (decltype(x) *y : z);"));
         ASSERT_EQUALS("for(tmpNULL!=tmptmpnext.=;;( tmpa=", testAst("for ( ({ tmp = a; }) ; tmp != NULL; tmp = tmp->next ) {}"));
         ASSERT_EQUALS("forx0=x;;(", testAst("for (int x=0; x;);"));
+        ASSERT_EQUALS("forae*bc.({:(", testAst("for (a *e : {b->c()});"));
+        ASSERT_EQUALS("fori0=iasize.(<i++;;( asize.(", testAst("for (decltype(a.size()) i = 0; i < a.size(); ++i);"));
+        ASSERT_EQUALS("foria:( asize.(", testAst("for(decltype(a.size()) i:a);"));
 
         // for with initializer (c++20)
         ASSERT_EQUALS("forab=ca:;(", testAst("for(a=b;int c:a)"));
@@ -6106,6 +6128,7 @@ private:
         ASSERT_EQUALS("a0{,( \"\"abc12:?,", testAst("a(0, {{\"\", (abc) ? 1 : 2}});"));
         ASSERT_EQUALS("a0{,( \'\'abc12:?,", testAst("a(0, {{\'\', (abc) ? 1 : 2}});"));
         ASSERT_EQUALS("x12,{34,{,{56,{78,{,{,{=", testAst("x = { { {1,2}, {3,4} }, { {5,6}, {7,8} } };"));
+        ASSERT_EQUALS("Sa.stdmove::s(=b.1=,{(", testAst("S({.a = std::move(s), .b = 1})"));
 
         // struct initialization hang
         ASSERT_EQUALS("sbar.1{,{(={= forfieldfield++;;(",
@@ -6485,6 +6508,12 @@ private:
 
         const char code8[] = "void foo() { a = [](int x, decltype(vec) y){}; }";
         ASSERT_NO_THROW(tokenizeAndStringify(code8));
+
+        const char code9[] = "void f(std::exception c) { b(M() c.what()); }";
+        ASSERT_THROW(tokenizeAndStringify(code9), InternalError);
+
+        const char code10[] = "void f(std::exception c) { b(M() M() + N(c.what())); }";
+        ASSERT_THROW(tokenizeAndStringify(code10), InternalError);
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
@@ -6567,6 +6596,17 @@ private:
         // #10139
         ASSERT_NO_THROW(tokenizeAndStringify("template<typename F>\n"
                                              "void foo(std::enable_if_t<value<F>>* = 0) {}\n"));
+
+        // #10001
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  int c;\n"
+                                             "  template <class b> void d(b e) const { c < e ? c : e; }\n"
+                                             "};\n"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  int c;\n"
+                                             "  template <class b> void d(b e) const { c > e ? c : e; }\n"
+                                             "};\n"));
     }
 
     void checkTemplates() {
@@ -6764,6 +6804,13 @@ private:
         // #9301
         ASSERT_NO_THROW(tokenizeAndStringify("template <typename> constexpr char x[] = \"\";\n"
                                              "template <> constexpr char x<int>[] = \"\";\n"));
+
+        // #10951
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  template <class> static void b() {}\n"
+                                             "  ~a();\n"
+                                             "};\n"
+                                             "void d() { a::b<int>(); }\n"));
     }
 
     void checkNamespaces() {
@@ -6842,6 +6889,15 @@ private:
         // #9185
         ASSERT_NO_THROW(tokenizeAndStringify("void a() {\n"
                                              "  [b = [] { ; }] {};\n"
+                                             "}\n"));
+
+        // #10739
+        ASSERT_NO_THROW(tokenizeAndStringify("struct a {\n"
+                                             "  std::vector<int> b;\n"
+                                             "};\n"
+                                             "void c() {\n"
+                                             "  a bar;\n"
+                                             "  (decltype(bar.b)::value_type){};\n"
                                              "}\n"));
     }
     void checkIfCppCast() {
@@ -6952,6 +7008,15 @@ private:
 
     void noCrash3() {
         ASSERT_NO_THROW(tokenizeAndStringify("void a(X<int> x, typename Y1::Y2<int, A::B::C, 2> y, Z z = []{});"));
+    }
+
+    void noCrash4()
+    {
+        ASSERT_NO_THROW(tokenizeAndStringify("static int foo() {\n"
+                                             "    zval ref ;\n"
+                                             "    p = &(ref).value;\n"
+                                             "    return result ;\n"
+                                             "}\n"));
     }
 
     void checkConfig(const char code[]) {
@@ -7140,6 +7205,13 @@ private:
         settings.standards.cpp = Standards::CPP20;
         const char code[] = "void f() { for (a;b:c) {} }";
         ASSERT_EQUALS("void f ( ) { { a ; for ( b : c ) { } } }", tokenizeAndStringify(code, settings));
+    }
+
+    void simplifyIfSwitchForInit5() {
+        Settings settings;
+        settings.standards.cpp = Standards::CPP20;
+        const char code[] = "void f() { if ([] { ; }) {} }";
+        ASSERT_EQUALS("void f ( ) { if ( [ ] { ; } ) { } }", tokenizeAndStringify(code, settings));
     }
 };
 

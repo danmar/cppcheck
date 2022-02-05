@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,18 +17,30 @@
  */
 
 #include "clangimport.h"
+
+#include "errortypes.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
+#include "valueflow.h"
 
-#include <cstring>
 #include <algorithm>
-#include <iostream>
-#include <memory>
-#include <stack>
-#include <vector>
 #include <cctype>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <list>
+#include <map>
+#include <memory>
+#include <set>
+#include <stack>
+#include <string>
+#include <utility>
+#include <vector>
 
 static const std::string AccessSpecDecl = "AccessSpecDecl";
 static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";

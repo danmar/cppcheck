@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,11 @@
 #ifndef RESULTSTREE_H
 #define RESULTSTREE_H
 
-#include <QTreeView>
-#include <QStandardItemModel>
 #include "errortypes.h"
 #include "showtypes.h"
+
+#include <QStandardItemModel>
+#include <QTreeView>
 
 class ApplicationList;
 class Report;
@@ -177,7 +178,7 @@ public:
      */
     ShowTypes mShowSeverities;
 
-    virtual void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) override;
 
 signals:
     /**
@@ -294,7 +295,7 @@ protected slots:
      * @param current Model index to specify new selected item.
      * @param previous Model index to specify previous selected item.
      */
-    virtual void currentChanged(const QModelIndex &current, const QModelIndex &previous);
+    void currentChanged(const QModelIndex &current, const QModelIndex &previous) override;
 
 protected:
 
@@ -365,7 +366,7 @@ protected:
      *
      * @param e Event
      */
-    void contextMenuEvent(QContextMenuEvent * e);
+    void contextMenuEvent(QContextMenuEvent * e) override;
 
     /**
      * @brief Add a new error item beneath a file or a backtrace item beneath an error

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,10 @@
 #include "templatesimplifier.h"
 
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "mathlib.h"
 #include "settings.h"
+#include "standards.h"
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
@@ -29,6 +31,7 @@
 #include <cassert>
 #include <iostream>
 #include <map>
+#include <memory>
 #include <stack>
 #include <utility>
 
@@ -312,14 +315,15 @@ void TemplateSimplifier::checkComplicatedSyntaxErrorsInTemplates()
             break;
 
         // template variable or type..
-        if (Token::Match(tok, "%type% <")) {
+        if (Token::Match(tok, "%type% <") && !Token::simpleMatch(tok, "template")) {
             // these are used types..
             std::set<std::string> usedtypes;
 
             // parse this statement and see if the '<' and '>' are matching
             unsigned int level = 0;
             for (const Token *tok2 = tok; tok2 && !Token::simpleMatch(tok2, ";"); tok2 = tok2->next()) {
-                if (Token::simpleMatch(tok2, "{") && (!Token::Match(tok2->previous(), ">|%type%") || Token::simpleMatch(tok2->link(), "} ;")))
+                if (Token::simpleMatch(tok2, "{") &&
+                    (!Token::Match(tok2->previous(), ">|%type%") || Token::simpleMatch(tok2->link(), "} ;")))
                     break;
                 if (tok2->str() == "(")
                     tok2 = tok2->link();
@@ -2136,7 +2140,7 @@ void TemplateSimplifier::expandTemplate(
                             addNamespace(templateDeclaration, tok3);
                         }
                         mTokenList.addtoken(newName, tok3);
-                    } else if (!Token::Match(tok3->next(), ":|{|=|;"))
+                    } else if (!Token::Match(tok3->next(), ":|{|=|;|["))
                         tok3->str(newName);
                     continue;
                 }
@@ -2221,7 +2225,7 @@ void TemplateSimplifier::expandTemplate(
                         mTokenList.addtoken(tokSemicolon, tokSemicolon->linenr(), tokSemicolon->column(), tokSemicolon->fileIndex());
                     }
                     brackets.pop();
-                    if (brackets.empty() && !Token::Match(tok3, "} >|,|{|%cop%")) {
+                    if (brackets.empty() && !Token::Match(tok3, "} >|,|{")) {
                         inTemplateDefinition = false;
                         break;
                     }

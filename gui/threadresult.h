@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,13 @@
 #ifndef THREADRESULT_H
 #define THREADRESULT_H
 
-#include <QMutex>
-#include <QObject>
-#include <QStringList>
 #include "color.h"
 #include "errorlogger.h"
 #include "importproject.h"
+
+#include <QMutex>
+#include <QObject>
+#include <QStringList>
 
 class ErrorItem;
 

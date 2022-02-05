@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,11 +19,11 @@
 #ifndef CHECKSTATISTICS_H
 #define CHECKSTATISTICS_H
 
-#include <QObject>
-#include <QMap>
-#include <QString>
-
 #include "showtypes.h"
+
+#include <QMap>
+#include <QObject>
+#include <QString>
 
 /// @addtogroup GUI
 /// @{

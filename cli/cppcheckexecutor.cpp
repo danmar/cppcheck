@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "color.h"
 #include "config.h"
 #include "cppcheck.h"
+#include "errortypes.h"
 #include "filelister.h"
 #include "importproject.h"
 #include "library.h"
@@ -35,13 +36,17 @@
 #include "utils.h"
 #include "checkunusedfunctions.h"
 
+#include <algorithm>
+#include <atomic>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
+#include <functional>
 #include <iostream>
 #include <list>
 #include <memory>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -57,8 +62,7 @@
 #   include <ucontext.h>
 #endif
 #ifdef __linux__
-#include <sys/syscall.h>
-#include <sys/types.h>
+#include <syscall.h>
 #endif
 #endif
 

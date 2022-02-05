@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,13 @@
 
 #include "applicationdialog.h"
 
+#include "application.h"
+#include "common.h"
+
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
-
-#include "application.h"
-#include "common.h"
 
 
 ApplicationDialog::ApplicationDialog(const QString &title,

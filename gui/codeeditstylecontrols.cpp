@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "codeeditstylecontrols.h"
+
 #include <QColorDialog>
 
 SelectColorButton::SelectColorButton(QWidget* parent) :
@@ -57,6 +58,7 @@ void SelectColorButton::setColor(const QColor& color)
     updateColor();
 }
 
+// cppcheck-suppress unusedFunction
 const QColor& SelectColorButton::getColor()
 {
     return mColor;
@@ -114,6 +116,7 @@ void SelectFontWeightCombo::setWeight(const QFont::Weight& weight)
     updateWeight();
 }
 
+// cppcheck-suppress unusedFunction
 const QFont::Weight& SelectFontWeightCombo::getWeight()
 {
     return mWeight;

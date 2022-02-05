@@ -25,6 +25,7 @@ if __name__ == "__main__":
     group.add_argument('-p', default=256, type=int, help='Count of packages to check')
     group.add_argument('--packages', nargs='+', help='Check specific packages and then stop.')
     parser.add_argument('-o', default='my_check_diff.log', help='Filename of result inside a working path dir')
+    parser.add_argument('--cpp-only', dest='cpp_only', help='Only process c++ packages', action='store_true')
     parser.add_argument('--work-path', '--work-path=', default=lib.work_path, type=str, help='Working directory for reference repo')
     args = parser.parse_args()
 
@@ -33,7 +34,9 @@ if __name__ == "__main__":
     work_path = os.path.abspath(args.work_path)
     if not os.path.exists(work_path):
         os.makedirs(work_path)
-    main_dir = os.path.join(work_path, 'cppcheck')
+    repo_dir = os.path.join(work_path, 'repo')
+    old_repo_dir = os.path.join(work_path, 'cppcheck')
+    main_dir = os.path.join(work_path, 'tree-main')
 
     jobs = '-j' + str(args.j)
     result_file = os.path.join(work_path, args.o)
@@ -46,8 +49,18 @@ if __name__ == "__main__":
     if os.path.exists(timing_file):
         os.remove(timing_file)
 
-    if not lib.get_cppcheck(main_dir, work_path):
-        print('Failed to clone main of Cppcheck, retry later')
+    try:
+        lib.clone_cppcheck(repo_dir, old_repo_dir)
+        pass
+    except:
+        print('Failed to clone Cppcheck repository, retry later')
+        sys.exit(1)
+
+    try:
+        lib.checkout_cppcheck_version(repo_dir, 'main', main_dir)
+        pass
+    except:
+        print('Failed to checkout main, retry later')
         sys.exit(1)
 
     try:
@@ -62,8 +75,10 @@ if __name__ == "__main__":
                 'Package', 'main', 'your', 'Factor', package_width=package_width, timing_width=timing_width))
 
         os.chdir(main_dir)
+        subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', commit_id])
         subprocess.check_call(['git', 'checkout', '-f', commit_id])
-    except:
+    except BaseException as e:
+        print('Error: {}'.format(e))
         print('Failed to switch to common ancestor of your branch and main')
         sys.exit(1)
 
@@ -103,7 +118,7 @@ if __name__ == "__main__":
             print("No package downloaded")
             continue
 
-        if not lib.unpack_package(work_path, tgz):
+        if not lib.unpack_package(work_path, tgz, args.cpp_only):
             print("No files to process")
             continue
 

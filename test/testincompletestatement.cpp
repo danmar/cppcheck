@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,13 +17,19 @@
  */
 
 #include "checkother.h"
+#include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
+#include <iosfwd>
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestIncompleteStatement : public TestFixture {
 public:
@@ -374,6 +380,9 @@ private:
 
         check("void f1(int x) { x; }", true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unused variable value 'x'\n", errout.str());
+
+        check("void f() { if (Type t; g(t)) {} }"); // #9776
+        ASSERT_EQUALS("", errout.str());
 
     }
 

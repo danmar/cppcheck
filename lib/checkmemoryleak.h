@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,6 +36,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenize.h"
+#include "utils.h"
 
 #include <list>
 #include <string>
@@ -145,9 +146,6 @@ public:
 
     /** What type of allocated memory does the given function return? */
     AllocType functionReturnType(const Function* func, std::list<const Function*> *callstack = nullptr) const;
-
-    /** Function allocates pointed-to argument (a la asprintf)? */
-    const char *functionArgAlloc(const Function *func, nonneg int targetpar, AllocType &allocType) const;
 };
 
 /// @}

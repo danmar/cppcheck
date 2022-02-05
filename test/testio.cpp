@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,14 @@
 
 
 #include "checkio.h"
+#include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <iosfwd>
 
 
 class TestIO : public TestFixture {
@@ -2113,6 +2117,11 @@ private:
             ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires a 'char *' but the argument type is 'const char *'.\n"
                           "[test.cpp:3]: (warning) scanf() without field width limits can crash with huge input data.\n", errout.str());
         }
+
+        check("void f() {\n" // #7038
+              "    scanf(\"%i\", \"abc\" + 1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n", errout.str());
     }
 
     void testPrintfArgument() {
@@ -3291,6 +3300,12 @@ private:
               "  printf(\"%f\", x.f(4.0));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    printf(\"%lu\", sizeof(char));\n"
+              "}\n", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %lu in format string (no. 1) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long long}'.\n",
+                      errout.str());
     }
 
     void testPrintfArgumentVariables() {
@@ -4621,9 +4636,12 @@ private:
 
         check("void f() {\n"
               "  char str[8];\n"
-              "  scanf_s(\"%8c\", str, sizeof(str))\n"
-              "  scanf_s(\"%9c\", str, sizeof(str))\n"
-              "}\n", false, false, Settings::Win32A);
+              "  scanf_s(\"%8c\", str, sizeof(str));\n"
+              "  scanf_s(\"%9c\", str, sizeof(str));\n"
+              "}\n",
+              false,
+              false,
+              Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:4]: (error) Width 9 given in format string (no. 1) is larger than destination buffer 'str[8]', use %8c to prevent overflowing it.\n", errout.str());
 
         check("void foo() {\n"

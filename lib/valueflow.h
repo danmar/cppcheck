@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,13 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
-#include "astutils.h"
 #include "config.h"
 #include "mathlib.h"
 #include "utils.h"
 
+#include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <functional>
 #include <list>
 #include <string>
@@ -457,6 +458,8 @@ namespace ValueFlow {
     std::vector<ValueFlow::Value> isOutOfBounds(const Value& size, const Token* indexTok, bool possible = true);
 }
 
+bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
+
 struct LifetimeToken {
     const Token* token;
     bool addressOf;
@@ -492,7 +495,7 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
 ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok);
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
-ValuePtr<InferModel> makeIntegralInferModel();
+CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
 
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                                              bool escape = false,
@@ -512,6 +515,8 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Value
 
 CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 
-CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive = false, bool subfunction = false);
+CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok,
+                                                               bool inconclusive = false,
+                                                               MathLib::bigint path = 0);
 
 #endif // valueflowH

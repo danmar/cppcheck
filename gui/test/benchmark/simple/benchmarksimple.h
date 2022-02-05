@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,9 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtTest/QtTest>
-#include <QObject>
 #include "errorlogger.h"
+
+#include <QObject>
 
 class BenchmarkSimple : public QObject, public ErrorLogger {
     Q_OBJECT
@@ -31,6 +31,7 @@ private slots:
 private:
     // Empty implementations of ErrorLogger methods.
     // We don't care about the output in the benchmark tests.
-    void reportOut(const std::string & outmsg) override {}
-    void reportErr(const ErrorMessage &msg) override {}
+    void reportOut(const std::string & /*outmsg*/, Color /*c*/ = Color::Reset) override {}
+    void reportErr(const ErrorMessage & /*msg*/) override {}
+    void bughuntingReport(const std::string & /*str*/) override {}
 };

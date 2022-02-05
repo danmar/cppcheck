@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,21 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <tinyxml2.h>
-
+#include "check.h"
 #include "checkclass.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <iosfwd>
+#include <list>
+#include <string>
+#include <vector>
+
+#include <tinyxml2.h>
 
 
 class TestClass : public TestFixture {
@@ -173,6 +181,9 @@ private:
         TEST_CASE(const68); // ticket #6471
         TEST_CASE(const69); // ticket #9806
         TEST_CASE(const70); // variadic template can receive more arguments than in its definition
+        TEST_CASE(const71); // ticket #10146
+        TEST_CASE(const72); // ticket #10520
+        TEST_CASE(const73); // ticket #10735
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -201,6 +212,7 @@ private:
         TEST_CASE(const_shared_ptr);
         TEST_CASE(constPtrToConstPtr);
         TEST_CASE(constTrailingReturnType);
+        TEST_CASE(staticArrayPtrOverload);
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -442,6 +454,19 @@ private:
                                   "    A(int, int y=2) {}"
                                   "};");
         ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
+
+        checkExplicitConstructors("struct Foo {\n" // #10515
+                                  "    template <typename T>\n"
+                                  "    explicit constexpr Foo(T) {}\n"
+                                  "};\n"
+                                  "struct Bar {\n"
+                                  "    template <typename T>\n"
+                                  "    constexpr explicit Bar(T) {}\n"
+                                  "};\n"
+                                  "struct Baz {\n"
+                                  "    explicit constexpr Baz(int) {}\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
@@ -5771,6 +5796,129 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void const71() { // #10146
+        checkConst("struct Bar {\n"
+                   "    int j = 5;\n"
+                   "    void f(int& i) const { i += j; }\n"
+                   "};\n"
+                   "struct Foo {\n"
+                   "    Bar bar;\n"
+                   "    int k{};\n"
+                   "    void g() { bar.f(k); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    A a;\n"
+                   "    void f(int j, int*& p) {\n"
+                   "        p = &(((a[j])));\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const72() { // #10520
+        checkConst("struct S {\n"
+                   "    explicit S(int* p) : mp(p) {}\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    explicit S(int* p) : mp(p) {}\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S(&i); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return { &i }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    explicit S(const int* p) : mp(p) {}\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    explicit S(const int* p) : mp(p) {}\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S(&i); }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return { &i }; }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+    }
+
+    void const73() {
+        checkConst("struct A {\n"
+                   "    int* operator[](int i);\n"
+                   "    const int* operator[](int i) const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    A a;\n"
+                   "    void f(int j) {\n"
+                   "        int* p = a[j];\n"
+                   "        *p = 0;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n" // #10758
+                   "    T* h;\n"
+                   "    void f(); \n"
+                   "};\n"
+                   "void S::f() {\n"
+                   "    char* c = h->x[y];\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n", errout.str());
+    }
+
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
@@ -6566,6 +6714,22 @@ private:
                    "    int x = 1;\n"
                    "    auto get() -> int & { return x; }\n"
                    "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void staticArrayPtrOverload() {
+        checkConst("struct S {\n"
+                   "    template<size_t N>\n"
+                   "    void f(const std::array<std::string_view, N>& sv);\n"
+                   "    template<long N>\n"
+                   "    void f(const char* const (&StrArr)[N]);\n"
+                   "};\n"
+                   "template<size_t N>\n"
+                   "void S::f(const std::array<std::string_view, N>& sv) {\n"
+                   "    const char* ptrs[N]{};\n"
+                   "    return f(ptrs);\n"
+                   "}\n"
+                   "template void S::f(const std::array<std::string_view, 3>& sv);\n");
         ASSERT_EQUALS("", errout.str());
     }
 

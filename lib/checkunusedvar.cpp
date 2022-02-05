@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,17 +21,19 @@
 #include "checkunusedvar.h"
 
 #include "astutils.h"
+#include "errortypes.h"
+#include "library.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "valueflow.h"
+#include "tokenlist.h"
+#include "utils.h"
 
 #include <algorithm>
-#include <cctype>
-#include <cstddef>
 #include <list>
+#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -712,8 +714,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             else if (mTokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
-                     (i->isStlType() &&
-                      !Token::Match(i->typeStartToken()->tokAt(2), "lock_guard|unique_lock|shared_ptr|unique_ptr|auto_ptr|shared_lock")))
+                     mSettings->library.detectContainer(i->typeStartToken(), /*iterator*/ false) ||
+                     i->isStlType())
                 type = Variables::standard;
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
                 continue;
@@ -731,7 +733,8 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     break;
                 }
             }
-            if (i->isArray() && i->isClass()) // Array of class/struct members. Initialized by ctor.
+            if (i->isArray() && i->isClass() && // Array of class/struct members. Initialized by ctor except for std::array
+                !(i->isStlType() && i->valueType() && i->valueType()->containerTypeToken && i->valueType()->containerTypeToken->isStandardType()))
                 variables.write(i->declarationId(), i->nameToken());
             if (i->isArray() && Token::Match(i->nameToken(), "%name% [ %var% ]")) // Array index variable read.
                 variables.read(i->nameToken()->tokAt(2)->varId(), i->nameToken());
@@ -1179,9 +1182,12 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             }
             // not assignment/initialization/increment => continue
             const bool isAssignment = tok->isAssignmentOp() && tok->astOperand1();
-            const bool isInitialization = (Token::Match(tok, "%var% (") && tok->variable() && tok->variable()->nameToken() == tok);
+            const bool isInitialization = (Token::Match(tok, "%var% (|{") && tok->variable() && tok->variable()->nameToken() == tok);
             const bool isIncrementOrDecrement = (tok->tokType() == Token::Type::eIncDecOp);
             if (!isAssignment && !isInitialization && !isIncrementOrDecrement)
+                continue;
+
+            if (isInitialization && Token::Match(tok, "%var% { }")) // don't warn for trivial initialization
                 continue;
 
             if (isIncrementOrDecrement && tok->astParent() && precedes(tok, tok->astOperand1()))
@@ -1191,7 +1197,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
 
             if (tok->isName()) {
-                if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), true))
+                if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
                     continue;
                 tok = tok->next();
             }
@@ -1222,6 +1228,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 op1tok = op1tok->astOperand1();
 
             const Variable *op1Var = op1tok ? op1tok->variable() : nullptr;
+            if (!op1Var && Token::Match(tok, "(|{") && tok->previous() && tok->previous()->variable())
+                op1Var = tok->previous()->variable();
             std::string bailoutTypeName;
             if (op1Var) {
                 if (op1Var->isReference() && op1Var->nameToken() != tok->astOperand1())
@@ -1277,8 +1285,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                                     Severity::information,
                                     "checkLibraryCheckType",
                                     "--check-library: Provide <type-checks><unusedvar> configuration for " + bailoutTypeName);
-                        continue;
                     }
+                    continue;
                 }
 
                 // warn
@@ -1417,6 +1425,19 @@ void CheckUnusedVar::checkStructMemberUsage()
             if (var && (var->isExtern() || (var->isGlobal() && !var->isStatic())) && var->typeEndToken()->str() == scope.className) {
                 bailout = true;
                 break;
+            }
+            if (var && (var->typeStartToken()->str() == scope.className || var->typeEndToken()->str() == scope.className)) {
+                const std::string addressPattern("!!" + scope.className + " & " + var->name()); // cast from struct
+                const Token* addrTok = scope.bodyEnd;
+                do {
+                    addrTok = Token::findmatch(addrTok, addressPattern.c_str());
+                    if ((addrTok && addrTok->str() == ")" && addrTok->link()->isCast()) || isCPPCast(addrTok)) {
+                        bailout = true;
+                        break;
+                    }
+                    if (addrTok)
+                        addrTok = addrTok->next();
+                } while (addrTok);
             }
         }
         if (bailout)

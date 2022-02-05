@@ -1,14 +1,39 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "reverseanalyzer.h"
+
 #include "analyzer.h"
 #include "astutils.h"
 #include "errortypes.h"
 #include "forwardanalyzer.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 struct ReverseTraversal {
     ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
@@ -133,6 +158,8 @@ struct ReverseTraversal {
             }
             if (tok != parent->astOperand2())
                 continue;
+            if (Token::simpleMatch(parent, ":"))
+                parent = parent->astParent();
             if (!Token::Match(parent, "%oror%|&&|?"))
                 continue;
             Token* condTok = parent->astOperand1();
@@ -159,7 +186,7 @@ struct ReverseTraversal {
         if (start == end)
             return;
         std::size_t i = start->index();
-        for (Token* tok = start->previous(); succedes(tok, end); tok = tok->previous()) {
+        for (Token* tok = start->previous(); succeeds(tok, end); tok = tok->previous()) {
             if (tok->index() >= i)
                 throw InternalError(tok, "Cyclic reverse analysis.");
             i = tok->index();

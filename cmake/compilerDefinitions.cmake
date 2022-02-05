@@ -7,7 +7,8 @@ if (MSVC)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
 endif()
 
-if (UNIX)
+# TODO: this should probably apply to the compiler and not the platform
+if (CPPCHK_GLIBCXX_DEBUG AND UNIX)
     # TODO: check if this can be enabled again for Clang - also done in Makefile
     if (CMAKE_BUILD_TYPE MATCHES "Debug" AND NOT (CMAKE_CXX_COMPILER_ID MATCHES "Clang"))
         add_definitions(-D_GLIBCXX_DEBUG)

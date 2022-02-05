@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,8 @@
  */
 
 
+#include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -24,11 +26,13 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <map>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <simplecpp.h>
-
-
-struct InternalError;
 
 
 class TestSimplifyTypedef : public TestFixture {
@@ -182,6 +186,7 @@ private:
         TEST_CASE(simplifyTypedef136);
         TEST_CASE(simplifyTypedef137);
         TEST_CASE(simplifyTypedef138);
+        TEST_CASE(simplifyTypedef139);
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3007,6 +3012,20 @@ private:
                             "class C : Baz {};\n"
                             "}\n";
         ASSERT_EQUALS("namespace foo { class Bar ; } class Baz ; namespace bar { class C : Baz { } ; }", tok(code));
+    }
+
+    void simplifyTypedef139()
+    {
+        const char code[] = "typedef struct c a;\n"
+                            "struct {\n"
+                            "  a *b;\n"
+                            "} * d;\n"
+                            "void e(a *a) {\n"
+                            "  if (a < d[0].b) {}\n"
+                            "}\n";
+        ASSERT_EQUALS(
+            "struct Anonymous0 { struct c * b ; } ; struct Anonymous0 * d ; void e ( struct c * a ) { if ( a < d [ 0 ] . b ) { } }",
+            tok(code));
     }
 
     void simplifyTypedefFunction1() {

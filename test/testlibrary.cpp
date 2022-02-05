@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,6 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "standards.h"
@@ -24,10 +26,13 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <tinyxml2.h>
+#include <iosfwd>
 #include <map>
 #include <string>
+#include <unordered_map>
 #include <vector>
+
+#include <tinyxml2.h>
 
 #define ASSERT_EQ(expected, actual)   ASSERT(expected == actual)
 
@@ -665,8 +670,8 @@ private:
                                 "</def>";
 
         Library library;
-        library.loadxmldata(xmldata1, sizeof(xmldata1));
-        library.loadxmldata(xmldata2, sizeof(xmldata2));
+        ASSERT_EQUALS(true, library.loadxmldata(xmldata1, sizeof(xmldata1)));
+        ASSERT_EQUALS(true, library.loadxmldata(xmldata2, sizeof(xmldata2)));
 
         ASSERT_EQUALS(library.deallocId("free"), library.allocId("malloc"));
         ASSERT_EQUALS(library.deallocId("free"), library.allocId("foo"));

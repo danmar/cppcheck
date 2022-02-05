@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
 #include "library.h"
+#include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -25,16 +27,21 @@
 #include "valueflow.h"
 
 #include <algorithm>
+#include <climits>
 #include <cmath>
 #include <cstdint>
 #include <cstring>
 #include <functional>
 #include <list>
 #include <map>
-#include <simplecpp.h>
+#include <memory>
+#include <ostream>
+#include <set>
 #include <string>
 #include <utility>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestValueFlow : public TestFixture {
 public:
@@ -50,7 +57,7 @@ private:
                            "  <function name=\"strcpy\"> <arg nr=\"1\"><not-null/></arg> </function>\n"
                            "  <function name=\"abort\"> <noreturn>true</noreturn> </function>\n" // abort is a noreturn function
                            "</def>";
-        settings.library.loadxmldata(cfg, sizeof(cfg));
+        ASSERT_EQUALS(true, settings.library.loadxmldata(cfg, sizeof(cfg)));
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(valueFlowNumber);
@@ -3006,7 +3013,7 @@ private:
                "    auto x = !i;\n"
                "    return x;\n"
                "}\n";
-        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 1));
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
 
         code = "auto f(int i) {\n"
                "    if (i == 1) return;\n"
@@ -3918,7 +3925,8 @@ private:
                "  }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
-        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 9));
+        // Known to be true, but it could also be 9
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
 
         code = "void foo() {\n"
                "  for (int x = 0; x < 10; x++) {\n"
@@ -3936,7 +3944,8 @@ private:
                "  }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
-        ASSERT_EQUALS(true,  testValueOfX(code, 4U, 9));
+        // Known to be true, but it could also be 9
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 1));
 
         // After loop
         code = "void foo() {\n"
@@ -6060,6 +6069,17 @@ private:
                "}\n";
         valueOfTok(code, "x");
 
+        code = "struct a {\n"
+               "  void b();\n"
+               "};\n"
+               "void d(std::vector<a> c) {\n"
+               "  a *e;\n"
+               "  for (auto &child : c)\n"
+               "    e = &child;\n"
+               "  (*e).b();\n"
+               "}\n";
+        valueOfTok(code, "e");
+
         code = "const int& f(int, const int& y = 0);\n"
                "const int& f(int, const int& y) {\n"
                "    return y;\n"
@@ -6173,6 +6193,72 @@ private:
                "  ASSERT(!(t4 < t5) && t4 <= t5);\n"
                "}";
         valueOfTok(code, "<=");
+
+        code = "void f() {\n"
+               "    unsigned short Xoff = 10;\n"
+               "    unsigned short Nx = 0;\n"
+               "    int last;\n"
+               "    do {\n"
+               "        last = readData(0);\n"
+               "        if (last && (last - Xoff < Nx))\n"
+               "            Nx = last - Xoff;\n"
+               "    } while (last > 0);\n"
+               "}\n";
+        valueOfTok(code, "last");
+
+        code = "struct a {\n"
+               "  void clear();\n"
+               "  int b();\n"
+               "};\n"
+               "struct d {\n"
+               "  void c(int);\n"
+               "  decltype(auto) f() { c(0 != e.b()); }\n"
+               "  a e;\n"
+               "};\n"
+               "void d::c(int) { e.clear(); }\n";
+        valueOfTok(code, "e");
+
+        code = "struct a {\n"
+               "  int b;\n"
+               "  int c;\n"
+               "} f;\n"
+               "unsigned g;\n"
+               "struct {\n"
+               "  a d;\n"
+               "} e;\n"
+               "void h() {\n"
+               "  if (g && f.c)\n"
+               "    e.d.b = g - f.c;\n"
+               "}\n";
+        valueOfTok(code, "e");
+
+        code = "struct a {\n"
+               "  std::vector<a> b;\n"
+               "  void c(unsigned d) {\n"
+               "    size_t e = 0;\n"
+               "    size_t f = 0;\n"
+               "    for (auto child : b) {\n"
+               "      f = e;\n"
+               "      e = d - f;\n"
+               "    }\n"
+               "  }\n"
+               "};\n";
+        valueOfTok(code, "e");
+
+        code = "struct a {\n"
+               "  struct b {\n"
+               "    std::unique_ptr<a> c;\n"
+               "  };\n"
+               "  void d(int, void *);\n"
+               "  void e() {\n"
+               "    d(0, [f = b{}] { return f.c.get(); }());\n"
+               "  }\n"
+               "  void g() {\n"
+               "    if (b *h = 0)\n"
+               "      h->c.get();\n"
+               "  }\n"
+               "};\n";
+        valueOfTok(code, "f.c");
     }
 
     void valueFlowHang() {
@@ -6330,6 +6416,14 @@ private:
                "            && ch != '\\\'' && ch != '\\\"');\n"
                "}\n";
         valueOfTok(code, "return");
+
+        code = "void heapSort() {\n"
+               "    int n = m_size;\n"
+               "    while (n >= 1) {\n"
+               "        swap(0, n - 1);\n"
+               "    }\n"
+               "}\n";
+        valueOfTok(code, "swap");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577

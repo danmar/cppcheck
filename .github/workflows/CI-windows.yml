@@ -15,15 +15,22 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-2019, windows-2022]
         arch: [x64, x86]
-        qt_ver: ['', 5.9.9, 5.15.2]
+        qt_ver: ['', 5.15.2]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
 
+    env:
+      # see https://www.pcre.org/original/changelog.txt
+      PCRE_VERSION: 8.45
+      # see https://github.com/Z3Prover/z3/releases:
+      Z3_VERSION: 4.8.10
+
     steps:
       - uses: actions/checkout@v2
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
 
       - name: Set up Python 3.10
         if: matrix.qt_ver == ''
@@ -31,15 +38,27 @@ jobs:
         with:
           python-version: '3.10'
 
-      - name: Setup msbuild.exe
-        if: matrix.qt_ver == ''
-        uses: microsoft/setup-msbuild@v1.0.2
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
+      - name: Cache PCRE
+        id: cache-pcre
+        uses: actions/cache@v2
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        with:
+          path: pcre-${{ env.PCRE_VERSION }}.zip
+          key: pcre-${{ env.PCRE_VERSION }}
+
+      - name: Download PCRE
+        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-pcre.outputs.cache-hit != 'true'
+        run: |
+          curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
 
       - name: Install PCRE
-        if: false
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
-          curl -fsSL https://ftp.pcre.org/pub/pcre/pcre-%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
           cmake . -G "NMake Makefiles" -DCMAKE_BUILD_TYPE=Release -DPCRE_BUILD_PCRECPP=Off -DPCRE_BUILD_TESTS=Off -DPCRE_BUILD_PCREGREP=Off || exit /b !errorlevel!
@@ -51,18 +70,34 @@ jobs:
             copy pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
           )
         env:
-          # see https://www.pcre.org/original/changelog.txt
-          PCRE_VERSION: 8.44
           CL: /MP
 
-      - name: Install Z3 library
+      - name: Cache Z3 Library
+        id: cache-z3
+        uses: actions/cache@v2
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        with:
+          path: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win.zip
+          key: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win
+
+      - name: Download Z3 library
+        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-z3.outputs.cache-hit != 'true'
         run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-win.zip || exit /b !errorlevel!
-          7z x z3-%Z3_VERSION%-win.zip -oexternals -r -y || exit /b !errorlevel!
+          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip || exit /b !errorlevel!
+
+      - name: Install Z3 library
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        run: |
+          7z x z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -oexternals -r -y || exit /b !errorlevel!
           move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
-        env:
-          # see https://github.com/Z3Prover/z3/releases:  
-          Z3_VERSION: 4.8.10
+
+      - name: Cache Qt ${{ matrix.qt_ver }}
+        if: matrix.qt_ver != '' && matrix.arch == 'x64'
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Windows-QtCache-${{ matrix.qt_ver }}-qtcharts
 
       # no 32-bit Qt available
       - name: Install Qt ${{ matrix.qt_ver }}
@@ -71,6 +106,7 @@ jobs:
         with:
           version: ${{ matrix.qt_ver }}
           modules: 'qtcharts'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
       - name: Install missing Python packages
         if: matrix.qt_ver == ''
@@ -82,7 +118,6 @@ jobs:
       - name: Build GUI release
         if: matrix.qt_ver != '' && matrix.arch == 'x64'
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           cd gui || exit /b !errorlevel!
           qmake HAVE_QCHART=yes || exit /b !errorlevel!
           nmake release || exit /b !errorlevel!
@@ -96,10 +131,9 @@ jobs:
           del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
 
-      - name: Configure MSBuild
-        if: matrix.qt_ver == ''
+      - name: Run CMake
+        if: false && matrix.qt_ver == ''
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
@@ -112,28 +146,38 @@ jobs:
       - name: Build CLI debug configuration using MSBuild
         if: matrix.qt_ver == ''
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          cmake --build build --target check --config Debug || exit /b !errorlevel!
+          :: cmake --build build --target check --config Debug || exit /b !errorlevel!
+          msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
+
+      - name: Run Debug test
+        if: matrix.qt_ver == ''
+        run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
 
       - name: Build CLI release configuration using MSBuild
         if: matrix.qt_ver == ''
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" ${{ matrix.arch }} || exit /b !errorlevel!
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          cmake --build build --target check --config Release || exit /b !errorlevel!
+          :: cmake --build build --target check --config Release || exit /b !errorlevel!
+          msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
+
+      - name: Run Release test
+        if: matrix.qt_ver == ''
+        run: .\bin\testrunner.exe || exit /b !errorlevel!
 
       - name: Run test/cli
         if: matrix.qt_ver == ''
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
-          copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          :: copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          copy .\bin\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
+          copy .\bin\cppcheck-core.dll .\cppcheck-core.dll || exit /b !errorlevel!
           cd test/cli || exit /b !errorlevel!
           :: python -m pytest --suppress-no-test-exit-code test-clang-import.py || exit /b !errorlevel!
           python -m pytest test-helloworld.py || exit /b !errorlevel!

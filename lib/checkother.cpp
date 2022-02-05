@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,8 +20,6 @@
 //---------------------------------------------------------------------------
 #include "checkother.h"
 
-#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
-
 #include "astutils.h"
 #include "library.h"
 #include "mathlib.h"
@@ -33,11 +31,18 @@
 #include "utils.h"
 #include "valueflow.h"
 
+#include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
+
 #include <algorithm> // find_if()
+#include <cctype>
 #include <list>
 #include <map>
+#include <memory>
+#include <ostream>
+#include <set>
 #include <utility>
-#include <cctype>
+#include <numeric>
+
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -479,16 +484,21 @@ void CheckOther::checkRedundantAssignment()
                     // todo: check static variables
                     continue;
 
-                // If there is a custom assignment operator => this is inconclusive
                 bool inconclusive = false;
-                if (mTokenizer->isCPP() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->typeScope) {
-                    const std::string op = "operator" + tok->str();
-                    for (const Function &f : tok->astOperand1()->valueType()->typeScope->functionList) {
-                        if (f.name() == op) {
-                            inconclusive = true;
-                            break;
+                if (mTokenizer->isCPP() && tok->astOperand1()->valueType()) {
+                    // If there is a custom assignment operator => this is inconclusive
+                    if (tok->astOperand1()->valueType()->typeScope) {
+                        const std::string op = "operator" + tok->str();
+                        for (const Function& f : tok->astOperand1()->valueType()->typeScope->functionList) {
+                            if (f.name() == op) {
+                                inconclusive = true;
+                                break;
+                            }
                         }
                     }
+                    // assigning a smart pointer has side effects
+                    if (tok->astOperand1()->valueType()->type == ValueType::SMART_POINTER)
+                        break;
                 }
                 if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
                     continue;
@@ -1145,6 +1155,13 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
         return 0;
 
     int cumulatedSize = 0;
+    const bool isUnion = type->classScope->type == Scope::ScopeType::eUnion;
+    const auto accumulateSize = [](int& cumulatedSize, int size, bool isUnion) -> void {
+        if (isUnion)
+            cumulatedSize = std::max(cumulatedSize, size);
+        else
+            cumulatedSize += size;
+    };
     for (const Variable&var : type->classScope->varlist) {
         int size = 0;
         if (var.isStatic())
@@ -1159,9 +1176,11 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             size = symbolDatabase->sizeOfType(var.typeStartToken());
 
         if (var.isArray())
-            cumulatedSize += size * var.dimension(0);
-        else
-            cumulatedSize += size;
+            size *= std::accumulate(var.dimensions().begin(), var.dimensions().end(), 1, [](int v, const Dimension& d) {
+                return v *= d.num;
+            });
+
+        accumulateSize(cumulatedSize, size, isUnion);
     }
     for (const Type::BaseInfo &baseInfo : type->derivedFrom) {
         if (baseInfo.type && baseInfo.type->classScope)
@@ -1170,7 +1189,7 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
     return cumulatedSize;
 }
 
-static bool canBeConst(const Variable *var)
+static bool canBeConst(const Variable *var, const Settings* settings)
 {
     {
         // check initializer list. If variable is moved from it can't be const.
@@ -1214,17 +1233,26 @@ static bool canBeConst(const Variable *var)
                     argNr++;
                 tok3 = tok3->previous();
             }
-            if (!tok3 || tok3->str() != "(" || !tok3->astOperand1() || !tok3->astOperand1()->function())
+            if (!tok3 || tok3->str() != "(")
                 return false;
-            else {
-                const Variable* argVar = tok3->astOperand1()->function()->getArgumentVar(argNr);
+            const Token* functionTok = tok3->astOperand1();
+            if (!functionTok)
+                return false;
+            const Function* tokFunction = functionTok->function();
+            if (!tokFunction && functionTok->str() == "." && (functionTok = functionTok->astOperand2()))
+                tokFunction = functionTok->function();
+            if (tokFunction) {
+                const Variable* argVar = tokFunction->getArgumentVar(argNr);
                 if (!argVar || (!argVar->isConst() && argVar->isReference()))
                     return false;
             }
+            else if (!settings->library.isFunctionConst(functionTok))
+                return false;
         } else if (parent->isUnaryOp("&")) {
             // TODO: check how pointer is used
             return false;
-        } else if (parent->isConstOp())
+        } else if (parent->isConstOp() ||
+                   (parent->astOperand2() && settings->library.isFunctionConst(parent->astOperand2())))
             continue;
         else if (parent->isAssignmentOp()) {
             if (parent->astOperand1() == tok2)
@@ -1290,7 +1318,7 @@ void CheckOther::checkPassByReference()
         if (!var->scope() || var->scope()->function->hasVirtualSpecifier())
             continue;
 
-        if (canBeConst(var)) {
+        if (canBeConst(var, mSettings)) {
             passedByValueError(var->nameToken(), var->name(), inconclusive);
         }
     }
@@ -2293,7 +2321,7 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             } else if (styleEnabled && tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
-                if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()))
+                if (!isVariableChanged(tok->astParent(), /*indirect*/ 0, mSettings, mTokenizer->isCPP()) && !tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()))
                     duplicateValueTernaryError(tok);
                 else if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath))
                     duplicateExpressionTernaryError(tok, errorPath);
@@ -3253,6 +3281,8 @@ void CheckOther::checkShadowVariables()
             if (!shadowed)
                 continue;
             if (scope.type == Scope::eFunction && scope.className == var.name())
+                continue;
+            if (functionScope->function && functionScope->function->isStatic() && shadowed->variable() && !shadowed->variable()->isLocal())
                 continue;
             shadowError(var.nameToken(), shadowed, (shadowed->varId() != 0) ? "variable" : "function");
         }

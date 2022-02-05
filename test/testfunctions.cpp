@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <tinyxml2.h>
-
 #include "checkfunctions.h"
+#include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
+#include <list>
+#include <string>
+
+#include <tinyxml2.h>
 
 class TestFunctions : public TestFixture {
 public:
@@ -464,6 +469,44 @@ private:
 
         check("void f() { strtol(a,b,10); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& v) {\n" //  #10754
+              "    int N = -1;\n"
+              "    for (long i = 0; i < g(); i++)\n"
+              "        N = h(N);\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Invalid v.resize() argument nr 1. The value is -1 but the valid values are '0:'.\n", errout.str());
+
+        check("void f(std::vector<int>& v, int N) {\n"
+              "    if (N < -1)\n"
+              "        return;\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Either the condition 'N<-1' is redundant or v.resize() argument nr 1 can have invalid value. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v, int N) {\n"
+              "    if (N == -1) {}\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'N==-1' is redundant or v.resize() argument nr 1 can have invalid value. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v, int N, bool b) {\n"
+              "    if (b)\n"
+              "        N = -1;\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Invalid v.resize() argument nr 1. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    int N = -1;\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid v.resize() argument nr 1. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
     }
 
     void invalidFunctionUsageStrings() {
