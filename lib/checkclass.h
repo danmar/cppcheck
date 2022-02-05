@@ -23,9 +23,7 @@
 
 #include "check.h"
 #include "config.h"
-#include "symboldatabase.h"
 #include "tokenize.h"
-#include "utils.h"
 
 #include <cstddef>
 #include <list>
@@ -37,6 +35,11 @@
 class ErrorLogger;
 class Settings;
 class Token;
+class Function;
+class Scope;
+class SymbolDatabase;
+class Type;
+class Variable;
 
 namespace CTU {
     class FileInfo;

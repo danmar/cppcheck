@@ -26,7 +26,6 @@
 #include "check.h"
 #include "errorlogger.h"
 #include "mathlib.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <algorithm>

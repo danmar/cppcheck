@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "utils.h"
 
 #include <string>
 #include <vector>

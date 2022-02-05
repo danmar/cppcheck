@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "utils.h"
 
 #include <algorithm>
 #include <cassert>
