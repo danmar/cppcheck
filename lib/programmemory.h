@@ -62,7 +62,7 @@ struct ProgramMemory {
 
     ProgramMemory() = default;
 
-    explicit ProgramMemory(const Map& values) : values(values) {}
+    explicit ProgramMemory(const Map& values) : mValues(values) {}
 
     void setValue(const Token* expr, const ValueFlow::Value& value);
     const ValueFlow::Value* getValue(nonneg int exprid, bool impossible = false) const;
@@ -95,23 +95,23 @@ struct ProgramMemory {
     void insert(const ProgramMemory &pm);
 
     Map::iterator begin() {
-        return values.begin();
+        return mValues.begin();
     }
 
     Map::iterator end() {
-        return values.end();
+        return mValues.end();
     }
 
     Map::const_iterator begin() const {
-        return values.begin();
+        return mValues.begin();
     }
 
     Map::const_iterator end() const {
-        return values.end();
+        return mValues.end();
     }
 
 private:
-    Map values;
+    Map mValues;
 };
 
 void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then);

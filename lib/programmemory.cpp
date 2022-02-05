@@ -48,12 +48,12 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 }
 
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
-    values[expr] = value;
+    mValues[expr] = value;
 }
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
-    const ProgramMemory::Map::const_iterator it = values.find(exprid);
-    const bool found = it != values.end() && (impossible || !it->second.isImpossible());
+    const ProgramMemory::Map::const_iterator it = mValues.find(exprid);
+    const bool found = it != mValues.end() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
     else
@@ -76,7 +76,7 @@ void ProgramMemory::setIntValue(const Token* expr, MathLib::bigint value, bool i
     ValueFlow::Value v(value);
     if (impossible)
         v.setImpossible();
-    values[expr] = v;
+    mValues[expr] = v;
 }
 
 bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
@@ -121,30 +121,30 @@ void ProgramMemory::setContainerSizeValue(const Token* expr, MathLib::bigint val
     v.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
     if (!isEqual)
         v.valueKind = ValueFlow::Value::ValueKind::Impossible;
-    values[expr] = v;
+    mValues[expr] = v;
 }
 
 void ProgramMemory::setUnknown(const Token* expr) {
-    values[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
+    mValues[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
 bool ProgramMemory::hasValue(nonneg int exprid)
 {
-    return values.find(exprid) != values.end();
+    return mValues.find(exprid) != mValues.end();
 }
 
 const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const {
-    return values.at(exprid);
+    return mValues.at(exprid);
 }
 ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
-    return values.at(exprid);
+    return mValues.at(exprid);
 }
 
 void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred)
 {
-    for (auto it = values.begin(); it != values.end();) {
+    for (auto it = mValues.begin(); it != mValues.end();) {
         if (pred(it->first))
-            it = values.erase(it);
+            it = mValues.erase(it);
         else
             ++it;
     }
@@ -152,30 +152,30 @@ void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred
 
 void ProgramMemory::swap(ProgramMemory &pm)
 {
-    values.swap(pm.values);
+    mValues.swap(pm.mValues);
 }
 
 void ProgramMemory::clear()
 {
-    values.clear();
+    mValues.clear();
 }
 
 bool ProgramMemory::empty() const
 {
-    return values.empty();
+    return mValues.empty();
 }
 
 void ProgramMemory::replace(const ProgramMemory &pm)
 {
-    for (auto&& p : pm.values) {
-        values[p.first] = p.second;
+    for (auto&& p : pm.mValues) {
+        mValues[p.first] = p.second;
     }
 }
 
 void ProgramMemory::insert(const ProgramMemory &pm)
 {
     for (auto&& p : pm)
-        values.insert(p);
+        mValues.insert(p);
 }
 
 bool evaluateCondition(const std::string& op,
