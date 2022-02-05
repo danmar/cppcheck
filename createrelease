@@ -10,7 +10,8 @@
 # - ensure cfg files etc are included (win_installer/cppcheck.wxs)
 #
 # self check, fix critical issues:
-# ./cppcheck -D__CPPCHECK__ --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h cli gui/*.cpp --suppress=functionConst --suppress=functionStatic -q lib
+# make clean && make CXXFLAGS=-O2 MATCHCOMPILER=yes -j4
+# ./cppcheck -D__CPPCHECK__ --std=c++11 --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
 #
 # check --bug-hunting output:
 # make clean && make -j4 USE_Z3=yes && ./cppcheck -D__CPPCHECK__ --bug-hunting lib
