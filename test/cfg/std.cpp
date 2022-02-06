@@ -1231,6 +1231,23 @@ void uninitvar_fseek(void)
     (void)std::fseek(stream,offset,origin);
 }
 
+void invalidFunctionArg_fseek(FILE* stream, long int offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)std::fseek(stream, offset, origin);
+    (void)std::fseek(stream, offset, SEEK_SET);
+    (void)std::fseek(stream, offset, SEEK_CUR);
+    (void)std::fseek(stream, offset, SEEK_END);
+}
+
 void uninitvar_fsetpos(void)
 {
     FILE* stream;
