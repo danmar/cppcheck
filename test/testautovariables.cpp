@@ -2958,9 +2958,9 @@ private:
 
         // #10784
         check("template <class... Ts>\n"
-            "auto f(int i, Ts&... xs) {\n"
-            "    return std::tie(xs[i]...);\n"
-            "}\n");
+              "auto f(int i, Ts&... xs) {\n"
+              "    return std::tie(xs[i]...);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
