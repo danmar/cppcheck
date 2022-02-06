@@ -3135,15 +3135,15 @@ private:
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 8U, 1));
 
         code = "void g(int i) {\n"
-              "    if (i == 1)\n"
-              "        return;\n"
-              "    abort();\n"
-              "}\n"
-              "int f(int x) {\n"
-              "    if (x != 0)\n"
-              "        g(x);\n"
-              "    return x;\n"
-              "}\n";
+               "    if (i == 1)\n"
+               "        return;\n"
+               "    abort();\n"
+               "}\n"
+               "int f(int x) {\n"
+               "    if (x != 0)\n"
+               "        g(x);\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));
     }
