@@ -1439,6 +1439,8 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
         Function * function = scope.function;
         if (!function)
             continue;
+        if (Token::findsimplematch(scope.bodyStart, "return", scope.bodyEnd))
+            continue;
         function->isEscapeFunction(isReturnScope(scope.bodyEnd, &mSettings->library, nullptr, true));
     }
 }
