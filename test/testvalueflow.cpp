@@ -149,6 +149,7 @@ private:
         TEST_CASE(valueFlowCrashConstructorInitialization);
 
         TEST_CASE(valueFlowUnknownMixedOperators);
+        TEST_CASE(valueFlowSolveExpr);
         TEST_CASE(valueFlowIdempotent);
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
@@ -6480,6 +6481,59 @@ private:
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
     }
 
+    void valueFlowSolveExpr()
+    {
+        const char* code;
+        code = "int f(int x) {\n"
+               "    if ((64 - x) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 56));
+
+        code = "int f(int x) {\n"
+               "    if ((x - 64) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 72));
+
+        code = "int f(int x) {\n"
+               "    if ((x - 64) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 72));
+
+        code = "int f(int x) {\n"
+               "    if ((x + 64) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, -56));
+
+        code = "int f(int x) {\n"
+               "    if ((x * 2) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 4));
+
+        code = "int f(int x) {\n"
+               "    if ((x ^ 64) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 72));
+
+        code = "int f(int i) {\n"
+               "    int j = i + 64;\n"
+               "    int x = j;\n"
+               "    return x;\n"
+               "}\n";
+        TODO_ASSERT_EQUALS(true, false, testValueOfXKnown(code, 4U, "i", 64));
+    }
+
     void valueFlowIdempotent() {
         const char *code;
 
@@ -6860,6 +6914,15 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, "len", -1));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "len", 0));
+
+        code = "int f(int x) {\n"
+               "    int i = 64 - x;\n"
+               "    if(i < 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 71));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 56));
     }
 
     void valueFlowSymbolicIdentity()

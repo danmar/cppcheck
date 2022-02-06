@@ -2831,6 +2831,10 @@ static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
         return expr;
     MathLib::bigint intval;
     const Token* binaryTok = parseBinaryIntOp(expr, intval);
+    bool rhs = astIsRHS(binaryTok);
+    // If its on the rhs, then -1 multipllication is needed, which is not possible with simple delta analysis used currentl for symbolic values
+    if (value.isSymbolicValue() && rhs && Token::simpleMatch(expr, "-"))
+        return expr;
     if (binaryTok && expr->str().size() == 1) {
         switch (expr->str()[0]) {
         case '+': {
@@ -2838,7 +2842,10 @@ static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
             return solveExprValue(binaryTok, value);
         }
         case '-': {
-            value.intvalue += intval;
+            if (rhs)
+                value.intvalue = intval - value.intvalue;
+            else
+                value.intvalue += intval;
             return solveExprValue(binaryTok, value);
         }
         case '*': {
