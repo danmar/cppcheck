@@ -5936,6 +5936,16 @@ private:
                    "    }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'A::bar' can be const.\n", errout.str());
+
+        // Don't crash
+        checkConst("struct S {\n"
+                   "    std::vector<T*> v;\n"
+                   "    void f() const;\n"
+                   "};\n"
+                   "void S::f() const {\n"
+                   "    for (std::vector<T*>::const_iterator it = v.begin(), end = v.end(); it != end; ++it) {}\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void const_handleDefaultParameters() {

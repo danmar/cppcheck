@@ -2222,7 +2222,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                     (lastVarTok->valueType() && lastVarTok->valueType()->container &&
                      ((lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::START_ITERATOR) ||
                       (lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::END_ITERATOR))
-                     && (tok1->previous()->isComparisonOp() || (tok1->previous()->isAssignmentOp() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator")))))
+                     && (tok1->previous()->isComparisonOp() ||
+                         (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator")))))
                     ;
                 else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
                     return false;
