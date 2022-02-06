@@ -26,7 +26,7 @@ if (BUILD_TESTS)
         endif()
     endif()
     if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
-        target_link_libraries(testrunner tinyxml2)
+        target_link_libraries(testrunner ${tinyxml2_LIBRARY})
     endif()
 
     if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
