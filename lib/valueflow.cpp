@@ -3014,6 +3014,8 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
 {
     if (!tok)
         return std::vector<LifetimeToken> {};
+    if (Token::simpleMatch(tok, "..."))
+        return std::vector<LifetimeToken> {};
     const Variable *var = tok->variable();
     if (pred(tok))
         return {{tok, std::move(errorPath)}};
