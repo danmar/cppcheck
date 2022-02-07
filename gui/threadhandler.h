@@ -87,10 +87,6 @@ public:
         mClangIncludePaths = s;
     }
 
-    void setDataDir(const QString &dataDir) {
-        mDataDir = dataDir;
-    }
-
     /**
      * @brief Clear all files from cppcheck
      *
@@ -262,8 +258,6 @@ protected:
     QStringList mAddonsAndTools;
     QList<Suppressions::Suppression> mSuppressions;
     QStringList mClangIncludePaths;
-
-    QString mDataDir;
 private:
 
     /**
