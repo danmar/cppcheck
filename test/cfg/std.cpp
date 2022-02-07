@@ -1248,6 +1248,14 @@ void invalidFunctionArg_fseek(FILE* stream, long int offset, int origin)
     (void)std::fseek(stream, offset, SEEK_END);
 }
 
+void invalidFunctionArgBool_fseek(FILE* stream, long int offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)std::fseek(stream, offset, true);
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)std::fseek(stream, offset, false);
+}
+
 void uninitvar_fsetpos(void)
 {
     FILE* stream;
