@@ -28,7 +28,6 @@
 #include <QStringList>
 
 class QWidget;
-class QCheckBox;
 
 /// @addtogroup GUI
 /// @{
@@ -322,9 +321,6 @@ private:
      * @brief Projectfile path.
      */
     ProjectFile *mProjectFile;
-
-    /** @brief Library checkboxes */
-    QList<QCheckBox*> mLibraryCheckboxes;
 
     QString getExistingDirectory(const QString &caption, bool trailingSlash);
 

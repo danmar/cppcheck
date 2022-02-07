@@ -104,7 +104,6 @@ void ThreadHandler::check(const Settings &settings)
         mThreads[i]->setAddonsAndTools(addonsAndTools);
         mThreads[i]->setSuppressions(mSuppressions);
         mThreads[i]->setClangIncludePaths(mClangIncludePaths);
-        mThreads[i]->setDataDir(mDataDir);
         mThreads[i]->check(settings);
     }
 

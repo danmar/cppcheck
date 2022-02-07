@@ -382,9 +382,6 @@ private slots:
 private:
     QSet<QString> mFunctionContracts;
     QSet<QString> mVariableContracts;
-
-    /** Current file shown in the code editor */
-    QString mCurrentFileName;
 };
 /// @}
 #endif // RESULTSVIEW_H
