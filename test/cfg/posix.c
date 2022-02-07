@@ -29,6 +29,26 @@
 #include <wchar.h>
 #include <string.h>
 
+void invalidFunctionArg_lseek(int fd, off_t offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(-1, offset, SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)lseek(0, offset, origin);
+    (void)lseek(fd, offset, origin);
+    (void)lseek(fd, offset, SEEK_SET);
+    (void)lseek(fd, offset, SEEK_CUR);
+    (void)lseek(fd, offset, SEEK_END);
+}
+
 void invalidFunctionArg_fseeko(FILE* stream, off_t offset, int origin)
 {
     // cppcheck-suppress invalidFunctionArg
