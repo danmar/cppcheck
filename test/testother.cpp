@@ -2679,9 +2679,9 @@ private:
 
         // #10785
         check("template <class T, class C>\n"
-                  "struct d {\n"
-                  "    T& g(C& c, T C::*f) { return c.*f; }\n"
-                  "};\n");
+              "struct d {\n"
+              "    T& g(C& c, T C::*f) { return c.*f; }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
