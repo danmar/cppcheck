@@ -29,6 +29,27 @@
 #include <wchar.h>
 #include <string.h>
 
+
+void invalidFunctionArg_lseek64(int fd, off_t offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(-1, offset, SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)lseek64(0, offset, origin);
+    (void)lseek64(fd, offset, origin);
+    (void)lseek64(fd, offset, SEEK_SET);
+    (void)lseek64(fd, offset, SEEK_CUR);
+    (void)lseek64(fd, offset, SEEK_END);
+}
+
 void invalidFunctionArg_lseek(int fd, off_t offset, int origin)
 {
     // cppcheck-suppress invalidFunctionArg
