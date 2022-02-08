@@ -1262,7 +1262,7 @@ private:
         fIsImplicitInt          = (1U << 31),   // Is "int" token implicitly added?
         fIsInline               = (1ULL << 32), // Is this a inline type
         fIsTemplate             = (1ULL << 33),
-        fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ..., ...)
+        fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ...; ...)
     };
 
     Token::Type mTokType;
