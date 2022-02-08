@@ -5041,7 +5041,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         for (std::multimap<std::string, const Function *>::const_iterator it = scope->functionMap.find(tok->str()); it != scope->functionMap.cend() && it->first == tok->str(); ++it) {
             const Function *func = it->second;
             if (!isCall || args == func->argCount() ||
-                (func->isVariadic() && args >= (func->argCount() - 1)) ||
+                (func->isVariadic() && args >= (func->minArgCount() - 1)) ||
                 (args < func->argCount() && args >= func->minArgCount())) {
                 matches.push_back(func);
             }
