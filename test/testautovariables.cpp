@@ -2955,6 +2955,13 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:11] -> [test.cpp:10] -> [test.cpp:11]: (error) Non-local variable 'mMoreData.data1' will use pointer to local variable 'data'.\n",
             errout.str());
+
+        // #10784
+        check("template <class... Ts>\n"
+              "auto f(int i, Ts&... xs) {\n"
+              "    return std::tie(xs[i]...);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {
