@@ -225,8 +225,6 @@ private:
 
     unsigned int mExitCode;
 
-    bool mSuppressInternalErrorFound;
-
     bool mUseGlobalSuppressions;
 
     /** Are there too many configs? */

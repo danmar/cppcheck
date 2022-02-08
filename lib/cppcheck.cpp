@@ -359,7 +359,6 @@ CppCheck::CppCheck(ErrorLogger &errorLogger,
                    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
     : mErrorLogger(errorLogger)
     , mExitCode(0)
-    , mSuppressInternalErrorFound(false)
     , mUseGlobalSuppressions(useGlobalSuppressions)
     , mTooManyConfigs(false)
     , mSimplify(true)
@@ -585,7 +584,6 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
 {
     mExitCode = 0;
-    mSuppressInternalErrorFound = false;
 
     // only show debug warnings for accepted C/C++ source files
     if (!Path::acceptFile(filename))
@@ -1515,8 +1513,6 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
-    mSuppressInternalErrorFound = false;
-
     if (!mSettings.library.reportErrors(msg.file0))
         return;
 
@@ -1534,12 +1530,10 @@ void CppCheck::reportErr(const ErrorMessage &msg)
 
     if (mUseGlobalSuppressions) {
         if (mSettings.nomsg.isSuppressed(errorMessage)) {
-            mSuppressInternalErrorFound = true;
             return;
         }
     } else {
         if (mSettings.nomsg.isSuppressedLocal(errorMessage)) {
-            mSuppressInternalErrorFound = true;
             return;
         }
     }

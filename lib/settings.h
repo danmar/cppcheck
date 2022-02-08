@@ -135,9 +135,6 @@ public:
     /** Check for incomplete info in library files? */
     bool checkLibrary;
 
-    /** @brief List of selected Visual Studio configurations that should be checks */
-    std::list<std::string> checkVsConfigs;
-
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 

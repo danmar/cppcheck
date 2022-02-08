@@ -8,11 +8,37 @@
 //
 
 #include <windows.h>
+#include <stdio.h>
 #include <direct.h>
 #include <stdlib.h>
 #include <time.h>
 #include <memory.h>
 #include <mbstring.h>
+
+void invalidFunctionArg__fseeki64(FILE* stream, __int64 offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)_fseeki64(stream, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)_fseeki64(stream, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)_fseeki64(stream, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)_fseeki64(stream, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)_fseeki64(stream, offset, origin);
+    (void)_fseeki64(stream, offset, SEEK_SET);
+    (void)_fseeki64(stream, offset, SEEK_CUR);
+    (void)_fseeki64(stream, offset, SEEK_END);
+}
+
+void invalidFunctionArgBool__fseeki64(FILE* stream, __int64 offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)_fseeki64(stream, offset, true);
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)_fseeki64(stream, offset, false);
+}
 
 unsigned char * overlappingWriteFunction__mbscat(unsigned char *src, unsigned char *dest)
 {

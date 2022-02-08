@@ -1,4 +1,4 @@
-qt5_wrap_cpp(test-cppchecklibrarydata_SRC testcppchecklibrarydata.h)
+qt_wrap_cpp(test-cppchecklibrarydata_SRC testcppchecklibrarydata.h)
 add_custom_target(build-cppchecklibrarydata-deps SOURCES ${test-cppchecklibrarydata_SRC})
 add_dependencies(gui-build-deps build-cppchecklibrarydata-deps)
 add_executable(test-cppchecklibrarydata
@@ -7,4 +7,4 @@ add_executable(test-cppchecklibrarydata
         ${CMAKE_SOURCE_DIR}/gui/cppchecklibrarydata.cpp
         )
 target_include_directories(test-cppchecklibrarydata PRIVATE ${CMAKE_SOURCE_DIR}/gui)
-target_link_libraries(test-cppchecklibrarydata Qt5::Core Qt5::Test)
+target_link_libraries(test-cppchecklibrarydata ${QT_CORE_LIB} ${QT_TEST_LIB})

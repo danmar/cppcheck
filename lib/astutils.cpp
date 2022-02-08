@@ -541,12 +541,15 @@ const Token* getParentLifetime(const Token* tok)
 {
     if (!tok)
         return tok;
-    const Variable* var = tok->variable();
-    // TODO: Call getLifetimeVariable for deeper analysis
-    if (!var)
-        return tok;
-    if (var->isLocal() || var->isArgument())
-        return tok;
+    // Skipping checking for variable if its a pointer-to-member
+    if (!Token::simpleMatch(tok->previous(), ". *")) {
+        const Variable* var = tok->variable();
+        // TODO: Call getLifetimeVariable for deeper analysis
+        if (!var)
+            return tok;
+        if (var->isLocal() || var->isArgument())
+            return tok;
+    }
     const Token* parent = getParentMember(tok);
     if (parent != tok)
         return getParentLifetime(parent);

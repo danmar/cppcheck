@@ -2676,6 +2676,13 @@ private:
               "    s.g(0, PC);\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10785
+        check("template <class T, class C>\n"
+              "struct d {\n"
+              "    T& g(C& c, T C::*f) { return c.*f; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {

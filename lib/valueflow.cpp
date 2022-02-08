@@ -1967,7 +1967,7 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual bool isAlias(const Token* tok, bool& inconclusive) const = 0;
 
-    using ProgramState = std::unordered_map<nonneg int, ValueFlow::Value>;
+    using ProgramState = ProgramMemory::Map;
 
     virtual ProgramState getProgramState() const = 0;
 
@@ -2693,7 +2693,7 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
 
     virtual ProgramState getProgramState() const OVERRIDE {
         ProgramState ps;
-        ps[expr->exprId()] = value;
+        ps[expr] = value;
         return ps;
     }
 
@@ -2831,6 +2831,10 @@ static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
         return expr;
     MathLib::bigint intval;
     const Token* binaryTok = parseBinaryIntOp(expr, intval);
+    bool rhs = astIsRHS(binaryTok);
+    // If its on the rhs, then -1 multipllication is needed, which is not possible with simple delta analysis used currentl for symbolic values
+    if (value.isSymbolicValue() && rhs && Token::simpleMatch(expr, "-"))
+        return expr;
     if (binaryTok && expr->str().size() == 1) {
         switch (expr->str()[0]) {
         case '+': {
@@ -2838,7 +2842,10 @@ static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
             return solveExprValue(binaryTok, value);
         }
         case '-': {
-            value.intvalue += intval;
+            if (rhs)
+                value.intvalue = intval - value.intvalue;
+            else
+                value.intvalue += intval;
             return solveExprValue(binaryTok, value);
         }
         case '*': {
@@ -5964,16 +5971,22 @@ static bool valueFlowForLoop2(const Token *tok,
     return true;
 }
 
-static void valueFlowForLoopSimplify(Token * const bodyStart, const nonneg int varid, bool globalvar, const MathLib::bigint value, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
+static void valueFlowForLoopSimplify(Token* const bodyStart,
+                                     const Token* expr,
+                                     bool globalvar,
+                                     const MathLib::bigint value,
+                                     TokenList* tokenlist,
+                                     ErrorLogger* errorLogger,
+                                     const Settings* settings)
 {
     const Token * const bodyEnd = bodyStart->link();
 
     // Is variable modified inside for loop
-    if (isVariableChanged(bodyStart, bodyEnd, varid, globalvar, settings, tokenlist->isCPP()))
+    if (isVariableChanged(bodyStart, bodyEnd, expr->varId(), globalvar, settings, tokenlist->isCPP()))
         return;
 
     for (Token *tok2 = bodyStart->next(); tok2 != bodyEnd; tok2 = tok2->next()) {
-        if (tok2->varId() == varid) {
+        if (tok2->varId() == expr->varId()) {
             const Token * parent = tok2->astParent();
             while (parent) {
                 const Token * const p = parent;
@@ -5998,7 +6011,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const nonneg int v
         }
 
         if (Token::Match(tok2, "%oror%|&&")) {
-            const ProgramMemory programMemory(getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value), settings));
+            const ProgramMemory programMemory(getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings));
             if ((tok2->str() == "&&" && !conditionIsTrue(tok2->astOperand1(), programMemory)) ||
                 (tok2->str() == "||" && !conditionIsFalse(tok2->astOperand1(), programMemory))) {
                 // Skip second expression..
@@ -6015,12 +6028,16 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const nonneg int v
             }
 
         }
-        if ((tok2->str() == "&&" && conditionIsFalse(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value), settings))) ||
-            (tok2->str() == "||" && conditionIsTrue(tok2->astOperand1(), getProgramMemory(tok2->astTop(), varid, ValueFlow::Value(value), settings))))
+        if ((tok2->str() == "&&" &&
+             conditionIsFalse(tok2->astOperand1(),
+                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings))) ||
+            (tok2->str() == "||" &&
+             conditionIsTrue(tok2->astOperand1(),
+                             getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings))))
             break;
 
-        else if (Token::simpleMatch(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, varid)) {
-            if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), varid)) {
+        else if (Token::simpleMatch(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, expr->varId())) {
+            if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), expr->varId())) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
                 break;
@@ -6029,7 +6046,7 @@ static void valueFlowForLoopSimplify(Token * const bodyStart, const nonneg int v
                 bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
             tok2 = tok2->next()->link();
             if (Token::simpleMatch(tok2, "} else {")) {
-                if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), varid)) {
+                if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), expr->varId())) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
                     break;
@@ -6125,20 +6142,23 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
             ProgramMemory mem1, mem2, memAfter;
             if (valueFlowForLoop2(tok, &mem1, &mem2, &memAfter)) {
                 ProgramMemory::Map::const_iterator it;
-                for (it = mem1.values.begin(); it != mem1.values.end(); ++it) {
+                for (it = mem1.begin(); it != mem1.end(); ++it) {
                     if (!it->second.isIntValue())
                         continue;
-                    valueFlowForLoopSimplify(bodyStart, it->first, false, it->second.intvalue, tokenlist, errorLogger, settings);
+                    valueFlowForLoopSimplify(
+                        bodyStart, it->first.tok, false, it->second.intvalue, tokenlist, errorLogger, settings);
                 }
-                for (it = mem2.values.begin(); it != mem2.values.end(); ++it) {
+                for (it = mem2.begin(); it != mem2.end(); ++it) {
                     if (!it->second.isIntValue())
                         continue;
-                    valueFlowForLoopSimplify(bodyStart, it->first, false, it->second.intvalue, tokenlist, errorLogger, settings);
+                    valueFlowForLoopSimplify(
+                        bodyStart, it->first.tok, false, it->second.intvalue, tokenlist, errorLogger, settings);
                 }
-                for (it = memAfter.values.begin(); it != memAfter.values.end(); ++it) {
+                for (it = memAfter.begin(); it != memAfter.end(); ++it) {
                     if (!it->second.isIntValue())
                         continue;
-                    valueFlowForLoopSimplifyAfter(tok, it->first, it->second.intvalue, tokenlist, settings);
+                    valueFlowForLoopSimplifyAfter(
+                        tok, it->first.getExpressionId(), it->second.intvalue, tokenlist, settings);
                 }
             }
         }
@@ -6282,13 +6302,15 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
 
     virtual ProgramState getProgramState() const OVERRIDE {
         ProgramState ps;
-        for (const auto& p:values)
-            ps[p.first] = p.second;
+        for (const auto& p : values) {
+            const Variable* var = vars.at(p.first);
+            ps[var->nameToken()] = p.second;
+        }
         return ps;
     }
 
     virtual void forkScope(const Token* endBlock) OVERRIDE {
-        ProgramMemory pm = {getProgramState()};
+        ProgramMemory pm{getProgramState()};
         const Scope* scope = endBlock->scope();
         const Token* condTok = getCondTokFromEnd(endBlock);
         if (scope && condTok)
@@ -6299,8 +6321,8 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
                 pm.replace(endMemory);
         }
         // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
-        for (const auto& p:pm.values) {
-            nonneg int varid = p.first;
+        for (const auto& p : pm) {
+            nonneg int varid = p.first.getExpressionId();
             if (symboldatabase && !symboldatabase->isVarId(varid))
                 continue;
             ValueFlow::Value value = p.second;
@@ -6537,11 +6559,13 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
         return;
 
     // set varids
+    std::unordered_map<nonneg int, const Token*> lookupVarId;
     for (Token* tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
         if (tok2->str().compare(0, 3, "arg") != 0)
             continue;
         nonneg int id = std::atoi(tok2->str().c_str() + 3);
         tok2->varId(id);
+        lookupVarId[id] = tok2;
     }
 
     // Evaluate expression
@@ -6550,7 +6574,11 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
     ValueFlow::valueFlowConstantFoldAST(expr, settings);
 
     productParams(argValues, [&](const std::unordered_map<nonneg int, ValueFlow::Value>& arg) {
-        ProgramMemory pm{arg};
+        ProgramMemory pm{};
+        for (const auto& p : arg) {
+            const Token* tok = lookupVarId[p.first];
+            pm.setValue(tok, p.second);
+        }
         MathLib::bigint result = 0;
         bool error = false;
         execute(expr, &pm, &result, &error);
@@ -6751,7 +6779,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
                 programMemory.clear();
                 break;
             }
-            programMemory.setIntValue(arg->declarationId(), parvalues[i]);
+            programMemory.setIntValue(arg->nameToken(), parvalues[i]);
         }
         if (programMemory.empty() && !parvalues.empty())
             continue;
