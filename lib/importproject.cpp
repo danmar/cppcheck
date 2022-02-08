@@ -466,15 +466,17 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
 {
     std::string line;
 
-    // skip magic word
     if (!std::getline(istr,line)) {
         printError("Visual Studio solution file is empty");
         return false;
     }
 
-    if (!std::getline(istr, line) || line.find("Microsoft Visual Studio Solution File") != 0) {
-        printError("Visual Studio solution file header not found");
-        return false;
+    if (line.find("Microsoft Visual Studio Solution File") != 0) {
+        // Skip BOM
+        if (!std::getline(istr, line) || line.find("Microsoft Visual Studio Solution File") != 0) {
+            printError("Visual Studio solution file header not found");
+            return false;
+        }
     }
 
     std::map<std::string,std::string,cppcheck::stricmp> variables;
