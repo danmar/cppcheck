@@ -8833,6 +8833,7 @@ void Tokenizer::simplifyIfSwitchForInit()
         tok->str("{");
         endscope->insertToken("}");
         Token::createMutualLinks(tok, endscope->next());
+        tok->isSimplifiedScope(true);
     }
 }
 
