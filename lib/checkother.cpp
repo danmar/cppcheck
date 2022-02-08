@@ -1067,12 +1067,12 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (tok->varId() == var->declarationId()) {
             used = true;
             if (scope == tok->scope()) {
-              if (scope->type == Scope::eSwitch)
-                return false; // Used in outer switch scope - unsafe or impossible to reduce scope
+                if (scope->type == Scope::eSwitch)
+                    return false; // Used in outer switch scope - unsafe or impossible to reduce scope
 
-              if (scope->bodyStart && scope->bodyStart->isSimplifiedScope())
-                  return false; // simplified if/for/switch init statement
-            }                
+                if (scope->bodyStart && scope->bodyStart->isSimplifiedScope())
+                    return false; // simplified if/for/switch init statement
+            }
         }
     }
 
