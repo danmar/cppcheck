@@ -769,6 +769,10 @@ void uninitvar()
     _fileno(pFileUninit);
 }
 
+void unreferencedParameter(int i) {
+    UNREFERENCED_PARAMETER(i);
+}
+
 void errorPrintf()
 {
     char bufC[50];
