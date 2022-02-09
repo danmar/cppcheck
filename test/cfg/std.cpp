@@ -2029,7 +2029,7 @@ void uninitvar_longjmp(void)
 void uninitvar_malloc(void)
 {
     size_t size;
-    // cppcheck-suppress uninitvar, cstyleCast
+    // cppcheck-suppress [uninitvar, cstyleCast]
     int *p = (int*)std::malloc(size);
     free(p);
 }
@@ -2261,7 +2261,7 @@ void uninivar_bsearch(void)
     void* base;
     size_t num;
     size_t size;
-    // cppcheck-suppress uninitvar, cstyleCast
+    // cppcheck-suppress [uninitvar, cstyleCast]
     (void)std::bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
 }
 
