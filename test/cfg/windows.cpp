@@ -513,7 +513,7 @@ void memleak_HeapAlloc()
 void memleak_LocalAlloc()
 {
     LPTSTR pszBuf;
-    // cppcheck-suppress LocalAllocCalled
+    // cppcheck-suppress LocalAllocCalled, cstyleCast
     pszBuf = (LPTSTR)LocalAlloc(LPTR, MAX_PATH*sizeof(TCHAR));
     (void)LocalSize(pszBuf);
     (void)LocalFlags(pszBuf);
