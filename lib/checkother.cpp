@@ -301,11 +301,11 @@ void CheckOther::warningOldStylePointerCast()
             tok = scope->bodyStart;
         for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Old style pointer casting..
-            if (!Token::Match(tok, "( const|volatile| const|volatile| %type% * const| ) (| %name%|%num%|%bool%|%char%|%str%"))
+            if (!Token::Match(tok, "( const|volatile| const|volatile|class|struct| %type% * const|&| ) (| %name%|%num%|%bool%|%char%|%str%"))
                 continue;
 
             // skip first "const" in "const Type* const"
-            while (Token::Match(tok->next(), "const|volatile"))
+            while (Token::Match(tok->next(), "const|volatile|class|struct"))
                 tok = tok->next();
             const Token* typeTok = tok->next();
             // skip second "const" in "const Type* const"
@@ -316,8 +316,7 @@ void CheckOther::warningOldStylePointerCast()
             if (p->hasKnownIntValue() && p->values().front().intvalue==0) // Casting nullpointers is safe
                 continue;
 
-            // Is "type" a class?
-            if (typeTok->type())
+            if (typeTok->tokType() == Token::eType || typeTok->tokType() == Token::eName)
                 cstyleCastError(tok);
         }
     }
