@@ -29,6 +29,36 @@
 #include <wchar.h>
 #include <string.h>
 
+// Note: Since glibc 2.28, this function symbol is no longer available to newly linked applications.
+void invalidFunctionArg_llseek(int fd, loff_t offset, int origin)
+{
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(-1, offset, SEEK_SET);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, -1);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, 3);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, 42+SEEK_SET);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, SEEK_SET+42);
+    // No invalidFunctionArg warning is expected for
+    // cppcheck-suppress llseekCalled
+    (void)llseek(0, offset, origin);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, origin);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, SEEK_SET);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, SEEK_CUR);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, SEEK_END);
+}
 
 void invalidFunctionArg_lseek64(int fd, off_t offset, int origin)
 {
