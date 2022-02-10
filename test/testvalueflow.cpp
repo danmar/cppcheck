@@ -6933,6 +6933,13 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 71));
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 56));
+
+        code = "int b(int a) {\n"
+               "  unsigned long x = a ? 6 : 4;\n"
+               "  assert(x < 6 && x > 0);\n"
+               "  return 1 / x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowSymbolicIdentity()
