@@ -755,7 +755,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
     if (pm.hasValue(expr->exprId()))
         return pm.at(expr->exprId());
     // Find symbolic values
-    for(const ValueFlow::Value& value : expr->values()) {
+    for (const ValueFlow::Value& value : expr->values()) {
         if (!value.isSymbolicValue())
             continue;
         if (!pm.hasValue(value.tokvalue->exprId()))
