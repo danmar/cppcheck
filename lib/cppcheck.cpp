@@ -1366,7 +1366,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             mExitCode = 1;
             continue;
         }
-        if (addon != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
+        if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
             continue;
 
         const std::string results =
