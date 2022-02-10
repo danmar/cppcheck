@@ -6306,6 +6306,8 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         ProgramState ps;
         for (const auto& p : values) {
             const Variable* var = vars.at(p.first);
+            if (!var)
+                continue;
             ps[var->nameToken()] = p.second;
         }
         return ps;
