@@ -6580,8 +6580,8 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
     productParams(argValues, [&](const std::unordered_map<nonneg int, ValueFlow::Value>& arg) {
         ProgramMemory pm{};
         for (const auto& p : arg) {
-            const Token* tok = lookupVarId[p.first];
-            pm.setValue(tok, p.second);
+            const Token* varTok = lookupVarId[p.first];
+            pm.setValue(varTok, p.second);
         }
         MathLib::bigint result = 0;
         bool error = false;

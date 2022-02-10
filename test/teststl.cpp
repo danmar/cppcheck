@@ -3830,6 +3830,13 @@ private:
               "    return ref.c_str();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
+
+        check("void f(const wchar_t* w, int i = 0, ...);\n" // #10357
+              "void f(const std::string& s, int i = 0);\n"
+              "void g(const std::wstring& p) {\n"
+              "    f(p.c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {
