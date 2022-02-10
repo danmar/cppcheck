@@ -250,6 +250,7 @@ private:
         TEST_CASE(garbageCode217); // #10011
         TEST_CASE(garbageCode218); // #8763
         TEST_CASE(garbageCode219); // #10101
+        TEST_CASE(garbageCode220); // #6832
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1700,6 +1701,9 @@ private:
                   "    func f;\n"
                   "    f & = (func)42;\n"
                   "}\n"); // don't crash
+    }
+    void garbageCode220() { // #6832
+        ASSERT_THROW(checkCode("(){(){{()}}return;{switch()0 case(){}break;l:()}}\n"), InternalError);  // don't crash
     }
 
     void syntaxErrorFirstToken() {
