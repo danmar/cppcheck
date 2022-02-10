@@ -10,8 +10,8 @@ function(qt_add_resources out)
     set("${out}" ${_resources} PARENT_SCOPE)
 endfunction()
 
-function(qt_add_translation out)
-    qt5_add_translation(_qms ${ARGN})
+function(qt_create_translation out)
+    qt5_create_translation(_qms ${ARGN})
     set("${out}" ${_qms} PARENT_SCOPE)
 endfunction()
 
