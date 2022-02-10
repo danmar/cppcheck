@@ -6273,6 +6273,16 @@ private:
                "  }\n"
                "};\n";
         valueOfTok(code, "f.c");
+
+        code = "void d(fmpz_t a, fmpz_t b) {\n"
+               "  if (fmpz_sgn(0)) {}\n"
+               "  else if (b) {}\n"
+               "}\n"
+               "void e(psl2z_t f) {\n"
+               "  f->b;\n"
+               "  d(&f->a, c);\n"
+               "}\n";
+        valueOfTok(code, "f");
     }
 
     void valueFlowHang() {
