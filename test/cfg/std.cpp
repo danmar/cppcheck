@@ -2029,7 +2029,7 @@ void uninitvar_longjmp(void)
 void uninitvar_malloc(void)
 {
     size_t size;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar, cstyleCast]
     int *p = (int*)std::malloc(size);
     free(p);
 }
@@ -2261,7 +2261,7 @@ void uninivar_bsearch(void)
     void* base;
     size_t num;
     size_t size;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar, cstyleCast]
     (void)std::bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
 }
 
@@ -2271,11 +2271,11 @@ void minsize_bsearch(const void* key, const void* base,
 {
     int Base[3] = {42, 43, 44};
 
-    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp);
-    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp);
-    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
 
-    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
 }
 
 void uninitvar_qsort(void)
@@ -2284,7 +2284,7 @@ void uninitvar_qsort(void)
     size_t n;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp);
+    (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
 }
 
 void uninitvar_putc(void)
