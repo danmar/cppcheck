@@ -9061,7 +9061,7 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'b'.\n", errout.str());
     }
 
-    void doubleMoveMemberInitialization3() {
+    void doubleMoveMemberInitialization3() { // #9974
         check("struct A { int i; };\n"
               "struct B { A a1; A a2; };\n"
               "B f() {\n"
