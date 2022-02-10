@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
@@ -36,7 +35,7 @@ public:
     TestVarID() : TestFixture("TestVarID") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
         TEST_CASE(varid3);

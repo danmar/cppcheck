@@ -19,7 +19,6 @@
 
 #include "check.h"
 #include "checkbufferoverrun.h"
-#include "config.h"
 #include "ctu.h"
 #include "errortypes.h"
 #include "standards.h"
@@ -116,7 +115,7 @@ private:
         checkBufferOverrun.runChecks(&tokenizer, settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.severity.enable(Severity::warning);

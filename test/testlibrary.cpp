@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
@@ -43,7 +42,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(isCompliantValidationExpression);
         TEST_CASE(empty);
         TEST_CASE(function);

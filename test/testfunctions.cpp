@@ -17,7 +17,6 @@
  */
 
 #include "checkfunctions.h"
-#include "config.h"
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
@@ -38,7 +37,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::performance);

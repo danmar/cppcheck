@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
@@ -37,7 +36,7 @@ public:
     TestTokenRange() : TestFixture("TestTokenRange") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(enumerationToEnd);
         TEST_CASE(untilHelperToEnd);
         TEST_CASE(untilHelperPartWay);

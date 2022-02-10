@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "threadexecutor.h"
@@ -61,7 +60,7 @@ private:
         ASSERT_EQUALS(result, executor.check());
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(deadlock_with_many_errors);

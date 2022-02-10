@@ -20,7 +20,6 @@
 #define TestUtilsH
 
 #include "color.h"
-#include "config.h"
 #include "errorlogger.h"
 #include "settings.h"
 #include "suppressions.h"
@@ -58,10 +57,10 @@ class SimpleSuppressor : public ErrorLogger {
 public:
     SimpleSuppressor(Settings &settings, ErrorLogger *next)
         : settings(settings), next(next) {}
-    void reportOut(const std::string &outmsg, Color = Color::Reset) OVERRIDE {
+    void reportOut(const std::string &outmsg, Color = Color::Reset) override {
         next->reportOut(outmsg);
     }
-    void reportErr(const ErrorMessage &msg) OVERRIDE {
+    void reportErr(const ErrorMessage &msg) override {
         if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
             next->reportErr(msg);
     }

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -50,7 +49,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         // strcpy, abort cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"

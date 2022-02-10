@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -40,7 +39,7 @@ private:
     Settings settings_std;
     Settings settings_windows;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings_std.library, "std.cfg");
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
         settings0.severity.enable(Severity::portability);

@@ -18,7 +18,6 @@
 
 #include "check.h"
 #include "checkuninitvar.h"
-#include "config.h"
 #include "ctu.h"
 #include "errortypes.h"
 #include "library.h"
@@ -38,7 +37,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(uninitvar1);

@@ -59,7 +59,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
 
         checkFunctions.checkIgnoredReturnValue();
@@ -124,7 +124,7 @@ private:
     void missingReturnError(const Token *tok);
     void copyElisionError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckFunctions c(nullptr, settings, errorLogger);
 
         for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin(); i != settings->library.functionwarn.cend(); ++i) {
@@ -148,7 +148,7 @@ private:
         return "Check function usage";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Check function usage:\n"
                "- missing 'return' in non-void function\n"
                "- return value of certain functions not used\n"

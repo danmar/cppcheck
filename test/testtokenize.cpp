@@ -48,7 +48,7 @@ private:
     Settings settings2;
     Settings settings_windows;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
 
         // If there are unused templates, keep those

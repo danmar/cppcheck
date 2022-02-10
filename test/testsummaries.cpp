@@ -17,7 +17,6 @@
  */
 
 
-#include "config.h"
 #include "settings.h"
 #include "summaries.h"
 #include "testsuite.h"
@@ -32,7 +31,7 @@ public:
     TestSummaries() : TestFixture("TestSummaries") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
 
         TEST_CASE(createSummaries1);
         TEST_CASE(createSummariesGlobal);

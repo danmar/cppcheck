@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "testutils.h"
@@ -45,7 +44,7 @@ private:
     std::vector<std::string> extendedOps;
     std::vector<std::string> assignmentOps;
 
-    void run() OVERRIDE {
+    void run() override {
         arithmeticalOps = { "+", "-", "*", "/", "%", "<<", ">>" };
         logicalOps = { "&&", "||", "!" };
         comparisonOps = { "==", "!=", "<", "<=", ">", ">=" };

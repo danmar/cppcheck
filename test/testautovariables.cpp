@@ -18,7 +18,6 @@
 
 
 #include "checkautovariables.h"
-#include "config.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -49,7 +48,7 @@ private:
         checkAutoVariables.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::style);
         LOAD_LIB_2(settings.library, "std.cfg");

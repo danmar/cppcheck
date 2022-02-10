@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "filelister.h"
 #include "pathmatch.h"
 #include "testsuite.h"
@@ -34,7 +33,7 @@ public:
         : TestFixture("TestFileLister") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         // bail out if the tests are not executed from the base folder
         {
             std::ifstream fin("test/testfilelister.cpp");

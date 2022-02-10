@@ -18,7 +18,6 @@
 
 
 #include "checkclass.h"
-#include "config.h"
 #include "errortypes.h"
 #include "standards.h"
 #include "settings.h"
@@ -68,7 +67,7 @@ private:
         checkClass.constructors();
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::warning);
 

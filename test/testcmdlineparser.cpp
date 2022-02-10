@@ -17,7 +17,6 @@
  */
 
 #include "cmdlineparser.h"
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "redirect.h"
@@ -42,7 +41,7 @@ private:
     Settings settings;
     CmdLineParser defParser;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(nooptions);
         TEST_CASE(helpshort);
         TEST_CASE(helplong);

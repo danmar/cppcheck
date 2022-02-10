@@ -30,7 +30,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.addEnabled("internal");
 
         TEST_CASE(simplePatternInTokenMatch);

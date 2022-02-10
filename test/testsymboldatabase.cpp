@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "library.h"
 #include "platform.h"
 #include "settings.h"
@@ -117,7 +116,7 @@ private:
         return nullptr;
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
         settings2.platform(Settings::Unspecified);
 
