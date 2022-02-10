@@ -1650,6 +1650,16 @@ private:
         check("void f(const std::string &str) {}");
         ASSERT_EQUALS("", errout.str());
 
+        // The idiomatic way of passing a std::string_view is by value
+        check("void f(const std::string_view str) {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string_view str) {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string_view &str) {}");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(const std::vector<int> v) {}");
         ASSERT_EQUALS("[test.cpp:1]: (performance) Function parameter 'v' should be passed by const reference.\n", errout.str());
 

@@ -1300,7 +1300,7 @@ void CheckOther::checkPassByReference()
 
         bool inconclusive = false;
 
-        if (var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER) {} else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
+        if (var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER && !var->valueType()->container->view) {} else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
             // Ensure that it is a large object.
             if (!var->type()->classScope)
                 inconclusive = true;
