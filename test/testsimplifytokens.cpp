@@ -2458,6 +2458,10 @@ private:
                "sizeof(char[20][3]);\n"
                "sizeof(char[unknown][3]);";
         ASSERT_EQUALS("20 ; 60 ; sizeof ( char [ unknown ] [ 3 ] ) ;", tok(code));
+
+        code = "char(*Helper())[1];\n"
+               "sizeof(*Helper());\n";
+        TODO_ASSERT_EQUALS("char ( * Helper ( ) ) [ 1 ] ; 1 ;", "char ( * Helper ( ) ) [ 1 ] ; sizeof ( * Helper ( ) ) ;", tok(code));
     }
 
     void sizeof5() {

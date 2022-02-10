@@ -4627,6 +4627,13 @@ private:
               "    char *p = arr + 20;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 'arr+20' is out of bounds.\n", errout.str());
+
+        check("char(*g())[1];\n" // #7950
+              "void f() {\n"
+              "    int a[2];\n"
+              "    int* b = a + sizeof(*g());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define ctu(code) ctu_(code, __FILE__, __LINE__)
