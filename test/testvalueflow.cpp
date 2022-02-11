@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -50,7 +49,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         // strcpy, abort cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
@@ -6273,6 +6272,16 @@ private:
                "  }\n"
                "};\n";
         valueOfTok(code, "f.c");
+
+        code = "void d(fmpz_t a, fmpz_t b) {\n"
+               "  if (fmpz_sgn(0)) {}\n"
+               "  else if (b) {}\n"
+               "}\n"
+               "void e(psl2z_t f) {\n"
+               "  f->b;\n"
+               "  d(&f->a, c);\n"
+               "}\n";
+        valueOfTok(code, "f");
     }
 
     void valueFlowHang() {
@@ -6438,6 +6447,21 @@ private:
                "    }\n"
                "}\n";
         valueOfTok(code, "swap");
+
+        code = "double a;\n"
+               "int b, c, d, e, f, g;\n"
+               "void h() { double i, j = i = g = f = e = d = c = b = a; }\n";
+        valueOfTok(code, "a");
+
+        code = "double a, c;\n"
+               "double *b;\n"
+               "void d() {\n"
+               "  double e, f, g, h = g = f = e = c = a;\n"
+               "  b[8] = a;\n"
+               "  b[1] = a;\n"
+               "  a;\n"
+               "}\n";
+        valueOfTok(code, "a");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
@@ -6923,6 +6947,13 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 71));
         TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 56));
+
+        code = "int b(int a) {\n"
+               "  unsigned long x = a ? 6 : 4;\n"
+               "  assert(x < 6 && x > 0);\n"
+               "  return 1 / x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowSymbolicIdentity()

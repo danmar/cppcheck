@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -40,7 +39,7 @@ private:
     Settings settings_std;
     Settings settings_windows;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings_std.library, "std.cfg");
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
         settings0.severity.enable(Severity::portability);
@@ -2458,6 +2457,10 @@ private:
                "sizeof(char[20][3]);\n"
                "sizeof(char[unknown][3]);";
         ASSERT_EQUALS("20 ; 60 ; sizeof ( char [ unknown ] [ 3 ] ) ;", tok(code));
+
+        code = "char(*Helper())[1];\n"
+               "sizeof(*Helper());\n";
+        TODO_ASSERT_EQUALS("char ( * Helper ( ) ) [ 1 ] ; 1 ;", "char ( * Helper ( ) ) [ 1 ] ; sizeof ( * Helper ( ) ) ;", tok(code));
     }
 
     void sizeof5() {

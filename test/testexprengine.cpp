@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "exprengine.h"
 #include "library.h"
 #include "platform.h"
@@ -37,7 +36,7 @@ public:
     TestExprEngine() : TestFixture("TestExprEngine") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
 #ifdef USE_Z3
         TEST_CASE(annotation1);
         TEST_CASE(annotation2);

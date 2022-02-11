@@ -17,7 +17,6 @@
  */
 
 #include "checkother.h"
-#include "config.h"
 #include "errortypes.h"
 #include "library.h"
 #include "platform.h"
@@ -46,7 +45,7 @@ public:
 private:
     Settings _settings;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(_settings.library, "std.cfg");
 
 
@@ -231,6 +230,7 @@ private:
         TEST_CASE(doubleMove1);
         TEST_CASE(doubleMoveMemberInitialization1);
         TEST_CASE(doubleMoveMemberInitialization2);
+        TEST_CASE(doubleMoveMemberInitialization3); // #9974
         TEST_CASE(moveAndAssign1);
         TEST_CASE(moveAndAssign2);
         TEST_CASE(moveAssignMoveAssign);
@@ -1459,6 +1459,50 @@ private:
                                  "  v.push_back((Base*)new Derived);\n"
                                  "}");
         ASSERT_EQUALS("[test.cpp:5]: (style) C-style pointer casting\n", errout.str());
+
+        // #7709
+        checkOldStylePointerCast("typedef struct S S;\n"
+                                 "typedef struct S SS;\n"
+                                 "typedef class C C;\n"
+                                 "typedef long LONG;\n"
+                                 "typedef long* LONGP;\n"
+                                 "struct T {};\n"
+                                 "typedef struct T TT;\n"
+                                 "typedef struct T2 {} TT2;\n"
+                                 "void f(int* i) {\n"
+                                 "    S* s = (S*)i;\n"
+                                 "    SS* ss = (SS*)i;\n"
+                                 "    struct S2* s2 = (struct S2*)i;\n"
+                                 "    C* c = (C*)i;\n"
+                                 "    class C2* c2 = (class C2*)i;\n"
+                                 "    long* l = (long*)i;\n"
+                                 "    LONG* l2 = (LONG*)i;\n"
+                                 "    LONGP l3 = (LONGP)i;\n"
+                                 "    TT* tt = (TT*)i;\n"
+                                 "    TT2* tt2 = (TT2*)i;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (style) C-style pointer casting\n"
+                      "[test.cpp:11]: (style) C-style pointer casting\n"
+                      "[test.cpp:12]: (style) C-style pointer casting\n"
+                      "[test.cpp:13]: (style) C-style pointer casting\n"
+                      "[test.cpp:14]: (style) C-style pointer casting\n"
+                      "[test.cpp:15]: (style) C-style pointer casting\n"
+                      "[test.cpp:16]: (style) C-style pointer casting\n"
+                      "[test.cpp:17]: (style) C-style pointer casting\n"
+                      "[test.cpp:18]: (style) C-style pointer casting\n"
+                      "[test.cpp:19]: (style) C-style pointer casting\n",
+                      errout.str());
+
+        // #8649
+        checkOldStylePointerCast("struct S {};\n"
+                                 "void g(S*& s);\n"
+                                 "void f(int i) {\n"
+                                 "    g((S*&)i);\n"
+                                 "    S*& r = (S*&)i;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n"
+                      "[test.cpp:5]: (style) C-style pointer casting\n",
+                      errout.str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
@@ -1603,6 +1647,16 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 'foo' should be passed by const reference.\n", errout.str());
 
         check("void f(const std::string &str) {}");
+        ASSERT_EQUALS("", errout.str());
+
+        // The idiomatic way of passing a std::string_view is by value
+        check("void f(const std::string_view str) {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string_view str) {}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string_view &str) {}");
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const std::vector<int> v) {}");
@@ -7622,7 +7676,7 @@ private:
               "  *reg = 12;\n"
               "  *reg = 34;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("test.cpp:2:style:C-style pointer casting\n", errout.str());
     }
 
     void redundantVarAssignment_trivial() {
@@ -9067,6 +9121,17 @@ private:
               "    B b2;\n"
               "};");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'b'.\n", errout.str());
+    }
+
+    void doubleMoveMemberInitialization3() { // #9974
+        check("struct A { int i; };\n"
+              "struct B { A a1; A a2; };\n"
+              "B f() {\n"
+              "    A a1 = { 1 };\n"
+              "    A a2 = { 2 };\n"
+              "    return { .a1 = std::move(a1), .a2 = std::move(a2) };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void moveAndAssign1() {

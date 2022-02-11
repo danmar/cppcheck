@@ -419,10 +419,10 @@ namespace {
         int recursion;
         std::time_t startTime;
 
-        bool isC() const OVERRIDE {
+        bool isC() const override {
             return tokenizer->isC();
         }
-        bool isCPP() const OVERRIDE {
+        bool isCPP() const override {
             return tokenizer->isCPP();
         }
 
@@ -492,7 +492,7 @@ namespace {
             }
         }
 
-        std::string getNewSymbolName() FINAL {
+        std::string getNewSymbolName() final {
             return "$" + std::to_string(++(*symbolValueIndex));
         }
 
@@ -651,7 +651,7 @@ namespace {
                          CWE cwe,
                          bool inconclusive,
                          bool incomplete,
-                         const std::string &functionName) OVERRIDE {
+                         const std::string &functionName) override {
             if (errorPath.empty())
                 mTrackExecution->addError(tok->linenr());
 

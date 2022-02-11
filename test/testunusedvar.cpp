@@ -17,7 +17,6 @@
  */
 
 #include "checkunusedvar.h"
-#include "config.h"
 #include "errortypes.h"
 #include "preprocessor.h"
 #include "settings.h"
@@ -35,7 +34,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::information);
         settings.checkLibrary = true;

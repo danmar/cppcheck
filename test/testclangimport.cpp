@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "clangimport.h"
-#include "config.h"
 #include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -38,7 +37,7 @@ public:
 
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(breakStmt);
         TEST_CASE(callExpr);
         TEST_CASE(caseStmt1);

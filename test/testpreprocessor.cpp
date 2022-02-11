@@ -20,7 +20,6 @@
 // The preprocessor that Cppcheck uses is a bit special. Instead of generating
 // the code for a known configuration, it generates the code for each configuration.
 
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "preprocessor.h"
@@ -75,7 +74,7 @@ private:
     Settings settings0;
     Preprocessor preprocessor0;
 
-    void run() OVERRIDE {
+    void run() override {
 
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);

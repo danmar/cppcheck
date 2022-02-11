@@ -37,17 +37,6 @@
 #  include <crtdbg.h>
 #endif
 
-// C++11 override
-#if defined(_MSC_VER) || (defined(__GNUC__) && (__GNUC__ >= 5)) \
-    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
-    || defined(__CPPCHECK__)
-#  define OVERRIDE override
-#  define FINAL final
-#else
-#  define OVERRIDE
-#  define FINAL
-#endif
-
 // C++11 noexcept
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
     || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \

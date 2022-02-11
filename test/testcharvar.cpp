@@ -18,7 +18,6 @@
 
 
 #include "checkother.h"
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -34,7 +33,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.platform(Settings::Unspecified);
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::portability);
