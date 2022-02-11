@@ -2253,7 +2253,8 @@ struct ValueFlowAnalyzer : Analyzer {
         if (!currValue)
             return false;
         // If the same symbolic value is already there then skip
-        if (currValue->isSymbolicValue() && std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+        if (currValue->isSymbolicValue() &&
+            std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
             return v.isSymbolicValue() && currValue->equalValue(v);
         }))
             return false;
@@ -5069,7 +5070,7 @@ static bool intersects(const C1& c1, const C2& c2)
 {
     if (c1.size() > c2.size())
         return intersects(c2, c1);
-    for(auto&& x:c1) {
+    for (auto&& x : c1) {
         if (c2.find(x) != c2.end())
             return true;
     }
@@ -5165,7 +5166,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                     auto& s = backAssigns[value.tokvalue->exprId()];
                     if (intersects(s, ids))
                         continue;
-                    s.insert(expr->exprId());                   
+                    s.insert(expr->exprId());
 
                     value.errorPath.emplace_back(tok,
                                                  tok->astOperand1()->expressionString() + " is assigned '" +
