@@ -2181,6 +2181,8 @@ bool Token::addValue(const ValueFlow::Value &value)
 
         // Add value
         if (it == mImpl->mValues->end()) {
+            // If the errorPath has gotten this large then there must be something wrong
+            assert(value.errorPath.size() < 64);
             ValueFlow::Value v(value);
             if (v.varId == 0)
                 v.varId = mImpl->mVarId;

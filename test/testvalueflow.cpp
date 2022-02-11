@@ -6448,6 +6448,11 @@ private:
                "    }\n"
                "}\n";
         valueOfTok(code, "swap");
+        
+        code = "double a;\n"
+                "int b, c, d, e, f, g;\n"
+                "void h() { double i, j = i = g = f = e = d = c = b = a; }\n";
+        valueOfTok(code, "a");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
