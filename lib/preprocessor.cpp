@@ -844,8 +844,12 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
     if (mSettings.nomsg.isSuppressed(errorMessage))
         return;
     errorMessage.errorId = "missingIncludeSystem";
-    if (headerType == SystemHeader && mSettings.nomsg.isSuppressed(errorMessage))
-        return;
+    if (headerType == SystemHeader) {
+       if(mSettings.nomsg.isSuppressed(errorMessage)) return;
+       if(header.compare("stdio.h") == 0) return;
+       if(header.compare("stdlib.h") == 0) return;
+       if(header.compare("string.h") == 0) return;
+    }
 
     if (headerType == SystemHeader)
         missingSystemIncludeFlag = true;
