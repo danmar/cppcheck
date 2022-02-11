@@ -20,9 +20,9 @@ ifeq ($(SRCDIR),build)
 endif
 ifeq ($(MATCHCOMPILER),yes)
     # Find available Python interpreter
-    PYTHON_INTERPRETER := $(shell which python)
+    PYTHON_INTERPRETER := $(shell which python3)
     ifndef PYTHON_INTERPRETER
-        PYTHON_INTERPRETER := $(shell which python3)
+        PYTHON_INTERPRETER := $(shell which python)
     endif
     ifndef PYTHON_INTERPRETER
         $(error Did not find a Python interpreter)
