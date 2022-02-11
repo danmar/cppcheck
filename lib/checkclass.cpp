@@ -2131,9 +2131,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
     return false;
 }
 
-
-// The container contains the STL types whose operator[] is not a const.
-static const std::set<std::string> stl_containers_not_const = { "map", "unordered_map" };
+const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "unordered_map" };
 
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
 {
