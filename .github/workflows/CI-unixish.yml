@@ -42,8 +42,8 @@ jobs:
 
       - name: Install missing Python packages
         run: |
-          python -m pip install pip --upgrade
-          python -m pip install pytest
+          python3 -m pip install pip --upgrade
+          python3 -m pip install pytest
 
       - name: CMake build on ubuntu (with GUI / system tinyxml2)
         if: contains(matrix.os, 'ubuntu')
@@ -119,11 +119,11 @@ jobs:
       - name: Run test/cli
         run: |
           cd test/cli
-          pytest test-*.py
+          python3 -m pytest test-*.py
           cd ../../..
           ln -s cppcheck 'cpp check'
           cd 'cpp check/test/cli'
-          pytest test-*.py
+          python3 -m pytest test-*.py
 
       # fails on macos since some includes (e.g. sys/epoll.h) are not available
       - name: Run cfg tests
