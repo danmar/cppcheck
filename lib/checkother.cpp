@@ -1509,7 +1509,7 @@ void CheckOther::checkConstVariable()
                     if (var->isStlType() && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
                         const Token* typeTok = var->typeStartToken() ? var->typeStartToken()->tokAt(2) : nullptr;
                         const auto& notConst = CheckClass::stl_containers_not_const;
-                        if (typeTok && std::find(notConst.begin(), notConst.end(), typeTok->str()) != notConst.end()) {
+                        if (typeTok && notConst.find(typeTok->str()) != notConst.end()) {
                             callNonConstMethod = true;
                             break;
                         }
