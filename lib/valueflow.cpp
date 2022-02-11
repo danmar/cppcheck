@@ -2252,9 +2252,17 @@ struct ValueFlowAnalyzer : Analyzer {
         const ValueFlow::Value* currValue = getValue(tok);
         if (!currValue)
             return false;
+        // If the same symbolic value is already there then skip
+        if (currValue->isSymbolicValue() &&
+            std::any_of(tok->values().begin(), tok->values().end(), [&](const ValueFlow::Value& v) {
+            return v.isSymbolicValue() && currValue->equalValue(v);
+        }))
+            return false;
         const bool exact = !currValue->isIntValue() || currValue->isImpossible();
         for (const ValueFlow::Value& v : tok->values()) {
             if (!v.isSymbolicValue())
+                continue;
+            if (currValue->equalValue(v))
                 continue;
             const bool toImpossible = v.isImpossible() && currValue->isKnown();
             if (!v.isKnown() && !toImpossible)
@@ -5056,9 +5064,23 @@ static bool isVariableInit(const Token *tok)
            !Token::simpleMatch(tok->astOperand2(), ",");
 }
 
+// Return true if two associative containers intersect
+template<class C1, class C2>
+static bool intersects(const C1& c1, const C2& c2)
+{
+    if (c1.size() > c2.size())
+        return intersects(c2, c1);
+    for (auto&& x : c1) {
+        if (c2.find(x) != c2.end())
+            return true;
+    }
+    return false;
+}
+
 static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
+        std::unordered_map<nonneg int, std::unordered_set<nonneg int>> backAssigns;
         std::set<nonneg int> aliased;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             // Alias
@@ -5122,12 +5144,30 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (tok->astOperand1()->exprId() > 0) {
                 Token* start = nextAfterAstRightmostLeaf(tok);
                 const Token* end = scope->bodyEnd;
+                // Collect symbolic ids
+                std::unordered_set<nonneg int> ids;
+                for (const ValueFlow::Value& value : values) {
+                    if (!value.isSymbolicValue())
+                        continue;
+                    if (!value.tokvalue)
+                        continue;
+                    if (value.tokvalue->exprId() == 0)
+                        continue;
+                    ids.insert(value.tokvalue->exprId());
+                }
                 for (ValueFlow::Value value : values) {
                     if (!value.isSymbolicValue())
                         continue;
                     const Token* expr = value.tokvalue;
                     value.intvalue = -value.intvalue;
                     value.tokvalue = tok->astOperand1();
+
+                    // Skip if it intersects with an already assigned symbol
+                    auto& s = backAssigns[value.tokvalue->exprId()];
+                    if (intersects(s, ids))
+                        continue;
+                    s.insert(expr->exprId());
+
                     value.errorPath.emplace_back(tok,
                                                  tok->astOperand1()->expressionString() + " is assigned '" +
                                                  tok->astOperand2()->expressionString() + "' here.");
