@@ -6455,13 +6455,13 @@ private:
         valueOfTok(code, "a");
 
         code = "double a, c;\n"
-"double *b;\n"
-"void d() {\n"
-"  double e, f, g, h = g = f = e = c = a;\n"
-"  b[8] = a;\n"
-"  b[1] = a;\n"
-"  a;\n"
-"}\n";
+               "double *b;\n"
+               "void d() {\n"
+               "  double e, f, g, h = g = f = e = c = a;\n"
+               "  b[8] = a;\n"
+               "  b[1] = a;\n"
+               "  a;\n"
+               "}\n";
         valueOfTok(code, "a");
     }
 
