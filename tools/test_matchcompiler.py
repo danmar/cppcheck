@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Cppcheck - A tool for static C/C++ code analysis
 # Copyright (C) 2007-2021 Cppcheck team.
