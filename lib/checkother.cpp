@@ -32,6 +32,7 @@
 #include "valueflow.h"
 
 #include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
+#include "checkclass.h" // CheckClass::stl_containers_not_const
 
 #include <algorithm> // find_if()
 #include <cctype>
@@ -1502,11 +1503,21 @@ void CheckOther::checkConstVariable()
         if (var->isReference()) {
             bool callNonConstMethod = false;
             for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->variable() == var && Token::Match(tok, "%var% . * ( & %name% ::")) {
-                    const Token *ftok = tok->linkAt(3)->previous();
-                    if (!ftok->function() || !ftok->function()->isConst())
-                        callNonConstMethod = true;
-                    break;
+                if (tok->variable() == var) {
+                    if (Token::Match(tok, "%var% . * ( & %name% ::")) {
+                        const Token* ftok = tok->linkAt(3)->previous();
+                        if (!ftok->function() || !ftok->function()->isConst())
+                            callNonConstMethod = true;
+                        break;
+                    }
+                    if (var->isStlType() && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
+                        const Token* typeTok = var->typeStartToken() ? var->typeStartToken()->tokAt(2) : nullptr;
+                        const auto& notConst = CheckClass::stl_containers_not_const;
+                        if (typeTok && notConst.find(typeTok->str()) != notConst.end()) {
+                            callNonConstMethod = true;
+                            break;
+                        }
+                    }
                 }
             }
             if (callNonConstMethod)

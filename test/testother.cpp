@@ -2746,6 +2746,11 @@ private:
               "    T& g(C& c, T C::*f) { return c.*f; }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::map<int, int>& m) {\n"
+              "    std::cout << m[0] << std::endl;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constParameterCallback() {
