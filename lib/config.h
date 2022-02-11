@@ -69,4 +69,30 @@
 #include <string>
 static const std::string emptyString;
 
+// Use the nonneg macro when you want to assert that a variable/argument is not negative
+#ifdef __CPPCHECK__
+#define nonneg   __cppcheck_low__(0)
+#elif defined(NONNEG)
+// Enable non-negative values checking
+// TODO : investigate using annotations/contracts for stronger value checking
+#define nonneg   unsigned
+#else
+// Disable non-negative values checking
+#define nonneg
+#endif
+
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define ASAN 1
+#endif
+#endif
+
+#ifndef ASAN
+#ifdef  __SANITIZE_ADDRESS__
+#define ASAN 1
+#else
+#define ASAN 0
+#endif
+#endif
+
 #endif // configH

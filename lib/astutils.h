@@ -27,8 +27,8 @@
 #include <string>
 #include <vector>
 
+#include "config.h"
 #include "errortypes.h"
-#include "utils.h"
 
 class Function;
 class Library;

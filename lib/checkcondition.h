@@ -26,7 +26,6 @@
 #include "config.h"
 #include "mathlib.h"
 #include "errortypes.h"
-#include "utils.h"
 
 #include <set>
 #include <string>

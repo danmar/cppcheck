@@ -27,7 +27,6 @@
 #include "ctu.h"
 #include "mathlib.h"
 #include "errortypes.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <list>

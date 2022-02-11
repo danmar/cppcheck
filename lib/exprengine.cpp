@@ -142,7 +142,6 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
-#include "utils.h"
 
 #include <cctype>
 #include <climits>

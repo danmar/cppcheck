@@ -24,7 +24,6 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenlist.h"
-#include "utils.h"
 
 #include <iosfwd>
 #include <list>
