@@ -10290,8 +10290,10 @@ void Tokenizer::findGarbageCode() const
             unknownMacroError(tok);
 
         // Assign/increment/decrement literal
-        else if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--"))
-            syntaxError(tok, tok->next()->str() + " " + tok->strAt(2));
+        else if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--")) {
+            if (!isCPP() || mSettings->standards.cpp < Standards::CPP20 || !Token::Match(tok->previous(), "%name% : %num% ="))
+                syntaxError(tok, tok->next()->str() + " " + tok->strAt(2));
+        }
 
         if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|)")) {
@@ -11566,12 +11568,12 @@ void Tokenizer::simplifyBitfields()
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = (tok->next()->str() == "const") ? tok->tokAt(3) : tok->tokAt(2);
-            if (Token::Match(tok1, "%name% : %num% ;"))
+            if (Token::Match(tok1, "%name% : %num% [;=]"))
                 tok1->setBits(MathLib::toLongNumber(tok1->strAt(2)));
             if (tok1 && tok1->tokAt(2) &&
                 (Token::Match(tok1->tokAt(2), "%bool%|%num%") ||
                  !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))) {
-                while (tok1->next() && !Token::Match(tok1->next(), "[;,)]{}]")) {
+                while (tok1->next() && !Token::Match(tok1->next(), "[;,)]{}=]")) {
                     if (Token::Match(tok1->next(), "[([]"))
                         Token::eraseTokens(tok1, tok1->next()->link());
                     tok1->deleteNext();

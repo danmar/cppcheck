@@ -448,6 +448,8 @@ private:
         TEST_CASE(simplifyIfSwitchForInit3);
         TEST_CASE(simplifyIfSwitchForInit4);
         TEST_CASE(simplifyIfSwitchForInit5);
+
+        TEST_CASE(cpp20_default_bitfield_initializer);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -7212,6 +7214,15 @@ private:
         settings.standards.cpp = Standards::CPP20;
         const char code[] = "void f() { if ([] { ; }) {} }";
         ASSERT_EQUALS("void f ( ) { if ( [ ] { ; } ) { } }", tokenizeAndStringify(code, settings));
+    }
+
+    void cpp20_default_bitfield_initializer() {
+        Settings settings;
+        const char code[] = "struct S { int a:2 = 0; };";
+        settings.standards.cpp = Standards::CPP20;
+        ASSERT_EQUALS("struct S { int a ; a = 0 ; } ;", tokenizeAndStringify(code, settings));
+        settings.standards.cpp = Standards::CPP17;
+        ASSERT_THROW(tokenizeAndStringify(code, settings), InternalError);
     }
 };
 
