@@ -11376,14 +11376,23 @@ void Tokenizer::simplifyAsm()
         }
 
         else if (Token::Match(tok, "asm|__asm|__asm__ volatile|__volatile|__volatile__| (")) {
+            // Check if asm is inside fuction (at least one closing curly brace after)
+            Token* downbrace = tok;
+            while (downbrace && downbrace->str != "}")
+                downbrace->next();
+
+            //while (upbrace && upbrace->str() != "{")
+            //    upbrace = upbrace -> previous();
+
             // Goto "("
             Token *partok = tok->next();
             if (partok->str() != "(")
                 partok = partok->next();
             instruction = partok->next()->stringifyList(partok->link());
             Token::eraseTokens(tok, partok->link()->next());
-            if (tok->previous() && !Token::Match(tok->previous(), ";|{")) {
-                // Asm label found
+
+            if (!downbrace) {
+                // Asm outside function => Asm label found
                 tok->deleteThis();
                 continue;
             }
