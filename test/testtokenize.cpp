@@ -998,10 +998,10 @@ private:
     void simplifyAsm() {
         // asm label (variable)
         ASSERT_EQUALS("int * pfoo ; pfoo = NULL ;",
-                      tokenizeAndStringify("int* pfoo asm ("pmyfoo") = NULL;"));
+                      tokenizeAndStringify("int* pfoo asm (\"pmyfoo\") = NULL;"));
         // asm label (function)
         ASSERT_EQUALS("void * func ( ) ;",
-                      tokenizeAndStringify("void* func() asm ("myfunc");"));
+                      tokenizeAndStringify("void* func() asm (\"myfunc\");"));
     }
 
     // #4725 - ^{}
