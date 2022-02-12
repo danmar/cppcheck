@@ -28,15 +28,15 @@ namespace MatchCompiler {
     class ConstString {
     public:
         typedef const char(&StringRef)[n];
-        explicit ConstString(StringRef s)
-            : _s(s) {}
+        explicit ConstString(StringRef str)
+            : s(str) {}
 
         operator StringRef() const {
-            return _s;
+            return s;
         }
 
     private:
-        StringRef _s;
+        StringRef s;
     };
 
     template<unsigned int n>
