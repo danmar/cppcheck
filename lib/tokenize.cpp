@@ -11382,6 +11382,11 @@ void Tokenizer::simplifyAsm()
                 partok = partok->next();
             instruction = partok->next()->stringifyList(partok->link());
             Token::eraseTokens(tok, partok->link()->next());
+            if (!Token::Match(tok->previous(), ";|{")) {
+                // Asm label found
+                tok->deleteThis();
+                continue;
+            }
         }
 
         else if (Token::Match(tok, "_asm|__asm")) {
