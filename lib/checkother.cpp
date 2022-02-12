@@ -1540,8 +1540,6 @@ void CheckOther::checkConstPointer()
             continue;
         if (!tok->variable()->isLocal() && !tok->variable()->isArgument())
             continue;
-        if (tok == tok->variable()->nameToken())
-            continue;
         if (!tok->valueType())
             continue;
         if (tok->valueType()->pointer == 0 || tok->valueType()->constness > 0)
@@ -1549,6 +1547,8 @@ void CheckOther::checkConstPointer()
         if (nonConstPointers.find(tok->variable()) != nonConstPointers.end())
             continue;
         pointers.insert(tok->variable());
+        if (tok == tok->variable()->nameToken())
+            continue;
         const Token *parent = tok->astParent();
         bool deref = false;
         if (parent && parent->isUnaryOp("*"))
