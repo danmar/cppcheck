@@ -204,7 +204,7 @@ g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/sim
 ### MinGW
 
 ```shell
-mingw32-make LDFLAGS=-lshlwapi
+mingw32-make
 ```
 
 ### Other Compiler/IDE
