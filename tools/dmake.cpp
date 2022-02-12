@@ -254,7 +254,9 @@ int main(int argc, char **argv)
          << "endif\n";
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
          << "    # Find available Python interpreter\n"
-         << "    PYTHON_INTERPRETER := $(shell which python3)\n"
+         << "    ifndef PYTHON_INTERPRETER\n"
+         << "        PYTHON_INTERPRETER := $(shell which python3)\n"
+         << "    endif\n"
          << "    ifndef PYTHON_INTERPRETER\n"
          << "        PYTHON_INTERPRETER := $(shell which python)\n"
          << "    endif\n"
