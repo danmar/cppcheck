@@ -11391,7 +11391,7 @@ void Tokenizer::simplifyAsm()
             instruction = partok->next()->stringifyList(partok->link());
             Token::eraseTokens(tok, partok->link()->next());
 
-            if (!balance) {
+            if (!balance && (tok->previous()->str() == ")" || tok->previous()->tokType() == eName) {
                 // Asm outside function => Asm label found
                 tok->deleteThis();
                 continue;
