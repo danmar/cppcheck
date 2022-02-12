@@ -275,31 +275,13 @@ static void misra_7_1(void) {
   int x = 066; // 7.1
 }
 
-static void misra_7_2_call_test(int a, unsigned int b, unsigned int c) { } // 2.7
-
-static void misra_7_2_call_va_test(int a, ...) { } // 2.7
-
 static void misra_7_2(void) {
-    uint32_t a = 2147483647;
-    const uint32_t b = 2147483648U;
-    const uint32_t c = 2147483648; // 7.2 10.3
-    uint32_t d = 2147483649; // 7.2 10.3
-
-    uint8_t e = 0x80; // 7.2 10.3
-    uint8_t f = 0x80U;
-    uint16_t g = 0x8000; // 7.2 10.3
-    uint16_t h = 0x8000U;
-    uint32_t i = 0x80000000; // 7.2
-    uint32_t j = 0x80000000U;
-    uint64_t k = 0x8000000000000000; // TODO 7.2
-    uint64_t l = 0x8000000000000000ULL;
-
-    uint32_t m = 1 + 0x80000000; // 7.2 10.4
-
-    misra_7_2_call_test(1, 2, 2147483648U);
-    misra_7_2_call_test(1, 2, 2147483648); // 7.2
-    misra_7_2_call_test(1, 0x80000000, 3); // 7.2
-    misra_7_2_call_va_test(1, 2, 3);
+    uint32_t a = 0x7fffffff;
+    uint32_t b = 0x80000000; // 7.2
+    uint32_t c = 0x80000000U;
+    uint32_t d = 2147483647;
+    uint64_t e = 2147483648;
+    uint32_t f = 2147483648U;
 }
 
 // The addon should not generate false positives for the identifiers.

@@ -1031,16 +1031,14 @@ def isNoReturnScope(tok):
 
 
 # Return the token which the value is assigned to
-def getAssignedVariableToken(valueToken):
-    if not valueToken:
+def getAssignedVariableToken(vartok):
+    if not vartok:
         return None
-    if not valueToken.astParent:
-        return None
-    operator = valueToken.astParent
-    if operator.isAssignmentOp:
-        return operator.astOperand1
-    if operator.isArithmeticalOp:
-        return getAssignedVariableToken(operator)
+    parent = vartok.astParent
+    while parent and parent.isArithmeticalOp:
+        parent = parent.astParent
+    if parent and parent.isAssignmentOp:
+        return parent.astOperand1
     return None
 
 # If the value is used as a return value, return the function definition
@@ -1781,41 +1779,9 @@ class MisraChecker:
                 self.reportError(tok, 7, 1)
 
     def misra_7_2(self, data):
-        # Large constant numbers that are assigned to a variable should have an
-        # u/U suffix if the variable type is unsigned.
-        def reportErrorIfMissingSuffix(variable, value):
-            if 'U' in value.str.upper():
-                return
-            if value and value.isNumber:
-                if variable and variable.valueType and variable.valueType.sign == 'unsigned':
-                    if variable.valueType.type in ['char', 'short', 'int', 'long', 'long long']:
-                        limit = 1 << (bitsOfEssentialType(variable.valueType.type) -1)
-                        v = value.getKnownIntValue()
-                        if v is not None and v >= limit:
-                            self.reportError(value, 7, 2)
-
         for token in data.tokenlist:
-            # Check normal variable assignment
-            if token.valueType and token.isNumber:
-                variable = getAssignedVariableToken(token)
-                reportErrorIfMissingSuffix(variable, token)
-
-            # Check use as function parameter
-            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
-                functionDeclaration = token.astOperand1.function
-
-                if functionDeclaration.tokenDef:
-                    if functionDeclaration.tokenDef is token.astOperand1:
-                        # Token is not a function call, but it is the definition of the function
-                        continue
-
-                    parametersUsed = getArguments(token)
-                    for i in range(len(parametersUsed)):
-                        usedParameter = parametersUsed[i]
-                        if usedParameter.isNumber:
-                            parameterDefinition = functionDeclaration.argument.get(i+1)
-                            if parameterDefinition and parameterDefinition.nameToken:
-                                reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
+            if token.isInt and ('U' not in token.str.upper()) and token.valueType and token.valueType.sign == 'unsigned':
+                self.reportError(token, 7, 2)
 
     def misra_7_3(self, rawTokens):
         compiled = re.compile(r'^[0-9.]+[Uu]*l+[Uu]*$')
