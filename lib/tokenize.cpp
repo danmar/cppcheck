@@ -11377,7 +11377,7 @@ void Tokenizer::simplifyAsm()
 
         else if (Token::Match(tok, "asm|__asm|__asm__ volatile|__volatile|__volatile__| (")) {
             long balance = 0;
-            for (Token *uptok = tok; uptok; uptok = uptok->previous()) {
+            for (Token *uptok = tok; uptok && balance < 1; uptok = uptok->previous()) {
                if (uptok->str() == "{")
                    balance++;
                else if (uptok->str() == "}")
