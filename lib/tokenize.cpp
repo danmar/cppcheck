@@ -11378,7 +11378,7 @@ void Tokenizer::simplifyAsm()
         else if (Token::Match(tok, "asm|__asm|__asm__ volatile|__volatile|__volatile__| (")) {
             // Searching for unmatched '{' before asm (label or inline?)
             const Token* uptok = tok->previous();
-            while(uptok && uptok->str() != "{") {
+            while (uptok && uptok->str() != "{") {
                if (uptok->str() == "}")
                    uptok = uptok->link();
 
@@ -11392,7 +11392,7 @@ void Tokenizer::simplifyAsm()
             instruction = partok->next()->stringifyList(partok->link());
             Token::eraseTokens(tok, partok->link()->next());
 
-            if (!uptok && Token::Match(tok->previous(),"%name%|)")) {
+            if (!uptok && Token::Match(tok->previous(), "%name%|)")) {
                 // Asm outside function => Asm label found
                 tok->deleteThis();
                 continue;
