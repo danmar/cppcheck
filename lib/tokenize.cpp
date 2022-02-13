@@ -11376,12 +11376,13 @@ void Tokenizer::simplifyAsm()
         }
 
         else if (Token::Match(tok, "asm|__asm|__asm__ volatile|__volatile|__volatile__| (")) {
-            long balance = 0;
-            for (Token *uptok = tok; uptok && balance < 1; uptok = uptok->previous()) {
-               if (uptok->str() == "{")
-                   balance++;
-               else if (uptok->str() == "}")
-                   balance--;
+            // Searching for unmatched '{' before asm (label or inline?)
+            const Token* uptok = tok->previous();
+            while(uptok && uptok->str() != "{")
+               if (uptok->str() == "}")
+                   uptok = uptok->link();
+
+               uptok = uptok->previous();
             }
 
             // Goto "("
@@ -11391,7 +11392,7 @@ void Tokenizer::simplifyAsm()
             instruction = partok->next()->stringifyList(partok->link());
             Token::eraseTokens(tok, partok->link()->next());
 
-            if (!balance && tok->previous() && (tok->previous()->str() == ")" || tok->previous()->tokType() == Token::eName)) {
+            if (!uptok && Token::Match(tok->previous(),"%name%|)")) {
                 // Asm outside function => Asm label found
                 tok->deleteThis();
                 continue;
