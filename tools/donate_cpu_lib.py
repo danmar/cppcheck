@@ -268,8 +268,9 @@ def __has_include(path, includes):
     return False
 
 
-def __run_command(cmd):
-    print(cmd)
+def __run_command(cmd, print_cmd=True):
+    if print_cmd:
+        print(cmd)
     start_time = time.time()
     comm = None
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
@@ -556,7 +557,7 @@ def get_libraries():
 
 
 def get_compiler_version():
-    _, stdout, _, _ = __run_command('g++ --version')
+    _, stdout, _, _ = __run_command('g++ --version', False)
     return stdout.split('\n')[0]
 
 
