@@ -677,10 +677,10 @@ private:
 
         // ticket 5033 segmentation fault (valid code) in CheckOther::checkZeroDivisionOrUselessCondition
         check("void f() {\n"
-              "  double* p1= new double[1];\n"
-              "  double* p2= new double[1];\n"
-              "  double* p3= new double[1];\n"
-              "  const double* pp[3] = {p1,p2,p3};\n"
+              "double* p1= new double[1];\n"
+              "double* p2= new double[1];\n"
+              "double* p3= new double[1];\n"
+              "double* pp[3] = {p1,p2,p3};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
 
@@ -2778,9 +2778,6 @@ private:
     }
 
     void constPointer() {
-        check("void foo(void* data) {}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'data' can be declared with const\n", errout.str());
-
         check("void foo(int *p) { return *p; }");
         ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
 
@@ -4754,7 +4751,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
-              "    const std::array<std::array<double,3>,3> array;\n"
+              "    std::array<std::array<double,3>,3> array;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
