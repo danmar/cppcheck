@@ -37,7 +37,7 @@ def check_requirements():
     try:
         import psutil
     except ImportError as e:
-        print("Error: {}. Module is required. ".format(e))
+        print("Error: {}. Module is required.".format(e))
         result = False
     return result
 
@@ -71,21 +71,21 @@ def clone_cppcheck(repo_path, migrate_from_path):
         os.rename(migrate_from_path, repo_path)
     else:
         # A shallow git clone (depth = 1) is enough for building and scanning.
-        # Do not checkout until fetch_cppcheck_version.
+        # Do not checkout until fetch_cppcheck_version.
         subprocess.check_call(['git', 'clone', '--depth=1', '--no-checkout', CPPCHECK_REPO_URL, repo_path])
         # Checkout an empty branch to allow "git worktree add" for main later on
     try:
         # git >= 2.27
         subprocess.check_call(['git', 'switch', '--orphan', 'empty'], cwd=repo_path)
     except subprocess.CalledProcessError:
-        subprocess.check_call(['git', 'checkout','--orphan', 'empty'], cwd=repo_path)
+        subprocess.check_call(['git', 'checkout', '--orphan', 'empty'], cwd=repo_path)
 
 
 def checkout_cppcheck_version(repo_path, version, cppcheck_path):
     if not os.path.isabs(cppcheck_path):
         raise ValueError("cppcheck_path is not an absolute path")
     if os.path.exists(cppcheck_path):
-        subprocess.check_call(['git', 'checkout' , '-f', version], cwd=cppcheck_path)
+        subprocess.check_call(['git', 'checkout', '-f', version], cwd=cppcheck_path)
         # It is possible to pull branches, not tags
         if version == 'main':
             subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
