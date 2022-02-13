@@ -24,6 +24,7 @@
 
 #include <functional>
 #include <set>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -47,8 +48,37 @@ enum class ChildrenToVisit {
 /**
  * Visit AST nodes recursively. The order is not "well defined"
  */
-void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor);
-void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor);
+template<class T, class TFunc, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+void visitAstNodes(T *ast, const TFunc &visitor)
+{
+    if (!ast)
+        return;
+
+    std::stack<T *, std::vector<T *>> tokens;
+    T *tok = ast;
+    do {
+        ChildrenToVisit c = visitor(tok);
+
+        if (c == ChildrenToVisit::done)
+            break;
+        if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2) {
+            T *t2 = tok->astOperand2();
+            if (t2)
+                tokens.push(t2);
+        }
+        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2) {
+            T *t1 = tok->astOperand1();
+            if (t1)
+                tokens.push(t1);
+        }
+
+        if (tokens.empty())
+            break;
+
+        tok = tokens.top();
+        tokens.pop();
+    } while (true);
+}
 
 const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred);
 const Token* findExpression(const nonneg int exprid,

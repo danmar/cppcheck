@@ -40,52 +40,9 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <stack>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
-
-template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
-{
-    if (!ast)
-        return;
-
-    std::stack<T *, std::vector<T *>> tokens;
-    T *tok = ast;
-    do {
-        ChildrenToVisit c = visitor(tok);
-
-        if (c == ChildrenToVisit::done)
-            break;
-        if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2) {
-            T *t2 = tok->astOperand2();
-            if (t2)
-                tokens.push(t2);
-        }
-        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2) {
-            T *t1 = tok->astOperand1();
-            if (t1)
-                tokens.push(t1);
-        }
-
-        if (tokens.empty())
-            break;
-
-        tok = tokens.top();
-        tokens.pop();
-    } while (true);
-}
-
-void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor)
-{
-    visitAstNodesGeneric(ast, std::move(visitor));
-}
-
-void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor)
-{
-    visitAstNodesGeneric(ast, std::move(visitor));
-}
 
 const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred)
 {
