@@ -119,7 +119,7 @@ def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
         os.chdir(cppcheck_path)
-        subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g'])
+        subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'])
         subprocess.check_call([cppcheck_path + '/cppcheck', '--version'])
     except:
         return False
