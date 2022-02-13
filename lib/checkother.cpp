@@ -1593,8 +1593,15 @@ void CheckOther::checkConstPointer()
 }
 void CheckOther::constVariableError(const Variable *var, const Function *function)
 {
-    const std::string vartype((var && var->isArgument()) ? "Parameter" : "Variable");
-    const std::string varname(var ? var->name() : std::string("x"));
+    if (!var) {
+        reportError(nullptr, Severity::style, "constParameter", "Parameter 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constVariable",  "Variable 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constParameterCallback", "Parameter 'x' can be declared with const, however it seems that 'f' is a callback function.");
+        return;
+    }
+
+    const std::string vartype(var->isArgument() ? "Parameter" : "Variable");
+    const std::string varname(var->name());
 
     ErrorPath errorPath;
     std::string id = "const" + vartype;
