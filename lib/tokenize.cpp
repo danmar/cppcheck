@@ -11379,10 +11379,10 @@ void Tokenizer::simplifyAsm()
             // Searching for unmatched '{' before asm (label or inline?)
             const Token* uptok = tok->previous();
             while (uptok && uptok->str() != "{") {
-               if (uptok->str() == "}")
-                   uptok = uptok->link();
+                if (uptok->str() == "}")
+                    uptok = uptok->link();
 
-               uptok = uptok->previous();
+                uptok = uptok->previous();
             }
 
             // Goto "("
