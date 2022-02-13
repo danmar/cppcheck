@@ -45,8 +45,8 @@
 #include <unordered_map>
 #include <utility>
 
-template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
+template<class T, class TFunc, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+void visitAstNodesGeneric(T *ast, const TFunc &visitor)
 {
     if (!ast)
         return;
@@ -79,12 +79,12 @@ void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
 
 void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor)
 {
-    visitAstNodesGeneric(ast, std::move(visitor));
+    visitAstNodesGeneric(ast, visitor);
 }
 
 void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor)
 {
-    visitAstNodesGeneric(ast, std::move(visitor));
+    visitAstNodesGeneric(ast, visitor);
 }
 
 const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred)
