@@ -1151,7 +1151,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
         }
     };
     if (!tok)
-        return std::vector<ReferenceToken> {};
+        return {};
     if (depth < 0)
         return {{tok, std::move(errors)}};
     const Variable *var = tok->variable();
@@ -1167,7 +1167,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
                 return {{tok, std::move(errors)}};
             } else if (Token::simpleMatch(varDeclEndToken, "=")) {
                 if (astHasToken(varDeclEndToken, tok))
-                    return std::vector<ReferenceToken>{};
+                    return {};
                 errors.emplace_back(varDeclEndToken, "Assigned to reference.");
                 const Token *vartok = varDeclEndToken->astOperand2();
                 if (vartok == tok || (!temporary && isTemporary(true, vartok, nullptr, true) &&
@@ -1183,8 +1183,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
         std::set<ReferenceToken, ReferenceTokenLess> result;
         const Token* tok2 = tok->astOperand2();
 
-        std::vector<ReferenceToken> refs;
-        refs = followAllReferences(tok2->astOperand1(), temporary, inconclusive, errors, depth - 1);
+        auto refs = followAllReferences(tok2->astOperand1(), temporary, inconclusive, errors, depth - 1);
         result.insert(refs.begin(), refs.end());
         refs = followAllReferences(tok2->astOperand2(), temporary, inconclusive, errors, depth - 1);
         result.insert(refs.begin(), refs.end());
@@ -1193,7 +1192,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
             return {{tok, std::move(errors)}};
 
         if (!result.empty())
-            return std::vector<ReferenceToken>(result.begin(), result.end());
+            return {result.begin(), result.end()};
 
     } else if (Token::Match(tok->previous(), "%name% (")) {
         const Function *f = tok->previous()->function();
@@ -1221,7 +1220,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
                         ErrorPath er = errors;
                         er.emplace_back(returnTok, "Return reference.");
                         er.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
-                        std::vector<ReferenceToken> refs =
+                        auto refs =
                             followAllReferences(argTok, temporary, inconclusive, std::move(er), depth - returns.size());
                         result.insert(refs.begin(), refs.end());
                         if (!inconclusive && result.size() > 1)
@@ -1230,7 +1229,7 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
                 }
             }
             if (!result.empty())
-                return std::vector<ReferenceToken>(result.begin(), result.end());
+                return {result.begin(), result.end()};
         }
     }
     return {{tok, std::move(errors)}};
@@ -1240,7 +1239,7 @@ const Token* followReferences(const Token* tok, ErrorPath* errors)
 {
     if (!tok)
         return nullptr;
-    std::vector<ReferenceToken> refs = followAllReferences(tok, true, false);
+    auto refs = followAllReferences(tok, true, false);
     if (refs.size() == 1) {
         if (errors)
             *errors = refs.front().errors;
