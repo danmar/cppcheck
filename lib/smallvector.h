@@ -31,8 +31,17 @@ using SmallVector = boost::container::small_vector<T, N>;
 #else
 #include <vector>
 
+template<class T, std::size_t N>
+struct TaggedAllocator : std::allocator<T>
+{
+    template<class ... Ts>
+    TaggedAllocator(Ts&&... ts)
+        : std::allocator<T>(std::forward<Ts>(ts)...)
+    {}
+};
+
 template<typename T, std::size_t N = DefaultSmallVectorSize>
-using SmallVector = std::vector<T>;
+using SmallVector = std::vector<T, TaggedAllocator<T, N>>;
 #endif
 
 #endif
