@@ -21,7 +21,7 @@
 
 #include <cstddef>
 
-static constexpr std::size_t DefaultSmallVectorSize = 0;
+static constexpr std::size_t DefaultSmallVectorSize = 3;
 
 #ifdef HAVE_BOOST
 #include <boost/container/small_vector.hpp>

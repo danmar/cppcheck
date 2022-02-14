@@ -33,6 +33,7 @@
 #include "config.h"
 #include "errortypes.h"
 #include "library.h"
+#include "smallvector.h"
 #include "symboldatabase.h"
 
 class Settings;
@@ -224,7 +225,7 @@ struct ReferenceToken {
     ErrorPath errors;
 };
 
-std::vector<ReferenceToken> followAllReferences(const Token* tok,
+SmallVector<ReferenceToken> followAllReferences(const Token* tok,
                                                 bool temporary = true,
                                                 bool inconclusive = true,
                                                 ErrorPath errors = ErrorPath{},
