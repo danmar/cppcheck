@@ -1783,14 +1783,14 @@ static ExprEngine::ValuePtr calculateArrayIndex(const Token *tok, Data &data, co
 {
     int nr = 1;
     const Token *tok2 = tok;
-    while (Token::simpleMatch(tok2->astOperand1(), "[")) {
+    while (Token::exactMatch(tok2->astOperand1(), "[")) {
         tok2 = tok2->astOperand1();
         nr++;
     }
 
     ExprEngine::ValuePtr totalIndex;
     ExprEngine::ValuePtr dim;
-    while (Token::simpleMatch(tok, "[")) {
+    while (Token::exactMatch(tok, "[")) {
         auto rawIndex = executeExpression(tok->astOperand2(), data);
 
         ExprEngine::ValuePtr index;
@@ -1871,7 +1871,7 @@ static void assignExprValue(const Token *expr, ExprEngine::ValuePtr value, Data 
     } else if (expr->str() == "[") {
         // Find array token
         const Token *arrayToken = expr;
-        while (Token::simpleMatch(arrayToken, "["))
+        while (Token::exactMatch(arrayToken, "["))
             arrayToken = arrayToken->astOperand1();
         if (!arrayToken)
             return;
@@ -2186,7 +2186,7 @@ static ExprEngine::ValuePtr executeArrayIndex(const Token *tok, Data &data)
     if (tok->tokType() == Token::eLambda)
         throw ExprEngineException(tok, "FIXME: lambda");
     const Token *tok2 = tok;
-    while (Token::simpleMatch(tok2->astOperand1(), "["))
+    while (Token::exactMatch(tok2->astOperand1(), "["))
         tok2 = tok2->astOperand1();
     auto arrayValue = data.getArrayValue(tok2->astOperand1());
     if (arrayValue) {
@@ -2301,7 +2301,7 @@ static void streamReadSetValue(const Token *tok, Data &data)
 static ExprEngine::ValuePtr executeStreamRead(const Token *tok, Data &data)
 {
     tok = tok->astOperand2();
-    while (Token::simpleMatch(tok, ">>")) {
+    while (Token::exactMatch(tok, ">>")) {
         streamReadSetValue(tok->astOperand1(), data);
         tok = tok->astOperand2();
     }
@@ -2762,11 +2762,11 @@ static std::string execute(const Token *start, const Token *end, Data &data)
                 for (const Token *tok2 = tok; tok2 != bodyEnd; tok2 = tok2->next()) {
                     if (Token::Match(tok2, "%assign%")) {
                         const Token *lhs = tok2->astOperand1();
-                        while (Token::simpleMatch(lhs, "["))
+                        while (Token::exactMatch(lhs, "["))
                             lhs = lhs->astOperand1();
                         if (!lhs)
                             throw ExprEngineException(tok2, "Unhandled assignment in loop");
-                        if (Token::Match(lhs, ". %name% =|[") && Token::simpleMatch(lhs->astOperand1(), ".")) {
+                        if (Token::Match(lhs, ". %name% =|[") && Token::exactMatch(lhs->astOperand1(), ".")) {
                             const Token *structToken = lhs;
                             while (Token::Match(structToken, ".|["))
                                 structToken = structToken->astOperand1();

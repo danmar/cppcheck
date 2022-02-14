@@ -134,7 +134,7 @@ void CheckClass::constructors()
         if (isVcl(mSettings) && isVclTypeInit(scope->definedType))
             continue;
 
-        const bool unusedTemplate = Token::simpleMatch(scope->classDef->previous(), ">");
+        const bool unusedTemplate = Token::exactMatch(scope->classDef->previous(), ">");
 
         bool usedInUnion = false;
         for (const Scope &unionScope : mSymbolDatabase->scopeList) {
@@ -1260,7 +1260,7 @@ void CheckClass::checkMemset()
                     if (var && arg1->strAt(1) == ",") {
                         if (var->isArrayOrPointer()) {
                             const Token *endTok = var->typeEndToken();
-                            while (Token::simpleMatch(endTok, "*")) {
+                            while (Token::exactMatch(endTok, "*")) {
                                 ++numIndirToVariableType;
                                 endTok = endTok->previous();
                             }
@@ -1458,7 +1458,7 @@ void CheckClass::checkReturnPtrThis(const Scope *scope, const Function *func, co
         const Token *retExpr = tok->astOperand1();
         if (retExpr && retExpr->str() == "=")
             retExpr = retExpr->astOperand1();
-        if (retExpr && retExpr->isUnaryOp("*") && Token::simpleMatch(retExpr->astOperand1(), "this"))
+        if (retExpr && retExpr->isUnaryOp("*") && Token::exactMatch(retExpr->astOperand1(), "this"))
             continue;
 
         std::string cast("( " + scope->className + " & )");
@@ -1659,21 +1659,21 @@ CheckClass::Bool CheckClass::isInverted(const Token *tok, const Token *rhs)
 {
     bool res = true;
     for (const Token *itr = tok; itr && itr->str()!="("; itr=itr->astParent()) {
-        if (Token::simpleMatch(itr, "!=") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
+        if (Token::exactMatch(itr, "!=") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
             res = !res;
-        } else if (Token::simpleMatch(itr, "!=") && ((Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
-                                                     || (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
+        } else if (Token::exactMatch(itr, "!=") && ((Token::exactMatch(itr->astOperand1(), "this") && Token::exactMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
+                                                    || (Token::exactMatch(itr->astOperand2(), "this") && Token::exactMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
             res = !res;
-        } else if (Token::simpleMatch(itr, "!=") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
+        } else if (Token::exactMatch(itr, "!=") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
             //Do nothing
-        } else if (Token::simpleMatch(itr, "!")) {
+        } else if (Token::exactMatch(itr, "!")) {
             res = !res;
-        } else if (Token::simpleMatch(itr, "==") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
+        } else if (Token::exactMatch(itr, "==") && (isFalseKeyword(itr->astOperand1()) || isFalseKeyword(itr->astOperand2()))) {
             res = !res;
-        } else if (Token::simpleMatch(itr, "==") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
+        } else if (Token::exactMatch(itr, "==") && (isTrueKeyword(itr->astOperand1()) || isTrueKeyword(itr->astOperand2()))) {
             //Do nothing
-        } else if (Token::simpleMatch(itr, "==") && ((Token::simpleMatch(itr->astOperand1(), "this") && Token::simpleMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
-                                                     || (Token::simpleMatch(itr->astOperand2(), "this") && Token::simpleMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
+        } else if (Token::exactMatch(itr, "==") && ((Token::exactMatch(itr->astOperand1(), "this") && Token::exactMatch(itr->astOperand2(), "&") && Token::simpleMatch(itr->astOperand2()->next(), rhs->str().c_str(), rhs->str().size()))
+                                                    || (Token::exactMatch(itr->astOperand2(), "this") && Token::exactMatch(itr->astOperand1(), "&") && Token::simpleMatch(itr->astOperand1()->next(), rhs->str().c_str(), rhs->str().size())))) {
             //Do nothing
         } else {
             return Bool::BAILOUT;
@@ -1714,9 +1714,9 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Tok
                       [&](const Token *tok2) {
             if (!Token::Match(tok2, "==|!="))
                 return ChildrenToVisit::op1_and_op2;
-            if (Token::simpleMatch(tok2->astOperand1(), "this"))
+            if (Token::exactMatch(tok2->astOperand1(), "this"))
                 tok2 = tok2->astOperand2();
-            else if (Token::simpleMatch(tok2->astOperand2(), "this"))
+            else if (Token::exactMatch(tok2->astOperand2(), "this"))
                 tok2 = tok2->astOperand1();
             else
                 return ChildrenToVisit::op1_and_op2;
@@ -2514,7 +2514,7 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
         }
 
         if (callFunction->isImplicitlyVirtual()) {
-            if (!callFunction->isPure() && Token::simpleMatch(tok->previous(), "::"))
+            if (!callFunction->isPure() && Token::exactMatch(tok->previous(), "::"))
                 continue;
             virtualFunctionCalls.push_back(tok);
             continue;

@@ -337,20 +337,20 @@ void CheckString::overlappingStrcmp()
                     return ChildrenToVisit::op1_and_op2;
                 }
                 if (t->str() == "==") {
-                    if (Token::simpleMatch(t->astOperand1(), "(") && Token::simpleMatch(t->astOperand2(), "0"))
+                    if (Token::exactMatch(t->astOperand1(), "(") && Token::exactMatch(t->astOperand2(), "0"))
                         equals0.push_back(t->astOperand1());
-                    else if (Token::simpleMatch(t->astOperand2(), "(") && Token::simpleMatch(t->astOperand1(), "0"))
+                    else if (Token::exactMatch(t->astOperand2(), "(") && Token::exactMatch(t->astOperand1(), "0"))
                         equals0.push_back(t->astOperand2());
                     return ChildrenToVisit::none;
                 }
                 if (t->str() == "!=") {
-                    if (Token::simpleMatch(t->astOperand1(), "(") && Token::simpleMatch(t->astOperand2(), "0"))
+                    if (Token::exactMatch(t->astOperand1(), "(") && Token::exactMatch(t->astOperand2(), "0"))
                         notEquals0.push_back(t->astOperand1());
-                    else if (Token::simpleMatch(t->astOperand2(), "(") && Token::simpleMatch(t->astOperand1(), "0"))
+                    else if (Token::exactMatch(t->astOperand2(), "(") && Token::exactMatch(t->astOperand1(), "0"))
                         notEquals0.push_back(t->astOperand2());
                     return ChildrenToVisit::none;
                 }
-                if (t->str() == "!" && Token::simpleMatch(t->astOperand1(), "("))
+                if (t->str() == "!" && Token::exactMatch(t->astOperand1(), "("))
                     equals0.push_back(t->astOperand1());
                 else if (t->str() == "(")
                     notEquals0.push_back(t);
@@ -405,7 +405,7 @@ void CheckString::sprintfOverlappingData()
 
             const std::vector<const Token *> args = getArguments(tok);
 
-            const int formatString = Token::simpleMatch(tok, "sprintf") ? 1 : 2;
+            const int formatString = Token::exactMatch(tok, "sprintf") ? 1 : 2;
             for (unsigned int argnr = formatString + 1; argnr < args.size(); ++argnr) {
                 const Token *dest = args[0];
                 while (dest->isCast())

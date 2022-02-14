@@ -178,7 +178,7 @@ void CheckExceptionSafety::checkRethrowCopy()
                         break;
                 } else if (Token::Match(tok, "%varid% .", varid)) {
                     const Token *parent = tok->astParent();
-                    while (Token::simpleMatch(parent->astParent(), "."))
+                    while (Token::exactMatch(parent->astParent(), "."))
                         parent = parent->astParent();
                     if (Token::Match(parent->astParent(), "%assign%|++|--|(") && parent == parent->astParent()->astOperand1())
                         break;

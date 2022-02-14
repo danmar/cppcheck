@@ -221,17 +221,17 @@ void CheckOther::checkSizeofForArrayParameter()
             if (tok->tokAt(tokIdx)->varId() > 0) {
                 const Token *declTok = Token::findmatch(_tokenizer->tokens(), "%varid%", tok->tokAt(tokIdx)->varId());
                 if (declTok) {
-                    if (Token::simpleMatch(declTok->next(), "[")) {
+                    if (Token::exactMatch(declTok->next(), "[")) {
                         declTok = declTok->next()->link();
                         // multidimensional array
-                        while (Token::simpleMatch(declTok->next(), "[")) {
+                        while (Token::exactMatch(declTok->next(), "[")) {
                             declTok = declTok->next()->link();
                         }
-                        if (!(Token::Match(declTok->next(), "= %str%")) && !(Token::simpleMatch(declTok->next(), "= {")) && !(Token::simpleMatch(declTok->next(), ";"))) {
-                            if (Token::simpleMatch(declTok->next(), ",")) {
+                        if (!(Token::Match(declTok->next(), "= %str%")) && !(Token::simpleMatch(declTok->next(), "= {")) && !(Token::exactMatch(declTok->next(), ";"))) {
+                            if (Token::exactMatch(declTok->next(), ",")) {
                                 declTok = declTok->next();
-                                while (!Token::simpleMatch(declTok, ";")) {
-                                    if (Token::simpleMatch(declTok, ")")) {
+                                while (!Token::exactMatch(declTok, ";")) {
+                                    if (Token::exactMatch(declTok, ")")) {
                                         sizeofForArrayParameterError(tok);
                                         break;
                                     }
@@ -242,7 +242,7 @@ void CheckOther::checkSizeofForArrayParameter()
                                 }
                             }
                         }
-                        if (Token::simpleMatch(declTok->next(), ")")) {
+                        if (Token::exactMatch(declTok->next(), ")")) {
                             sizeofForArrayParameterError(tok);
                         }
                     }
@@ -2352,7 +2352,7 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
             if (indentlevel == 0)
                 return;
             used1 = true;
-            if (for_or_while && !Token::simpleMatch(tok->next(), "="))
+            if (for_or_while && !Token::exactMatch(tok->next(), "="))
                 used2 = true;
             if (used1 && used2)
                 return;
@@ -2362,7 +2362,7 @@ void CheckOther::lookupVar(const Token *tok1, const std::string &varname)
             // %unknown% ( %any% ) {
             // If %unknown% is anything except if, we assume
             // that it is a for or while loop or a macro hiding either one
-            if (Token::simpleMatch(tok->next(), "(") &&
+            if (Token::exactMatch(tok->next(), "(") &&
                 Token::simpleMatch(tok->next()->link(), ") {")) {
                 if (tok->str() != "if")
                     for_or_while = true;
@@ -2464,9 +2464,9 @@ void CheckOther::checkStructMemberUsage()
 
         if (Token::Match(tok, "struct|union %type% {")) {
             structname.clear();
-            if (Token::simpleMatch(tok->previous(), "extern"))
+            if (Token::exactMatch(tok->previous(), "extern"))
                 continue;
-            if ((!tok->previous() || Token::simpleMatch(tok->previous(), ";")) && Token::Match(tok->tokAt(2)->link(), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
+            if ((!tok->previous() || Token::exactMatch(tok->previous(), ";")) && Token::Match(tok->tokAt(2)->link(), ("} ; " + tok->strAt(1) + " %var% ;").c_str()))
                 continue;
 
             structname = tok->strAt(1);

@@ -57,11 +57,11 @@ static bool isLessThan(ExprEngine::DataBase *dataBase, ExprEngine::ValuePtr lhs,
 
 static void arrayIndex(const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase)
 {
-    if (!Token::simpleMatch(tok->astParent(), "["))
+    if (!Token::exactMatch(tok->astParent(), "["))
         return;
     int nr = 0;
     const Token *buf = tok->astParent()->astOperand1();
-    while (Token::simpleMatch(buf, "[")) {
+    while (Token::exactMatch(buf, "[")) {
         ++nr;
         buf = buf->astOperand1();
     }
@@ -102,7 +102,7 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
 {
     if (value.type != ExprEngine::ValueType::FunctionCallArgumentValues)
         return;
-    if (!Token::simpleMatch(tok, "(") || !Token::Match(tok->previous(), "%name% ("))
+    if (!Token::exactMatch(tok, "(") || !Token::Match(tok->previous(), "%name% ("))
         return;
 
     const Library::Function *func = dataBase->settings->library.getFunction(tok->previous());
@@ -453,16 +453,16 @@ static void uninit(const Token *tok, const ExprEngine::Value &value, ExprEngine:
     if (Token::Match(tok->astParent(), "[,(]")) {
         const Token *parent = tok->astParent();
         int count = 0;
-        if (Token::simpleMatch(parent, ",")) {
+        if (Token::exactMatch(parent, ",")) {
             if (tok == parent->astOperand2())
                 count = 1;
             parent = parent->astParent();
-            while (Token::simpleMatch(parent, ",")) {
+            while (Token::exactMatch(parent, ",")) {
                 count++;
                 parent = parent->astParent();
             }
         }
-        if (Token::simpleMatch(parent, "(") && parent->astOperand1() != tok) {
+        if (Token::exactMatch(parent, "(") && parent->astOperand1() != tok) {
             if (parent->astOperand1()->function()) {
                 const Variable *argvar = parent->astOperand1()->function()->getArgumentVar(count);
                 if (argvar && argvar->isReference() && !argvar->isConst())
@@ -546,7 +546,7 @@ static void checkFunctionCall(const Token *tok, const ExprEngine::Value &value, 
     if (!Token::Match(tok->astParent(), "[(,]"))
         return;
     const Token *parent = tok->astParent();
-    while (Token::simpleMatch(parent, ","))
+    while (Token::exactMatch(parent, ","))
         parent = parent->astParent();
     if (!parent || parent->str() != "(")
         return;
@@ -650,10 +650,10 @@ static void checkFunctionCall(const Token *tok, const ExprEngine::Value &value, 
 
 static void checkAssignment(const Token *tok, const ExprEngine::Value &value, ExprEngine::DataBase *dataBase)
 {
-    if (!Token::simpleMatch(tok->astParent(), "="))
+    if (!Token::exactMatch(tok->astParent(), "="))
         return;
     const Token *lhs = tok->astParent()->astOperand1();
-    while (Token::simpleMatch(lhs, "."))
+    while (Token::exactMatch(lhs, "."))
         lhs = lhs->astOperand2();
     if (!lhs || !lhs->variable() || !lhs->variable()->nameToken())
         return;

@@ -100,7 +100,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
             tok = nextAfterAstRightmostLeaf(assignTok);
             if (!tok)
                 return Progress::Break;
-        } else if (Token::simpleMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
+        } else if (Token::exactMatch(tok, "}") && Token::simpleMatch(tok->link()->previous(), ") {") && Token::Match(tok->link()->linkAt(-1)->previous(), "if|while|for (")) {
             const Token * blockStart = tok->link()->linkAt(-1)->previous();
             const Token * condTok = getCondTok(blockStart);
             if (!condTok)
@@ -111,7 +111,7 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
                 const Token* endCond = blockStart->linkAt(1);
                 bool traverseLoop = true;
                 // Only traverse simple for loops
-                if (Token::simpleMatch(blockStart, "for") && !Token::Match(endCond->tokAt(-3), "; ++|--|%var% %var%|++|-- ) {"))
+                if (Token::exactMatch(blockStart, "for") && !Token::Match(endCond->tokAt(-3), "; ++|--|%var% %var%|++|-- ) {"))
                     traverseLoop = false;
                 // Traverse loop a second time
                 if (traverseLoop) {

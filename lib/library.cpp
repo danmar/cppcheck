@@ -1033,7 +1033,7 @@ std::string Library::getFunctionName(const Token *ftok) const
     }
 
     // Lookup function name without using AST..
-    if (Token::simpleMatch(ftok->previous(), "."))
+    if (Token::exactMatch(ftok->previous(), "."))
         return "";
     if (!Token::Match(ftok->tokAt(-2), "%name% ::"))
         return ftok->str();
@@ -1141,8 +1141,8 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
 
     if (Token::Match(end->tokAt(-2), "!!{ ; }")) {
         const Token *lastTop = end->tokAt(-2)->astTop();
-        if (Token::simpleMatch(lastTop, "<<") &&
-            Token::simpleMatch(lastTop->astOperand1(), "(") &&
+        if (Token::exactMatch(lastTop, "<<") &&
+            Token::exactMatch(lastTop->astOperand1(), "(") &&
             Token::Match(lastTop->astOperand1()->previous(), "%name% ("))
             return isnoreturn(lastTop->astOperand1()->previous());
     }

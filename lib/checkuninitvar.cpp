@@ -450,7 +450,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                 const Token *rhs = condition->astOperand2();
                 const Token *vartok = (lhs && lhs->hasKnownIntValue()) ? rhs : lhs;
                 const Token *numtok = (lhs == vartok) ? rhs : lhs;
-                while (Token::simpleMatch(vartok, "."))
+                while (Token::exactMatch(vartok, "."))
                     vartok = vartok->astOperand2();
                 if (vartok && vartok->varId() && numtok && numtok->hasKnownIntValue()) {
                     const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(vartok->varId());
@@ -727,7 +727,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
         // variable is seen..
         if (tok->varId() == var.declarationId()) {
             // calling function that returns uninit data through pointer..
-            if (var.isPointer() && Token::simpleMatch(tok->next(), "=")) {
+            if (var.isPointer() && Token::exactMatch(tok->next(), "=")) {
                 const Token *rhs = tok->next()->astOperand2();
                 while (rhs && rhs->isCast())
                     rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
@@ -797,7 +797,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                             }
                         }
                     }
-                    if (Token::simpleMatch(parent->astParent(), "=") && astIsLHS(parent)) {
+                    if (Token::exactMatch(parent->astParent(), "=") && astIsLHS(parent)) {
                         const Token *eq = parent->astParent();
                         if (const Token *errorToken = checkExpr(eq->astOperand2(), var, *alloc, number_of_if==0)) {
                             if (!suppressErrors)
@@ -902,7 +902,7 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
         }
 
         // for loop; skip third expression until loop body has been analyzed..
-        if (tok->str() == ";" && Token::simpleMatch(tok->astParent(), ";") && Token::simpleMatch(tok->astParent()->astParent(), "(")) {
+        if (tok->str() == ";" && Token::exactMatch(tok->astParent(), ";") && Token::exactMatch(tok->astParent()->astParent(), "(")) {
             const Token *top = tok->astParent()->astParent();
             if (!Token::simpleMatch(top->previous(), "for (") || !Token::simpleMatch(top->link(), ") {"))
                 continue;
@@ -916,8 +916,8 @@ const Token* CheckUninitVar::checkLoopBodyRecursive(const Token *start, const Va
         // for loop; skip loop body if there is third expression
         if (Token::simpleMatch(tok, ") {") &&
             Token::simpleMatch(tok->link()->previous(), "for (") &&
-            Token::simpleMatch(tok->link()->astOperand2(), ";") &&
-            Token::simpleMatch(tok->link()->astOperand2()->astOperand2(), ";")) {
+            Token::exactMatch(tok->link()->astOperand2(), ";") &&
+            Token::exactMatch(tok->link()->astOperand2()->astOperand2(), ";")) {
             tok = tok->linkAt(1);
         }
 
@@ -1096,7 +1096,7 @@ static bool astIsRhs(const Token *tok)
 
 static bool isVoidCast(const Token *tok)
 {
-    return Token::simpleMatch(tok, "(") && tok->isCast() && tok->valueType() && tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
+    return Token::exactMatch(tok, "(") && tok->isCast() && tok->valueType() && tok->valueType()->type == ValueType::Type::VOID && tok->valueType()->pointer == 0;
 }
 
 const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, const Library& library, bool pointer, Alloc alloc, int indirect)
@@ -1118,7 +1118,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
     if (!pointer) {
         if (Token::Match(vartok, "%name% [.(]") && vartok->variable() && !vartok->variable()->isPointer())
             return nullptr;
-        while (Token::simpleMatch(valueExpr->astParent(), ".") && astIsLhs(valueExpr) && valueExpr->astParent()->valueType() && valueExpr->astParent()->valueType()->pointer == 0)
+        while (Token::exactMatch(valueExpr->astParent(), ".") && astIsLhs(valueExpr) && valueExpr->astParent()->valueType() && valueExpr->astParent()->valueType()->pointer == 0)
             valueExpr = valueExpr->astParent();
     }
     const Token *derefValue = nullptr; // dereferenced value expression
@@ -1128,7 +1128,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
         derefValue = valueExpr;
         while (Token::Match(derefValue->astParent(), "+|-|*|[|.") ||
                (derefValue->astParent() && derefValue->astParent()->isCast()) ||
-               (deref < arrayDim && Token::simpleMatch(derefValue->astParent(), "&") && derefValue->astParent()->isBinaryOp())) {
+               (deref < arrayDim && Token::exactMatch(derefValue->astParent(), "&") && derefValue->astParent()->isBinaryOp())) {
             const Token * const derefValueParent = derefValue->astParent();
             if (derefValueParent->str() == "*") {
                 if (derefValueParent->isUnaryOp("*"))
@@ -1172,15 +1172,15 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
         return nullptr;
 
     // BAILOUT for binary & without parent
-    if (Token::simpleMatch(valueExpr->astParent(), "&") && astIsRhs(valueExpr) && Token::Match(valueExpr->astParent()->tokAt(-3), "( %name% ) &"))
+    if (Token::exactMatch(valueExpr->astParent(), "&") && astIsRhs(valueExpr) && Token::Match(valueExpr->astParent()->tokAt(-3), "( %name% ) &"))
         return nullptr;
 
     // safe operations
     if (isVoidCast(valueExpr->astParent()))
         return nullptr;
-    if (Token::simpleMatch(valueExpr->astParent(), ".")) {
+    if (Token::exactMatch(valueExpr->astParent(), ".")) {
         const Token *parent = valueExpr->astParent();
-        while (Token::simpleMatch(parent, "."))
+        while (Token::exactMatch(parent, "."))
             parent = parent->astParent();
         if (isVoidCast(parent))
             return nullptr;
@@ -1190,18 +1190,18 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
             return nullptr;
         if (Token::Match(valueExpr->astParent(), "%or%|&") && valueExpr->astParent()->isBinaryOp())
             return nullptr;
-        if (alloc == CTOR_CALL && derefValue && Token::simpleMatch(derefValue->astParent(), "(") && astIsLhs(derefValue))
+        if (alloc == CTOR_CALL && derefValue && Token::exactMatch(derefValue->astParent(), "(") && astIsLhs(derefValue))
             return nullptr;
-        if (Token::simpleMatch(valueExpr->astParent(), "return"))
+        if (Token::exactMatch(valueExpr->astParent(), "return"))
             return nullptr;
     }
 
     // Passing variable to function..
     if (Token::Match(valueExpr->astParent(), "[(,]") && (valueExpr->astParent()->str() == "," || astIsRhs(valueExpr))) {
         const Token *parent = valueExpr->astParent();
-        while (Token::simpleMatch(parent, ","))
+        while (Token::exactMatch(parent, ","))
             parent = parent->astParent();
-        if (Token::simpleMatch(parent, "{"))
+        if (Token::exactMatch(parent, "{"))
             return valueExpr;
         const int use = isFunctionParUsage(valueExpr, library, pointer, alloc, indirect);
         return (use>0) ? valueExpr : nullptr;
@@ -1225,10 +1225,10 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
     {
         const Token *tok = derefValue ? derefValue : valueExpr;
         if (alloc == NO_ALLOC) {
-            while (tok->valueType() && tok->valueType()->pointer == 0 && Token::simpleMatch(tok->astParent(), "."))
+            while (tok->valueType() && tok->valueType()->pointer == 0 && Token::exactMatch(tok->astParent(), "."))
                 tok = tok->astParent();
         }
-        if (Token::simpleMatch(tok->astParent(), "=")) {
+        if (Token::exactMatch(tok->astParent(), "=")) {
             if (astIsLhs(tok))
                 return nullptr;
             if (alloc != NO_ALLOC && astIsRhs(valueExpr))
@@ -1246,7 +1246,7 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
     }
 
     // range for loop
-    if (Token::simpleMatch(valueExpr->astParent(), ":") &&
+    if (Token::exactMatch(valueExpr->astParent(), ":") &&
         valueExpr->astParent()->astParent() &&
         Token::simpleMatch(valueExpr->astParent()->astParent()->previous(), "for (")) {
         if (astIsLhs(valueExpr))
@@ -1275,13 +1275,13 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
         return nullptr;
 
     // Assignment with overloaded &
-    if (cpp && Token::simpleMatch(valueExpr->astParent(), "&") && astIsRhs(valueExpr)) {
+    if (cpp && Token::exactMatch(valueExpr->astParent(), "&") && astIsRhs(valueExpr)) {
         const Token *parent = valueExpr->astParent();
-        while (Token::simpleMatch(parent, "&") && parent->isBinaryOp())
+        while (Token::exactMatch(parent, "&") && parent->isBinaryOp())
             parent = parent->astParent();
         if (!parent) {
             const Token *lhs = valueExpr->astParent();
-            while (Token::simpleMatch(lhs, "&") && lhs->isBinaryOp())
+            while (Token::exactMatch(lhs, "&") && lhs->isBinaryOp())
                 lhs = lhs->astOperand1();
             if (lhs && lhs->isName() && (!lhs->valueType() || lhs->valueType()->type <= ValueType::Type::CONTAINER))
                 return nullptr; // <- possible assignment
@@ -1469,8 +1469,8 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
 
     // = *(&var);
     else if (!isPointer &&
-             Token::simpleMatch(tok->astParent(),"&") &&
-             Token::simpleMatch(tok->astParent()->astParent(),"*") &&
+             Token::exactMatch(tok->astParent(),"&") &&
+             Token::exactMatch(tok->astParent()->astParent(),"*") &&
              Token::Match(tok->astParent()->astParent()->astParent(), "= * (| &") &&
              tok->astParent()->astParent()->astParent()->astOperand2() == tok->astParent()->astParent())
         return true;
@@ -1503,7 +1503,7 @@ void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname
 void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
 {
     const Token* ltok = tok;
-    if (tok && Token::simpleMatch(tok->astParent(), ".") && astIsRHS(tok))
+    if (tok && Token::exactMatch(tok->astParent(), ".") && astIsRHS(tok))
         ltok = tok->astParent();
     const std::string& varname = ltok ? ltok->expressionString() : "x";
     ErrorPath errorPath = v.errorPath;
@@ -1574,7 +1574,7 @@ static bool isLeafDot(const Token* tok)
     if (!tok)
         return false;
     const Token * parent = tok->astParent();
-    if (!Token::simpleMatch(parent, "."))
+    if (!Token::exactMatch(parent, "."))
         return false;
     if (parent->astOperand2() == tok)
         return true;
@@ -1601,7 +1601,7 @@ void CheckUninitVar::valueFlowUninit()
                 if (Token::Match(tok, "%name% ("))
                     continue;
                 const Token* parent = tok->astParent();
-                while (Token::simpleMatch(parent, "."))
+                while (Token::exactMatch(parent, "."))
                     parent = parent->astParent();
                 if (parent && parent->isUnaryOp("&"))
                     continue;

@@ -1013,7 +1013,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
         }
 
         // assignment
-        else if ((Token::Match(tok, "%name% [") && Token::simpleMatch(skipBracketsAndMembers(tok->next()), "=")) ||
+        else if ((Token::Match(tok, "%name% [") && Token::exactMatch(skipBracketsAndMembers(tok->next()), "=")) ||
                  (Token::simpleMatch(tok, "* (") && Token::simpleMatch(tok->next()->link(), ") ="))) {
             const Token *eq = tok;
             while (eq && !eq->isAssignmentOp())
@@ -1173,9 +1173,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const Token *varDecl = nullptr;
             if (tok->variable() && tok->variable()->nameToken() == tok) {
                 const Token * eq = tok->next();
-                while (Token::simpleMatch(eq, "["))
+                while (Token::exactMatch(eq, "["))
                     eq = eq->link()->next();
-                if (Token::simpleMatch(eq, "=")) {
+                if (Token::exactMatch(eq, "=")) {
                     varDecl = tok;
                     tok = eq;
                 }
@@ -1625,7 +1625,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         return false;
     }
 
-    for (const Token* argsToken = functionUsageToken->next(); !Token::simpleMatch(argsToken, ")"); argsToken = argsToken->next()) {
+    for (const Token* argsToken = functionUsageToken->next(); !Token::exactMatch(argsToken, ")"); argsToken = argsToken->next()) {
         const Variable* argVar = argsToken->variable();
         if (argVar && argVar->isGlobal()) {
             return false; // TODO: analyze global variable usage
@@ -1649,7 +1649,7 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
                     return false;
                 }
                 // check if pointer to global variable assigned to another variable (another_var = &global_var)
-                if (Token::simpleMatch(bodyToken->tokAt(-1), "&") && Token::simpleMatch(bodyToken->tokAt(-2), "=")) {
+                if (Token::exactMatch(bodyToken->tokAt(-1), "&") && Token::exactMatch(bodyToken->tokAt(-2), "=")) {
                     const Token* assigned_var_token = bodyToken->tokAt(-3);
                     if (assigned_var_token && assigned_var_token->variable()) {
                         pointersToGlobals.insert(assigned_var_token->variable());
@@ -1671,10 +1671,10 @@ bool CheckUnusedVar::isFunctionWithoutSideEffects(const Function& func, const To
         }
 
         // check returned value
-        if (Token::simpleMatch(bodyToken, "return")) {
+        if (Token::exactMatch(bodyToken, "return")) {
             const Token* returnValueToken = bodyToken->next();
             // TODO: handle complex return expressions
-            if (!Token::simpleMatch(returnValueToken->next(), ";")) {
+            if (!Token::exactMatch(returnValueToken->next(), ";")) {
                 sideEffectReturnFound = true;
                 continue;
             }

@@ -125,7 +125,7 @@ struct ForwardTraversal {
     Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
         if (Token::Match(tok, "asm|goto|setjmp|longjmp"))
             return Break(Analyzer::Terminate::Bail);
-        else if (Token::simpleMatch(tok, "continue")) {
+        else if (Token::exactMatch(tok, "continue")) {
             if (loopEnds.empty())
                 return Break(Analyzer::Terminate::Escape);
             // If we are in a loop then jump to the end
@@ -318,7 +318,7 @@ struct ForwardTraversal {
 
     bool hasInnerReturnScope(const Token* start, const Token* end) const {
         for (const Token* tok=start; tok != end; tok = tok->previous()) {
-            if (Token::simpleMatch(tok, "}")) {
+            if (Token::exactMatch(tok, "}")) {
                 const Token* ftok = nullptr;
                 bool r = isReturnScope(tok, &settings->library, &ftok);
                 if (r)
@@ -387,7 +387,7 @@ struct ForwardTraversal {
     bool reentersLoop(Token* endBlock, const Token* condTok, const Token* stepTok) {
         if (!condTok)
             return true;
-        if (Token::simpleMatch(condTok, ":"))
+        if (Token::exactMatch(condTok, ":"))
             return true;
         bool changed = false;
         if (stepTok) {
@@ -434,7 +434,7 @@ struct ForwardTraversal {
         const bool isDoWhile = precedes(endBlock, condTok);
         bool checkThen = true;
         bool checkElse = false;
-        if (condTok && !Token::simpleMatch(condTok, ":"))
+        if (condTok && !Token::exactMatch(condTok, ":"))
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->previous() : nullptr);
         // exiting a do while(false)
         if (checkElse && exit) {
@@ -472,7 +472,7 @@ struct ForwardTraversal {
                 return Break(Analyzer::Terminate::Bail);
         }
 
-        if (condTok && !Token::simpleMatch(condTok, ":")) {
+        if (condTok && !Token::exactMatch(condTok, ":")) {
             if (!isDoWhile || (!bodyAnalysis.isModified() && !bodyAnalysis.isIdempotent()))
                 if (updateRecursive(condTok) == Progress::Break)
                     return Break();
@@ -637,7 +637,7 @@ struct ForwardTraversal {
                     return Break();
                 if (Token::Match(tok, "for|while (")) {
                     // For-range loop
-                    if (Token::simpleMatch(condTok, ":")) {
+                    if (Token::exactMatch(condTok, ":")) {
                         Token* conTok = condTok->astOperand2();
                         if (conTok && updateRecursive(conTok) == Progress::Break)
                             return Break();
@@ -800,7 +800,7 @@ struct ForwardTraversal {
 
     static bool isFunctionCall(const Token* tok)
     {
-        if (!Token::simpleMatch(tok, "("))
+        if (!Token::exactMatch(tok, "("))
             return false;
         if (tok->isCast())
             return false;
@@ -841,10 +841,10 @@ struct ForwardTraversal {
     }
 
     static Token* getStepTokFromEnd(Token* tok) {
-        if (!Token::simpleMatch(tok, "}"))
+        if (!Token::exactMatch(tok, "}"))
             return nullptr;
         Token* end = tok->link()->previous();
-        if (!Token::simpleMatch(end, ")"))
+        if (!Token::exactMatch(end, ")"))
             return nullptr;
         return getStepTok(end->link());
     }

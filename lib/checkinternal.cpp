@@ -28,6 +28,10 @@
 #include <set>
 #include <cstring>
 
+// TODO: suggest Token::exactMatch() for patterns like 'tok1 && tok1->str() == "this"'
+// TODO: suggest Token::exactMatch() for Token::simpleMatch() when pattern contains no whitespaces
+// TODO: detect Token::exactMatch() with whitespaces in pattern
+
 // Register this check class (by creating a static instance of it).
 // Disabled in release builds
 namespace {
@@ -88,26 +92,26 @@ void CheckInternal::checkTokenMatchPatterns()
 void CheckInternal::checkRedundantTokCheck()
 {
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "&& Token :: simpleMatch|Match|findsimplematch|findmatch (")) {
+        if (Token::Match(tok, "&& Token :: exactMatch|simpleMatch|Match|findsimplematch|findmatch (")) {
             // in code like
             // if (tok->previous() && Token::match(tok->previous(), "bla")) {}
             // the first tok->previous() check is redundant
             const Token *astOp1 = tok->astOperand1();
             const Token *astOp2 = getArguments(tok->tokAt(3))[0];
-            if (Token::simpleMatch(astOp1, "&&")) {
+            if (Token::exactMatch(astOp1, "&&")) {
                 astOp1 = astOp1->astOperand2();
             }
             if (astOp1->expressionString() == astOp2->expressionString()) {
                 checkRedundantTokCheckError(astOp2);
             }
             // if (!tok || !Token::match(tok, "foo"))
-        } else if (Token::Match(tok, "%oror% ! Token :: simpleMatch|Match|findsimplematch|findmatch (")) {
+        } else if (Token::Match(tok, "%oror% ! Token :: exactMatch|simpleMatch|Match|findsimplematch|findmatch (")) {
             const Token *negTok = tok->next()->astParent()->astOperand1();
-            if (Token::simpleMatch(negTok, "||")) {
+            if (Token::exactMatch(negTok, "||")) {
                 negTok = negTok->astOperand2();
             }
             // the first tok condition is negated
-            if (Token::simpleMatch(negTok, "!")) {
+            if (Token::exactMatch(negTok, "!")) {
                 const Token *astOp1 = negTok->astOperand1();
                 const Token *astOp2 = getArguments(tok->tokAt(4))[0];
 
@@ -322,7 +326,7 @@ void CheckInternal::checkExtraWhitespace()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "Token :: simpleMatch|findsimplematch|Match|findmatch ("))
+            if (!Token::Match(tok, "Token :: exactMatch|simpleMatch|findsimplematch|Match|findmatch ("))
                 continue;
 
             const std::string& funcname = tok->strAt(2);
