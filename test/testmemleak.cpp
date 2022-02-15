@@ -521,6 +521,7 @@ private:
         TEST_CASE(class24); // ticket #3806 - false positive in copy constructor
         TEST_CASE(class25); // ticket #4367 - false positive implementation for destructor is not seen
         TEST_CASE(class26); // ticket #10789
+        TEST_CASE(class27); // ticket #8126
 
         TEST_CASE(staticvar);
 
@@ -1459,6 +1460,17 @@ private:
               "};\n"
               "S::~S() = default;\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Class 'S' is unsafe, 'S::p' can leak by wrong usage.\n", errout.str());
+    }
+
+    void class27() { // ticket #8126 - array of pointers
+        check("struct S {\n"
+              "    S() {\n"
+              "    for (int i = 0; i < 1; i++)\n"
+              "        a = new char[3];\n"
+              "    }\n"
+              "    char* a;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Class 'S' is unsafe, 'S::a' can leak by wrong usage.\n", errout.str());
     }
 
     void staticvar() {
