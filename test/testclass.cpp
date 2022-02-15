@@ -971,8 +971,8 @@ private:
     void copyConstructor6() {
         checkCopyConstructor("struct S {\n"
                              "    S() {\n"
-                             "    for (int i = 0; i < 5; i++)\n"
-                             "      a[i] = new char[3];\n"
+                             "        for (int i = 0; i < 5; i++)\n"
+                             "            a[i] = new char[3];\n"
                              "    }\n"
                              "    char* a[5];\n"
                              "};\n");

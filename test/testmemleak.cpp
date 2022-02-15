@@ -1465,8 +1465,8 @@ private:
     void class27() { // ticket #8126 - array of pointers
         check("struct S {\n"
               "    S() {\n"
-              "    for (int i = 0; i < 5; i++)\n"
-              "        a[i] = new char[3];\n"
+              "        for (int i = 0; i < 5; i++)\n"
+              "            a[i] = new char[3];\n"
               "    }\n"
               "    char* a[5];\n"
               "};\n");
