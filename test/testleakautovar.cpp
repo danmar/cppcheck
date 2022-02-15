@@ -160,6 +160,7 @@ private:
         TEST_CASE(ifelse20); // #10182
         TEST_CASE(ifelse21);
         TEST_CASE(ifelse22); // #10187
+        TEST_CASE(ifelse23); // #5473
 
         // switch
         TEST_CASE(switch1);
@@ -1707,6 +1708,13 @@ private:
               "    return fd;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse23() { // #5473
+        check("void f() {\n"
+              "    if (FILE* fp = fopen(\"x\", \"r\")) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:2]: (error) Resource leak: fp\n", errout.str());
     }
 
     void switch1() {
