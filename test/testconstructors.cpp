@@ -1726,7 +1726,7 @@ private:
               "    double d;\n"
               "};", s);
         ASSERT_EQUALS("", errout.str());
-        
+
         check("struct S {\n" // #8485
               "    explicit S(const T& rhs) { set(*rhs); }\n"
               "    void set(const S& v) {\n"
