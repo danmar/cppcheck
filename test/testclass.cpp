@@ -84,6 +84,7 @@ private:
         TEST_CASE(copyConstructor3); // defaulted/deleted
         TEST_CASE(copyConstructor4); // base class with private constructor
         TEST_CASE(copyConstructor5); // multiple inheritance
+        TEST_CASE(copyConstructor6); // array of pointers
         TEST_CASE(noOperatorEq); // class with memory management should have operator eq
         TEST_CASE(noDestructor); // class with memory management should have destructor
 
@@ -965,6 +966,21 @@ private:
                              "    int* m_ptr;\n"
                              "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void copyConstructor6() {
+        checkCopyConstructor("struct S {\n"
+                             "    S() {\n"
+                             "        for (int i = 0; i < 5; i++)\n"
+                             "            a[i] = new char[3];\n"
+                             "    }\n"
+                             "    char* a[5];\n"
+                             "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Struct 'S' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n"
+                           "[test.cpp:4]: (warning) Struct 'S' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n"
+                           "[test.cpp:4]: (warning) Struct 'S' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n",
+                           "",
+                           errout.str());
     }
 
     void noOperatorEq() {
