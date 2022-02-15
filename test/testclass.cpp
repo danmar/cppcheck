@@ -976,11 +976,11 @@ private:
                              "    }\n"
                              "    char* a[5];\n"
                              "};\n");
-       TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Struct 'S' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n"
-                          "[test.cpp:4]: (warning) Struct 'S' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n"
-                          "[test.cpp:4]: (warning) Struct 'S' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n",
-                          "",
-                          errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Struct 'S' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n"
+                           "[test.cpp:4]: (warning) Struct 'S' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n"
+                           "[test.cpp:4]: (warning) Struct 'S' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n",
+                           "",
+                           errout.str());
     }
 
     void noOperatorEq() {
