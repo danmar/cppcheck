@@ -308,7 +308,7 @@ def __run_command(cmd, print_cmd=True):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = True):
+def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack=True):
     print('Analyze..')
     os.chdir(work_path)
     libs = ''
