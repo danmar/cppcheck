@@ -1263,7 +1263,7 @@ private:
               "  void foo() override;\n"
               "};");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Base::x' is not initialized in the constructor. Maybe it should be initialized directly in the class Base?\n", errout.str());
-        
+
         check("struct A {\n" // #3462
               "    char ca;\n"
               "    A& operator=(const A& a) {\n"
@@ -1279,7 +1279,7 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'B::cb' is not assigned a value in 'B::operator='.\n", errout.str());
-        
+
         check("struct A {\n"
               "    char ca;\n"
               "    A& operator=(const A& a) {\n"
