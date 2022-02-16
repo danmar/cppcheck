@@ -40,6 +40,7 @@ endif()
 
 add_dependencies(cppcheck copy_cfg)
 add_dependencies(cppcheck copy_addons)
+add_dependencies(cppcheck run-dmake)
 
 install(TARGETS cppcheck
     RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}

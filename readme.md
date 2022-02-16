@@ -204,7 +204,17 @@ g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/sim
 ### MinGW
 
 ```shell
-mingw32-make LDFLAGS=-lshlwapi
+mingw32-make
+```
+
+If you encounter the following error with `MATCHCOMPILER=yes` you need to specify your Python interpreter via `PYTHON_INTERPRETER`.
+
+```
+process_begin: CreateProcess(NULL, which python3, ...) failed.
+makefile:24: pipe: No error
+process_begin: CreateProcess(NULL, which python, ...) failed.
+makefile:27: pipe: No error
+makefile:30: *** Did not find a Python interpreter.  Stop.
 ```
 
 ### Other Compiler/IDE
