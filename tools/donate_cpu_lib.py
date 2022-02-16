@@ -89,9 +89,11 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
         subprocess.check_call(['git', 'checkout', '-f', version], cwd=cppcheck_path)
 
         # It is possible to pull branches, not tags
-        if version == 'main':
-            print('Pulling {}'.format(version))
-            subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
+        if version != 'main':
+            return
+
+        print('Pulling {}'.format(version))
+        subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
     else:
         if version != 'main':
             print('Fetching {}'.format(version))
