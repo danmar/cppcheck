@@ -409,28 +409,35 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 
         const std::string directory = dirpath;
 
-        std::ostringstream comm;
-        if (obj.find("arguments") != obj.end()) {
+        std::string command;
+        if (obj.count("arguments")) {
             if (obj["arguments"].is<picojson::array>()) {
                 for (const picojson::value& arg : obj["arguments"].get<picojson::array>()) {
                     if (arg.is<std::string>()) {
-                        comm << arg.get<std::string>() << " ";
+                        command += arg.get<std::string>() + " ";
                     }
                 }
             } else {
                 printError("'arguments' field in compilation database entry is not a JSON array");
                 return false;
             }
-        } else if (obj.find("command") != obj.end()) {
+        } else if (obj.count("command")) {
             if (obj["command"].is<std::string>()) {
-                comm << obj["command"].get<std::string>();
+                command = obj["command"].get<std::string>();
+            } else {
+                printError("'command' field in compilation database entry is not a string");
+                return false;
             }
         } else {
             printError("no 'arguments' or 'command' field found in compilation database entry");
             return false;
         }
 
-        const std::string command = comm.str();
+        if (!obj.count("file") || !obj["file"].is<std::string>()) {
+            printError("skip compilation database entry because it does not have a proper 'file' field");
+            continue;
+        }
+
         const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
         // Accept file?
