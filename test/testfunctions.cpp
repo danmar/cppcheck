@@ -1556,6 +1556,22 @@ private:
 
         check("auto f() -> void {}"); // #10342
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S1 {\n" // #7433
+              "    S1& operator=(const S1& r) { if (this != &r) { i = r.i; } }\n"
+              "    int i;\n"
+              "};\n"
+              "struct S2 {\n"
+              "    S2& operator=(const S2& s) { if (this != &s) { j = s.j; } return *this; }\n"
+              "    int j;\n"
+              "};\n"
+              "struct S3 {\n"
+              "    S3& operator=(const S3& t) { if (this != &t) { k = t.k; return *this; } }\n"
+              "    int k;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Found a exit path from function with non-void return type that has missing return statement\n"
+                      "[test.cpp:10]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+                      errout.str());
     }
 
     // NRVO check
