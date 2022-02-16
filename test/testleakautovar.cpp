@@ -1719,33 +1719,33 @@ private:
     }
 
     void ifelse24() { // #1733
-      Settings s;
-      LOAD_LIB_2(s.library, "std.cfg");
-      LOAD_LIB_2(s.library, "posix.cfg");
+        Settings s;
+        LOAD_LIB_2(s.library, "std.cfg");
+        LOAD_LIB_2(s.library, "posix.cfg");
 
-      check("void f() {\n"
-            "    char* temp = strdup(\"temp.txt\");\n"
-            "    FILE* fp;\n"
-            "    if (NULL == x || NULL == (fp = fopen(temp, \"rt\")))\n"
-            "        return;\n"
-            "}\n", s);
-      ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: temp\n"
-                    "[test.cpp:6]: (error) Memory leak: temp\n"
-                    "[test.cpp:6]: (error) Resource leak: fp\n",
-                    errout.str());
+        check("void f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp;\n"
+              "    if (NULL == x || NULL == (fp = fopen(temp, \"rt\")))\n"
+              "        return;\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: temp\n"
+                      "[test.cpp:6]: (error) Memory leak: temp\n"
+                      "[test.cpp:6]: (error) Resource leak: fp\n",
+                      errout.str());
 
-      check("FILE* f() {\n"
-            "    char* temp = strdup(\"temp.txt\");\n"
-            "    FILE* fp = fopen(temp, \"rt\");\n"
-            "    return fp;\n"
-            "}\n", s);
-      ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: temp\n", errout.str());
+        check("FILE* f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp = fopen(temp, \"rt\");\n"
+              "    return fp;\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: temp\n", errout.str());
 
-      check("FILE* f() {\n"
-            "    char* temp = strdup(\"temp.txt\");\n"
-            "    return fopen(temp, \"rt\");\n"
-            "}\n", s);
-      TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: temp\n", "", errout.str());
+        check("FILE* f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    return fopen(temp, \"rt\");\n"
+              "}\n", s);
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: temp\n", "", errout.str());
     }
 
     void switch1() {
