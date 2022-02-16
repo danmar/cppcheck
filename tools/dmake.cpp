@@ -254,7 +254,9 @@ int main(int argc, char **argv)
          << "endif\n";
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
          << "    # Find available Python interpreter\n"
-         << "    PYTHON_INTERPRETER := $(shell which python3)\n"
+         << "    ifndef PYTHON_INTERPRETER\n"
+         << "        PYTHON_INTERPRETER := $(shell which python3)\n"
+         << "    endif\n"
          << "    ifndef PYTHON_INTERPRETER\n"
          << "        PYTHON_INTERPRETER := $(shell which python)\n"
          << "    endif\n"
@@ -287,11 +289,15 @@ int main(int argc, char **argv)
          << "ifndef COMSPEC\n"
          << "    ifdef ComSpec\n"
          << "        #### ComSpec is defined on some WIN32's.\n"
-         << "        COMSPEC=$(ComSpec)\n"
+         << "        WINNT=1\n"
+         << "\n"
+         << "        ifneq (,$(findstring /cygdrive/,$(PATH)))\n"
+         << "            CYGWIN=1\n"
+         << "        endif # CYGWIN\n"
          << "    endif # ComSpec\n"
          << "endif # COMSPEC\n"
          << "\n"
-         << "ifdef COMSPEC\n"
+         << "ifdef WINNT\n"
          << "    #### Maybe Windows\n"
          << "    ifndef CPPCHK_GLIBCXX_DEBUG\n"
          << "        CPPCHK_GLIBCXX_DEBUG=\n"
@@ -302,7 +308,7 @@ int main(int argc, char **argv)
          << "    else\n"
          << "        RDYNAMIC=-lshlwapi\n"
          << "    endif\n"
-         << "else # !COMSPEC\n"
+         << "else # !WINNT\n"
          << "    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')\n"
          << "\n"
          << "    ifeq ($(uname_S),Linux)\n"
@@ -317,19 +323,18 @@ int main(int argc, char **argv)
          << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
          << "    endif # GNU/kFreeBSD\n"
          << "\n"
-         << "endif # COMSPEC\n"
+         << "endif # WINNT\n"
          << "\n";
 
     // tinymxl2 requires __STRICT_ANSI__ to be undefined to compile under CYGWIN.
-    fout << "# Set the UNDEF_STRICT_ANSI flag to address compile time warnings\n"
-         << "# with tinyxml2 and Cygwin.\n"
-         << "ifdef COMSPEC\n"
-         << "    uname_S := $(shell uname -s)\n"
-         << "\n"
-         << "    ifneq (,$(findstring CYGWIN,$(uname_S)))\n"
-         << "        UNDEF_STRICT_ANSI=-U__STRICT_ANSI__\n"
-         << "    endif # CYGWIN\n"
-         << "endif # COMSPEC\n"
+    fout << "ifdef CYGWIN\n"
+         << "    # Set the UNDEF_STRICT_ANSI flag to address compile time warnings\n"
+         << "    # with tinyxml2 and Cygwin.\n"
+         << "    UNDEF_STRICT_ANSI=-U__STRICT_ANSI__\n"
+         << "    \n"
+         << "    # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
+         << "    CXXFLAGS+=-Wl,--stack,8388608\n"
+         << "endif # CYGWIN\n"
          << "\n";
 
     // skip "-D_GLIBCXX_DEBUG" if clang, since it breaks the build
@@ -373,16 +378,6 @@ int main(int argc, char **argv)
                                 "$(CPPCHK_GLIBCXX_DEBUG) "
                                 "-g");
     }
-
-    fout << "# Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
-         << "ifdef COMSPEC\n"
-         << "    uname_S := $(shell uname -s)\n"
-         << "\n"
-         << "    ifneq (,$(findstring CYGWIN,$(uname_S)))\n"
-         << "        CXXFLAGS+=-Wl,--stack,8388608\n"
-         << "    endif # CYGWIN\n"
-         << "endif # COMSPEC\n"
-         << "\n";
 
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
          << "    override CXXFLAGS += -std=c++0x\n"

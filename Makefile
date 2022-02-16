@@ -20,7 +20,9 @@ ifeq ($(SRCDIR),build)
 endif
 ifeq ($(MATCHCOMPILER),yes)
     # Find available Python interpreter
-    PYTHON_INTERPRETER := $(shell which python3)
+    ifndef PYTHON_INTERPRETER
+        PYTHON_INTERPRETER := $(shell which python3)
+    endif
     ifndef PYTHON_INTERPRETER
         PYTHON_INTERPRETER := $(shell which python)
     endif
@@ -49,11 +51,15 @@ RDYNAMIC=-rdynamic
 ifndef COMSPEC
     ifdef ComSpec
         #### ComSpec is defined on some WIN32's.
-        COMSPEC=$(ComSpec)
+        WINNT=1
+
+        ifneq (,$(findstring /cygdrive/,$(PATH)))
+            CYGWIN=1
+        endif # CYGWIN
     endif # ComSpec
 endif # COMSPEC
 
-ifdef COMSPEC
+ifdef WINNT
     #### Maybe Windows
     ifndef CPPCHK_GLIBCXX_DEBUG
         CPPCHK_GLIBCXX_DEBUG=
@@ -64,7 +70,7 @@ ifdef COMSPEC
     else
         RDYNAMIC=-lshlwapi
     endif
-else # !COMSPEC
+else # !WINNT
     uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
     ifeq ($(uname_S),Linux)
@@ -79,17 +85,16 @@ else # !COMSPEC
         endif # !CPPCHK_GLIBCXX_DEBUG
     endif # GNU/kFreeBSD
 
-endif # COMSPEC
+endif # WINNT
 
-# Set the UNDEF_STRICT_ANSI flag to address compile time warnings
-# with tinyxml2 and Cygwin.
-ifdef COMSPEC
-    uname_S := $(shell uname -s)
-
-    ifneq (,$(findstring CYGWIN,$(uname_S)))
-        UNDEF_STRICT_ANSI=-U__STRICT_ANSI__
-    endif # CYGWIN
-endif # COMSPEC
+ifdef CYGWIN
+    # Set the UNDEF_STRICT_ANSI flag to address compile time warnings
+    # with tinyxml2 and Cygwin.
+    UNDEF_STRICT_ANSI=-U__STRICT_ANSI__
+    
+    # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.
+    CXXFLAGS+=-Wl,--stack,8388608
+endif # CYGWIN
 
 ifndef CXX
     CXX=g++
@@ -101,15 +106,6 @@ endif
 ifndef CXXFLAGS
     CXXFLAGS=-pedantic -Wall -Wextra -Wcast-qual -Wno-deprecated-declarations -Wfloat-equal -Wmissing-declarations -Wmissing-format-attribute -Wno-long-long -Wpacked -Wredundant-decls -Wundef -Wno-shadow -Wno-missing-field-initializers -Wno-missing-braces -Wno-sign-compare -Wno-multichar $(CPPCHK_GLIBCXX_DEBUG) -g
 endif
-
-# Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.
-ifdef COMSPEC
-    uname_S := $(shell uname -s)
-
-    ifneq (,$(findstring CYGWIN,$(uname_S)))
-        CXXFLAGS+=-Wl,--stack,8388608
-    endif # CYGWIN
-endif # COMSPEC
 
 ifeq (g++, $(findstring g++,$(CXX)))
     override CXXFLAGS += -std=c++0x
