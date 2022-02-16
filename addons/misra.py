@@ -25,6 +25,7 @@ import argparse
 import codecs
 import string
 import copy
+import subprocess
 
 try:
     from itertools import izip as zip
@@ -1316,6 +1317,8 @@ class MisraChecker:
         self._ctu_summary_tagnames = False
         self._ctu_summary_identifiers = False
         self._ctu_summary_usage = False
+
+        self.premium_addon = None
 
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
@@ -4045,7 +4048,10 @@ class MisraChecker:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
-                errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
+                if self.premium_addon:
+                    errmsg = subprocess.check_output([self.premium_addon, '--get-rule-text=' + errorId]).strip().decode('ascii')
+                else:
+                    errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 errmsg = 'misra violation %s with no text in the supplied rule-texts-file' % (ruleNum)
 
@@ -4379,6 +4385,10 @@ class MisraChecker:
             self.executeCheck(2209, self.misra_22_9, cfg)
             self.executeCheck(2210, self.misra_22_10, cfg)
 
+            # Premium MISRA checking, deep analysis
+            if cfgNumber == 0 and self.premium_addon:
+                subprocess.call([self.premium_addon, '--misra', dumpfile])
+
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []
         all_tagname_info = []
@@ -4562,6 +4572,7 @@ def get_args_parser():
     parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("--severity", type=str, help="Set a custom severity string, for example 'error' or 'warning'. ")
+    parser.add_argument("--premium-addon", type=str, default=None, help=argparse.SUPPRESS)
     return parser
 
 
@@ -4570,6 +4581,8 @@ def main():
     args = parser.parse_args()
     settings = MisraSettings(args)
     checker = MisraChecker(settings)
+
+    checker.premium_addon = args.premium_addon
 
     if args.generate_table:
         generateTable()
@@ -4631,6 +4644,13 @@ def main():
                 sys.exit(exitCode)
 
     checker.analyse_ctu_info(ctu_info_files)
+
+    if args.file_list and args.premium_addon:
+        premium_command = [args.premium_addon, '--misra', '--file-list', args.file_list]
+        if args.cli:
+            premium_command.append('--cli')
+        for line in subprocess.check_output(premium_command).decode('ascii').split('\n'):
+            print(line.strip())
 
     if settings.verify:
         sys.exit(exitCode)
