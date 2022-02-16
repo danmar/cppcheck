@@ -120,7 +120,7 @@ private:
         TEST_CASE(initvar_union);
         TEST_CASE(initvar_delegate);       // ticket #4302
         TEST_CASE(initvar_delegate2);
-        TEST_CASE(initvar_derived_class);  // ticket #10161
+        TEST_CASE(initvar_derived_class);
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
         TEST_CASE(initvar_copy_constructor); // ticket #1611
@@ -1251,7 +1251,7 @@ private:
     }
 
     void initvar_derived_class() {
-        check("class Base {\n"
+        check("class Base {\n" // #10161
               "public:\n"
               "  virtual void foo() = 0;\n"
               "  int x;\n" // <- uninitialized
@@ -1263,6 +1263,41 @@ private:
               "  void foo() override;\n"
               "};");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Member variable 'Base::x' is not initialized in the constructor. Maybe it should be initialized directly in the class Base?\n", errout.str());
+
+        check("struct A {\n" // #3462
+              "    char ca;\n"
+              "    A& operator=(const A& a) {\n"
+              "        ca = a.ca;\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n"
+              "struct B : public A {\n"
+              "    char cb;\n"
+              "    B& operator=(const B& b) {\n"
+              "        A::operator=(b);\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:10]: (warning) Member variable 'B::cb' is not assigned a value in 'B::operator='.\n", errout.str());
+
+        check("struct A {\n"
+              "    char ca;\n"
+              "    A& operator=(const A& a) {\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n"
+              "struct B : public A {\n"
+              "    char cb;\n"
+              "    B& operator=(const B& b) {\n"
+              "        A::operator=(b);\n"
+              "        return *this;\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'A::ca' is not assigned a value in 'A::operator='.\n"
+                      "[test.cpp:9]: (warning) Member variable 'B::cb' is not assigned a value in 'B::operator='.\n"
+                      "[test.cpp:9]: (warning) Member variable 'B::ca' is not assigned a value in 'B::operator='.\n",
+                      errout.str());
+
     }
 
     void initvar_private_constructor() {

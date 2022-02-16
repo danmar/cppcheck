@@ -819,9 +819,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         // Calling member function?
-        else if (Token::simpleMatch(ftok, "operator= (") &&
-                 ftok->previous()->str() != "::") {
-            if (ftok->function() && ftok->function()->nestedIn == scope) {
+        else if (Token::simpleMatch(ftok, "operator= (")) {
+            if (ftok->function()) {
                 const Function *member = ftok->function();
                 // recursive call
                 // assume that all variables are initialized
