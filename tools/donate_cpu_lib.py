@@ -85,15 +85,20 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
     if not os.path.isabs(cppcheck_path):
         raise ValueError("cppcheck_path is not an absolute path")
     if os.path.exists(cppcheck_path):
+        print('Checking out {}'.format(version))
         subprocess.check_call(['git', 'checkout', '-f', version], cwd=cppcheck_path)
+
         # It is possible to pull branches, not tags
         if version == 'main':
+            print('Pulling {}'.format(version))
             subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
     else:
         if version != 'main':
+            print('Fetching {}'.format(version))
             # Since this is a shallow clone, explicitly fetch the remote version tag
             refspec = 'refs/tags/' + version + ':ref/tags/' + version
             subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec], cwd=repo_path)
+        print('Adding worktree \'{}\' for {}'.format(cppcheck_path, version))
         subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version], cwd=repo_path)
 
 
