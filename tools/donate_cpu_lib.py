@@ -124,7 +124,7 @@ def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
         subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
-        subprocess.check_call([cppcheck_path + '/cppcheck', '--version'], cwd=cppcheck_path)
+        subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
     except:
         return False
     return True
@@ -221,7 +221,7 @@ def __wget(url, destfile, bandwidth_limit):
 
 def download_package(work_path, package, bandwidth_limit):
     print('Download package ' + package)
-    destfile = work_path + '/temp.tgz'
+    destfile = os.path.join(work_path, 'temp.tgz')
     if not __wget(package, destfile, bandwidth_limit):
         return None
     return destfile
@@ -229,7 +229,7 @@ def download_package(work_path, package, bandwidth_limit):
 
 def unpack_package(work_path, tgz, cpp_only=False):
     print('Unpacking..')
-    temp_path = work_path + '/temp'
+    temp_path = os.path.join(work_path, 'temp')
     __remove_tree(temp_path)
     os.mkdir(temp_path)
     found = False
@@ -321,7 +321,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack=Tr
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2'
     options += ' -D__GNUC__ --platform=unix64'
     options += ' -rp={}'.format(dir_to_scan)
-    cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
+    cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options
     cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
