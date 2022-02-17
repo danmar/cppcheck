@@ -1304,7 +1304,7 @@ void CheckOther::checkPassByReference()
         const bool isContainer = var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER && var->valueType()->container && !var->valueType()->container->view;
         if (!isContainer) {
             if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
-                  // Ensure that it is a large object.
+                // Ensure that it is a large object.
                 if (!var->type()->classScope)
                     inconclusive = true;
                 else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->sizeof_pointer)
