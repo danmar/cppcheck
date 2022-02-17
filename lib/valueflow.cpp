@@ -6070,6 +6070,10 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
             }
 
         }
+        const Token* vartok = expr;
+        const Token* rml = nextAfterAstRightmostLeaf(expr);
+        if (rml)
+            vartok = rml->previous();
         if ((tok2->str() == "&&" &&
              conditionIsFalse(tok2->astOperand1(),
                               getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings))) ||
@@ -6078,8 +6082,8 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings))))
             break;
 
-        else if (Token::simpleMatch(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, expr->varId())) {
-            if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), expr->varId())) {
+        else if (Token::simpleMatch(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, vartok->varId())) {
+            if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), vartok->varId())) {
                 if (settings->debugwarnings)
                     bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
                 break;
@@ -6088,7 +6092,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                 bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
             tok2 = tok2->next()->link();
             if (Token::simpleMatch(tok2, "} else {")) {
-                if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), expr->varId())) {
+                if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), vartok->varId())) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
                     break;

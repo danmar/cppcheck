@@ -4086,6 +4086,17 @@ private:
                "}\n";
         value = valueOfTok(code, "x <");
         ASSERT(!value.isKnown());
+
+        code = "void b(int* a) {\n" // #10795
+               "    for (*a = 1;;)\n"
+               "        if (0) {}\n"
+               "}\n"
+               "struct S { int* a; }\n"
+               "void b(S& s) {\n"
+               "    for (*s.a = 1;;)\n"
+               "        if (0) {}\n"
+               "}\n";
+        testValueOfX(code, 0, 0); // <- don't crash
     }
 
     void valueFlowSubFunction() {
