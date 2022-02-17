@@ -1743,7 +1743,7 @@ private:
 
         check("FILE* f() {\n"
               "    char* temp = strdup(\"temp.txt\");\n"
-              "    FILE * fp = NULL;\n"
+              "    FILE* fp = NULL;\n"
               "    fopen_s(&fp, temp, \"rt\");\n"
               "    return fp;\n"
               "}\n", s);
@@ -1751,7 +1751,7 @@ private:
 
         check("void f() {\n"
               "    char* temp = strdup(\"temp.txt\");\n"
-              "    FILE * fp = fopen(\"a.txt\", \"rb\");\n"
+              "    FILE* fp = fopen(\"a.txt\", \"rb\");\n"
               "    if (fp)\n"
               "        freopen(temp, \"rt\", fp);\n"
               "}\n", s);
