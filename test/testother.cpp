@@ -8520,6 +8520,10 @@ private:
               "    A a2;"
               "};", nullptr, false, false, true);
         ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'a2' should be passed by const reference.\n", errout.str());
+
+        check("std::map<int, int> m;\n" // #10817
+              "void f(const decltype(m)::const_iterator i) {}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparisonFunctionIsAlwaysTrueOrFalse() {
