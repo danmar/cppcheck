@@ -1743,6 +1743,24 @@ private:
 
         check("FILE* f() {\n"
               "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp = NULL;\n"
+              "    fopen_s(&fp, temp, \"rt\");\n"
+              "    return fp;\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: temp\n", errout.str());
+
+        check("void f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp = fopen(\"a.txt\", \"rb\");\n"
+              "    if (fp)\n"
+              "        freopen(temp, \"rt\", fp);\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: temp\n"
+                      "[test.cpp:6]: (error) Resource leak: fp\n",
+                      errout.str());
+
+        check("FILE* f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
               "    return fopen(temp, \"rt\");\n"
               "}\n", s);
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: temp\n", "", errout.str());
