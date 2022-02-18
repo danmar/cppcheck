@@ -203,14 +203,14 @@ def crashReport(results_path: str) -> str:
                         break
                     package = filename[filename.rfind('/')+1:]
                     counts = line.split(' ')
-                    c2 = ''
+                    c_version = ''
                     if counts[2] == 'Crash!':
-                        c2 = 'Crash'
-                    c1 = ''
+                        c_version = 'Crash'
+                    c_head = ''
                     if counts[1] == 'Crash!':
-                        c1 = 'Crash'
-                    html += fmt(package, datestr, c2, c1) + '\n'
-                    if c1 != 'Crash':
+                        c_head = 'Crash'
+                    html += fmt(package, datestr, c_version, c_head) + '\n'
+                    if c_head != 'Crash':
                         break
                 elif line.find(' received signal ') != -1:
                     crash_line = next(file_, '').strip()
