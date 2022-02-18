@@ -21,6 +21,7 @@ import logging
 import logging.handlers
 import operator
 import html as html_lib
+from urllib.parse import urlparse
 
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
@@ -946,75 +947,79 @@ class HttpClientThread(Thread):
         try:
             cmd = self.cmd
             print_ts(cmd)
-            res = re.match(r'GET /([a-zA-Z0-9_\-\.\+%]*) HTTP', cmd)
-            if res is None:
+            # TODO: use a proper parser
+            req_parts = cmd.split(' ')
+            if len(req_parts) != 3 or req_parts[0] != 'GET' or not req_parts[2].startswith('HTTP'):
+                print_ts('invalid request: {}'.format(cmd))
                 self.connection.close()
                 return
-            url = res.group(1)
-            if url == '':
+            url_obj = urlparse(req_parts[1])
+            url = url_obj.path
+            queryParams = dict(urllib.parse.parse_qsl(url_obj.query))
+            if url == '/':
                 html = overviewReport()
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'latest.html':
+            elif url == '/latest.html':
                 html = latestReport(self.latestResults)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'crash.html':
+            elif url == '/crash.html':
                 html = crashReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'timeout.html':
+            elif url == '/timeout.html':
                 html = timeoutReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'stale.html':
+            elif url == '/stale.html':
                 html = staleReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url == 'diff.html':
+            elif url == '/diff.html':
                 html = diffReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url.startswith('difftoday-'):
-                messageId = url[10:]
+            elif url.startswith('/difftoday-'):
+                messageId = url[len('/difftoday-'):]
                 text = diffMessageIdTodayReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url.startswith('diff-'):
-                messageId = url[5:]
+            elif url.startswith('/diff-'):
+                messageId = url[len('/diff-'):]
                 text = diffMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url == 'head.html':
+            elif url == '/head.html':
                 html = headReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
-            elif url.startswith('headtoday-'):
-                messageId = url[10:]
+            elif url.startswith('/headtoday-'):
+                messageId = url[len('/headtoday-'):]
                 text = headMessageIdTodayReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url.startswith('head-'):
-                messageId = url[5:]
+            elif url.startswith('/head-'):
+                messageId = url[len('/head-'):]
                 text = headMessageIdReport(self.resultPath, messageId)
                 httpGetResponse(self.connection, text, 'text/plain')
-            elif url == 'time_lt.html':
+            elif url == '/time_lt.html':
                 text = timeReport(self.resultPath, False)
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'time_gt.html':
+            elif url == '/time_gt.html':
                 text = timeReport(self.resultPath, True)
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'time_slow.html':
+            elif url == '/time_slow.html':
                 text = timeReportSlow(self.resultPath)
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'check_library_function_report.html':
+            elif url == '/check_library_function_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryFunction')
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'check_library_noreturn_report.html':
+            elif url == '/check_library_noreturn_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryNoReturn')
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'check_library_use_ignore_report.html':
+            elif url == '/check_library_use_ignore_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryUseIgnore')
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url == 'check_library_check_type_report.html':
+            elif url == '/check_library_check_type_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryCheckType')
                 httpGetResponse(self.connection, text, 'text/html')
-            elif url.startswith('check_library-'):
-                function_name = url[len('check_library-'):]
+            elif url.startswith('/check_library-'):
+                function_name = url[len('/check_library-'):]
                 text = check_library_function_name(self.resultPath + '/' + 'info_output', function_name)
                 httpGetResponse(self.connection, text, 'text/plain')
             else:
-                filename = resultPath + '/' + url
+                filename = resultPath + url
                 if not os.path.isfile(filename):
                     print_ts('HTTP/1.1 404 Not Found')
                     self.connection.send(b'HTTP/1.1 404 Not Found\r\n\r\n')
