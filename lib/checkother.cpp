@@ -1161,6 +1161,7 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
 
     int cumulatedSize = 0;
     const bool isUnion = type->classScope->type == Scope::ScopeType::eUnion;
+    // cppcheck-suppress varid0
     const auto accumulateSize = [](int& cumulatedSize, int size, bool isUnion) -> void {
         if (isUnion)
             cumulatedSize = std::max(cumulatedSize, size);
