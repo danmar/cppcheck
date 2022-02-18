@@ -938,7 +938,7 @@ class HttpClientThread(Thread):
     def __init__(self, connection: socket.socket, cmd: str, resultPath: str, latestResults: list) -> None:
         Thread.__init__(self)
         self.connection = connection
-        self.cmd = cmd[:cmd.find('\n')]
+        self.cmd = cmd[:cmd.find('\r\n')]
         self.resultPath = resultPath
         self.latestResults = latestResults
 
