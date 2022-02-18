@@ -1395,7 +1395,9 @@ class MisraChecker:
                 local_identifiers.append(identifier(var.nameToken))
             elif var.isStatic:
                 names.append(var.nameToken.str)
-                internal_identifiers.append(identifier(var.nameToken))
+                i = identifier(var.nameToken)
+                i['inlinefunc'] = False
+                internal_identifiers.append(i)
             else:
                 names.append(var.nameToken.str)
                 i = identifier(var.nameToken)
@@ -1406,7 +1408,9 @@ class MisraChecker:
             if func.tokenDef is None:
                 continue
             if func.isStatic:
-                internal_identifiers.append(identifier(func.tokenDef))
+                i = identifier(func.tokenDef)
+                i['inlinefunc'] = func.isInlineKeyword
+                internal_identifiers.append(i)
             else:
                 if func.token is None:
                     i = identifier(func.tokenDef)
@@ -4478,8 +4482,9 @@ class MisraChecker:
                 if summary_type == 'MisraInternalIdentifiers':
                     for s in summary_data:
                         if s['name'] in all_internal_identifiers:
-                            self.reportError(Location(s), 5, 9)
-                            self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
+                            if not s['inlinefunc'] or s['file'] != all_internal_identifiers[s['name']]['file']:
+                                self.reportError(Location(s), 5, 9)
+                                self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
                         all_internal_identifiers[s['name']] = s
 
                 if summary_type == 'MisraLocalIdentifiers':
