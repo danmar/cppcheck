@@ -687,6 +687,18 @@ private:
         lifetimes = lifetimeValues(code, "( void * )");
         ASSERT_EQUALS(true, lifetimes.size() == 1);
         ASSERT_EQUALS(true, lifetimes.front() == "i");
+
+        code  = "struct T {\n" // #10810
+                "    static int g() { return 0; }\n"
+                "};\n"
+                "T t;\n"
+                "struct S { int i; };\n"
+                "S f() {\n"
+                "    S s = { decltype(t)::g() };\n"
+                "    return s;\n"
+                "};\n";
+        lifetimes = lifetimeValues(code, "=");
+        ASSERT_EQUALS(true, lifetimes.empty());
     }
 
     void valueFlowArrayElement() {
