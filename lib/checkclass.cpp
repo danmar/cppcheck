@@ -2048,7 +2048,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 			std::string scopeStr;
 			const Scope* curScope = scope;
 			while (!isMember && curScope && curScope->type != Scope::ScopeType::eGlobal) {
-				scopeStr.insert(0, scope->className + " :: ";
+				scopeStr.insert(0, curScope->className + " :: ");
 				isMember = Token::Match(fqTok, scopeStr.c_str());
 
 				curScope = curScope->nestedIn;
