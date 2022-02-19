@@ -2044,16 +2044,15 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
                 fqTok = fqTok->tokAt(-2);
             if (fqTok->strAt(-1) == "::")
                 fqTok = fqTok->previous();
-            bool isMember = tok == fqTok;
-            std::string scopeStr;
-            if (!isMember) {
-                scopeStr = scope->className + " ::";
-                isMember = Token::Match(fqTok, scopeStr.c_str());
-            }
-            if (!isMember && scope->nestedIn && scope->nestedIn->type != Scope::ScopeType::eGlobal) {
-                scopeStr.insert(0, scope->nestedIn->className + " :: ");
-                isMember = Token::Match(fqTok, scopeStr.c_str());
-            }
+			bool isMember = tok == fqTok;
+			std::string scopeStr;
+			const Scope* curScope = scope;
+			while (!isMember && curScope && curScope->type != Scope::ScopeType::eGlobal) {
+				scopeStr.insert(0, scope->className + " :: ";
+				isMember = Token::Match(fqTok, scopeStr.c_str());
+
+				curScope = curScope->nestedIn;
+			}
             if (isMember) {
                 if (tok->varId() == 0)
                     mSymbolDatabase->debugMessage(tok, "varid0", "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");

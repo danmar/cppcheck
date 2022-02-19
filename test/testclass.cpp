@@ -5974,6 +5974,15 @@ private:
                    "};\n");
         ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
 
+        checkConst("int i = 0;\n"
+                   "struct S {\n"
+                   "    int i;\n"
+                   "    void f() {\n"
+                   "        if (::i) {}\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+
         checkConst("namespace N {\n"
                    "    struct S {\n"
                    "        int i;\n"
