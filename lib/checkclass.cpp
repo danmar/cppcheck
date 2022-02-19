@@ -2054,7 +2054,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
                 scopeStr.insert(0, scope->nestedIn->className + " :: ");
                 isMember = Token::Match(fqTok, scopeStr.c_str());
             }
-            if (isMember)  {
+            if (isMember) {
                 if (tok->varId() == 0)
                     mSymbolDatabase->debugMessage(tok, "varid0", "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
 
