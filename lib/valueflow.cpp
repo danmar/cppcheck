@@ -6071,9 +6071,13 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         }
         const Token* vartok = expr;
-        const Token* rml = nextAfterAstRightmostLeaf(expr);
-        if (rml)
-            vartok = rml->previous();
+        if (vartok->str() == "[" && vartok->astOperand1())
+            vartok = vartok->astOperand1();
+        else {
+            const Token* rml = nextAfterAstRightmostLeaf(vartok);
+            if (rml)
+                vartok = rml->previous();
+        }
         if ((tok2->str() == "&&" &&
              conditionIsFalse(tok2->astOperand1(),
                               getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings))) ||
