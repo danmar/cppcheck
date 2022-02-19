@@ -410,9 +410,8 @@ private:
                       expr("void f() { unsigned char a[2]; a[0] = 1; a[0]++; a[0] == a[0]; }", "=="));
     }
 
-    void inc3() { // #10391
-        ASSERT_EQUALS("(= 2 2)\n"
-                      "z3::sat\n",
+    void inc3() { // #10391 - don't crash
+        ASSERT_EQUALS("",
                       expr("void f(T* p, T t) { *p++ = 1; *p++ = t; *p == 0; }", "=="));
     }
 
