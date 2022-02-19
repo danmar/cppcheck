@@ -2035,9 +2035,9 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
             tok = tok->link()->previous();
             again = true;
         }
-	} while (again);
+    } while (again);
 
-	for (const Variable& var : scope->varlist) {
+    for (const Variable& var : scope->varlist) {
         if (var.name() == tok->str()) {
             const Token* fqTok = tok;
             while (Token::Match(fqTok->tokAt(-2), "%name% ::"))
@@ -2061,7 +2061,7 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
                 return !var.isStatic();
             }
         }
-	}
+    }
 
     // not found in this class
     if (!scope->definedType->derivedFrom.empty()) {
