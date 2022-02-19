@@ -4912,7 +4912,7 @@ private:
 
     void simplifyOperatorName32() { // #10256
         const char code[] = "void f(int* = nullptr) {}\n";
-        ASSERT_EQUALS("void f ( int *= nullptr ) { }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("void f ( int * = nullptr ) { }", tokenizeAndStringify(code));
         ASSERT_EQUALS("", errout.str());
     }
 
