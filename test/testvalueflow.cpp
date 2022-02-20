@@ -4096,6 +4096,11 @@ private:
                "    for (*s.a = 1;;)\n"
                "        if (0) {}\n"
                "}\n";
+               "struct T { S s; };\n"
+               "void b(T& t) {\n"
+               "    for (*&t.s.a[0] = 1;;)\n"
+               "        if (0) {}\n"
+               "}\n";
         testValueOfX(code, 0, 0); // <- don't throw
 
         code = "void f() {\n"
