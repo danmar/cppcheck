@@ -6071,15 +6071,11 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
 
         }
         const Token* vartok = expr;
-        if (vartok->str() == "[" && vartok->astOperand1())
-            vartok = vartok->astOperand1();
-        else {
-            const Token* rml = nextAfterAstRightmostLeaf(vartok);
-            if (rml)
-                vartok = rml->previous();
-            if (vartok->str() == "]" && vartok->link()->previous())
-                vartok = vartok->link()->previous();
-        }
+        const Token* rml = nextAfterAstRightmostLeaf(vartok);
+        if (rml)
+            vartok = rml->str() == "]" ? rml : rml->previous();
+        if (vartok->str() == "]" && vartok->link()->previous())
+            vartok = vartok->link()->previous();
 
         if ((tok2->str() == "&&" &&
              conditionIsFalse(tok2->astOperand1(),
