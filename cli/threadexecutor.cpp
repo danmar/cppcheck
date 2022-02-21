@@ -433,9 +433,10 @@ public:
         report(msg, MessageType::REPORT_INFO);
     }
 
-    void bughuntingReport(const std::string  & /*str*/) override
+    void bughuntingReport(const std::string &str) override
     {
-        // TODO
+        std::lock_guard<std::mutex> lg(mReportSync);
+        mThreadExecutor.mErrorLogger.bughuntingReport(str);
     }
 
     ThreadExecutor &mThreadExecutor;
