@@ -22,6 +22,7 @@
 #include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
+#include "errorlogger.h"
 #include "errortypes.h"
 #include "importproject.h"
 #include "settings.h"
@@ -48,6 +49,9 @@
 #include <fcntl.h>
 #include <csignal>
 #include <unistd.h>
+
+// required for FD_ZERO
+using std::memset;
 #endif
 
 #ifdef THREADING_MODEL_WIN
@@ -55,15 +59,10 @@
 #include <numeric>
 #endif
 
-// required for FD_ZERO
-using std::memset;
-
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
     : mFiles(files), mSettings(settings), mErrorLogger(errorLogger), mFileCount(0)
 {
-#if defined(THREADING_MODEL_FORK)
-    mWpipe = 0;
-#elif defined(THREADING_MODEL_WIN)
+#if defined(THREADING_MODEL_WIN)
     mProcessedFiles = 0;
     mTotalFiles = 0;
     mProcessedSize = 0;
@@ -80,21 +79,74 @@ void ThreadExecutor::addFileContent(const std::string &path, const std::string &
     mFileContents[path] = content;
 }
 
-void ThreadExecutor::reportErr(const ErrorMessage &msg)
-{
-    report(msg, MessageType::REPORT_ERROR);
-}
-
-void ThreadExecutor::reportInfo(const ErrorMessage &msg)
-{
-    report(msg, MessageType::REPORT_INFO);
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is for platforms that support fork() only ////////////////////
 ///////////////////////////////////////////////////////////////////////////////
 
 #if defined(THREADING_MODEL_FORK)
+
+class PipeWriter : public ErrorLogger {
+public:
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', REPORT_VERIFICATION='4', CHILD_END='5'};
+
+    explicit PipeWriter(int pipe) : mWpipe(pipe) {}
+
+    void reportOut(const std::string &outmsg, Color c) override {
+        writeToPipe(REPORT_OUT, ::toString(c) + outmsg + ::toString(Color::Reset));
+    }
+
+    void reportErr(const ErrorMessage &msg) override {
+        report(msg, MessageType::REPORT_ERROR);
+    }
+
+    void reportInfo(const ErrorMessage &msg) override {
+        report(msg, MessageType::REPORT_INFO);
+    }
+
+    void bughuntingReport(const std::string &str) override {
+        writeToPipe(REPORT_VERIFICATION, str);
+    }
+
+    void writeEnd(const std::string& str) {
+        writeToPipe(CHILD_END, str);
+    }
+
+private:
+    enum class MessageType {REPORT_ERROR, REPORT_INFO};
+
+    void report(const ErrorMessage &msg, MessageType msgType) {
+        PipeSignal pipeSignal;
+        switch (msgType) {
+        case MessageType::REPORT_ERROR:
+            pipeSignal = REPORT_ERROR;
+            break;
+        case MessageType::REPORT_INFO:
+            pipeSignal = REPORT_INFO;
+            break;
+        }
+
+        writeToPipe(pipeSignal, msg.serialize());
+    }
+
+    void writeToPipe(PipeSignal type, const std::string &data)
+    {
+        unsigned int len = static_cast<unsigned int>(data.length() + 1);
+        char *out = new char[len + 1 + sizeof(len)];
+        out[0] = static_cast<char>(type);
+        std::memcpy(&(out[1]), &len, sizeof(len));
+        std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
+        if (write(mWpipe, out, len + 1 + sizeof(len)) <= 0) {
+            delete[] out;
+            out = nullptr;
+            std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+
+        delete[] out;
+    }
+
+    const int mWpipe;
+};
 
 int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 {
@@ -108,7 +160,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         return -1;
     }
 
-    if (type != REPORT_OUT && type != REPORT_ERROR && type != REPORT_INFO && type != CHILD_END) {
+    if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::REPORT_INFO && type != PipeWriter::CHILD_END) {
         std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -129,9 +181,9 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     }
     buf[readIntoBuf] = 0;
 
-    if (type == REPORT_OUT) {
+    if (type == PipeWriter::REPORT_OUT) {
         mErrorLogger.reportOut(buf);
-    } else if (type == REPORT_ERROR || type == REPORT_INFO) {
+    } else if (type == PipeWriter::REPORT_ERROR || type == PipeWriter::REPORT_INFO) {
         ErrorMessage msg;
         try {
             msg.deserialize(buf);
@@ -145,13 +197,13 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
             std::string errmsg = msg.toString(mSettings.verbose);
             if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
                 mErrorList.emplace_back(errmsg);
-                if (type == REPORT_ERROR)
+                if (type == PipeWriter::REPORT_ERROR)
                     mErrorLogger.reportErr(msg);
                 else
                     mErrorLogger.reportInfo(msg);
             }
         }
-    } else if (type == CHILD_END) {
+    } else if (type == PipeWriter::CHILD_END) {
         std::istringstream iss(buf);
         unsigned int fileResult = 0;
         iss >> fileResult;
@@ -231,9 +283,9 @@ unsigned int ThreadExecutor::check()
                 prctl(PR_SET_PDEATHSIG, SIGHUP);
 #endif
                 close(pipes[0]);
-                mWpipe = pipes[1];
 
-                CppCheck fileChecker(*this, false, CppCheckExecutor::executeCommand);
+                PipeWriter pipewriter(pipes[1]);
+                CppCheck fileChecker(pipewriter, false, CppCheckExecutor::executeCommand);
                 fileChecker.settings() = mSettings;
                 unsigned int resultOfCheck = 0;
 
@@ -249,7 +301,7 @@ unsigned int ThreadExecutor::check()
 
                 std::ostringstream oss;
                 oss << resultOfCheck;
-                writeToPipe(CHILD_END, oss.str());
+                pipewriter.writeEnd(oss.str());
                 std::exit(EXIT_SUCCESS);
             }
 
@@ -339,48 +391,6 @@ unsigned int ThreadExecutor::check()
 
 
     return result;
-}
-
-void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
-{
-    unsigned int len = static_cast<unsigned int>(data.length() + 1);
-    char *out = new char[len + 1 + sizeof(len)];
-    out[0] = static_cast<char>(type);
-    std::memcpy(&(out[1]), &len, sizeof(len));
-    std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
-    if (write(mWpipe, out, len + 1 + sizeof(len)) <= 0) {
-        delete[] out;
-        out = nullptr;
-        std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    delete[] out;
-}
-
-void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
-{
-    writeToPipe(REPORT_OUT, ::toString(c) + outmsg + ::toString(Color::Reset));
-}
-
-void ThreadExecutor::bughuntingReport(const std::string &str)
-{
-    writeToPipe(REPORT_VERIFICATION, str);
-}
-
-void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
-{
-    PipeSignal pipeSignal;
-    switch (msgType) {
-    case MessageType::REPORT_ERROR:
-        pipeSignal = REPORT_ERROR;
-        break;
-    case MessageType::REPORT_INFO:
-        pipeSignal = REPORT_INFO;
-        break;
-    }
-
-    writeToPipe(pipeSignal, msg.serialize());
 }
 
 void ThreadExecutor::reportInternalChildErr(const std::string &childname, const std::string &msg)
