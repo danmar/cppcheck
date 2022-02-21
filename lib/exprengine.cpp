@@ -1978,6 +1978,9 @@ static ExprEngine::ValuePtr executeIncDec(const Token *tok, Data &data)
     ExprEngine::ValuePtr assignValue = simplifyValue(std::make_shared<ExprEngine::BinOpResult>(tok->str().substr(0,1), beforeValue, std::make_shared<ExprEngine::IntRange>("1", 1, 1)));
     assignExprValue(tok->astOperand1(), assignValue, data);
     auto retVal = (precedes(tok, tok->astOperand1())) ? assignValue : beforeValue;
+    auto binOp = std::dynamic_pointer_cast<ExprEngine::BinOpResult>(retVal);
+    if (binOp && !binOp->op1)
+        retVal.reset();
     call(data.callbacks, tok, retVal, &data);
     return retVal;
 }
