@@ -19,22 +19,12 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include "config.h"
+
 #include <cstddef>
 #include <list>
 #include <map>
 #include <string>
-
-#if defined(_WIN32)
-#define THREADING_MODEL_THREAD
-#define STDCALL __stdcall
-#elif defined(USE_THREADS)
-#define THREADING_MODEL_THREAD
-#define STDCALL
-#elif ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__) && !defined(__CYGWIN__)) || defined(__CPPCHECK__)
-#define THREADING_MODEL_FORK
-#else
-#error "No threading model defined"
-#endif
 
 class Settings;
 class ErrorLogger;

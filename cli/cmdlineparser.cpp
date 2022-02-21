@@ -19,6 +19,7 @@
 #include "cmdlineparser.h"
 
 #include "check.h"
+#include "config.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "filelister.h"
@@ -28,7 +29,6 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "threadexecutor.h" // Threading model
 #include "timer.h"
 #include "utils.h"
 
