@@ -4107,8 +4107,21 @@ private:
                "void b(S& s) {\n"
                "    for (*s.a = 1;;)\n"
                "        if (0) {}\n"
+               "}\n"
+               "struct T { S s; };\n"
+               "void b(T& t) {\n"
+               "    for (*&t.s.a[0] = 1;;)\n"
+               "        if (0) {}\n"
                "}\n";
-        testValueOfX(code, 0, 0); // <- don't crash
+        testValueOfX(code, 0, 0); // <- don't throw
+
+        code = "void f() {\n"
+               "    int p[2];\n"
+               "    for (p[0] = 0; p[0] <= 2; p[0]++) {\n"
+               "        for (p[1] = 0; p[1] <= 2 - p[0]; p[1]++) {}\n"
+               "    }\n"
+               "}\n";
+        testValueOfX(code, 0, 0); // <- don't throw
     }
 
     void valueFlowSubFunction() {
