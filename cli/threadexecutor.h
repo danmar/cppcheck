@@ -28,8 +28,6 @@
 #define THREADING_MODEL_FORK
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
-#include "importproject.h"
-#include <mutex>
 #else
 #error "No threading model defined"
 #endif
@@ -66,11 +64,12 @@ private:
     Settings &mSettings;
     ErrorLogger &mErrorLogger;
     unsigned int mFileCount;
-
-#if defined(THREADING_MODEL_FORK)
+    std::list<std::string> mErrorList;
 
     /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> mFileContents;
+
+#if defined(THREADING_MODEL_FORK)
 
     /**
      * Read from the pipe, parse and handle what ever is in there.
@@ -79,8 +78,6 @@ private:
      *         1 if we did read something
      */
     int handleRead(int rpipe, unsigned int &result);
-
-    std::list<std::string> mErrorList;
 
     /**
      * @brief Check load average condition
@@ -95,32 +92,12 @@ private:
      */
     void reportInternalChildErr(const std::string &childname, const std::string &msg);
 
-public:
-    /**
-     * @return true if support for threads exist.
-     */
-    static bool isEnabled() {
-        return true;
-    }
-
 #elif defined(THREADING_MODEL_WIN)
 
-private:
-    std::map<std::string, std::string> mFileContents;
-    std::map<std::string, std::size_t>::const_iterator mItNextFile;
-    std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
-    std::size_t mProcessedFiles;
-    std::size_t mTotalFiles;
-    std::size_t mProcessedSize;
-    std::size_t mTotalFileSize;
-    std::mutex mFileSync;
+    class LogWriter;
+    static unsigned __stdcall threadProc(LogWriter *threadExecutor);
 
-    std::list<std::string> mErrorList;
-    std::mutex mErrorSync;
-
-    std::mutex mReportSync;
-
-    static unsigned __stdcall threadProc(ThreadExecutor *threadExecutor);
+#endif
 
 public:
     /**
@@ -129,15 +106,7 @@ public:
     static bool isEnabled() {
         return true;
     }
-#else
-public:
-    /**
-     * @return true if support for threads exist.
-     */
-    static bool isEnabled() {
-        return false;
-    }
-#endif
+
 };
 
 /// @}
