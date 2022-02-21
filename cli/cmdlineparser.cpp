@@ -470,6 +470,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+#ifdef THREADING_MODEL_FORK
             else if (std::strncmp(argv[i], "-l", 2) == 0) {
                 std::string numberString;
 
@@ -494,6 +495,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     return false;
                 }
             }
+#endif
 
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
