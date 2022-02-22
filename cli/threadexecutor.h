@@ -19,9 +19,6 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
-#include "color.h"
-#include "errorlogger.h"
-
 #include <cstddef>
 #include <list>
 #include <map>
@@ -31,13 +28,12 @@
 #define THREADING_MODEL_FORK
 #elif defined(_WIN32)
 #define THREADING_MODEL_WIN
-#include "importproject.h"
-#include <mutex>
 #else
-#error "No threading moodel defined"
+#error "No threading model defined"
 #endif
 
 class Settings;
+class ErrorLogger;
 
 /// @addtogroup CLI
 /// @{
@@ -46,18 +42,13 @@ class Settings;
  * This class will take a list of filenames and settings and check then
  * all files using threads.
  */
-class ThreadExecutor : public ErrorLogger {
+class ThreadExecutor {
 public:
     ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
     ThreadExecutor(const ThreadExecutor &) = delete;
-    ~ThreadExecutor() override;
+    ~ThreadExecutor();
     void operator=(const ThreadExecutor &) = delete;
     unsigned int check();
-
-    void reportOut(const std::string &outmsg, Color c) override;
-    void reportErr(const ErrorMessage &msg) override;
-    void reportInfo(const ErrorMessage &msg) override;
-    void bughuntingReport(const std::string &str) override;
 
     /**
      * @brief Add content to a file, to be used in unit testing.
@@ -69,21 +60,16 @@ public:
     void addFileContent(const std::string &path, const std::string &content);
 
 private:
-    enum class MessageType {REPORT_ERROR, REPORT_INFO};
-
     const std::map<std::string, std::size_t> &mFiles;
     Settings &mSettings;
     ErrorLogger &mErrorLogger;
     unsigned int mFileCount;
-
-    void report(const ErrorMessage &msg, MessageType msgType);
-
-#if defined(THREADING_MODEL_FORK)
+    std::list<std::string> mErrorList;
 
     /** @brief Key is file name, and value is the content of the file */
     std::map<std::string, std::string> mFileContents;
-private:
-    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', REPORT_VERIFICATION='4', CHILD_END='5'};
+
+#if defined(THREADING_MODEL_FORK)
 
     /**
      * Read from the pipe, parse and handle what ever is in there.
@@ -92,13 +78,6 @@ private:
      *         1 if we did read something
      */
     int handleRead(int rpipe, unsigned int &result);
-    void writeToPipe(PipeSignal type, const std::string &data);
-    /**
-     * Write end of status pipe, different for each child.
-     * Not used in master process.
-     */
-    std::list<std::string> mErrorList;
-    int mWpipe;
 
     /**
      * @brief Check load average condition
@@ -113,32 +92,12 @@ private:
      */
     void reportInternalChildErr(const std::string &childname, const std::string &msg);
 
-public:
-    /**
-     * @return true if support for threads exist.
-     */
-    static bool isEnabled() {
-        return true;
-    }
-
 #elif defined(THREADING_MODEL_WIN)
 
-private:
-    std::map<std::string, std::string> mFileContents;
-    std::map<std::string, std::size_t>::const_iterator mItNextFile;
-    std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
-    std::size_t mProcessedFiles;
-    std::size_t mTotalFiles;
-    std::size_t mProcessedSize;
-    std::size_t mTotalFileSize;
-    std::mutex mFileSync;
+    class LogWriter;
+    static unsigned __stdcall threadProc(LogWriter *threadExecutor);
 
-    std::list<std::string> mErrorList;
-    std::mutex mErrorSync;
-
-    std::mutex mReportSync;
-
-    static unsigned __stdcall threadProc(ThreadExecutor *threadExecutor);
+#endif
 
 public:
     /**
@@ -147,15 +106,7 @@ public:
     static bool isEnabled() {
         return true;
     }
-#else
-public:
-    /**
-     * @return true if support for threads exist.
-     */
-    static bool isEnabled() {
-        return false;
-    }
-#endif
+
 };
 
 /// @}
