@@ -3427,7 +3427,7 @@ static const Token* getEndOfVarScope(const Variable* var)
     return innerScope->bodyEnd;
 }
 
-static const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope = nullptr)
+const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope, bool smallest)
 {
     const Token* end = nullptr;
     bool local = false;
@@ -3436,7 +3436,7 @@ static const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScop
             local |= var->isLocal();
             if (var->isLocal() || var->isArgument()) {
                 const Token* varEnd = getEndOfVarScope(var);
-                if (!end || precedes(varEnd, end))
+                if (!end || (smallest ? precedes(varEnd, end) : succeeds(varEnd, end)))
                     end = varEnd;
             }
         }
@@ -3477,8 +3477,9 @@ static const Token* getEndOfVarScope(const Token* tok, const std::vector<const V
                     varScope = varScope->nestedIn;
             }
         }
-        if (varScope && (!endOfVarScope || precedes(varScope->bodyEnd, endOfVarScope)))
+        if (varScope && (!endOfVarScope || precedes(endOfVarScope, varScope->bodyEnd))) {
             endOfVarScope = varScope->bodyEnd;
+        }
     }
     return endOfVarScope;
 }
