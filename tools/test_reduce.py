@@ -103,3 +103,40 @@ def test_combinelines_chunk():
     ]
 
     reduce.combinelines(filedata)
+
+
+def test_combinelines_chunk_2():
+    """'filedata' is not changed by the funtion since the data is assigned to a local variable"""
+
+    reduce = ReduceTest()
+
+    # need to have at least 11 lines ending with comma to enter chunked mode
+    filedata = [
+        'int i,\n',
+        'j,\n',
+        'k,\n',
+        'l,\n',
+        'm,\n',
+        'n,\n',
+        'o,\n',
+        'p,\n',
+        'q,\n',
+        'r,\n',
+        's,\n',
+        't;\n'
+    ]
+
+    filedata2 = reduce.combinelines(filedata)
+    assert filedata == filedata
+    assert filedata2 == ['int i,j,\n',
+                         '',
+                         'l,\n',
+                         'm,\n',
+                         'n,\n',
+                         'o,\n',
+                         'p,\n',
+                         'q,\n',
+                         'r,\n',
+                         's,\n',
+                         't;\n',
+                         '']
