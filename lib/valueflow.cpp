@@ -6866,7 +6866,12 @@ static bool needsInitialization(const Variable* var, bool cpp)
 static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from)
 {
     std::unordered_set<const Token*> locations;
-    std::transform(value.errorPath.begin(), value.errorPath.end(), std::inserter(locations, locations.begin()), [](const ErrorPathItem& e) { return e.first; });
+    std::transform(value.errorPath.begin(),
+                   value.errorPath.end(),
+                   std::inserter(locations, locations.begin()),
+                   [](const ErrorPathItem& e) {
+        return e.first;
+    });
     if (from.condition && !value.condition)
         value.condition = from.condition;
     std::copy_if(from.errorPath.begin(),
