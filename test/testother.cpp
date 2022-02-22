@@ -1503,6 +1503,12 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n"
                       "[test.cpp:5]: (style) C-style pointer casting\n",
                       errout.str());
+
+        // #10823
+        checkOldStylePointerCast("void f(void* p) {\n"
+                                 "    auto h = reinterpret_cast<void (STDAPICALLTYPE*)(int)>(p);\n"
+                                 "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)

@@ -304,6 +304,8 @@ void CheckOther::warningOldStylePointerCast()
             // Old style pointer casting..
             if (!Token::Match(tok, "( const|volatile| const|volatile|class|struct| %type% * const|&| ) (| %name%|%num%|%bool%|%char%|%str%"))
                 continue;
+            if (Token::Match(tok->previous(), "%type%"))
+                continue;
 
             // skip first "const" in "const Type* const"
             while (Token::Match(tok->next(), "const|volatile|class|struct"))
