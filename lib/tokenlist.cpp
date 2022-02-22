@@ -497,7 +497,7 @@ struct AST_state {
     explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false),stopAtColon(false), functionCallEndPar(nullptr) {}
 };
 
-static Token * skipDecl(Token *tok, std::vector<Token*>* inner = nullptr)
+static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
 {
     if (!Token::Match(tok->previous(), "( %name%"))
         return tok;
@@ -794,7 +794,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             Token* tok2 = tok;
             std::vector<Token*> inner;
             tok = skipDecl(tok, &inner);
-            for(Token* tok3: inner) {
+            for (Token* tok3 : inner) {
                 AST_state state1(state.cpp);
                 compileExpression(tok3, state1);
             }
@@ -1437,8 +1437,8 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         }
 
         std::vector<Token*> inner;
-        Token *tok2 = skipDecl(tok->tokAt(2), &inner);
-        for(Token* tok3: inner) {
+        Token* tok2 = skipDecl(tok->tokAt(2), &inner);
+        for (Token* tok3 : inner) {
             AST_state state1(cpp);
             compileExpression(tok3, state1);
         }
