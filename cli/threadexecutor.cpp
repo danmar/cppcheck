@@ -19,19 +19,15 @@
 #include "threadexecutor.h"
 
 #include "color.h"
-#include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
 #include "errorlogger.h"
-#include "errortypes.h"
 #include "importproject.h"
 #include "settings.h"
 #include "suppressions.h"
 
 #include <algorithm>
-#include <cerrno>
 #include <cstdlib>
-#include <cstring>
 #include <functional>
 #include <iostream>
 #include <utility>
@@ -41,9 +37,14 @@
 #endif
 
 #ifdef THREADING_MODEL_FORK
+#include "config.h"
+#include "errortypes.h"
+
 #if defined(__linux__)
 #include <sys/prctl.h>
 #endif
+#include <cerrno>
+#include <cstring>
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <fcntl.h>
@@ -54,13 +55,13 @@
 using std::memset;
 #endif
 
-#ifdef THREADING_MODEL_WIN
+#ifdef THREADING_MODEL_THREAD
 #include <future>
 #include <numeric>
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
-    : mFiles(files), mSettings(settings), mErrorLogger(errorLogger), mFileCount(0)
+    : mFiles(files), mSettings(settings), mErrorLogger(errorLogger)
 {}
 
 ThreadExecutor::~ThreadExecutor()
@@ -231,7 +232,7 @@ bool ThreadExecutor::checkLoadAverage(size_t nchildren)
 
 unsigned int ThreadExecutor::check()
 {
-    mFileCount = 0;
+    unsigned int fileCount = 0;
     unsigned int result = 0;
 
     std::size_t totalfilesize = 0;
@@ -337,10 +338,10 @@ unsigned int ThreadExecutor::check()
                                 }
                             }
 
-                            mFileCount++;
+                            fileCount++;
                             processedsize += size;
                             if (!mSettings.quiet)
-                                CppCheckExecutor::reportStatus(mFileCount, mFiles.size() + mSettings.project.fileSettings.size(), processedsize, totalfilesize);
+                                CppCheckExecutor::reportStatus(fileCount, mFiles.size() + mSettings.project.fileSettings.size(), processedsize, totalfilesize);
 
                             close(*rp);
                             rp = rpipes.erase(rp);
@@ -401,7 +402,7 @@ void ThreadExecutor::reportInternalChildErr(const std::string &childname, const 
         mErrorLogger.reportErr(errmsg);
 }
 
-#elif defined(THREADING_MODEL_WIN)
+#elif defined(THREADING_MODEL_THREAD)
 
 class ThreadExecutor::LogWriter : public ErrorLogger
 {
@@ -510,7 +511,7 @@ unsigned int ThreadExecutor::check()
     });
 }
 
-unsigned int __stdcall ThreadExecutor::threadProc(LogWriter* logWriter)
+unsigned int STDCALL ThreadExecutor::threadProc(LogWriter* logWriter)
 {
     unsigned int result = 0;
 

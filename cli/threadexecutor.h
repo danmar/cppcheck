@@ -19,18 +19,12 @@
 #ifndef THREADEXECUTOR_H
 #define THREADEXECUTOR_H
 
+#include "config.h"
+
 #include <cstddef>
 #include <list>
 #include <map>
 #include <string>
-
-#if ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__) && !defined(__CYGWIN__)) || defined(__CPPCHECK__)
-#define THREADING_MODEL_FORK
-#elif defined(_WIN32)
-#define THREADING_MODEL_WIN
-#else
-#error "No threading model defined"
-#endif
 
 class Settings;
 class ErrorLogger;
@@ -63,7 +57,6 @@ private:
     const std::map<std::string, std::size_t> &mFiles;
     Settings &mSettings;
     ErrorLogger &mErrorLogger;
-    unsigned int mFileCount;
     std::list<std::string> mErrorList;
 
     /** @brief Key is file name, and value is the content of the file */
@@ -92,10 +85,10 @@ private:
      */
     void reportInternalChildErr(const std::string &childname, const std::string &msg);
 
-#elif defined(THREADING_MODEL_WIN)
+#elif defined(THREADING_MODEL_THREAD)
 
     class LogWriter;
-    static unsigned __stdcall threadProc(LogWriter *threadExecutor);
+    static unsigned int STDCALL threadProc(LogWriter *threadExecutor);
 
 #endif
 
