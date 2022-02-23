@@ -13,7 +13,6 @@ import argparse
 import cppcheckdata
 import sys
 import re
-import subprocess
 
 VERIFY = ('-verify' in sys.argv)
 VERIFY_EXPECTED = []
@@ -402,8 +401,6 @@ if __name__ == '__main__':
     parser = get_args_parser()
     args = parser.parse_args()
 
-    path_premium_addon = cppcheckdata.get_path_premium_addon()
-
     if args.verify:
         VERIFY = True
 
@@ -415,14 +412,6 @@ if __name__ == '__main__':
     for dumpfile in args.dumpfile:
         if not args.quiet:
             print('Checking %s...' % dumpfile)
-
-        if path_premium_addon:
-            premium_command = [path_premium_addon, '--cert', dumpfile]
-            if args.cli:
-                premium_command.append('--cli')
-            for line in subprocess.check_output(premium_command).decode('ascii').split('\n'):
-                if line.find('cert-') > 0:
-                    print(line.strip())
 
         data = cppcheckdata.CppcheckData(dumpfile)
 
