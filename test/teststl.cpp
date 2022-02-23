@@ -174,6 +174,13 @@ private:
 
         TEST_CASE(checkKnownEmptyContainer);
         TEST_CASE(checkMutexes);
+
+        TEST_CASE(checkMergeArguments0);
+        TEST_CASE(checkMergeArguments1);
+        TEST_CASE(checkMergeArguments2);
+        TEST_CASE(checkMergeArguments3);
+        TEST_CASE(checkMergeArguments4);
+        TEST_CASE(checkMergeArguments5);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -5698,6 +5705,58 @@ private:
               "        std::scoped_lock shared_multi_lock(shared_foo_lock, shared_bar_lock);\n"
               "    }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkMergeArguments0() {
+        checkNormal("void f() {\n"
+                    "    std::list<unsigned long long int> list1, list2;\n"
+                    "    list1.merge(list2);\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkMergeArguments1() {
+        checkNormal("void f() {\n"
+                    "    std::list<int long unsigned long *> list1, list2;\n"
+                    "    list1.merge(list2);\n"
+                    "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Merge operation expects both containers in a sorted order. But now code compares pointers "
+                      "instead of objects inside. You can use lambda expression to compare objects itself\n", errout.str());
+    }
+
+    void checkMergeArguments2() {
+        checkNormal("void f() {\n"
+                    "    std::list<unsigned long long int *> list1, list2;\n"
+                    "    list1.merge(list2,\n"
+                    "                [](const unsigned long long int* a, const unsigned long long int* b){ return *a < *b; });\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkMergeArguments3() {
+        checkNormal("void f() {\n"
+                    "    std::forward_list<char *, std::allocator<char *>> list1, list2;\n"
+                    "    list1.merge(list2);\n"
+                    "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Merge operation expects both containers in a sorted order. But now code compares pointers "
+                      "instead of objects inside. You can use lambda expression to compare objects itself\n", errout.str());
+    }
+
+    void checkMergeArguments4() {
+        checkNormal("void f() {\n"
+                    "    std::forward_list<int *> list1, list2;\n"
+                    "    list1.merge(list2,\n"
+                    "                [](const int* a, const int* b){ return *a < *b; });\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkMergeArguments5() {
+        checkNormal("void f() {\n"
+                    "    std::list<unsigned int, std::allocator<unsigned int>> list1, list2;\n"
+                    "    list1.merge(list2);\n"
+                    "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

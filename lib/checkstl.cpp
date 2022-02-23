@@ -2870,3 +2870,36 @@ void CheckStl::checkMutexes()
     }
 }
 
+void CheckStl::checkMergeArgumentsError(const Token* tok)
+{
+    reportError(tok, Severity::warning,
+                "mergePointerValues",
+                "Merge operation expects both containers in a sorted order. But now code compares pointers instead of objects inside. "
+                "You can use lambda expression to compare objects itself", CWE398, Certainty::normal);
+}
+
+void CheckStl::checkMergeArguments()
+{
+    if (!mSettings->severity.isEnabled(Severity::warning))
+        return;
+
+    for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
+        for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
+            // std::list<T, A> and std::forward_list<T, A> has a merge() member function
+            // Prereq: *this and arg are both sorted with respect to the comparator operator<
+            if (Token::Match(tok, "%var% . merge ( %var% )") && astIsContainer(tok)) {
+                const auto * typeToken = tok->variable()->valueType()->containerTypeToken;
+
+                // Parce template arguments
+                while (typeToken && typeToken->str() != ">" && typeToken->str() != ",") {
+                    if (typeToken->str() == "*") {
+                        checkMergeArgumentsError(tok);
+                        break;
+                    }
+                    typeToken = typeToken->next();
+                }
+            }
+            // TODO: for <algorithm> "std :: merge|inplace_merge ( ", including c++17 ExecutionPolicy cases
+        }
+    }
+}

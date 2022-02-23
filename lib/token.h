@@ -977,6 +977,7 @@ public:
      * "{" <-> "}"
      * "(" <-> ")"
      * "[" <-> "]"
+     * "<" <-> ">"
      *
      * @return The token where this token links to.
      */

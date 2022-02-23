@@ -69,6 +69,7 @@ public:
         checkStl.string_c_str();
         checkStl.uselessCalls();
         checkStl.useStlAlgorithm();
+        checkStl.checkMergeArguments();
 
         checkStl.stlOutOfBounds();
         checkStl.negativeIndex();
@@ -184,6 +185,8 @@ public:
 
     void checkMutexes();
 
+    void checkMergeArguments();
+
 private:
     bool isContainerSize(const Token *containerToken, const Token *expr) const;
     bool isContainerSizeGE(const Token * containerToken, const Token *expr) const;
@@ -233,6 +236,8 @@ private:
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);
 
+    void checkMergeArgumentsError(const Token *tok);
+
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         ErrorPath errorPath;
         CheckStl c(nullptr, settings, errorLogger);
@@ -272,6 +277,7 @@ private:
         c.knownEmptyContainerError(nullptr, "");
         c.globalLockGuardError(nullptr);
         c.localMutexError(nullptr);
+        c.checkMergeArgumentsError(nullptr);
     }
 
     static std::string myName() {
@@ -296,7 +302,8 @@ private:
                "- reading from empty STL container\n"
                "- iterating over an empty STL container\n"
                "- consider using an STL algorithm instead of raw loop\n"
-               "- incorrect locking with mutex\n";
+               "- incorrect locking with mutex\n"
+               "- comparing pointers instead of objects in merge\n";
     }
 };
 /// @}
