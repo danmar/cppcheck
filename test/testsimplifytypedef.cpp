@@ -17,7 +17,6 @@
  */
 
 
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -45,7 +44,7 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void run() OVERRIDE {
+    void run() override {
         settings0.severity.enable(Severity::style);
         settings2.severity.enable(Severity::style);
 

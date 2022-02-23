@@ -25,6 +25,7 @@ import argparse
 import codecs
 import string
 import copy
+import subprocess
 
 try:
     from itertools import izip as zip
@@ -421,6 +422,28 @@ def get_type_conversion_to_from(token):
             return (lhs.variable.typeStartToken, rhs.variable.typeStartToken)
 
     return None
+
+
+def is_composite_expr(expr, composite_operator=False):
+    """MISRA C 2012, section 8.10.3"""
+    if expr is None:
+        return False
+
+    if not composite_operator:
+        if (expr.str in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~')):
+            return is_composite_expr(expr.astOperand1,True) or is_composite_expr(expr.astOperand2, True)
+        if expr.str == '?' and simpleMatch(expr.astOperand2, ':'):
+            colon = expr.astOperand2
+            return is_composite_expr(colon.astOperand1,True) or is_composite_expr(colon.astOperand2, True)
+        return False
+
+    # non constant expression?
+    if expr.isNumber:
+        return False
+    if expr.astOperand1 or expr.astOperand2:
+        return is_composite_expr(expr.astOperand1,True) or is_composite_expr(expr.astOperand2, True)
+    return True
+
 
 def getEssentialTypeCategory(expr):
     if not expr:
@@ -1009,16 +1032,14 @@ def isNoReturnScope(tok):
 
 
 # Return the token which the value is assigned to
-def getAssignedVariableToken(valueToken):
-    if not valueToken:
+def getAssignedVariableToken(vartok):
+    if not vartok:
         return None
-    if not valueToken.astParent:
-        return None
-    operator = valueToken.astParent
-    if operator.isAssignmentOp:
-        return operator.astOperand1
-    if operator.isArithmeticalOp:
-        return getAssignedVariableToken(operator)
+    parent = vartok.astParent
+    while parent and parent.isArithmeticalOp:
+        parent = parent.astParent
+    if parent and parent.isAssignmentOp:
+        return parent.astOperand1
     return None
 
 # If the value is used as a return value, return the function definition
@@ -1296,6 +1317,8 @@ class MisraChecker:
         self._ctu_summary_tagnames = False
         self._ctu_summary_identifiers = False
         self._ctu_summary_usage = False
+
+        self.premium_addon = None
 
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
@@ -1759,41 +1782,9 @@ class MisraChecker:
                 self.reportError(tok, 7, 1)
 
     def misra_7_2(self, data):
-        # Large constant numbers that are assigned to a variable should have an
-        # u/U suffix if the variable type is unsigned.
-        def reportErrorIfMissingSuffix(variable, value):
-            if 'U' in value.str.upper():
-                return
-            if value and value.isNumber:
-                if variable and variable.valueType and variable.valueType.sign == 'unsigned':
-                    if variable.valueType.type in ['char', 'short', 'int', 'long', 'long long']:
-                        limit = 1 << (bitsOfEssentialType(variable.valueType.type) -1)
-                        v = value.getKnownIntValue()
-                        if v is not None and v >= limit:
-                            self.reportError(value, 7, 2)
-
         for token in data.tokenlist:
-            # Check normal variable assignment
-            if token.valueType and token.isNumber:
-                variable = getAssignedVariableToken(token)
-                reportErrorIfMissingSuffix(variable, token)
-
-            # Check use as function parameter
-            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
-                functionDeclaration = token.astOperand1.function
-
-                if functionDeclaration.tokenDef:
-                    if functionDeclaration.tokenDef is token.astOperand1:
-                        # Token is not a function call, but it is the definition of the function
-                        continue
-
-                    parametersUsed = getArguments(token)
-                    for i in range(len(parametersUsed)):
-                        usedParameter = parametersUsed[i]
-                        if usedParameter.isNumber:
-                            parameterDefinition = functionDeclaration.argument.get(i+1)
-                            if parameterDefinition and parameterDefinition.nameToken:
-                                reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
+            if token.isInt and ('U' not in token.str.upper()) and token.valueType and token.valueType.sign == 'unsigned':
+                self.reportError(token, 7, 2)
 
     def misra_7_3(self, rawTokens):
         compiled = re.compile(r'^[0-9.]+[Uu]*l+[Uu]*$')
@@ -2277,8 +2268,7 @@ class MisraChecker:
         for token in data.tokenlist:
             if token.str != '=' or not token.astOperand1 or not token.astOperand2:
                 continue
-            if (token.astOperand2.str not in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~') and
-                    not isCast(token.astOperand2)):
+            if not is_composite_expr(token.astOperand2):
                 continue
             vt1 = token.astOperand1.valueType
             vt2 = token.astOperand2.valueType
@@ -4058,7 +4048,10 @@ class MisraChecker:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
-                errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
+                if self.premium_addon:
+                    errmsg = subprocess.check_output([self.premium_addon, '--get-rule-text=' + errorId]).strip().decode('ascii')
+                else:
+                    errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 errmsg = 'misra violation %s with no text in the supplied rule-texts-file' % (ruleNum)
 
@@ -4392,6 +4385,10 @@ class MisraChecker:
             self.executeCheck(2209, self.misra_22_9, cfg)
             self.executeCheck(2210, self.misra_22_10, cfg)
 
+            # Premium MISRA checking, deep analysis
+            if cfgNumber == 0 and self.premium_addon:
+                subprocess.call([self.premium_addon, '--misra', dumpfile])
+
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []
         all_tagname_info = []
@@ -4575,6 +4572,7 @@ def get_args_parser():
     parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("--severity", type=str, help="Set a custom severity string, for example 'error' or 'warning'. ")
+    parser.add_argument("--premium-addon", type=str, default=None, help=argparse.SUPPRESS)
     return parser
 
 
@@ -4583,6 +4581,8 @@ def main():
     args = parser.parse_args()
     settings = MisraSettings(args)
     checker = MisraChecker(settings)
+
+    checker.premium_addon = args.premium_addon
 
     if args.generate_table:
         generateTable()
@@ -4644,6 +4644,13 @@ def main():
                 sys.exit(exitCode)
 
     checker.analyse_ctu_info(ctu_info_files)
+
+    if args.file_list and args.premium_addon:
+        premium_command = [args.premium_addon, '--misra', '--file-list', args.file_list]
+        if args.cli:
+            premium_command.append('--cli')
+        for line in subprocess.check_output(premium_command).decode('ascii').split('\n'):
+            print(line.strip())
 
     if settings.verify:
         sys.exit(exitCode)

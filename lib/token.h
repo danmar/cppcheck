@@ -651,6 +651,13 @@ public:
         setFlag(fIsTemplate, b);
     }
 
+    bool isSimplifiedScope() const {
+        return getFlag(fIsSimplifedScope);
+    }
+    void isSimplifiedScope(bool b) {
+        setFlag(fIsSimplifedScope, b);
+    }
+
     bool isBitfield() const {
         return mImpl->mBits > 0;
     }
@@ -1254,7 +1261,8 @@ private:
         fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
         fIsImplicitInt          = (1U << 31),   // Is "int" token implicitly added?
         fIsInline               = (1ULL << 32), // Is this a inline type
-        fIsTemplate             = (1ULL << 33)
+        fIsTemplate             = (1ULL << 33),
+        fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ...; ...)
     };
 
     Token::Type mTokType;

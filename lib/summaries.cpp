@@ -58,10 +58,11 @@ std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg
         }
 
         // Write summary for function
+        // cppcheck-suppress varid0
         auto join = [](const std::set<std::string> &data) -> std::string {
             std::string ret;
             const char *sep = "";
-            for (std::string d: data)
+            for (const std::string &d: data)
             {
                 ret += sep + d;
                 sep = ",";

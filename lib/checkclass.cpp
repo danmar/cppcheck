@@ -819,9 +819,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         // Calling member function?
-        else if (Token::simpleMatch(ftok, "operator= (") &&
-                 ftok->previous()->str() != "::") {
-            if (ftok->function() && ftok->function()->nestedIn == scope) {
+        else if (Token::simpleMatch(ftok, "operator= (")) {
+            if (ftok->function()) {
                 const Function *member = ftok->function();
                 // recursive call
                 // assume that all variables are initialized
@@ -2038,12 +2037,28 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
         }
     } while (again);
 
-    for (const Variable &var : scope->varlist) {
+    for (const Variable& var : scope->varlist) {
         if (var.name() == tok->str()) {
-            if (tok->varId() == 0)
-                mSymbolDatabase->debugMessage(tok, "varid0", "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
+            const Token* fqTok = tok;
+            while (Token::Match(fqTok->tokAt(-2), "%name% ::"))
+                fqTok = fqTok->tokAt(-2);
+            if (fqTok->strAt(-1) == "::")
+                fqTok = fqTok->previous();
+            bool isMember = tok == fqTok;
+            std::string scopeStr;
+            const Scope* curScope = scope;
+            while (!isMember && curScope && curScope->type != Scope::ScopeType::eGlobal) {
+                scopeStr.insert(0, curScope->className + " :: ");
+                isMember = Token::Match(fqTok, scopeStr.c_str());
 
-            return !var.isStatic();
+                curScope = curScope->nestedIn;
+            }
+            if (isMember) {
+                if (tok->varId() == 0)
+                    mSymbolDatabase->debugMessage(tok, "varid0", "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
+
+                return !var.isStatic();
+            }
         }
     }
 
@@ -2131,9 +2146,7 @@ bool CheckClass::isConstMemberFunc(const Scope *scope, const Token *tok) const
     return false;
 }
 
-
-// The container contains the STL types whose operator[] is not a const.
-static const std::set<std::string> stl_containers_not_const = { "map", "unordered_map" };
+const std::set<std::string> CheckClass::stl_containers_not_const = { "map", "unordered_map" };
 
 bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& memberAccessed) const
 {
@@ -2216,8 +2229,14 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 const Variable *var = lastVarTok->variable();
                 if (!var)
                     return false;
-                if (var->isStlType() // assume all std::*::size() and std::*::empty() are const
-                    && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy")))
+                if ((var->isStlType() // assume all std::*::size() and std::*::empty() are const
+                     && (Token::Match(end, "size|empty|cend|crend|cbegin|crbegin|max_size|length|count|capacity|get_allocator|c_str|str ( )") || Token::Match(end, "rfind|copy"))) ||
+
+                    (lastVarTok->valueType() && lastVarTok->valueType()->container &&
+                     ((lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::START_ITERATOR) ||
+                      (lastVarTok->valueType()->container->getYield(end->str()) == Library::Container::Yield::END_ITERATOR))
+                     && (tok1->previous()->isComparisonOp() ||
+                         (tok1->previous()->isAssignmentOp() && tok1->tokAt(-2)->variable() && Token::Match(tok1->tokAt(-2)->variable()->typeEndToken(), "const_iterator|const_reverse_iterator")))))
                     ;
                 else if (!var->typeScope() || !isConstMemberFunc(var->typeScope(), end))
                     return false;

@@ -104,15 +104,15 @@ protected:
 
     void processOptions(const options& args);
 public:
-    void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
-    void reportErr(const ErrorMessage &msg) OVERRIDE;
+    void bughuntingReport(const std::string & /*str*/) override {}
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
+    void reportErr(const ErrorMessage &msg) override;
     void run(const std::string &str);
     static void printHelp();
     const std::string classname;
 
     explicit TestFixture(const char * const _name);
-    ~TestFixture() OVERRIDE {}
+    ~TestFixture() override {}
 
     static std::size_t runTests(const options& args);
 };

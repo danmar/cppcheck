@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "pathmatch.h"
 #include "testsuite.h"
 
@@ -39,7 +38,7 @@ private:
     const PathMatch fooCppMatcher;
     const PathMatch srcFooCppMatcher;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(emptymaskemptyfile);
         TEST_CASE(emptymaskpath1);
         TEST_CASE(emptymaskpath2);

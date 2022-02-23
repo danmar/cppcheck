@@ -409,28 +409,35 @@ bool ImportProject::importCompileCommands(std::istream &istr)
 
         const std::string directory = dirpath;
 
-        std::ostringstream comm;
-        if (obj.find("arguments") != obj.end()) {
+        std::string command;
+        if (obj.count("arguments")) {
             if (obj["arguments"].is<picojson::array>()) {
                 for (const picojson::value& arg : obj["arguments"].get<picojson::array>()) {
                     if (arg.is<std::string>()) {
-                        comm << arg.get<std::string>() << " ";
+                        command += arg.get<std::string>() + " ";
                     }
                 }
             } else {
                 printError("'arguments' field in compilation database entry is not a JSON array");
                 return false;
             }
-        } else if (obj.find("command") != obj.end()) {
+        } else if (obj.count("command")) {
             if (obj["command"].is<std::string>()) {
-                comm << obj["command"].get<std::string>();
+                command = obj["command"].get<std::string>();
+            } else {
+                printError("'command' field in compilation database entry is not a string");
+                return false;
             }
         } else {
             printError("no 'arguments' or 'command' field found in compilation database entry");
             return false;
         }
 
-        const std::string command = comm.str();
+        if (!obj.count("file") || !obj["file"].is<std::string>()) {
+            printError("skip compilation database entry because it does not have a proper 'file' field");
+            continue;
+        }
+
         const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
         // Accept file?
@@ -466,15 +473,17 @@ bool ImportProject::importSln(std::istream &istr, const std::string &path, const
 {
     std::string line;
 
-    // skip magic word
     if (!std::getline(istr,line)) {
         printError("Visual Studio solution file is empty");
         return false;
     }
 
-    if (!std::getline(istr, line) || line.find("Microsoft Visual Studio Solution File") != 0) {
-        printError("Visual Studio solution file header not found");
-        return false;
+    if (line.find("Microsoft Visual Studio Solution File") != 0) {
+        // Skip BOM
+        if (!std::getline(istr, line) || line.find("Microsoft Visual Studio Solution File") != 0) {
+            printError("Visual Studio solution file header not found");
+            return false;
+        }
     }
 
     std::map<std::string,std::string,cppcheck::stricmp> variables;
@@ -773,7 +782,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
             if (!guiProject.checkVsConfigs.empty()) {
                 bool doChecking = false;
-                for (std::string config : guiProject.checkVsConfigs)
+                for (const std::string& config : guiProject.checkVsConfigs)
                     if (config == p.configuration) {
                         doChecking = true;
                         break;

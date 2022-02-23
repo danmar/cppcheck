@@ -121,7 +121,7 @@ static void bufferOverflow(const Token *tok, const ExprEngine::Value &value, Exp
     int overflowArgument = 0;
     bool bailout = false;
 
-    for (auto argNrChecks: func->argumentChecks) {
+    for (const auto &argNrChecks: func->argumentChecks) {
         const int argnr = argNrChecks.first;
         const Library::ArgumentChecks &checks = argNrChecks.second;
         if (argnr <= 0 || argnr > arguments.size() || checks.minsizes.empty())

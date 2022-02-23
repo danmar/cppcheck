@@ -18,7 +18,6 @@
 
 
 #include "astutils.h"
-#include "config.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -35,7 +34,7 @@ public:
 
 private:
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(findLambdaEndTokenTest);
         TEST_CASE(findLambdaStartTokenTest);
         TEST_CASE(isNullOperandTest);

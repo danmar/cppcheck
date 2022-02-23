@@ -1366,7 +1366,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             mExitCode = 1;
             continue;
         }
-        if (addon != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
+        if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
             continue;
 
         const std::string results =
@@ -1646,7 +1646,6 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
         const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);
         const std::string columnNumString = line.substr(endLinePos + 1, endColumnPos - endLinePos - 1);
-        const std::string errorTypeString = line.substr(endColumnPos + 1, endMsgTypePos - endColumnPos - 1);
         const std::string messageString = line.substr(endMsgTypePos + 1, endErrorPos - endMsgTypePos - 1);
         const std::string errorString = line.substr(endErrorPos, line.length());
 

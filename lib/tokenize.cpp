@@ -78,7 +78,7 @@ static bool isEnumStart(const Token* tok)
 {
     if (!tok || tok->str() != "{")
         return false;
-    return (tok->strAt(-1) == "enum") || (tok->strAt(-2) == "enum");
+    return (tok->strAt(-1) == "enum") || (tok->strAt(-2) == "enum") || Token::Match(tok->tokAt(-3), "enum class %name%");
 }
 
 template<typename T>
@@ -2134,7 +2134,7 @@ namespace {
                     if (tempScope->usingNamespaces.find(scope) != tempScope->usingNamespaces.end())
                         return true;
                 } else {
-                    for (auto ns : tempScope->usingNamespaces) {
+                    for (const auto &ns : tempScope->usingNamespaces) {
                         if (scope == ns + " :: " + qualification)
                             return true;
                     }
@@ -2910,7 +2910,7 @@ void Tokenizer::combineOperators()
             const char c2 = tok->next()->str()[0];
 
             // combine +-*/ and =
-            if (c2 == '=' && (std::strchr("+-*/%|^=!<>", c1))) {
+            if (c2 == '=' && (std::strchr("+-*/%|^=!<>", c1)) && !Token::Match(tok->previous(), "%type% *")) {
                 // skip templates
                 if (cpp && (tok->str() == ">" || Token::simpleMatch(tok->previous(), "> *"))) {
                     const Token* opening =
@@ -4286,7 +4286,10 @@ void Tokenizer::setVarIdPass2()
         while (Token::Match(tokStart, ":: %name%") || tokStart->str() == "<") {
             if (tokStart->str() == "<") {
                 // skip the template part
-                tokStart = tokStart->findClosingBracket()->next();
+                const Token* closeTok = tokStart->findClosingBracket();
+                if (!closeTok)
+                    syntaxError(tok);
+                tokStart = closeTok->next();
             } else {
                 classnameTokens.push_back(tokStart->next());
                 tokStart = tokStart->tokAt(2);
@@ -8833,6 +8836,7 @@ void Tokenizer::simplifyIfSwitchForInit()
         tok->str("{");
         endscope->insertToken("}");
         Token::createMutualLinks(tok, endscope->next());
+        tok->isSimplifiedScope(true);
     }
 }
 
@@ -10289,8 +10293,10 @@ void Tokenizer::findGarbageCode() const
             unknownMacroError(tok);
 
         // Assign/increment/decrement literal
-        else if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--"))
-            syntaxError(tok, tok->next()->str() + " " + tok->strAt(2));
+        else if (Token::Match(tok, "!!) %num%|%str%|%char% %assign%|++|--")) {
+            if (!isCPP() || mSettings->standards.cpp < Standards::CPP20 || !Token::Match(tok->previous(), "%name% : %num% ="))
+                syntaxError(tok, tok->next()->str() + " " + tok->strAt(2));
+        }
 
         if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for|switch")) { // if|while|for|switch (EXPR) { ... }
             if (tok->previous() && !Token::Match(tok->previous(), "%name%|:|;|{|}|)")) {
@@ -11565,12 +11571,12 @@ void Tokenizer::simplifyBitfields()
             !Token::Match(tok->next(), "case|public|protected|private|class|struct") &&
             !Token::simpleMatch(tok->tokAt(2), "default :")) {
             Token *tok1 = (tok->next()->str() == "const") ? tok->tokAt(3) : tok->tokAt(2);
-            if (Token::Match(tok1, "%name% : %num% ;"))
+            if (Token::Match(tok1, "%name% : %num% [;=]"))
                 tok1->setBits(MathLib::toLongNumber(tok1->strAt(2)));
             if (tok1 && tok1->tokAt(2) &&
                 (Token::Match(tok1->tokAt(2), "%bool%|%num%") ||
                  !Token::Match(tok1->tokAt(2), "public|protected|private| %type% ::|<|,|{|;"))) {
-                while (tok1->next() && !Token::Match(tok1->next(), "[;,)]{}]")) {
+                while (tok1->next() && !Token::Match(tok1->next(), "[;,)]{}=]")) {
                     if (Token::Match(tok1->next(), "[([]"))
                         Token::eraseTokens(tok1, tok1->next()->link());
                     tok1->deleteNext();

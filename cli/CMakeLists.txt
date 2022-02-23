@@ -37,9 +37,13 @@ endif()
 if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
     target_link_libraries(cppcheck ${tinyxml2_LIBRARY})
 endif()
+if (USE_THREADS)
+    target_link_libraries(cppcheck ${CMAKE_THREAD_LIBS_INIT})
+endif()
 
 add_dependencies(cppcheck copy_cfg)
 add_dependencies(cppcheck copy_addons)
+add_dependencies(cppcheck run-dmake)
 
 install(TARGETS cppcheck
     RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR}

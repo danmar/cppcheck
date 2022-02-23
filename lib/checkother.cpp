@@ -28,10 +28,10 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
+#include "checkclass.h" // CheckClass::stl_containers_not_const
 
 #include <algorithm> // find_if()
 #include <cctype>
@@ -40,6 +40,7 @@
 #include <memory>
 #include <ostream>
 #include <set>
+#include <type_traits>
 #include <utility>
 #include <numeric>
 
@@ -301,11 +302,13 @@ void CheckOther::warningOldStylePointerCast()
             tok = scope->bodyStart;
         for (; tok && tok != scope->bodyEnd; tok = tok->next()) {
             // Old style pointer casting..
-            if (!Token::Match(tok, "( const|volatile| const|volatile| %type% * const| ) (| %name%|%num%|%bool%|%char%|%str%"))
+            if (!Token::Match(tok, "( const|volatile| const|volatile|class|struct| %type% * const|&| ) (| %name%|%num%|%bool%|%char%|%str%"))
+                continue;
+            if (Token::Match(tok->previous(), "%type%"))
                 continue;
 
             // skip first "const" in "const Type* const"
-            while (Token::Match(tok->next(), "const|volatile"))
+            while (Token::Match(tok->next(), "const|volatile|class|struct"))
                 tok = tok->next();
             const Token* typeTok = tok->next();
             // skip second "const" in "const Type* const"
@@ -316,8 +319,7 @@ void CheckOther::warningOldStylePointerCast()
             if (p->hasKnownIntValue() && p->values().front().intvalue==0) // Casting nullpointers is safe
                 continue;
 
-            // Is "type" a class?
-            if (typeTok->type())
+            if (typeTok->tokType() == Token::eType || typeTok->tokType() == Token::eName)
                 cstyleCastError(tok);
         }
     }
@@ -1066,8 +1068,13 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
 
         if (tok->varId() == var->declarationId()) {
             used = true;
-            if (scope->type == Scope::eSwitch && scope == tok->scope())
-                return false; // Used in outer switch scope - unsafe or impossible to reduce scope
+            if (scope == tok->scope()) {
+                if (scope->type == Scope::eSwitch)
+                    return false; // Used in outer switch scope - unsafe or impossible to reduce scope
+
+                if (scope->bodyStart && scope->bodyStart->isSimplifiedScope())
+                    return false; // simplified if/for/switch init statement
+            }
         }
     }
 
@@ -1156,6 +1163,7 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
 
     int cumulatedSize = 0;
     const bool isUnion = type->classScope->type == Scope::ScopeType::eUnion;
+    // cppcheck-suppress varid0
     const auto accumulateSize = [](int& cumulatedSize, int size, bool isUnion) -> void {
         if (isUnion)
             cumulatedSize = std::max(cumulatedSize, size);
@@ -1296,14 +1304,18 @@ void CheckOther::checkPassByReference()
 
         bool inconclusive = false;
 
-        if (var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER) {} else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
-            // Ensure that it is a large object.
-            if (!var->type()->classScope)
-                inconclusive = true;
-            else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->sizeof_pointer)
+        const bool isContainer = var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER && var->valueType()->container && !var->valueType()->container->view;
+        if (!isContainer) {
+            if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
+                // Ensure that it is a large object.
+                if (!var->type()->classScope)
+                    inconclusive = true;
+                else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->sizeof_pointer)
+                    continue;
+            }
+            else
                 continue;
-        } else
-            continue;
+        }
 
         if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
             continue;
@@ -1498,11 +1510,21 @@ void CheckOther::checkConstVariable()
         if (var->isReference()) {
             bool callNonConstMethod = false;
             for (const Token* tok = var->nameToken(); tok != scope->bodyEnd && tok != nullptr; tok = tok->next()) {
-                if (tok->variable() == var && Token::Match(tok, "%var% . * ( & %name% ::")) {
-                    const Token *ftok = tok->linkAt(3)->previous();
-                    if (!ftok->function() || !ftok->function()->isConst())
-                        callNonConstMethod = true;
-                    break;
+                if (tok->variable() == var) {
+                    if (Token::Match(tok, "%var% . * ( & %name% ::")) {
+                        const Token* ftok = tok->linkAt(3)->previous();
+                        if (!ftok->function() || !ftok->function()->isConst())
+                            callNonConstMethod = true;
+                        break;
+                    }
+                    if (var->isStlType() && Token::Match(tok, "%var% [")) { // containers whose operator[] is non-const
+                        const Token* typeTok = var->typeStartToken() ? var->typeStartToken()->tokAt(2) : nullptr;
+                        const auto& notConst = CheckClass::stl_containers_not_const;
+                        if (typeTok && notConst.find(typeTok->str()) != notConst.end()) {
+                            callNonConstMethod = true;
+                            break;
+                        }
+                    }
                 }
             }
             if (callNonConstMethod)
@@ -1578,8 +1600,15 @@ void CheckOther::checkConstPointer()
 }
 void CheckOther::constVariableError(const Variable *var, const Function *function)
 {
-    const std::string vartype((var && var->isArgument()) ? "Parameter" : "Variable");
-    const std::string varname(var ? var->name() : std::string("x"));
+    if (!var) {
+        reportError(nullptr, Severity::style, "constParameter", "Parameter 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constVariable",  "Variable 'x' can be declared with const");
+        reportError(nullptr, Severity::style, "constParameterCallback", "Parameter 'x' can be declared with const, however it seems that 'f' is a callback function.");
+        return;
+    }
+
+    const std::string vartype(var->isArgument() ? "Parameter" : "Variable");
+    const std::string varname(var->name());
 
     ErrorPath errorPath;
     std::string id = "const" + vartype;
@@ -3246,7 +3275,10 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
     }
     if (scope->type == Scope::eLambda)
         return nullptr;
-    return findShadowed(scope->nestedIn, varname, linenr);
+    const Token* shadowed = findShadowed(scope->nestedIn, varname, linenr);
+    if (!shadowed)
+        shadowed = findShadowed(scope->functionOf, varname, linenr);
+    return shadowed;
 }
 
 void CheckOther::checkShadowVariables()
@@ -3278,6 +3310,8 @@ void CheckOther::checkShadowVariables()
             }
 
             const Token *shadowed = findShadowed(scope.nestedIn, var.name(), var.nameToken()->linenr());
+            if (!shadowed)
+                shadowed = findShadowed(scope.functionOf, var.name(), var.nameToken()->linenr());
             if (!shadowed)
                 continue;
             if (scope.type == Scope::eFunction && scope.className == var.name())

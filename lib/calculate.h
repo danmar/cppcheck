@@ -48,6 +48,7 @@ bool isZero(T x)
 template<class R, class T>
 R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {
+    // cppcheck-suppress varid0
     auto wrap = [](T z) {
         return R{z};
     };

@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "importproject.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -33,7 +32,7 @@ public:
     using ImportProject::importCompileCommands;
     using ImportProject::importCppcheckGuiProject;
 
-    bool sourceFileExists(const std::string & /*file*/) OVERRIDE {
+    bool sourceFileExists(const std::string & /*file*/) override {
         return true;
     }
 };
@@ -45,7 +44,7 @@ public:
 
 private:
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(setDefines);
         TEST_CASE(setIncludePaths1);
         TEST_CASE(setIncludePaths2);
@@ -58,6 +57,7 @@ private:
         TEST_CASE(importCompileCommands6); // Windows/CMake/Ninja generated comile_commands.json with spaces
         TEST_CASE(importCompileCommands7); // linux: "/home/danielm/cppcheck 2"
         TEST_CASE(importCompileCommands8); // Windows: "C:\Users\danielm\cppcheck"
+        TEST_CASE(importCompileCommands9);
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
@@ -243,12 +243,22 @@ private:
             }])";
         std::istringstream istr(json);
         TestImporter importer;
+        importer.importCompileCommands(istr); // Do not crash
+    }
+
+    void importCompileCommands9() const {
+        // IAR output (https://sourceforge.net/p/cppcheck/discussion/general/thread/608af51e0a/)
+        const char json[] =
+            R"([{
+              "arguments" : [
+                 "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File d:\\Projekte\\xyz\\firmware\\app\\xyz-lib\\build.ps1 -IAR -COMPILER_PATH \"c:\\Program Files (x86)\\IAR Systems\\Embedded Workbench 9.0\" -CONTROLLER CC1310F128 -LIB LIB_PERMANENT -COMPILER_DEFINES \"CC1310_HFXO_FREQ=24000000 DEBUG\""
+              ],
+              "directory" : "d:\\Projekte\\xyz\\firmware\\app",
+              "type" : "PRE"
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
         importer.importCompileCommands(istr);
-        ASSERT_EQUALS(1, importer.fileSettings.size());
-        ASSERT_EQUALS("FILESDIR=\"C:\\Program Files\\Cppcheck\"", importer.fileSettings.begin()->defines);
-        ASSERT_EQUALS(2, importer.fileSettings.begin()->includePaths.size());
-        ASSERT_EQUALS("C:/Users/danielm/cppcheck/build/lib/", importer.fileSettings.begin()->includePaths.front());
-        ASSERT_EQUALS("C:/Users/danielm/cppcheck/lib/", importer.fileSettings.begin()->includePaths.back());
     }
 
     void importCompileCommandsArgumentsSection() const {

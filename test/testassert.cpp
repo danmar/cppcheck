@@ -18,7 +18,6 @@
 
 
 #include "checkassert.h"
-#include "config.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -49,7 +48,7 @@ private:
         checkAssert.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
 
         TEST_CASE(assignmentInAssert);

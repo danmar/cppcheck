@@ -17,7 +17,6 @@
  */
 
 #include "checkunusedvar.h"
-#include "config.h"
 #include "errortypes.h"
 #include "preprocessor.h"
 #include "settings.h"
@@ -35,7 +34,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::information);
         settings.checkLibrary = true;
@@ -127,6 +126,7 @@ private:
         TEST_CASE(localvar58); // #9901 - increment false positive
         TEST_CASE(localvar59); // #9737
         TEST_CASE(localvar60);
+        TEST_CASE(localvar61); // #9407
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -3293,6 +3293,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvar61() { // #9407
+        functionVariableUsage("void g(int& i);\n"
+                              "void f() {\n"
+                              "    int var = 0;\n"
+                              "    g(var);\n"
+                              "    var = 2;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'var' is assigned a value that is never used.\n", errout.str());
+    }
+
     void localvarloops() {
         // loops
         functionVariableUsage("void fun(int c) {\n"
@@ -3319,7 +3329,7 @@ private:
                               "    if (y) { x=10; break; }\n"
                               "  }\n"
                               "}");
-        ASSERT_EQUALS("", errout.str()); // TODO : in this special case we can ignore that x is aliased. x is local and there are no function calls after the assignment
+        ASSERT_EQUALS("[test.cpp:6]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("void fun() {\n"
                               "  int x = 0;\n"
@@ -3352,6 +3362,61 @@ private:
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'sum' is assigned a value that is never used.\n"
                       "[test.cpp:5]: (style) Variable 'sum' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f(int c) {\n" // #7908
+                              "    int b = 0;\n"
+                              "    while (g()) {\n"
+                              "        int a = c;\n"
+                              "        b = a;\n"
+                              "        if (a == 4)\n"
+                              "            a = 5;\n"
+                              "    }\n"
+                              "    h(b);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f(const std::vector<int>& v) {\n"
+                              "    while (g()) {\n"
+                              "        const std::vector<int>& v2 = h();\n"
+                              "        if (std::vector<int>{ 1, 2, 3 }.size() > v2.size()) {}\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(const std::vector<int>& v) {\n"
+                              "    while (g()) {\n"
+                              "        const std::vector<int>& v2 = h();\n"
+                              "        if (std::vector<int>({ 1, 2, 3 }).size() > v2.size()) {}\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(const std::string &c) {\n"
+                              "    std::string s = str();\n"
+                              "    if (s[0] == '>')\n"
+                              "        s[0] = '<';\n"
+                              "    if (s == c) {}\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(bool b) {\n"
+                              "    std::map<std::string, std::vector<std::string>> m;\n"
+                              "    if (b) {\n"
+                              "        const std::string n = g();\n"
+                              "        std::vector<std::string> c = h();\n"
+                              "        m[n] = c;\n"
+                              "    }\n"
+                              "    j(m);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct S { int i; };\n"
+                              "S f(S s, bool b) {\n"
+                              "    if (b)\n"
+                              "        s.i = 1;\n"
+                              "    return s;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {

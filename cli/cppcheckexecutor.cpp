@@ -339,10 +339,10 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
     }
 #undef ADDRESSDISPLAYLENGTH
 #else
-    UNUSED(output);
-    UNUSED(demangling);
-    UNUSED(maxdepth);
-    UNUSED(lowMem);
+    (void)output;
+    (void)demangling;
+    (void)maxdepth;
+    (void)lowMem;
 #endif
 }
 
@@ -410,7 +410,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
     }
 #else
-    UNUSED(context);
+    (void)context;
     killid = getpid();
 #endif
 

@@ -19,9 +19,12 @@
 #ifndef GUARD_PROGRAMMEMORY_H
 #define GUARD_PROGRAMMEMORY_H
 
+#include "config.h"
 #include "mathlib.h"
-#include "utils.h"
 #include "valueflow.h" // needed for alias
+
+#include <cstddef>
+#include <functional>
 #include <map>
 #include <unordered_map>
 

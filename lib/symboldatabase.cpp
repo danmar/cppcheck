@@ -42,6 +42,7 @@
 #include <limits>
 #include <stack>
 #include <string>
+#include <type_traits>
 #include <unordered_map>
 #include <unordered_set>
 //---------------------------------------------------------------------------
@@ -754,7 +755,7 @@ void SymbolDatabase::createSymbolDatabaseClassInfo()
     for (Type& type : typeList) {
         // finish filling in base class info
         for (Type::BaseInfo & i : type.derivedFrom) {
-            const Type* found = findType(i.nameTok, type.enclosingScope);
+            const Type* found = findType(i.nameTok, type.enclosingScope, /*lookOutside*/ true);
             if (found && found->findDependency(&type)) {
                 // circular dependency
                 //mTokenizer->syntaxError(nullptr);
@@ -3966,6 +3967,7 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             argType = findVariableTypeIncludingUsedNamespaces(symbolDatabase, scope, typeTok);
 
             // save type
+            // cppcheck-suppress varid0
             const_cast<Token *>(typeTok)->type(argType);
         }
 
@@ -5041,7 +5043,7 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
         for (std::multimap<std::string, const Function *>::const_iterator it = scope->functionMap.find(tok->str()); it != scope->functionMap.cend() && it->first == tok->str(); ++it) {
             const Function *func = it->second;
             if (!isCall || args == func->argCount() ||
-                (func->isVariadic() && args >= (func->argCount() - 1)) ||
+                (func->isVariadic() && args >= (func->minArgCount() - 1)) ||
                 (args < func->argCount() && args >= func->minArgCount())) {
                 matches.push_back(func);
             }
@@ -5187,9 +5189,13 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                     vartok = vartok->astOperand1();
                 const Variable* var = vartok->variable();
                 // smart pointer deref?
-                if (var && vartok->astParent() && vartok->astParent()->str() == "*" &&
-                    var->isSmartPointer() && var->valueType() && var->valueType()->smartPointerTypeToken)
-                    var = var->valueType()->smartPointerTypeToken->variable();
+                bool unknownDeref = false;
+                if (var && vartok->astParent() && vartok->astParent()->str() == "*") {
+                    if (var->isSmartPointer() && var->valueType() && var->valueType()->smartPointerTypeToken)
+                        var = var->valueType()->smartPointerTypeToken->variable();
+                    else
+                        unknownDeref = true;
+                }
                 ValueType::MatchResult res = ValueType::matchParameter(arguments[j]->valueType(), var, funcarg);
                 if (res == ValueType::MatchResult::SAME)
                     ++same;
@@ -5198,6 +5204,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
                 else if (res == ValueType::MatchResult::FALLBACK2)
                     ++fallback2;
                 else if (res == ValueType::MatchResult::NOMATCH) {
+                    if (unknownDeref)
+                        continue;
                     // can't match so remove this function from possible matches
                     matches.erase(matches.begin() + i);
                     erased = true;
@@ -5495,7 +5503,7 @@ const Scope *SymbolDatabase::findScope(const Token *tok, const Scope *startScope
 
 //---------------------------------------------------------------------------
 
-const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startScope) const
+const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startScope, bool lookOutside) const
 {
     // skip over struct or union
     if (Token::Match(startTok, "struct|union"))
@@ -5540,6 +5548,9 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
                 type = scope1->definedType;
                 if (type)
                     return type;
+            } else if (scope->type == Scope::ScopeType::eNamespace && lookOutside) {
+                scope = scope->nestedIn;
+                continue;
             } else
                 break;
         }

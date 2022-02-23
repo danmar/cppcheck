@@ -18,7 +18,6 @@
 
 
 #include "checkautovariables.h"
-#include "config.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -49,7 +48,7 @@ private:
         checkAutoVariables.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::style);
         LOAD_LIB_2(settings.library, "std.cfg");
@@ -2955,6 +2954,13 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:11] -> [test.cpp:10] -> [test.cpp:11]: (error) Non-local variable 'mMoreData.data1' will use pointer to local variable 'data'.\n",
             errout.str());
+
+        // #10784
+        check("template <class... Ts>\n"
+              "auto f(int i, Ts&... xs) {\n"
+              "    return std::tie(xs[i]...);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeFunction() {

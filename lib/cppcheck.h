@@ -60,7 +60,7 @@ public:
     /**
      * @brief Destructor.
      */
-    ~CppCheck() OVERRIDE;
+    ~CppCheck() override;
 
     /**
      * @brief This starts the actual checking. Note that you must call
@@ -197,26 +197,26 @@ private:
      * "[filepath:line number] Message", e.g.
      * "[main.cpp:4] Uninitialized member variable"
      */
-    void reportErr(const ErrorMessage &msg) OVERRIDE;
+    void reportErr(const ErrorMessage &msg) override;
 
     /**
      * @brief Information about progress is directed here.
      *
      * @param outmsg Message to show, e.g. "Checking main.cpp..."
      */
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
 
-    void bughuntingReport(const std::string &str) OVERRIDE;
+    void bughuntingReport(const std::string &str) override;
 
     std::list<std::string> mErrorList;
     Settings mSettings;
 
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) OVERRIDE;
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
     /**
      * Output information messages.
      */
-    void reportInfo(const ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorMessage &msg) override;
 
     ErrorLogger &mErrorLogger;
 

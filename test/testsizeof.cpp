@@ -17,7 +17,6 @@
  */
 
 #include "checksizeof.h"
-#include "config.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -38,7 +37,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::portability);
         settings.certainty.enable(Certainty::inconclusive);

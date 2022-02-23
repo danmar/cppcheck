@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "path.h"
 #include "testsuite.h"
 
@@ -29,7 +28,7 @@ public:
 
 private:
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(removeQuotationMarks);
         TEST_CASE(acceptFile);
         TEST_CASE(getCurrentPath);

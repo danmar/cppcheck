@@ -14,6 +14,21 @@
 #include <time.h>
 #include <memory.h>
 #include <mbstring.h>
+#include <wchar.h>
+
+int ignoredReturnValue__wtoi_l(const wchar_t *str, _locale_t locale)
+{
+    // cppcheck-suppress ignoredReturnValue
+    _wtoi_l(str,locale);
+    return _wtoi_l(str,locale);
+}
+
+int ignoredReturnValue__atoi_l(const char *str, _locale_t locale)
+{
+    // cppcheck-suppress ignoredReturnValue
+    _atoi_l(str,locale);
+    return _atoi_l(str,locale);
+}
 
 void invalidFunctionArg__fseeki64(FILE* stream, __int64 offset, int origin)
 {
@@ -513,7 +528,7 @@ void memleak_HeapAlloc()
 void memleak_LocalAlloc()
 {
     LPTSTR pszBuf;
-    // cppcheck-suppress LocalAllocCalled
+    // cppcheck-suppress [LocalAllocCalled, cstyleCast]
     pszBuf = (LPTSTR)LocalAlloc(LPTR, MAX_PATH*sizeof(TCHAR));
     (void)LocalSize(pszBuf);
     (void)LocalFlags(pszBuf);
@@ -767,6 +782,10 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     // cppcheck-suppress ignoredReturnValue
     _fileno(pFileUninit);
+}
+
+void unreferencedParameter(int i) {
+    UNREFERENCED_PARAMETER(i);
 }
 
 void errorPrintf()

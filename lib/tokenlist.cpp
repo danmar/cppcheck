@@ -497,7 +497,7 @@ struct AST_state {
     explicit AST_state(bool cpp) : depth(0), inArrayAssignment(0), cpp(cpp), assign(0), inCase(false),stopAtColon(false), functionCallEndPar(nullptr) {}
 };
 
-static Token * skipDecl(Token *tok)
+static Token* skipDecl(Token* tok, std::vector<Token*>* inner = nullptr)
 {
     if (!Token::Match(tok->previous(), "( %name%"))
         return tok;
@@ -510,7 +510,9 @@ static Token * skipDecl(Token *tok)
                 return tok;
         } else if (Token::Match(vartok, "%var% [:=(]")) {
             return vartok;
-        } else if (Token::simpleMatch(vartok, "decltype (") && !Token::Match(tok->linkAt(1), ") [,)]")) {
+        } else if (Token::Match(vartok, "decltype|typeof (") && !Token::Match(tok->linkAt(1), ") [,)]")) {
+            if (inner)
+                inner->push_back(vartok->tokAt(2));
             return vartok->linkAt(1)->next();
         }
         vartok = vartok->next();
@@ -790,9 +792,9 @@ static void compileTerm(Token *&tok, AST_state& state)
             }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
             Token* tok2 = tok;
-            tok = skipDecl(tok);
-            if (Token::simpleMatch(tok2, "decltype (")) {
-                Token* tok3 = tok2->next();
+            std::vector<Token*> inner;
+            tok = skipDecl(tok, &inner);
+            for (Token* tok3 : inner) {
                 AST_state state1(state.cpp);
                 compileExpression(tok3, state1);
             }
@@ -1434,9 +1436,9 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             }
         }
 
-        Token *tok2 = skipDecl(tok->tokAt(2));
-        if (Token::simpleMatch(tok->tokAt(2), "decltype (")) {
-            Token* tok3 = tok->tokAt(4);
+        std::vector<Token*> inner;
+        Token* tok2 = skipDecl(tok->tokAt(2), &inner);
+        for (Token* tok3 : inner) {
             AST_state state1(cpp);
             compileExpression(tok3, state1);
         }

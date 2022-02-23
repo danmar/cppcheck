@@ -25,7 +25,6 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "utils.h"
 
 #include <string>
 #include <vector>
@@ -57,7 +56,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckOther checkOther(tokenizer, settings, errorLogger);
 
         // Checks
@@ -289,7 +288,7 @@ private:
     void comparePointersError(const Token *tok, const ValueFlow::Value *v1, const ValueFlow::Value *v2);
     void checkModuloOfOneError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckOther c(nullptr, settings, errorLogger);
 
         ErrorPath errorPath;
@@ -370,7 +369,7 @@ private:
         return "Other";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Other checks\n"
 
                // error

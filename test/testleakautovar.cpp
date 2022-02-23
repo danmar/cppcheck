@@ -18,7 +18,6 @@
 
 
 #include "checkleakautovar.h"
-#include "config.h"
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
@@ -45,7 +44,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         int id = 0;
         while (!Library::ismemory(++id));
         settings.library.setalloc("malloc", id, -1);
@@ -161,6 +160,8 @@ private:
         TEST_CASE(ifelse20); // #10182
         TEST_CASE(ifelse21);
         TEST_CASE(ifelse22); // #10187
+        TEST_CASE(ifelse23); // #5473
+        TEST_CASE(ifelse24); // #1733
 
         // switch
         TEST_CASE(switch1);
@@ -1710,6 +1711,61 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void ifelse23() { // #5473
+        check("void f() {\n"
+              "    if (FILE* fp = fopen(\"x\", \"r\")) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:2]: (error) Resource leak: fp\n", errout.str());
+    }
+
+    void ifelse24() { // #1733
+        Settings s;
+        LOAD_LIB_2(s.library, "std.cfg");
+        LOAD_LIB_2(s.library, "posix.cfg");
+
+        check("void f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp;\n"
+              "    if (NULL == x || NULL == (fp = fopen(temp, \"rt\")))\n"
+              "        return;\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: temp\n"
+                      "[test.cpp:6]: (error) Memory leak: temp\n"
+                      "[test.cpp:6]: (error) Resource leak: fp\n",
+                      errout.str());
+
+        check("FILE* f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp = fopen(temp, \"rt\");\n"
+              "    return fp;\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: temp\n", errout.str());
+
+        check("FILE* f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp = NULL;\n"
+              "    fopen_s(&fp, temp, \"rt\");\n"
+              "    return fp;\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: temp\n", errout.str());
+
+        check("void f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp = fopen(\"a.txt\", \"rb\");\n"
+              "    if (fp)\n"
+              "        freopen(temp, \"rt\", fp);\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: temp\n"
+                      "[test.cpp:6]: (error) Resource leak: fp\n",
+                      errout.str());
+
+        check("FILE* f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    return fopen(temp, \"rt\");\n"
+              "}\n", s);
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: temp\n", "", errout.str());
+    }
+
     void switch1() {
         check("void f() {\n"
               "    char *p = 0;\n"
@@ -2312,7 +2368,7 @@ private:
         c.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
@@ -2363,7 +2419,7 @@ private:
         checkLeak.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(returnedValue); // #9298
@@ -2411,7 +2467,7 @@ private:
         checkLeak.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         TEST_CASE(heapDoubleFree);

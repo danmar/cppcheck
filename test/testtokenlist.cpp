@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
@@ -32,7 +31,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(testaddtoken1);
         TEST_CASE(testaddtoken2);
         TEST_CASE(inc);

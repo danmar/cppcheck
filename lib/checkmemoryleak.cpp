@@ -26,7 +26,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "utils.h"
 
 #include <algorithm>
 #include <unordered_set>
@@ -539,7 +538,7 @@ void CheckMemoryLeakInClass::check()
     // only check classes and structures
     for (const Scope * scope : symbolDatabase->classAndStructScopes) {
         for (const Variable &var : scope->varlist) {
-            if (!var.isStatic() && var.isPointer()) {
+            if (!var.isStatic() && (var.isPointer() || var.isPointerArray())) {
                 // allocation but no deallocation of private variables in public function..
                 const Token *tok = var.typeStartToken();
                 // Either it is of standard type or a non-derived type
@@ -593,7 +592,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                 }
 
                 // Allocate..
-                if (!body || Token::Match(tok, "%varid% =", varid)) {
+                if (!body || Token::Match(tok, "%varid% =|[", varid)) {
                     // var1 = var2 = ...
                     // bail out
                     if (tok->strAt(-1) == "=")
@@ -605,7 +604,11 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                         tok->strAt(-2) != scope->className)
                         return;
 
-                    AllocType alloc = getAllocationType(tok->tokAt(body ? 2 : 3), 0);
+                    const Token* allocTok = tok->tokAt(body ? 2 : 3);
+                    if (tok->astParent() && tok->astParent()->str() == "[" && tok->astParent()->astParent())
+                        allocTok = tok->astParent()->astParent()->astOperand2();
+
+                    AllocType alloc = getAllocationType(allocTok, 0);
                     if (alloc != CheckMemoryLeak::No) {
                         if (constructor)
                             allocInConstructor = true;

@@ -18,7 +18,6 @@
 
 
 #include "checkvaarg.h"
-#include "config.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -48,7 +47,7 @@ private:
         checkVaarg.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
 
         TEST_CASE(wrongParameterTo_va_start);

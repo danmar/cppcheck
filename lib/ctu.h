@@ -26,7 +26,6 @@
 #include "check.h"
 #include "errorlogger.h"
 #include "mathlib.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <algorithm>
@@ -54,7 +53,7 @@ namespace CTU {
     public:
         enum class InvalidValueType { null, uninit, bufferOverflow };
 
-        std::string toString() const OVERRIDE;
+        std::string toString() const override;
 
         struct Location {
             Location() = default;

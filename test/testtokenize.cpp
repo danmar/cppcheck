@@ -48,7 +48,7 @@ private:
     Settings settings2;
     Settings settings_windows;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
 
         // If there are unused templates, keep those
@@ -347,6 +347,7 @@ private:
         TEST_CASE(simplifyOperatorName28);
         TEST_CASE(simplifyOperatorName29); // spaceship operator
         TEST_CASE(simplifyOperatorName31); // #6342
+        TEST_CASE(simplifyOperatorName32); // #10256
 
         TEST_CASE(simplifyOverloadedOperators1);
         TEST_CASE(simplifyOverloadedOperators2); // (*this)(123)
@@ -448,6 +449,8 @@ private:
         TEST_CASE(simplifyIfSwitchForInit3);
         TEST_CASE(simplifyIfSwitchForInit4);
         TEST_CASE(simplifyIfSwitchForInit5);
+
+        TEST_CASE(cpp20_default_bitfield_initializer);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -4907,6 +4910,12 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void simplifyOperatorName32() { // #10256
+        const char code[] = "void f(int* = nullptr) {}\n";
+        ASSERT_EQUALS("void f ( int * = nullptr ) { }", tokenizeAndStringify(code));
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void simplifyOperatorName10() { // #8746
         const char code1[] = "using a::operator=;";
         ASSERT_EQUALS("using a :: operator= ;", tokenizeAndStringify(code1));
@@ -6166,6 +6175,8 @@ private:
         ASSERT_EQUALS("decltypex({", testAst("decltype(x){};"));
         ASSERT_EQUALS("decltypexy+(yx+(", testAst("decltype(x+y)(y+x);"));
         ASSERT_EQUALS("decltypexy+(yx+{", testAst("decltype(x+y){y+x};"));
+        ASSERT_EQUALS("adecltypeac::(,decltypead::(,",
+                      testAst("template <typename a> void b(a &, decltype(a::c), decltype(a::d));"));
 
         // #10334: Do not hang!
         tokenizeAndStringify("void foo(const std::vector<std::string>& locations = {\"\"}) {\n"
@@ -7212,6 +7223,15 @@ private:
         settings.standards.cpp = Standards::CPP20;
         const char code[] = "void f() { if ([] { ; }) {} }";
         ASSERT_EQUALS("void f ( ) { if ( [ ] { ; } ) { } }", tokenizeAndStringify(code, settings));
+    }
+
+    void cpp20_default_bitfield_initializer() {
+        Settings settings;
+        const char code[] = "struct S { int a:2 = 0; };";
+        settings.standards.cpp = Standards::CPP20;
+        ASSERT_EQUALS("struct S { int a ; a = 0 ; } ;", tokenizeAndStringify(code, settings));
+        settings.standards.cpp = Standards::CPP17;
+        ASSERT_THROW(tokenizeAndStringify(code, settings), InternalError);
     }
 };
 

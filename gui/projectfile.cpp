@@ -973,7 +973,7 @@ bool ProjectFile::write(const QString &filename)
     if (!mVariableContracts.empty()) {
         xmlWriter.writeStartElement(CppcheckXml::VariableContractsElementName);
 
-        for (auto vc: mVariableContracts) {
+        for (const auto &vc: mVariableContracts) {
             xmlWriter.writeStartElement(CppcheckXml::VariableContractItemElementName);
             xmlWriter.writeAttribute(CppcheckXml::VariableContractVarName, vc.first);
             xmlWriter.writeAttribute(CppcheckXml::VariableContractMin, QString::fromStdString(vc.second.minValue));
