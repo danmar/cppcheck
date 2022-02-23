@@ -1370,8 +1370,11 @@ def reportSummary(dumpfile, summary_type, summary_data):
 
 def get_path_premium_addon():
     p = pathlib.Path(sys.argv[0]).parent.parent
-    p1 = os.path.join(p, 'premiumaddon')
-    p2 = os.path.join(p, 'cppcheck')
-    if os.path.isfile(p1) and os.path.isfile(p2):
-        return p1
+
+    for ext in ('.exe', ''):
+        p1 = os.path.join(p, 'premiumaddon' + ext)
+        p2 = os.path.join(p, 'cppcheck' + ext)
+        if os.path.isfile(p1) and os.path.isfile(p2):
+            print(p1)
+            return p1
     return None
