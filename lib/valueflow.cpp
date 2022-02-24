@@ -2177,7 +2177,7 @@ struct ValueFlowAnalyzer : Analyzer {
         if (value->isLifetimeValue()) {
             if (value->lifetimeKind != ValueFlow::Value::LifetimeKind::Iterator)
                 return Action::None;
-             if (!Token::Match(parent, "++|--|+="))
+            if (!Token::Match(parent, "++|--|+="))
                 return Action::None;
             return Action::Read | Action::Write;
         }
@@ -3474,12 +3474,7 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
     if (Token::Match(tok->previous(), "%var% {")) {
         std::list<ValueFlow::Value> values = tok->values();
         values.remove_if(&isNotLifetimeValue);
-        valueFlowForward(nextAfterAstRightmostLeaf(tok),
-                         getEndOfExprScope(tok),
-                         tok->previous(),
-                         values,
-                         tokenlist,
-                         settings);
+        valueFlowForward(nextAfterAstRightmostLeaf(tok), getEndOfExprScope(tok), tok->previous(), values, tokenlist, settings);
         return;
     }
     Token *parent = tok->astParent();
@@ -3508,8 +3503,12 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
 
         if (expr->exprId() > 0) {
-            valueFlowForwardExpression(
-                const_cast<Token*>(nextExpression), endOfVarScope->next(), expr, values, tokenlist, settings);
+            valueFlowForwardExpression(const_cast<Token*>(nextExpression),
+                                       endOfVarScope->next(),
+                                       expr,
+                                       values,
+                                       tokenlist,
+                                       settings);
 
             for (ValueFlow::Value& val : values) {
                 if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
@@ -3517,11 +3516,15 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
             }
             // TODO: handle `[`
             if (Token::simpleMatch(parent->astOperand1(), ".")) {
-                const Token* parentLifetime = getParentLifetime(tokenlist->isCPP(), parent->astOperand1()->astOperand2(), &settings->library);
+                const Token* parentLifetime =
+                    getParentLifetime(tokenlist->isCPP(), parent->astOperand1()->astOperand2(), &settings->library);
                 if (parentLifetime && parentLifetime->exprId() > 0) {
-                    valueFlowForward(
-                        const_cast<Token*>(nextExpression), endOfVarScope, parentLifetime, values, tokenlist, settings);
-
+                    valueFlowForward(const_cast<Token*>(nextExpression),
+                                     endOfVarScope,
+                                     parentLifetime,
+                                     values,
+                                     tokenlist,
+                                     settings);
                 }
             }
         }
