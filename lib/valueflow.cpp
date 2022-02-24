@@ -5555,7 +5555,7 @@ struct ConditionHandler {
             while (Token::Match(condTop->astParent(), "%oror%|&&|!"))
                 condTop = condTop->astParent();
 
-            if (Token::Match(condTop->astParent(), "?")) {
+            if (Token::simpleMatch(condTop->astParent(), "?")) {
                 Token* colon = condTop->astParent()->astOperand2();
                 forward(colon->astOperand1(), cond.vartok, thenValues, tokenlist, settings);
                 forward(colon->astOperand2(), cond.vartok, elseValues, tokenlist, settings);
