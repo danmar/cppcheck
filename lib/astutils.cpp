@@ -514,6 +514,70 @@ const Token* getParentLifetime(const Token* tok)
     return tok;
 }
 
+static std::vector<const Token*> getParentMembers(const Token* tok)
+{
+    if (!tok)
+        return {};
+    if (!Token::simpleMatch(tok->astParent(), "."))
+        return {tok};
+    const Token* parent = tok;
+    while (Token::simpleMatch(parent->astParent(), "."))
+        parent = parent->astParent();
+    std::vector<const Token*> result;
+    for (const Token* tok2 : astFlatten(parent, ".")) {
+        if (Token::simpleMatch(tok2, "(") && Token::simpleMatch(tok2->astOperand1(), ".")) {
+            std::vector<const Token*> sub = getParentMembers(tok2->astOperand1());
+            result.insert(result.end(), sub.begin(), sub.end());
+        }
+        result.push_back(tok2);
+    }
+    return result;
+}
+
+const Token* getParentLifetime(bool cpp, const Token* tok, const Library* library)
+{
+    std::vector<const Token*> members = getParentMembers(tok);
+    if (members.size() < 2)
+        return tok;
+    // Find the first local variable or temporary
+    auto it = std::find_if(members.rbegin(), members.rend(), [&](const Token* tok2) {
+        const Variable* var = tok2->variable();
+        if (var) {
+            return var->isLocal() || var->isArgument();
+        } else {
+            return isTemporary(cpp, tok2, library);
+        }
+    });
+    if (it == members.rend())
+        return tok;
+    // If any of the submembers are borrowed types then stop
+    if (std::any_of(it.base() - 1, members.end() - 1, [&](const Token* tok2) {
+        if (astIsPointer(tok2) || astIsContainerView(tok2) || astIsIterator(tok2))
+            return true;
+        if (!astIsUniqueSmartPointer(tok2)) {
+            if (astIsSmartPointer(tok2))
+                return true;
+            const Token* dotTok = tok2->next();
+            if (!Token::simpleMatch(dotTok, ".")) {
+                const Token* endTok = nextAfterAstRightmostLeaf(tok2);
+                if (!endTok)
+                    dotTok = tok2->next();
+                else if (Token::simpleMatch(endTok, "."))
+                    dotTok = endTok;
+                else if (Token::simpleMatch(endTok->next(), "."))
+                    dotTok = endTok->next();
+            }
+            // If we are dereferencing the member variable then treat it as borrowed
+            if (Token::simpleMatch(dotTok, ".") && dotTok->originalName() == "->")
+                return true;
+        }
+        const Variable* var = tok2->variable();
+        return var && var->isReference();
+    }))
+        return nullptr;
+    return *it;
+}
+
 bool astIsLHS(const Token* tok)
 {
     if (!tok)
@@ -2708,9 +2772,9 @@ const Token* getLHSVariableToken(const Token* tok)
     if (tok->astOperand1()->varId() > 0)
         return tok->astOperand1();
     const Token* vartok = getLHSVariableRecursive(tok->astOperand1());
-    if (!vartok)
-        return tok->astOperand1();
-    return vartok;
+    if (vartok && vartok->variable() && vartok->variable()->nameToken() == vartok)
+        return vartok;
+    return tok->astOperand1();
 }
 
 const Token* findAllocFuncCallToken(const Token *expr, const Library &library)
