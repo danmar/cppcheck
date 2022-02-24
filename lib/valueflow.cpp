@@ -2168,13 +2168,19 @@ struct ValueFlowAnalyzer : Analyzer {
         const ValueFlow::Value* value = getValue(tok);
         if (!value)
             return Action::None;
-        if (!(value->isIntValue() || value->isFloatValue() || value->isSymbolicValue()))
+        if (!(value->isIntValue() || value->isFloatValue() || value->isSymbolicValue() || value->isLifetimeValue()))
             return Action::None;
         const Token* parent = tok->astParent();
         // Only if its invertible
         if (value->isImpossible() && !Token::Match(parent, "+=|-=|*=|++|--"))
             return Action::None;
-
+        if (value->isLifetimeValue()) {
+            if (value->lifetimeKind != ValueFlow::Value::LifetimeKind::Iterator)
+                return Action::None;
+            if (!Token::Match(parent, "++|--|+="))
+                return Action::None;
+            return Action::Read | Action::Write;
+        }
         if (parent && parent->isAssignmentOp() && astIsLHS(tok) &&
             parent->astOperand2()->hasKnownValue()) {
             const Token* rhs = parent->astOperand2();
@@ -2205,6 +2211,9 @@ struct ValueFlowAnalyzer : Analyzer {
         if (!value)
             return;
         if (!tok->astParent())
+            return;
+        // Lifetime value doesn't change
+        if (value->isLifetimeValue())
             return;
         if (tok->astParent()->isAssignmentOp()) {
             const ValueFlow::Value* rhsValue =
@@ -3459,43 +3468,13 @@ const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope, bool
     return end;
 }
 
-static const Token* getEndOfVarScope(const Token* tok, const std::vector<const Variable*>& vars)
-{
-    const Token* endOfVarScope = nullptr;
-    for (const Variable* var : vars) {
-        const Scope *varScope = nullptr;
-        if (var && (var->isLocal() || var->isArgument()) && var->typeStartToken()->scope()->type != Scope::eNamespace)
-            varScope = var->typeStartToken()->scope();
-        else if (!endOfVarScope) {
-            varScope = tok->scope();
-            // A "local member" will be a expression like foo.x where foo is a local variable.
-            // A "global member" will be a member that belongs to a global object.
-            const bool globalMember = vars.size() == 1; // <- could check if it's a member here also but it seems redundant
-            if (var && (var->isGlobal() || var->isNamespace() || globalMember)) {
-                // Global variable => end of function
-                while (varScope->isLocal())
-                    varScope = varScope->nestedIn;
-            }
-        }
-        if (varScope && (!endOfVarScope || precedes(endOfVarScope, varScope->bodyEnd))) {
-            endOfVarScope = varScope->bodyEnd;
-        }
-    }
-    return endOfVarScope;
-}
-
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     // Forward lifetimes to constructed variable
     if (Token::Match(tok->previous(), "%var% {")) {
         std::list<ValueFlow::Value> values = tok->values();
         values.remove_if(&isNotLifetimeValue);
-        valueFlowForward(nextAfterAstRightmostLeaf(tok),
-                         getEndOfVarScope(tok, {tok->variable()}),
-                         tok->previous(),
-                         values,
-                         tokenlist,
-                         settings);
+        valueFlowForward(nextAfterAstRightmostLeaf(tok), getEndOfExprScope(tok), tok->previous(), values, tokenlist, settings);
         return;
     }
     Token *parent = tok->astParent();
@@ -3512,9 +3491,9 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         if (!isLifetimeBorrowed(parent->astOperand2(), settings))
             return;
 
-        std::vector<const Variable*> vars = getLHSVariables(parent);
+        const Token* expr = getLHSVariableToken(parent);
 
-        const Token* endOfVarScope = getEndOfVarScope(tok, vars);
+        const Token* endOfVarScope = getEndOfExprScope(expr);
 
         // Only forward lifetime values
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
@@ -3523,23 +3502,30 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         // Skip RHS
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
 
-        if (Token::Match(parent->astOperand1(), ".|[|(") && parent->astOperand1()->exprId() > 0) {
-            valueFlowForwardExpression(
-                const_cast<Token*>(nextExpression), endOfVarScope, parent->astOperand1(), values, tokenlist, settings);
+        if (expr->exprId() > 0) {
+            valueFlowForwardExpression(const_cast<Token*>(nextExpression),
+                                       endOfVarScope->next(),
+                                       expr,
+                                       values,
+                                       tokenlist,
+                                       settings);
 
             for (ValueFlow::Value& val : values) {
                 if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
                     val.lifetimeKind = ValueFlow::Value::LifetimeKind::SubObject;
             }
-        }
-        for (const Variable* var : vars) {
-            valueFlowForward(
-                const_cast<Token*>(nextExpression), endOfVarScope, var->nameToken(), values, tokenlist, settings);
-
-            if (tok->astTop() && Token::simpleMatch(tok->astTop()->previous(), "for (") &&
-                Token::simpleMatch(tok->astTop()->link(), ") {")) {
-                Token* start = tok->astTop()->link()->next();
-                valueFlowForward(start, start->link(), var->nameToken(), values, tokenlist, settings);
+            // TODO: handle `[`
+            if (Token::simpleMatch(parent->astOperand1(), ".")) {
+                const Token* parentLifetime =
+                    getParentLifetime(tokenlist->isCPP(), parent->astOperand1()->astOperand2(), &settings->library);
+                if (parentLifetime && parentLifetime->exprId() > 0) {
+                    valueFlowForward(const_cast<Token*>(nextExpression),
+                                     endOfVarScope,
+                                     parentLifetime,
+                                     values,
+                                     tokenlist,
+                                     settings);
+                }
             }
         }
         // Constructor
@@ -4915,7 +4901,7 @@ static void valueFlowForwardAssign(Token* const tok,
 {
     if (Token::simpleMatch(tok->astParent(), "return"))
         return;
-    const Token* endOfVarScope = getEndOfVarScope(tok, vars);
+    const Token* endOfVarScope = getEndOfExprScope(expr);
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
         values.remove_if(std::mem_fn(&ValueFlow::Value::isLifetimeValue));
