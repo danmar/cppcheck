@@ -3201,11 +3201,11 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
 
         code = "bool g(int);\n"
-                "auto f(int* x) {\n"
-                "    if (!g(x ?\n"
-                "        *x :\n"
-                "        0)) {}\n"
-                "}\n";
+               "auto f(int* x) {\n"
+               "    if (!g(x ?\n"
+               "        *x :\n"
+               "        0)) {}\n"
+               "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
