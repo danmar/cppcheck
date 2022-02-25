@@ -92,6 +92,7 @@ private:
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterSwap);
         TEST_CASE(valueFlowAfterCondition);
+        TEST_CASE(valueFlowAfterConditionTernary);
         TEST_CASE(valueFlowAfterConditionExpr);
         TEST_CASE(valueFlowAfterConditionSeveralNot);
         TEST_CASE(valueFlowForwardCompoundAssign);
@@ -3158,6 +3159,54 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 0));
         ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));
+    }
+
+    void valueFlowAfterConditionTernary()
+    {
+        const char* code;
+
+        code = "auto f(int x) {\n"
+               "    return x == 3 ?\n"
+               "        x :\n"
+               "        0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
+
+        code = "auto f(int x) {\n"
+               "    return x != 3 ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
+
+        code = "auto f(int x) {\n"
+               "    return !(x == 3) ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
+
+        code = "auto f(int* x) {\n"
+               "    return x ?\n"
+               "        x :\n"
+               "        0;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "auto f(int* x) {\n"
+               "    return x ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
+        code = "bool g(int);\n"
+               "auto f(int* x) {\n"
+               "    if (!g(x ?\n"
+               "        *x :\n"
+               "        0)) {}\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowAfterConditionExpr() {

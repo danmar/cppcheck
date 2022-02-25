@@ -5298,7 +5298,7 @@ struct ConditionHandler {
                 if (!top)
                     continue;
 
-                if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?"))
+                if (!Token::Match(top->previous(), "if|while|for (") && !Token::Match(tok->astParent(), "&&|%oror%|?|!"))
                     continue;
                 for (const Condition& cond : parse(tok, tokenlist->getSettings())) {
                     if (!cond.vartok)
@@ -5430,8 +5430,6 @@ struct ConditionHandler {
                         ErrorLogger* errorLogger,
                         const Settings* settings) const {
         traverseCondition(tokenlist, symboldatabase, [&](const Condition& cond, Token* tok, const Scope* scope) {
-            if (Token::simpleMatch(tok->astParent(), "?"))
-                return;
             const Token* top = tok->astTop();
 
             std::list<ValueFlow::Value> thenValues;
@@ -5526,6 +5524,31 @@ struct ConditionHandler {
                 }
             }
 
+            // if astParent is "!" we need to invert codeblock
+            {
+                const Token* tok2 = tok;
+                while (tok2 && tok2->astParent() && tok2->astParent()->str() != "?") {
+                    const Token* parent = tok2->astParent();
+                    while (parent && parent->str() == "&&")
+                        parent = parent->astParent();
+                    if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false")))
+                        std::swap(thenValues, elseValues);
+                    tok2 = parent;
+                }
+            }
+
+            Token* condTop = tok;
+            while (Token::Match(condTop->astParent(), "%oror%|&&|!"))
+                condTop = condTop->astParent();
+
+            if (Token::simpleMatch(condTop->astParent(), "?")) {
+                Token* colon = condTop->astParent()->astOperand2();
+                forward(colon->astOperand1(), cond.vartok, thenValues, tokenlist, settings);
+                forward(colon->astOperand2(), cond.vartok, elseValues, tokenlist, settings);
+                // TODO: Handle after condition
+                return;
+            }
+
             if (!Token::Match(top->previous(), "if|while|for ("))
                 return;
 
@@ -5580,19 +5603,6 @@ struct ConditionHandler {
                         v.condition = nullptr;
                         v.conditional = true;
                     }
-                }
-            }
-
-            // if astParent is "!" we need to invert codeblock
-            {
-                const Token* tok2 = tok;
-                while (tok2->astParent()) {
-                    const Token* parent = tok2->astParent();
-                    while (parent && parent->str() == "&&")
-                        parent = parent->astParent();
-                    if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false")))
-                        std::swap(thenValues, elseValues);
-                    tok2 = parent;
                 }
             }
 
