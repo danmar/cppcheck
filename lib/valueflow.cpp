@@ -5541,7 +5541,7 @@ struct ConditionHandler {
             // if astParent is "!" we need to invert codeblock
             {
                 const Token* tok2 = tok;
-                while (tok2 && tok2->astParent()) {
+                while (tok2 && tok2->astParent() && tok2->astParent()->str() != "?") {
                     const Token* parent = tok2->astParent();
                     while (parent && parent->str() == "&&")
                         parent = parent->astParent();

@@ -3179,6 +3179,13 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
 
+        code = "auto f(int x) {\n"
+               "    return !(x == 3) ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
+
         code = "auto f(int* x) {\n"
                "    return x ?\n"
                "        x :\n"
@@ -3192,6 +3199,14 @@ private:
                "        x;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
+        code = "bool g(int);\n"
+                "auto f(int* x) {\n"
+                "    if (!g(x ?\n"
+                "        *x :\n"
+                "        0)) {}\n"
+                "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
