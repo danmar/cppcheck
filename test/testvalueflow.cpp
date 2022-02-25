@@ -3161,35 +3161,36 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));
     }
 
-    void valueFlowAfterConditionTernary() {
+    void valueFlowAfterConditionTernary()
+    {
         const char* code;
 
         code = "auto f(int x) {\n"
-                "    return x == 3 ?\n"
-                "        x :\n"
-                "        0;\n"
-                "}\n";
+               "    return x == 3 ?\n"
+               "        x :\n"
+               "        0;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
 
         code = "auto f(int x) {\n"
-                "    return x != 3 ?\n"
-                "        0 :\n"
-                "        x;\n"
-                "}\n";
+               "    return x != 3 ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
 
         code = "auto f(int* x) {\n"
-                "    return x ?\n"
-                "        x :\n"
-                "        0;\n"
-                "}\n";
+               "    return x ?\n"
+               "        x :\n"
+               "        0;\n"
+               "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
 
         code = "auto f(int* x) {\n"
-                "    return x ?\n"
-                "        0 :\n"
-                "        x;\n"
-                "}\n";
+               "    return x ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
     }
 
