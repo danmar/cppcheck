@@ -6083,32 +6083,32 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                              getProgramMemory(tok2->astTop(), expr, ValueFlow::Value(value), settings))))
             break;
 
-        else if (Token::simpleMatch(tok2, ") {") && Token::findmatch(tok2->link(), "%varid%", tok2, vartok->varId())) {
-            if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), vartok->varId())) {
-                if (settings->debugwarnings)
-                    bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
-                break;
-            }
-            if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
-            tok2 = tok2->next()->link();
-            if (Token::simpleMatch(tok2, "} else {")) {
-                if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), vartok->varId())) {
+        else if (Token::simpleMatch(tok2, ") {")) {
+            if (vartok->varId() && Token::findmatch(tok2->link(), "%varid%", tok2, vartok->varId())) {
+                if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(1), vartok->varId())) {
                     if (settings->debugwarnings)
                         bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
                     break;
                 }
-
-                tok2 = tok2->linkAt(2);
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "For loop variable skipping conditional scope");
+                tok2 = tok2->next()->link();
+                if (Token::simpleMatch(tok2, "} else {")) {
+                    if (Token::findmatch(tok2, "continue|break|return", tok2->linkAt(2), vartok->varId())) {
+                        if (settings->debugwarnings)
+                            bailout(tokenlist, errorLogger, tok2, "For loop variable bailout on conditional continue|break|return");
+                        break;
+                    }
+                    tok2 = tok2->linkAt(2);
+                }
             }
-        }
-
-        else if (Token::simpleMatch(tok2, ") {")) {
-            if (settings->debugwarnings)
-                bailout(tokenlist, errorLogger, tok2, "For loop skipping {} code");
-            tok2 = tok2->linkAt(1);
-            if (Token::simpleMatch(tok2, "} else {"))
-                tok2 = tok2->linkAt(2);
+            else {
+                if (settings->debugwarnings)
+                    bailout(tokenlist, errorLogger, tok2, "For loop skipping {} code");
+                tok2 = tok2->linkAt(1);
+                if (Token::simpleMatch(tok2, "} else {"))
+                    tok2 = tok2->linkAt(2);
+            }
         }
     }
 }
