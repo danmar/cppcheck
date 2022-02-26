@@ -3544,7 +3544,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 }
             }
 
-            if (cpp && tok3 && Token::simpleMatch(tok3->previous(), "] (") && Token::simpleMatch(tok3->link(), ") {"))
+            if (cpp && tok3 && Token::simpleMatch(tok3->previous(), "] (") && (Token::Match(tok3->link(), ") mutable| {") || Token::Match(tok3->link(), ") . %name%")))
                 isLambdaArg = true;
         }
 
@@ -4239,10 +4239,13 @@ void Tokenizer::setVarIdPass2()
             }
 
             Token* const tok1 = tok;
+            bool maybeinNS = false;
             if (Token::Match(tok->previous(), "!!:: %name% :: ~| %name%"))
                 tok = tok->next();
-            else if (Token::Match(tok->previous(), "!!:: %name% <") && Token::Match(tok->next()->findClosingBracket(),"> :: ~| %name%"))
+            else if (Token::Match(tok->previous(), "!!:: %name% <") && Token::Match(tok->next()->findClosingBracket(), "> :: ~| %name%"))
                 tok = tok->next()->findClosingBracket()->next();
+            else if (!usingnamespaces.empty() && tok->varId() == 0 && tok->isName() && !tok->isStandardType())
+                maybeinNS = true;
             else
                 continue;
 
@@ -4261,6 +4264,8 @@ void Tokenizer::setVarIdPass2()
                 syntaxError(tok);
             if (Token::Match(tok, "%name% ("))
                 allMemberFunctions.emplace_back(scope, usingnamespaces, tok1);
+            else if (maybeinNS)
+                allMemberVars.emplace_back(scope, usingnamespaces, tok1);
             else
                 allMemberVars.emplace_back(scope, usingnamespaces, tok1);
         }

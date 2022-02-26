@@ -344,6 +344,7 @@ private:
         TEST_CASE(simplifyKnownVariablesGlobalVars);
         TEST_CASE(simplifyKnownVariablesReturn);   // 3500 - return
         TEST_CASE(simplifyKnownVariablesPointerAliasFunctionCall); // #7440
+        TEST_CASE(simplifyKnownVariablesNamespace); // #10059
 
         TEST_CASE(simplifyCasts1);
         TEST_CASE(simplifyCasts2);
@@ -6872,6 +6873,31 @@ private:
                             "delete [ ] data ;\n"
                             "}";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code, /*simplify=*/ true));
+    }
+
+    void simplifyKnownVariablesNamespace() { // #10059
+        const char code[] = "namespace N {\n"
+                            "    const int n = 0;\n"
+                            "    namespace M { const int m = 0; }\n"
+                            "}\n"
+                            "using namespace N;\n"
+                            "int i(n);\n"
+                            "int j(M::m);\n"
+                            "using namespace N::M;\n"
+                            "int k(m);\n"
+                            "int l(N::M::m);\n";
+        const char exp[]  = "\n\n##file 0\n"
+                            "1: namespace N {\n"
+                            "2: const int n@1 = 0 ;\n"
+                            "3: namespace M { const int m@2 = 0 ; }\n"
+                            "4: }\n"
+                            "5: using namespace N ;\n"
+                            "6: int i ; i = n@1 ;\n"
+                            "7: int j ( M :: m@2 ) ;\n"
+                            "8: using namespace N :: M ;\n"
+                            "9: int k ; k = m@2 ;\n"
+                            "10: int l ( N :: M :: m@2 ) ;\n";
+        ASSERT_EQUALS(exp, tokenizeDebugListing(code));
     }
 
     void simplifyKnownVariablesClassMember() {
