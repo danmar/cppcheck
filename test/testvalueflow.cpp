@@ -92,6 +92,7 @@ private:
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterSwap);
         TEST_CASE(valueFlowAfterCondition);
+        TEST_CASE(valueFlowAfterConditionTernary);
         TEST_CASE(valueFlowAfterConditionExpr);
         TEST_CASE(valueFlowAfterConditionSeveralNot);
         TEST_CASE(valueFlowForwardCompoundAssign);
@@ -687,6 +688,18 @@ private:
         lifetimes = lifetimeValues(code, "( void * )");
         ASSERT_EQUALS(true, lifetimes.size() == 1);
         ASSERT_EQUALS(true, lifetimes.front() == "i");
+
+        code  = "struct T {\n" // #10810
+                "    static int g() { return 0; }\n"
+                "};\n"
+                "T t;\n"
+                "struct S { int i; };\n"
+                "S f() {\n"
+                "    S s = { decltype(t)::g() };\n"
+                "    return s;\n"
+                "};\n";
+        lifetimes = lifetimeValues(code, "=");
+        ASSERT_EQUALS(true, lifetimes.empty());
     }
 
     void valueFlowArrayElement() {
@@ -3148,6 +3161,54 @@ private:
         ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));
     }
 
+    void valueFlowAfterConditionTernary()
+    {
+        const char* code;
+
+        code = "auto f(int x) {\n"
+               "    return x == 3 ?\n"
+               "        x :\n"
+               "        0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
+
+        code = "auto f(int x) {\n"
+               "    return x != 3 ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
+
+        code = "auto f(int x) {\n"
+               "    return !(x == 3) ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
+
+        code = "auto f(int* x) {\n"
+               "    return x ?\n"
+               "        x :\n"
+               "        0;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "auto f(int* x) {\n"
+               "    return x ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
+        code = "bool g(int);\n"
+               "auto f(int* x) {\n"
+               "    if (!g(x ?\n"
+               "        *x :\n"
+               "        0)) {}\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+    }
+
     void valueFlowAfterConditionExpr() {
         const char* code;
 
@@ -4095,8 +4156,21 @@ private:
                "void b(S& s) {\n"
                "    for (*s.a = 1;;)\n"
                "        if (0) {}\n"
+               "}\n"
+               "struct T { S s; };\n"
+               "void b(T& t) {\n"
+               "    for (*&t.s.a[0] = 1;;)\n"
+               "        if (0) {}\n"
                "}\n";
-        testValueOfX(code, 0, 0); // <- don't crash
+        testValueOfX(code, 0, 0); // <- don't throw
+
+        code = "void f() {\n"
+               "    int p[2];\n"
+               "    for (p[0] = 0; p[0] <= 2; p[0]++) {\n"
+               "        for (p[1] = 0; p[1] <= 2 - p[0]; p[1]++) {}\n"
+               "    }\n"
+               "}\n";
+        testValueOfX(code, 0, 0); // <- don't throw
 
         code = "struct C {\n" // #10828
                "    int& v() { return i; }\n"
@@ -6306,6 +6380,23 @@ private:
                "  d(&f->a, c);\n"
                "}\n";
         valueOfTok(code, "f");
+
+        code = "struct bo {\n"
+               "  int b, c, a, d;\n"
+               "  char e, g, h, i, aa, j, k, l, m, n, o, p, q, r, t, u, v, w, x, y;\n"
+               "  long z, ab, ac, ad, f, ae, af, ag, ah, ai, aj, ak, al, am, an, ao, ap, aq, ar,\n"
+               "      as;\n"
+               "  short at, au, av, aw, ax, ay, az, ba, bb, bc, bd, be, bf, bg, bh, bi, bj, bk,\n"
+               "      bl, bm;\n"
+               "};\n"
+               "char bn;\n"
+               "void bp() {\n"
+               "  bo s;\n"
+               "  if (bn)\n"
+               "    return;\n"
+               "  s;\n"
+               "}\n";
+        valueOfTok(code, "s");
     }
 
     void valueFlowHang() {

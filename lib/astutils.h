@@ -149,6 +149,7 @@ const Token* astParentSkipParens(const Token* tok);
 const Token* getParentMember(const Token * tok);
 
 const Token* getParentLifetime(const Token* tok);
+const Token* getParentLifetime(bool cpp, const Token* tok, const Library* library);
 
 bool astIsLHS(const Token* tok);
 bool astIsRHS(const Token* tok);

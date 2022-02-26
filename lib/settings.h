@@ -228,8 +228,10 @@ public:
     /** Library */
     Library library;
 
+#ifdef THREADING_MODEL_FORK
     /** @brief Load average value */
     int loadAverage;
+#endif
 
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */

@@ -191,6 +191,7 @@ private:
         TEST_CASE(const72); // ticket #10520
         TEST_CASE(const73); // ticket #10735
         TEST_CASE(const74); // ticket #10671
+        TEST_CASE(const75); // ticket #10065
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -5961,6 +5962,36 @@ private:
                    "    for (std::vector<T*>::const_iterator it = v.begin(), end = v.end(); it != end; ++it) {}\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const75() { // #10065
+        checkConst("namespace N { int i = 0; }\n"
+                   "struct S {\n"
+                   "    int i;\n"
+                   "    void f() {\n"
+                   "        if (N::i) {}\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+
+        checkConst("int i = 0;\n"
+                   "struct S {\n"
+                   "    int i;\n"
+                   "    void f() {\n"
+                   "        if (::i) {}\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+
+        checkConst("namespace N {\n"
+                   "    struct S {\n"
+                   "        int i;\n"
+                   "        void f() {\n"
+                   "            if (N::S::i) {}\n"
+                   "        }\n"
+                   "    };\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'N::S::f' can be const.\n", errout.str());
     }
 
     void const_handleDefaultParameters() {

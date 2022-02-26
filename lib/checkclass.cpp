@@ -2037,12 +2037,28 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
         }
     } while (again);
 
-    for (const Variable &var : scope->varlist) {
+    for (const Variable& var : scope->varlist) {
         if (var.name() == tok->str()) {
-            if (tok->varId() == 0)
-                mSymbolDatabase->debugMessage(tok, "varid0", "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
+            const Token* fqTok = tok;
+            while (Token::Match(fqTok->tokAt(-2), "%name% ::"))
+                fqTok = fqTok->tokAt(-2);
+            if (fqTok->strAt(-1) == "::")
+                fqTok = fqTok->previous();
+            bool isMember = tok == fqTok;
+            std::string scopeStr;
+            const Scope* curScope = scope;
+            while (!isMember && curScope && curScope->type != Scope::ScopeType::eGlobal) {
+                scopeStr.insert(0, curScope->className + " :: ");
+                isMember = Token::Match(fqTok, scopeStr.c_str());
 
-            return !var.isStatic();
+                curScope = curScope->nestedIn;
+            }
+            if (isMember) {
+                if (tok->varId() == 0)
+                    mSymbolDatabase->debugMessage(tok, "varid0", "CheckClass::isMemberVar found used member variable \'" + tok->str() + "\' with varid 0");
+
+                return !var.isStatic();
+            }
         }
     }
 
