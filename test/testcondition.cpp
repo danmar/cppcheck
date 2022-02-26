@@ -3962,6 +3962,52 @@ private:
               "    return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10702
+        check("struct Object {\n"
+              "  int _count=0;\n"
+              "   void increment() { ++_count;}\n"
+              "   auto get() const { return _count; }\n"
+              "};\n"
+              "struct Modifier {\n"
+              "Object & _object;\n"
+              "  explicit Modifier(Object & object) : _object(object) {}\n"
+              "  void do_something() { _object.increment(); }\n"
+              "};\n"
+              "struct Foo {\n"
+              "  Object _object;\n"
+              "  void foo() {\n"
+              "    Modifier mod(_object);\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "    mod.do_something();\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Object {\n"
+              "  int _count=0;\n"
+              "   auto get() const;\n"
+              "};\n"
+              "struct Modifier {\n"
+              "Object & _object;\n"
+              "  explicit Modifier(Object & object);\n"
+              "  void do_something();\n"
+              "};\n"
+              "struct Foo {\n"
+              "  Object _object;\n"
+              "  void foo() {\n"
+              "    Modifier mod(_object);\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "    mod.do_something();\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
