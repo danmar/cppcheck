@@ -3544,7 +3544,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 }
             }
 
-            if (cpp && tok3 && Token::simpleMatch(tok3->previous(), "] (") && (Token::Match(tok3->link(), ") mutable| {") || Token::Match(tok3->link(), ") . %name%")))
+            if (cpp && tok3 && Token::simpleMatch(tok3->previous(), "] (") && Token::simpleMatch(tok3->link(), ") {"))
                 isLambdaArg = true;
         }
 
