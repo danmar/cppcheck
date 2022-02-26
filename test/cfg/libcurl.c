@@ -2,7 +2,7 @@
 // Test library configuration for libcurl.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=libcurl --enable=information --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/libcurl.c
+// $ cppcheck --check-library --library=libcurl --error-exitcode=1 --inline-suppr --suppress=missingIncludeSystem test/cfg/libcurl.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //

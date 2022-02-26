@@ -4601,7 +4601,6 @@ private:
 
     void uninitvar_configuration() {
         const auto oldSettings = settings;
-        settings.severity.enable(Severity::information);
         settings.checkLibrary = true;
 
         checkUninitVar("int f() {\n"

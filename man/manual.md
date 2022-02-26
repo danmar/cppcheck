@@ -925,7 +925,7 @@ Cppcheck already contains configurations for several libraries. They can be load
 
 ## Using your own custom .cfg file
 
-You can create and use your own .cfg files for your projects. Use `--check-library` and `--enable=information` to get hints about what you should configure.
+You can create and use your own .cfg files for your projects. Use `--check-library` to get hints about what you should configure.
 
 You can use the `Library Editor` in the `Cppcheck GUI` to edit configuration files. It is available in the `View` menu.
 

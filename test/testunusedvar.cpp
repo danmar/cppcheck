@@ -36,7 +36,6 @@ private:
 
     void run() override {
         settings.severity.enable(Severity::style);
-        settings.severity.enable(Severity::information);
         settings.checkLibrary = true;
         LOAD_LIB_2(settings.library, "std.cfg");
 

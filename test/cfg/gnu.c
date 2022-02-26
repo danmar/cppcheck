@@ -2,7 +2,7 @@
 // Test library configuration for gnu.cfg
 //
 // Usage:
-// $ cppcheck --check-library --library=gnu --enable=information --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/gnu.c
+// $ cppcheck --check-library --library=gnu --enable=style --error-exitcode=1 --suppress=missingIncludeSystem --inline-suppr test/cfg/gnu.c
 // =>
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
