@@ -5095,7 +5095,8 @@ private:
               "    A a{v};\n"
               "    v.push_back(1);\n"
               "    return a.i->front();\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
 
         check("struct A {\n"
@@ -5110,7 +5111,8 @@ private:
               "    A a{v};\n"
               "    v.push_back(1);\n"
               "    g(a);\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
     }
 
