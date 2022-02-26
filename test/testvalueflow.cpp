@@ -4098,7 +4098,6 @@ private:
                "}\n";
         testValueOfX(code, 0, 0); // <- don't crash
 
-        settings.debugwarnings = true;
         code = "struct C {\n" // #10828
                "    int& v() { return i; }\n"
                "    int& w() { return j; }\n"
@@ -4111,7 +4110,6 @@ private:
                "    }\n"
                "}\n";
         testValueOfX(code, 0, 0); // <- don't throw
-        EXPECT_EQ("[test.cpp:9]: (debug) valueflow.cpp:6107:valueFlowForLoopSimplify bailout: For loop skipping {} code\n", errout.str());
     }
 
     void valueFlowSubFunction() {
