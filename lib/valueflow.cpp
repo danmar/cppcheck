@@ -4078,7 +4078,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
                 LifetimeStore::forEach(args,
                                        "Passed to constructor of '" + t->name() + "'.",
                                        ValueFlow::Value::LifetimeKind::SubObject,
-                                       [&](LifetimeStore& ls) {
+                                       [&](const LifetimeStore& ls) {
                     const Variable* paramVar = argToParam.at(ls.argtok);
                     if (paramCapture.count(paramVar) == 0)
                         return;
