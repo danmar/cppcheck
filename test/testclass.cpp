@@ -7189,10 +7189,10 @@ private:
                                  "    void Copy(const Base& Src) override;\n"
                                  "    int i;\n"
                                  "};\n"
-                                 "Derived::Derived(const Derived & Src) {\n"
+                                 "Derived::Derived(const Derived& Src) {\n"
                                  "    Copy(Src);\n"
                                  "}\n"
-                                 "void Derived::Copy(const Base & Src) {\n"
+                                 "void Derived::Copy(const Base& Src) {\n"
                                  "    auto d = dynamic_cast<const Derived&>(Src);\n"
                                  "    i = d.i;\n"
                                  "}\n");
