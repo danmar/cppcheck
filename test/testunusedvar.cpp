@@ -66,6 +66,7 @@ private:
         TEST_CASE(structmember16); // #10485
         TEST_CASE(structmember17); // #10591
         TEST_CASE(structmember18); // #10684
+        TEST_CASE(structmember19); // #10826
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1405,7 +1406,7 @@ private:
                                "{\n"
                                "    ab->a = 0;\n"
                                "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) struct member 'AB::b' is never used.\n", errout.str());
 
         checkStructMemberUsage("struct AB\n"
                                "{\n"
@@ -1417,7 +1418,7 @@ private:
                                "{\n"
                                "    ab->a = 0;\n"
                                "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) struct member 'AB::b' is never used.\n", errout.str());
     }
 
     void structmember8() {
@@ -1624,6 +1625,32 @@ private:
                                "    return p[10];\n"
                                "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember19() { // #10826
+        checkStructMemberUsage("class C {};\n"
+                               "struct S {\n"
+                               "    char* p;\n"
+                               "    std::string str;\n"
+                               "    C c;\n"
+                               "};\n"
+                               "void f(S* s) {}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::p' is never used.\n"
+                      "[test.cpp:4]: (style) struct member 'S::str' is never used.\n"
+                      "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
+                      errout.str());
+
+        checkStructMemberUsage("class C {};\n"
+                               "struct S {\n"
+                               "    char* p;\n"
+                               "    std::string str;\n"
+                               "    C c;\n"
+                               "};\n"
+                               "void f(S& s) {}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::p' is never used.\n"
+                      "[test.cpp:4]: (style) struct member 'S::str' is never used.\n"
+                      "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
+                      errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
