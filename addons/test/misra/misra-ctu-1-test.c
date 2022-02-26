@@ -39,3 +39,4 @@ extern int misra_8_5;
 // cppcheck-suppress misra-c2012-8.6
 int32_t misra_8_6 = 1;
 
+void misra_8_7_external(void) {}
