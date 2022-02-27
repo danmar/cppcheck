@@ -2023,8 +2023,9 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 
         if (tok->str() == "this") {
             return true;
-        } else if (Token::simpleMatch(tok->tokAt(-3), "( * this )")) {
-            return true;
+        } else if (Token::Match(tok->tokAt(-3), "%name% ) . %name%")) {
+            tok = tok->tokAt(-3);
+            again = true;
         } else if (Token::Match(tok->tokAt(-2), "%name% . %name%")) {
             tok = tok->tokAt(-2);
             again = true;
