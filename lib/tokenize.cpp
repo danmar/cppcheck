@@ -4239,15 +4239,17 @@ void Tokenizer::setVarIdPass2()
             }
 
             Token* const tok1 = tok;
-            bool maybeinNS = false;
             if (Token::Match(tok->previous(), "!!:: %name% :: ~| %name%"))
                 tok = tok->next();
-            else if (Token::Match(tok->previous(), "!!:: %name% <") && Token::Match(tok->next()->findClosingBracket(), "> :: ~| %name%"))
+            else if (Token::Match(tok->previous(), "!!:: %name% <") && Token::Match(tok->next()->findClosingBracket(), " > :: ~| %name%"))
                 tok = tok->next()->findClosingBracket()->next();
-            else if (!usingnamespaces.empty() && tok->varId() == 0 && tok->isName() && !tok->isStandardType())
-                maybeinNS = true;
-            else
+            else if (usingnamespaces.empty() || tok->varId() || !tok->isName() || tok->isStandardType() || tok->tokType() == Token::eKeyword || tok->tokType() == Token::eBoolean ||
+                     Token::Match(tok->previous(), ".|namespace|class|struct|&|*|> %name%") || Token::Match(tok->previous(), "%type%| %name% ( %type%|)")|| Token::Match(tok, "public:|private:|protected:|"))
                 continue;
+
+            int i = 0;
+            if (tok->str() != "::")
+                i++;
 
             while (Token::Match(tok, ":: ~| %name%")) {
                 tok = tok->next();
@@ -4264,8 +4266,6 @@ void Tokenizer::setVarIdPass2()
                 syntaxError(tok);
             if (Token::Match(tok, "%name% ("))
                 allMemberFunctions.emplace_back(scope, usingnamespaces, tok1);
-            else if (maybeinNS)
-                allMemberVars.emplace_back(scope, usingnamespaces, tok1);
             else
                 allMemberVars.emplace_back(scope, usingnamespaces, tok1);
         }
