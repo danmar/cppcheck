@@ -1395,7 +1395,9 @@ class MisraChecker:
                 local_identifiers.append(identifier(var.nameToken))
             elif var.isStatic:
                 names.append(var.nameToken.str)
-                internal_identifiers.append(identifier(var.nameToken))
+                i = identifier(var.nameToken)
+                i['inlinefunc'] = False
+                internal_identifiers.append(i)
             else:
                 names.append(var.nameToken.str)
                 i = identifier(var.nameToken)
@@ -1406,9 +1408,14 @@ class MisraChecker:
             if func.tokenDef is None:
                 continue
             if func.isStatic:
-                internal_identifiers.append(identifier(func.tokenDef))
-            else:
                 i = identifier(func.tokenDef)
+                i['inlinefunc'] = func.isInlineKeyword
+                internal_identifiers.append(i)
+            else:
+                if func.token is None:
+                    i = identifier(func.tokenDef)
+                else:
+                    i = identifier(func.token)
                 i['decl'] = func.token is None
                 external_identifiers.append(i)
 
@@ -1427,12 +1434,12 @@ class MisraChecker:
                 continue
             if token.function and token.scope.isExecutable:
                 if (not token.function.isStatic) and (token.str not in names):
-                    names.append(token.str)
+                    names.append({'name': token.str, 'file': token.file})
             elif token.variable:
                 if token == token.variable.nameToken:
                     continue
                 if token.variable.access == 'Global' and (not token.variable.isStatic) and (token.str not in names):
-                    names.append(token.str)
+                    names.append({'name': token.str, 'file': token.file})
 
         if len(names) > 0:
             cppcheckdata.reportSummary(dumpfile, 'MisraUsage', names)
@@ -4397,7 +4404,7 @@ class MisraChecker:
         all_external_identifiers_def = {}
         all_internal_identifiers = {}
         all_local_identifiers = {}
-        all_usage_count = {}
+        all_usage_files = {}
 
         from cppcheckdata import Location
 
@@ -4475,8 +4482,9 @@ class MisraChecker:
                 if summary_type == 'MisraInternalIdentifiers':
                     for s in summary_data:
                         if s['name'] in all_internal_identifiers:
-                            self.reportError(Location(s), 5, 9)
-                            self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
+                            if not s['inlinefunc'] or s['file'] != all_internal_identifiers[s['name']]['file']:
+                                self.reportError(Location(s), 5, 9)
+                                self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
                         all_internal_identifiers[s['name']] = s
 
                 if summary_type == 'MisraLocalIdentifiers':
@@ -4485,10 +4493,10 @@ class MisraChecker:
 
                 if summary_type == 'MisraUsage':
                     for s in summary_data:
-                        if s in all_usage_count:
-                            all_usage_count[s] += 1
+                        if s['name'] in all_usage_files:
+                            all_usage_files[s['name']].append(s['file'])
                         else:
-                            all_usage_count[s] = 1
+                            all_usage_files[s['name']] = [s['file']]
 
         for ti in all_typedef_info:
             if not ti['used']:
@@ -4515,9 +4523,12 @@ class MisraChecker:
                 self.reportError(Location(local_identifier), 5, 8)
                 self.reportError(Location(external_identifier), 5, 8)
 
-        for name, count in all_usage_count.items():
+        for name, files in all_usage_files.items():
             #print('%s:%i' % (name, count))
-            if count != 1:
+            count = len(files)
+            if count != 1 or name not in all_external_identifiers_def:
+                continue
+            if files[0] != Location(all_external_identifiers_def[name]).file:
                 continue
             if name in all_external_identifiers:
                 self.reportError(Location(all_external_identifiers[name]), 8, 7)

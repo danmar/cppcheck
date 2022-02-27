@@ -11237,8 +11237,13 @@ void Tokenizer::simplifyKeyword()
         if (keywords.find(tok->str()) != keywords.end()) {
             // Don't remove struct members
             if (!Token::simpleMatch(tok->previous(), ".")) {
-                if (tok->str().find("inline") != std::string::npos && Token::Match(tok->next(), "%name%"))
-                    tok->next()->isInline(true);
+                if (tok->str().find("inline") != std::string::npos) {
+                    Token *temp = tok->next();
+                    while (temp != nullptr && Token::Match(temp, "%name%")) {
+                        temp->isInline(true);
+                        temp = temp->next();
+                    }
+                }
                 tok->deleteThis(); // Simplify..
             }
         }
