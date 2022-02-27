@@ -262,7 +262,7 @@ private:
         ASSERT_EQUALS(0, platform.long_long_bit);
     }
 
-    void invalid_config_file_1() {
+    void invalid_config_file_1() const {
         // Invalid XML file: mismatching elements "boolt" vs "bool".
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<platform>\n"

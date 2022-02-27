@@ -1824,7 +1824,7 @@ class SelectValueFromVarIdMapRange {
             return mIt->second;
         }
 
-        pointer operator->() {
+        pointer operator->() const {
             return &mIt->second;
         }
 

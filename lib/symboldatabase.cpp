@@ -1156,7 +1156,7 @@ void SymbolDatabase::createSymbolDatabaseSetTypePointers()
 
         const Type *type = findVariableType(tok->scope(), tok);
         if (type)
-            const_cast<Token *>(tok)->type(type);
+            const_cast<Token *>(tok)->type(type); // TODO: avoid const_cast
     }
 }
 
@@ -1428,7 +1428,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (mSettings->standards.cpp >= Standards::CPP20 && cpp20keywords.count(tok->str()) > 0)
             continue;
-        const_cast<Token *>(tok)->isIncompleteVar(true);
+        const_cast<Token *>(tok)->isIncompleteVar(true); // TODO: avoid const_cast
     }
 }
 
