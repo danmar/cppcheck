@@ -243,7 +243,7 @@ private:
             }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr); // Do not crash
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr)); // Do not crash
     }
 
     void importCompileCommands9() const {
@@ -258,7 +258,7 @@ private:
             }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
     }
 
     void importCompileCommandsArgumentsSection() const {

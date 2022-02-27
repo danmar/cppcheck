@@ -1,7 +1,6 @@
 unusedPrivateFunction:test/testbufferoverrun.cpp
 unusedPrivateFunction:test/testcmdlineparser.cpp
 shadowFunction
-functionStatic
 bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!

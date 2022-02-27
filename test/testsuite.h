@@ -90,8 +90,8 @@ protected:
     void assertThrow(const char * const filename, const unsigned int linenr) const;
     void assertThrowFail(const char * const filename, const unsigned int linenr) const;
     void assertNoThrowFail(const char * const filename, const unsigned int linenr) const;
-    void complainMissingLib(const char * const libname) const;
-    std::string deleteLineNumber(const std::string &message) const;
+    static void complainMissingLib(const char * const libname);
+    static std::string deleteLineNumber(const std::string &message);
 
     void setVerbose(bool v) {
         mVerbose = v;

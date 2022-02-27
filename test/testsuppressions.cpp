@@ -84,7 +84,7 @@ private:
         ASSERT_EQUALS("", suppressions.parseFile(s2));
     }
 
-    Suppressions::ErrorMessage errorMessage(const std::string &errorId) const {
+    static Suppressions::ErrorMessage errorMessage(const std::string &errorId) {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
         ret.hash = 0;
@@ -93,7 +93,7 @@ private:
         return ret;
     }
 
-    Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &file, int line) const {
+    static Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &file, int line) {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
         ret.setFileName(file);

@@ -45,7 +45,7 @@ private:
         TEST_CASE(exampleAlgorithms);
     }
 
-    std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) const {
+    static std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) {
         auto tokenToString = [](const Token* t) {
             return t ? t->str() : "<null>";
         };
