@@ -58,6 +58,7 @@ private:
 
         TEST_CASE(inc1);
         TEST_CASE(inc2);
+        TEST_CASE(inc3);
 
         TEST_CASE(if1);
         TEST_CASE(if2);
@@ -407,6 +408,11 @@ private:
         ASSERT_EQUALS("(= 2 2)\n"
                       "z3::sat\n",
                       expr("void f() { unsigned char a[2]; a[0] = 1; a[0]++; a[0] == a[0]; }", "=="));
+    }
+
+    void inc3() { // #10391 - don't crash
+        ASSERT_EQUALS("",
+                      expr("void f(T* p, T t) { *p++ = 1; *p++ = t; *p == 0; }", "=="));
     }
 
     void if1() {

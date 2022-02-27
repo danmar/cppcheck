@@ -41,5 +41,8 @@ int32_t misra_8_6 = 2;
 // cppcheck-suppress misra-c2012-8.4
 // cppcheck-suppress misra-c2012-8.7
 void misra_8_7(void) {}
-static void misra_8_7_caller(void) { misra_8_7(); }
+static void misra_8_7_caller(void) { 
+    misra_8_7(); 
+    misra_8_7_external();
+}
 

@@ -220,6 +220,8 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const int line = strline ? std::atoi(strline) : 0;
             const int column = strcolumn ? std::atoi(strcolumn) : 0;
             callStack.emplace_front(file, info, line, column);
+        } else if (std::strcmp(e->Name(),"symbol")==0) {
+            mSymbolNames += e->GetText();
         }
     }
 }

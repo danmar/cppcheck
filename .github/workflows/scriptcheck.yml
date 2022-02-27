@@ -55,6 +55,7 @@ jobs:
         if: matrix.python-version == '2.7'
         run: |
           python -m pip install pip --upgrade
+          python -m pip install pathlib
           python -m pip install pytest
           python -m pip install pygments
 

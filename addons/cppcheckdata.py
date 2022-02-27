@@ -8,6 +8,8 @@ License: No restrictions, use this as you need.
 
 import argparse
 import json
+import os
+import pathlib
 import sys
 
 from xml.etree import ElementTree
@@ -1364,3 +1366,15 @@ def reportSummary(dumpfile, summary_type, summary_data):
     with open(ctu_info_file, 'at') as f:
         msg = {'summary': summary_type, 'data': summary_data}
         f.write(json.dumps(msg) + '\n')
+
+
+def get_path_premium_addon():
+    p = pathlib.Path(sys.argv[0]).parent.parent
+
+    for ext in ('.exe', ''):
+        p1 = os.path.join(p, 'premiumaddon' + ext)
+        p2 = os.path.join(p, 'cppcheck' + ext)
+        if os.path.isfile(p1) and os.path.isfile(p2):
+            print(p1)
+            return p1
+    return None
