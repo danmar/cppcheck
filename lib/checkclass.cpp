@@ -82,11 +82,23 @@ static const char * getFunctionTypeName(Function::Type type)
     return "";
 }
 
-static bool isVariableCopyNeeded(const Variable &var)
+static bool isVariableCopyNeeded(const Variable &var, Function::Type type)
 {
-    return var.isPointer() ||
-           (var.type() && var.type()->needInitialization == Type::NeedInitialization::True) ||
-           (var.valueType() && var.valueType()->type >= ValueType::Type::CHAR);
+    bool isOpEqual = false;
+    switch (type) {
+    case Function::eOperatorEqual:
+        isOpEqual = true;
+    case Function::eCopyConstructor:
+    case Function::eMoveConstructor:
+        break;
+    default:
+        return true;
+    }
+
+    return (!var.hasDefault() || isOpEqual) && // default init does not matter for operator=
+           (var.isPointer() ||
+            (var.type() && var.type()->needInitialization == Type::NeedInitialization::True) ||
+            (var.valueType() && var.valueType()->type >= ValueType::Type::CHAR));
 }
 
 static bool isVcl(const Settings *settings)
@@ -202,7 +214,7 @@ void CheckClass::constructors()
                 const Variable& var = *usage.var;
 
                 // check for C++11 initializer
-                if (var.hasDefault()) {
+                if (var.hasDefault() && func.type != Function::eOperatorEqual && func.type != Function::eCopyConstructor) { // variable still needs to be copied
                     usage.init = true;
                     continue;
                 }
@@ -244,7 +256,7 @@ void CheckClass::constructors()
 
                 // Don't warn about unknown types in copy constructors since we
                 // don't know if they can be copied or not..
-                if ((func.type == Function::eCopyConstructor || func.type == Function::eMoveConstructor || func.type == Function::eOperatorEqual) && !isVariableCopyNeeded(var)) {
+                if (!isVariableCopyNeeded(var, func.type)) {
                     if (!printInconclusive)
                         continue;
 
