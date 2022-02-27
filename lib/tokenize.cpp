@@ -4247,10 +4247,6 @@ void Tokenizer::setVarIdPass2()
                      Token::Match(tok->previous(), ".|namespace|class|struct|&|&&|*|> %name%") || Token::Match(tok->previous(), "%type%| %name% ( %type%|)")|| Token::Match(tok, "public:|private:|protected:|"))
                 continue;
 
-            int i = 0;
-            if (tok->str() != "::")
-                i++;
-
             while (Token::Match(tok, ":: ~| %name%")) {
                 tok = tok->next();
                 if (tok->str() == "~")
