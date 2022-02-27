@@ -3589,7 +3589,7 @@ private:
               "    stringstream out;\n"
               "    out << ((ip >> 0) & 0xFF);\n"
               "    return out.str();\n"
-              "}n", true);
+              "}", true);
         ASSERT_EQUALS("", errout.str());
         // avoid regression from first fix attempt for #5811...
         check("void deserialize(const std::string &data) {\n"
