@@ -67,12 +67,6 @@ ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, 
 ThreadExecutor::~ThreadExecutor()
 {}
 
-// cppcheck-suppress unusedFunction - only used in unit tests
-void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
-{
-    mFileContents[path] = content;
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is for platforms that support fork() only ////////////////////
 ///////////////////////////////////////////////////////////////////////////////
@@ -285,9 +279,6 @@ unsigned int ThreadExecutor::check()
 
                 if (iFileSettings != mSettings.project.fileSettings.end()) {
                     resultOfCheck = fileChecker.check(*iFileSettings);
-                } else if (!mFileContents.empty() && mFileContents.find(iFile->first) != mFileContents.end()) {
-                    // File content was given as a string
-                    resultOfCheck = fileChecker.check(iFile->first, mFileContents[iFile->first]);
                 } else {
                     // Read file from a file
                     resultOfCheck = fileChecker.check(iFile->first);
@@ -538,14 +529,8 @@ unsigned int STDCALL ThreadExecutor::threadProc(LogWriter* logWriter)
 
             logWriter->mFileSync.unlock();
 
-            const std::map<std::string, std::string>::const_iterator fileContent = logWriter->mThreadExecutor.mFileContents.find(file);
-            if (fileContent != logWriter->mThreadExecutor.mFileContents.end()) {
-                // File content was given as a string
-                result += fileChecker.check(file, fileContent->second);
-            } else {
-                // Read file from a file
-                result += fileChecker.check(file);
-            }
+            // Read file from a file
+            result += fileChecker.check(file);
         } else { // file settings..
             const ImportProject::FileSettings &fs = *itFileSettings;
             ++itFileSettings;

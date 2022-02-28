@@ -22,10 +22,12 @@
 #include "settings.h"
 #include "suppressions.h"
 #include "testsuite.h"
+#include "testutils.h"
 #include "threadexecutor.h"
 
 #include <algorithm>
 #include <cstddef>
+#include <cstring>
 #include <functional>
 #include <iosfwd>
 #include <list>
@@ -216,7 +218,7 @@ private:
         output.str("");
 
         std::map<std::string, std::size_t> files;
-        files["test.cpp"] = 1;
+        files["test.cpp"] = strlen(code);
 
         Settings settings;
         settings.jobs = 1;
@@ -226,8 +228,10 @@ private:
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
         ThreadExecutor executor(files, settings, *this);
+        std::vector<ScopedFile> scopedfiles;
+        scopedfiles.reserve(files.size());
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
-            executor.addFileContent(i->first, code);
+            scopedfiles.emplace_back(i->first, code);
 
         const unsigned int exitCode = executor.check();
 
