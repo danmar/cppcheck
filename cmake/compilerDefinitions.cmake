@@ -27,5 +27,9 @@ if (ENABLE_CHECK_INTERNAL)
     add_definitions(-DCHECK_INTERNAL)
 endif()
 
+if (USE_THREADS)
+    add_definitions(-DUSE_THREADS)
+endif()
+
 file(TO_CMAKE_PATH ${FILESDIR} _filesdir)
 add_definitions(-DFILESDIR="${_filesdir}")

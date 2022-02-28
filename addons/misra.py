@@ -1318,7 +1318,7 @@ class MisraChecker:
         self._ctu_summary_identifiers = False
         self._ctu_summary_usage = False
 
-        self.premium_addon = None
+        self.path_premium_addon = None
 
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
@@ -1395,7 +1395,9 @@ class MisraChecker:
                 local_identifiers.append(identifier(var.nameToken))
             elif var.isStatic:
                 names.append(var.nameToken.str)
-                internal_identifiers.append(identifier(var.nameToken))
+                i = identifier(var.nameToken)
+                i['inlinefunc'] = False
+                internal_identifiers.append(i)
             else:
                 names.append(var.nameToken.str)
                 i = identifier(var.nameToken)
@@ -1406,9 +1408,14 @@ class MisraChecker:
             if func.tokenDef is None:
                 continue
             if func.isStatic:
-                internal_identifiers.append(identifier(func.tokenDef))
-            else:
                 i = identifier(func.tokenDef)
+                i['inlinefunc'] = func.isInlineKeyword
+                internal_identifiers.append(i)
+            else:
+                if func.token is None:
+                    i = identifier(func.tokenDef)
+                else:
+                    i = identifier(func.token)
                 i['decl'] = func.token is None
                 external_identifiers.append(i)
 
@@ -1427,12 +1434,12 @@ class MisraChecker:
                 continue
             if token.function and token.scope.isExecutable:
                 if (not token.function.isStatic) and (token.str not in names):
-                    names.append(token.str)
+                    names.append({'name': token.str, 'file': token.file})
             elif token.variable:
                 if token == token.variable.nameToken:
                     continue
                 if token.variable.access == 'Global' and (not token.variable.isStatic) and (token.str not in names):
-                    names.append(token.str)
+                    names.append({'name': token.str, 'file': token.file})
 
         if len(names) > 0:
             cppcheckdata.reportSummary(dumpfile, 'MisraUsage', names)
@@ -4048,8 +4055,8 @@ class MisraChecker:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
-                if self.premium_addon:
-                    errmsg = subprocess.check_output([self.premium_addon, '--get-rule-text=' + errorId]).strip().decode('ascii')
+                if self.path_premium_addon:
+                    errmsg = subprocess.check_output([self.path_premium_addon, '--get-rule-text=' + errorId]).strip().decode('ascii')
                 else:
                     errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
@@ -4386,8 +4393,8 @@ class MisraChecker:
             self.executeCheck(2210, self.misra_22_10, cfg)
 
             # Premium MISRA checking, deep analysis
-            if cfgNumber == 0 and self.premium_addon:
-                subprocess.call([self.premium_addon, '--misra', dumpfile])
+            if cfgNumber == 0 and self.path_premium_addon:
+                subprocess.call([self.path_premium_addon, '--misra', dumpfile])
 
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []
@@ -4397,7 +4404,7 @@ class MisraChecker:
         all_external_identifiers_def = {}
         all_internal_identifiers = {}
         all_local_identifiers = {}
-        all_usage_count = {}
+        all_usage_files = {}
 
         from cppcheckdata import Location
 
@@ -4475,8 +4482,9 @@ class MisraChecker:
                 if summary_type == 'MisraInternalIdentifiers':
                     for s in summary_data:
                         if s['name'] in all_internal_identifiers:
-                            self.reportError(Location(s), 5, 9)
-                            self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
+                            if not s['inlinefunc'] or s['file'] != all_internal_identifiers[s['name']]['file']:
+                                self.reportError(Location(s), 5, 9)
+                                self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
                         all_internal_identifiers[s['name']] = s
 
                 if summary_type == 'MisraLocalIdentifiers':
@@ -4485,10 +4493,10 @@ class MisraChecker:
 
                 if summary_type == 'MisraUsage':
                     for s in summary_data:
-                        if s in all_usage_count:
-                            all_usage_count[s] += 1
+                        if s['name'] in all_usage_files:
+                            all_usage_files[s['name']].append(s['file'])
                         else:
-                            all_usage_count[s] = 1
+                            all_usage_files[s['name']] = [s['file']]
 
         for ti in all_typedef_info:
             if not ti['used']:
@@ -4515,9 +4523,12 @@ class MisraChecker:
                 self.reportError(Location(local_identifier), 5, 8)
                 self.reportError(Location(external_identifier), 5, 8)
 
-        for name, count in all_usage_count.items():
+        for name, files in all_usage_files.items():
             #print('%s:%i' % (name, count))
-            if count != 1:
+            count = len(files)
+            if count != 1 or name not in all_external_identifiers_def:
+                continue
+            if files[0] != Location(all_external_identifiers_def[name]).file:
                 continue
             if name in all_external_identifiers:
                 self.reportError(Location(all_external_identifiers[name]), 8, 7)
@@ -4572,7 +4583,6 @@ def get_args_parser():
     parser.add_argument("-generate-table", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("-verify", help=argparse.SUPPRESS, action="store_true")
     parser.add_argument("--severity", type=str, help="Set a custom severity string, for example 'error' or 'warning'. ")
-    parser.add_argument("--premium-addon", type=str, default=None, help=argparse.SUPPRESS)
     return parser
 
 
@@ -4582,7 +4592,7 @@ def main():
     settings = MisraSettings(args)
     checker = MisraChecker(settings)
 
-    checker.premium_addon = args.premium_addon
+    checker.path_premium_addon = cppcheckdata.get_path_premium_addon()
 
     if args.generate_table:
         generateTable()
@@ -4645,8 +4655,8 @@ def main():
 
     checker.analyse_ctu_info(ctu_info_files)
 
-    if args.file_list and args.premium_addon:
-        premium_command = [args.premium_addon, '--misra', '--file-list', args.file_list]
+    if args.file_list and checker.path_premium_addon:
+        premium_command = [checker.path_premium_addon, '--misra', '--file-list', args.file_list]
         if args.cli:
             premium_command.append('--cli')
         for line in subprocess.check_output(premium_command).decode('ascii').split('\n'):

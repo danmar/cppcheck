@@ -56,3 +56,7 @@ if (NOT USE_BUNDLED_TINYXML2)
         endif()
     endif()
 endif()
+
+if (USE_THREADS)
+    find_package(Threads REQUIRED)
+endif()

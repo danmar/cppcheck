@@ -66,6 +66,7 @@ private:
         TEST_CASE(structmember16); // #10485
         TEST_CASE(structmember17); // #10591
         TEST_CASE(structmember18); // #10684
+        TEST_CASE(structmember19); // #10826
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1406,7 +1407,7 @@ private:
                                "{\n"
                                "    ab->a = 0;\n"
                                "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) struct member 'AB::b' is never used.\n", errout.str());
 
         checkStructMemberUsage("struct AB\n"
                                "{\n"
@@ -1418,7 +1419,7 @@ private:
                                "{\n"
                                "    ab->a = 0;\n"
                                "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) struct member 'AB::b' is never used.\n", errout.str());
     }
 
     void structmember8() {
@@ -1625,6 +1626,32 @@ private:
                                "    return p[10];\n"
                                "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember19() { // #10826
+        checkStructMemberUsage("class C {};\n"
+                               "struct S {\n"
+                               "    char* p;\n"
+                               "    std::string str;\n"
+                               "    C c;\n"
+                               "};\n"
+                               "void f(S* s) {}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::p' is never used.\n"
+                      "[test.cpp:4]: (style) struct member 'S::str' is never used.\n"
+                      "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
+                      errout.str());
+
+        checkStructMemberUsage("class C {};\n"
+                               "struct S {\n"
+                               "    char* p;\n"
+                               "    std::string str;\n"
+                               "    C c;\n"
+                               "};\n"
+                               "void f(S& s) {}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::p' is never used.\n"
+                      "[test.cpp:4]: (style) struct member 'S::str' is never used.\n"
+                      "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
+                      errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
@@ -3377,6 +3404,61 @@ private:
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'sum' is assigned a value that is never used.\n"
                       "[test.cpp:5]: (style) Variable 'sum' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f(int c) {\n" // #7908
+                              "    int b = 0;\n"
+                              "    while (g()) {\n"
+                              "        int a = c;\n"
+                              "        b = a;\n"
+                              "        if (a == 4)\n"
+                              "            a = 5;\n"
+                              "    }\n"
+                              "    h(b);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f(const std::vector<int>& v) {\n"
+                              "    while (g()) {\n"
+                              "        const std::vector<int>& v2 = h();\n"
+                              "        if (std::vector<int>{ 1, 2, 3 }.size() > v2.size()) {}\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(const std::vector<int>& v) {\n"
+                              "    while (g()) {\n"
+                              "        const std::vector<int>& v2 = h();\n"
+                              "        if (std::vector<int>({ 1, 2, 3 }).size() > v2.size()) {}\n"
+                              "    }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(const std::string &c) {\n"
+                              "    std::string s = str();\n"
+                              "    if (s[0] == '>')\n"
+                              "        s[0] = '<';\n"
+                              "    if (s == c) {}\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f(bool b) {\n"
+                              "    std::map<std::string, std::vector<std::string>> m;\n"
+                              "    if (b) {\n"
+                              "        const std::string n = g();\n"
+                              "        std::vector<std::string> c = h();\n"
+                              "        m[n] = c;\n"
+                              "    }\n"
+                              "    j(m);\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct S { int i; };\n"
+                              "S f(S s, bool b) {\n"
+                              "    if (b)\n"
+                              "        s.i = 1;\n"
+                              "    return s;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvaralias1() {

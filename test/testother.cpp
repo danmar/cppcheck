@@ -1503,6 +1503,12 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) C-style pointer casting\n"
                       "[test.cpp:5]: (style) C-style pointer casting\n",
                       errout.str());
+
+        // #10823
+        checkOldStylePointerCast("void f(void* p) {\n"
+                                 "    auto h = reinterpret_cast<void (STDAPICALLTYPE*)(int)>(p);\n"
+                                 "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
@@ -8520,6 +8526,10 @@ private:
               "    A a2;"
               "};", nullptr, false, false, true);
         ASSERT_EQUALS("[test.cpp:8]: (performance) Function parameter 'a2' should be passed by const reference.\n", errout.str());
+
+        check("std::map<int, int> m;\n" // #10817
+              "void f(const decltype(m)::const_iterator i) {}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkComparisonFunctionIsAlwaysTrueOrFalse() {
