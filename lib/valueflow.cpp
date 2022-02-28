@@ -4001,7 +4001,9 @@ static void valueFlowLifetimeConstructor(Token* tok,
         // constructor, but make each lifetime inconclusive
         std::vector<const Token*> args = getArguments(tok);
         LifetimeStore::forEach(
-            args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::SubObject, [&](LifetimeStore& ls) {
+            args, "Passed to initializer list.",
+            ValueFlow::Value::LifetimeKind::SubObject,
+            [&](LifetimeStore& ls) {
             ls.inconclusive = true;
             ls.byVal(tok, tokenlist, errorLogger, settings);
         });
