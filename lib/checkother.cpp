@@ -304,6 +304,8 @@ void CheckOther::warningOldStylePointerCast()
             // Old style pointer casting..
             if (!Token::Match(tok, "( const|volatile| const|volatile|class|struct| %type% * const|&| ) (| %name%|%num%|%bool%|%char%|%str%"))
                 continue;
+            if (Token::Match(tok->previous(), "%type%"))
+                continue;
 
             // skip first "const" in "const Type* const"
             while (Token::Match(tok->next(), "const|volatile|class|struct"))
@@ -1161,6 +1163,7 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
 
     int cumulatedSize = 0;
     const bool isUnion = type->classScope->type == Scope::ScopeType::eUnion;
+    // cppcheck-suppress varid0
     const auto accumulateSize = [](int& cumulatedSize, int size, bool isUnion) -> void {
         if (isUnion)
             cumulatedSize = std::max(cumulatedSize, size);
@@ -1301,14 +1304,18 @@ void CheckOther::checkPassByReference()
 
         bool inconclusive = false;
 
-        if (var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER && !var->valueType()->container->view) {} else if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
-            // Ensure that it is a large object.
-            if (!var->type()->classScope)
-                inconclusive = true;
-            else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->sizeof_pointer)
+        const bool isContainer = var->valueType() && var->valueType()->type == ValueType::Type::CONTAINER && var->valueType()->container && !var->valueType()->container->view;
+        if (!isContainer) {
+            if (var->type() && !var->type()->isEnumType()) { // Check if type is a struct or class.
+                // Ensure that it is a large object.
+                if (!var->type()->classScope)
+                    inconclusive = true;
+                else if (estimateSize(var->type(), mSettings, symbolDatabase) <= 2 * mSettings->sizeof_pointer)
+                    continue;
+            }
+            else
                 continue;
-        } else
-            continue;
+        }
 
         if (inconclusive && !mSettings->certainty.isEnabled(Certainty::inconclusive))
             continue;

@@ -2244,6 +2244,7 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         return nullptr;
     if (typeTok != nullptr)
         *typeTok = tok;
+    const Token* lhsVarTok{};
     if (Token::simpleMatch(tok, "return")) {
         const Scope *scope = tok->scope();
         if (!scope)
@@ -2266,8 +2267,8 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         return function->retType;
     } else if (Token::Match(tok->previous(), "%type%|= (|{")) {
         return typeOf(tok->previous(), typeTok);
-    } else if (Token::simpleMatch(tok, "=")) {
-        return Token::typeOf(getLHSVariableToken(tok), typeTok);
+    } else if (Token::simpleMatch(tok, "=") && (lhsVarTok = getLHSVariableToken(tok)) != tok->next()) {
+        return Token::typeOf(lhsVarTok, typeTok);
     } else if (Token::simpleMatch(tok, ".")) {
         return Token::typeOf(tok->astOperand2(), typeTok);
     } else if (Token::simpleMatch(tok, "[")) {

@@ -2910,7 +2910,7 @@ void Tokenizer::combineOperators()
             const char c2 = tok->next()->str()[0];
 
             // combine +-*/ and =
-            if (c2 == '=' && (std::strchr("+-*/%|^=!<>", c1))) {
+            if (c2 == '=' && (std::strchr("+-*/%|^=!<>", c1)) && !Token::Match(tok->previous(), "%type% *")) {
                 // skip templates
                 if (cpp && (tok->str() == ">" || Token::simpleMatch(tok->previous(), "> *"))) {
                     const Token* opening =
@@ -11238,8 +11238,13 @@ void Tokenizer::simplifyKeyword()
         if (keywords.find(tok->str()) != keywords.end()) {
             // Don't remove struct members
             if (!Token::simpleMatch(tok->previous(), ".")) {
-                if (tok->str().find("inline") != std::string::npos && Token::Match(tok->next(), "%name%"))
-                    tok->next()->isInline(true);
+                if (tok->str().find("inline") != std::string::npos) {
+                    Token *temp = tok->next();
+                    while (temp != nullptr && Token::Match(temp, "%name%")) {
+                        temp->isInline(true);
+                        temp = temp->next();
+                    }
+                }
                 tok->deleteThis(); // Simplify..
             }
         }

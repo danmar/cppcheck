@@ -1278,7 +1278,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd)) {
+            const Token* scopeEnd = getEndOfExprScope(expr, scope, /*smallest*/ false);
+            if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {
                 if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {
                     if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
                         reportError(tok,
@@ -1444,7 +1445,7 @@ void CheckUnusedVar::checkStructMemberUsage()
             continue;
 
         // Bail out if some data is casted to struct..
-        const std::string castPattern("( struct| " + scope.className + " * ) & %name% [");
+        const std::string castPattern("( struct| " + scope.className + " * ) &| %name%");
         if (Token::findmatch(scope.bodyEnd, castPattern.c_str()))
             continue;
 
@@ -1464,13 +1465,9 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (bailout)
             continue;
 
-        // Try to prevent false positives when struct members are not used directly.
-        if (Token::findmatch(scope.bodyEnd, (scope.className + " %type%| *").c_str()))
-            continue;
-
         for (const Variable &var : scope.varlist) {
-            // declaring a POD member variable?
-            if (!var.typeStartToken()->isStandardType() && !var.isPointer())
+            // only warn for variables without side effects
+            if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
                 continue;
 
             // Check if the struct member variable is used anywhere in the file

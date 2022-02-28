@@ -1466,7 +1466,9 @@ private:
               "            : s->value - 1; // <-- null ptr dereference\n"
               "  return i;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Possible null pointer dereference: s\n", "", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 's' is redundant or there is possible null pointer dereference: s.\n",
+            errout.str());
     }
 
     void nullpointer30() { // #6392
