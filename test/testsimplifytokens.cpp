@@ -6876,28 +6876,55 @@ private:
     }
 
     void simplifyKnownVariablesNamespace() { // #10059
-        const char code[] = "namespace N {\n"
-                            "    const int n = 0;\n"
-                            "    namespace M { const int m = 0; }\n"
-                            "}\n"
-                            "using namespace N;\n"
-                            "int i(n);\n"
-                            "int j(M::m);\n"
-                            "using namespace N::M;\n"
-                            "int k(m);\n"
-                            "int l(N::M::m);\n";
-        const char exp[]  = "\n\n##file 0\n"
-                            "1: namespace N {\n"
-                            "2: const int n@1 = 0 ;\n"
-                            "3: namespace M { const int m@2 = 0 ; }\n"
-                            "4: }\n"
-                            "5: using namespace N ;\n"
-                            "6: int i ; i = n@1 ;\n"
-                            "7: int j ( M :: m@2 ) ;\n"
-                            "8: using namespace N :: M ;\n"
-                            "9: int k ; k = m@2 ;\n"
-                            "10: int l ( N :: M :: m@2 ) ;\n";
-        ASSERT_EQUALS(exp, tokenizeDebugListing(code));
+        {
+            const char code[] = "namespace N {\n"
+                                "    const int n = 0;\n"
+                                "    namespace M { const int m = 0; }\n"
+                                "}\n"
+                                "using namespace N;\n"
+                                "int i(n);\n"
+                                "int j(M::m);\n"
+                                "using namespace N::M;\n"
+                                "int k(m);\n"
+                                "int l(N::M::m);\n";
+            const char exp[]  = "\n\n##file 0\n"
+                                "1: namespace N {\n"
+                                "2: const int n@1 = 0 ;\n"
+                                "3: namespace M { const int m@2 = 0 ; }\n"
+                                "4: }\n"
+                                "5: using namespace N ;\n"
+                                "6: int i ; i = n@1 ;\n"
+                                "7: int j ( M :: m@2 ) ;\n"
+                                "8: using namespace N :: M ;\n"
+                                "9: int k ; k = m@2 ;\n"
+                                "10: int l ( N :: M :: m@2 ) ;\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
+        }
+
+        {
+            const char code[] = "struct S {\n"
+                                "    S() { f(); }\n"
+                                "    void f();\n"
+                                "    int i;\n"
+                                "};\n"
+                                "namespace N { int j; }\n"
+                                "using namespace N;\n"
+                                "void S::f() {\n"
+                                "  i = 0;\n"
+                                "}\n";
+            const char exp[]  = "\n\n##file 0\n"
+                                "1: struct S {\n"
+                                "2: S ( ) { f ( ) ; }\n"
+                                "3: void f ( ) ;\n"
+                                "4: int i@1 ;\n"
+                                "5: } ;\n"
+                                "6: namespace N { int j@2 ; }\n"
+                                "7: using namespace N ;\n"
+                                "8: void S :: f ( ) {\n"
+                                "9: i@1 = 0 ;\n"
+                                "10: }\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
+        }
     }
 
     void simplifyKnownVariablesClassMember() {
