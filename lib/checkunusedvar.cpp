@@ -1149,6 +1149,15 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
+    auto reportLibraryCfgError = [this](const Token* tok, const std::string& typeName) {
+        if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
+            reportError(tok,
+                Severity::information,
+                "checkLibraryCheckType",
+                "--check-library: Provide <type-checks><unusedvar> configuration for " + typeName);
+        }
+    };
+
     // only check functions
     for (const Scope * scope : symbolDatabase->functionScopes) {
         // Bailout when there are lambdas or inline functions
@@ -1274,12 +1283,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             const Token* scopeEnd = getEndOfExprScope(expr, scope, /*smallest*/ false);
             if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {
                 if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {
-                    if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
-                        reportError(tok,
-                                    Severity::information,
-                                    "checkLibraryCheckType",
-                                    "--check-library: Provide <type-checks><unusedvar> configuration for " + bailoutTypeName);
-                    }
+                    reportLibraryCfgError(tok, bailoutTypeName);
                     continue;
                 }
 
@@ -1334,7 +1338,21 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 unassignedVariableError(usage._var->nameToken(), varname);
             else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
                 if (usage._lastAccess->linenr() == var->nameToken()->linenr() && var->nameToken()->next()->isSplittedVarDeclEq()) {
-                    if (mSettings->library.getTypeCheck("unusedvar", var->getTypeName()) != Library::TypeCheck::suppress)
+                    bool error = true;
+                    if (mTokenizer->isCPP() && var->isClass() &&
+                        (!var->valueType() || var->valueType()->type == ValueType::Type::UNKNOWN_TYPE)) {
+                        const std::string typeName = var->getTypeName();
+                        switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
+                        case Library::TypeCheck::def:
+                            reportLibraryCfgError(var->nameToken(), typeName);
+                            break;
+                        case Library::TypeCheck::check:
+                            break;
+                        case Library::TypeCheck::suppress:
+                            error = false;
+                        }
+                    }
+                    if (error)
                         unreadVariableError(usage._var->nameToken(), varname, false);
                 }
             }
