@@ -2940,6 +2940,8 @@ static void valueFlowReverse(TokenList* tokenlist,
     valueFlowReverse(tok, nullptr, varToken, values, tokenlist, settings);
 }
 
+enum class LifetimeCapture { Undefined, ByValue, ByReference };
+
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
 {
     std::string result;
@@ -3218,11 +3220,10 @@ static bool isLifetimeOwned(const ValueType *vt, const ValueType *vtParent)
 {
     if (!vtParent)
         return false;
-    if (!vt) {
-        if (isLifetimeOwned(vtParent))
-            return true;
+    if (isLifetimeOwned(vtParent))
+        return true;
+    if (!vt)
         return false;
-    }
     // If converted from iterator to pointer then the iterator is most likely a pointer
     if (vtParent->pointer == 1 && vt->pointer == 0 && vt->type == ValueType::ITERATOR)
         return false;
@@ -3370,6 +3371,25 @@ static std::vector<ValueType> getParentValueTypes(const Token* tok, const Settin
     return {};
 }
 
+static bool isInConstructorList(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!astIsRHS(tok))
+        return false;
+    const Token* parent = tok->astParent();
+    if (!Token::Match(parent, "{|("))
+        return false;
+    if (!Token::Match(parent->previous(), "%var% {|("))
+        return false;
+    if (!parent->astOperand1() || !parent->astOperand2())
+        return false;
+    do {
+        parent = parent->astParent();
+    } while (Token::simpleMatch(parent, ","));
+    return Token::simpleMatch(parent, ":") && !Token::simpleMatch(parent->astParent(), "?");
+}
+
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
 {
     if (!tok)
@@ -3378,7 +3398,17 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
         return true;
     if (!tok->astParent())
         return true;
-    if (!Token::Match(tok->astParent()->previous(), "%name% (") && !Token::simpleMatch(tok->astParent(), ",")) {
+    if (isInConstructorList(tok)) {
+        const Token* parent = tok->astParent()->astOperand1();
+        const ValueType* vt = tok->valueType();
+        const ValueType* vtParent = parent->valueType();
+        if (isLifetimeBorrowed(vt, vtParent))
+            return true;
+        if (isLifetimeOwned(vt, vtParent))
+            return false;
+        if (isDifferentType(tok, parent))
+            return false;
+    } else if (!Token::Match(tok->astParent()->previous(), "%name% (") && !Token::simpleMatch(tok->astParent(), ",")) {
         if (!Token::simpleMatch(tok, "{")) {
             const ValueType *vt = tok->valueType();
             const ValueType *vtParent = tok->astParent()->valueType();
@@ -3471,7 +3501,7 @@ const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope, bool
 static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     // Forward lifetimes to constructed variable
-    if (Token::Match(tok->previous(), "%var% {")) {
+    if (Token::Match(tok->previous(), "%var% {|(") && isVariableDecl(tok->previous())) {
         std::list<ValueFlow::Value> values = tok->values();
         values.remove_if(&isNotLifetimeValue);
         valueFlowForward(nextAfterAstRightmostLeaf(tok), getEndOfExprScope(tok), tok->previous(), values, tokenlist, settings);
@@ -3906,9 +3936,50 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         if (settings->library.getFunction(tok->previous()))
             return;
         // Assume constructing the valueType
-        valueFlowLifetimeConstructor(tok, tokenlist, errorLogger, settings);
+        valueFlowLifetimeConstructor(tok->next(), tokenlist, errorLogger, settings);
         valueFlowForwardLifetime(tok->next(), tokenlist, errorLogger, settings);
     }
+}
+
+static bool isScope(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!Token::simpleMatch(tok, "{"))
+        return false;
+    const Scope* scope = tok->scope();
+    if (!scope)
+        return false;
+    if (!scope->bodyStart)
+        return false;
+    return scope->bodyStart == tok;
+}
+
+static const Function* findConstructor(const Scope* scope, const Token* tok, const std::vector<const Token*>& args)
+{
+    if (!tok)
+        return nullptr;
+    const Function* f = tok->function();
+    if (!f && tok->astOperand1())
+        f = tok->astOperand1()->function();
+    // Search for a constructor
+    if (!f || !f->isConstructor()) {
+        f = nullptr;
+        std::vector<const Function*> candidates;
+        for (const Function& function : scope->functionList) {
+            if (function.argCount() != args.size())
+                continue;
+            if (!function.isConstructor())
+                continue;
+            candidates.push_back(&function);
+        }
+        // TODO: Narrow the candidates
+        if (candidates.size() == 1)
+            f = candidates.front();
+    }
+    if (!f)
+        return nullptr;
+    return f;
 }
 
 static void valueFlowLifetimeConstructor(Token* tok,
@@ -3919,14 +3990,20 @@ static void valueFlowLifetimeConstructor(Token* tok,
 {
     if (!Token::Match(tok, "(|{"))
         return;
+    if (isScope(tok))
+        return;
     if (!t) {
         if (tok->valueType() && tok->valueType()->type != ValueType::RECORD)
+            return;
+        if (tok->str() != "{" && !Token::Match(tok->previous(), "%var% (") && !isVariableDecl(tok->previous()))
             return;
         // If the type is unknown then assume it captures by value in the
         // constructor, but make each lifetime inconclusive
         std::vector<const Token*> args = getArguments(tok);
-        LifetimeStore::forEach(
-            args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::SubObject, [&](LifetimeStore& ls) {
+        LifetimeStore::forEach(args,
+                               "Passed to initializer list.",
+                               ValueFlow::Value::LifetimeKind::SubObject,
+                               [&](LifetimeStore& ls) {
             ls.inconclusive = true;
             ls.byVal(tok, tokenlist, errorLogger, settings);
         });
@@ -3936,23 +4013,99 @@ static void valueFlowLifetimeConstructor(Token* tok,
     if (!scope)
         return;
     // Only support aggregate constructors for now
-    if (scope->numConstructors == 0 && t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
+    if (t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
         std::vector<const Token*> args = getArguments(tok);
-        auto it = scope->varlist.begin();
-        LifetimeStore::forEach(args,
-                               "Passed to constructor of '" + t->name() + "'.",
-                               ValueFlow::Value::LifetimeKind::SubObject,
-                               [&](const LifetimeStore& ls) {
-            if (it == scope->varlist.end())
+        if (scope->numConstructors == 0) {
+            auto it = scope->varlist.begin();
+            LifetimeStore::forEach(args,
+                                   "Passed to constructor of '" + t->name() + "'.",
+                                   ValueFlow::Value::LifetimeKind::SubObject,
+                                   [&](const LifetimeStore& ls) {
+                if (it == scope->varlist.end())
+                    return;
+                const Variable& var = *it;
+                if (var.isReference() || var.isRValueReference()) {
+                    ls.byRef(tok, tokenlist, errorLogger, settings);
+                } else {
+                    ls.byVal(tok, tokenlist, errorLogger, settings);
+                }
+                it++;
+            });
+        } else {
+            const Function* constructor = findConstructor(scope, tok, args);
+            if (!constructor)
                 return;
-            const Variable& var = *it;
-            if (var.isReference() || var.isRValueReference()) {
-                ls.byRef(tok, tokenlist, errorLogger, settings);
+            std::unordered_map<const Token*, const Variable*> argToParam;
+            for (std::size_t i = 0; i < args.size(); i++)
+                argToParam[args[i]] = constructor->getArgumentVar(i);
+            if (const Token* initList = constructor->constructorMemberInitialization()) {
+                std::unordered_map<const Variable*, LifetimeCapture> paramCapture;
+                for (const Token* tok2 : astFlatten(initList->astOperand2(), ",")) {
+                    if (!Token::simpleMatch(tok2, "("))
+                        continue;
+                    if (!tok2->astOperand1())
+                        continue;
+                    if (!tok2->astOperand2())
+                        continue;
+                    const Variable* var = tok2->astOperand1()->variable();
+                    const Token* expr = tok2->astOperand2();
+                    if (!var)
+                        continue;
+                    if (!isLifetimeBorrowed(expr, settings))
+                        continue;
+                    const Variable* argvar = getLifetimeVariable(expr);
+                    if (!argvar)
+                        argvar = expr->variable();
+                    if (argvar && argvar->isArgument()) {
+                        paramCapture[argvar] =
+                            argvar->isReference() ? LifetimeCapture::ByReference : LifetimeCapture::ByValue;
+                    } else if (!var->isReference()) {
+                        for (const ValueFlow::Value& v : expr->values()) {
+                            if (!v.isLifetimeValue())
+                                continue;
+                            if (v.path > 0)
+                                continue;
+                            if (!v.tokvalue)
+                                continue;
+                            const Variable* lifeVar = v.tokvalue->variable();
+                            if (!lifeVar)
+                                continue;
+                            if (!lifeVar->isArgument())
+                                continue;
+                            if (!lifeVar->isReference())
+                                continue;
+                            paramCapture[lifeVar] = LifetimeCapture::ByReference;
+                        }
+                    }
+                }
+                // TODO: Use SubExpressionAnalyzer for members
+                LifetimeStore::forEach(args,
+                                       "Passed to constructor of '" + t->name() + "'.",
+                                       ValueFlow::Value::LifetimeKind::SubObject,
+                                       [&](const LifetimeStore& ls) {
+                    const Variable* paramVar = argToParam.at(ls.argtok);
+                    if (paramCapture.count(paramVar) == 0)
+                        return;
+                    LifetimeCapture c = paramCapture.at(paramVar);
+                    if (c == LifetimeCapture::ByReference)
+                        ls.byRef(tok, tokenlist, errorLogger, settings);
+                    else
+                        ls.byVal(tok, tokenlist, errorLogger, settings);
+                });
             } else {
-                ls.byVal(tok, tokenlist, errorLogger, settings);
+                LifetimeStore::forEach(args,
+                                       "Passed to constructor of '" + t->name() + "'.",
+                                       ValueFlow::Value::LifetimeKind::SubObject,
+                                       [&](LifetimeStore& ls) {
+                    ls.inconclusive = true;
+                    const Variable* var = argToParam.at(ls.argtok);
+                    if (var && !var->isConst() && var->isReference())
+                        ls.byRef(tok, tokenlist, errorLogger, settings);
+                    else
+                        ls.byVal(tok, tokenlist, errorLogger, settings);
+                });
             }
-            it++;
-        });
+        }
     }
 }
 
@@ -3972,6 +4125,8 @@ static bool hasInitList(const Token* tok)
 static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings)
 {
     if (!Token::Match(tok, "(|{"))
+        return;
+    if (isScope(tok))
         return;
     Token* parent = tok->astParent();
     while (Token::simpleMatch(parent, ","))
@@ -4006,13 +4161,14 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
 }
 
 struct Lambda {
-    enum class Capture {
-        Undefined,
-        ByValue,
-        ByReference
-    };
-    explicit Lambda(const Token * tok)
-        : capture(nullptr), arguments(nullptr), returnTok(nullptr), bodyTok(nullptr), explicitCaptures(), implicitCapture(Capture::Undefined) {
+    explicit Lambda(const Token* tok)
+        : capture(nullptr),
+        arguments(nullptr),
+        returnTok(nullptr),
+        bodyTok(nullptr),
+        explicitCaptures(),
+        implicitCapture(LifetimeCapture::Undefined)
+    {
         if (!Token::simpleMatch(tok, "[") || !tok->link())
             return;
         capture = tok;
@@ -4029,19 +4185,20 @@ struct Lambda {
         }
         for (const Token* c:getCaptures()) {
             if (Token::Match(c, "this !!.")) {
-                explicitCaptures[c->variable()] = std::make_pair(c, Capture::ByReference);
+                explicitCaptures[c->variable()] = std::make_pair(c, LifetimeCapture::ByReference);
             } else if (Token::simpleMatch(c, "* this")) {
-                explicitCaptures[c->next()->variable()] = std::make_pair(c->next(), Capture::ByValue);
+                explicitCaptures[c->next()->variable()] = std::make_pair(c->next(), LifetimeCapture::ByValue);
             } else if (c->variable()) {
-                explicitCaptures[c->variable()] = std::make_pair(c, Capture::ByValue);
+                explicitCaptures[c->variable()] = std::make_pair(c, LifetimeCapture::ByValue);
             } else if (c->isUnaryOp("&") && Token::Match(c->astOperand1(), "%var%")) {
-                explicitCaptures[c->astOperand1()->variable()] = std::make_pair(c->astOperand1(), Capture::ByReference);
+                explicitCaptures[c->astOperand1()->variable()] =
+                    std::make_pair(c->astOperand1(), LifetimeCapture::ByReference);
             } else {
                 const std::string& s = c->expressionString();
                 if (s == "=")
-                    implicitCapture = Capture::ByValue;
+                    implicitCapture = LifetimeCapture::ByValue;
                 else if (s == "&")
-                    implicitCapture = Capture::ByReference;
+                    implicitCapture = LifetimeCapture::ByReference;
             }
         }
     }
@@ -4050,8 +4207,8 @@ struct Lambda {
     const Token * arguments;
     const Token * returnTok;
     const Token * bodyTok;
-    std::unordered_map<const Variable*, std::pair<const Token*, Capture>> explicitCaptures;
-    Capture implicitCapture;
+    std::unordered_map<const Variable*, std::pair<const Token*, LifetimeCapture>> explicitCaptures;
+    LifetimeCapture implicitCapture;
 
     std::vector<const Token*> getCaptures() {
         return getArguments(capture);
@@ -4126,16 +4283,16 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
             bool update = false;
             // cppcheck-suppress varid0
-            auto captureVariable = [&](const Token* tok2, Lambda::Capture c, std::function<bool(const Token*)> pred) {
+            auto captureVariable = [&](const Token* tok2, LifetimeCapture c, std::function<bool(const Token*)> pred) {
                 if (varids.count(tok->varId()) > 0)
                     return;
                 ErrorPath errorPath;
-                if (c == Lambda::Capture::ByReference) {
+                if (c == LifetimeCapture::ByReference) {
                     LifetimeStore ls{
                         tok2, "Lambda captures variable by reference here.", ValueFlow::Value::LifetimeKind::Lambda};
                     ls.forward = false;
                     update |= ls.byRef(tok, tokenlist, errorLogger, settings, pred);
-                } else if (c == Lambda::Capture::ByValue) {
+                } else if (c == LifetimeCapture::ByValue) {
                     LifetimeStore ls{
                         tok2, "Lambda captures variable by value here.", ValueFlow::Value::LifetimeKind::Lambda};
                     ls.forward = false;
@@ -4144,12 +4301,12 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 }
             };
 
-            auto captureThisVariable = [&](const Token* tok2, Lambda::Capture c) {
+            auto captureThisVariable = [&](const Token* tok2, LifetimeCapture c) {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::LIFETIME;
-                if (c == Lambda::Capture::ByReference)
+                if (c == LifetimeCapture::ByReference)
                     value.lifetimeScope = ValueFlow::Value::LifetimeScope::ThisPointer;
-                else if (c == Lambda::Capture::ByValue)
+                else if (c == LifetimeCapture::ByValue)
                     value.lifetimeScope = ValueFlow::Value::LifetimeScope::ThisValue;
                 value.tokvalue = tok2;
                 value.errorPath.push_back({tok2, "Lambda captures the 'this' variable here."});
@@ -4166,7 +4323,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             for (const auto& p:lam.explicitCaptures) {
                 const Variable* var = p.first;
                 const Token* tok2 = p.second.first;
-                Lambda::Capture c = p.second.second;
+                LifetimeCapture c = p.second.second;
                 if (Token::Match(tok2, "this !!.")) {
                     captureThisVariable(tok2, c);
                 } else if (var) {
@@ -4199,7 +4356,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
 
             for (const Token * tok2 = lam.bodyTok; tok2 != lam.bodyTok->link(); tok2 = tok2->next()) {
                 if (isImplicitCapturingThis(tok2)) {
-                    captureThisVariable(tok2, Lambda::Capture::ByReference);
+                    captureThisVariable(tok2, LifetimeCapture::ByReference);
                 } else if (tok2->variable()) {
                     captureVariable(tok2, lam.implicitCapture, isImplicitCapturingVariable);
                 }
@@ -4305,7 +4462,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowForwardLifetime(parent->tokAt(2), tokenlist, errorLogger, settings);
         }
         // Check constructors
-        else if (Token::Match(tok, "=|return|%type%|%var% {")) {
+        else if (Token::Match(tok, "=|return|%type%|%var% {") && !isScope(tok->next())) {
             valueFlowLifetimeConstructor(tok->next(), tokenlist, errorLogger, settings);
         }
         // Check function calls

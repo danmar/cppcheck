@@ -5093,6 +5093,37 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:5]: (error) Using pointer to local variable 'v' that may be invalid.\n",
             errout.str());
+
+        check("struct A {\n"
+              "    const std::vector<int>* i;\n"
+              "    A(const std::vector<int>& v)\n"
+              "    : i(&v)\n"
+              "    {}\n"
+              "};\n"
+              "int f() {\n"
+              "    std::vector<int> v;\n"
+              "    A a{v};\n"
+              "    v.push_back(1);\n"
+              "    return a.i->front();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    const std::vector<int>* i;\n"
+              "    A(const std::vector<int>& v)\n"
+              "    : i(&v)\n"
+              "    {}\n"
+              "};\n"
+              "void g(const std::vector<int>& v);\n"
+              "void f() {\n"
+              "    std::vector<int> v;\n"
+              "    A a{v};\n"
+              "    v.push_back(1);\n"
+              "    g(a);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {
