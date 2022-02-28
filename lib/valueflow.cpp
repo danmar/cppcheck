@@ -3995,6 +3995,8 @@ static void valueFlowLifetimeConstructor(Token* tok,
     if (!t) {
         if (tok->valueType() && tok->valueType()->type != ValueType::RECORD)
             return;
+        if (tok->str() != "{" && !Token::Match(tok->previous(), "%var% (") && !isVariableDecl(tok->previous()))
+            return;
         // If the type is unknown then assume it captures by value in the
         // constructor, but make each lifetime inconclusive
         std::vector<const Token*> args = getArguments(tok);
@@ -4088,7 +4090,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
                     else
                         ls.byVal(tok, tokenlist, errorLogger, settings);
                 });
-            } else if (tok->str() == "{" || Token::Match(tok->previous(), "%var% (")) {
+            } else {
                 LifetimeStore::forEach(args,
                                        "Passed to constructor of '" + t->name() + "'.",
                                        ValueFlow::Value::LifetimeKind::SubObject,
