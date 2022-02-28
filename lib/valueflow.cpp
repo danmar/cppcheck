@@ -4088,7 +4088,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
                     else
                         ls.byVal(tok, tokenlist, errorLogger, settings);
                 });
-            } else {
+            } else if (tok->str() == "{" || Token::Match(tok->previous(), "%var% (")) {
                 LifetimeStore::forEach(args,
                                        "Passed to constructor of '" + t->name() + "'.",
                                        ValueFlow::Value::LifetimeKind::SubObject,
