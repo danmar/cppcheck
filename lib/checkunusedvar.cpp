@@ -972,13 +972,6 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 } else if (varid1 && Token::Match(tok, "%varid% .", varid1)) {
                     variables.read(varid1, tok);
                     variables.write(varid1, start);
-                } else if (var &&
-                           var->mType == Variables::pointer &&
-                           Token::Match(tok, "%name% ;") &&
-                           tok->varId() == 0 &&
-                           tok->hasKnownIntValue() &&
-                           tok->values().front().intvalue == 0) {
-                    variables.use(varid1, tok);
                 } else {
                     variables.write(varid1, tok);
                 }
@@ -1338,6 +1331,12 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // variable has been read but not written
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
                 unassignedVariableError(usage._var->nameToken(), varname);
+            else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
+                if (usage._lastAccess->linenr() == var->nameToken()->linenr() && var->nameToken()->next()->isSplittedVarDeclEq()) {
+                    if (mSettings->library.getTypeCheck("unusedvar", var->getTypeName()) != Library::TypeCheck::suppress)
+                        unreadVariableError(usage._var->nameToken(), varname, false);
+                }
+            }
         }
     }
 }
