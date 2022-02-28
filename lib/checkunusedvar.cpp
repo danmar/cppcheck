@@ -1152,9 +1152,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     auto reportLibraryCfgError = [this](const Token* tok, const std::string& typeName) {
         if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
             reportError(tok,
-                Severity::information,
-                "checkLibraryCheckType",
-                "--check-library: Provide <type-checks><unusedvar> configuration for " + typeName);
+                        Severity::information,
+                        "checkLibraryCheckType",
+                        "--check-library: Provide <type-checks><unusedvar> configuration for " + typeName);
         }
     };
 
