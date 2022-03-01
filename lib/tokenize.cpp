@@ -1068,6 +1068,7 @@ void Tokenizer::simplifyTypedef()
             bool globalScope = false;
             int classLevel = spaceInfo.size();
             bool inTypeDef = false;
+            bool inEnumClass = false;
             std::string removed;
             std::string classPath;
             for (size_t i = 1; i < spaceInfo.size(); ++i) {
@@ -1165,19 +1166,23 @@ void Tokenizer::simplifyTypedef()
                     // check for entering a new scope
                     else if (tok2->str() == "{") {
                         // check for entering a new namespace
-                        if (isCPP() && tok2->strAt(-2) == "namespace") {
-                            if (classLevel < spaceInfo.size() &&
-                                spaceInfo[classLevel].isNamespace &&
-                                spaceInfo[classLevel].className == tok2->previous()->str()) {
-                                spaceInfo[classLevel].bodyEnd2 = tok2->link();
-                                ++classLevel;
-                                pattern.clear();
-                                for (int i = classLevel; i < spaceInfo.size(); ++i)
-                                    pattern += spaceInfo[i].className + " :: ";
-
-                                pattern += typeName->str();
+                        if (isCPP()) {
+                            if (tok2->strAt(-2) == "namespace") {
+                                if (classLevel < spaceInfo.size() &&
+                                  spaceInfo[classLevel].isNamespace &&
+                                  spaceInfo[classLevel].className == tok2->previous()->str()) {
+                                  spaceInfo[classLevel].bodyEnd2 = tok2->link();
+                                  ++classLevel;
+                                  pattern.clear();
+                                  for (int i = classLevel; i < spaceInfo.size(); ++i)
+                                      pattern += spaceInfo[i].className + " :: ";
+                                
+                                  pattern += typeName->str();
+                                }
+                                ++scope;
                             }
-                            ++scope;
+                            if (Token::Match(tok2->tokAt(-3), "enum class %name%"))
+                                inEnumClass = true;
                         }
 
                         // keep track of scopes within member function
@@ -1302,6 +1307,8 @@ void Tokenizer::simplifyTypedef()
                         }
                     }
                 }
+
+                simplifyType = simplifyType && !inEnumClass;
 
                 if (simplifyType) {
                     mTypedefInfo.back().used = true;

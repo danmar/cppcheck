@@ -329,6 +329,7 @@ private:
         TEST_CASE(simplifyKnownVariables60);    // #6829
         TEST_CASE(simplifyKnownVariables61);    // #7805
         TEST_CASE(simplifyKnownVariables62);    // #5666 - p=&str[0]
+        TEST_CASE(simplifyKnownVariables63);    // #10798
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
@@ -6644,6 +6645,12 @@ private:
                                            "  char *p = &str[0];\n"
                                            "  *p = 0;\n"
                                            "}", /*simplify=*/ true));
+    }
+
+    void simplifyKnownVariables63() { // #10798
+        tokenizeAndStringify("typedef void (*a)();\n"
+                             "enum class E { a };\n");
+        ASSERT_EQUALS("", errout.str()); // don't throw
     }
 
     void simplifyKnownVariablesBailOutAssign1() {
