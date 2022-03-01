@@ -3028,16 +3028,16 @@ private:
             tok(code));
     }
 
-    void simplifyTypedef140() { // #10798      
+    void simplifyTypedef140() { // #10798
         {
-          const char code[] = "typedef void (*b)();\n"
-                              "enum class E { a, b, c };\n";
-          ASSERT_EQUALS("enum class E { a , b , c } ;", tok(code));
+            const char code[] = "typedef void (*b)();\n"
+                                "enum class E { a, b, c };\n";
+            ASSERT_EQUALS("enum class E { a , b , c } ;", tok(code));
         }
         {
-          const char code[] = "typedef int A;\n"
-                              "enum class E { A };\n";
-          ASSERT_EQUALS("enum class E { A } ;", tok(code));
+            const char code[] = "typedef int A;\n"
+                                "enum class E { A };\n";
+            ASSERT_EQUALS("enum class E { A } ;", tok(code));
         }
 
     }
