@@ -1169,15 +1169,15 @@ void Tokenizer::simplifyTypedef()
                         if (isCPP()) {
                             if (tok2->strAt(-2) == "namespace") {
                                 if (classLevel < spaceInfo.size() &&
-                                  spaceInfo[classLevel].isNamespace &&
-                                  spaceInfo[classLevel].className == tok2->previous()->str()) {
-                                  spaceInfo[classLevel].bodyEnd2 = tok2->link();
-                                  ++classLevel;
-                                  pattern.clear();
-                                  for (int i = classLevel; i < spaceInfo.size(); ++i)
-                                      pattern += spaceInfo[i].className + " :: ";
-                                
-                                  pattern += typeName->str();
+                                    spaceInfo[classLevel].isNamespace &&
+                                    spaceInfo[classLevel].className == tok2->previous()->str()) {
+                                    spaceInfo[classLevel].bodyEnd2 = tok2->link();
+                                    ++classLevel;
+                                    pattern.clear();
+                                    for (int i = classLevel; i < spaceInfo.size(); ++i)
+                                        pattern += spaceInfo[i].className + " :: ";
+
+                                    pattern += typeName->str();
                                 }
                                 ++scope;
                             }
