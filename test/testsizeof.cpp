@@ -429,7 +429,7 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("struct S { T *t; };\n" // #10179
+        check("struct S { T* t; };\n" // #10179
               "int f(S* s) {\n"
               "    return g(sizeof(*s->t) / 4);\n"
               "}\n");
