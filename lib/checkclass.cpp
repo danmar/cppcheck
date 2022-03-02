@@ -666,6 +666,8 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
                 if (func.tokenDef->str() == tok->str())
                     return true;
             }
+            if (isBaseClassFunc(tok, derivedFrom->classScope))
+                return true;
         }
 
         // Base class not found so assume it is in it.

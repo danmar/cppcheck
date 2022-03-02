@@ -113,6 +113,7 @@ private:
         TEST_CASE(initvar_operator_eq4);     // ticket #2204
         TEST_CASE(initvar_operator_eq5);     // ticket #4119
         TEST_CASE(initvar_operator_eq6);
+        TEST_CASE(initvar_operator_eq7);
         TEST_CASE(initvar_same_classname);      // BUG 2208157
         TEST_CASE(initvar_chained_assign);      // BUG 2270433
         TEST_CASE(initvar_2constructors);       // BUG 2270353
@@ -908,6 +909,25 @@ private:
               "    }\n"
               "};",true);
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Member variable 'Fred::data' is not assigned a value in 'Fred::operator='.\n", errout.str());
+    }
+
+    void initvar_operator_eq7() {
+        check("struct B {\n"
+              "    virtual void CopyImpl(const B& Src) = 0;\n"
+              "    void Copy(const B& Src);\n"
+              "};\n"
+              "struct D : B {};\n"
+              "struct DD : D {\n"
+              "    void CopyImpl(const B& Src) override;\n"
+              "    DD& operator=(const DD& Src);\n"
+              "    int i{};\n"
+              "};\n"
+              "DD& DD::operator=(const DD& Src) {\n"
+              "    if (this != &Src)\n"
+              "        Copy(Src);\n"
+              "    return *this;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_same_classname() {
