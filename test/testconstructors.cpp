@@ -1854,6 +1854,17 @@ private:
               "void Fred::operator=(const Fred &f)\n"
               "{ }", true);
         ASSERT_EQUALS("[test.cpp:13]: (warning, inconclusive) Member variable 'Fred::ints' is not assigned a value in 'Fred::operator='.\n", errout.str());
+
+        Settings s;
+        s.certainty.setEnabled(Certainty::inconclusive, true);
+        s.severity.enable(Severity::style);
+        s.severity.enable(Severity::warning);
+        LOAD_LIB_2(s.library, "std.cfg");
+        check("struct S {\n"
+              "    S& operator=(const S& s) { return *this; }\n"
+              "    std::mutex m;\n"
+              "};\n", s);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitVar1() {
