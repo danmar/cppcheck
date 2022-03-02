@@ -167,7 +167,7 @@ bool TestFixture::assertEquals(const char * const filename, const unsigned int l
     return expected == actual;
 }
 
-std::string TestFixture::deleteLineNumber(const std::string &message) const
+std::string TestFixture::deleteLineNumber(const std::string &message)
 {
     std::string result(message);
     // delete line number in "...:NUMBER:..."
@@ -290,7 +290,7 @@ void TestFixture::assertNoThrowFail(const char * const filename, const unsigned 
 
 }
 
-void TestFixture::complainMissingLib(const char * const libname) const
+void TestFixture::complainMissingLib(const char * const libname)
 {
     missingLibs.insert(libname);
 }

@@ -331,6 +331,20 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+bool isVariableDecl(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Variable* var = tok->variable();
+    if (!var)
+        return false;
+    if (var->nameToken() == tok)
+        return true;
+    if (Token::Match(var->declEndToken(), "; %var%") && var->declEndToken()->next() == tok)
+        return true;
+    return false;
+}
+
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown)
 {
     if (!tok)

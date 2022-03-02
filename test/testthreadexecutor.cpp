@@ -18,6 +18,7 @@
 
 #include "settings.h"
 #include "testsuite.h"
+#include "testutils.h"
 #include "threadexecutor.h"
 
 #include <cstddef>
@@ -49,13 +50,15 @@ private:
         for (int i = 1; i <= files; ++i) {
             std::ostringstream oss;
             oss << "file_" << i << ".cpp";
-            filemap[oss.str()] = 1;
+            filemap[oss.str()] = data.size();
         }
 
         settings.jobs = jobs;
         ThreadExecutor executor(filemap, settings, *this);
+        std::vector<ScopedFile> scopedfiles;
+        scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.begin(); i != filemap.end(); ++i)
-            executor.addFileContent(i->first, data);
+            scopedfiles.emplace_back(i->first, data);
 
         ASSERT_EQUALS(result, executor.check());
     }

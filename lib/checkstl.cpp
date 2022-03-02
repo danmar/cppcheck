@@ -1009,20 +1009,6 @@ struct InvalidContainerAnalyzer {
     }
 };
 
-static bool isVariableDecl(const Token* tok)
-{
-    if (!tok)
-        return false;
-    const Variable* var = tok->variable();
-    if (!var)
-        return false;
-    if (var->nameToken() == tok)
-        return true;
-    if (Token::Match(var->declEndToken(), "; %var%") && var->declEndToken()->next() == tok)
-        return true;
-    return false;
-}
-
 static const Token* getLoopContainer(const Token* tok)
 {
     if (!Token::simpleMatch(tok, "for ("))

@@ -312,7 +312,7 @@ struct ForwardTraversal {
         return Token::findsimplematch(endBlock->link(), "goto", endBlock);
     }
 
-    bool hasJump(const Token* endBlock) {
+    static bool hasJump(const Token* endBlock) {
         return Token::findmatch(endBlock->link(), "goto|break", endBlock);
     }
 

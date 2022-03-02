@@ -26,6 +26,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <cstdio>
 #include <iosfwd>
 #include <list>
 #include <string>
@@ -67,6 +68,20 @@ public:
 private:
     Settings &settings;
     ErrorLogger *next;
+};
+
+class ScopedFile {
+public:
+    ScopedFile(const std::string &name, const std::string &content) : mName(name) {
+        std::ofstream of(mName);
+        of << content;
+    }
+
+    ~ScopedFile() {
+        remove(mName.c_str());
+    }
+private:
+    std::string mName;
 };
 
 #endif // TestUtilsH
