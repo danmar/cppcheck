@@ -4377,7 +4377,8 @@ void Tokenizer::setVarIdPass2()
             Token *tok2 = matchMemberVarName(var, scopeInfo);
             if (!tok2)
                 continue;
-            tok2->varId(thisClassVars[tok2->str()]);
+            if (tok2->varId() == 0)
+                tok2->varId(thisClassVars[tok2->str()]);
         }
 
         if (isC() || tok->str() == "namespace")
