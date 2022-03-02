@@ -44,23 +44,11 @@ public:
     void operator=(const ThreadExecutor &) = delete;
     unsigned int check();
 
-    /**
-     * @brief Add content to a file, to be used in unit testing.
-     *
-     * @param path File name (used as a key to link with real file).
-     * @param content If the file would be a real file, this should be
-     * the content of the file.
-     */
-    void addFileContent(const std::string &path, const std::string &content);
-
 private:
     const std::map<std::string, std::size_t> &mFiles;
     Settings &mSettings;
     ErrorLogger &mErrorLogger;
     std::list<std::string> mErrorList;
-
-    /** @brief Key is file name, and value is the content of the file */
-    std::map<std::string, std::string> mFileContents;
 
 #if defined(THREADING_MODEL_FORK)
 
