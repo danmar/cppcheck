@@ -1946,7 +1946,7 @@ private:
         ASSERT(actual.find("X@2 = 0") != std::string::npos);
     }
 
-    std::string getLine(const std::string &code, int lineNumber) {
+    static std::string getLine(const std::string &code, int lineNumber) {
         std::string nr = MathLib::toString(lineNumber);
         const std::string::size_type pos1 = code.find('\n' + nr + ": ");
         if (pos1 == std::string::npos)

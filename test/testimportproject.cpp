@@ -117,7 +117,7 @@ private:
                                }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
         ASSERT_EQUALS("TEST1=1;TEST2=2", importer.fileSettings.begin()->defines);
     }
@@ -132,7 +132,7 @@ private:
                                }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
         ASSERT_EQUALS("C:/bar.c", importer.fileSettings.begin()->filename);
 #else
@@ -143,7 +143,7 @@ private:
                                }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
         ASSERT_EQUALS("/bar.c", importer.fileSettings.begin()->filename);
 #endif
@@ -157,7 +157,7 @@ private:
                                }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
         ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
     }
@@ -170,7 +170,7 @@ private:
                                }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(0, importer.fileSettings.size());
     }
 
@@ -188,7 +188,7 @@ private:
              }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(2, importer.fileSettings.size());
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.begin()->includePaths.front());
     }
@@ -207,7 +207,7 @@ private:
              }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(2, importer.fileSettings.size());
         ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.front());
     }
@@ -223,7 +223,7 @@ private:
             }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
         ASSERT_EQUALS("FILESDIR=\"/some/path\"", importer.fileSettings.begin()->defines);
         ASSERT_EQUALS(1, importer.fileSettings.begin()->includePaths.size());
@@ -243,7 +243,7 @@ private:
             }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr); // Do not crash
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr)); // Do not crash
     }
 
     void importCompileCommands9() const {
@@ -258,7 +258,7 @@ private:
             }])";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
     }
 
     void importCompileCommandsArgumentsSection() const {
@@ -267,7 +267,7 @@ private:
                             "\"file\": \"src.c\" } ]";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(1, importer.fileSettings.size());
         ASSERT_EQUALS("/tmp/src.c", importer.fileSettings.begin()->filename);
     }
@@ -277,7 +277,7 @@ private:
                             "\"file\": \"src.mm\" } ]";
         std::istringstream istr(json);
         TestImporter importer;
-        importer.importCompileCommands(istr);
+        ASSERT_EQUALS(false, importer.importCompileCommands(istr));
         ASSERT_EQUALS(0, importer.fileSettings.size());
     }
 

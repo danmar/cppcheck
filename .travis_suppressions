@@ -1,8 +1,6 @@
 unusedPrivateFunction:test/testbufferoverrun.cpp
 unusedPrivateFunction:test/testcmdlineparser.cpp
 shadowFunction
-functionConst
-functionStatic
 bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
@@ -13,7 +11,7 @@ symbolDatabaseWarning:gui/temp/moc_*.cpp
 simplifyUsing:gui/temp/moc_*.cpp
 symbolDatabaseWarning:tools/triage/moc_*.cpp
 
-# debug suppressions
+# --debug-warnings suppressions
 valueFlowBailout
 valueFlowBailoutIncompleteVar
 autoNoType

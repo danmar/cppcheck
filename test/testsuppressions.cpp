@@ -84,7 +84,7 @@ private:
         ASSERT_EQUALS("", suppressions.parseFile(s2));
     }
 
-    Suppressions::ErrorMessage errorMessage(const std::string &errorId) const {
+    static Suppressions::ErrorMessage errorMessage(const std::string &errorId) {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
         ret.hash = 0;
@@ -93,7 +93,7 @@ private:
         return ret;
     }
 
-    Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &file, int line) const {
+    static Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &file, int line) {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
         ret.setFileName(file);
@@ -484,13 +484,13 @@ private:
         ASSERT_EQUALS(true, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
     }
 
-    void suppressionsLine0() {
+    void suppressionsLine0() const {
         Suppressions suppressions;
         suppressions.addSuppressionLine("syntaxError:*:0");
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("syntaxError", "test.cpp", 0)));
     }
 
-    void suppressionsFileComment() {
+    void suppressionsFileComment() const {
         std::istringstream file1("# comment\nabc");
         Suppressions suppressions1;
         suppressions1.parseFile(file1);
@@ -746,7 +746,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symbol() {
+    void symbol() const {
         Suppressions::Suppression s;
         s.errorId = "foo";
         s.symbolName = "array*";

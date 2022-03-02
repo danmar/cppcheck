@@ -76,7 +76,7 @@ private:
         return library.load(doc);
     }
 
-    void isCompliantValidationExpression() {
+    void isCompliantValidationExpression() const {
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("-1"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1:"));

@@ -1103,14 +1103,14 @@ private:
         ASSERT(t == nullptr);
     }
 
-    void findClosingBracket() {
+    void findClosingBracket() const {
         givenACodeSampleToTokenize var("template<typename X, typename...Y> struct S : public Fred<Wilma<Y...>> {}");
 
         const Token* const t = var.tokens()->next()->findClosingBracket();
         ASSERT(Token::simpleMatch(t, "> struct"));
     }
 
-    void expressionString() {
+    void expressionString() const {
         givenACodeSampleToTokenize var1("void f() { *((unsigned long long *)x) = 0; }");
         const Token *const tok1 = Token::findsimplematch(var1.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok1->expressionString());
@@ -1132,7 +1132,7 @@ private:
         ASSERT_EQUALS("x=\"\\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07\"", data6.tokens()->next()->expressionString());
     }
 
-    void hasKnownIntValue() {
+    void hasKnownIntValue() const {
         // pointer might be NULL
         ValueFlow::Value v1(0);
 
