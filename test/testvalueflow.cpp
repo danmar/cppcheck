@@ -6397,6 +6397,13 @@ private:
                "  s;\n"
                "}\n";
         valueOfTok(code, "s");
+
+        code = "int f(int value) { return 0; }\n"
+               "std::shared_ptr<Manager> g() {\n"
+               "    static const std::shared_ptr<Manager> x{ new M{} };\n"
+               "    return x;\n"
+               "}\n";
+        valueOfTok(code, "x");
     }
 
     void valueFlowHang() {

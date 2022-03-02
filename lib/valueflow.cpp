@@ -5107,6 +5107,8 @@ static void valueFlowForwardAssign(Token* const tok,
 
     // Skip RHS
     const Token * nextExpression = tok->astParent() ? nextAfterAstRightmostLeaf(tok->astParent()) : tok->next();
+    if (!nextExpression)
+        return;
 
     for (ValueFlow::Value& value : values) {
         if (value.isSymbolicValue())
