@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "mathlib.h"
 #include "platform.h"
 #include "settings.h"
@@ -36,7 +35,7 @@ public:
     TestVarID() : TestFixture("TestVarID") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(varid1);
         TEST_CASE(varid2);
         TEST_CASE(varid3);
@@ -1947,7 +1946,7 @@ private:
         ASSERT(actual.find("X@2 = 0") != std::string::npos);
     }
 
-    std::string getLine(const std::string &code, int lineNumber) {
+    static std::string getLine(const std::string &code, int lineNumber) {
         std::string nr = MathLib::toString(lineNumber);
         const std::string::size_type pos1 = code.find('\n' + nr + ": ");
         if (pos1 == std::string::npos)

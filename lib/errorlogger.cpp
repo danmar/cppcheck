@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -220,6 +220,8 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const int line = strline ? std::atoi(strline) : 0;
             const int column = strcolumn ? std::atoi(strcolumn) : 0;
             callStack.emplace_front(file, info, line, column);
+        } else if (std::strcmp(e->Name(),"symbol")==0) {
+            mSymbolNames += e->GetText();
         }
     }
 }

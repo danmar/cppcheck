@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 #include "check.h"
 #include "checkuninitvar.h"
-#include "config.h"
 #include "ctu.h"
 #include "errortypes.h"
 #include "library.h"
@@ -38,7 +37,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(uninitvar1);
@@ -524,6 +523,24 @@ private:
                                "  std::cout << p << 1;\n"
                                "}");
                 ASSERT_EQUALS("[test.cpp:3]: (error) Memory is allocated but not initialized: p\n", errout.str());
+
+                checkUninitVar("void f() {\n" // #9696
+                               "  int *p = new int[10];\n"
+                               "  std::cout << p << 1;\n"
+                               "}");
+                ASSERT_EQUALS("", errout.str());
+
+                checkUninitVar("void f() {\n"
+                               "  int i[10];\n"
+                               "  std::cout << i;\n"
+                               "  char c[10];\n"
+                               "  std::cout << c;\n"
+                               "  wchar_t w[10];\n"
+                               "  std::cout << w;\n"
+                               "}");
+                ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: c\n"
+                              "[test.cpp:7]: (error) Uninitialized variable: w\n",
+                              errout.str());
 
                 checkUninitVar("void f() {\n"
                                "  char p[10];\n"

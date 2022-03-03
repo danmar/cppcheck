@@ -384,6 +384,10 @@ class MatchCompiler:
             is_simplematch = func == 'simpleMatch'
             pattern_start = 0
             while True:
+                # skip comments
+                if line.strip().startswith('//'):
+                    break
+
                 pos1 = line.find('Token::' + func + '(', pattern_start)
                 if pos1 == -1:
                     break

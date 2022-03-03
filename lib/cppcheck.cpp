@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -359,7 +359,6 @@ CppCheck::CppCheck(ErrorLogger &errorLogger,
                    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
     : mErrorLogger(errorLogger)
     , mExitCode(0)
-    , mSuppressInternalErrorFound(false)
     , mUseGlobalSuppressions(useGlobalSuppressions)
     , mTooManyConfigs(false)
     , mSimplify(true)
@@ -585,7 +584,6 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
 {
     mExitCode = 0;
-    mSuppressInternalErrorFound = false;
 
     // only show debug warnings for accepted C/C++ source files
     if (!Path::acceptFile(filename))
@@ -1368,7 +1366,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             mExitCode = 1;
             continue;
         }
-        if (addon != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
+        if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
             continue;
 
         const std::string results =
@@ -1515,8 +1513,6 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
-    mSuppressInternalErrorFound = false;
-
     if (!mSettings.library.reportErrors(msg.file0))
         return;
 
@@ -1534,12 +1530,10 @@ void CppCheck::reportErr(const ErrorMessage &msg)
 
     if (mUseGlobalSuppressions) {
         if (mSettings.nomsg.isSuppressed(errorMessage)) {
-            mSuppressInternalErrorFound = true;
             return;
         }
     } else {
         if (mSettings.nomsg.isSuppressedLocal(errorMessage)) {
-            mSuppressInternalErrorFound = true;
             return;
         }
     }
@@ -1652,7 +1646,6 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
         const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);
         const std::string columnNumString = line.substr(endLinePos + 1, endColumnPos - endLinePos - 1);
-        const std::string errorTypeString = line.substr(endColumnPos + 1, endMsgTypePos - endColumnPos - 1);
         const std::string messageString = line.substr(endMsgTypePos + 1, endErrorPos - endMsgTypePos - 1);
         const std::string errorString = line.substr(endErrorPos, line.length());
 

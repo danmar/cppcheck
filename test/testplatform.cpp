@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "platform.h"
 #include "testsuite.h"
 
@@ -28,7 +27,7 @@ public:
     TestPlatform() : TestFixture("TestPlatform") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(empty);
         TEST_CASE(valid_config_native_1);
         TEST_CASE(valid_config_native_2);
@@ -263,7 +262,7 @@ private:
         ASSERT_EQUALS(0, platform.long_long_bit);
     }
 
-    void invalid_config_file_1() {
+    void invalid_config_file_1() const {
         // Invalid XML file: mismatching elements "boolt" vs "bool".
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<platform>\n"

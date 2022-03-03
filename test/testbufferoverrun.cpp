@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 
 #include "check.h"
 #include "checkbufferoverrun.h"
-#include "config.h"
 #include "ctu.h"
 #include "errortypes.h"
 #include "standards.h"
@@ -116,7 +115,7 @@ private:
         checkBufferOverrun.runChecks(&tokenizer, settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings0.library, "std.cfg");
 
         settings0.severity.enable(Severity::warning);
@@ -4627,6 +4626,13 @@ private:
               "    char *p = arr + 20;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic 'arr+20' is out of bounds.\n", errout.str());
+
+        check("char(*g())[1];\n" // #7950
+              "void f() {\n"
+              "    int a[2];\n"
+              "    int* b = a + sizeof(*g());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define ctu(code) ctu_(code, __FILE__, __LINE__)

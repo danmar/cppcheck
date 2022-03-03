@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -972,13 +972,6 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 } else if (varid1 && Token::Match(tok, "%varid% .", varid1)) {
                     variables.read(varid1, tok);
                     variables.write(varid1, start);
-                } else if (var &&
-                           var->mType == Variables::pointer &&
-                           Token::Match(tok, "%name% ;") &&
-                           tok->varId() == 0 &&
-                           tok->hasKnownIntValue() &&
-                           tok->values().front().intvalue == 0) {
-                    variables.use(varid1, tok);
                 } else {
                     variables.write(varid1, tok);
                 }
@@ -1156,6 +1149,15 @@ void CheckUnusedVar::checkFunctionVariableUsage()
     // Parse all executing scopes..
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
+    auto reportLibraryCfgError = [this](const Token* tok, const std::string& typeName) {
+        if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
+            reportError(tok,
+                        Severity::information,
+                        "checkLibraryCheckType",
+                        "--check-library: Provide <type-checks><unusedvar> configuration for " + typeName);
+        }
+    };
+
     // only check functions
     for (const Scope * scope : symbolDatabase->functionScopes) {
         // Bailout when there are lambdas or inline functions
@@ -1278,14 +1280,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 continue;
 
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
-            if (fwdAnalysis.unusedValue(expr, start, scope->bodyEnd)) {
+            const Token* scopeEnd = getEndOfExprScope(expr, scope, /*smallest*/ false);
+            if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {
                 if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {
-                    if (mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
-                        reportError(tok,
-                                    Severity::information,
-                                    "checkLibraryCheckType",
-                                    "--check-library: Provide <type-checks><unusedvar> configuration for " + bailoutTypeName);
-                    }
+                    reportLibraryCfgError(tok, bailoutTypeName);
                     continue;
                 }
 
@@ -1338,6 +1336,26 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             // variable has been read but not written
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
                 unassignedVariableError(usage._var->nameToken(), varname);
+            else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
+                if (usage._lastAccess->linenr() == var->nameToken()->linenr() && var->nameToken()->next()->isSplittedVarDeclEq()) {
+                    bool error = true;
+                    if (mTokenizer->isCPP() && var->isClass() &&
+                        (!var->valueType() || var->valueType()->type == ValueType::Type::UNKNOWN_TYPE)) {
+                        const std::string typeName = var->getTypeName();
+                        switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
+                        case Library::TypeCheck::def:
+                            reportLibraryCfgError(var->nameToken(), typeName);
+                            break;
+                        case Library::TypeCheck::check:
+                            break;
+                        case Library::TypeCheck::suppress:
+                            error = false;
+                        }
+                    }
+                    if (error)
+                        unreadVariableError(usage._var->nameToken(), varname, false);
+                }
+            }
         }
     }
 }
@@ -1426,12 +1444,25 @@ void CheckUnusedVar::checkStructMemberUsage()
                 bailout = true;
                 break;
             }
+            if (var && (var->typeStartToken()->str() == scope.className || var->typeEndToken()->str() == scope.className)) {
+                const std::string addressPattern("!!" + scope.className + " & " + var->name()); // cast from struct
+                const Token* addrTok = scope.bodyEnd;
+                do {
+                    addrTok = Token::findmatch(addrTok, addressPattern.c_str());
+                    if ((addrTok && addrTok->str() == ")" && addrTok->link()->isCast()) || isCPPCast(addrTok)) {
+                        bailout = true;
+                        break;
+                    }
+                    if (addrTok)
+                        addrTok = addrTok->next();
+                } while (addrTok);
+            }
         }
         if (bailout)
             continue;
 
         // Bail out if some data is casted to struct..
-        const std::string castPattern("( struct| " + scope.className + " * ) & %name% [");
+        const std::string castPattern("( struct| " + scope.className + " * ) &| %name%");
         if (Token::findmatch(scope.bodyEnd, castPattern.c_str()))
             continue;
 
@@ -1451,13 +1482,9 @@ void CheckUnusedVar::checkStructMemberUsage()
         if (bailout)
             continue;
 
-        // Try to prevent false positives when struct members are not used directly.
-        if (Token::findmatch(scope.bodyEnd, (scope.className + " %type%| *").c_str()))
-            continue;
-
         for (const Variable &var : scope.varlist) {
-            // declaring a POD member variable?
-            if (!var.typeStartToken()->isStandardType() && !var.isPointer())
+            // only warn for variables without side effects
+            if (!var.typeStartToken()->isStandardType() && !var.isPointer() && !astIsContainer(var.nameToken()) && !isRecordTypeWithoutSideEffects(var.type()))
                 continue;
 
             // Check if the struct member variable is used anywhere in the file

@@ -16,15 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
+#include "benchmarksimple.h"
+
+#include "settings.h"
+#include "tokenize.h"
+
+#include <sstream>
+
+#include <QByteArray>
 #include <QFile>
 #include <QString>
-#include <QByteArray>
-#include <sstream>
-#include "benchmarksimple.h"
-#include "tokenize.h"
-#include "token.h"
-#include "settings.h"
+#include <QtTest>
 
 void BenchmarkSimple::tokenize()
 {

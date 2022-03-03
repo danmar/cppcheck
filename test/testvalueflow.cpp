@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "library.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -50,7 +49,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         // strcpy, abort cfg
         const char cfg[] = "<?xml version=\"1.0\"?>\n"
                            "<def>\n"
@@ -93,6 +92,7 @@ private:
         TEST_CASE(valueFlowAfterAssign);
         TEST_CASE(valueFlowAfterSwap);
         TEST_CASE(valueFlowAfterCondition);
+        TEST_CASE(valueFlowAfterConditionTernary);
         TEST_CASE(valueFlowAfterConditionExpr);
         TEST_CASE(valueFlowAfterConditionSeveralNot);
         TEST_CASE(valueFlowForwardCompoundAssign);
@@ -149,6 +149,7 @@ private:
         TEST_CASE(valueFlowCrashConstructorInitialization);
 
         TEST_CASE(valueFlowUnknownMixedOperators);
+        TEST_CASE(valueFlowSolveExpr);
         TEST_CASE(valueFlowIdempotent);
         TEST_CASE(valueFlowUnsigned);
         TEST_CASE(valueFlowMod);
@@ -687,6 +688,31 @@ private:
         lifetimes = lifetimeValues(code, "( void * )");
         ASSERT_EQUALS(true, lifetimes.size() == 1);
         ASSERT_EQUALS(true, lifetimes.front() == "i");
+
+        code  = "struct T {\n" // #10810
+                "    static int g() { return 0; }\n"
+                "};\n"
+                "T t;\n"
+                "struct S { int i; };\n"
+                "S f() {\n"
+                "    S s = { decltype(t)::g() };\n"
+                "    return s;\n"
+                "};\n";
+        lifetimes = lifetimeValues(code, "=");
+        ASSERT_EQUALS(true, lifetimes.empty());
+
+        code  = "struct T {\n" // #10838
+                "     void f();\n"
+                "     double d[4][4];\n"
+                "};\n"
+                "void T::f() {\n"
+                "    auto g = [this]() -> double(&)[4] {\n"
+                "        double(&q)[4] = d[0];\n"
+                "        return q;\n"
+                "    };\n"
+                "}\n";
+        lifetimes = lifetimeValues(code, "return"); // don't crash
+        ASSERT_EQUALS(true, lifetimes.empty());
     }
 
     void valueFlowArrayElement() {
@@ -3133,6 +3159,67 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 8U, 1));
         ASSERT_EQUALS(false, testValueOfXImpossible(code, 8U, 1));
+
+        code = "void g(int i) {\n"
+               "    if (i == 1)\n"
+               "        return;\n"
+               "    abort();\n"
+               "}\n"
+               "int f(int x) {\n"
+               "    if (x != 0)\n"
+               "        g(x);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 9U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 9U, 0));
+    }
+
+    void valueFlowAfterConditionTernary()
+    {
+        const char* code;
+
+        code = "auto f(int x) {\n"
+               "    return x == 3 ?\n"
+               "        x :\n"
+               "        0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 3));
+
+        code = "auto f(int x) {\n"
+               "    return x != 3 ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
+
+        code = "auto f(int x) {\n"
+               "    return !(x == 3) ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
+
+        code = "auto f(int* x) {\n"
+               "    return x ?\n"
+               "        x :\n"
+               "        0;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, 0));
+
+        code = "auto f(int* x) {\n"
+               "    return x ?\n"
+               "        0 :\n"
+               "        x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
+
+        code = "bool g(int);\n"
+               "auto f(int* x) {\n"
+               "    if (!g(x ?\n"
+               "        *x :\n"
+               "        0)) {}\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowAfterConditionExpr() {
@@ -4073,6 +4160,43 @@ private:
                "}\n";
         value = valueOfTok(code, "x <");
         ASSERT(!value.isKnown());
+
+        code = "void b(int* a) {\n" // #10795
+               "    for (*a = 1;;)\n"
+               "        if (0) {}\n"
+               "}\n"
+               "struct S { int* a; }\n"
+               "void b(S& s) {\n"
+               "    for (*s.a = 1;;)\n"
+               "        if (0) {}\n"
+               "}\n"
+               "struct T { S s; };\n"
+               "void b(T& t) {\n"
+               "    for (*&t.s.a[0] = 1;;)\n"
+               "        if (0) {}\n"
+               "}\n";
+        testValueOfX(code, 0, 0); // <- don't throw
+
+        code = "void f() {\n"
+               "    int p[2];\n"
+               "    for (p[0] = 0; p[0] <= 2; p[0]++) {\n"
+               "        for (p[1] = 0; p[1] <= 2 - p[0]; p[1]++) {}\n"
+               "    }\n"
+               "}\n";
+        testValueOfX(code, 0, 0); // <- don't throw
+
+        code = "struct C {\n" // #10828
+               "    int& v() { return i; }\n"
+               "    int& w() { return j; }\n"
+               "    int i{}, j{};\n"
+               "};\n"
+               "void f() {\n"
+               "    C c;\n"
+               "    for (c.w() = 0; c.w() < 2; c.w()++) {\n"
+               "        for (c.v() = 0; c.v() < 24; c.v()++) {}\n"
+               "    }\n"
+               "}\n";
+        testValueOfX(code, 0, 0); // <- don't throw
     }
 
     void valueFlowSubFunction() {
@@ -6259,6 +6383,40 @@ private:
                "  }\n"
                "};\n";
         valueOfTok(code, "f.c");
+
+        code = "void d(fmpz_t a, fmpz_t b) {\n"
+               "  if (fmpz_sgn(0)) {}\n"
+               "  else if (b) {}\n"
+               "}\n"
+               "void e(psl2z_t f) {\n"
+               "  f->b;\n"
+               "  d(&f->a, c);\n"
+               "}\n";
+        valueOfTok(code, "f");
+
+        code = "struct bo {\n"
+               "  int b, c, a, d;\n"
+               "  char e, g, h, i, aa, j, k, l, m, n, o, p, q, r, t, u, v, w, x, y;\n"
+               "  long z, ab, ac, ad, f, ae, af, ag, ah, ai, aj, ak, al, am, an, ao, ap, aq, ar,\n"
+               "      as;\n"
+               "  short at, au, av, aw, ax, ay, az, ba, bb, bc, bd, be, bf, bg, bh, bi, bj, bk,\n"
+               "      bl, bm;\n"
+               "};\n"
+               "char bn;\n"
+               "void bp() {\n"
+               "  bo s;\n"
+               "  if (bn)\n"
+               "    return;\n"
+               "  s;\n"
+               "}\n";
+        valueOfTok(code, "s");
+
+        code = "int f(int value) { return 0; }\n"
+               "std::shared_ptr<Manager> g() {\n"
+               "    static const std::shared_ptr<Manager> x{ new M{} };\n"
+               "    return x;\n"
+               "}\n";
+        valueOfTok(code, "x");
     }
 
     void valueFlowHang() {
@@ -6424,6 +6582,21 @@ private:
                "    }\n"
                "}\n";
         valueOfTok(code, "swap");
+
+        code = "double a;\n"
+               "int b, c, d, e, f, g;\n"
+               "void h() { double i, j = i = g = f = e = d = c = b = a; }\n";
+        valueOfTok(code, "a");
+
+        code = "double a, c;\n"
+               "double *b;\n"
+               "void d() {\n"
+               "  double e, f, g, h = g = f = e = c = a;\n"
+               "  b[8] = a;\n"
+               "  b[1] = a;\n"
+               "  a;\n"
+               "}\n";
+        valueOfTok(code, "a");
     }
 
     void valueFlowCrashConstructorInitialization() { // #9577
@@ -6465,6 +6638,59 @@ private:
                           "}";
 
         ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
+    }
+
+    void valueFlowSolveExpr()
+    {
+        const char* code;
+        code = "int f(int x) {\n"
+               "    if ((64 - x) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 56));
+
+        code = "int f(int x) {\n"
+               "    if ((x - 64) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 72));
+
+        code = "int f(int x) {\n"
+               "    if ((x - 64) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 72));
+
+        code = "int f(int x) {\n"
+               "    if ((x + 64) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, -56));
+
+        code = "int f(int x) {\n"
+               "    if ((x * 2) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 4));
+
+        code = "int f(int x) {\n"
+               "    if ((x ^ 64) == 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 72));
+
+        code = "int f(int i) {\n"
+               "    int j = i + 64;\n"
+               "    int x = j;\n"
+               "    return x;\n"
+               "}\n";
+        TODO_ASSERT_EQUALS(true, false, testValueOfXKnown(code, 4U, "i", 64));
     }
 
     void valueFlowIdempotent() {
@@ -6847,6 +7073,22 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 3U, "len", -1));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 3U, "len", 0));
+
+        code = "int f(int x) {\n"
+               "    int i = 64 - x;\n"
+               "    if(i < 8)\n"
+               "        return x;\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 71));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 56));
+
+        code = "int b(int a) {\n"
+               "  unsigned long x = a ? 6 : 4;\n"
+               "  assert(x < 6 && x > 0);\n"
+               "  return 1 / x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
     }
 
     void valueFlowSymbolicIdentity()

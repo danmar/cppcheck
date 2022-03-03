@@ -17,19 +17,22 @@
  */
 
 #include "mainwindow.h"
+
 #include "ui_mainwindow.h"
+
+#include <cstdlib>
+#include <ctime>
+
 #include <QClipboard>
-#include <QProcess>
-#include <QFile>
-#include <QTextStream>
 #include <QDir>
 #include <QDirIterator>
-#include <QFileInfo>
+#include <QFile>
 #include <QFileDialog>
-#include <QProgressDialog>
+#include <QFileInfo>
 #include <QMimeDatabase>
-#include <ctime>
-#include <cstdlib>
+#include <QProcess>
+#include <QProgressDialog>
+#include <QTextStream>
 
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
 const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");

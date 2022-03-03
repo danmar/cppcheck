@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,8 +62,7 @@
 #   include <ucontext.h>
 #endif
 #ifdef __linux__
-#include <sys/syscall.h>
-#include <sys/types.h>
+#include <syscall.h>
 #endif
 #endif
 
@@ -340,10 +339,10 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
     }
 #undef ADDRESSDISPLAYLENGTH
 #else
-    UNUSED(output);
-    UNUSED(demangling);
-    UNUSED(maxdepth);
-    UNUSED(lowMem);
+    (void)output;
+    (void)demangling;
+    (void)maxdepth;
+    (void)lowMem;
 #endif
 }
 
@@ -411,7 +410,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
     }
 #else
-    UNUSED(context);
+    (void)context;
     killid = getpid();
 #endif
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <algorithm>
@@ -975,7 +974,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                         bool done = false;
                         while (!done) {
                             if (i == formatString.end()) {
-                                done = true;
                                 break;
                             }
                             switch (*i) {

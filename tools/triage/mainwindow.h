@@ -19,9 +19,9 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <QFileSystemModel>
 #include <QMainWindow>
 #include <QString>
-#include <QFileSystemModel>
 
 class QListWidgetItem;
 class QTextStream;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,8 +19,9 @@
 #ifndef XML_REPORTV2_H
 #define XML_REPORTV2_H
 
-#include <QString>
 #include "xmlreport.h"
+
+#include <QString>
 
 class QXmlStreamReader;
 class QXmlStreamWriter;

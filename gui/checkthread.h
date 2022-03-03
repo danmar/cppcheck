@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,9 +20,10 @@
 #ifndef CHECKTHREAD_H
 #define CHECKTHREAD_H
 
-#include <QThread>
 #include "cppcheck.h"
 #include "suppressions.h"
+
+#include <QThread>
 
 class Settings;
 class ThreadResult;
@@ -55,10 +56,6 @@ public:
 
     void setAddonsAndTools(const QStringList &addonsAndTools) {
         mAddonsAndTools = addonsAndTools;
-    }
-
-    void setDataDir(const QString &dataDir) {
-        mDataDir = dataDir;
     }
 
     void setClangIncludePaths(const QStringList &s) {
@@ -135,7 +132,6 @@ private:
     QStringList mFiles;
     bool mAnalyseWholeProgram;
     QStringList mAddonsAndTools;
-    QString mDataDir;
     QStringList mClangIncludePaths;
     QList<Suppressions::Suppression> mSuppressions;
 };

@@ -1,0 +1,41 @@
+# Some convenient links:
+# - https://github.com/actions/virtual-environments/blob/master/images/win/Windows2019-Readme.md
+#
+
+name: CI-mingw
+
+on: [push,pull_request]
+
+defaults:
+  run:
+    shell: cmd
+
+jobs:
+  build_mingw:
+    strategy:
+      matrix:
+        os: [windows-2019]
+        arch: [x64] # TODO: fix x86 build?
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up MinGW
+        uses: egor-tensin/setup-mingw@v2
+        with:
+          platform: ${{ matrix.arch }}
+
+      - name: Build cppcheck
+        run: |
+          mingw32-make -j2
+
+      - name: Build test
+        run: |
+          mingw32-make -j2 testrunner
+
+      - name: Run test
+        run: |
+          mingw32-make -j2 check

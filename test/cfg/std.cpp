@@ -31,6 +31,26 @@
 #include <iterator>
 #include <vector>
 
+void invalidFunctionArg_std_string_substr(const std::string &str, std::size_t pos, std::size_t len) {
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(-1,len);
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(pos,-1);
+    // no warning is expected for
+    (void)str.substr(pos,len);
+    (void)str.substr(pos, std::string::npos);
+}
+
+void invalidFunctionArg_std_wstring_substr(const std::wstring &str, std::size_t pos, std::size_t len) {
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(-1,len);
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(pos,-1);
+    // no warning is expected for
+    (void)str.substr(pos,len);
+    (void)str.substr(pos, std::wstring::npos);
+}
+
 double invalidFunctionArg_log10(double d = 0.0) {
     // cppcheck-suppress invalidFunctionArg
     return log10(d);
@@ -1211,6 +1231,31 @@ void uninitvar_fseek(void)
     (void)std::fseek(stream,offset,origin);
 }
 
+void invalidFunctionArg_fseek(FILE* stream, long int offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)std::fseek(stream, offset, origin);
+    (void)std::fseek(stream, offset, SEEK_SET);
+    (void)std::fseek(stream, offset, SEEK_CUR);
+    (void)std::fseek(stream, offset, SEEK_END);
+}
+
+void invalidFunctionArgBool_fseek(FILE* stream, long int offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)std::fseek(stream, offset, true);
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)std::fseek(stream, offset, false);
+}
+
 void uninitvar_fsetpos(void)
 {
     FILE* stream;
@@ -1984,7 +2029,7 @@ void uninitvar_longjmp(void)
 void uninitvar_malloc(void)
 {
     size_t size;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar, cstyleCast]
     int *p = (int*)std::malloc(size);
     free(p);
 }
@@ -2216,7 +2261,7 @@ void uninivar_bsearch(void)
     void* base;
     size_t num;
     size_t size;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar, cstyleCast]
     (void)std::bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
 }
 
@@ -2226,11 +2271,11 @@ void minsize_bsearch(const void* key, const void* base,
 {
     int Base[3] = {42, 43, 44};
 
-    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp);
-    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp);
-    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
 
-    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
 }
 
 void uninitvar_qsort(void)
@@ -2239,7 +2284,7 @@ void uninitvar_qsort(void)
     size_t n;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp);
+    (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
 }
 
 void uninitvar_putc(void)
@@ -3636,3 +3681,46 @@ void stdbind()
     // cppcheck-suppress unreadVariable
     auto f2 = std::bind(stdbind_helper, 10);
 }
+
+class A
+{
+    std::vector<std::string> m_str;
+
+public:
+
+    A() {}
+
+    // cppcheck-suppress functionConst
+    void begin_const_iterator(void)
+    {
+        for (std::vector<std::string>::const_iterator it = m_str.begin(); it != m_str.end(); ++it) {;}
+    }
+    // cppcheck-suppress functionConst
+    void cbegin_const_iterator(void)
+    {
+        for (std::vector<std::string>::const_iterator it = m_str.cbegin(); it != m_str.cend(); ++it) {;}
+    }
+    // cppcheck-suppress functionConst
+    void crbegin_const_iterator(void)
+    {
+        for (std::vector<std::string>::const_reverse_iterator it = m_str.crbegin(); it != m_str.crend(); ++it) {;}
+    }
+    // cppcheck-suppress functionConst
+    void rbegin_const_iterator(void)
+    {
+        for (std::vector<std::string>::const_reverse_iterator it = m_str.rbegin(); it != m_str.rend(); ++it) {;}
+    }
+    // cppcheck-suppress functionConst
+    void cbegin_auto(void)
+    {
+        for (auto it = m_str.cbegin(); it != m_str.cend(); ++it) {;}
+    }
+    void baz_begin_no_const_iterator(void)
+    {
+        for (std::vector<std::string>::iterator it = m_str.begin(); it != m_str.end(); ++it) {;}
+    }
+    void rbegin_no_const_iterator(void)
+    {
+        for (std::vector<std::string>::reverse_iterator it = m_str.rbegin(); it != m_str.rend(); ++it) {;}
+    }
+};

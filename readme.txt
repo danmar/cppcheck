@@ -15,7 +15,7 @@ Manual
 Compiling
 
     Any C++11 compiler should work. For compilers with partial C++11 support it may work. If
-    your compiler has the C++11 features that are available in Visual Studio 2013 / GCC 4.6
+    your compiler has the C++11 features that are available in Visual Studio 2013 / GCC 4.8
     then it will work.
 
     To build the GUI, you need Qt.
@@ -36,7 +36,7 @@ Compiling
       * Windows: Visual Studio
       * Windows: Qt Creator + mingw
       * gnu make
-      * g++ 4.6 (or later)
+      * g++ 4.8 (or later)
       * clang++
 
     cmake

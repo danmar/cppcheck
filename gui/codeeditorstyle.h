@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 #ifndef CODEEDITORSTYLE_H
 #define CODEEDITORSTYLE_H
 
-#include <QString>
 #include <QColor>
 #include <QFont>
+#include <QString>
 
 const QString SETTINGS_STYLE_GROUP("EditorStyle");
 const QString SETTINGS_STYLE_TYPE("StyleType");

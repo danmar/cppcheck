@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "utils.h"
 #include "valueflow.h"
 #include "valueptr.h"
 
@@ -39,52 +40,9 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <stack>
 #include <type_traits>
 #include <unordered_map>
 #include <utility>
-
-template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-void visitAstNodesGeneric(T *ast, std::function<ChildrenToVisit(T *)> visitor)
-{
-    if (!ast)
-        return;
-
-    std::stack<T *, std::vector<T *>> tokens;
-    T *tok = ast;
-    do {
-        ChildrenToVisit c = visitor(tok);
-
-        if (c == ChildrenToVisit::done)
-            break;
-        if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2) {
-            T *t2 = tok->astOperand2();
-            if (t2)
-                tokens.push(t2);
-        }
-        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2) {
-            T *t1 = tok->astOperand1();
-            if (t1)
-                tokens.push(t1);
-        }
-
-        if (tokens.empty())
-            break;
-
-        tok = tokens.top();
-        tokens.pop();
-    } while (true);
-}
-
-void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor)
-{
-    visitAstNodesGeneric(ast, std::move(visitor));
-}
-
-void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor)
-{
-    visitAstNodesGeneric(ast, std::move(visitor));
-}
 
 const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred)
 {
@@ -373,6 +331,20 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     return ret;
 }
 
+bool isVariableDecl(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Variable* var = tok->variable();
+    if (!var)
+        return false;
+    if (var->nameToken() == tok)
+        return true;
+    if (Token::Match(var->declEndToken(), "; %var%") && var->declEndToken()->next() == tok)
+        return true;
+    return false;
+}
+
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown)
 {
     if (!tok)
@@ -541,16 +513,83 @@ const Token* getParentLifetime(const Token* tok)
 {
     if (!tok)
         return tok;
-    const Variable* var = tok->variable();
-    // TODO: Call getLifetimeVariable for deeper analysis
-    if (!var)
-        return tok;
-    if (var->isLocal() || var->isArgument())
-        return tok;
+    // Skipping checking for variable if its a pointer-to-member
+    if (!Token::simpleMatch(tok->previous(), ". *")) {
+        const Variable* var = tok->variable();
+        // TODO: Call getLifetimeVariable for deeper analysis
+        if (!var)
+            return tok;
+        if (var->isLocal() || var->isArgument())
+            return tok;
+    }
     const Token* parent = getParentMember(tok);
     if (parent != tok)
         return getParentLifetime(parent);
     return tok;
+}
+
+static std::vector<const Token*> getParentMembers(const Token* tok)
+{
+    if (!tok)
+        return {};
+    if (!Token::simpleMatch(tok->astParent(), "."))
+        return {tok};
+    const Token* parent = tok;
+    while (Token::simpleMatch(parent->astParent(), "."))
+        parent = parent->astParent();
+    std::vector<const Token*> result;
+    for (const Token* tok2 : astFlatten(parent, ".")) {
+        if (Token::simpleMatch(tok2, "(") && Token::simpleMatch(tok2->astOperand1(), ".")) {
+            std::vector<const Token*> sub = getParentMembers(tok2->astOperand1());
+            result.insert(result.end(), sub.begin(), sub.end());
+        }
+        result.push_back(tok2);
+    }
+    return result;
+}
+
+const Token* getParentLifetime(bool cpp, const Token* tok, const Library* library)
+{
+    std::vector<const Token*> members = getParentMembers(tok);
+    if (members.size() < 2)
+        return tok;
+    // Find the first local variable or temporary
+    auto it = std::find_if(members.rbegin(), members.rend(), [&](const Token* tok2) {
+        const Variable* var = tok2->variable();
+        if (var) {
+            return var->isLocal() || var->isArgument();
+        } else {
+            return isTemporary(cpp, tok2, library);
+        }
+    });
+    if (it == members.rend())
+        return tok;
+    // If any of the submembers are borrowed types then stop
+    if (std::any_of(it.base() - 1, members.end() - 1, [&](const Token* tok2) {
+        if (astIsPointer(tok2) || astIsContainerView(tok2) || astIsIterator(tok2))
+            return true;
+        if (!astIsUniqueSmartPointer(tok2)) {
+            if (astIsSmartPointer(tok2))
+                return true;
+            const Token* dotTok = tok2->next();
+            if (!Token::simpleMatch(dotTok, ".")) {
+                const Token* endTok = nextAfterAstRightmostLeaf(tok2);
+                if (!endTok)
+                    dotTok = tok2->next();
+                else if (Token::simpleMatch(endTok, "."))
+                    dotTok = endTok;
+                else if (Token::simpleMatch(endTok->next(), "."))
+                    dotTok = endTok->next();
+            }
+            // If we are dereferencing the member variable then treat it as borrowed
+            if (Token::simpleMatch(dotTok, ".") && dotTok->originalName() == "->")
+                return true;
+        }
+        const Variable* var = tok2->variable();
+        return var && var->isReference();
+    }))
+        return nullptr;
+    return *it;
 }
 
 bool astIsLHS(const Token* tok)
@@ -2699,7 +2738,7 @@ static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const T
 std::vector<const Variable*> getLHSVariables(const Token* tok)
 {
     std::vector<const Variable*> result;
-    if (!Token::Match(tok, "%assign%"))
+    if (!Token::Match(tok, "%assign%|(|{"))
         return result;
     if (!tok->astOperand1())
         return result;
@@ -2747,9 +2786,9 @@ const Token* getLHSVariableToken(const Token* tok)
     if (tok->astOperand1()->varId() > 0)
         return tok->astOperand1();
     const Token* vartok = getLHSVariableRecursive(tok->astOperand1());
-    if (!vartok)
-        return tok->astOperand1();
-    return vartok;
+    if (vartok && vartok->variable() && vartok->variable()->nameToken() == vartok)
+        return vartok;
+    return tok->astOperand1();
 }
 
 const Token* findAllocFuncCallToken(const Token *expr, const Library &library)
@@ -3335,8 +3374,11 @@ bool FwdAnalysis::possiblyAliased(const Token *expr, const Token *startToken) co
                 if (tok->function() && tok->function()->getArgumentVar(argnr) && !tok->function()->getArgumentVar(argnr)->isReference() && !tok->function()->isConst())
                     continue;
                 for (const Token *subexpr = expr; subexpr; subexpr = subexpr->astOperand1()) {
-                    if (isSameExpression(mCpp, macro, subexpr, args[argnr], mLibrary, pure, followVar))
-                        return true;
+                    if (isSameExpression(mCpp, macro, subexpr, args[argnr], mLibrary, pure, followVar)) {
+                        const Scope* scope = expr->scope(); // if there is no other variable, assume no aliasing
+                        if (scope->varlist.size() > 1)
+                            return true;
+                    }
                 }
             }
             continue;

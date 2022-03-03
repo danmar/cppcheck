@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -40,7 +39,7 @@ private:
     Settings settings_std;
     Settings settings_windows;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings_std.library, "std.cfg");
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
         settings0.severity.enable(Severity::portability);
@@ -330,6 +329,7 @@ private:
         TEST_CASE(simplifyKnownVariables60);    // #6829
         TEST_CASE(simplifyKnownVariables61);    // #7805
         TEST_CASE(simplifyKnownVariables62);    // #5666 - p=&str[0]
+        TEST_CASE(simplifyKnownVariables63);    // #10798
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
@@ -345,6 +345,7 @@ private:
         TEST_CASE(simplifyKnownVariablesGlobalVars);
         TEST_CASE(simplifyKnownVariablesReturn);   // 3500 - return
         TEST_CASE(simplifyKnownVariablesPointerAliasFunctionCall); // #7440
+        TEST_CASE(simplifyKnownVariablesNamespace); // #10059
 
         TEST_CASE(simplifyCasts1);
         TEST_CASE(simplifyCasts2);
@@ -2458,6 +2459,10 @@ private:
                "sizeof(char[20][3]);\n"
                "sizeof(char[unknown][3]);";
         ASSERT_EQUALS("20 ; 60 ; sizeof ( char [ unknown ] [ 3 ] ) ;", tok(code));
+
+        code = "char(*Helper())[1];\n"
+               "sizeof(*Helper());\n";
+        TODO_ASSERT_EQUALS("char ( * Helper ( ) ) [ 1 ] ; 1 ;", "char ( * Helper ( ) ) [ 1 ] ; sizeof ( * Helper ( ) ) ;", tok(code));
     }
 
     void sizeof5() {
@@ -6642,6 +6647,12 @@ private:
                                            "}", /*simplify=*/ true));
     }
 
+    void simplifyKnownVariables63() { // #10798
+        tokenizeAndStringify("typedef void (*a)();\n"
+                             "enum class E { a };\n");
+        ASSERT_EQUALS("", errout.str()); // don't throw
+    }
+
     void simplifyKnownVariablesBailOutAssign1() {
         const char code[] = "int foo() {\n"
                             "    int i; i = 0;\n"
@@ -6869,6 +6880,58 @@ private:
                             "delete [ ] data ;\n"
                             "}";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code, /*simplify=*/ true));
+    }
+
+    void simplifyKnownVariablesNamespace() { // #10059
+        {
+            const char code[] = "namespace N {\n"
+                                "    const int n = 0;\n"
+                                "    namespace M { const int m = 0; }\n"
+                                "}\n"
+                                "using namespace N;\n"
+                                "int i(n);\n"
+                                "int j(M::m);\n"
+                                "using namespace N::M;\n"
+                                "int k(m);\n"
+                                "int l(N::M::m);\n";
+            const char exp[]  = "\n\n##file 0\n"
+                                "1: namespace N {\n"
+                                "2: const int n@1 = 0 ;\n"
+                                "3: namespace M { const int m@2 = 0 ; }\n"
+                                "4: }\n"
+                                "5: using namespace N ;\n"
+                                "6: int i ; i = n@1 ;\n"
+                                "7: int j ( M :: m@2 ) ;\n"
+                                "8: using namespace N :: M ;\n"
+                                "9: int k ; k = m@2 ;\n"
+                                "10: int l ( N :: M :: m@2 ) ;\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
+        }
+
+        {
+            const char code[] = "struct S {\n"
+                                "    S() { f(); }\n"
+                                "    void f();\n"
+                                "    int i;\n"
+                                "};\n"
+                                "namespace N { int j; }\n"
+                                "using namespace N;\n"
+                                "void S::f() {\n"
+                                "  i = 0;\n"
+                                "}\n";
+            const char exp[]  = "\n\n##file 0\n"
+                                "1: struct S {\n"
+                                "2: S ( ) { f ( ) ; }\n"
+                                "3: void f ( ) ;\n"
+                                "4: int i@1 ;\n"
+                                "5: } ;\n"
+                                "6: namespace N { int j@2 ; }\n"
+                                "7: using namespace N ;\n"
+                                "8: void S :: f ( ) {\n"
+                                "9: i@1 = 0 ;\n"
+                                "10: }\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
+        }
     }
 
     void simplifyKnownVariablesClassMember() {

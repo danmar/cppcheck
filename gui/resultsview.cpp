@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,27 +18,28 @@
 
 #include "resultsview.h"
 
-#include <QMessageBox>
-#include <QStandardItemModel>
-#include <QVariant>
-#include <QPrinter>
-#include <QPrintDialog>
-#include <QPrintPreviewDialog>
-#include <QSettings>
-#include <QDir>
-#include <QDate>
-#include <QMenu>
-#include <QClipboard>
+#include "checkstatistics.h"
+#include "codeeditorstyle.h"
 #include "common.h"
+#include "csvreport.h"
 #include "erroritem.h"
+#include "path.h"
+#include "printablereport.h"
 #include "txtreport.h"
 #include "xmlreport.h"
 #include "xmlreportv2.h"
-#include "csvreport.h"
-#include "printablereport.h"
-#include "checkstatistics.h"
-#include "path.h"
-#include "codeeditorstyle.h"
+
+#include <QClipboard>
+#include <QDate>
+#include <QDir>
+#include <QMenu>
+#include <QMessageBox>
+#include <QPrintDialog>
+#include <QPrintPreviewDialog>
+#include <QPrinter>
+#include <QSettings>
+#include <QStandardItemModel>
+#include <QVariant>
 
 ResultsView::ResultsView(QWidget * parent) :
     QWidget(parent),

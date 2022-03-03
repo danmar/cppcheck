@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,18 +18,19 @@
 
 #include "settingsdialog.h"
 
-#include <QWidget>
-#include <QList>
-#include <QFileDialog>
-#include <QFileInfo>
-#include <QThread>
-#include <QSettings>
 #include "applicationdialog.h"
 #include "applicationlist.h"
-#include "translationhandler.h"
 #include "codeeditorstyle.h"
 #include "codeeditstyledialog.h"
 #include "common.h"
+#include "translationhandler.h"
+
+#include <QFileDialog>
+#include <QFileInfo>
+#include <QList>
+#include <QSettings>
+#include <QThread>
+#include <QWidget>
 
 SettingsDialog::SettingsDialog(ApplicationList *list,
                                TranslationHandler *translator,

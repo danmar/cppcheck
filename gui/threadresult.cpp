@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,11 @@
 
 #include "threadresult.h"
 
-#include <QFile>
 #include "common.h"
 #include "erroritem.h"
 #include "errorlogger.h"
+
+#include <QFile>
 
 ThreadResult::ThreadResult() : QObject(), ErrorLogger(), mMaxProgress(0), mProgress(0), mFilesChecked(0), mTotalFiles(0)
 {

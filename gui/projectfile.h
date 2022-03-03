@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,14 @@
 #ifndef PROJECT_FILE_H
 #define PROJECT_FILE_H
 
+#include "settings.h"
+#include "suppressions.h"
+
 #include <map>
+
 #include <QObject>
 #include <QString>
 #include <QStringList>
-
-#include "suppressions.h"
-
-#include <settings.h>
 
 class QXmlStreamReader;
 class QXmlStreamWriter;

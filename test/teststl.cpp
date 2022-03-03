@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "checkstl.h"
-#include "config.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "standards.h"
@@ -36,7 +35,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::performance);
@@ -720,6 +719,16 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int> &v) {\n"
+              "    return !v.empty() ? 42 : v.back();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "test.cpp:2:warning:Either the condition 'v.empty()' is redundant or expression 'v.back()' cause access out of bounds.\n"
+            "test.cpp:2:note:condition 'v.empty()'\n"
+            "test.cpp:2:note:Access out of bounds\n",
+            errout.str());
     }
 
     void outOfBoundsSymbolic()
@@ -3830,6 +3839,13 @@ private:
               "    return ref.c_str();\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
+
+        check("void f(const wchar_t* w, int i = 0, ...);\n" // #10357
+              "void f(const std::string& s, int i = 0);\n"
+              "void g(const std::wstring& p) {\n"
+              "    f(p.c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {
@@ -4285,6 +4301,15 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (error) Out of bounds access in expression 'e[d].begin()' because 'e[d]' is empty.\n",
                       errout.str());
+
+        // #10151
+        check("std::set<int>::iterator f(std::set<int>& s) {\n"
+              "for (auto it = s.begin(); it != s.end(); ++it)\n"
+              "    if (*it == 42)\n"
+              "        return s.erase(it);\n"
+              "    return s.end();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
@@ -5068,6 +5093,37 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:5]: (error) Using pointer to local variable 'v' that may be invalid.\n",
             errout.str());
+
+        check("struct A {\n"
+              "    const std::vector<int>* i;\n"
+              "    A(const std::vector<int>& v)\n"
+              "    : i(&v)\n"
+              "    {}\n"
+              "};\n"
+              "int f() {\n"
+              "    std::vector<int> v;\n"
+              "    A a{v};\n"
+              "    v.push_back(1);\n"
+              "    return a.i->front();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    const std::vector<int>* i;\n"
+              "    A(const std::vector<int>& v)\n"
+              "    : i(&v)\n"
+              "    {}\n"
+              "};\n"
+              "void g(const std::vector<int>& v);\n"
+              "void f() {\n"
+              "    std::vector<int> v;\n"
+              "    A a{v};\n"
+              "    v.push_back(1);\n"
+              "    g(a);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {

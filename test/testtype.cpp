@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "checktype.h"
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -35,7 +34,7 @@ public:
 private:
 
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(checkTooBigShift_Unix32);
         TEST_CASE(checkIntegerOverflow);
         TEST_CASE(signConversion);

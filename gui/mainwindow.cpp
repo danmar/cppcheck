@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,23 +18,10 @@
 
 #include "mainwindow.h"
 
-#include <QApplication>
-#include <QDebug>
-#include <QMessageBox>
-#include <QFileInfo>
-#include <QDir>
-#include <QAction>
-#include <QActionGroup>
-#include <QFile>
-#include <QInputDialog>
-#include <QTimer>
-#include <QSettings>
-
-#include "cppcheck.h"
-
 #include "applicationlist.h"
 #include "aboutdialog.h"
 #include "common.h"
+#include "cppcheck.h"
 #include "filelist.h"
 #include "fileviewdialog.h"
 #include "functioncontractdialog.h"
@@ -51,6 +38,18 @@
 #include "threadresult.h"
 #include "translationhandler.h"
 #include "variablecontractsdialog.h"
+
+#include <QApplication>
+#include <QAction>
+#include <QActionGroup>
+#include <QDebug>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
+#include <QInputDialog>
+#include <QMessageBox>
+#include <QSettings>
+#include <QTimer>
 
 static const QString OnlineHelpURL("https://cppcheck.sourceforge.io/manual.html");
 static const QString compile_commands_json("compile_commands.json");
@@ -70,7 +69,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 {
     mUI.setupUi(this);
     mThread = new ThreadHandler(this);
-    mThread->setDataDir(getDataDir());
     mUI.mResults->initialize(mSettings, mApplications, mThread);
 
     // Filter timer to delay filtering results slightly while typing
@@ -516,8 +514,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (!checkSettings.buildDir.empty()) {
         checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
-        foreach (QString s, fileNames)
-        sourcefiles.push_back(s.toStdString());
+        for (const QString& s: fileNames)
+            sourcefiles.push_back(s.toStdString());
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
     }
 
@@ -626,7 +624,7 @@ void MainWindow::updateVariableContractsTab()
 {
     QStringList added;
     if (mProjectFile) {
-        for (auto vc: mProjectFile->getVariableContracts()) {
+        for (const auto &vc: mProjectFile->getVariableContracts()) {
             QString line = vc.first;
             if (!vc.second.minValue.empty())
                 line += " min:" + QString::fromStdString(vc.second.minValue);

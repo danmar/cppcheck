@@ -16,8 +16,9 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QtTest/QtTest>
 #include "cppchecklibrarydata.h"
+
+#include <QObject>
 
 class TestCppcheckLibraryData : public QObject {
     Q_OBJECT

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -302,7 +302,7 @@ static bool isOperatorFunction(const std::string & funcName)
 
 
 
-bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings)
+bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings) const
 {
     bool errors = false;
     for (std::map<std::string, FunctionUsage>::const_iterator it = mFunctions.begin(); it != mFunctions.end(); ++it) {

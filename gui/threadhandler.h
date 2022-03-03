@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,15 @@
 #ifndef THREADHANDLER_H
 #define THREADHANDLER_H
 
+#include "suppressions.h"
+#include "threadresult.h"
+
+#include <set>
+
+#include <QDateTime>
+#include <QElapsedTimer>
 #include <QObject>
 #include <QStringList>
-#include <QDateTime>
-#include <set>
-#include "threadresult.h"
-#include "suppressions.h"
 
 class ResultsView;
 class CheckThread;
@@ -82,10 +85,6 @@ public:
 
     void setClangIncludePaths(const QStringList &s) {
         mClangIncludePaths = s;
-    }
-
-    void setDataDir(const QString &dataDir) {
-        mDataDir = dataDir;
     }
 
     /**
@@ -222,7 +221,7 @@ protected:
      * @brief Timer used for measuring scan duration
      *
      */
-    QTime mTime;
+    QElapsedTimer mTimer;
 
     /**
      * @brief The previous scan duration in milliseconds.
@@ -259,8 +258,6 @@ protected:
     QStringList mAddonsAndTools;
     QList<Suppressions::Suppression> mSuppressions;
     QStringList mClangIncludePaths;
-
-    QString mDataDir;
 private:
 
     /**

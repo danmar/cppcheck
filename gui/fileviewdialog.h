@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,10 @@
 #ifndef FILEVIEW_DIALOG_H
 #define FILEVIEW_DIALOG_H
 
+#include "ui_file.h"
+
 #include <QDialog>
 #include <QString>
-#include "ui_file.h"
 
 class QWidget;
 class QTextEdit;

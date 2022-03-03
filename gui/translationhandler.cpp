@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,13 +18,14 @@
 
 #include "translationhandler.h"
 
+#include "common.h"
+
 #include <QApplication>
 #include <QFile>
+#include <QFileInfo>
 #include <QLocale>
 #include <QMessageBox>
-#include <QFileInfo>
 #include <QTranslator>
-#include "common.h"
 
 
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,9 @@ Settings::Settings()
     inlineSuppressions(false),
     jobs(1),
     jointSuppressionReport(false),
+#ifdef THREADING_MODEL_FORK
     loadAverage(0),
+#endif
     maxConfigs(12),
     maxCtuDepth(2),
     maxTemplateRecursion(100),

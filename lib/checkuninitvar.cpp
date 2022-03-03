@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -1263,8 +1263,13 @@ const Token* CheckUninitVar::isVariableUsage(bool cpp, const Token *vartok, cons
         if (isLikelyStreamRead(cpp, vartok->previous()))
             return nullptr;
 
-        if (valueExpr->valueType() && valueExpr->valueType()->type == ValueType::Type::VOID)
-            return nullptr;
+        if (const auto* vt = valueExpr->valueType()) {
+            if (vt->type == ValueType::Type::VOID)
+                return nullptr;
+            // passing a char* to a stream will dereference it
+            if ((alloc == CTOR_CALL || alloc == ARRAY) && vt->pointer && vt->type != ValueType::Type::CHAR && vt->type != ValueType::Type::WCHAR_T)
+                return nullptr;
+        }
     }
     if (astIsRhs(derefValue) && isLikelyStreamRead(cpp, derefValue->astParent()))
         return nullptr;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -40,7 +39,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::portability);
 
         // If there are unused templates, keep those
@@ -5559,6 +5558,24 @@ private:
                                     "C<int> i ; "
                                     "C<char> c ; "
                                     "class C<int> { } ;";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+        {
+            const char code[] = "class A {};\n"
+                                "template<typename T> struct B;\n"
+                                "template<> struct B<A> {};\n"
+                                "int f() {\n"
+                                "    int B[1] = {};\n"
+                                "    return B[0];\n"
+                                "}\n";
+            const char expected[] = "class A { } ; "
+                                    "struct B<A> ; "
+                                    "template < typename T > struct B ; "
+                                    "struct B<A> { } ; "
+                                    "int f ( ) { "
+                                    "int B [ 1 ] = { } ; "
+                                    "return B [ 0 ] ; "
+                                    "}";
             ASSERT_EQUALS(expected, tok(code));
         }
     }

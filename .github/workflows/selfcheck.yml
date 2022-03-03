@@ -9,19 +9,30 @@ jobs:
 
     runs-on: ubuntu-20.04
 
+    env:
+      QT_VERSION: 5.15.2
+
     steps:
       - uses: actions/checkout@v2
 
       - name: Install missing software
         run: |
           sudo apt-get update
-          sudo apt-get install z3 libz3-dev
+          sudo apt-get install libz3-dev
 
-      - name: Install Qt
+      - name: Cache Qt ${{ env.QT_VERSION }}
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Linux-QtCache-${{ env.QT_VERSION }}-qtcharts
+
+      - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v2
         with:
-          version: '5.15.2'
+          version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
 
       # TODO: cache this - perform same build as for the other self check
       - name: Self check (build)

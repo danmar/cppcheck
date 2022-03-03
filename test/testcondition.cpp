@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "checkcondition.h"
-#include "config.h"
 #include "errortypes.h"
 #include "library.h"
 #include "platform.h"
@@ -44,7 +43,7 @@ private:
     Settings settings0;
     Settings settings1;
 
-    void run() OVERRIDE {
+    void run() override {
         // known platform..
         settings0.platform(cppcheck::Platform::PlatformType::Native);
         settings1.platform(cppcheck::Platform::PlatformType::Native);
@@ -3867,12 +3866,147 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #10484
+        check("void f() {\n"
+              "    static bool init = true;\n"
+              "    if (init)\n"
+              "        init = false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static bool init(true);\n"
+              "    if (init)\n"
+              "        init = false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static bool init{ true };\n"
+              "    if (init)\n"
+              "        init = false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10248
+        check("void f() {\n"
+              "    static int var(1);\n"
+              "    if (var == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static int var{ 1 };\n"
+              "    if (var == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "using Fn = void (*)();\n"
+              "void f() {\n"
+              "    static Fn logger = nullptr;\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "using Fn = void (*)();\n"
+              "void f() {\n"
+              "    static Fn logger(nullptr);\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "using Fn = void (*)();\n"
+              "void f() {\n"
+              "    static Fn logger{ nullptr };\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "typedef void (*Fn)();\n"
+              "void f() {\n"
+              "    static Fn logger = nullptr;\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (style) Condition 'logger==nullptr' is always true\n", errout.str());
+
+        check("void Fun();\n"
+              "typedef void (*Fn)();\n"
+              "void f() {\n"
+              "    static Fn logger(nullptr);\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "typedef void (*Fn)();\n"
+              "void f() {\n"
+              "    static Fn logger{ nullptr };\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #9256
         check("bool f() {\n"
               "    bool b = false;\n"
               "    b = true;\n"
               "    return b;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10702
+        check("struct Object {\n"
+              "  int _count=0;\n"
+              "   void increment() { ++_count;}\n"
+              "   auto get() const { return _count; }\n"
+              "};\n"
+              "struct Modifier {\n"
+              "Object & _object;\n"
+              "  explicit Modifier(Object & object) : _object(object) {}\n"
+              "  void do_something() { _object.increment(); }\n"
+              "};\n"
+              "struct Foo {\n"
+              "  Object _object;\n"
+              "  void foo() {\n"
+              "    Modifier mod(_object);\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "    mod.do_something();\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Object {\n"
+              "  int _count=0;\n"
+              "   auto get() const;\n"
+              "};\n"
+              "struct Modifier {\n"
+              "Object & _object;\n"
+              "  explicit Modifier(Object & object);\n"
+              "  void do_something();\n"
+              "};\n"
+              "struct Foo {\n"
+              "  Object _object;\n"
+              "  void foo() {\n"
+              "    Modifier mod(_object);\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "    mod.do_something();\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "  }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

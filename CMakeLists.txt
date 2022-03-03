@@ -5,6 +5,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(GNUInstallDirs)
 
+include(cmake/compilerCheck.cmake)
 include(cmake/versions.cmake)
 include(cmake/options.cmake)
 include(cmake/findDependencies.cmake)
@@ -12,6 +13,9 @@ include(cmake/compileroptions.cmake)
 include(cmake/compilerDefinitions.cmake)
 include(cmake/buildFiles.cmake)
 include(cmake/cxx11.cmake)
+if (BUILD_GUI)
+    include(cmake/qtCompat.cmake)
+endif()
 
 use_cxx11()
 

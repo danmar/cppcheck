@@ -331,12 +331,12 @@ static CppcheckLibraryData::Markup loadMarkup(QXmlStreamReader &xmlReader)
         mandatoryAttibuteMissing(xmlReader, "ext");
     }
     if (xmlReader.attributes().hasAttribute("aftercode")) {
-        markup.afterCode = (xmlReader.attributes().value("aftercode") == "true") ? true : false;
+        markup.afterCode = (xmlReader.attributes().value("aftercode") == QString("true")) ? true : false;
     } else {
         mandatoryAttibuteMissing(xmlReader, "aftercode");
     }
     if (xmlReader.attributes().hasAttribute("reporterrors")) {
-        markup.reportErrors = (xmlReader.attributes().value("reporterrors") == "true") ? true : false;
+        markup.reportErrors = (xmlReader.attributes().value("reporterrors") == QString("true")) ? true : false;
     } else {
         mandatoryAttibuteMissing(xmlReader, "reporterrors");
     }
