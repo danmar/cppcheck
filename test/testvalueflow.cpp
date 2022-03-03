@@ -711,7 +711,7 @@ private:
                 "        return q;\n"
                 "    };\n"
                 "}\n";
-        lifetimes = lifetimeValues(code, "return"); // dont' crash
+        lifetimes = lifetimeValues(code, "return"); // don't crash
         ASSERT_EQUALS(true, lifetimes.empty());
     }
 
