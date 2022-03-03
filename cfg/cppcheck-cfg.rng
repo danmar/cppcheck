@@ -534,6 +534,18 @@
               </choice>
             </zeroOrMore>
           </element>
+          <element name="operatorEqVarError">
+            <zeroOrMore>
+              <choice>
+                <element name="check">
+                  <ref name="DATA-EXTNAME"/>
+                </element>
+                <element name="suppress">
+                  <ref name="DATA-EXTNAME"/>
+                </element>
+              </choice>
+            </zeroOrMore>
+          </element>          
         </optional>
       </element>
 
