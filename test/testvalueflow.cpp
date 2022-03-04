@@ -700,6 +700,19 @@ private:
                 "};\n";
         lifetimes = lifetimeValues(code, "=");
         ASSERT_EQUALS(true, lifetimes.empty());
+
+        code  = "struct T {\n" // #10838
+                "     void f();\n"
+                "     double d[4][4];\n"
+                "};\n"
+                "void T::f() {\n"
+                "    auto g = [this]() -> double(&)[4] {\n"
+                "        double(&q)[4] = d[0];\n"
+                "        return q;\n"
+                "    };\n"
+                "}\n";
+        lifetimes = lifetimeValues(code, "return"); // don't crash
+        ASSERT_EQUALS(true, lifetimes.empty());
     }
 
     void valueFlowArrayElement() {

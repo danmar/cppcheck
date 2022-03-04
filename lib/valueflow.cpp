@@ -3522,6 +3522,8 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
             return;
 
         const Token* expr = getLHSVariableToken(parent);
+        if (!expr)
+            return;
 
         const Token* endOfVarScope = getEndOfExprScope(expr);
 
