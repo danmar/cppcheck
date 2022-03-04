@@ -6026,6 +6026,18 @@ private:
                "}\n";
         ASSERT_EQUALS(
             "", isKnownContainerSizeValue(tokenValues(code, "v [", ValueFlow::Value::ValueType::CONTAINER_SIZE), 0));
+
+        code = "void f() {\n"
+               "  std::vector<int> v(3);\n"
+               "  v.size();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3));
+
+        code = "void f() {\n"
+               "  std::vector<int> v({ 1, 2, 3 });\n"
+               "  v.size();\n"
+               "}";
+        ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3));
     }
 
     void valueFlowDynamicBufferSize() {
