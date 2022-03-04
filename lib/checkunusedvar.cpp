@@ -1345,7 +1345,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         nextStmt = nextStmt->next();
                     error = precedes(usage._lastAccess, nextStmt);
                 }
-                if (error) {                    
+                if (error) {
                     if (mTokenizer->isCPP() && var->isClass() &&
                         (!var->valueType() || var->valueType()->type == ValueType::Type::UNKNOWN_TYPE)) {
                         const std::string typeName = var->getTypeName();
