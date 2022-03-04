@@ -22,6 +22,7 @@
 
 #include "checkassert.h"
 
+#include "astutils.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -39,118 +40,172 @@ namespace {
     CheckAssert instance;
 }
 
-void CheckAssert::assertWithSideEffects()
-{
+void CheckAssert::assertWithSideEffects() {
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
+    for (const Token *tok = mTokenizer->list.front(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "assert ("))
             continue;
 
         const Token *endTok = tok->next()->link();
-        for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
+        for (const Token *tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             if (Token::simpleMatch(tmp, "sizeof ("))
                 tmp = tmp->linkAt(1);
 
-            checkVariableAssignment(tmp, tok->scope());
-
-            if (tmp->tokType() != Token::eFunction)
-                continue;
-
-            const Function* f = tmp->function();
-            if (f->nestedIn->isClassOrStruct() && !f->isStatic() && !f->isConst()) {
-                sideEffectInAssertError(tmp, f->name()); // Non-const member function called
-                continue;
-            }
-            const Scope* scope = f->functionScope;
-            if (!scope) continue;
-
-            for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
-                if (!tok2->isAssignmentOp() && tok2->tokType() != Token::eIncDecOp)
-                    continue;
-
-                const Variable* var = tok2->previous()->variable();
-                if (!var || var->isLocal() || (var->isArgument() && !var->isReference() && !var->isPointer()))
-                    continue; // See ticket #4937. Assigning function arguments not passed by reference is ok.
-                if (var->isArgument() && var->isPointer() && tok2->strAt(-2) != "*")
-                    continue; // Pointers need to be dereferenced, otherwise there is no error
-
-                bool noReturnInScope = true;
-                for (const Token *rt = scope->bodyStart; rt != scope->bodyEnd; rt = rt->next()) {
-                    if (rt->str() != "return") continue; // find all return statements
-                    if (inSameScope(rt, tok2)) {
-                        noReturnInScope = false;
-                        break;
-                    }
+            if (isVariableAssignment(tmp)) {
+                const auto *var = tmp->astOperand1()->variable();
+                if (checkVariableAssignment(var, tok->scope())) {
+                    assignmentInAssertError(tmp, var->name());
                 }
-                if (noReturnInScope) continue;
+            }
 
-                sideEffectInAssertError(tmp, f->name());
-                break;
+            if (tmp->tokType() != Token::eFunction)   // TODO: constructor calls with initializer list are not detected!
+                continue;
+            const Function *func = tmp->function();
+            auto args = getArguments(tmp);
+            if (isFunctionWithSideEffect(func, {&args, tok->scope()})) {
+                sideEffectInAssertError(tmp, func->name());
             }
         }
         tok = endTok;
     }
 }
+
+bool CheckAssert::isFunctionWithSideEffect(const Function *function, argumentCheck argsChecking) const {
+    if (function->isConstexpr()) return false;
+    if (function->nestedIn->isClassOrStruct() && !function->isConstructor()) {
+        if (!(function->isConst() || function->isStatic())) {
+            return true;
+        }
+    }
+    const Scope *scope = function->functionScope;
+    if (!scope) return false;
+
+    if (function->isConstructor()) {
+        const auto *initializationList =
+                function->constructorMemberInitialization();
+        if (initializationList) {
+            for (const Token *tok = initializationList; tok != scope->bodyStart; tok = tok->next()) {
+                if (tok->tokType() == Token::eIncDecOp) {
+                    const Variable *var = tok->previous()->variable();
+                    if (!var)
+                        continue;
+                    if (var->isArgument() && argsChecking.arguments) {
+                        return checkArgument(tok, function, var, argsChecking);
+                    }
+                }
+            }
+        }
+    }
+
+    for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        if (tok->tokType() == Token::eFunction) {
+            // previously function calls on a second level from assert aren't checked at all
+            // now check at least if static or global variables are changed
+            if (isFunctionWithSideEffect(tok->function()))
+                return true;
+            continue;
+        }
+        if (!tok->isAssignmentOp() && tok->tokType() != Token::eIncDecOp)
+            continue;
+
+        const Variable *var = tok->previous()->variable();
+        if (!var)
+            continue;
+
+        if (var->isLocal())
+            continue;
+        if (var->isStatic() || var->isGlobal())
+            return true;
+
+        if (var->isArgument() && argsChecking.arguments) {
+            return checkArgument(tok, function, var, argsChecking);
+        }
+    }
+    return false;
+}
+
+const Variable *CheckAssert::findPassedVariable(const Function *function, const Variable *var, const argumentCheck &argsChecking) {
+    int paramCtr = 0;
+    const Variable *arg;
+    const Variable *variable = nullptr;
+    do {
+        arg = function->getArgumentVar(paramCtr);
+        if (arg == var) {
+            variable = argsChecking.arguments->at(paramCtr)->variable();
+            break;
+        }
+    } while (arg);
+    return variable;
+}
+
+bool CheckAssert::checkArgument(const Token *assignIncToken, const Function *function, const Variable *var, const argumentCheck &argsChecking) {
+    const Variable *variable = findPassedVariable(function, var, argsChecking);
+    if (!variable)
+        variable = var;
+    // See ticket #4937. Assigning function arguments not passed by reference is ok.
+    if (var->isReference())
+        return checkVariableAssignment(variable, argsChecking.assertionScope);
+    if (var->isPointer() && assignIncToken->strAt(-2) == "*")                    // TODO: what if assigned first and then dereferenced?
+        return checkVariableAssignment(variable, argsChecking.assertionScope);   // Pointers need to be dereferenced, otherwise there is no error
+}
 //---------------------------------------------------------------------------
 
 
-void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& functionName)
-{
+void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string &functionName) {
     reportError(tok, Severity::warning,
                 "assertWithSideEffect",
                 "$symbol:" + functionName + "\n"
-                "Assert statement calls a function which may have desired side effects: '$symbol'.\n"
-                "Non-pure function: '$symbol' is called inside assert statement. "
-                "Assert statements are removed from release builds so the code inside "
-                "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.", CWE398, Certainty::normal);
+                                            "Assert statement calls a function which may have desired side effects: '$symbol'.\n"
+                                            "Non-pure function: '$symbol' is called inside assert statement. "
+                                            "Assert statements are removed from release builds so the code inside "
+                                            "assert statement is not executed. If the code is needed also in release "
+                                            "builds, this is a bug.",
+                CWE398, Certainty::normal);
 }
 
-void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
-{
+void CheckAssert::assignmentInAssertError(const Token *tok, const std::string &varname) {
     reportError(tok, Severity::warning,
                 "assignmentInAssert",
                 "$symbol:" + varname + "\n"
-                "Assert statement modifies '$symbol'.\n"
-                "Variable '$symbol' is modified inside assert statement. "
-                "Assert statements are removed from release builds so the code inside "
-                "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.", CWE398, Certainty::normal);
+                                       "Assert statement modifies '$symbol'.\n"
+                                       "Variable '$symbol' is modified inside assert statement. "
+                                       "Assert statements are removed from release builds so the code inside "
+                                       "assert statement is not executed. If the code is needed also in release "
+                                       "builds, this is a bug.",
+                CWE398, Certainty::normal);
+}
+
+bool CheckAssert::isVariableAssignment(const Token *token) {
+    if (token->isAssignmentOp())
+        return true;
+    if (token->tokType() == Token::eIncDecOp)
+        return true;
+
+    return false;
 }
 
 // checks if side effects happen on the variable prior to tmp
-void CheckAssert::checkVariableAssignment(const Token* assignTok, const Scope *assertionScope)
-{
-    if (!assignTok->isAssignmentOp() && assignTok->tokType() != Token::eIncDecOp)
-        return;
-
-    const Variable* var = assignTok->astOperand1()->variable();
+bool CheckAssert::checkVariableAssignment(const Variable *var, const Scope *assertionScope) {
     if (!var)
-        return;
+        return false;
 
     // Variable declared in inner scope in assert => don't warn
-    if (assertionScope != var->scope()) {
-        const Scope *s = var->scope();
+    const auto *variableScope = var->scope();
+    if (assertionScope != variableScope) {
+        const Scope *s = variableScope;
         while (s && s != assertionScope)
             s = s->nestedIn;
         if (s == assertionScope)
-            return;
+            return false;
     }
 
     // assignment
-    if (assignTok->isAssignmentOp() || assignTok->tokType() == Token::eIncDecOp) {
-        if (var->isConst()) {
-            return;
-        }
-        assignmentInAssertError(assignTok, var->name());
+    if (var->isConst()) {
+        return false;
     }
-    // TODO: function calls on var
-}
 
-bool CheckAssert::inSameScope(const Token* returnTok, const Token* assignTok)
-{
-    // TODO: even if a return is in the same scope, the assignment might not affect it.
-    return returnTok->scope() == assignTok->scope();
+    // TODO: function calls on var
+    return true;
 }

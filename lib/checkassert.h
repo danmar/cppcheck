@@ -55,12 +55,8 @@ public:
 
     void assertWithSideEffects();
 
-protected:
-    void checkVariableAssignment(const Token* assignTok, const Scope *assertionScope);
-    static bool inSameScope(const Token* returnTok, const Token* assignTok);
-
 private:
-    void sideEffectInAssertError(const Token *tok, const std::string& functionName);
+    void sideEffectInAssertError(const Token *tok, const std::string &functionName);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
@@ -68,6 +64,17 @@ private:
         c.sideEffectInAssertError(nullptr, "function");
         c.assignmentInAssertError(nullptr, "var");
     }
+
+    struct argumentCheck {
+        const std::vector<const Token *> *arguments;
+        const Scope *assertionScope;
+    };
+
+    bool isFunctionWithSideEffect(const Function *function, argumentCheck argsChecking = {}) const;
+    static bool checkVariableAssignment(const Variable *var, const Scope *assertionScope);
+    static bool isVariableAssignment(const Token *token);
+    static bool checkArgument(const Token *assignIncToken, const Function *function, const Variable *var, const argumentCheck &argsChecking);
+    static const Variable *findPassedVariable(const Function *function, const Variable *var, const argumentCheck &argsChecking);
 
     static std::string myName() {
         return "Assert";
@@ -79,4 +86,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif // checkassertH
+#endif   // checkassertH
