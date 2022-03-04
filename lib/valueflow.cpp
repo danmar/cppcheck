@@ -7674,7 +7674,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 const Token* plusTok = commaTok->astOperand2();
                 if (varTok1->varId() && plusTok->astOperand1() && plusTok->astOperand2() && varTok1->valueType() && varTok1->valueType()->pointer) {
                     const Token* sizeTok = nullptr;
-                    if (varTok1->varId() == plusTok->astOperand1()->varId() )
+                    if (varTok1->varId() == plusTok->astOperand1()->varId())
                         sizeTok = plusTok->astOperand2();
                     else if (varTok1->varId() == plusTok->astOperand2()->varId())
                         sizeTok = plusTok->astOperand1();
