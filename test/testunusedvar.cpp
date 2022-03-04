@@ -3345,14 +3345,14 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", "", errout.str());
 
         functionVariableUsage("int f() {\n"
-                              "    	int i = 0, j = 1;\n"
-                              "     return i;\n"
+                              "    int i = 0, j = 1;\n"
+                              "    return i;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'j' is assigned a value that is never used.\n", errout.str());
 
         functionVariableUsage("int f() {\n"
-                              "    	int i = 0, j = 1;\n"
-                              "     return j;\n"
+                              "    int i = 0, j = 1;\n"
+                              "    return j;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
 
