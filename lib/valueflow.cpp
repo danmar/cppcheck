@@ -7636,7 +7636,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         if (!isDecl) {
             hasInitList = Token::Match(vnt, "%name% {") && Token::simpleMatch(vnt->next()->link(), "} ;");
             if (!hasInitList)
-                hasInitList = Token::Match(vnt, "%name% ( {") && Token::simpleMatch(vnt->tokAt(2)->link(), "} ) ;");
+                hasInitList = Token::Match(vnt, "%name% ( {") && Token::simpleMatch(vnt->linkAt(2), "} ) ;");
             if (!hasInitList)
                 hasInitSize = Token::Match(vnt, "%name% (|{ %num%|%var% )|}");
         }
