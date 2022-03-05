@@ -3333,8 +3333,8 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'var' is assigned a value that is never used.\n", errout.str());
     }
 
-    void localvar62() { // #10824
-        functionVariableUsage("void f() {\n"
+    void localvar62() {
+        functionVariableUsage("void f() {\n" // #10824
                               "    S* s = nullptr;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
@@ -3343,6 +3343,23 @@ private:
                               "    S* s{};\n"
                               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", "", errout.str());
+
+        functionVariableUsage("int f() {\n"
+                              "    int i = 0, j = 1;\n"
+                              "    return i;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'j' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("int f() {\n"
+                              "    int i = 0, j = 1;\n"
+                              "    return j;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f() {\n" // #10846
+                              "    int i = 1; while (i) { i = g(); }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarloops() {

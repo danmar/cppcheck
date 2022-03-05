@@ -1337,14 +1337,21 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
                 unassignedVariableError(usage._var->nameToken(), varname);
             else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
-                if (usage._lastAccess->linenr() == var->nameToken()->linenr() && var->nameToken()->next()->isSplittedVarDeclEq()) {
-                    bool error = true;
+                const Token* vnt = var->nameToken();
+                bool error = false;
+                if (vnt->next()->isSplittedVarDeclEq()) {
+                    const Token* nextStmt = vnt->tokAt(2);
+                    while (nextStmt && nextStmt->str() != ";")
+                        nextStmt = nextStmt->next();
+                    error = precedes(usage._lastAccess, nextStmt);
+                }
+                if (error) {
                     if (mTokenizer->isCPP() && var->isClass() &&
                         (!var->valueType() || var->valueType()->type == ValueType::Type::UNKNOWN_TYPE)) {
                         const std::string typeName = var->getTypeName();
                         switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
                         case Library::TypeCheck::def:
-                            reportLibraryCfgError(var->nameToken(), typeName);
+                            reportLibraryCfgError(vnt, typeName);
                             break;
                         case Library::TypeCheck::check:
                             break;
@@ -1353,7 +1360,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         }
                     }
                     if (error)
-                        unreadVariableError(usage._var->nameToken(), varname, false);
+                        unreadVariableError(vnt, varname, false);
                 }
             }
         }
