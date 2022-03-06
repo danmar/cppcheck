@@ -2644,13 +2644,13 @@ private:
         // #8957
         {
             const char code[] = "static void func() {\n"
-                                 "    auto x = []() mutable {};\n"
-                                 "    dostuff(x);\n"
-                                 "}";
+                                "    auto x = []() mutable {};\n"
+                                "    dostuff(x);\n"
+                                "}";
             const char exp[] = "1: static void func ( ) {\n"
-                                "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
-                                "3: dostuff ( x@1 ) ;\n"
-                                "4: }\n";
+                               "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
+                               "3: dostuff ( x@1 ) ;\n"
+                               "4: }\n";
             ASSERT_EQUALS(exp, tokenize(code));
         }
         // #9384
