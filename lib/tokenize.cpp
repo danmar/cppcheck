@@ -5221,7 +5221,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     elseif();
 
     validate(); // #6772 "segmentation fault (invalid code) in Tokenizer::setVarId"
-    createLinks2();
+
     if (mTimerResults) {
         Timer t("Tokenizer::tokenize::setVarId", mSettings->showtime, mTimerResults);
         setVarId();
@@ -5230,7 +5230,7 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     }
 
     // Link < with >
-    //createLinks2();
+    createLinks2();
 
     // Mark C++ casts
     for (Token *tok = list.front(); tok; tok = tok->next()) {
