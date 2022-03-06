@@ -753,6 +753,40 @@ private:
               "}\n");
         ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
                       errout.str());
+
+        check("void f() {\n"
+              "    char c[] = { 1, 2, 3 };\n"
+              "    std::vector<char> v(c, sizeof(c) + c);\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    char c[] = { 1, 2, 3 };\n"
+              "    std::vector<char> v{ c, c + sizeof(c) };\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                           "",
+                           errout.str());
+
+        check("void f() {\n"
+              "    int i[] = { 1, 2, 3 };\n"
+              "    std::vector<int> v(i, i + sizeof(i) / 4);\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n" // #6615
+              "    int i[] = { 1, 2, 3 };\n"
+              "    std::vector<int> v(i, i + sizeof(i) / sizeof(int));\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                           "",
+                           errout.str());
     }
 
     void outOfBoundsSymbolic()

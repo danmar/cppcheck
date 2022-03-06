@@ -7634,15 +7634,17 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         if (vnt->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
             continue;
         const bool isDecl = Token::Match(vnt, "%name% ;");
-        bool hasInitList = false, hasInitSize = false;
+        bool hasInitList = false, hasInitSize = false, isPointerInit = false;
         if (!isDecl) {
             hasInitList = Token::Match(vnt, "%name% {") && Token::simpleMatch(vnt->next()->link(), "} ;");
             if (!hasInitList)
                 hasInitList = Token::Match(vnt, "%name% ( {") && Token::simpleMatch(vnt->linkAt(2), "} ) ;");
             if (!hasInitList)
                 hasInitSize = Token::Match(vnt, "%name% (|{ %num%|%var% )|}");
+            if (!hasInitList && !hasInitSize)
+                isPointerInit = Token::Match(vnt, "%name% ( %var% ,");
         }
-        if (!isDecl && !hasInitList && !hasInitSize)
+        if (!isDecl && !hasInitList && !hasInitSize && !isPointerInit)
             continue;
         if (vnt->astTop() && Token::Match(vnt->astTop()->previous(), "for|while"))
             known = !isVariableChanged(var, settings, true);
@@ -7666,6 +7668,27 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             if (!sizeTok || !sizeTok->hasKnownIntValue())
                 continue;
             values.back().intvalue = sizeTok->getKnownIntValue();
+        }
+        else if (isPointerInit) { // (ptr, ptr + size)
+            const Token* commaTok = vnt->next()->astOperand2();
+            if (commaTok && commaTok->str() == "," && commaTok->astOperand1() && commaTok->astOperand2() && commaTok->astOperand2()->isArithmeticalOp() && commaTok->astOperand2()->str() == "+") {
+                const Token* varTok1 = commaTok->astOperand1();
+                const Token* plusTok = commaTok->astOperand2();
+                if (varTok1->varId() && plusTok->astOperand1() && plusTok->astOperand2() && varTok1->valueType() && varTok1->valueType()->pointer) {
+                    const Token* sizeTok = nullptr;
+                    if (varTok1->varId() == plusTok->astOperand1()->varId())
+                        sizeTok = plusTok->astOperand2();
+                    else if (varTok1->varId() == plusTok->astOperand2()->varId())
+                        sizeTok = plusTok->astOperand1();
+                    if (!sizeTok || !sizeTok->hasKnownIntValue())
+                        continue;
+                    values.back().intvalue = sizeTok->getKnownIntValue();
+                }
+                else
+                    continue;
+            }
+            else
+                continue;
         }
         for (const ValueFlow::Value& value : values)
             valueFlowContainerForward(vnt->next(), vnt, value, tokenlist);
