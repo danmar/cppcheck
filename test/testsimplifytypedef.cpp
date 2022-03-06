@@ -186,6 +186,7 @@ private:
         TEST_CASE(simplifyTypedef137);
         TEST_CASE(simplifyTypedef138);
         TEST_CASE(simplifyTypedef139);
+        TEST_CASE(simplifyTypedef140); // #10798
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3025,6 +3026,20 @@ private:
         ASSERT_EQUALS(
             "struct Anonymous0 { struct c * b ; } ; struct Anonymous0 * d ; void e ( struct c * a ) { if ( a < d [ 0 ] . b ) { } }",
             tok(code));
+    }
+
+    void simplifyTypedef140() { // #10798
+        {
+            const char code[] = "typedef void (*b)();\n"
+                                "enum class E { a, b, c };\n";
+            ASSERT_EQUALS("enum class E { a , b , c } ;", tok(code));
+        }
+        {
+            const char code[] = "typedef int A;\n"
+                                "enum class E { A };\n";
+            ASSERT_EQUALS("enum class E { A } ;", tok(code));
+        }
+
     }
 
     void simplifyTypedefFunction1() {

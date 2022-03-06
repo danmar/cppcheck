@@ -791,7 +791,6 @@ static void compileTerm(Token *&tok, AST_state& state)
                 tok = tok->tokAt(2);
             }
         } else if (!state.cpp || !Token::Match(tok, "new|delete %name%|*|&|::|(|[")) {
-            Token* tok2 = tok;
             std::vector<Token*> inner;
             tok = skipDecl(tok, &inner);
             for (Token* tok3 : inner) {
