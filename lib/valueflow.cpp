@@ -7881,7 +7881,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
         MathLib::bigint sizeValue = -1, numElem = -1;
 
         if (newTok && newTok->astOperand1()) { // number of elements
-            const Token* bracTok{}, *typeTok{};
+            const Token* bracTok = nullptr, *typeTok = nullptr;
             if (newTok->astOperand1()->str() == "[")
                 bracTok = newTok->astOperand1();
             else if (newTok->astOperand1()->str() == "(") {
