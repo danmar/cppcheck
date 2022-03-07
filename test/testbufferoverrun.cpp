@@ -2243,7 +2243,7 @@ private:
               "    char buf[10];\n"
               "    const bool a = true, b = true;\n"
               "    for (int i = 0; i < (a && b ? 11 : 10); ++i)\n"
-              "      buf[i] = 0;\n"
+              "        buf[i] = 0;\n"
               "    return buf[0];\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n", errout.str());
