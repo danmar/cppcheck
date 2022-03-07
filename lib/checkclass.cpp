@@ -163,12 +163,24 @@ void CheckClass::constructors()
         // There are no constructors.
         if (scope->numConstructors == 0 && printStyle && !usedInUnion) {
             // If there is a private variable, there should be a constructor..
+            int needInit = 0, haveInit = 0;
+            std::vector<const Variable*> uninitVars;
             for (const Variable &var : scope->varlist) {
-                if (var.isPrivate() && !var.isStatic() && !var.isInit() && !var.hasDefault() &&
+                if (var.isPrivate() && !var.isStatic() &&
                     (!var.isClass() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True))) {
-                    noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
-                    break;
+                    ++needInit;
+                    if (!var.isInit() && !var.hasDefault())
+                        uninitVars.emplace_back(&var);
+                    else
+                        ++haveInit;
                 }
+            }
+            if (needInit > haveInit) {
+                if (haveInit == 0)
+                    noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
+                else
+                    for (const Variable* uv : uninitVars)
+                        uninitVarError(uv->typeStartToken(), /*isprivate*/ true, uv->scope()->className, uv->name(), /*derived*/ false, /*inconclusive*/ false, /*inConstructor*/ false);
             }
         }
 
@@ -998,10 +1010,10 @@ void CheckClass::noExplicitConstructorError(const Token *tok, const std::string 
     reportError(tok, Severity::style, "noExplicitConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
-void CheckClass::uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool derived, bool inconclusive)
+void CheckClass::uninitVarError(const Token *tok, bool isprivate, const std::string &classname, const std::string &varname, bool derived, bool inconclusive, bool inConstructor)
 {
-    std::string message;
-    message = "Member variable '$symbol' is not initialized in the constructor.";
+    std::string message("Member variable '$symbol' is not initialized");
+    message += inConstructor ? " in the constructor." : ".";
     if (derived)
         message += " Maybe it should be initialized directly in the class " + classname + "?";
     std::string id = std::string("uninit") + (derived ? "Derived" : "") + "MemberVar" + (isprivate ? "Private" : "");
