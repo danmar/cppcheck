@@ -7855,7 +7855,6 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
         const Token* const arg1 = (args.size() >= allocFunc->bufferSizeArg1) ? args[allocFunc->bufferSizeArg1 - 1] : nullptr;
         const Token* const arg2 = (args.size() >= allocFunc->bufferSizeArg2) ? args[allocFunc->bufferSizeArg2 - 1] : nullptr;
 
-
         switch (allocFunc->bufferSize) {
         case Library::AllocFunc::BufferSize::none:
             break;
@@ -7880,7 +7879,6 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
 
     auto getBufferSizeFromNew = [&](const Token* newTok) -> MathLib::bigint {
         MathLib::bigint sizeValue = -1, numElem = -1;
-
 
         if (newTok && newTok->astOperand1()) { // number of elements
             const Token* bracTok{}, *typeTok{};
