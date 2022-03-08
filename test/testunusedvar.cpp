@@ -1628,8 +1628,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember19() { // #10826
-        checkStructMemberUsage("class C {};\n"
+    void structmember19() {
+        checkStructMemberUsage("class C {};\n" // #10826
                                "struct S {\n"
                                "    char* p;\n"
                                "    std::string str;\n"
@@ -1651,6 +1651,15 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::p' is never used.\n"
                       "[test.cpp:4]: (style) struct member 'S::str' is never used.\n"
                       "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
+                      errout.str());
+
+        checkStructMemberUsage("typedef struct { int i; } A;\n" // #10848
+                               "typedef struct { std::vector<A> v; } B;\n"
+                               "const A& f(const std::vector<const B*>& b, int idx) {\n"
+                               "    const A& a = b[0]->v[idx];\n"
+                               "    return a;\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout.str());
     }
 
