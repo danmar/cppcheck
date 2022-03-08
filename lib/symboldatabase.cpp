@@ -1223,8 +1223,16 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                 if (membertok)
                     membertok = membertok->astOperand2();
             }
-            else if (isDirectAccess)
+            else if (isDirectAccess) {
                 membertok = const_cast<Token*>(tok->astParent()->astOperand2());
+                if (membertok == tok) {
+                    Token* gptok = const_cast<Token*>(tok->astParent()->astParent());
+                    if (Token::simpleMatch(gptok, ".")) // chained access
+                        membertok = gptok->astOperand2();
+                    else if (Token::simpleMatch(gptok, "[") && Token::simpleMatch(gptok->astParent(), "."))
+                        membertok = gptok->astParent()->astOperand2();
+                }
+            }
             else { // isDerefAccess
                 membertok = const_cast<Token*>(tok->astParent());
                 while (Token::simpleMatch(membertok, "*"))
