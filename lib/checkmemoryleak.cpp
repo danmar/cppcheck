@@ -1000,7 +1000,8 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 {
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-        if (!Token::Match(tok, "%name% ("))
+        bool isNew = false;
+        if (!Token::Match(tok, "%name% (") && !(isNew = mTokenizer->isCPP() && tok->str() == "new"))
             continue;
 
         if (tok->varId())
@@ -1010,21 +1011,21 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
         if (allocType == No)
             continue;
 
-        if (tok != tok->next()->astOperand1())
+        if (tok != tok->next()->astOperand1() && !isNew)
             continue;
 
         if (isReopenStandardStream(tok))
             continue;
 
         // get ast parent, skip casts
-        const Token *parent = tok->next()->astParent();
+        const Token *parent = isNew ? tok->astParent() : tok->next()->astParent();
         while (parent && parent->str() == "(" && !parent->astOperand2())
             parent = parent->astParent();
 
-        if (!parent) {
+        if (!parent && !(isNew && ((!tok->astOperand1() && !tok->astOperand2()) || tok->strAt(1) == "auto" || Token::Match(tok, "new %type% (")))) {
             // Check if we are in a C++11 constructor
             const Token * closingBrace = Token::findmatch(tok, "}|;");
-            if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%"))
+            if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%") && (!isNew && precedes(tok, closingBrace->link())))
                 continue;
             returnValueNotUsedError(tok, tok->str());
         } else if (Token::Match(parent, "%comp%|!")) {
