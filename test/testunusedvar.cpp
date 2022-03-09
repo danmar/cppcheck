@@ -1629,8 +1629,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember19() { // #10826
-        checkStructMemberUsage("class C {};\n"
+    void structmember19() {
+        checkStructMemberUsage("class C {};\n" // #10826
                                "struct S {\n"
                                "    char* p;\n"
                                "    std::string str;\n"
@@ -1653,6 +1653,54 @@ private:
                       "[test.cpp:4]: (style) struct member 'S::str' is never used.\n"
                       "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
                       errout.str());
+
+        checkStructMemberUsage("struct S {\n"
+                               "    struct T {\n"
+                               "        int i;\n"
+                               "    } t[2];\n"
+                               "};\n"
+                               "S s[1];\n"
+                               "int f() {\n"
+                               "    return s[0].t[1].i;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "struct T { S s; };\n"
+                               "int f(const T** tp) {\n"
+                               "    return tp[0]->s.a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S* sp) {\n"
+                               "    return (*sp).a; \n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S** spp) {\n"
+                               "    return spp[0]->a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S** spp) {\n"
+                               "    return spp[0][0].a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S* sp) {\n"
+                               "    return sp[0].a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S* sp) {\n"
+                               "    return sp->a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
