@@ -170,7 +170,7 @@ private:
               "    (void)c;\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:9]: (debug) constStatementError not handled.\n", errout.str());
     }
 
     void test_numeric() {
@@ -375,6 +375,7 @@ private:
                       "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!'\n"
                       "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!'\n"
+                      "[test.cpp:8]: (warning) Found unused cast of expression '!x'.\n"
                       "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n", errout.str());
 
         check("void f1(int x) { x; }", true);
@@ -383,6 +384,8 @@ private:
         check("void f() { if (Type t; g(t)) {} }"); // #9776
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(int x) { static_cast<unsigned>(x); }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found unused cast of expression 'x'.\n", errout.str());
     }
 
     void vardecl() {
