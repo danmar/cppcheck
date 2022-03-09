@@ -66,7 +66,7 @@ private:
         TEST_CASE(structmember16); // #10485
         TEST_CASE(structmember17); // #10591
         TEST_CASE(structmember18); // #10684
-        TEST_CASE(structmember19); // #10826
+        TEST_CASE(structmember19); // #10826, #10848
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1654,7 +1654,7 @@ private:
                       "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
                       errout.str());
 
-        checkStructMemberUsage("struct S {\n"
+        checkStructMemberUsage("struct S {\n" // #10848
                                "    struct T {\n"
                                "        int i;\n"
                                "    } t[2];\n"
@@ -1701,6 +1701,15 @@ private:
                                "    return sp->a;\n"
                                "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("typedef struct { int i; } A;\n"
+                               "typedef struct { std::vector<A> v; } B;\n"
+                               "const A& f(const std::vector<const B*>& b, int idx) {\n"
+                               "    const A& a = b[0]->v[idx];\n"
+                               "    return a;\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
+                      errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
