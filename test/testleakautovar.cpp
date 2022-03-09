@@ -184,6 +184,7 @@ private:
         TEST_CASE(return6); // #8282 return {p, p}
         TEST_CASE(return7); // #9343 return (uint8_t*)x
         TEST_CASE(return8);
+        TEST_CASE(return9);        
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -2103,6 +2104,14 @@ private:
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }
+    
+    void return9() {
+        check("void* f() {\n"
+              "    void *x = malloc (sizeof (struct alloc));\n"
+              "    return x + sizeof (struct alloc);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }    
 
     void test1() { // 3809
         check("void f(double*&p) {\n"
