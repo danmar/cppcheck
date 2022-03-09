@@ -340,6 +340,7 @@ bool Suppressions::Suppression::isMatch(const Suppressions::ErrorMessage &errmsg
     if (!isSuppressed(errmsg))
         return false;
     matched = true;
+    checked = true;
     return true;
 }
 
@@ -411,7 +412,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
     std::string tmpFile = Path::simplifyPath(file);
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
-        if (s.matched)
+        if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.hash > 0)
             continue;
@@ -428,7 +429,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
 {
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
-        if (s.matched)
+        if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.hash > 0)
             continue;
@@ -444,4 +445,25 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
 const std::list<Suppressions::Suppression> &Suppressions::getSuppressions() const
 {
     return mSuppressions;
+}
+
+/**
+ * This function require that both tokens and suppressions are sorted in line
+ * number order.
+ */
+void Suppressions::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer) {
+  int lastLineNr = 0;
+  auto supp = mSuppressions.begin();
+  for (const Token *tok = tokenizer.tokens(); tok && (supp != mSuppressions.end()); tok = tok->next())
+  {
+    if (tok->linenr() != lastLineNr)
+    {
+      lastLineNr = tok->linenr();
+      while ((supp != mSuppressions.end()) && (supp->lineNumber <= lastLineNr)) {
+        if (supp->lineNumber == lastLineNr)
+          supp->checked = true;
+        ++supp;
+      }
+    }
+  }
 }
