@@ -2609,34 +2609,56 @@ private:
 
     void varid_lambda_arg() {
         // #8664
-        const char code1[] = "static void func(int ec) {\n"
-                             "    func2([](const std::error_code& ec) { return ec; });\n"
-                             "}";
-        const char exp1[] = "1: static void func ( int ec@1 ) {\n"
-                            "2: func2 ( [ ] ( const std :: error_code & ec@2 ) { return ec@2 ; } ) ;\n"
-                            "3: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
-
-        const char code2[] = "static void func(int ec) {\n"
-                             "    func2([](int x, const std::error_code& ec) { return x + ec; });\n"
-                             "}";
-        const char exp2[] = "1: static void func ( int ec@1 ) {\n"
-                            "2: func2 ( [ ] ( int x@2 , const std :: error_code & ec@3 ) { return x@2 + ec@3 ; } ) ;\n"
-                            "3: }\n";
-        ASSERT_EQUALS(exp2, tokenize(code2));
+        {
+            const char code[] = "static void func(int ec) {\n"
+                                "    func2([](const std::error_code& ec) { return ec; });\n"
+                                "}";
+            const char exp[] = "1: static void func ( int ec@1 ) {\n"
+                               "2: func2 ( [ ] ( const std :: error_code & ec@2 ) { return ec@2 ; } ) ;\n"
+                               "3: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        {
+            const char code[] = "static void func(int ec) {\n"
+                                "    func2([](int x, const std::error_code& ec) { return x + ec; });\n"
+                                "}";
+            const char exp[] = "1: static void func ( int ec@1 ) {\n"
+                               "2: func2 ( [ ] ( int x@2 , const std :: error_code & ec@3 ) { return x@2 + ec@3 ; } ) ;\n"
+                               "3: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // #9384
+        {
+            const char code[] = "auto g = [](const std::string& s) -> std::string { return {}; };\n";
+            const char exp[] = "1: auto g@1 ; g@1 = [ ] ( const std :: string & s@2 ) . std :: string { return { } ; } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        {
+            const char code[] = "auto g = [](std::function<void()> p) {};\n";
+            const char exp[] = "1: auto g@1 ; g@1 = [ ] ( std :: function < void ( ) > p@2 ) { } ;\n";
+            TODO_ASSERT_EQUALS(exp, "1: auto g@1 ; g@1 = [ ] ( std :: function < void ( ) > p ) { } ;\n", tokenize(code));
+        }
     }
 
     void varid_lambda_mutable() {
         // #8957
-        const char code1[] = "static void func() {\n"
-                             "    auto x = []() mutable {};\n"
-                             "    dostuff(x);\n"
-                             "}";
-        const char exp1[] = "1: static void func ( ) {\n"
-                            "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
-                            "3: dostuff ( x@1 ) ;\n"
-                            "4: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
+        {
+            const char code[] = "static void func() {\n"
+                                "    auto x = []() mutable {};\n"
+                                "    dostuff(x);\n"
+                                "}";
+            const char exp[] = "1: static void func ( ) {\n"
+                               "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
+                               "3: dostuff ( x@1 ) ;\n"
+                               "4: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // #9384
+        {
+            const char code[] = "auto g = [](int i) mutable {};\n";
+            const char exp[] = "1: auto g@1 ; g@1 = [ ] ( int i@2 ) mutable { } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
     }
 
     void varid_trailing_return1() { // #8889
