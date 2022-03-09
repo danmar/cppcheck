@@ -385,7 +385,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) { static_cast<unsigned>(x); }");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (warning, inconclusive) Found unused cast of expression 'x'.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Found unused cast of expression 'x'.\n", errout.str());
     }
 
     void vardecl() {
