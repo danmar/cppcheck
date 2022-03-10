@@ -1761,7 +1761,7 @@ static bool isConstStatement(const Token *tok, bool cpp)
     if (isCPPCast(tok))
         return isWithoutSideEffects(cpp, tok) && isConstStatement(tok->astOperand2(), cpp);
     else if (tok->isCast())
-        return isWithoutSideEffects(cpp, tok->astOperand1());
+        return isWithoutSideEffects(cpp, tok->astOperand1()) && isConstStatement(tok->astOperand1(), cpp);
     if (Token::Match(tok, "( %type%"))
         return isConstStatement(tok->astOperand1(), cpp);
     if (Token::simpleMatch(tok, ","))
