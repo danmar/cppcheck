@@ -1739,7 +1739,7 @@ static bool isVarDeclOp(const Token* tok)
     return isType(typetok, Token::Match(vartok, "%var%"));
 }
 
-static bool isConstStatement(const Token *tok)
+static bool isConstStatement(const Token *tok, bool cpp)
 {
     if (!tok)
         return false;
@@ -1759,11 +1759,13 @@ static bool isConstStatement(const Token *tok)
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
     if (isCPPCast(tok))
-        return isConstStatement(tok->astOperand2());
+        return isWithoutSideEffects(cpp, tok) && isConstStatement(tok->astOperand2(), cpp);
+    else if (tok->isCast())
+        return isWithoutSideEffects(cpp, tok->astOperand1());
     if (Token::Match(tok, "( %type%"))
-        return isConstStatement(tok->astOperand1());
+        return isConstStatement(tok->astOperand1(), cpp);
     if (Token::simpleMatch(tok, ","))
-        return isConstStatement(tok->astOperand2());
+        return isConstStatement(tok->astOperand2(), cpp);
     return false;
 }
 
@@ -1838,7 +1840,7 @@ void CheckOther::checkIncompleteStatement()
         // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
             continue;
-        if (!isConstStatement(tok))
+        if (!isConstStatement(tok, mTokenizer->isCPP()))
             continue;
         if (isVoidStmt(tok))
             continue;
@@ -1864,8 +1866,14 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Found suspicious operator '" + tok->str() + "'";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
-    else if (Token::Match(valueTok, "%str%|%num%"))
-        msg = "Redundant code: Found a statement that begins with " + std::string(valueTok->isNumber() ? "numeric" : "string") + " constant.";
+    else if (Token::Match(valueTok, "%str%|%num%|%bool%")) {
+        std::string typeStr("string");
+        if (valueTok->isNumber())
+            typeStr = "numeric";
+        else if (valueTok->isBoolean())
+            typeStr = "bool";
+        msg = "Redundant code: Found a statement that begins with " + typeStr + " constant.";
+    }
     else if (!tok)
         msg = "Redundant code: Found a statement that begins with " + type + " constant.";
     else if (tok->isCast() && tok->tokType() == Token::Type::eExtendedOp) {

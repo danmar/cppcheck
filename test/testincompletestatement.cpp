@@ -384,8 +384,17 @@ private:
         check("void f() { if (Type t; g(t)) {} }"); // #9776
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(int x) { static_cast<unsigned>(x); }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found unused cast of expression 'x'.\n", errout.str());
+        check("void f() { false; }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found a statement that begins with bool constant.\n", errout.str());
+
+        check("struct S;\n"
+              "struct T;\n"
+              "void f() {\n"
+              "    T t;\n"
+              "    (S)t;\n"
+              "    static_cast<S>(t);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
