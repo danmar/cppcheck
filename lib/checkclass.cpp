@@ -1018,7 +1018,7 @@ void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type
     else if (functionType == Function::eMoveConstructor)
         ctor = "move ";
     std::string message("Member variable '$symbol' is not initialized");
-    message += (functionType != Function::eNone) ? "in the " + ctor + "constructor." : ".";
+    message += (functionType != Function::eNone) ? " in the " + ctor + "constructor." : ".";
     if (derived)
         message += " Maybe it should be initialized directly in the class " + classname + "?";
     std::string id = std::string("uninit") + (derived ? "Derived" : "") + "MemberVar" + (isprivate ? "Private" : "");
