@@ -2610,6 +2610,15 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
         } else if (second->next()->str() == "[" && first->next()->str() != "[")
             first = first->next();
 
+        // unnamed parameters
+        else if (Token::Match(first, "(|, %type% ,|)") && Token::Match(second, "(|, %type% ,|)")) {
+            if (first->next()->expressionString() != second->next()->expressionString())
+                break;
+            first = first->next();
+            second = second->next();
+            continue;
+        }
+
         // argument list has different number of arguments
         else if (openParen == 1 && second->str() == ")" && first->str() != ")")
             break;

@@ -7539,6 +7539,78 @@ private:
                       "    };\n"
                       "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(double);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(int);\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char, int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char, int);\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char, int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char, double);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char, int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c = '\\0', double);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char, int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c = '\\0', int);\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char c, std::vector<int>);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c, std::vector<double>);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char c, std::vector<int>);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c, std::set<int>);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char c, std::vector<int> v);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c, std::vector<int> w = {});\n"
+                      "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", "", errout.str());
     }
 
     void overrideCVRefQualifiers() {
