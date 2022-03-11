@@ -2636,7 +2636,7 @@ private:
         {
             const char code[] = "auto g = [](std::function<void()> p) {};\n";
             const char exp[] = "1: auto g@1 ; g@1 = [ ] ( std :: function < void ( ) > p@2 ) { } ;\n";
-            TODO_ASSERT_EQUALS(exp, "1: auto g@1 ; g@1 = [ ] ( std :: function < void ( ) > p ) { } ;\n", tokenize(code));
+            ASSERT_EQUALS(exp, tokenize(code));
         }
     }
 
