@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
     ui->setupUi(this);
-    std::srand(static_cast<unsigned int>(std::time(Q_NULLPTR)));
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
     QDir workFolder(WORK_FOLDER);
     if (!workFolder.exists()) {
         workFolder.mkdir(WORK_FOLDER);
