@@ -387,6 +387,12 @@ private:
         check("void f(int x) { static_cast<unsigned>(x); }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found unused cast of expression 'x'.\n", errout.str());
 
+        check("void f(int x) {\n"
+              "    static_cast<void>(x);\n"
+              "    (void)x;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() { false; }"); // #10856
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found a statement that begins with bool constant.\n", errout.str());
 

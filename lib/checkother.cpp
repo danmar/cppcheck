@@ -1773,6 +1773,8 @@ static bool isVoidStmt(const Token *tok)
 {
     if (Token::simpleMatch(tok, "( void"))
         return true;
+    if (isCPPCast(tok) && tok->astOperand1() && Token::Match(tok->astOperand1()->next(), "< void >"))
+        return true;
     const Token *tok2 = tok;
     while (tok2->astOperand1())
         tok2 = tok2->astOperand1();
