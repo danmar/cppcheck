@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,7 +18,6 @@
 
 
 #include "check64bit.h"
-#include "config.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -33,7 +32,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::portability);
 
         TEST_CASE(novardecl);
@@ -161,6 +160,16 @@ private:
               "    int i = foo->p;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Assigning a pointer to an integer is not portable.\n", errout.str());
+
+        check("struct S {\n" // #10145
+              "    enum class E { e1, e2 };\n"
+              "    E e;\n"
+              "    char* e1;\n"
+              "};\n"
+              "void f(S& s) {\n"
+              "    s.e = S::E::e1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ptrcompare() {

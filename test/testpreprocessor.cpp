@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 // The preprocessor that Cppcheck uses is a bit special. Instead of generating
 // the code for a known configuration, it generates the code for each configuration.
 
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "preprocessor.h"
@@ -75,7 +74,7 @@ private:
     Settings settings0;
     Preprocessor preprocessor0;
 
-    void run() OVERRIDE {
+    void run() override {
 
         // The bug that started the whole work with the new preprocessor
         TEST_CASE(Bug2190219);

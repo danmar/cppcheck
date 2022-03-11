@@ -18,7 +18,7 @@
 
 #include "cppchecklibrarydata.h"
 
-#include <QtTest/QtTest>
+#include <QObject>
 
 class TestCppcheckLibraryData : public QObject {
     Q_OBJECT

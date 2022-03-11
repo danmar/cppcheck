@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,7 +69,6 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
 {
     mUI.setupUi(this);
     mThread = new ThreadHandler(this);
-    mThread->setDataDir(getDataDir());
     mUI.mResults->initialize(mSettings, mApplications, mThread);
 
     // Filter timer to delay filtering results slightly while typing
@@ -515,8 +514,8 @@ void MainWindow::doAnalyzeFiles(const QStringList &files, const bool checkLibrar
     if (!checkSettings.buildDir.empty()) {
         checkSettings.loadSummaries();
         std::list<std::string> sourcefiles;
-        foreach (QString s, fileNames)
-        sourcefiles.push_back(s.toStdString());
+        for (const QString& s: fileNames)
+            sourcefiles.push_back(s.toStdString());
         AnalyzerInformation::writeFilesTxt(checkSettings.buildDir, sourcefiles, checkSettings.userDefines, checkSettings.project.fileSettings);
     }
 
@@ -625,7 +624,7 @@ void MainWindow::updateVariableContractsTab()
 {
     QStringList added;
     if (mProjectFile) {
-        for (auto vc: mProjectFile->getVariableContracts()) {
+        for (const auto &vc: mProjectFile->getVariableContracts()) {
             QString line = vc.first;
             if (!vc.second.minValue.empty())
                 line += " min:" + QString::fromStdString(vc.second.minValue);

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,17 @@
 #include <QPrinter>
 #include <QTextDocument>
 #include <QWidget>
+
+#ifdef HAVE_QCHART
+#include <QAbstractSeries>
+#include <QChartView>
+#include <QDateTimeAxis>
+#include <QLineSeries>
+#include <QTextStream>
+#include <QValueAxis>
+
+using namespace QtCharts;
+#endif
 
 static const QString CPPCHECK("cppcheck");
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,6 @@
 #include "errortypes.h"
 #include "mathlib.h"
 #include "symboldatabase.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <list>
@@ -67,7 +66,7 @@ public:
     CheckBufferOverrun(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckBufferOverrun checkBufferOverrun(tokenizer, settings, errorLogger);
         checkBufferOverrun.arrayIndex();
         checkBufferOverrun.pointerArithmetic();
@@ -78,7 +77,7 @@ public:
         checkBufferOverrun.argumentSize();
     }
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckBufferOverrun c(nullptr, settings, errorLogger);
         c.arrayIndexError(nullptr, std::vector<Dimension>(), std::vector<ValueFlow::Value>());
         c.pointerArithmeticError(nullptr, nullptr, nullptr);
@@ -90,10 +89,10 @@ public:
     }
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
+    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
 private:
 
@@ -137,14 +136,14 @@ private:
         std::list<CTU::FileInfo::UnsafeUsage> unsafePointerArith;
 
         /** Convert MyFileInfo data into xml string */
-        std::string toString() const OVERRIDE;
+        std::string toString() const override;
     };
 
     static bool isCtuUnsafeBufferUsage(const Check *check, const Token *argtok, MathLib::bigint *offset, int type);
     static bool isCtuUnsafeArrayIndex(const Check *check, const Token *argtok, MathLib::bigint *offset);
     static bool isCtuUnsafePointerArith(const Check *check, const Token *argtok, MathLib::bigint *offset);
 
-    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const OVERRIDE;
+    Check::FileInfo * loadFileInfoFromXml(const tinyxml2::XMLElement *xmlElement) const override;
     static bool analyseWholeProgram1(const std::map<std::string, std::list<const CTU::FileInfo::CallBase *>> &callsMap, const CTU::FileInfo::UnsafeUsage &unsafeUsage, int type, ErrorLogger &errorLogger);
 
 
@@ -152,7 +151,7 @@ private:
         return "Bounds checking";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Out of bounds checking:\n"
                "- Array index out of bounds\n"
                "- Pointer arithmetic overflow\n"

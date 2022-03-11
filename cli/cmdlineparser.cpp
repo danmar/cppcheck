@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "cmdlineparser.h"
 
 #include "check.h"
+#include "config.h"
 #include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "filelister.h"
@@ -28,7 +29,6 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "threadexecutor.h" // Threading model
 #include "timer.h"
 #include "utils.h"
 
@@ -470,6 +470,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+#ifdef THREADING_MODEL_FORK
             else if (std::strncmp(argv[i], "-l", 2) == 0) {
                 std::string numberString;
 
@@ -494,6 +495,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     return false;
                 }
             }
+#endif
 
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {

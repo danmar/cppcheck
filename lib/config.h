@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,17 +37,6 @@
 #  include <crtdbg.h>
 #endif
 
-// C++11 override
-#if defined(_MSC_VER) || (defined(__GNUC__) && (__GNUC__ >= 5)) \
-    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
-    || defined(__CPPCHECK__)
-#  define OVERRIDE override
-#  define FINAL final
-#else
-#  define OVERRIDE
-#  define FINAL
-#endif
-
 // C++11 noexcept
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
     || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
@@ -79,5 +68,43 @@
 
 #include <string>
 static const std::string emptyString;
+
+// Use the nonneg macro when you want to assert that a variable/argument is not negative
+#ifdef __CPPCHECK__
+#define nonneg   __cppcheck_low__(0)
+#elif defined(NONNEG)
+// Enable non-negative values checking
+// TODO : investigate using annotations/contracts for stronger value checking
+#define nonneg   unsigned
+#else
+// Disable non-negative values checking
+#define nonneg
+#endif
+
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define ASAN 1
+#endif
+#endif
+
+#ifndef ASAN
+#ifdef  __SANITIZE_ADDRESS__
+#define ASAN 1
+#else
+#define ASAN 0
+#endif
+#endif
+
+#if defined(_WIN32)
+#define THREADING_MODEL_THREAD
+#define STDCALL __stdcall
+#elif defined(USE_THREADS)
+#define THREADING_MODEL_THREAD
+#define STDCALL
+#elif ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__) && !defined(__CYGWIN__)) || defined(__CPPCHECK__)
+#define THREADING_MODEL_FORK
+#else
+#error "No threading model defined"
+#endif
 
 #endif // configH

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,16 @@
 #include "ui_stats.h"
 
 #include <QDialog>
-#ifdef HAVE_QCHART
-#include <QtCharts>
-#endif
 
 class ProjectFile;
 class CheckStatistics;
+
+#ifdef HAVE_QCHART
+namespace QtCharts {
+    class QChartView;
+    class QLineSeries;
+}
+#endif
 
 /// @addtogroup GUI
 /// @{
@@ -70,8 +74,8 @@ private slots:
     void copyToClipboard();
     void pdfExport();
 #ifdef HAVE_QCHART
-    QChartView *createChart(const QString &statsFile, const QString &tool);
-    QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
+    QtCharts::QChartView *createChart(const QString &statsFile, const QString &tool);
+    QtCharts::QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
 #endif
 private:
     Ui::StatsDialog mUI;

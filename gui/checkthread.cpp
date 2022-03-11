@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ static bool executeCommand(std::string exe, std::vector<std::string> args, std::
     output->clear();
 
     QStringList args2;
-    for (std::string arg: args)
+    for (const std::string &arg: args)
         args2 << QString::fromStdString(arg);
 
     QProcess process;

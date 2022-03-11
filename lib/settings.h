@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -135,9 +135,6 @@ public:
     /** Check for incomplete info in library files? */
     bool checkLibrary;
 
-    /** @brief List of selected Visual Studio configurations that should be checks */
-    std::list<std::string> checkVsConfigs;
-
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
 
@@ -231,8 +228,10 @@ public:
     /** Library */
     Library library;
 
+#ifdef THREADING_MODEL_FORK
     /** @brief Load average value */
     int loadAverage;
+#endif
 
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */

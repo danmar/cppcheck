@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ struct PathAnalysis {
 
     void forward(const std::function<Progress(const Info&)>& f) const;
 
-    Info forwardFind(std::function<bool(const Info&)> pred) {
+    Info forwardFind(std::function<bool(const Info&)> pred) const {
         Info result{};
         forward([&](const Info& info) {
             if (pred(info)) {

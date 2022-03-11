@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -90,8 +90,8 @@ protected:
     void assertThrow(const char * const filename, const unsigned int linenr) const;
     void assertThrowFail(const char * const filename, const unsigned int linenr) const;
     void assertNoThrowFail(const char * const filename, const unsigned int linenr) const;
-    void complainMissingLib(const char * const libname) const;
-    std::string deleteLineNumber(const std::string &message) const;
+    static void complainMissingLib(const char * const libname);
+    static std::string deleteLineNumber(const std::string &message);
 
     void setVerbose(bool v) {
         mVerbose = v;
@@ -104,15 +104,15 @@ protected:
 
     void processOptions(const options& args);
 public:
-    void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
-    void reportErr(const ErrorMessage &msg) OVERRIDE;
+    void bughuntingReport(const std::string & /*str*/) override {}
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
+    void reportErr(const ErrorMessage &msg) override;
     void run(const std::string &str);
     static void printHelp();
     const std::string classname;
 
     explicit TestFixture(const char * const _name);
-    ~TestFixture() OVERRIDE {}
+    ~TestFixture() override {}
 
     static std::size_t runTests(const options& args);
 };

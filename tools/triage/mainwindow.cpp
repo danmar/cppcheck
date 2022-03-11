@@ -47,7 +47,7 @@ MainWindow::MainWindow(QWidget *parent) :
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
     ui->setupUi(this);
-    std::srand(static_cast<unsigned int>(std::time(Q_NULLPTR)));
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
     QDir workFolder(WORK_FOLDER);
     if (!workFolder.exists()) {
         workFolder.mkdir(WORK_FOLDER);
@@ -308,7 +308,7 @@ void MainWindow::showSrcFile(const QString &fileName, const QString &url, const 
     }
 }
 
-void MainWindow::fileTreeFilter(QString str)
+void MainWindow::fileTreeFilter(const QString &str)
 {
     mFSmodel.setNameFilters(QStringList{"*" + str + "*"});
     mFSmodel.setNameFilterDisables(false);

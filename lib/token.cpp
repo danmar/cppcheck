@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -586,7 +586,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_l
         return false; // shortcut
     const char *current = pattern;
     const char *end = pattern + pattern_len;
-    const char *next = (const char*)std::memchr(pattern, ' ', pattern_len);
+    const char *next = static_cast<const char*>(std::memchr(pattern, ' ', pattern_len));
     if (!next)
         next = end;
 
@@ -2181,6 +2181,8 @@ bool Token::addValue(const ValueFlow::Value &value)
 
         // Add value
         if (it == mImpl->mValues->end()) {
+            // If the errorPath has gotten this large then there must be something wrong
+            assert(value.errorPath.size() < 64);
             ValueFlow::Value v(value);
             if (v.varId == 0)
                 v.varId = mImpl->mVarId;
@@ -2242,6 +2244,7 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         return nullptr;
     if (typeTok != nullptr)
         *typeTok = tok;
+    const Token* lhsVarTok{};
     if (Token::simpleMatch(tok, "return")) {
         const Scope *scope = tok->scope();
         if (!scope)
@@ -2264,8 +2267,8 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         return function->retType;
     } else if (Token::Match(tok->previous(), "%type%|= (|{")) {
         return typeOf(tok->previous(), typeTok);
-    } else if (Token::simpleMatch(tok, "=")) {
-        return Token::typeOf(getLHSVariableToken(tok), typeTok);
+    } else if (Token::simpleMatch(tok, "=") && (lhsVarTok = getLHSVariableToken(tok)) != tok->next()) {
+        return Token::typeOf(lhsVarTok, typeTok);
     } else if (Token::simpleMatch(tok, ".")) {
         return Token::typeOf(tok->astOperand2(), typeTok);
     } else if (Token::simpleMatch(tok, "[")) {

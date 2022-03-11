@@ -21,7 +21,7 @@
 #include "projectfile.h"
 #include "settings.h"
 
-#include <QObject>
+#include <QtTest>
 
 // Mock...
 const char Settings::SafeChecks::XmlRootName[] = "safe-checks";

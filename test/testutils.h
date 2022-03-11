@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,13 @@
 #define TestUtilsH
 
 #include "color.h"
-#include "config.h"
 #include "errorlogger.h"
 #include "settings.h"
 #include "suppressions.h"
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <cstdio>
 #include <iosfwd>
 #include <list>
 #include <string>
@@ -58,16 +58,30 @@ class SimpleSuppressor : public ErrorLogger {
 public:
     SimpleSuppressor(Settings &settings, ErrorLogger *next)
         : settings(settings), next(next) {}
-    void reportOut(const std::string &outmsg, Color = Color::Reset) OVERRIDE {
+    void reportOut(const std::string &outmsg, Color = Color::Reset) override {
         next->reportOut(outmsg);
     }
-    void reportErr(const ErrorMessage &msg) OVERRIDE {
+    void reportErr(const ErrorMessage &msg) override {
         if (!msg.callStack.empty() && !settings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
             next->reportErr(msg);
     }
 private:
     Settings &settings;
     ErrorLogger *next;
+};
+
+class ScopedFile {
+public:
+    ScopedFile(const std::string &name, const std::string &content) : mName(name) {
+        std::ofstream of(mName);
+        of << content;
+    }
+
+    ~ScopedFile() {
+        remove(mName.c_str());
+    }
+private:
+    std::string mName;
 };
 
 #endif // TestUtilsH

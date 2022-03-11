@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "errortypes.h"
 #include "library.h"
 #include "settings.h"
@@ -43,7 +42,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(isCompliantValidationExpression);
         TEST_CASE(empty);
         TEST_CASE(function);
@@ -77,7 +76,7 @@ private:
         return library.load(doc);
     }
 
-    void isCompliantValidationExpression() {
+    void isCompliantValidationExpression() const {
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("-1"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1:"));

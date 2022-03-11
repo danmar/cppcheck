@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ static QString getHelpFile()
     paths << (filesdir + "/help")
           << filesdir;
 #endif
-    for (QString p: paths) {
+    for (const QString &p: paths) {
         QString filename = p + "/online-help.qhc";
         if (QFileInfo(filename).exists())
             return filename;

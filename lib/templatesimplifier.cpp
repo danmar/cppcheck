@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,6 +33,7 @@
 #include <map>
 #include <memory>
 #include <stack>
+#include <type_traits>
 #include <utility>
 
 static Token *skipRequires(Token *tok)
@@ -401,6 +402,8 @@ unsigned int TemplateSimplifier::templateParameters(const Token *tok)
                 if (closing->str() == ">>")
                     return numberOfParameters;
                 tok = closing->next();
+                if (!tok)
+                    syntaxError(tok);
                 if (Token::Match(tok, ">|>>|>>="))
                     return numberOfParameters;
                 else if (tok->str() == ",") {
@@ -938,7 +941,6 @@ void TemplateSimplifier::getTemplateInstantiations()
 
             // Add outer template..
             if (templateParameters(tok->next()) || tok->strAt(2) == ">") {
-                const std::string scopeName1(scopeName);
                 while (true) {
                     const std::string fullName = scopeName + (scopeName.empty()?"":" :: ") +
                                                  qualification + (qualification.empty()?"":" :: ") + tok->str();
@@ -1138,6 +1140,8 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
                                                   "noparamend",
                                                   "TemplateSimplifier couldn't find end of template parameter.",
                                                   Certainty::normal);
+                        if (mErrorLogger && mSettings->severity.isEnabled(Severity::debug))
+                            mErrorLogger->reportErr(errmsg);
                     }
                     break;
                 }
@@ -1933,20 +1937,11 @@ void TemplateSimplifier::expandTemplate(
 
                         // replace type with given type..
                         if (itype < typeParametersInDeclaration.size() && itype < mTypesUsedInTemplateInstantiation.size()) {
-                            unsigned int typeindentlevel = 0;
                             std::stack<Token *> brackets1; // holds "(" and "{" tokens
                             for (const Token *typetok = mTypesUsedInTemplateInstantiation[itype].token();
-                                 typetok && (typeindentlevel>0 || !Token::Match(typetok, ",|>"));
+                                 typetok && !Token::Match(typetok, ",|>");
                                  typetok = typetok->next()) {
                                 if (!Token::simpleMatch(typetok, "...")) {
-                                    if (Token::Match(typetok, "%name% <") && (typetok->strAt(2) == ">" || templateParameters(typetok->next())))
-                                        ++typeindentlevel;
-                                    else if (typeindentlevel > 0 && typetok->str() == ">")
-                                        --typeindentlevel;
-                                    else if (typetok->str() == "(")
-                                        ++typeindentlevel;
-                                    else if (typetok->str() == ")")
-                                        --typeindentlevel;
                                     mTokenList.addtoken(typetok, tok5);
                                     Token *back = mTokenList.back();
                                     if (Token::Match(back, "{|(|[")) {

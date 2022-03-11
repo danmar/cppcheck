@@ -17,17 +17,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.10'
-
       - name: Install missing software on ubuntu
         if: contains(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils
-          sudo apt-get install z3 libz3-dev
+          sudo apt-get install libz3-dev libtinyxml2-dev
           sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qt5-default
 
       - name: Fix missing z3_version.h
@@ -38,12 +33,26 @@ jobs:
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
-          brew install coreutils z3 qt@5
+          brew install coreutils python3 z3 qt@5
 
       - name: Install missing Python packages
         run: |
-          python -m pip install pip --upgrade
-          python -m pip install pytest
+          python3 -m pip install pip --upgrade
+          python3 -m pip install pytest
+
+      - name: CMake build on ubuntu (with GUI / system tinyxml2)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          mkdir cmake.output.tinyxml2
+          cd cmake.output.tinyxml2
+          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off ..
+          cmake --build . -- -j$(nproc)
+          cd ..
+
+      - name: Run CMake test (system tinyxml2)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          cmake --build cmake.output.tinyxml2 --target check -- -j$(nproc)
 
       - name: CMake build on ubuntu (with GUI)
         if: contains(matrix.os, 'ubuntu')
@@ -105,11 +114,11 @@ jobs:
       - name: Run test/cli
         run: |
           cd test/cli
-          pytest test-*.py
+          python3 -m pytest test-*.py
           cd ../../..
           ln -s cppcheck 'cpp check'
           cd 'cpp check/test/cli'
-          pytest test-*.py
+          python3 -m pytest test-*.py
 
       # fails on macos since some includes (e.g. sys/epoll.h) are not available
       - name: Run cfg tests
@@ -220,6 +229,8 @@ jobs:
           ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  cli lib
           # check gui with qt settings
           mkdir b2
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  gui/*.cpp gui/temp/*.cpp
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib  --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  gui/*.cpp gui/temp/*.cpp
           # self check test and tools
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  test/*.cpp tools
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  test/*.cpp tools/*.cpp
+          # triage
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --library=qt -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings  tools/triage

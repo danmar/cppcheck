@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "check.h"
-#include "config.h"
 #include "errortypes.h"
 #include "mathlib.h"
 #include "settings.h"
@@ -37,7 +36,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.debugwarnings = true;
         settings.severity.fill();
         settings.certainty.fill();
@@ -250,6 +249,9 @@ private:
         TEST_CASE(garbageCode217); // #10011
         TEST_CASE(garbageCode218); // #8763
         TEST_CASE(garbageCode219); // #10101
+        TEST_CASE(garbageCode220); // #6832
+        TEST_CASE(garbageCode221);
+        TEST_CASE(garbageCode222); // #10763
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -1700,6 +1702,15 @@ private:
                   "    func f;\n"
                   "    f & = (func)42;\n"
                   "}\n"); // don't crash
+    }
+    void garbageCode220() { // #6832
+        ASSERT_THROW(checkCode("(){(){{()}}return;{switch()0 case(){}break;l:()}}\n"), InternalError);  // don't crash
+    }
+    void garbageCode221() {
+        ASSERT_THROW(checkCode("struct A<0<;\n"), InternalError);  // don't crash
+    }
+    void garbageCode222() { // #10763
+        ASSERT_THROW(checkCode("template<template<class>\n"), InternalError);  // don't crash
     }
 
     void syntaxErrorFirstToken() {

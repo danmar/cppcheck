@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,7 +20,6 @@
 #define CPPCHECKEXECUTOR_H
 
 #include "color.h"
-#include "config.h"
 #include "errorlogger.h"
 
 #include <cstdio>
@@ -54,7 +53,7 @@ public:
     /**
      * Destructor
      */
-    ~CppCheckExecutor() OVERRIDE;
+    ~CppCheckExecutor() override;
 
     /**
      * Starts the checking.
@@ -75,19 +74,19 @@ public:
      *
      * @param outmsg Progress message e.g. "Checking main.cpp..."
      */
-    void reportOut(const std::string &outmsg, Color c = Color::Reset) OVERRIDE;
+    void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
 
     /** xml output of errors */
-    void reportErr(const ErrorMessage &msg) OVERRIDE;
+    void reportErr(const ErrorMessage &msg) override;
 
-    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) OVERRIDE;
+    void reportProgress(const std::string &filename, const char stage[], const std::size_t value) override;
 
     /**
      * Output information messages.
      */
-    void reportInfo(const ErrorMessage &msg) OVERRIDE;
+    void reportInfo(const ErrorMessage &msg) override;
 
-    void bughuntingReport(const std::string &str) OVERRIDE;
+    void bughuntingReport(const std::string &str) override;
 
     /**
      * Information about how many files have been checked
