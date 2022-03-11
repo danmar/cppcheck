@@ -452,18 +452,16 @@ const std::list<Suppressions::Suppression> &Suppressions::getSuppressions() cons
  * number order.
  */
 void Suppressions::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer) {
-  int lastLineNr = 0;
-  auto supp = mSuppressions.begin();
-  for (const Token *tok = tokenizer.tokens(); tok && (supp != mSuppressions.end()); tok = tok->next())
-  {
-    if (tok->linenr() != lastLineNr)
-    {
-      lastLineNr = tok->linenr();
-      while ((supp != mSuppressions.end()) && (supp->lineNumber <= lastLineNr)) {
-        if (supp->lineNumber == lastLineNr)
-          supp->checked = true;
-        ++supp;
-      }
+    int lastLineNr = 0;
+    auto supp = mSuppressions.begin();
+    for (const Token *tok = tokenizer.tokens(); tok && (supp != mSuppressions.end()); tok = tok->next()) {
+        if (tok->linenr() != lastLineNr) {
+            lastLineNr = tok->linenr();
+            while ((supp != mSuppressions.end()) && (supp->lineNumber <= lastLineNr)) {
+                if (supp->lineNumber == lastLineNr)
+                    supp->checked = true;
+                ++supp;
+            }
+        }
     }
-  }
 }
