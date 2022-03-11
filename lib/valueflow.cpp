@@ -7628,14 +7628,25 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         if (!var->valueType() || !var->valueType()->container)
             continue;
-        if (!astIsContainer(var->nameToken()))
+        const Token* const vnt = var->nameToken();
+        if (!astIsContainer(vnt))
             continue;
-        if (var->nameToken()->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+        if (vnt->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
             continue;
-        if (!Token::Match(var->nameToken(), "%name% ;") &&
-            !(Token::Match(var->nameToken(), "%name% {") && Token::simpleMatch(var->nameToken()->next()->link(), "} ;")))
+        const bool isDecl = Token::Match(vnt, "%name% ;");
+        bool hasInitList = false, hasInitSize = false, isPointerInit = false;
+        if (!isDecl) {
+            hasInitList = Token::Match(vnt, "%name% {") && Token::simpleMatch(vnt->next()->link(), "} ;");
+            if (!hasInitList)
+                hasInitList = Token::Match(vnt, "%name% ( {") && Token::simpleMatch(vnt->linkAt(2), "} ) ;");
+            if (!hasInitList)
+                hasInitSize = Token::Match(vnt, "%name% (|{ %num%|%var% )|}");
+            if (!hasInitList && !hasInitSize)
+                isPointerInit = Token::Match(vnt, "%name% ( %var% ,");
+        }
+        if (!isDecl && !hasInitList && !hasInitSize && !isPointerInit)
             continue;
-        if (var->nameToken()->astTop() && Token::Match(var->nameToken()->astTop()->previous(), "for|while"))
+        if (vnt->astTop() && Token::Match(vnt->astTop()->previous(), "for|while"))
             known = !isVariableChanged(var, settings, true);
         if (var->valueType()->container->size_templateArgNo >= 0) {
             if (var->dimensions().size() == 1 && var->dimensions().front().known)
@@ -7646,12 +7657,41 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
         if (known)
             values.back().setKnown();
-        if (Token::simpleMatch(var->nameToken()->next(), "{")) {
-            const Token* initList = var->nameToken()->next();
+        if (hasInitList) {
+            const Token* initList = vnt->next();
+            if (Token::simpleMatch(initList, "("))
+                initList = initList->next();
             values = getInitListSize(initList, var->valueType()->container, known);
         }
+        else if (hasInitSize) {
+            const Token* sizeTok = vnt->next()->astOperand2();
+            if (!sizeTok || !sizeTok->hasKnownIntValue())
+                continue;
+            values.back().intvalue = sizeTok->getKnownIntValue();
+        }
+        else if (isPointerInit) { // (ptr, ptr + size)
+            const Token* commaTok = vnt->next()->astOperand2();
+            if (commaTok && commaTok->str() == "," && commaTok->astOperand1() && commaTok->astOperand2() && commaTok->astOperand2()->isArithmeticalOp() && commaTok->astOperand2()->str() == "+") {
+                const Token* varTok1 = commaTok->astOperand1();
+                const Token* plusTok = commaTok->astOperand2();
+                if (varTok1->varId() && plusTok->astOperand1() && plusTok->astOperand2() && varTok1->valueType() && varTok1->valueType()->pointer) {
+                    const Token* sizeTok = nullptr;
+                    if (varTok1->varId() == plusTok->astOperand1()->varId())
+                        sizeTok = plusTok->astOperand2();
+                    else if (varTok1->varId() == plusTok->astOperand2()->varId())
+                        sizeTok = plusTok->astOperand1();
+                    if (!sizeTok || !sizeTok->hasKnownIntValue())
+                        continue;
+                    values.back().intvalue = sizeTok->getKnownIntValue();
+                }
+                else
+                    continue;
+            }
+            else
+                continue;
+        }
         for (const ValueFlow::Value& value : values)
-            valueFlowContainerForward(var->nameToken()->next(), var->nameToken(), value, tokenlist);
+            valueFlowContainerForward(vnt->next(), vnt, value, tokenlist);
     }
 
     // after assignment
@@ -7802,6 +7842,78 @@ struct ContainerConditionHandler : ConditionHandler {
 
 static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
 {
+    auto getBufferSizeFromAllocFunc = [&](const Token* funcTok) -> MathLib::bigint {
+        MathLib::bigint sizeValue = -1;
+        const Library::AllocFunc* allocFunc = settings->library.getAllocFuncInfo(funcTok);
+        if (!allocFunc)
+            allocFunc = settings->library.getReallocFuncInfo(funcTok);
+        if (!allocFunc || allocFunc->bufferSize == Library::AllocFunc::BufferSize::none)
+            return sizeValue;
+
+        const std::vector<const Token*> args = getArguments(funcTok);
+
+        const Token* const arg1 = (args.size() >= allocFunc->bufferSizeArg1) ? args[allocFunc->bufferSizeArg1 - 1] : nullptr;
+        const Token* const arg2 = (args.size() >= allocFunc->bufferSizeArg2) ? args[allocFunc->bufferSizeArg2 - 1] : nullptr;
+
+        switch (allocFunc->bufferSize) {
+        case Library::AllocFunc::BufferSize::none:
+            break;
+        case Library::AllocFunc::BufferSize::malloc:
+            if (arg1 && arg1->hasKnownIntValue())
+                sizeValue = arg1->getKnownIntValue();
+            break;
+        case Library::AllocFunc::BufferSize::calloc:
+            if (arg1 && arg2 && arg1->hasKnownIntValue() && arg2->hasKnownIntValue())
+                sizeValue = arg1->getKnownIntValue() * arg2->getKnownIntValue();
+            break;
+        case Library::AllocFunc::BufferSize::strdup:
+            if (arg1 && arg1->hasKnownValue()) {
+                const ValueFlow::Value& value = arg1->values().back();
+                if (value.isTokValue() && value.tokvalue->tokType() == Token::eString)
+                    sizeValue = Token::getStrLength(value.tokvalue) + 1; // Add one for the null terminator
+            }
+            break;
+        }
+        return sizeValue;
+    };
+
+    auto getBufferSizeFromNew = [&](const Token* newTok) -> MathLib::bigint {
+        MathLib::bigint sizeValue = -1, numElem = -1;
+
+        if (newTok && newTok->astOperand1()) { // number of elements
+            const Token* bracTok = nullptr, *typeTok = nullptr;
+            if (newTok->astOperand1()->str() == "[")
+                bracTok = newTok->astOperand1();
+            else if (newTok->astOperand1()->str() == "(") {
+                if (newTok->astOperand1()->astOperand1() && newTok->astOperand1()->astOperand1()->str() == "[")
+                    bracTok = newTok->astOperand1()->astOperand1();
+                else
+                    typeTok = newTok->astOperand1()->astOperand1();
+            }
+            else {
+                typeTok = newTok->astOperand1();
+                if (typeTok && typeTok->str() == "{")
+                    typeTok = typeTok->astOperand2();
+            }
+            if (bracTok && bracTok->astOperand2() && bracTok->astOperand2()->hasKnownIntValue())
+                numElem = bracTok->astOperand2()->getKnownIntValue();
+            else if (Token::Match(typeTok, "%type%"))
+                numElem = 1;
+        }
+
+        if (numElem >= 0 && newTok->astParent() && newTok->astParent()->isAssignmentOp()) { // size of the allocated type
+            const Token* typeTok = newTok->astParent()->astOperand1(); // TODO: implement fallback for e.g. "auto p = new Type;"
+            if (!typeTok || !typeTok->varId())
+                typeTok = newTok->astParent()->previous(); // hack for "int** z = ..."
+            if (typeTok && typeTok->valueType()) {
+                const MathLib::bigint typeSize = typeTok->valueType()->typeSize(*settings, typeTok->valueType()->pointer > 1);
+                if (typeSize >= 0)
+                    sizeValue = numElem * typeSize;
+            }
+        }
+        return sizeValue;
+    };
+
     for (const Scope *functionScope : symboldatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "[;{}] %var% ="))
@@ -7816,40 +7928,11 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
             if (!rhs)
                 continue;
 
-            if (!Token::Match(rhs->previous(), "%name% ("))
+            const bool isNew = symboldatabase->isCPP() && rhs->str() == "new";
+            if (!isNew && !Token::Match(rhs->previous(), "%name% ("))
                 continue;
 
-            const Library::AllocFunc *allocFunc = settings->library.getAllocFuncInfo(rhs->previous());
-            if (!allocFunc)
-                allocFunc = settings->library.getReallocFuncInfo(rhs->previous());
-            if (!allocFunc || allocFunc->bufferSize == Library::AllocFunc::BufferSize::none)
-                continue;
-
-            const std::vector<const Token *> args = getArguments(rhs->previous());
-
-            const Token * const arg1 = (args.size() >= allocFunc->bufferSizeArg1) ? args[allocFunc->bufferSizeArg1 - 1] : nullptr;
-            const Token * const arg2 = (args.size() >= allocFunc->bufferSizeArg2) ? args[allocFunc->bufferSizeArg2 - 1] : nullptr;
-
-            MathLib::bigint sizeValue = -1;
-            switch (allocFunc->bufferSize) {
-            case Library::AllocFunc::BufferSize::none:
-                break;
-            case Library::AllocFunc::BufferSize::malloc:
-                if (arg1 && arg1->hasKnownIntValue())
-                    sizeValue = arg1->getKnownIntValue();
-                break;
-            case Library::AllocFunc::BufferSize::calloc:
-                if (arg1 && arg2 && arg1->hasKnownIntValue() && arg2->hasKnownIntValue())
-                    sizeValue = arg1->getKnownIntValue() * arg2->getKnownIntValue();
-                break;
-            case Library::AllocFunc::BufferSize::strdup:
-                if (arg1 && arg1->hasKnownValue()) {
-                    const ValueFlow::Value &value = arg1->values().back();
-                    if (value.isTokValue() && value.tokvalue->tokType() == Token::eString)
-                        sizeValue = Token::getStrLength(value.tokvalue) + 1; // Add one for the null terminator
-                }
-                break;
-            }
+            const MathLib::bigint sizeValue = isNew ? getBufferSizeFromNew(rhs) : getBufferSizeFromAllocFunc(rhs->previous());
             if (sizeValue < 0)
                 continue;
 

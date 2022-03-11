@@ -1210,20 +1210,36 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 
         // Set Token::variable pointer for array member variable
         // Since it doesn't point at a fixed location it doesn't have varid
-        if (tok->variable() != nullptr &&
-            (tok->variable()->typeScope() || tok->variable()->isSmartPointer() || (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER)) &&
-            Token::Match(tok, "%name% [|.")) {
-
-            Token *tok2 = tok->next();
-            // Locate "]"
-            while (tok2 && tok2->str() == "[")
-                tok2 = tok2->link()->next();
-
-            Token *membertok = nullptr;
-            if (Token::Match(tok2, ". %name%"))
-                membertok = tok2->next();
-            else if (Token::Match(tok2, ") . %name%") && tok->strAt(-1) == "(")
-                membertok = tok2->tokAt(2);
+        const bool isVar = tok->variable() && (tok->variable()->typeScope() || tok->variable()->isSmartPointer() || (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER));
+        const bool isArrayAccess = isVar && Token::simpleMatch(tok->astParent(), "[");
+        const bool isDirectAccess = isVar && !isArrayAccess && Token::simpleMatch(tok->astParent(), ".");
+        const bool isDerefAccess = isVar && !isDirectAccess && Token::simpleMatch(tok->astParent(), "*") && Token::simpleMatch(tok->astParent()->astParent(), ".");
+        if (isVar && (isArrayAccess || isDirectAccess || isDerefAccess)) {
+            Token* membertok{};
+            if (isArrayAccess) {
+                membertok = const_cast<Token*>(tok->astParent());
+                while (Token::simpleMatch(membertok, "["))
+                    membertok = membertok->astParent();
+                if (membertok)
+                    membertok = membertok->astOperand2();
+            }
+            else if (isDirectAccess) {
+                membertok = const_cast<Token*>(tok->astParent()->astOperand2());
+                if (membertok == tok) {
+                    Token* gptok = const_cast<Token*>(tok->astParent()->astParent());
+                    if (Token::simpleMatch(gptok, ".")) // chained access
+                        membertok = gptok->astOperand2();
+                    else if (Token::simpleMatch(gptok, "[") && Token::simpleMatch(gptok->astParent(), "."))
+                        membertok = gptok->astParent()->astOperand2();
+                }
+            }
+            else { // isDerefAccess
+                membertok = const_cast<Token*>(tok->astParent());
+                while (Token::simpleMatch(membertok, "*"))
+                    membertok = membertok->astParent();
+                if (membertok)
+                    membertok = membertok->astOperand2();
+            }
 
             if (membertok) {
                 const Variable *var = tok->variable();
@@ -1243,8 +1259,11 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                             fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
                     }
                 } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
-                    if (Token::Match(var->typeStartToken(), "std :: %type% < %type% *| *| >")) {
-                        const Type * type2 = var->typeStartToken()->tokAt(4)->type();
+                    if (Token::Match(var->typeStartToken(), "std :: %type% < %name%")) {
+                        const Token* type2tok = var->typeStartToken()->tokAt(4);
+                        while (type2tok && type2tok->isKeyword())
+                            type2tok = type2tok->next();
+                        const Type* type2 = type2tok ? type2tok->type() : nullptr;
                         if (type2 && type2->classScope && type2->classScope->definedType) {
                             const Variable *membervar = type2->classScope->getVariable(membertok->str());
                             if (membervar) {
@@ -2590,6 +2609,15 @@ bool Function::argsMatch(const Scope *scope, const Token *first, const Token *se
             }
         } else if (second->next()->str() == "[" && first->next()->str() != "[")
             first = first->next();
+
+        // unnamed parameters
+        else if (Token::Match(first, "(|, %type% ,|)") && Token::Match(second, "(|, %type% ,|)")) {
+            if (first->next()->expressionString() != second->next()->expressionString())
+                break;
+            first = first->next();
+            second = second->next();
+            continue;
+        }
 
         // argument list has different number of arguments
         else if (openParen == 1 && second->str() == ")" && first->str() != ")")

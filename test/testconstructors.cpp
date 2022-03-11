@@ -103,6 +103,7 @@ private:
         TEST_CASE(noConstructor12); // #8951 - member initialization
         TEST_CASE(noConstructor13); // #9998
         TEST_CASE(noConstructor14); // #10770
+        TEST_CASE(noConstructor15); // #5499
 
         TEST_CASE(forwardDeclaration); // ticket #4290/#3190
 
@@ -709,6 +710,31 @@ private:
               "    Func fp = nullptr;\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void noConstructor15() { // #5499
+        check("class C {\n"
+              "private:\n"
+              "    int i1 = 0;\n"
+              "    int i2;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Member variable 'C::i2' is not initialized.\n", errout.str());
+
+        check("class C {\n"
+              "private:\n"
+              "    int i1;\n"
+              "    int i2;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) The class 'C' does not declare a constructor although it has private member variables which likely require initialization.\n", errout.str());
+
+        check("class C {\n"
+              "public:\n"
+              "    C(int i) : i1(i) {}\n"
+              "private:\n"
+              "    int i1;\n"
+              "    int i2;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'C::i2' is not initialized in the constructor.\n", errout.str());
     }
 
     // ticket #4290 "False Positive: style (noConstructor): The class 'foo' does not have a constructor."
