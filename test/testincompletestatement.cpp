@@ -386,6 +386,36 @@ private:
 
         check("void f(int x) { static_cast<unsigned>(x); }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found unused cast of expression 'x'.\n", errout.str());
+
+        check("void f(int x, int* p) {\n"
+              "    static_cast<void>(x);\n"
+              "    (void)x;\n"
+              "    static_cast<void*>(p);\n"
+              "    (void*)p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { false; }"); // #10856
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found a statement that begins with bool constant.\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    (float)(char)i;\n"
+              "    static_cast<float>((char)i);\n"
+              "    (char)static_cast<float>(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Found unused cast of expression 'i'.\n"
+                      "[test.cpp:3]: (warning) Found unused cast of expression 'i'.\n"
+                      "[test.cpp:4]: (warning) Found unused cast of expression 'i'.\n",
+                      errout.str());
+
+        check("struct S; struct T; struct U;\n"
+              "void f() {\n"
+              "    T t;\n"
+              "    (S)(U)t;\n"
+              "    (S)static_cast<U>(t);\n"
+              "    static_cast<S>((U)t);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
