@@ -387,9 +387,11 @@ private:
         check("void f(int x) { static_cast<unsigned>(x); }");
         ASSERT_EQUALS("[test.cpp:1]: (warning) Found unused cast of expression 'x'.\n", errout.str());
 
-        check("void f(int x) {\n"
+        check("void f(int x, int* p) {\n"
               "    static_cast<void>(x);\n"
               "    (void)x;\n"
+              "    static_cast<void*>(p);\n"
+              "    (void*)p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
