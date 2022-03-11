@@ -308,7 +308,7 @@ void MainWindow::showSrcFile(const QString &fileName, const QString &url, const 
     }
 }
 
-void MainWindow::fileTreeFilter(QString str)
+void MainWindow::fileTreeFilter(const QString &str)
 {
     mFSmodel.setNameFilters(QStringList{"*" + str + "*"});
     mFSmodel.setNameFilterDisables(false);

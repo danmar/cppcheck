@@ -44,7 +44,7 @@ public slots:
     void filter(QString filter);
     void showResult(QListWidgetItem *item);
     void refreshResults();
-    void fileTreeFilter(QString str);
+    void fileTreeFilter(const QString &str);
     void findInFilesClicked();
     void directorytreeDoubleClick();
     void searchResultsDoubleClick();
