@@ -5547,16 +5547,13 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
         while (scope) {
             if (startTok->str() == scope->className && scope->isClassOrStruct())
                 return scope->definedType;
-            const Type* type = scope->findType(startTok->str());
-            if (type)
-                return type;
             const Scope* typeScope = scope->findRecordInNestedList(startTok->str(), /*isC*/ true);
             if (typeScope) {
-                if (startTok->str() == typeScope->className && typeScope->isClassOrStruct())
-                    type = typeScope->definedType;
+                if (startTok->str() == typeScope->className && typeScope->isClassOrStruct()) {
+                    if (const Type* type = typeScope->definedType)
+                        return type;
+                }
             }
-            if (type)
-                return type;
             scope = scope->nestedIn;
         }
         return nullptr;
