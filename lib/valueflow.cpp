@@ -2111,7 +2111,10 @@ struct ValueFlowAnalyzer : Analyzer {
             // Check if its assigned to the same value
             if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {
-                std::vector<MathLib::bigint> result = evaluate(Evaluate::Integral, tok->astParent()->astOperand2());
+                std::vector<MathLib::bigint> result = evaluateInt(tok->astParent()->astOperand2(), [&] {
+                    return ProgramMemory{getProgramState()};
+                });
+                // evaluate(Evaluate::Integral, tok->astParent()->astOperand2());
                 if (!result.empty() && value->equalTo(result.front()))
                     return Action::Idempotent;
             }
@@ -2396,13 +2399,12 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
-    virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const override
-    {
-        if (e == Evaluate::Integral) {
-            if (tok->hasKnownIntValue())
+    template<class F>
+    std::vector<MathLib::bigint> evaluateInt(const Token* tok, F getProgramMemory) const {
+        if (tok->hasKnownIntValue())
                 return {static_cast<int>(tok->values().front().intvalue)};
             std::vector<MathLib::bigint> result;
-            ProgramMemory pm = pms.get(tok, ctx, getProgramState());
+            ProgramMemory pm = getProgramMemory();
             if (Token::Match(tok, "&&|%oror%")) {
                 if (conditionIsTrue(tok, pm, getSettings()))
                     result.push_back(1);
@@ -2415,8 +2417,15 @@ struct ValueFlowAnalyzer : Analyzer {
                 if (!error)
                     result.push_back(out);
             }
-
             return result;
+    }
+
+    virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const override
+    {
+        if (e == Evaluate::Integral) {
+            return evaluateInt(tok, [&] {
+                return pms.get(tok, ctx, getProgramState());
+            });
         } else if (e == Evaluate::ContainerEmpty) {
             const ValueFlow::Value* value = ValueFlow::findValue(tok->values(), nullptr, [](const ValueFlow::Value& v) {
                 return v.isKnown() && v.isContainerSizeValue();
@@ -5387,7 +5396,7 @@ static bool isBreakScope(const Token* const endToken)
     return Token::findmatch(endToken->link(), "break|goto", endToken);
 }
 
-static ValueFlow::Value asImpossible(ValueFlow::Value v)
+ValueFlow::Value asImpossible(ValueFlow::Value v)
 {
     v.invertRange();
     v.setImpossible();

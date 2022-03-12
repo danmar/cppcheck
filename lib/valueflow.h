@@ -458,6 +458,8 @@ namespace ValueFlow {
     std::vector<ValueFlow::Value> isOutOfBounds(const Value& size, const Token* indexTok, bool possible = true);
 }
 
+ValueFlow::Value asImpossible(ValueFlow::Value v);
+
 bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
 
 struct LifetimeToken {
