@@ -180,7 +180,7 @@ void CheckClass::constructors()
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                 else
                     for (const Variable* uv : uninitVars)
-                        uninitVarError(uv->typeStartToken(), /*isprivate*/ true, Function::Type::eNone, uv->scope()->className, uv->name(), /*derived*/ false, /*inconclusive*/ false, /*inConstructor*/ false);
+                        uninitVarError(uv->typeStartToken(), /*isprivate*/ true, Function::Type::eNone, uv->scope()->className, uv->name(), /*derived*/ false, /*inconclusive*/ false);
             }
         }
 
@@ -1010,7 +1010,7 @@ void CheckClass::noExplicitConstructorError(const Token *tok, const std::string 
     reportError(tok, Severity::style, "noExplicitConstructor", "$symbol:" + classname + '\n' + message + '\n' + verbose, CWE398, Certainty::normal);
 }
 
-void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive, bool inConstructor)
+void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type functionType, const std::string &classname, const std::string &varname, bool derived, bool inconclusive)
 {
     std::string ctor;
     if (functionType == Function::eCopyConstructor)
