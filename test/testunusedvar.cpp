@@ -2547,7 +2547,10 @@ private:
                               "    int a, b, c;\n"
                               "    a = b = c = f();\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'a' is assigned a value that is never used.\n"
+                      "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used.\n"
+                      "[test.cpp:4]: (style) Variable 'c' is assigned a value that is never used.\n",
+                      errout.str());
 
         functionVariableUsage("int * foo()\n"
                               "{\n"
@@ -5181,8 +5184,15 @@ private:
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    static int i;\n"
+                              "    static const int ci;\n"
+                              "    static std::string s;\n"
+                              "    static const std::string cs;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n"
+                      "[test.cpp:4]: (style)Unused variable : ci\n"
+                      "[test.cpp:5]: (style)Unused variable : s\n"
+                      "[test.cpp:6]: (style)Unused variable : cs\n",
+                      errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
