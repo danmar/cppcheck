@@ -1766,6 +1766,8 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return isConstStatement(tok->astOperand1(), cpp);
     if (Token::simpleMatch(tok, ","))
         return isConstStatement(tok->astOperand2(), cpp);
+    if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
+        return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
     return false;
 }
 
@@ -1879,9 +1881,11 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
     else if (!tok)
         msg = "Redundant code: Found a statement that begins with " + type + " constant.";
     else if (tok->isCast() && tok->tokType() == Token::Type::eExtendedOp) {
-        msg = "Found unused cast ";
+        msg = "Redundant code: Found unused cast ";
         msg += valueTok ? "of expression '" + valueTok->expressionString() + "'." : "expression.";
     }
+    else if (tok->str() == "?" && tok->tokType() == Token::Type::eExtendedOp)
+        msg = "Redundant code: Found unused result of ternary operator.";
     else {
         reportError(tok, Severity::debug, "debug", "constStatementError not handled.");
         return;

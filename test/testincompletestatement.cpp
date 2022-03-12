@@ -375,7 +375,7 @@ private:
                       "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!'\n"
                       "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!'\n"
-                      "[test.cpp:8]: (warning) Found unused cast of expression '!x'.\n"
+                      "[test.cpp:8]: (warning) Redundant code: Found unused cast of expression '!x'.\n"
                       "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n", errout.str());
 
         check("void f1(int x) { x; }", true);
@@ -385,7 +385,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(int x) { static_cast<unsigned>(x); }");
-        ASSERT_EQUALS("[test.cpp:1]: (warning) Found unused cast of expression 'x'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found unused cast of expression 'x'.\n", errout.str());
 
         check("void f(int x, int* p) {\n"
               "    static_cast<void>(x);\n"
@@ -403,9 +403,9 @@ private:
               "    static_cast<float>((char)i);\n"
               "    (char)static_cast<float>(i);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Found unused cast of expression 'i'.\n"
-                      "[test.cpp:3]: (warning) Found unused cast of expression 'i'.\n"
-                      "[test.cpp:4]: (warning) Found unused cast of expression 'i'.\n",
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found unused cast of expression 'i'.\n"
+                      "[test.cpp:3]: (warning) Redundant code: Found unused cast of expression 'i'.\n"
+                      "[test.cpp:4]: (warning) Redundant code: Found unused cast of expression 'i'.\n",
                       errout.str());
 
         check("struct S; struct T; struct U;\n"
@@ -414,6 +414,19 @@ private:
               "    (S)(U)t;\n"
               "    (S)static_cast<U>(t);\n"
               "    static_cast<S>((U)t);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) { b ? true : false; }\n"); // #10865
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found unused result of ternary operator.\n", errout.str());
+
+        check("void f(bool b) {\n"
+              "    g() ? true : false;\n"
+              "    true ? g() : false;\n"
+              "    false ? true : g();\n"
+              "    g(b ? true : false, 1);\n"
+              "    C c{ b ? true : false, 1 };\n"
+              "    b = (b ? true : false);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
