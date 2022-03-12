@@ -3994,7 +3994,6 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             argType = findVariableTypeIncludingUsedNamespaces(symbolDatabase, scope, typeTok);
 
             // save type
-            // cppcheck-suppress varid0
             const_cast<Token *>(typeTok)->type(argType);
         }
 
@@ -5422,11 +5421,16 @@ const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 
 //---------------------------------------------------------------------------
 
-const Scope *Scope::findRecordInNestedList(const std::string & name) const
+const Scope *Scope::findRecordInNestedList(const std::string & name, bool isC) const
 {
     for (const Scope* scope: nestedList) {
         if (scope->className == name && scope->type != eFunction)
             return scope;
+        if (isC) {
+            const Scope* nestedScope = scope->findRecordInNestedList(name, isC);
+            if (nestedScope)
+                return nestedScope;
+        }
     }
 
     const Type * nested_type = findType(name);
@@ -5544,6 +5548,23 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
     // type same as scope
     if (startTok->str() == startScope->className && startScope->isClassOrStruct() && startTok->strAt(1) != "::")
         return startScope->definedType;
+
+    if (mTokenizer->isC()) {
+        const Scope* scope = startScope;
+        while (scope) {
+            if (startTok->str() == scope->className && scope->isClassOrStruct())
+                return scope->definedType;
+            const Scope* typeScope = scope->findRecordInNestedList(startTok->str(), /*isC*/ true);
+            if (typeScope) {
+                if (startTok->str() == typeScope->className && typeScope->isClassOrStruct()) {
+                    if (const Type* type = typeScope->definedType)
+                        return type;
+                }
+            }
+            scope = scope->nestedIn;
+        }
+        return nullptr;
+    }
 
     const Scope* start_scope = startScope;
 
