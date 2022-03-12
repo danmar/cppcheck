@@ -2114,7 +2114,6 @@ struct ValueFlowAnalyzer : Analyzer {
                 std::vector<MathLib::bigint> result = evaluateInt(tok->astParent()->astOperand2(), [&] {
                     return ProgramMemory{getProgramState()};
                 });
-                // evaluate(Evaluate::Integral, tok->astParent()->astOperand2());
                 if (!result.empty() && value->equalTo(result.front()))
                     return Action::Idempotent;
             }
@@ -2402,22 +2401,22 @@ struct ValueFlowAnalyzer : Analyzer {
     template<class F>
     std::vector<MathLib::bigint> evaluateInt(const Token* tok, F getProgramMemory) const {
         if (tok->hasKnownIntValue())
-                return {static_cast<int>(tok->values().front().intvalue)};
-            std::vector<MathLib::bigint> result;
-            ProgramMemory pm = getProgramMemory();
-            if (Token::Match(tok, "&&|%oror%")) {
-                if (conditionIsTrue(tok, pm, getSettings()))
-                    result.push_back(1);
-                if (conditionIsFalse(tok, pm, getSettings()))
-                    result.push_back(0);
-            } else {
-                MathLib::bigint out = 0;
-                bool error = false;
-                execute(tok, &pm, &out, &error, getSettings());
-                if (!error)
-                    result.push_back(out);
-            }
-            return result;
+            return {static_cast<int>(tok->values().front().intvalue)};
+        std::vector<MathLib::bigint> result;
+        ProgramMemory pm = getProgramMemory();
+        if (Token::Match(tok, "&&|%oror%")) {
+            if (conditionIsTrue(tok, pm, getSettings()))
+                result.push_back(1);
+            if (conditionIsFalse(tok, pm, getSettings()))
+                result.push_back(0);
+        } else {
+            MathLib::bigint out = 0;
+            bool error = false;
+            execute(tok, &pm, &out, &error, getSettings());
+            if (!error)
+                result.push_back(out);
+        }
+        return result;
     }
 
     virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const override
