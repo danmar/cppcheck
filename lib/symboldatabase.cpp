@@ -3995,7 +3995,6 @@ void Function::addArguments(const SymbolDatabase *symbolDatabase, const Scope *s
             argType = findVariableTypeIncludingUsedNamespaces(symbolDatabase, scope, typeTok);
 
             // save type
-            // cppcheck-suppress varid0
             const_cast<Token *>(typeTok)->type(argType);
         }
 
