@@ -5189,9 +5189,9 @@ private:
                               "    static const std::string cs;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n"
-                      "[test.cpp:4]: (style)Unused variable : ci\n"
-                      "[test.cpp:5]: (style)Unused variable : s\n"
-                      "[test.cpp:6]: (style)Unused variable : cs\n",
+                      "[test.cpp:4]: (style) Unused variable: ci\n"
+                      "[test.cpp:5]: (style) Unused variable: s\n"
+                      "[test.cpp:6]: (style) Unused variable: cs\n",
                       errout.str());
 
         functionVariableUsage("void foo()\n"
