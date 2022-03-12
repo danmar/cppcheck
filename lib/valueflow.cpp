@@ -2111,7 +2111,8 @@ struct ValueFlowAnalyzer : Analyzer {
             // Check if its assigned to the same value
             if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {
-                std::vector<MathLib::bigint> result = evaluateInt(tok->astParent()->astOperand2(), [&] {
+                std::vector<MathLib::bigint> result =
+                    evaluateInt(tok->astParent()->astOperand2(), [&] {
                     return ProgramMemory{getProgramState()};
                 });
                 if (!result.empty() && value->equalTo(result.front()))
@@ -2399,7 +2400,8 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 
     template<class F>
-    std::vector<MathLib::bigint> evaluateInt(const Token* tok, F getProgramMemory) const {
+    std::vector<MathLib::bigint> evaluateInt(const Token* tok, F getProgramMemory) const
+    {
         if (tok->hasKnownIntValue())
             return {static_cast<int>(tok->values().front().intvalue)};
         std::vector<MathLib::bigint> result;

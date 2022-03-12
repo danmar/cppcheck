@@ -4436,18 +4436,18 @@ private:
 
         // #10863
         check("void f(const int A[], int Len) {\n"
-            "  if (Len <= 0)\n"
-            "    return;\n"
-            "  int I = 0;\n"
-            "  while (I < Len) {\n"
-            "    int K = I + 1;\n"
-            "    for (; K < Len; K++) {\n"
-            "      if (A[I] != A[K])\n"
-            "        break;\n"
-            "    } \n"
-            "    I = K;   \n"
-            "  }\n"
-            "}\n");
+              "  if (Len <= 0)\n"
+              "    return;\n"
+              "  int I = 0;\n"
+              "  while (I < Len) {\n"
+              "    int K = I + 1;\n"
+              "    for (; K < Len; K++) {\n"
+              "      if (A[I] != A[K])\n"
+              "        break;\n"
+              "    } \n"
+              "    I = K;   \n"
+              "  }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
