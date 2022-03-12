@@ -67,6 +67,7 @@ private:
         TEST_CASE(structmember17); // #10591
         TEST_CASE(structmember18); // #10684
         TEST_CASE(structmember19); // #10826, #10848
+        TEST_CASE(structmember20); // #10737
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1710,6 +1711,21 @@ private:
                                "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout.str());
+    }
+
+    void structmember20() { // #10737
+        checkStructMemberUsage("void f() {\n"
+                               "    {\n"
+                               "    }\n"
+                               "    {\n"
+                               "        struct S { int a; };\n"
+                               "        S s{};\n"
+                               "        {\n"
+                               "            if (s.a) {}\n"
+                               "        }\n"
+                               "    }\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
