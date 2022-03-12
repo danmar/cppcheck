@@ -66,7 +66,7 @@ private:
         TEST_CASE(structmember16); // #10485
         TEST_CASE(structmember17); // #10591
         TEST_CASE(structmember18); // #10684
-        TEST_CASE(structmember19); // #10826, #10848
+        TEST_CASE(structmember19); // #10826, #10848, #10852
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1710,6 +1710,37 @@ private:
                                "}\n");
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
                       errout.str());
+
+        settings.enforcedLang = Settings::C;
+        checkStructMemberUsage("struct A {\n" // #10852
+                               "    struct B {\n"
+                               "        int x;\n"
+                               "    } b;\n"
+                               "} a;\n"
+                               "void f() {\n"
+                               "    struct B* pb = &a.b;\n"
+                               "    pb->x = 1;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("union U {\n"
+                               "    struct A {\n"
+                               "        struct B {\n"
+                               "            int x;\n"
+                               "        } b;\n"
+                               "    } a;\n"
+                               "    struct C {\n"
+                               "        short s[2];\n"
+                               "    } c;\n"
+                               "} u;\n"
+                               "void f() {\n"
+                               "    struct B* pb = &u.a.b;\n"
+                               "    pb->x = 1;\n"
+                               "    struct C* pc = &u.c;\n"
+                               "    pc->s[0] = 1;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+        settings.enforcedLang = Settings::None;
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
