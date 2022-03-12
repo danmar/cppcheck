@@ -108,7 +108,7 @@ static bool isExecutableScope(const Token* tok)
         return true;
     if (tok2 == tok)
         return false;
-    if (Token::Match(tok2, "} }")) { // inner scope
+    if (Token::simpleMatch(tok2, "} }")) { // inner scope
         const Token* startTok = tok2->link();
         if (Token::Match(startTok->previous(), "do|try|else {"))
             return true;
