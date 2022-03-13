@@ -1555,6 +1555,8 @@ static void misra_16_3(void) {
     case 2:
         x++;
   } // 16.3
+
+  #define M_16_3(a,b,default) { (a), (b), (default) },
 }
 
 static void misra_16_4(void) {
