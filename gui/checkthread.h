@@ -39,7 +39,7 @@ class CheckThread : public QThread {
     Q_OBJECT
 public:
     explicit CheckThread(ThreadResult &result);
-    virtual ~CheckThread();
+    ~CheckThread() override;
 
     /**
      * @brief Set settings for cppcheck

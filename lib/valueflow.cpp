@@ -3741,7 +3741,7 @@ struct LifetimeStore {
                 // Don't add the value a second time
                 if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                     continue;
-                ;
+
                 setTokenValue(tok, value, tokenlist->getSettings());
                 update = true;
             }

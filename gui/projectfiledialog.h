@@ -42,7 +42,7 @@ class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
     explicit ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = nullptr);
-    virtual ~ProjectFileDialog();
+    ~ProjectFileDialog() override;
 
 private:
     void loadFromProjectFile(const ProjectFile *projectFile);

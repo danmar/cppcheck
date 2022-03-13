@@ -2065,6 +2065,7 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
             continue;
         }
         std::sort(adjValues.begin(), adjValues.end(), [&values](ValueIterator xx, ValueIterator yy) {
+            (void)values;
             assert(xx != values.end() && yy != values.end());
             return xx->compareValue(*yy, ValueFlow::less{});
         });

@@ -46,7 +46,7 @@ public:
     explicit ResultsView(QWidget * parent = nullptr);
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     ResultsView(const ResultsView &) = delete;
-    virtual ~ResultsView();
+    ~ResultsView() override;
     ResultsView &operator=(const ResultsView &) = delete;
 
     void setAddedFunctionContracts(const QStringList &addedContracts);
@@ -372,7 +372,7 @@ protected:
 
     CheckStatistics *mStatistics;
 
-    bool eventFilter(QObject *target, QEvent *event);
+    bool eventFilter(QObject *target, QEvent *event) override;
 private slots:
     /**
      * @brief Custom context menu for Analysis Log

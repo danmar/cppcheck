@@ -30,9 +30,9 @@ class QHelpEngine;
 
 class HelpBrowser : public QTextBrowser {
 public:
-    HelpBrowser(QWidget* parent = 0) : QTextBrowser(parent), mHelpEngine(nullptr) {}
+    HelpBrowser(QWidget* parent = nullptr) : QTextBrowser(parent), mHelpEngine(nullptr) {}
     void setHelpEngine(QHelpEngine *helpEngine);
-    QVariant loadResource(int type, const QUrl& name);
+    QVariant loadResource(int type, const QUrl& name) override;
 private:
     QHelpEngine* mHelpEngine;
 };
@@ -42,7 +42,7 @@ class HelpDialog : public QDialog {
 
 public:
     explicit HelpDialog(QWidget *parent = nullptr);
-    ~HelpDialog();
+    ~HelpDialog() override;
 
 private:
     Ui::HelpDialog *mUi;

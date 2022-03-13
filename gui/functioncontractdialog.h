@@ -30,7 +30,7 @@ class FunctionContractDialog : public QDialog {
 
 public:
     explicit FunctionContractDialog(QWidget *parent, const QString &name, const QString &expects);
-    ~FunctionContractDialog();
+    ~FunctionContractDialog() override;
     QString getExpects() const;
 private:
     Ui::FunctionContractDialog *mUi;
