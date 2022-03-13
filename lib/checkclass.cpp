@@ -180,7 +180,7 @@ void CheckClass::constructors()
                     noConstructorError(scope->classDef, scope->className, scope->classDef->str() == "struct");
                 else
                     for (const Variable* uv : uninitVars)
-                        uninitVarError(uv->typeStartToken(), /*isprivate*/ true, Function::Type::eNone, uv->scope()->className, uv->name(), /*derived*/ false, /*inconclusive*/ false);
+                        uninitVarError(uv->typeStartToken(), uv->scope()->className, uv->name());
             }
         }
 
@@ -1017,12 +1017,18 @@ void CheckClass::uninitVarError(const Token *tok, bool isprivate, Function::Type
         ctor = "copy ";
     else if (functionType == Function::eMoveConstructor)
         ctor = "move ";
-    std::string message("Member variable '$symbol' is not initialized");
-    message += (functionType != Function::eNone) ? " in the " + ctor + "constructor." : ".";
+    std::string message("Member variable '$symbol' is not initialized in the " + ctor + "constructor.");
     if (derived)
         message += " Maybe it should be initialized directly in the class " + classname + "?";
     std::string id = std::string("uninit") + (derived ? "Derived" : "") + "MemberVar" + (isprivate ? "Private" : "");
     reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + "\n" + message, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
+}
+
+void CheckClass::uninitVarError(const Token *tok, const std::string &classname, const std::string &varname)
+{
+    const std::string message("Member variable '$symbol' is not initialized."); // report missing in-class initializer
+    const std::string id = std::string("uninitMemberVarPrivate");
+    reportError(tok, Severity::warning, id, "$symbol:" + classname + "::" + varname + "\n" + message, CWE398, Certainty::normal);
 }
 
 void CheckClass::missingMemberCopyError(const Token *tok, Function::Type functionType, const std::string& classname, const std::string& varname)
