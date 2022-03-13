@@ -65,6 +65,8 @@ static _Noreturn void misra_1_4_func(void) // 1.4
     printf_s("hello"); // 1.4
 }
 
+#define MISRA_2_2 (1*60)
+
 static void misra_2_2(int x) {
     int a;
     a = x + 0; // 2.2
@@ -73,6 +75,7 @@ static void misra_2_2(int x) {
     a = 0 * x; // 2.2
     a = x * 1; // 2.2
     a = 1 * x; // 2.2
+    a = MISRA_2_2;
     (void)a;
 }
 

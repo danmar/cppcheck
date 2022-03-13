@@ -1465,6 +1465,8 @@ class MisraChecker:
 
     def misra_2_2(self, cfg):
         for token in cfg.tokenlist:
+            if token.isExpandedMacro:
+                continue
             if (token.str in '+-') and token.astOperand2:
                 if simpleMatch(token.astOperand1, '0'):
                     self.reportError(token.astOperand1, 2, 2)
