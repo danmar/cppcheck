@@ -380,16 +380,23 @@ def api01(data):
         if scope.type!='Struct':
             continue
         token = scope.bodyStart
-        arrayFound=False
+        string_found = False
         # loop through the complete struct
         while token != scope.bodyEnd:
             if token.isName and token.variable:
+                is_string = False
                 if token.variable.isArray:
-                    arrayFound=True
-                elif arrayFound and not token.variable.isArray and not token.variable.isConst:
+                    type_token = token.variable.typeStartToken
+                    while type_token and type_token.isName:
+                        if type_token.str in ('char', 'wchar_t') and not type_token.isExpandedMacro:
+                            is_string = True
+                        type_token = type_token.next
+                if is_string:
+                    string_found = True
+                elif string_found and not token.variable.isConst:
                     reportError(token, 'style', 'Avoid laying out strings in memory directly before sensitive data', 'API01-C')
                     # reset flags to report other positions in the same struct
-                    arrayFound=False
+                    string_found = False
             token = token.next
 
 
@@ -453,13 +460,16 @@ if __name__ == '__main__':
             api01(cfg)
 
         if VERIFY:
+            fail = False
             for expected in VERIFY_EXPECTED:
                 if expected not in VERIFY_ACTUAL:
                     print('Expected but not seen: ' + expected)
-                    sys.exit(1)
+                    fail = True
             for actual in VERIFY_ACTUAL:
                 if actual not in VERIFY_EXPECTED:
                     print('Not expected: ' + actual)
-                    sys.exit(1)
+                    fail = True
+            if fail:
+                sys.exit(1)
 
     sys.exit(cppcheckdata.EXIT_CODE)
