@@ -1838,7 +1838,7 @@ void CheckOther::checkIncompleteStatement()
 
         const Token *rtok = nextAfterAstRightmostLeaf(tok);
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
-            !Token::Match(tok->previous(), ";|}|{ %any% ;") && !(mTokenizer->isCPP() && tok->isCast() && !tok->astParent()) && !Token::Match(tok->tokAt(-2), "for ("))
+            !Token::Match(tok->previous(), ";|}|{ %any% ;") && !(mTokenizer->isCPP() && tok->isCast() && !tok->astParent()) && !Token::simpleMatch(tok->tokAt(-2), "for ("))
             continue;
         // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
