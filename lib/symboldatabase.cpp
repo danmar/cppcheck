@@ -106,16 +106,15 @@ static bool isExecutableScope(const Token* tok)
     const Token * tok2 = tok->link()->previous();
     if (Token::simpleMatch(tok2, "; }"))
         return true;
-    if (Token::Match(tok2, "{|} }")) {
-        const Token* startTok = tok2->str() == "{" ? tok2 : tok2->link();
+    if (tok2 == tok)
+        return false;
+    if (Token::simpleMatch(tok2, "} }")) { // inner scope
+        const Token* startTok = tok2->link();
         if (Token::Match(startTok->previous(), "do|try|else {"))
             return true;
-        if (Token::simpleMatch(startTok->previous(), ") {"))
+        if (Token::Match(startTok->previous(), ")|] {"))
             return !findLambdaStartToken(tok2);
-        if (tok->str() == "{")
-            return false;
-        else
-            return isExecutableScope(startTok);
+        return isExecutableScope(startTok);
     }
     return false;
 }
@@ -128,7 +127,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
     // pointer to current scope
     Scope *scope = &scopeList.back();
 
-    // Store the edning of init lists
+    // Store the ending of init lists
     std::stack<std::pair<const Token*, const Scope*>> endInitList;
     auto inInitList = [&] {
         if (endInitList.empty())
