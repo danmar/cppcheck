@@ -1838,7 +1838,7 @@ void CheckOther::checkIncompleteStatement()
 
         const Token *rtok = nextAfterAstRightmostLeaf(tok);
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
-            !Token::Match(tok->previous(), ";|}|{ %any% ;") && !(mTokenizer->isCPP() && tok->isCast() && !tok->astParent()))
+            !Token::Match(tok->previous(), ";|}|{ %any% ;") && !(mTokenizer->isCPP() && tok->isCast() && !tok->astParent()) && !Token::Match(tok->tokAt(-2), "for ("))
             continue;
         // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
@@ -1869,12 +1869,14 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Found suspicious operator '" + tok->str() + "'";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
-    else if (Token::Match(valueTok, "%str%|%num%|%bool%")) {
+    else if (Token::Match(valueTok, "%str%|%num%|%bool%|%char%")) {
         std::string typeStr("string");
         if (valueTok->isNumber())
             typeStr = "numeric";
         else if (valueTok->isBoolean())
             typeStr = "bool";
+        else if (valueTok->tokType() == Token::eChar)
+            typeStr = "character";
         msg = "Redundant code: Found a statement that begins with " + typeStr + " constant.";
     }
     else if (!tok)
