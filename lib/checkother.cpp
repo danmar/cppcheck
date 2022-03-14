@@ -1763,7 +1763,7 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return isWithoutSideEffects(cpp, tok->astOperand1()) && isConstStatement(tok->astOperand1(), cpp);
     if (Token::Match(tok, "( %type%"))
         return isConstStatement(tok->astOperand1(), cpp);
-    if (Token::simpleMatch(tok, ","))
+    if (Token::Match(tok, ",|."))
         return isConstStatement(tok->astOperand2(), cpp);
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
         return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
@@ -1838,7 +1838,10 @@ void CheckOther::checkIncompleteStatement()
 
         const Token *rtok = nextAfterAstRightmostLeaf(tok);
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
-            !Token::Match(tok->previous(), ";|}|{ %any% ;") && !(mTokenizer->isCPP() && tok->isCast() && !tok->astParent()) && !Token::simpleMatch(tok->tokAt(-2), "for ("))
+            !Token::Match(tok->previous(), ";|}|{ %any% ;") &&
+            !(mTokenizer->isCPP() && tok->isCast() && !tok->astParent()) &&
+            !Token::simpleMatch(tok->tokAt(-2), "for (") &&
+            !Token::Match(tok->tokAt(-1), "%var% ["))
             continue;
         // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
@@ -1887,6 +1890,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
     }
     else if (tok->str() == "?" && tok->tokType() == Token::Type::eExtendedOp)
         msg = "Redundant code: Found unused result of ternary operator.";
+    else if (tok->str() == "." && tok->tokType() == Token::Type::eOther)
+        msg = "Redundant code: Found unused member access.";
     else {
         reportError(tok, Severity::debug, "debug", "constStatementError not handled.");
         return;

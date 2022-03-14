@@ -449,6 +449,29 @@ private:
                       "[test.cpp:8]: (warning) Redundant code: Found a statement that begins with string constant.\n"
                       "[test.cpp:9]: (warning) Redundant code: Found a statement that begins with string constant.\n",
                       errout.str());
+
+        check("struct S { bool b{}; };\n"
+               "struct T {\n"
+               "    S s[2];\n"
+               "    void g();\n"
+               "};\n"
+               "void f(const S& r, const S* p) {\n"
+               "	r.b;\n"
+               "	p->b;\n"
+               "	S s;\n"
+               "	(s.b);\n"
+               "	T t, u[2];\n"
+               "	t.s[1].b;\n"
+               "	t.g();\n"
+               "	u[0].g();\n"
+               "	u[1].s[0].b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant code: Found unused member access.\n"
+                      "[test.cpp:8]: (warning) Redundant code: Found unused member access.\n"
+                      "[test.cpp:10]: (warning) Redundant code: Found unused member access.\n"
+                      "[test.cpp:12]: (warning) Redundant code: Found unused member access.\n"
+                      "[test.cpp:15]: (warning) Redundant code: Found unused member access.\n",
+                      errout.str());
     }
 
     void vardecl() {
