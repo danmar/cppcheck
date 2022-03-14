@@ -1081,7 +1081,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
 
     // Set function call pointers
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
-        if (tok->isName() && !tok->function() && tok->varId() == 0 && Token::Match(tok, "%name% [(,)>]") && !isReservedName(tok->str())) {
+        if (tok->isName() && !tok->function() && tok->varId() == 0 && Token::Match(tok, "%name% [(,)>;]") && !isReservedName(tok->str())) {
             if (tok->next()->str() == ">" && !tok->next()->link())
                 continue;
 
@@ -1089,7 +1089,7 @@ void SymbolDatabase::createSymbolDatabaseSetFunctionPointers(bool firstPass)
                 const Token *start = tok;
                 while (Token::Match(start->tokAt(-2), "%name% ::"))
                     start = start->tokAt(-2);
-                if (!Token::Match(start->previous(), "[(,<]") && !Token::Match(start->tokAt(-2), "[(,<] &"))
+                if (!Token::Match(start->previous(), "[(,<=]") && !Token::Match(start->tokAt(-2), "[(,<=] &") && !Token::Match(start, "%name% ;"))
                     continue;
             }
 
@@ -5351,6 +5351,12 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
                     tok1 = tok1->linkAt(1)->tokAt(2);
                 else
                     tok1 = nullptr;
+
+                if (currScope && tok1) {
+                  const Function* func = currScope->findFunction(tok1);
+                  if (func)
+                    return func;
+                }
 
                 if (tok1)
                     currScope = currScope->findRecordInNestedList(tok1->str());
