@@ -1022,7 +1022,13 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
         while (parent && parent->str() == "(" && !parent->astOperand2())
             parent = parent->astParent();
 
-        if (!parent && !(isNew && ((!tok->astOperand1() && !tok->astOperand2()) || tok->strAt(1) == "auto" || Token::Match(tok, "new %type% (")))) {
+        bool warn = true;
+        if (isNew) {
+            const Token* typeTok = tok->next();
+            warn = typeTok && typeTok->isStandardType() || mSettings->library.detectContainer(typeTok);
+        }
+
+        if (!parent && warn) {
             // Check if we are in a C++11 constructor
             const Token * closingBrace = Token::findmatch(tok, "}|;");
             if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%") && (!isNew && precedes(tok, closingBrace->link())))
