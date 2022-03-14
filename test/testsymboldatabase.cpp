@@ -356,6 +356,7 @@ private:
         TEST_CASE(symboldatabase95); // #10295
         TEST_CASE(symboldatabase96); // #10126
         TEST_CASE(symboldatabase97); // #10598 - final class
+        TEST_CASE(symboldatabase98); // #10451
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -4848,6 +4849,20 @@ private:
     void symboldatabase97() { // #10598 - final class
         GET_SYMBOL_DB("template<> struct A<void> final {\n"
                       "    A() {}\n"
+                      "};\n");
+        ASSERT(db);
+        ASSERT_EQUALS(3, db->scopeList.size());
+
+        const Token *functok = Token::findmatch(tokenizer.tokens(), "%name% (");
+        ASSERT(functok);
+        ASSERT(functok->function());
+        ASSERT_EQUALS(functok->function()->type, Function::Type::eConstructor);
+    }
+
+    void symboldatabase98() { // #10451
+        GET_SYMBOL_DB("struct A { typedef struct {} B; };\n"
+                      "void f() {\n"
+                      "    auto g = [](A::B b) -> void { A::B b2 = b; };\n"    }
                       "};\n");
         ASSERT(db);
         ASSERT_EQUALS(3, db->scopeList.size());
