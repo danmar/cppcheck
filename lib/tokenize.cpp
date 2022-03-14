@@ -1371,7 +1371,7 @@ void Tokenizer::simplifyTypedef()
                             structRemoved = true;
                         typeStart = typeStart->next();
                     }
-                    if (Token::Match(typeStart, "struct|class") && Token::Match(tok2, "%name% ::"))
+                    if (Token::Match(typeStart, "struct|class|union") && Token::Match(tok2, "%name% ::"))
                         typeStart = typeStart->next();
 
                     if (sameStartEnd)

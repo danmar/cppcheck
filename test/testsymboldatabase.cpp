@@ -4860,17 +4860,23 @@ private:
     }
 
     void symboldatabase98() { // #10451
-        GET_SYMBOL_DB("struct A { typedef struct {} B; };\n"
-                      "void f() {\n"
-                      "    auto g = [](A::B b) -> void { A::B b2 = b; };\n"    }
-                      "};\n");
-        ASSERT(db);
-        ASSERT_EQUALS(3, db->scopeList.size());
-
-        const Token *functok = Token::findmatch(tokenizer.tokens(), "%name% (");
-        ASSERT(functok);
-        ASSERT(functok->function());
-        ASSERT_EQUALS(functok->function()->type, Function::Type::eConstructor);
+      {
+          GET_SYMBOL_DB("struct A { typedef struct {} B; };\n"
+                        "void f() {\n"
+                        "    auto g = [](A::B b) -> void { A::B b2 = b; };\n"
+                        "};\n");
+          ASSERT(db);
+          ASSERT_EQUALS(5, db->scopeList.size());
+      }
+      {
+          GET_SYMBOL_DB("typedef union {\n"
+                        "    int i;\n"
+                        "} U;\n"
+                        "template <auto U::*>\n"
+                        "void f();\n");
+          ASSERT(db);
+          ASSERT_EQUALS(2, db->scopeList.size());
+      }
     }
 
     void createSymbolDatabaseFindAllScopes1() {
