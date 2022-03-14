@@ -5353,9 +5353,9 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
                     tok1 = nullptr;
 
                 if (currScope && tok1) {
-                  const Function* func = currScope->findFunction(tok1);
-                  if (func)
-                    return func;
+                    const Function* func = currScope->findFunction(tok1);
+                    if (func)
+                        return func;
                 }
 
                 if (tok1)
