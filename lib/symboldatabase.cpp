@@ -5352,14 +5352,13 @@ const Function* SymbolDatabase::findFunction(const Token *tok) const
                 else
                     tok1 = nullptr;
 
-                if (currScope && tok1) {
+                if (tok1) {
                     const Function* func = currScope->findFunction(tok1);
                     if (func)
                         return func;
-                }
 
-                if (tok1)
                     currScope = currScope->findRecordInNestedList(tok1->str());
+                }
             }
 
             if (tok1)
