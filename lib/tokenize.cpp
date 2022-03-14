@@ -10221,7 +10221,7 @@ void Tokenizer::reportUnknownMacros() const
 
     // String concatenation with unknown macros
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%")) {
+        if (Token::Match(tok, "%str% %name% (") && Token::Match(tok->linkAt(2), ") %str%") && !Token::Match(tok->linkAt(2), ") \"\0\"")) {
             if (tok->next()->isKeyword())
                 continue;
             unknownMacroError(tok->next());
