@@ -3080,15 +3080,15 @@ private:
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
 
-        //checkUninitVar("void f(bool x) {\n"
-        //               "    bool b;\n"
-        //               "    {\n"
-        //               "        auto g = []{};\n"
-        //               "        b = x;\n"
-        //               "    }\n"
-        //               "    if (b) {}\n"
-        //               "}\n");
-        //ASSERT_EQUALS("", errout.str());
+        checkUninitVar("void f(bool x) {\n"
+                       "    bool b;\n"
+                       "    {\n"
+                       "        auto g = []{};\n"
+                       "        b = x;\n"
+                       "    }\n"
+                       "    if (b) {}\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         checkUninitVar("void f(bool x) {\n"
                        "    bool b;\n"
