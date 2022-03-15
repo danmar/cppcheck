@@ -3046,7 +3046,7 @@ private:
         const char code[] = "class C {\n"
                             "    struct I {\n"
                             "        using vt = const std::string;\n"
-                            "	       using ptr = vt*;\n"
+                            "        using ptr = vt*;\n"
                             "    };\n"
                             "};\n";
         ASSERT_EQUALS("class C { struct I { } ; } ;", tok(code));
