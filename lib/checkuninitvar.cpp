@@ -365,7 +365,7 @@ static bool isVariableUsed(const Token *tok, const Variable& var)
 
 bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var, bool * const possibleInit, bool * const noreturn, Alloc* const alloc, const std::string &membervar, std::map<nonneg int, VariableValue> variableValue)
 {
-    const bool suppressErrors(possibleInit && *possibleInit);  // Assume that this is a variable delaratkon, rather than a fundef
+    const bool suppressErrors(possibleInit && *possibleInit);  // Assume that this is a variable declaration, rather than a fundef
     const bool printDebug = mSettings->debugwarnings;
 
     if (possibleInit)
@@ -392,8 +392,8 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             break;
         }
 
-        // Unconditional inner scope or try..
-        if (tok->str() == "{" && Token::Match(tok->previous(), ",|;|{|}|try")) {
+        // Unconditional inner scope, try, lambda, init list
+        if (tok->str() == "{" && Token::Match(tok->previous(), ",|;|{|}|]|try")) {
             bool possibleInitInner = false;
             if (checkScopeForVariable(tok->next(), var, &possibleInitInner, noreturn, alloc, membervar, variableValue))
                 return true;
