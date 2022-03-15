@@ -35,7 +35,7 @@ if (WIN32 AND NOT BORLAND)
     endif()
 endif()
 if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
-    target_link_libraries(cppcheck ${tinyxml2_LIBRARY})
+    target_link_libraries(cppcheck ${tinyxml2_LIBRARIES})
 endif()
 
 add_dependencies(cppcheck copy_cfg)
