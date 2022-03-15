@@ -64,7 +64,7 @@ if (USE_Z3)
 endif()
 message( STATUS "USE_BUNDLED_TINYXML2 =  ${USE_BUNDLED_TINYXML2}" )
 if (NOT USE_BUNDLED_TINYXML2)
-    message(STATUS "tinyxml2_LIBRARY =       ${tinyxml2_LIBRARY}")
+    message(STATUS "tinyxml2_LIBRARIES =       ${tinyxml2_LIBRARIES}")
 endif()
 message( STATUS )
 

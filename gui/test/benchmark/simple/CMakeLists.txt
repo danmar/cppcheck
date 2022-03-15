@@ -20,7 +20,7 @@ if (USE_Z3)
     target_link_libraries(benchmark-simple ${Z3_LIBRARIES})
 endif()
 if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
-    target_link_libraries(benchmark-simple ${tinyxml2_LIBRARY})
+    target_link_libraries(benchmark-simple ${tinyxml2_LIBRARIES})
 endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
