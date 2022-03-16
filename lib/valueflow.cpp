@@ -2859,7 +2859,7 @@ static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
     MathLib::bigint intval;
     const Token* binaryTok = parseBinaryIntOp(expr, intval);
     bool rhs = astIsRHS(binaryTok);
-    // If its on the rhs, then -1 multipllication is needed, which is not possible with simple delta analysis used currentl for symbolic values
+    // If its on the rhs, then -1 multiplication is needed, which is not possible with simple delta analysis used currently for symbolic values
     if (value.isSymbolicValue() && rhs && Token::simpleMatch(expr, "-"))
         return expr;
     if (binaryTok && expr->str().size() == 1) {
@@ -4264,7 +4264,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
         if (tok->scope()->type == Scope::eGlobal)
             continue;
         Lambda lam(tok);
-        // Lamdas
+        // Lambdas
         if (lam.isLambda()) {
             const Scope * bodyScope = lam.bodyTok->scope();
 

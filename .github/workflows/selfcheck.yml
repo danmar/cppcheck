@@ -63,7 +63,7 @@ jobs:
         env:
           DISABLE_VALUEFLOW: 1
 
-      # the following steps are duplicated from above since setting up the buld node in a parallel step takes longer than the actual steps
+      # the following steps are duplicated from above since setting up the build node in a parallel step takes longer than the actual steps
       - name: CMake (no test)
         run: |
           mkdir cmake.output.notest
