@@ -179,6 +179,7 @@ private:
         TEST_CASE(uninitVar31); // ticket #8271
         TEST_CASE(uninitVar32); // ticket #8835
         TEST_CASE(uninitVar33); // ticket #10295
+        TEST_CASE(uninitVar34); // ticket #10841
         TEST_CASE(uninitVarEnum1);
         TEST_CASE(uninitVarEnum2); // ticket #8146
         TEST_CASE(uninitVarStream);
@@ -2820,6 +2821,15 @@ private:
               "};\n"
               "app::B::B(void){}");
         ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable 'B::x' is not initialized in the constructor.\n", errout.str());
+    }
+
+    void uninitVar34() { // ticket #10841
+        check("struct A { void f() {} };\n"
+              "struct B {\n"
+              "    B() { a->f(); }\n"
+              "    A* a;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'B::a' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitVarArray1() {
