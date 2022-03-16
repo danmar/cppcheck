@@ -2003,7 +2003,7 @@ namespace {
                 }
 
                 if (!added)
-                    *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::Other, "", tok, tok->link());
+                    *scopeInfo = (*scopeInfo)->addChild(ScopeInfo3::Other, emptyString, tok, tok->link());
             }
             return;
         }
@@ -2353,7 +2353,7 @@ bool Tokenizer::simplifyUsing()
             structEnd = structEnd->link();
 
             // add ';' after end of struct
-            structEnd->insertToken(";", "");
+            structEnd->insertToken(";", emptyString);
 
             // add name for anonymous struct
             if (!hasName) {
@@ -2363,8 +2363,8 @@ bool Tokenizer::simplifyUsing()
                 else
                     newName = "Unnamed" + MathLib::toString(mUnnamedCount++);
                 TokenList::copyTokens(structEnd->next(), tok, start);
-                structEnd->tokAt(5)->insertToken(newName, "");
-                start->insertToken(newName, "");
+                structEnd->tokAt(5)->insertToken(newName, emptyString);
+                start->insertToken(newName, emptyString);
             } else
                 TokenList::copyTokens(structEnd->next(), tok, start->next());
 
@@ -3318,7 +3318,7 @@ void Tokenizer::calculateScopes()
         tok->scopeInfo(nullptr);
 
     std::string nextScopeNameAddition;
-    std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>("", nullptr);
+    std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>(emptyString, nullptr);
     list.front()->scopeInfo(primaryScope);
 
     for (Token* tok = list.front(); tok; tok = tok->next()) {

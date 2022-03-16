@@ -726,12 +726,12 @@ public:
     }
 
     bool isCChar() const {
-        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "")) ||
-                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "") && mStr.length() == 3));
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', emptyString)) ||
+                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString) && mStr.length() == 3));
     }
 
     bool isCMultiChar() const {
-        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "")) &&
+        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString)) &&
                 (mStr.length() > 3));
     }
     /**

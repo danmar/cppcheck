@@ -961,11 +961,11 @@ void TemplateSimplifier::getTemplateInstantiations()
                                 std::string::size_type offset = 0;
                                 std::string::size_type pos = 0;
                                 while ((pos = nameSpace.substr(offset).find(' ')) != std::string::npos) {
-                                    qualificationTok->insertToken(nameSpace.substr(offset, pos), "", true);
+                                    qualificationTok->insertToken(nameSpace.substr(offset, pos), emptyString, true);
                                     offset = offset + pos + 1;
                                 }
-                                qualificationTok->insertToken(nameSpace.substr(offset), "", true);
-                                qualificationTok->insertToken("::", "", true);
+                                qualificationTok->insertToken(nameSpace.substr(offset), emptyString, true);
+                                qualificationTok->insertToken("::", emptyString, true);
                                 addInstantiation(tok, it1->scope());
                                 found = true;
                                 break;
@@ -1530,7 +1530,7 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
             }
         } else {
             if (insert)
-                mTokenList.back()->tokAt(offset)->insertToken(token, "");
+                mTokenList.back()->tokAt(offset)->insertToken(token, emptyString);
             else
                 mTokenList.addtoken(token, tok->linenr(), tok->column(), tok->fileIndex());
         }
@@ -1541,10 +1541,10 @@ void TemplateSimplifier::addNamespace(const TokenAndName &templateDeclaration, c
     if (token != tokStart->str() || tok->strAt(-1) != "::") {
         if (insert) {
             if (!inTemplate)
-                mTokenList.back()->tokAt(offset)->insertToken(templateDeclaration.scope().substr(start), "");
+                mTokenList.back()->tokAt(offset)->insertToken(templateDeclaration.scope().substr(start), emptyString);
             else
                 mTokenList.back()->tokAt(offset)->str(mTokenList.back()->strAt(offset) + templateDeclaration.scope().substr(start));
-            mTokenList.back()->tokAt(offset)->insertToken("::", "");
+            mTokenList.back()->tokAt(offset)->insertToken("::", emptyString);
         } else {
             if (!inTemplate)
                 mTokenList.addtoken(templateDeclaration.scope().substr(start), tok->linenr(), tok->column(), tok->fileIndex());
@@ -1596,9 +1596,9 @@ void TemplateSimplifier::expandTemplate(
 
     // add forward declarations
     if (copy && isClass) {
-        templateDeclaration.token()->insertToken(templateDeclarationToken->strAt(1), "", true);
-        templateDeclaration.token()->insertToken(newName, "", true);
-        templateDeclaration.token()->insertToken(";", "", true);
+        templateDeclaration.token()->insertToken(templateDeclarationToken->strAt(1), emptyString, true);
+        templateDeclaration.token()->insertToken(newName, emptyString, true);
+        templateDeclaration.token()->insertToken(";", emptyString, true);
     } else if ((isFunction && (copy || isSpecialization)) ||
                (isVariable && !isSpecialization) ||
                (isClass && isSpecialization && mTemplateSpecializationMap.find(templateDeclaration.token()) != mTemplateSpecializationMap.end())) {
@@ -1662,7 +1662,7 @@ void TemplateSimplifier::expandTemplate(
         }
 
         if (isStatic) {
-            dst->insertToken("static", "", true);
+            dst->insertToken("static", emptyString, true);
             if (start) {
                 dst->previous()->linenr(start->linenr());
                 dst->previous()->column(start->column());
@@ -1745,13 +1745,13 @@ void TemplateSimplifier::expandTemplate(
                            !(templateDeclaration.isFunction() && templateDeclaration.scope().empty() &&
                              (start->strAt(-1) == "." || Token::simpleMatch(start->tokAt(-2), ". template")))) {
                     if (start->strAt(1) != "<" || Token::Match(start, newName.c_str()) || !inAssignment) {
-                        dst->insertToken(newName, "", true);
+                        dst->insertToken(newName, emptyString, true);
                         dst->previous()->linenr(start->linenr());
                         dst->previous()->column(start->column());
                         if (start->strAt(1) == "<")
                             start = start->next()->findClosingBracket();
                     } else {
-                        dst->insertToken(start->str(), "", true);
+                        dst->insertToken(start->str(), emptyString, true);
                         dst->previous()->linenr(start->linenr());
                         dst->previous()->column(start->column());
                         newInstantiations.emplace_back(dst->previous(), templateDeclaration.scope());
@@ -1774,7 +1774,7 @@ void TemplateSimplifier::expandTemplate(
                             for (const auto & inst : mTemplateInstantiations) {
                                 if (Token::simpleMatch(inst.token(), name.c_str(), name.size())) {
                                     // use the instantiated name
-                                    dst->insertToken(name, "", true);
+                                    dst->insertToken(name, emptyString, true);
                                     dst->previous()->linenr(start->linenr());
                                     dst->previous()->column(start->column());
                                     start = closing;
@@ -1820,7 +1820,7 @@ void TemplateSimplifier::expandTemplate(
 
             start = start->next();
         }
-        dst->insertToken(";", "", true);
+        dst->insertToken(";", emptyString, true);
         dst->previous()->linenr(dst->tokAt(-2)->linenr());
         dst->previous()->column(dst->tokAt(-2)->column() + 1);
 
