@@ -2082,6 +2082,8 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 
     for (const Variable& var : scope->varlist) {
         if (var.name() == tok->str()) {
+            if (Token::Match(tok, "%name% ::"))
+                continue;
             const Token* fqTok = tok;
             while (Token::Match(fqTok->tokAt(-2), "%name% ::"))
                 fqTok = fqTok->tokAt(-2);
