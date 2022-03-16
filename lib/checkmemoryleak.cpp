@@ -1025,7 +1025,7 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
         bool warn = true;
         if (isNew) {
             const Token* typeTok = tok->next();
-            warn = typeTok && typeTok->isStandardType() || mSettings->library.detectContainer(typeTok);
+            warn = typeTok && (typeTok->isStandardType() || mSettings->library.detectContainer(typeTok));
         }
 
         if (!parent && warn) {
