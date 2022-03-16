@@ -3199,24 +3199,24 @@ private:
         TODO_ASSERT_EQUALS("error", "", errout.str());
 
         check("struct A {\n"
-            "    int n;\n"
-            "    A(const int &x) : n(x) {}\n"
-            "};\n"
-            "A f() {\n"
-            "    A m(4);\n"
-            "    return m;\n"
-            "}\n");
+              "    int n;\n"
+              "    A(const int &x) : n(x) {}\n"
+              "};\n"
+              "A f() {\n"
+              "    A m(4);\n"
+              "    return m;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("struct B {};\n"
-            "struct A {\n"
-            "    B n;\n"
-            "    A(const B &x) : n(x) {}\n"
-            "};\n"
-            "A f() {\n"
-            "    A m(B{});\n"
-            "    return m;\n"
-            "}\n");
+              "struct A {\n"
+              "    B n;\n"
+              "    A(const B &x) : n(x) {}\n"
+              "};\n"
+              "A f() {\n"
+              "    A m(B{});\n"
+              "    return m;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

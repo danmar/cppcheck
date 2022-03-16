@@ -3351,7 +3351,9 @@ static bool isInConstructorList(const Token* tok)
     return Token::simpleMatch(parent, ":") && !Token::simpleMatch(parent->astParent(), "?");
 }
 
-static std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* settings = nullptr, const Token** parent = nullptr)
+static std::vector<ValueType> getParentValueTypes(const Token* tok,
+                                                  const Settings* settings = nullptr,
+                                                  const Token** parent = nullptr)
 {
     if (!tok)
         return {};
@@ -3413,7 +3415,7 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
     const ValueType* vt = tok->valueType();
     std::vector<ValueType> vtParents = getParentValueTypes(tok, settings, &parent);
     if (vt) {
-        for (const ValueType &vtParent : vtParents) {
+        for (const ValueType& vtParent : vtParents) {
             if (isLifetimeBorrowed(vt, &vtParent))
                 return true;
             if (isLifetimeOwned(vt, &vtParent))
@@ -4044,8 +4046,6 @@ static void valueFlowLifetimeConstructor(Token* tok,
                     if (!var)
                         continue;
                     const Variable* argvar = getLifetimeVariable(expr);
-                    // if (!isLifetimeBorrowed(expr, settings))
-                        // continue;
                     if (var->isReference() || var->isRValueReference()) {
                         if (argvar && argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
                             paramCapture[argvar] = LifetimeCapture::ByReference;
