@@ -4551,7 +4551,7 @@ static bool isOpenParenthesisMemberFunctionCallOfVarId(const Token * openParenth
 {
     const Token * varTok = openParenthesisToken->tokAt(-3);
     return Token::Match(varTok, "%varid% . %name% (", varId) &&
-           varTok->next()->originalName() == emptyString;
+           varTok->next()->originalName().empty();
 }
 
 static const Token * findOpenParentesisOfMove(const Token * moveVarTok)
@@ -4590,7 +4590,7 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
 
         for (Token* tok = const_cast<Token*>(start); tok != scope->bodyEnd; tok = tok->next()) {
             Token * varTok;
-            if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName() == emptyString) {
+            if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName().empty()) {
                 varTok = tok;
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::MOVED;
