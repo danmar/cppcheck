@@ -420,6 +420,12 @@ private:
         check("void f(bool b) { b ? true : false; }\n"); // #10865
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found unused result of ternary operator.\n", errout.str());
 
+        check("struct S { void (*f)() = nullptr; };\n" // #10877
+              "void g(S* s) {\n"
+              "    (s->f == nullptr) ? nullptr : (s->f(), nullptr);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(bool b) {\n"
               "    g() ? true : false;\n"
               "    true ? g() : false;\n"
