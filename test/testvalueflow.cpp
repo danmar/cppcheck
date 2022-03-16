@@ -6739,6 +6739,19 @@ private:
                "    bool result = x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 5U, 0));
+
+        code = "void foo() {\n"
+               "    int x = 0;\n"
+               "    for (int i = 0; i < 5; i++) {\n"
+               "        int y = 0;\n"
+               "        for (int j = 0; j < 10; j++)\n"
+               "            y++;\n"
+               "        if (y >= x)\n"
+               "            x = y;\n"
+               "    }\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 10U, 0));
     }
 
     void valueFlowUnsigned() {

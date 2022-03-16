@@ -1163,7 +1163,6 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
 
     int cumulatedSize = 0;
     const bool isUnion = type->classScope->type == Scope::ScopeType::eUnion;
-    // cppcheck-suppress varid0
     const auto accumulateSize = [](int& cumulatedSize, int size, bool isUnion) -> void {
         if (isUnion)
             cumulatedSize = std::max(cumulatedSize, size);
@@ -1739,7 +1738,7 @@ static bool isVarDeclOp(const Token* tok)
     return isType(typetok, Token::Match(vartok, "%var%"));
 }
 
-static bool isConstStatement(const Token *tok)
+static bool isConstStatement(const Token *tok, bool cpp)
 {
     if (!tok)
         return false;
@@ -1759,17 +1758,23 @@ static bool isConstStatement(const Token *tok)
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
     if (isCPPCast(tok))
-        return isConstStatement(tok->astOperand2());
+        return isWithoutSideEffects(cpp, tok) && isConstStatement(tok->astOperand2(), cpp);
+    else if (tok->isCast())
+        return isWithoutSideEffects(cpp, tok->astOperand1()) && isConstStatement(tok->astOperand1(), cpp);
     if (Token::Match(tok, "( %type%"))
-        return isConstStatement(tok->astOperand1());
-    if (Token::simpleMatch(tok, ","))
-        return isConstStatement(tok->astOperand2());
+        return isConstStatement(tok->astOperand1(), cpp);
+    if (Token::Match(tok, ",|."))
+        return isConstStatement(tok->astOperand2(), cpp);
+    if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
+        return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
     return false;
 }
 
 static bool isVoidStmt(const Token *tok)
 {
     if (Token::simpleMatch(tok, "( void"))
+        return true;
+    if (isCPPCast(tok) && tok->astOperand1() && Token::Match(tok->astOperand1()->next(), "< void *| >"))
         return true;
     const Token *tok2 = tok;
     while (tok2->astOperand1())
@@ -1833,12 +1838,15 @@ void CheckOther::checkIncompleteStatement()
 
         const Token *rtok = nextAfterAstRightmostLeaf(tok);
         if (!Token::simpleMatch(tok->astParent(), ";") && !Token::simpleMatch(rtok, ";") &&
-            !Token::Match(tok->previous(), ";|}|{ %any% ;"))
+            !Token::Match(tok->previous(), ";|}|{ %any% ;") &&
+            !(mTokenizer->isCPP() && tok->isCast() && !tok->astParent()) &&
+            !Token::simpleMatch(tok->tokAt(-2), "for (") &&
+            !Token::Match(tok->tokAt(-1), "%var% ["))
             continue;
         // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))
             continue;
-        if (!isConstStatement(tok))
+        if (!isConstStatement(tok, mTokenizer->isCPP()))
             continue;
         if (isVoidStmt(tok))
             continue;
@@ -1864,12 +1872,30 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Found suspicious operator '" + tok->str() + "'";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
-    else if (Token::Match(valueTok, "%str%|%num%"))
-        msg = "Redundant code: Found a statement that begins with " + std::string(valueTok->isNumber() ? "numeric" : "string") + " constant.";
+    else if (Token::Match(valueTok, "%str%|%num%|%bool%|%char%")) {
+        std::string typeStr("string");
+        if (valueTok->isNumber())
+            typeStr = "numeric";
+        else if (valueTok->isBoolean())
+            typeStr = "bool";
+        else if (valueTok->tokType() == Token::eChar)
+            typeStr = "character";
+        msg = "Redundant code: Found a statement that begins with " + typeStr + " constant.";
+    }
     else if (!tok)
         msg = "Redundant code: Found a statement that begins with " + type + " constant.";
-    else
-        return; // Strange!
+    else if (tok->isCast() && tok->tokType() == Token::Type::eExtendedOp) {
+        msg = "Redundant code: Found unused cast ";
+        msg += valueTok ? "of expression '" + valueTok->expressionString() + "'." : "expression.";
+    }
+    else if (tok->str() == "?" && tok->tokType() == Token::Type::eExtendedOp)
+        msg = "Redundant code: Found unused result of ternary operator.";
+    else if (tok->str() == "." && tok->tokType() == Token::Type::eOther)
+        msg = "Redundant code: Found unused member access.";
+    else {
+        reportError(tok, Severity::debug, "debug", "constStatementError not handled.");
+        return;
+    }
     reportError(tok, Severity::warning, "constStatement", msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 

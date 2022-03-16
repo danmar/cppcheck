@@ -66,7 +66,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-shadow-field-in-constructor)
    add_compile_options_safe(-Wno-covered-switch-default)
    add_compile_options_safe(-Wno-shorten-64-to-32)
-   add_compile_options_safe(-Wno-zero-as-null-pointer-constant)
+   add_compile_options_safe(-Wno-zero-as-null-pointer-constant) # TODO: enable when warnings are fixed in in simplecpp and tinyxml2
    add_compile_options_safe(-Wno-format-nonliteral)
    add_compile_options_safe(-Wno-implicit-int-conversion)
    add_compile_options_safe(-Wno-double-promotion)
@@ -76,12 +76,13 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-implicit-float-conversion)
    add_compile_options_safe(-Wno-switch-enum)
    add_compile_options_safe(-Wno-float-conversion)
-   add_compile_options_safe(-Wno-redundant-parens) # caused by Qt moc code
    add_compile_options_safe(-Wno-enum-enum-conversion)
    add_compile_options_safe(-Wno-date-time)
-   add_compile_options_safe(-Wno-suggest-override)
-   add_compile_options_safe(-Wno-suggest-destructor-override)
    add_compile_options_safe(-Wno-conditional-uninitialized)
+   add_compile_options_safe(-Wno-suggest-override) # TODO: enable when warnings are fixed in in tinyxml2
+   add_compile_options_safe(-Wno-suggest-destructor-override) # TODO: enable when warnings are fixed in in tinyxml2
+   add_compile_options_safe(-Wno-extra-semi-stmt) # TODO: enable when warnings are fixed in in tinyxml2
+   add_compile_options(-Wno-disabled-macro-expansion)
 
    # warnings we are not interested in
    add_compile_options(-Wno-four-char-constants)
@@ -89,8 +90,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options(-Wno-weak-vtables)
    add_compile_options(-Wno-padded)
    add_compile_options(-Wno-c++98-compat-pedantic)
-   add_compile_options(-Wno-disabled-macro-expansion)
-   add_compile_options(-Wno-reserved-id-macro)
    add_compile_options_safe(-Wno-return-std-move-in-c++11)
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)

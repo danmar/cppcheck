@@ -66,7 +66,8 @@ private:
         TEST_CASE(structmember16); // #10485
         TEST_CASE(structmember17); // #10591
         TEST_CASE(structmember18); // #10684
-        TEST_CASE(structmember19); // #10826
+        TEST_CASE(structmember19); // #10826, #10848, #10852
+        TEST_CASE(structmember20); // #10737
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1629,8 +1630,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void structmember19() { // #10826
-        checkStructMemberUsage("class C {};\n"
+    void structmember19() {
+        checkStructMemberUsage("class C {};\n" // #10826
                                "struct S {\n"
                                "    char* p;\n"
                                "    std::string str;\n"
@@ -1653,6 +1654,109 @@ private:
                       "[test.cpp:4]: (style) struct member 'S::str' is never used.\n"
                       "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
                       errout.str());
+
+        checkStructMemberUsage("struct S {\n" // #10848
+                               "    struct T {\n"
+                               "        int i;\n"
+                               "    } t[2];\n"
+                               "};\n"
+                               "S s[1];\n"
+                               "int f() {\n"
+                               "    return s[0].t[1].i;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "struct T { S s; };\n"
+                               "int f(const T** tp) {\n"
+                               "    return tp[0]->s.a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S* sp) {\n"
+                               "    return (*sp).a; \n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S** spp) {\n"
+                               "    return spp[0]->a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S** spp) {\n"
+                               "    return spp[0][0].a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S* sp) {\n"
+                               "    return sp[0].a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S* sp) {\n"
+                               "    return sp->a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("typedef struct { int i; } A;\n"
+                               "typedef struct { std::vector<A> v; } B;\n"
+                               "const A& f(const std::vector<const B*>& b, int idx) {\n"
+                               "    const A& a = b[0]->v[idx];\n"
+                               "    return a;\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
+                      errout.str());
+
+        settings.enforcedLang = Settings::C;
+        checkStructMemberUsage("struct A {\n" // #10852
+                               "    struct B {\n"
+                               "        int x;\n"
+                               "    } b;\n"
+                               "} a;\n"
+                               "void f() {\n"
+                               "    struct B* pb = &a.b;\n"
+                               "    pb->x = 1;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("union U {\n"
+                               "    struct A {\n"
+                               "        struct B {\n"
+                               "            int x;\n"
+                               "        } b;\n"
+                               "    } a;\n"
+                               "    struct C {\n"
+                               "        short s[2];\n"
+                               "    } c;\n"
+                               "} u;\n"
+                               "void f() {\n"
+                               "    struct B* pb = &u.a.b;\n"
+                               "    pb->x = 1;\n"
+                               "    struct C* pc = &u.c;\n"
+                               "    pc->s[0] = 1;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+        settings.enforcedLang = Settings::None;
+    }
+
+    void structmember20() { // #10737
+        checkStructMemberUsage("void f() {\n"
+                               "    {\n"
+                               "    }\n"
+                               "    {\n"
+                               "        struct S { int a; };\n"
+                               "        S s{};\n"
+                               "        {\n"
+                               "            if (s.a) {}\n"
+                               "        }\n"
+                               "    }\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
@@ -2490,7 +2594,10 @@ private:
                               "    int a, b, c;\n"
                               "    a = b = c = f();\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'a' is assigned a value that is never used.\n"
+                      "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used.\n"
+                      "[test.cpp:4]: (style) Variable 'c' is assigned a value that is never used.\n",
+                      errout.str());
 
         functionVariableUsage("int * foo()\n"
                               "{\n"
@@ -2798,9 +2905,7 @@ private:
                               "    a = b[c] = 0;\n"
                               "    return a;\n"
                               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used.\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b[c]' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar24() { // ticket #1803
@@ -2839,7 +2944,7 @@ private:
                               "    int param = 1;\n"
                               "    ptr->param = param++;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'param' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar28() { // ticket #2205
@@ -5124,8 +5229,15 @@ private:
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    static int i;\n"
+                              "    static const int ci;\n"
+                              "    static std::string s;\n"
+                              "    static const std::string cs;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n"
+                      "[test.cpp:4]: (style) Unused variable: ci\n"
+                      "[test.cpp:5]: (style) Unused variable: s\n"
+                      "[test.cpp:6]: (style) Unused variable: cs\n",
+                      errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"

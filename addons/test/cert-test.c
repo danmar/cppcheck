@@ -18,25 +18,30 @@ struct PackedStruct {
     short b;
 };
 
-void api01()
+
+struct api01_bad_node_s
 {
-    const size_t String_Size = 20;
-    struct bad_node_s
-    {
-        char name[String_Size];
-        struct bad_node_s* next;      // cert-API01-C
-    };
-    struct good_node_s
-    {
-        struct good_node_s* next;
-        char name[String_Size];
-    };
-    struct also_good_node_s
-    {
-        struct also_good_node_s* next;
-        char *name;
-    };
-}
+    char name[10];
+    struct api01_bad_node_s* next;      // cert-API01-C
+};
+struct api01_good_node_s
+{
+    struct api01_good_node_s* next;
+    char name[String_Size];
+};
+struct api01_also_good_node_s
+{
+    struct api01_also_good_node_s* next;
+    char *name;
+};
+struct api01_no_string_1 {
+    int data[10];
+    int x;
+};
+struct api01_no_string_2 {
+    int8_t data[10];
+    int x;
+};
 
 void dostuff(int *data);
 
@@ -80,8 +85,8 @@ void int31(int x)
     x = (unsigned char)-1; // cert-INT31-c
     x = (unsigned long long)-1; // cert-INT31-c
     unsigned char c;
-    c = 256;
-    c = -1;
+    c = 256; // cert-INT31-c
+    c = -1; // cert-INT31-c
 
     // issue #10782
     uint16_t * ptr;

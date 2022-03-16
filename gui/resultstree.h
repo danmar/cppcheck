@@ -49,7 +49,7 @@ class ResultsTree : public QTreeView {
     Q_OBJECT
 public:
     explicit ResultsTree(QWidget * parent = nullptr);
-    virtual ~ResultsTree();
+    ~ResultsTree() override;
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
 
     /**

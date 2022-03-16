@@ -3079,6 +3079,35 @@ private:
                        "    } catch(...) {}\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar("void f(bool x) {\n"
+                       "    bool b;\n"
+                       "    {\n"
+                       "        auto g = []{};\n"
+                       "        b = x;\n"
+                       "    }\n"
+                       "    if (b) {}\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f(bool x) {\n"
+                       "    bool b;\n"
+                       "    {\n"
+                       "        int i[2]{ 1, 2 };\n"
+                       "        b = x;\n"
+                       "    }\n"
+                       "    if (b) {}\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("void f(bool x) {\n"
+                       "    bool b;\n"
+                       "    {\n"
+                       "        auto g = []{};\n"
+                       "    }\n"
+                       "    if (b) {}\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (error) Uninitialized variable: b\n", errout.str());
     }
 
     void uninitvar_funcptr() {

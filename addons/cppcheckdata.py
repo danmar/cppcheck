@@ -1375,6 +1375,5 @@ def get_path_premium_addon():
         p1 = os.path.join(p, 'premiumaddon' + ext)
         p2 = os.path.join(p, 'cppcheck' + ext)
         if os.path.isfile(p1) and os.path.isfile(p2):
-            print(p1)
             return p1
     return None

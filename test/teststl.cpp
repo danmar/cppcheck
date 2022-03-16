@@ -3904,6 +3904,14 @@ private:
               "    f(p.c_str());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" //#9161
+              "    const char* f() const noexcept {\n"
+              "        return (\"\" + m).c_str();\n"
+              "    }\n"
+              "    std::string m;\n"
+              "};\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
     }
 
     void uselessCalls() {

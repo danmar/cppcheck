@@ -36,7 +36,7 @@ if (BUILD_GUI)
         target_link_libraries(cppcheck-gui ${Z3_LIBRARIES})
     endif()
     if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
-        target_link_libraries(cppcheck-gui tinyxml2)
+        target_link_libraries(cppcheck-gui ${tinyxml2_LIBRARIES})
     endif()
     target_link_libraries(cppcheck-gui ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_WIDGETS_LIB} ${QT_PRINTSUPPORT_LIB} ${QT_HELP_LIB})
     if(WITH_QCHART)
@@ -44,10 +44,10 @@ if (BUILD_GUI)
         target_link_libraries(cppcheck-gui ${QT_CHARTS_LIB})
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            # Q_UNUSED() in generated code
-            target_compile_options(cppcheck-gui PRIVATE -Wno-extra-semi-stmt)
-        endif()
+        # Q_UNUSED() in generated code
+        target_compile_options_safe(cppcheck-gui -Wno-extra-semi-stmt)
+        # caused by Qt generated moc code
+        target_compile_options_safe(cppcheck-gui -Wno-redundant-parens)
     endif()
 
     install(TARGETS cppcheck-gui RUNTIME DESTINATION ${CMAKE_INSTALL_FULL_BINDIR} COMPONENT applications)

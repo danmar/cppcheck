@@ -48,7 +48,7 @@ class ThreadHandler : public QObject {
     Q_OBJECT
 public:
     explicit ThreadHandler(QObject *parent = nullptr);
-    virtual ~ThreadHandler();
+    ~ThreadHandler() override;
 
     /**
      * @brief Set the number of threads to use

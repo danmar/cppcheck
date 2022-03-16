@@ -113,7 +113,7 @@ const Token * Tokenizer::isFunctionHead(const Token *tok, const std::string &end
     }
     if (cpp && tok->str() == ")") {
         tok = tok->next();
-        while (Token::Match(tok, "const|noexcept|override|final|volatile|&|&& !!(") ||
+        while (Token::Match(tok, "const|noexcept|override|final|volatile|mutable|&|&& !!(") ||
                (Token::Match(tok, "%name% !!(") && tok->isUpperCaseName()))
             tok = tok->next();
         if (tok && tok->str() == ")")
@@ -1371,7 +1371,7 @@ void Tokenizer::simplifyTypedef()
                             structRemoved = true;
                         typeStart = typeStart->next();
                     }
-                    if (Token::Match(typeStart, "struct|class") && Token::Match(tok2, "%name% ::"))
+                    if (Token::Match(typeStart, "struct|class|union") && Token::Match(tok2, "%name% ::"))
                         typeStart = typeStart->next();
 
                     if (sameStartEnd)
@@ -3512,7 +3512,7 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
             if (Token::Match(tok2, "> %name% )")) {
                 if (Token::Match(tok2->linkAt(2)->previous(), "if|for|while ("))
                     return false;
-                if (!Token::Match(tok2->linkAt(2)->previous(), "%name% ("))
+                if (!Token::Match(tok2->linkAt(2)->previous(), "%name%|] ("))
                     return false;
             }
         } else if (Token::Match(tok2, "&|&&")) {
@@ -3552,7 +3552,8 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 }
             }
 
-            if (cpp && tok3 && Token::simpleMatch(tok3->previous(), "] (") && Token::simpleMatch(tok3->link(), ") {"))
+            if (cpp && tok3 && Token::simpleMatch(tok3->previous(), "] (") &&
+                (Token::simpleMatch(tok3->link(), ") {") || Token::Match(tok3->link(), ") . %name%")))
                 isLambdaArg = true;
         }
 
@@ -3619,7 +3620,7 @@ void Tokenizer::setVarIdStructMembers(Token **tok1,
 
     while (Token::Match(tok->next(), ")| . %name% !!(")) {
         // Don't set varid for trailing return type
-        if (tok->strAt(1) == ")" && tok->linkAt(1)->previous()->isName() &&
+        if (tok->strAt(1) == ")" && (tok->linkAt(1)->previous()->isName() || tok->linkAt(1)->strAt(-1) == "]") &&
             isFunctionHead(tok->linkAt(1), "{|;")) {
             tok = tok->tokAt(3);
             continue;
@@ -5231,6 +5232,14 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Link < with >
     createLinks2();
 
+    if (mTimerResults) {
+        Timer t("Tokenizer::tokenize::setVarId (2)", mSettings->showtime, mTimerResults);
+        setVarId();
+    }
+    else {
+        setVarId();
+    }
+
     // Mark C++ casts
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
@@ -5780,7 +5789,7 @@ void Tokenizer::removeMacrosInGlobalScope()
         if (tok->str() == "(") {
             tok = tok->link();
             if (Token::Match(tok, ") %type% {") &&
-                !Token::Match(tok->next(), "const|namespace|class|struct|union|noexcept|override|final|volatile"))
+                !Token::Match(tok->next(), "const|namespace|class|struct|union|noexcept|override|final|volatile|mutable"))
                 tok->deleteNext();
         }
 

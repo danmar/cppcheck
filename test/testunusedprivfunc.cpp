@@ -55,6 +55,7 @@ private:
         TEST_CASE(func_pointer4); // ticket #2807
         TEST_CASE(func_pointer5); // ticket #2233
         TEST_CASE(func_pointer6); // ticket #4787
+        TEST_CASE(func_pointer7); // ticket #10516
 
         TEST_CASE(ctor);
         TEST_CASE(ctor2);
@@ -346,6 +347,32 @@ private:
               "        f(\"test\");\n"
               "    }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void func_pointer7() { // #10516
+        check("class C {\n"
+              "    static void f() {}\n"
+              "    static constexpr void(*p)() = f;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    static void f() {}\n"
+              "    static constexpr void(*p)() = &f;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    static void f() {}\n"
+              "    static constexpr void(*p)() = C::f;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    static void f() {}\n"
+              "    static constexpr void(*p)() = &C::f;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

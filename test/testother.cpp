@@ -156,6 +156,7 @@ private:
         TEST_CASE(duplicateExpression11); // #8916 (function call)
         TEST_CASE(duplicateExpression12); // #10026
         TEST_CASE(duplicateExpression13); // #7899
+        TEST_CASE(duplicateExpression14); // #9871
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -5590,6 +5591,16 @@ private:
               "    if (sizeof(long) == sizeof(long long)) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression14() { //#9871
+        check("int f() {\n"
+              "    int k = 7;\n"
+              "    int* f = &k;\n"
+              "    int* g = &k;\n"
+              "    return (f + 4 != g + 4);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:5]: (style) The comparison 'f+4 != g+4' is always false because 'f+4' and 'g+4' represent the same value.\n", errout.str());
     }
 
     void duplicateExpressionLoop() {

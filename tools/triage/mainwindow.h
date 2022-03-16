@@ -33,10 +33,10 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = Q_NULLPTR);
+    explicit MainWindow(QWidget *parent = nullptr);
     MainWindow(const MainWindow &) = delete;
     MainWindow &operator=(const MainWindow &) = delete;
-    ~MainWindow();
+    ~MainWindow() override;
 
 public slots:
     void loadFile();
@@ -44,7 +44,7 @@ public slots:
     void filter(QString filter);
     void showResult(QListWidgetItem *item);
     void refreshResults();
-    void fileTreeFilter(QString str);
+    void fileTreeFilter(const QString &str);
     void findInFilesClicked();
     void directorytreeDoubleClick();
     void searchResultsDoubleClick();

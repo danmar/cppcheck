@@ -180,11 +180,11 @@ void ProgramMemory::insert(const ProgramMemory &pm)
         mValues.insert(p);
 }
 
-bool evaluateCondition(const std::string& op,
-                       MathLib::bigint r,
-                       const Token* condition,
-                       ProgramMemory& pm,
-                       const Settings* settings)
+static bool evaluateCondition(const std::string& op,
+                              MathLib::bigint r,
+                              const Token* condition,
+                              ProgramMemory& pm,
+                              const Settings* settings)
 {
     if (!condition)
         return false;
@@ -241,11 +241,12 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return;
         if (endTok && isExpressionChanged(vartok, tok->next(), endTok, settings, true))
             return;
-        bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
-        pm.setIntValue(vartok, then ? truevalue.intvalue : falsevalue.intvalue, impossible);
+        const bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
+        const ValueFlow::Value& v = then ? truevalue : falsevalue;
+        pm.setValue(vartok, impossible ? asImpossible(v) : v);
         const Token* containerTok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
         if (containerTok)
-            pm.setContainerSizeValue(containerTok, then ? truevalue.intvalue : falsevalue.intvalue, !impossible);
+            pm.setContainerSizeValue(containerTok, v.intvalue, !impossible);
     } else if (Token::simpleMatch(tok, "!")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, !then);
     } else if (then && Token::simpleMatch(tok, "&&")) {
@@ -759,6 +760,9 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
     // Find symbolic values
     for (const ValueFlow::Value& value : expr->values()) {
         if (!value.isSymbolicValue())
+            continue;
+        // TODO: Handle possible symbolic values
+        if (!value.isKnown())
             continue;
         if (!pm.hasValue(value.tokvalue->exprId()))
             continue;

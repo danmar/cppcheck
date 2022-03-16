@@ -170,7 +170,7 @@ private:
               "    (void)c;\n"
               "  }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:9]: (debug) constStatementError not handled.\n", errout.str());
     }
 
     void test_numeric() {
@@ -375,6 +375,7 @@ private:
                       "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!'\n"
                       "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!'\n"
+                      "[test.cpp:8]: (warning) Redundant code: Found unused cast of expression '!x'.\n"
                       "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n", errout.str());
 
         check("void f1(int x) { x; }", true);
@@ -383,6 +384,94 @@ private:
         check("void f() { if (Type t; g(t)) {} }"); // #9776
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(int x) { static_cast<unsigned>(x); }");
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found unused cast of expression 'x'.\n", errout.str());
+
+        check("void f(int x, int* p) {\n"
+              "    static_cast<void>(x);\n"
+              "    (void)x;\n"
+              "    static_cast<void*>(p);\n"
+              "    (void*)p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() { false; }"); // #10856
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found a statement that begins with bool constant.\n", errout.str());
+
+        check("void f(int i) {\n"
+              "    (float)(char)i;\n"
+              "    static_cast<float>((char)i);\n"
+              "    (char)static_cast<float>(i);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Redundant code: Found unused cast of expression 'i'.\n"
+                      "[test.cpp:3]: (warning) Redundant code: Found unused cast of expression 'i'.\n"
+                      "[test.cpp:4]: (warning) Redundant code: Found unused cast of expression 'i'.\n",
+                      errout.str());
+
+        check("struct S; struct T; struct U;\n"
+              "void f() {\n"
+              "    T t;\n"
+              "    (S)(U)t;\n"
+              "    (S)static_cast<U>(t);\n"
+              "    static_cast<S>((U)t);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) { b ? true : false; }\n"); // #10865
+        ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found unused result of ternary operator.\n", errout.str());
+
+        check("void f(bool b) {\n"
+              "    g() ? true : false;\n"
+              "    true ? g() : false;\n"
+              "    false ? true : g();\n"
+              "    g(b ? true : false, 1);\n"
+              "    C c{ b ? true : false, 1 };\n"
+              "    b = (b ? true : false);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n"
+              "    for (i; ;) {}\n"
+              "    for ((long)i; ;) {}\n"
+              "    for (1; ;) {}\n"
+              "    for (true; ;) {}\n"
+              "    for ('a'; ;) {}\n"
+              "    for (L'b'; ;) {}\n"
+              "    for (\"x\"; ;) {}\n"
+              "    for (L\"y\"; ;) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Unused variable value 'i'\n"
+                      "[test.cpp:3]: (warning) Redundant code: Found unused cast of expression 'i'.\n"
+                      "[test.cpp:4]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
+                      "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with bool constant.\n"
+                      "[test.cpp:6]: (warning) Redundant code: Found a statement that begins with character constant.\n"
+                      "[test.cpp:7]: (warning) Redundant code: Found a statement that begins with character constant.\n"
+                      "[test.cpp:8]: (warning) Redundant code: Found a statement that begins with string constant.\n"
+                      "[test.cpp:9]: (warning) Redundant code: Found a statement that begins with string constant.\n",
+                      errout.str());
+
+        check("struct S { bool b{}; };\n"
+              "struct T {\n"
+              "    S s[2];\n"
+              "    void g();\n"
+              "};\n"
+              "void f(const S& r, const S* p) {\n"
+              "	r.b;\n"
+              "	p->b;\n"
+              "	S s;\n"
+              "	(s.b);\n"
+              "	T t, u[2];\n"
+              "	t.s[1].b;\n"
+              "	t.g();\n"
+              "	u[0].g();\n"
+              "	u[1].s[0].b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant code: Found unused member access.\n"
+                      "[test.cpp:8]: (warning) Redundant code: Found unused member access.\n"
+                      "[test.cpp:10]: (warning) Redundant code: Found unused member access.\n"
+                      "[test.cpp:12]: (warning) Redundant code: Found unused member access.\n"
+                      "[test.cpp:15]: (warning) Redundant code: Found unused member access.\n",
+                      errout.str());
     }
 
     void vardecl() {

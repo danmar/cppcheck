@@ -2111,7 +2111,10 @@ struct ValueFlowAnalyzer : Analyzer {
             // Check if its assigned to the same value
             if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {
-                std::vector<MathLib::bigint> result = evaluate(Evaluate::Integral, tok->astParent()->astOperand2());
+                std::vector<MathLib::bigint> result =
+                    evaluateInt(tok->astParent()->astOperand2(), [&] {
+                    return ProgramMemory{getProgramState()};
+                });
                 if (!result.empty() && value->equalTo(result.front()))
                     return Action::Idempotent;
             }
@@ -2396,27 +2399,34 @@ struct ValueFlowAnalyzer : Analyzer {
         return Action::None;
     }
 
+    template<class F>
+    std::vector<MathLib::bigint> evaluateInt(const Token* tok, F getProgramMemory) const
+    {
+        if (tok->hasKnownIntValue())
+            return {static_cast<int>(tok->values().front().intvalue)};
+        std::vector<MathLib::bigint> result;
+        ProgramMemory pm = getProgramMemory();
+        if (Token::Match(tok, "&&|%oror%")) {
+            if (conditionIsTrue(tok, pm, getSettings()))
+                result.push_back(1);
+            if (conditionIsFalse(tok, pm, getSettings()))
+                result.push_back(0);
+        } else {
+            MathLib::bigint out = 0;
+            bool error = false;
+            execute(tok, &pm, &out, &error, getSettings());
+            if (!error)
+                result.push_back(out);
+        }
+        return result;
+    }
+
     virtual std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const override
     {
         if (e == Evaluate::Integral) {
-            if (tok->hasKnownIntValue())
-                return {static_cast<int>(tok->values().front().intvalue)};
-            std::vector<MathLib::bigint> result;
-            ProgramMemory pm = pms.get(tok, ctx, getProgramState());
-            if (Token::Match(tok, "&&|%oror%")) {
-                if (conditionIsTrue(tok, pm, getSettings()))
-                    result.push_back(1);
-                if (conditionIsFalse(tok, pm, getSettings()))
-                    result.push_back(0);
-            } else {
-                MathLib::bigint out = 0;
-                bool error = false;
-                execute(tok, &pm, &out, &error, getSettings());
-                if (!error)
-                    result.push_back(out);
-            }
-
-            return result;
+            return evaluateInt(tok, [&] {
+                return pms.get(tok, ctx, getProgramState());
+            });
         } else if (e == Evaluate::ContainerEmpty) {
             const ValueFlow::Value* value = ValueFlow::findValue(tok->values(), nullptr, [](const ValueFlow::Value& v) {
                 return v.isKnown() && v.isContainerSizeValue();
@@ -3731,7 +3741,7 @@ struct LifetimeStore {
                 // Don't add the value a second time
                 if (std::find(tok->values().begin(), tok->values().end(), value) != tok->values().end())
                     continue;
-                ;
+
                 setTokenValue(tok, value, tokenlist->getSettings());
                 update = true;
             }
@@ -4284,7 +4294,6 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             };
 
             bool update = false;
-            // cppcheck-suppress varid0
             auto captureVariable = [&](const Token* tok2, LifetimeCapture c, std::function<bool(const Token*)> pred) {
                 if (varids.count(tok->varId()) > 0)
                     return;
@@ -5387,7 +5396,7 @@ static bool isBreakScope(const Token* const endToken)
     return Token::findmatch(endToken->link(), "break|goto", endToken);
 }
 
-static ValueFlow::Value asImpossible(ValueFlow::Value v)
+ValueFlow::Value asImpossible(ValueFlow::Value v)
 {
     v.invertRange();
     v.setImpossible();
@@ -7842,6 +7851,78 @@ struct ContainerConditionHandler : ConditionHandler {
 
 static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* symboldatabase, const Settings* settings)
 {
+    auto getBufferSizeFromAllocFunc = [&](const Token* funcTok) -> MathLib::bigint {
+        MathLib::bigint sizeValue = -1;
+        const Library::AllocFunc* allocFunc = settings->library.getAllocFuncInfo(funcTok);
+        if (!allocFunc)
+            allocFunc = settings->library.getReallocFuncInfo(funcTok);
+        if (!allocFunc || allocFunc->bufferSize == Library::AllocFunc::BufferSize::none)
+            return sizeValue;
+
+        const std::vector<const Token*> args = getArguments(funcTok);
+
+        const Token* const arg1 = (args.size() >= allocFunc->bufferSizeArg1) ? args[allocFunc->bufferSizeArg1 - 1] : nullptr;
+        const Token* const arg2 = (args.size() >= allocFunc->bufferSizeArg2) ? args[allocFunc->bufferSizeArg2 - 1] : nullptr;
+
+        switch (allocFunc->bufferSize) {
+        case Library::AllocFunc::BufferSize::none:
+            break;
+        case Library::AllocFunc::BufferSize::malloc:
+            if (arg1 && arg1->hasKnownIntValue())
+                sizeValue = arg1->getKnownIntValue();
+            break;
+        case Library::AllocFunc::BufferSize::calloc:
+            if (arg1 && arg2 && arg1->hasKnownIntValue() && arg2->hasKnownIntValue())
+                sizeValue = arg1->getKnownIntValue() * arg2->getKnownIntValue();
+            break;
+        case Library::AllocFunc::BufferSize::strdup:
+            if (arg1 && arg1->hasKnownValue()) {
+                const ValueFlow::Value& value = arg1->values().back();
+                if (value.isTokValue() && value.tokvalue->tokType() == Token::eString)
+                    sizeValue = Token::getStrLength(value.tokvalue) + 1; // Add one for the null terminator
+            }
+            break;
+        }
+        return sizeValue;
+    };
+
+    auto getBufferSizeFromNew = [&](const Token* newTok) -> MathLib::bigint {
+        MathLib::bigint sizeValue = -1, numElem = -1;
+
+        if (newTok && newTok->astOperand1()) { // number of elements
+            const Token* bracTok = nullptr, *typeTok = nullptr;
+            if (newTok->astOperand1()->str() == "[")
+                bracTok = newTok->astOperand1();
+            else if (newTok->astOperand1()->str() == "(") {
+                if (newTok->astOperand1()->astOperand1() && newTok->astOperand1()->astOperand1()->str() == "[")
+                    bracTok = newTok->astOperand1()->astOperand1();
+                else
+                    typeTok = newTok->astOperand1()->astOperand1();
+            }
+            else {
+                typeTok = newTok->astOperand1();
+                if (typeTok && typeTok->str() == "{")
+                    typeTok = typeTok->astOperand2();
+            }
+            if (bracTok && bracTok->astOperand2() && bracTok->astOperand2()->hasKnownIntValue())
+                numElem = bracTok->astOperand2()->getKnownIntValue();
+            else if (Token::Match(typeTok, "%type%"))
+                numElem = 1;
+        }
+
+        if (numElem >= 0 && newTok->astParent() && newTok->astParent()->isAssignmentOp()) { // size of the allocated type
+            const Token* typeTok = newTok->astParent()->astOperand1(); // TODO: implement fallback for e.g. "auto p = new Type;"
+            if (!typeTok || !typeTok->varId())
+                typeTok = newTok->astParent()->previous(); // hack for "int** z = ..."
+            if (typeTok && typeTok->valueType()) {
+                const MathLib::bigint typeSize = typeTok->valueType()->typeSize(*settings, typeTok->valueType()->pointer > 1);
+                if (typeSize >= 0)
+                    sizeValue = numElem * typeSize;
+            }
+        }
+        return sizeValue;
+    };
+
     for (const Scope *functionScope : symboldatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
             if (!Token::Match(tok, "[;{}] %var% ="))
@@ -7856,40 +7937,11 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
             if (!rhs)
                 continue;
 
-            if (!Token::Match(rhs->previous(), "%name% ("))
+            const bool isNew = symboldatabase->isCPP() && rhs->str() == "new";
+            if (!isNew && !Token::Match(rhs->previous(), "%name% ("))
                 continue;
 
-            const Library::AllocFunc *allocFunc = settings->library.getAllocFuncInfo(rhs->previous());
-            if (!allocFunc)
-                allocFunc = settings->library.getReallocFuncInfo(rhs->previous());
-            if (!allocFunc || allocFunc->bufferSize == Library::AllocFunc::BufferSize::none)
-                continue;
-
-            const std::vector<const Token *> args = getArguments(rhs->previous());
-
-            const Token * const arg1 = (args.size() >= allocFunc->bufferSizeArg1) ? args[allocFunc->bufferSizeArg1 - 1] : nullptr;
-            const Token * const arg2 = (args.size() >= allocFunc->bufferSizeArg2) ? args[allocFunc->bufferSizeArg2 - 1] : nullptr;
-
-            MathLib::bigint sizeValue = -1;
-            switch (allocFunc->bufferSize) {
-            case Library::AllocFunc::BufferSize::none:
-                break;
-            case Library::AllocFunc::BufferSize::malloc:
-                if (arg1 && arg1->hasKnownIntValue())
-                    sizeValue = arg1->getKnownIntValue();
-                break;
-            case Library::AllocFunc::BufferSize::calloc:
-                if (arg1 && arg2 && arg1->hasKnownIntValue() && arg2->hasKnownIntValue())
-                    sizeValue = arg1->getKnownIntValue() * arg2->getKnownIntValue();
-                break;
-            case Library::AllocFunc::BufferSize::strdup:
-                if (arg1 && arg1->hasKnownValue()) {
-                    const ValueFlow::Value &value = arg1->values().back();
-                    if (value.isTokValue() && value.tokvalue->tokType() == Token::eString)
-                        sizeValue = Token::getStrLength(value.tokvalue) + 1; // Add one for the null terminator
-                }
-                break;
-            }
+            const MathLib::bigint sizeValue = isNew ? getBufferSizeFromNew(rhs) : getBufferSizeFromAllocFunc(rhs->previous());
             if (sizeValue < 0)
                 continue;
 
