@@ -140,6 +140,7 @@ if (BUILD_TESTS)
                         --enable=style
                         --error-exitcode=1
                         --suppress=missingIncludeSystem
+                        --suppress=legacyUninitvar
                         --inline-suppr
                         --template="{file}:{line}:{severity}:{id}:{message}"
                         ${INCONCLUSIVE}
