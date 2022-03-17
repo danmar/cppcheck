@@ -170,7 +170,7 @@ private:
               "    (void)c;\n"
               "  }\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:9]: (debug) constStatementError not handled.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test_numeric() {
@@ -407,6 +407,25 @@ private:
                       "[test.cpp:3]: (warning) Redundant code: Found unused cast of expression 'i'.\n"
                       "[test.cpp:4]: (warning) Redundant code: Found unused cast of expression 'i'.\n",
                       errout.str());
+
+        check("namespace M {\n"
+              "    namespace N { typedef char T; }\n"
+              "}\n"
+              "void f(int i) {\n"
+              "    (M::N::T)i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Redundant code: Found unused cast of expression 'i'.\n", errout.str());
+
+        check("void f(int (g)(int a, int b)) {\n" // #10873
+              "    int p = 0, q = 1;\n"
+              "    (g)(p, q);\n"
+              "}\n"
+              "void f() {\n"
+              "  char buf[10];\n"
+              "  (sprintf)(buf, \"%d\", 42);\n"
+              "  (printf)(\"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         check("struct S; struct T; struct U;\n"
               "void f() {\n"
