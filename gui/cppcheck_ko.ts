@@ -487,13 +487,13 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <location filename="mainwindow.cpp" line="565"/>
         <location filename="mainwindow.cpp" line="697"/>
         <location filename="mainwindow.cpp" line="719"/>
-        <location filename="mainwindow.cpp" line="1202"/>
-        <location filename="mainwindow.cpp" line="1327"/>
-        <location filename="mainwindow.cpp" line="1601"/>
-        <location filename="mainwindow.cpp" line="1609"/>
-        <location filename="mainwindow.cpp" line="1632"/>
-        <location filename="mainwindow.cpp" line="1709"/>
-        <location filename="mainwindow.cpp" line="1784"/>
+        <location filename="mainwindow.cpp" line="1201"/>
+        <location filename="mainwindow.cpp" line="1326"/>
+        <location filename="mainwindow.cpp" line="1600"/>
+        <location filename="mainwindow.cpp" line="1608"/>
+        <location filename="mainwindow.cpp" line="1631"/>
+        <location filename="mainwindow.cpp" line="1708"/>
+        <location filename="mainwindow.cpp" line="1783"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
@@ -778,8 +778,8 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation>숨기기 보기(&amp;H)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="808"/>
-        <location filename="mainwindow.cpp" line="846"/>
+        <location filename="mainwindow.cpp" line="807"/>
+        <location filename="mainwindow.cpp" line="845"/>
         <source>Information</source>
         <translation>정보</translation>
     </message>
@@ -850,7 +850,7 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
     <message>
         <location filename="mainwindow.cpp" line="86"/>
-        <location filename="mainwindow.cpp" line="1470"/>
+        <location filename="mainwindow.cpp" line="1469"/>
         <source>Quick Filter:</source>
         <translation>빠른 필터:</translation>
     </message>
@@ -894,13 +894,13 @@ Do you want to proceed checking without using any of these project files?</sourc
 이 프로젝트 파일을 사용하지 않고 검사를 계속하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1218"/>
-        <location filename="mainwindow.cpp" line="1398"/>
+        <location filename="mainwindow.cpp" line="1217"/>
+        <location filename="mainwindow.cpp" line="1397"/>
         <source>XML files (*.xml)</source>
         <translation>XML 파일 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1220"/>
+        <location filename="mainwindow.cpp" line="1219"/>
         <source>Open the report file</source>
         <translation>보고서 파일 열기</translation>
     </message>
@@ -913,12 +913,12 @@ Do you want to stop the checking and exit Cppcheck?</source>
 검사를 중지하고 Cppcheck을 종료하시겠습니까?</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1369"/>
+        <location filename="mainwindow.cpp" line="1368"/>
         <source>License</source>
         <translation>저작권</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1376"/>
+        <location filename="mainwindow.cpp" line="1375"/>
         <source>Authors</source>
         <translation>제작자</translation>
     </message>
@@ -927,7 +927,7 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="obsolete">XML 파일 버전 2 (*.xml);;XML 파일 버전 1 (*.xml);;텍스트 파일 (*.txt);;CSV 파일 (*.csv)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1391"/>
+        <location filename="mainwindow.cpp" line="1390"/>
         <source>Save the report file</source>
         <translation>보고서 파일 저장</translation>
     </message>
@@ -940,12 +940,12 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation type="obsolete">XML 파일 버전 2 (*.xml)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1402"/>
+        <location filename="mainwindow.cpp" line="1401"/>
         <source>Text files (*.txt)</source>
         <translation>텍스트 파일 (*.txt)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1406"/>
+        <location filename="mainwindow.cpp" line="1405"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV 파일 (*.csv)</translation>
     </message>
@@ -966,40 +966,40 @@ The user interface language has been reset to English. Open the Preferences-dial
 언어가 영어로 초기화 됐습니다. 설정창을 열어서 설정 가능한 언어를 선택하세요.</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1508"/>
+        <location filename="mainwindow.cpp" line="1507"/>
         <source>Project files (*.cppcheck);;All files(*.*)</source>
         <translation>프로젝트 파일 (*.cppcheck);;모든 파일(*.*)</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1510"/>
+        <location filename="mainwindow.cpp" line="1509"/>
         <source>Select Project File</source>
         <translation>프로젝트 파일 선택</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="162"/>
-        <location filename="mainwindow.cpp" line="1472"/>
-        <location filename="mainwindow.cpp" line="1538"/>
-        <location filename="mainwindow.cpp" line="1672"/>
+        <location filename="mainwindow.cpp" line="1471"/>
+        <location filename="mainwindow.cpp" line="1537"/>
+        <location filename="mainwindow.cpp" line="1671"/>
         <source>Project:</source>
         <translation>프로젝트:</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1610"/>
+        <location filename="mainwindow.cpp" line="1609"/>
         <source>To check the project using addons, you need a build directory.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1659"/>
+        <location filename="mainwindow.cpp" line="1658"/>
         <source>Select Project Filename</source>
         <translation>프로젝트 파일이름 선택</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1710"/>
+        <location filename="mainwindow.cpp" line="1709"/>
         <source>No project file loaded</source>
         <translation>프로젝트 파일 불러오기 실패</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1779"/>
+        <location filename="mainwindow.cpp" line="1778"/>
         <source>The project file
 
 %1
@@ -1042,54 +1042,54 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="obsolete">C++03</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="869"/>
+        <location filename="mainwindow.cpp" line="868"/>
         <source>Error</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="817"/>
+        <location filename="mainwindow.cpp" line="816"/>
         <source>File not found</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="820"/>
+        <location filename="mainwindow.cpp" line="819"/>
         <source>Bad XML</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="823"/>
+        <location filename="mainwindow.cpp" line="822"/>
         <source>Missing attribute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="826"/>
+        <location filename="mainwindow.cpp" line="825"/>
         <source>Bad attribute value</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="846"/>
+        <location filename="mainwindow.cpp" line="845"/>
         <source>Failed to load the selected library &apos;%1&apos;.
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="829"/>
+        <location filename="mainwindow.cpp" line="828"/>
         <source>Unsupported format</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="808"/>
+        <location filename="mainwindow.cpp" line="807"/>
         <source>The library &apos;%1&apos; contains unknown elements:
 %2</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="832"/>
+        <location filename="mainwindow.cpp" line="831"/>
         <source>Duplicate platform type</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="835"/>
+        <location filename="mainwindow.cpp" line="834"/>
         <source>Platform type redefined</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1119,12 +1119,12 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="838"/>
+        <location filename="mainwindow.cpp" line="837"/>
         <source>Unknown element</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="841"/>
+        <location filename="mainwindow.cpp" line="840"/>
         <source>Unknown issue</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1152,12 +1152,12 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="869"/>
+        <location filename="mainwindow.cpp" line="868"/>
         <source>Failed to load %1. Your Cppcheck installation is broken. You can use --data-dir=&lt;directory&gt; at the command line to specify where this file is located. Please note that --data-dir is supposed to be used by installation scripts and therefore the GUI does not start when it is used, all that happens is that the setting is configured.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1602"/>
+        <location filename="mainwindow.cpp" line="1601"/>
         <source>Build dir &apos;%1&apos; does not exist, create it?</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1185,7 +1185,7 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1389"/>
+        <location filename="mainwindow.cpp" line="1388"/>
         <source>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1217,7 +1217,7 @@ Do you want to proceed analysis without using any of these project files?</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1323"/>
+        <location filename="mainwindow.cpp" line="1322"/>
         <source>Analyzer is running.
 
 Do you want to stop the analysis and exit Cppcheck?</source>
@@ -1364,12 +1364,12 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished">C++14</translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1633"/>
+        <location filename="mainwindow.cpp" line="1632"/>
         <source>Failed to import &apos;%1&apos;, analysis is stopped</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1657"/>
+        <location filename="mainwindow.cpp" line="1656"/>
         <source>Project files (*.cppcheck)</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1414,7 +1414,7 @@ Do you want to stop the analysis and exit Cppcheck?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="mainwindow.cpp" line="1203"/>
+        <location filename="mainwindow.cpp" line="1202"/>
         <source>Current results will be cleared.
 
 Opening a new XML file will clear current results.
@@ -2124,22 +2124,22 @@ Do you want to proceed?</source>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1445"/>
+        <location filename="resultstree.cpp" line="1442"/>
         <source>File</source>
         <translation>파일</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1445"/>
+        <location filename="resultstree.cpp" line="1442"/>
         <source>Severity</source>
         <translation>분류</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1445"/>
+        <location filename="resultstree.cpp" line="1442"/>
         <source>Line</source>
         <translation>행</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1445"/>
+        <location filename="resultstree.cpp" line="1442"/>
         <source>Summary</source>
         <translation>요약</translation>
     </message>
@@ -2256,7 +2256,7 @@ Please select the directory where file is located.</source>
         <translation>디렉토리 선택</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1445"/>
+        <location filename="resultstree.cpp" line="1442"/>
         <source>Id</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2271,7 +2271,7 @@ Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1445"/>
+        <location filename="resultstree.cpp" line="1442"/>
         <source>Inconclusive</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2302,7 +2302,7 @@ Please select the directory where file is located.</source>
     </message>
     <message>
         <location filename="resultstree.cpp" line="701"/>
-        <location filename="resultstree.cpp" line="1445"/>
+        <location filename="resultstree.cpp" line="1442"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2312,7 +2312,7 @@ Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1445"/>
+        <location filename="resultstree.cpp" line="1442"/>
         <source>Since date</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2389,7 +2389,7 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation>결과 불러오기 실패.</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="462"/>
+        <location filename="resultsview.cpp" line="461"/>
         <source>Bug hunting analysis is incomplete</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2402,7 +2402,7 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="obsolete">내용</translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="460"/>
+        <location filename="resultsview.cpp" line="459"/>
         <source>Id</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2417,7 +2417,7 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="455"/>
+        <location filename="resultsview.cpp" line="454"/>
         <source>First included by</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2464,17 +2464,17 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="575"/>
+        <location filename="resultsview.cpp" line="574"/>
         <source>Clear Log</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="576"/>
+        <location filename="resultsview.cpp" line="575"/>
         <source>Copy this Log entry</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultsview.cpp" line="577"/>
+        <location filename="resultsview.cpp" line="576"/>
         <source>Copy complete Log</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2730,22 +2730,22 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation>N/A</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="220"/>
+        <location filename="settingsdialog.cpp" line="219"/>
         <source>The executable file &quot;%1&quot; is not available</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="231"/>
+        <location filename="settingsdialog.cpp" line="230"/>
         <source>Add a new application</source>
         <translation>새 응용 프로그램 추가</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="264"/>
+        <location filename="settingsdialog.cpp" line="260"/>
         <source>Modify an application</source>
         <translation>응용 프로그램 편집</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="294"/>
+        <location filename="settingsdialog.cpp" line="290"/>
         <source>[Default]</source>
         <translation>[기본]</translation>
     </message>
@@ -2754,22 +2754,22 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="obsolete">Include 디렉토리 선택</translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="269"/>
+        <location filename="settingsdialog.cpp" line="265"/>
         <source> [Default]</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="349"/>
+        <location filename="settingsdialog.cpp" line="345"/>
         <source>Select python binary</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="387"/>
+        <location filename="settingsdialog.cpp" line="383"/>
         <source>Select clang path</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="settingsdialog.cpp" line="356"/>
+        <location filename="settingsdialog.cpp" line="352"/>
         <source>Select MISRA File</source>
         <translation type="unfinished"></translation>
     </message>
