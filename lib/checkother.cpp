@@ -2967,7 +2967,7 @@ void CheckOther::checkUnusedLabel()
             if (!tok->scope()->isExecutable())
                 tok = tok->scope()->bodyEnd;
 
-            if (Token::Match(tok, "{|}|; %name% :") && tok->strAt(1) != "default") {
+            if (Token::Match(tok, "{|}|; %name% :") && !tok->tokAt(1)->isKeyword()) {
                 const std::string tmp("goto " + tok->strAt(1));
                 if (!Token::findsimplematch(scope->bodyStart->next(), tmp.c_str(), tmp.size(), scope->bodyEnd->previous()))
                     unusedLabelError(tok->next(), tok->next()->scope()->type == Scope::eSwitch, hasIfdef);
