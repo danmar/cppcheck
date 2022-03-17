@@ -4071,6 +4071,11 @@ private:
               "    return 1;\n" // <- clarify for tools that function does not continue..
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    enum : uint8_t { A, B } var = A;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
