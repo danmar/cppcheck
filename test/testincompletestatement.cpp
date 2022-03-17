@@ -407,7 +407,7 @@ private:
                       "[test.cpp:3]: (warning) Redundant code: Found unused cast of expression 'i'.\n"
                       "[test.cpp:4]: (warning) Redundant code: Found unused cast of expression 'i'.\n",
                       errout.str());
-        
+
         check("namespace M {\n"
               "    namespace N { typedef char T; }\n"
               "}\n"
