@@ -196,7 +196,7 @@ void ResultsView::saveStatistics(const QString &filename) const
     QTextStream ts(&f);
     ts <<  '[' << QDate::currentDate().toString("dd.MM.yyyy") << "]\n";
     ts << QDateTime::currentMSecsSinceEpoch() << '\n';
-    foreach (QString tool, mStatistics->getTools()) {
+    for (const QString& tool : mStatistics->getTools()) {
         ts << tool << "-error:" << mStatistics->getCount(tool, ShowTypes::ShowErrors) << '\n';
         ts << tool << "-warning:" << mStatistics->getCount(tool, ShowTypes::ShowWarnings) << '\n';
         ts << tool << "-style:" << mStatistics->getCount(tool, ShowTypes::ShowStyle) << '\n';
@@ -408,8 +408,7 @@ void ResultsView::readErrorsXml(const QString &filename)
         msgBox.exec();
     }
 
-    ErrorItem item;
-    foreach (item, errors) {
+    for (const ErrorItem& item : errors) {
         mUI->mTree->addErrorItem(item);
     }
 

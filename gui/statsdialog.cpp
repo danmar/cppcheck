@@ -366,7 +366,7 @@ QChartView *StatsDialog::createChart(const QString &statsFile, const QString &to
     axisX->setTitleText("Date");
     chart->addAxis(axisX, Qt::AlignBottom);
 
-    foreach (QAbstractSeries *s, chart->series()) {
+    for (QAbstractSeries *s : chart->series()) {
         s->attachAxis(axisX);
     }
 
@@ -376,10 +376,10 @@ QChartView *StatsDialog::createChart(const QString &statsFile, const QString &to
     chart->addAxis(axisY, Qt::AlignLeft);
 
     qreal maxY = 0;
-    foreach (QAbstractSeries *s, chart->series()) {
+    for (QAbstractSeries *s : chart->series()) {
         s->attachAxis(axisY);
         if (QLineSeries *ls = dynamic_cast<QLineSeries*>(s)) {
-            foreach (QPointF p, ls->points()) {
+            for (QPointF p : ls->points()) {
                 if (p.y() > maxY)
                     maxY = p.y();
             }

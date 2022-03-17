@@ -414,7 +414,7 @@ void MainWindow::doAnalyzeProject(ImportProject p, const bool checkLibrary, cons
     mIsLogfileLoaded = false;
     if (mProjectFile) {
         std::vector<std::string> v;
-        foreach (const QString &i, mProjectFile->getExcludedPaths()) {
+        for (const QString &i : mProjectFile->getExcludedPaths()) {
             v.push_back(i.toStdString());
         }
         p.ignorePaths(v);
@@ -737,8 +737,7 @@ void MainWindow::analyzeDirectory()
 
 void MainWindow::addIncludeDirs(const QStringList &includeDirs, Settings &result)
 {
-    QString dir;
-    foreach (dir, includeDirs) {
+    for (const QString& dir : includeDirs) {
         QString incdir;
         if (!QDir::isAbsolutePath(dir))
             incdir = mCurrentDirectory + "/";
@@ -874,7 +873,7 @@ Settings MainWindow::getCppcheckSettings()
         addIncludeDirs(dirs, result);
 
         const QStringList defines = mProjectFile->getDefines();
-        foreach (QString define, defines) {
+        for (const QString& define : defines) {
             if (!result.userDefines.empty())
                 result.userDefines += ";";
             result.userDefines += define.toStdString();
@@ -890,17 +889,17 @@ Settings MainWindow::getCppcheckSettings()
             result.variableContracts[vc.first.toStdString()] = vc.second;
 
         const QStringList undefines = mProjectFile->getUndefines();
-        foreach (QString undefine, undefines)
-        result.userUndefs.insert(undefine.toStdString());
+        for (const QString& undefine : undefines)
+            result.userUndefs.insert(undefine.toStdString());
 
         const QStringList libraries = mProjectFile->getLibraries();
-        foreach (QString library, libraries) {
+        for (const QString& library : libraries) {
             result.libraries.emplace_back(library.toStdString());
             const QString filename = library + ".cfg";
             tryLoadLibrary(&result.library, filename);
         }
 
-        foreach (const Suppressions::Suppression &suppression, mProjectFile->getSuppressions()) {
+        for (const Suppressions::Suppression &suppression : mProjectFile->getSuppressions()) {
             result.nomsg.addSuppression(suppression);
         }
 
@@ -944,12 +943,12 @@ Settings MainWindow::getCppcheckSettings()
         result.safeChecks.externalFunctions = mProjectFile->safeChecks.externalFunctions;
         result.safeChecks.internalFunctions = mProjectFile->safeChecks.internalFunctions;
         result.safeChecks.externalVariables = mProjectFile->safeChecks.externalVariables;
-        foreach (QString s, mProjectFile->getCheckUnknownFunctionReturn())
-        result.checkUnknownFunctionReturn.insert(s.toStdString());
+        for (const QString& s : mProjectFile->getCheckUnknownFunctionReturn())
+            result.checkUnknownFunctionReturn.insert(s.toStdString());
 
         QString filesDir(getDataDir());
         const QString pythonCmd = mSettings->value(SETTINGS_PYTHON_PATH).toString();
-        foreach (QString addon, mProjectFile->getAddons()) {
+        for (const QString& addon : mProjectFile->getAddons()) {
             QString addonFilePath = ProjectFile::getAddonFilePath(filesDir, addon);
             if (addonFilePath.isEmpty())
                 continue;
@@ -1866,7 +1865,7 @@ void MainWindow::suppressIds(QStringList ids)
     ids.removeDuplicates();
 
     QList<Suppressions::Suppression> suppressions = mProjectFile->getSuppressions();
-    foreach (QString id, ids) {
+    for (const QString& id : ids) {
         // Remove all matching suppressions
         std::string id2 = id.toStdString();
         for (int i = 0; i < suppressions.size();) {

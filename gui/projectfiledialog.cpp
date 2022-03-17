@@ -100,12 +100,12 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     QStringList libs;
     // Search the std.cfg first since other libraries could depend on it
     QString stdLibraryFilename;
-    foreach (const QString sp, searchPaths) {
+    for (const QString &sp : searchPaths) {
         QDir dir(sp);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.cfg"));
         dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-        foreach (QFileInfo item, dir.entryInfoList()) {
+        for (const QFileInfo& item : dir.entryInfoList()) {
             QString library = item.fileName();
             if (library.compare("std.cfg", Qt::CaseInsensitive) != 0)
                 continue;
@@ -122,12 +122,12 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
             break;
     }
     // Search other libraries
-    foreach (const QString sp, searchPaths) {
+    for (const QString &sp : searchPaths) {
         QDir dir(sp);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.cfg"));
         dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-        foreach (QFileInfo item, dir.entryInfoList()) {
+        for (const QFileInfo& item : dir.entryInfoList()) {
             QString library = item.fileName();
             {
                 Library lib;
@@ -161,14 +161,14 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     for (cppcheck::Platform::PlatformType builtinPlatform : builtinPlatforms)
         mUI->mComboBoxPlatform->addItem(platforms.get(builtinPlatform).mTitle);
     QStringList platformFiles;
-    foreach (QString sp, searchPaths) {
+    for (QString sp : searchPaths) {
         if (sp.endsWith("/cfg"))
             sp = sp.mid(0,sp.length()-3) + "platforms";
         QDir dir(sp);
         dir.setSorting(QDir::Name);
         dir.setNameFilters(QStringList("*.xml"));
         dir.setFilter(QDir::Files | QDir::NoDotAndDotDot);
-        foreach (QFileInfo item, dir.entryInfoList()) {
+        for (const QFileInfo& item : dir.entryInfoList()) {
             const QString platformFile = item.fileName();
 
             cppcheck::Platform plat2;
@@ -528,7 +528,7 @@ void ProjectFileDialog::setProjectConfigurations(const QStringList &configs)
 {
     mUI->mListVsConfigs->clear();
     mUI->mListVsConfigs->setEnabled(!configs.isEmpty() && !mUI->mChkAllVsConfigs->isChecked());
-    foreach (const QString &cfg, configs) {
+    for (const QString &cfg : configs) {
         QListWidgetItem* item = new QListWidgetItem(cfg, mUI->mListVsConfigs);
         item->setFlags(item->flags() | Qt::ItemIsUserCheckable); // set checkable flag
         item->setCheckState(Qt::Unchecked);
@@ -650,7 +650,7 @@ void ProjectFileDialog::setImportProject(const QString &importProject)
 
 void ProjectFileDialog::setIncludepaths(const QStringList &includes)
 {
-    foreach (QString dir, includes) {
+    for (const QString& dir : includes) {
         addIncludeDir(dir);
     }
 }
@@ -667,14 +667,14 @@ void ProjectFileDialog::setUndefines(const QStringList &undefines)
 
 void ProjectFileDialog::setCheckPaths(const QStringList &paths)
 {
-    foreach (QString path, paths) {
+    for (const QString& path : paths) {
         addCheckPath(path);
     }
 }
 
 void ProjectFileDialog::setExcludedPaths(const QStringList &paths)
 {
-    foreach (QString path, paths) {
+    for (const QString& path : paths) {
         addExcludePath(path);
     }
 }
@@ -724,7 +724,7 @@ void ProjectFileDialog::setSuppressions(const QList<Suppressions::Suppression> &
     mUI->mListSuppressions->clear();
     QList<Suppressions::Suppression> new_suppressions = suppressions;
     mSuppressions.clear();
-    foreach (const Suppressions::Suppression &suppression, new_suppressions) {
+    for (const Suppressions::Suppression &suppression : new_suppressions) {
         addSingleSuppression(suppression);
     }
     mUI->mListSuppressions->sortItems();
