@@ -222,6 +222,7 @@ private:
         TEST_CASE(constPtrToConstPtr);
         TEST_CASE(constTrailingReturnType);
         TEST_CASE(staticArrayPtrOverload);
+        TEST_CASE(qualifiedNameMember); // #10872
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -6821,6 +6822,22 @@ private:
                    "}\n"
                    "template void S::f(const std::array<std::string_view, 3>& sv);\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void qualifiedNameMember() { // #10872
+        Settings s;
+        s.severity.enable(Severity::style);
+        s.debugwarnings = true;
+        LOAD_LIB_2(s.library, "std.cfg");
+        checkConst("struct data {};\n"
+                   "    struct S {\n"
+                   "    std::vector<data> std;\n"
+                   "    void f();\n"
+                   "};\n"
+                   "void S::f() {\n"
+                   "    std::vector<data>::const_iterator end = std.end();\n"
+                   "}\n", &s);
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'S::f' can be const.\n", errout.str());
     }
 
 #define checkInitializerListOrder(code) checkInitializerListOrder_(code, __FILE__, __LINE__)

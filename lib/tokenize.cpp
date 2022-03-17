@@ -3745,6 +3745,8 @@ void Tokenizer::setVarIdClassFunction(const std::string &classname,
             continue;
         if (Token::Match(tok2->tokAt(-2), "!!this .") && !Token::simpleMatch(tok2->tokAt(-5), "( * this ) ."))
             continue;
+        if (Token::Match(tok2, "%name% ::"))
+            continue;
 
         const std::map<std::string,int>::const_iterator it = varlist.find(tok2->str());
         if (it != varlist.end()) {

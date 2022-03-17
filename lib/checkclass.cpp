@@ -778,7 +778,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         // Calling member variable function?
-        if (Token::Match(ftok->next(), "%var% . %name% (")) {
+        if (Token::Match(ftok->next(), "%var% . %name% (") && !(ftok->next()->valueType() && ftok->next()->valueType()->pointer)) {
             for (const Variable &var : scope->varlist) {
                 if (var.declarationId() == ftok->next()->varId()) {
                     /** @todo false negative: we assume function changes variable state */
@@ -2082,6 +2082,8 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 
     for (const Variable& var : scope->varlist) {
         if (var.name() == tok->str()) {
+            if (Token::Match(tok, "%name% ::"))
+                continue;
             const Token* fqTok = tok;
             while (Token::Match(fqTok->tokAt(-2), "%name% ::"))
                 fqTok = fqTok->tokAt(-2);
