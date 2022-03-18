@@ -2560,7 +2560,7 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
         if (!callFunction ||
             function.nestedIn != callFunction->nestedIn ||
             Token::simpleMatch(tok->previous(), ".") ||
-            !(tok->astParent() && (tok->astParent()->str() == "(" || (tok->astParent()->str() == "::") && Token::simpleMatch(tok->astParent()->astParent(), "("))))
+            !(tok->astParent() && (tok->astParent()->str() == "(" || (tok->astParent()->str() == "::" && Token::simpleMatch(tok->astParent()->astParent(), "(")))))
             continue;
 
         if (tok->previous() &&
