@@ -143,21 +143,11 @@ class ValueType:
     def __init__(self, element):
         self.type = element.get('valueType-type')
         self.sign = element.get('valueType-sign')
-        bits = element.get('valueType-bits')
-        if bits:
-            self.bits = int(bits)
+        self.bits = int(element.get('valueType-bits', 0))
         self.typeScopeId = element.get('valueType-typeScope')
         self.originalTypeName = element.get('valueType-originalTypeName')
-        constness = element.get('valueType-constness')
-        if constness:
-            self.constness = int(constness)
-        else:
-            self.constness = 0
-        pointer = element.get('valueType-pointer')
-        if pointer:
-            self.pointer = int(pointer)
-        else:
-            self.pointer = 0
+        self.constness = int(element.get('valueType-constness', 0))
+        self.pointer = int(element.get('valueType-pointer', 0))
 
     def __repr__(self):
         attrs = ["type", "sign", "bits", "typeScopeId", "originalTypeName",
@@ -620,11 +610,7 @@ class Variable:
         self.isPointer = element.get('isPointer') == 'true'
         self.isReference = element.get('isReference') == 'true'
         self.isStatic = element.get('isStatic') == 'true'
-        constness = element.get('constness')
-        if constness:
-            self.constness = int(constness)
-        else:
-            self.constness = 0
+        self.constness = int(element.get('constness',0))
 
     def __repr__(self):
         attrs = ["Id", "nameTokenId", "typeStartTokenId", "typeEndTokenId",
