@@ -46,6 +46,10 @@
 #include <tinyxml2.h>
 #endif
 
+#ifdef __linux__
+#include <unistd.h>
+#endif
+
 static void addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
@@ -122,6 +126,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool maxconfigs = false;
 
     mSettings->exename = argv[0];
+#ifdef __linux__
+    // Executing cppcheck in PATH. argv[0] does not contain the path.
+    if (mSettings->exename.find_first_of("/\\") == std::string::npos) {
+        char buf[PATH_MAX] = {0};
+        if (FileLister::fileExists("/proc/self/exe") && readlink("/proc/self/exe", buf, sizeof(buf)-1) > 0)
+            mSettings->exename = buf;
+    }
+#endif
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
