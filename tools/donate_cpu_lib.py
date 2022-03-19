@@ -333,12 +333,15 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
     issue_messages_list = []
     internal_error_messages_list = []
     count = 0
+    re_obj = None
     for line in stderr.split('\n'):
         if ': information: ' in line:
             information_messages_list.append(line + '\n')
         elif line:
             issue_messages_list.append(line + '\n')
-            if re.match(r'.*:[0-9]+:.*\]$', line):
+            if re_obj is None:
+                re_obj = re.compile(r'.*:[0-9]+:.*\]$')
+            if re_obj.match(line):
                 count += 1
             if ': error: Internal error: ' in line:
                 internal_error_messages_list.append(line + '\n')
@@ -435,11 +438,15 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
 def __split_results(results):
     ret = []
     w = None
+    re_obj = None
     for line in results.split('\n'):
-        if line.endswith(']') and re.search(r': (error|warning|style|performance|portability|information|debug):', line):
-            if w is not None:
-                ret.append(w.strip())
-            w = ''
+        if line.endswith(']'):
+            if re_obj is None:
+                re_obj = re.compile(r': (error|warning|style|performance|portability|information|debug):')
+            if re_obj.search(line):
+                if w is not None:
+                    ret.append(w.strip())
+                w = ''
         if w is not None:
             w += ' ' * 5 + line + '\n'
     if w is not None:
