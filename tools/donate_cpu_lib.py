@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.20"
+CLIENT_VERSION = "1.3.21"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -37,7 +37,7 @@ def check_requirements():
     try:
         import psutil
     except ImportError as e:
-        print("Error: {}. Module is required. ".format(e))
+        print("Error: {}. Module is required.".format(e))
         result = False
     return result
 
@@ -71,21 +71,21 @@ def clone_cppcheck(repo_path, migrate_from_path):
         os.rename(migrate_from_path, repo_path)
     else:
         # A shallow git clone (depth = 1) is enough for building and scanning.
-        # Do not checkout until fetch_cppcheck_version.
+        # Do not checkout until fetch_cppcheck_version.
         subprocess.check_call(['git', 'clone', '--depth=1', '--no-checkout', CPPCHECK_REPO_URL, repo_path])
         # Checkout an empty branch to allow "git worktree add" for main later on
     try:
         # git >= 2.27
         subprocess.check_call(['git', 'switch', '--orphan', 'empty'], cwd=repo_path)
     except subprocess.CalledProcessError:
-        subprocess.check_call(['git', 'checkout','--orphan', 'empty'], cwd=repo_path)
+        subprocess.check_call(['git', 'checkout', '--orphan', 'empty'], cwd=repo_path)
 
 
 def checkout_cppcheck_version(repo_path, version, cppcheck_path):
     if not os.path.isabs(cppcheck_path):
         raise ValueError("cppcheck_path is not an absolute path")
     if os.path.exists(cppcheck_path):
-        subprocess.check_call(['git', 'checkout' , '-f', version], cwd=cppcheck_path)
+        subprocess.check_call(['git', 'checkout', '-f', version], cwd=cppcheck_path)
         # It is possible to pull branches, not tags
         if version == 'main':
             subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
@@ -119,9 +119,9 @@ def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
         os.chdir(cppcheck_path)
-        subprocess.call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g'])
-        subprocess.call([cppcheck_path + '/cppcheck', '--version'])
-    except OSError:
+        subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'])
+        subprocess.check_call([cppcheck_path + '/cppcheck', '--version'])
+    except:
         return False
     return True
 
@@ -171,7 +171,7 @@ def get_package(server_address, package_index=None):
     return package.decode('utf-8')
 
 
-def handle_remove_readonly(func, path, exc):
+def __handle_remove_readonly(func, path, exc):
     import stat
     if not os.access(path, os.W_OK):
         # Is the error an access error ?
@@ -179,14 +179,14 @@ def handle_remove_readonly(func, path, exc):
         func(path)
 
 
-def remove_tree(folder_name):
+def __remove_tree(folder_name):
     if not os.path.exists(folder_name):
         return
     count = 5
     while count > 0:
         count -= 1
         try:
-            shutil.rmtree(folder_name, onerror=handle_remove_readonly)
+            shutil.rmtree(folder_name, onerror=__handle_remove_readonly)
             break
         except OSError as err:
             time.sleep(30)
@@ -195,7 +195,7 @@ def remove_tree(folder_name):
                 sys.exit(1)
 
 
-def wget(url, destfile, bandwidth_limit):
+def __wget(url, destfile, bandwidth_limit):
     if os.path.exists(destfile):
         if os.path.isfile(destfile):
             os.remove(destfile)
@@ -218,7 +218,7 @@ def wget(url, destfile, bandwidth_limit):
 def download_package(work_path, package, bandwidth_limit):
     print('Download package ' + package)
     destfile = work_path + '/temp.tgz'
-    if not wget(package, destfile, bandwidth_limit):
+    if not __wget(package, destfile, bandwidth_limit):
         return None
     return destfile
 
@@ -226,7 +226,7 @@ def download_package(work_path, package, bandwidth_limit):
 def unpack_package(work_path, tgz, cpp_only=False):
     print('Unpacking..')
     temp_path = work_path + '/temp'
-    remove_tree(temp_path)
+    __remove_tree(temp_path)
     os.mkdir(temp_path)
     found = False
     if tarfile.is_tarfile(tgz):
@@ -252,7 +252,7 @@ def unpack_package(work_path, tgz, cpp_only=False):
     return found
 
 
-def has_include(path, includes):
+def __has_include(path, includes):
     re_includes = [re.escape(inc) for inc in includes]
     re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
     for root, _, files in os.walk(path):
@@ -268,8 +268,9 @@ def has_include(path, includes):
     return False
 
 
-def run_command(cmd):
-    print(cmd)
+def __run_command(cmd, print_cmd=True):
+    if print_cmd:
+        print(cmd)
     start_time = time.time()
     comm = None
     p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
@@ -318,7 +319,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = 
     options += ' -rp={}'.format(dir_to_scan)
     cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
     cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
-    returncode, stdout, stderr, elapsed_time = run_command(cmd)
+    returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
     # collect messages
     information_messages_list = []
@@ -387,7 +388,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = 
                 cmd += sig_file
             else:
                 cmd += dir_to_scan
-            _, st_stdout, _, _ = run_command(cmd)
+            _, st_stdout, _, _ = __run_command(cmd)
             gdb_pos = st_stdout.find(" received signal")
             if not gdb_pos == -1:
                 last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
@@ -422,7 +423,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = 
     return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
 
 
-def split_results(results):
+def __split_results(results):
     ret = []
     w = None
     for line in results.split('\n'):
@@ -440,8 +441,8 @@ def split_results(results):
 def diff_results(ver1, results1, ver2, results2):
     print('Diff results..')
     ret = ''
-    r1 = sorted(split_results(results1))
-    r2 = sorted(split_results(results2))
+    r1 = sorted(__split_results(results1))
+    r2 = sorted(__split_results(results2))
     i1 = 0
     i2 = 0
     while i1 < len(r1) and i2 < len(r2):
@@ -464,7 +465,7 @@ def diff_results(ver1, results1, ver2, results2):
     return ret
 
 
-def send_all(connection, data):
+def __send_all(connection, data):
     bytes_ = data.encode('ascii', 'ignore')
     while bytes_:
         num = connection.send(bytes_)
@@ -482,7 +483,7 @@ def upload_results(package, results, server_address):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.connect(server_address)
                 cmd = 'write\n'
-                send_all(sock, cmd + package + '\n' + results + '\nDONE')
+                __send_all(sock, cmd + package + '\n' + results + '\nDONE')
             print('Results have been successfully uploaded.')
             return True
         except socket.error as err:
@@ -501,7 +502,7 @@ def upload_info(package, info_output, server_address):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.connect(server_address)
-                send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
+                __send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
             print('Information output has been successfully uploaded.')
             return True
         except socket.error as err:
@@ -550,13 +551,13 @@ def get_libraries():
                        'zlib': ['<zlib.h>'],
                       }
     for library, includes in library_includes.items():
-        if has_include('temp', includes):
+        if __has_include('temp', includes):
             libraries.append(library)
     return libraries
 
 
 def get_compiler_version():
-    _, stdout, _, _ = run_command('g++ --version')
+    _, stdout, _, _ = __run_command('g++ --version', False)
     return stdout.split('\n')[0]
 
 
