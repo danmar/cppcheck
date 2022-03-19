@@ -374,9 +374,11 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack=Tr
             break
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
 
+    options_j = options + ' ' + jobs
+
     if returncode == RETURN_CODE_TIMEOUT:
         print('Timeout!')
-        return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options, ''
+        return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options_j, ''
 
     # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
     has_error = returncode in (-11, -6, -4, -8, -7)
@@ -408,25 +410,25 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack=Tr
                 stacktrace = ''.join(internal_error_messages_list)
             else:
                 stacktrace = stdout
-        return returncode, stacktrace, '', returncode, options, ''
+        return returncode, stacktrace, '', returncode, options_j, ''
 
     if returncode != 0:
         # returncode is always 1 when this message is written
         thr_pos = stderr.find('#### ThreadExecutor')
         if thr_pos != -1:
             print('Thread!')
-            return -222, stderr[thr_pos:], '', -222, options, ''
+            return -222, stderr[thr_pos:], '', -222, options_j, ''
 
         print('Error!')
         if returncode > 0:
             returncode = -100-returncode
-        return returncode, stdout, '', returncode, options, ''
+        return returncode, stdout, '', returncode, options_j, ''
 
     if sig_num != -1:
         print('Signal!')
-        return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options, ''
+        return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options_j, ''
 
-    return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
+    return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options_j, timing_str
 
 
 def __split_results(results):
