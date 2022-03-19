@@ -1000,8 +1000,8 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 {
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-        bool isNew = false;
-        if (!Token::Match(tok, "%name% (") && !(isNew = mTokenizer->isCPP() && tok->str() == "new"))
+        const bool isNew = mTokenizer->isCPP() && tok->str() == "new";
+        if (!isNew && !Token::Match(tok, "%name% ("))
             continue;
 
         if (tok->varId())
