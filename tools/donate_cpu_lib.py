@@ -248,9 +248,15 @@ def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
     source_found = False
     if tarfile.is_tarfile(tgz):
         with tarfile.open(tgz) as tf:
+            total = 0
+            extracted = 0
+            skipped = 0
             for member in tf:
+                total += 1
                 if member.name.startswith(('/', '..')):
                     # Skip dangerous file names
+                    # print('skipping dangerous file: ' + member.name)
+                    skipped += 1
                     continue
 
                 is_source = member.name.lower().endswith(source_endings)
@@ -259,18 +265,22 @@ def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
                         skip = False
                         for skip_file in skip_files:
                             if member.name.endswith('/' + skip_file):
+                                # print('found file to skip: ' + member.name)
                                 skip = True
                                 break
                         if skip:
+                            skipped += 1
                             continue
                     try:
                         tf.extract(member.name, temp_path)
                         if is_source:
                             source_found = True
+                        extracted += 1
                     except OSError:
                         pass
                     except AttributeError:
                         pass
+            print('extracted {} of {} files (skipped {}{})'.format(extracted, total, skipped, (' / only headers' if (extracted and not source_found) else '')))
     return temp_path, source_found
 
 
