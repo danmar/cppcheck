@@ -19,12 +19,13 @@
 #ifndef STATSDIALOG_H
 #define STATSDIALOG_H
 
-#include "ui_stats.h"
-
 #include <QDialog>
 
 class ProjectFile;
 class CheckStatistics;
+namespace Ui {
+    class StatsDialog;
+}
 
 #ifdef HAVE_QCHART
 namespace QtCharts {
@@ -44,6 +45,7 @@ class StatsDialog : public QDialog {
     Q_OBJECT
 public:
     explicit StatsDialog(QWidget *parent = nullptr);
+    ~StatsDialog() override;
 
     /**
      * @brief Sets the project to extract statistics from
@@ -78,7 +80,7 @@ private slots:
     QtCharts::QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
 #endif
 private:
-    Ui::StatsDialog mUI;
+    Ui::StatsDialog *mUI;
     const CheckStatistics *mStatistics;
 };
 
