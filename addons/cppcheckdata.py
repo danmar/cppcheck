@@ -620,9 +620,11 @@ class Variable:
         self.isPointer = element.get('isPointer') == 'true'
         self.isReference = element.get('isReference') == 'true'
         self.isStatic = element.get('isStatic') == 'true'
-        self.constness = element.get('constness')
-        if self.constness:
-            self.constness = int(self.constness)
+        constness = element.get('constness')
+        if constness:
+            self.constness = int(constness)
+        else:
+            self.constness = 0
 
     def __repr__(self):
         attrs = ["Id", "nameTokenId", "typeStartTokenId", "typeEndTokenId",
