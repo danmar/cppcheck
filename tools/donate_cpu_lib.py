@@ -237,19 +237,24 @@ def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
     temp_path = os.path.join(work_path, 'temp')
     __remove_tree(temp_path)
     os.mkdir(temp_path)
-    found = False
+
+    header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
+    source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
+    c_source_endings = ('.c',)
+
+    if not cpp_only:
+        source_endings = source_endings + c_source_endings
+
+    source_found = False
     if tarfile.is_tarfile(tgz):
         with tarfile.open(tgz) as tf:
             for member in tf:
-                header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
-                source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
-                c_source_endings = ('.c',)
-                if not cpp_only:
-                    source_endings = source_endings + c_source_endings
                 if member.name.startswith(('/', '..')):
                     # Skip dangerous file names
                     continue
-                elif member.name.lower().endswith(header_endings + source_endings):
+
+                is_source = member.name.lower().endswith(source_endings)
+                if is_source or member.name.lower().endswith(header_endings):
                     if skip_files is not None:
                         skip = False
                         for skip_file in skip_files:
@@ -260,13 +265,13 @@ def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
                             continue
                     try:
                         tf.extract(member.name, temp_path)
-                        if member.name.lower().endswith(source_endings):
-                            found = True
+                        if is_source:
+                            source_found = True
                     except OSError:
                         pass
                     except AttributeError:
                         pass
-    return temp_path, found
+    return temp_path, source_found
 
 
 def __run_command(cmd, print_cmd=True):
