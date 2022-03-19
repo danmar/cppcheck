@@ -209,7 +209,7 @@ while True:
     head_timing_info = ''
     old_timing_info = ''
     cppcheck_head_info = ''
-    libraries = get_libraries(source_path)
+    libraries = library_includes.get_libraries(source_path)
 
     for ver in cppcheck_versions:
         tree_path = os.path.join(work_path, 'tree-'+ver)

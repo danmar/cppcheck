@@ -269,22 +269,6 @@ def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
     return temp_path, found
 
 
-def __has_include(path, includes):
-    re_includes = [re.escape(inc) for inc in includes]
-    re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
-    for root, _, files in os.walk(path):
-        for name in files:
-            filename = os.path.join(root, name)
-            try:
-                with open(filename, 'rt', errors='ignore') as f:
-                    filedata = f.read()
-                if re.search(re_expr, filedata, re.MULTILINE):
-                    return True
-            except IOError:
-                pass
-    return False
-
-
 def __run_command(cmd, print_cmd=True):
     if print_cmd:
         print(cmd)
@@ -539,48 +523,64 @@ def upload_info(package, info_output, server_address):
     return False
 
 
-def get_libraries(folder):
-    libraries = ['posix', 'gnu']
-    library_includes = {'boost': ['<boost/'],
-                       'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<sys/uio.h>', '<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
-                       'cairo': ['<cairo.h>'],
-                       'cppunit': ['<cppunit/'],
-                       'icu': ['<unicode/', '"unicode/'],
-                       'ginac': ['<ginac/', '"ginac/'],
-                       'googletest': ['<gtest/gtest.h>'],
-                       'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gnome'],
-                       'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
-                       'libcerror': ['<libcerror.h>'],
-                       'libcurl': ['<curl/curl.h>'],
-                       'libsigc++': ['<sigc++/'],
-                       'lua': ['<lua.h>', '"lua.h"'],
-                       'mfc': ['<afx.h>', '<afxwin.h>', '<afxext.h>'],
-                       'microsoft_atl': ['<atlbase.h>'],
-                       'microsoft_sal': ['<sal.h>'],
-                       'motif': ['<X11/', '<Xm/'],
-                       'nspr': ['<prtypes.h>', '"prtypes.h"'],
-                       'ntl': ['<ntl/', '"ntl/'],
-                       'opencv2': ['<opencv2/', '"opencv2/'],
-                       'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
-                       'openmp': ['<omp.h>'],
-                       'openssl': ['<openssl/'],
-                       'pcre': ['<pcre.h>', '"pcre.h"'],
-                       'python': ['<Python.h>', '"Python.h"'],
-                       'qt': ['<QApplication>', '<QList>', '<QKeyEvent>', '<qlist.h>', '<QObject>', '<QFlags>', '<QFileDialog>', '<QTest>', '<QMessageBox>', '<QMetaType>', '<QString>', '<qobjectdefs.h>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
-                       'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
-                       'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
-                       'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
-                       'tinyxml2': ['<tinyxml2', '"tinyxml2'],
-                       'wxsqlite3': ['<wx/wxsqlite3', '"wx/wxsqlite3'],
-                       'wxwidgets': ['<wx/', '"wx/'],
-                       'zlib': ['<zlib.h>'],
-                      }
-    print('Detecting library usage...')
-    for library, includes in library_includes.items():
-        if __has_include(folder, includes):
-            libraries.append(library)
-    print('Found libraries: {}'.format(libraries))
-    return libraries
+class LibraryIncludes:
+    def get_libraries(self, folder):
+        libraries = ['posix', 'gnu']
+        library_includes = {'boost': ['<boost/'],
+                            'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<sys/uio.h>', '<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
+                            'cairo': ['<cairo.h>'],
+                            'cppunit': ['<cppunit/'],
+                            'icu': ['<unicode/', '"unicode/'],
+                            'ginac': ['<ginac/', '"ginac/'],
+                            'googletest': ['<gtest/gtest.h>'],
+                            'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gnome'],
+                            'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
+                            'libcerror': ['<libcerror.h>'],
+                            'libcurl': ['<curl/curl.h>'],
+                            'libsigc++': ['<sigc++/'],
+                            'lua': ['<lua.h>', '"lua.h"'],
+                            'mfc': ['<afx.h>', '<afxwin.h>', '<afxext.h>'],
+                            'microsoft_atl': ['<atlbase.h>'],
+                            'microsoft_sal': ['<sal.h>'],
+                            'motif': ['<X11/', '<Xm/'],
+                            'nspr': ['<prtypes.h>', '"prtypes.h"'],
+                            'ntl': ['<ntl/', '"ntl/'],
+                            'opencv2': ['<opencv2/', '"opencv2/'],
+                            'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
+                            'openmp': ['<omp.h>'],
+                            'openssl': ['<openssl/'],
+                            'pcre': ['<pcre.h>', '"pcre.h"'],
+                            'python': ['<Python.h>', '"Python.h"'],
+                            'qt': ['<QApplication>', '<QList>', '<QKeyEvent>', '<qlist.h>', '<QObject>', '<QFlags>', '<QFileDialog>', '<QTest>', '<QMessageBox>', '<QMetaType>', '<QString>', '<qobjectdefs.h>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                            'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
+                            'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
+                            'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
+                            'tinyxml2': ['<tinyxml2', '"tinyxml2'],
+                            'wxsqlite3': ['<wx/wxsqlite3', '"wx/wxsqlite3'],
+                            'wxwidgets': ['<wx/', '"wx/'],
+                            'zlib': ['<zlib.h>'],
+                           }
+        print('Detecting library usage...')
+        for library, includes in library_includes.items():
+            if self.__has_include(folder, includes):
+                libraries.append(library)
+        print('Found libraries: {}'.format(libraries))
+        return libraries
+
+    def __has_include(self, path, includes):
+        re_includes = [re.escape(inc) for inc in includes]
+        re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
+        for root, _, files in os.walk(path):
+            for name in files:
+                filename = os.path.join(root, name)
+                try:
+                    with open(filename, 'rt', errors='ignore') as f:
+                        filedata = f.read()
+                    if re.search(re_expr, filedata, re.MULTILINE):
+                        return True
+                except IOError:
+                    pass
+        return False
 
 
 def get_compiler_version():
@@ -597,3 +597,4 @@ server_address = ('cppcheck1.osuosl.org', 8000)
 bandwidth_limit = None
 max_packages = None
 do_upload = True
+library_includes = LibraryIncludes()
