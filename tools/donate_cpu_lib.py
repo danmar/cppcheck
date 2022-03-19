@@ -524,10 +524,9 @@ def upload_info(package, info_output, server_address):
 
 
 class LibraryIncludes:
-    def get_libraries(self, folder):
-        libraries = ['posix', 'gnu']
-        library_includes = {'boost': ['<boost/'],
-                            'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<sys/uio.h>', '<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
+    def __init__(self):
+        include_mappings = {'boost': ['<boost/'],
+                            'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<sys/uio.h>','<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
                             'cairo': ['<cairo.h>'],
                             'cppunit': ['<cppunit/'],
                             'icu': ['<unicode/', '"unicode/'],
@@ -559,28 +558,37 @@ class LibraryIncludes:
                             'wxsqlite3': ['<wx/wxsqlite3', '"wx/wxsqlite3'],
                             'wxwidgets': ['<wx/', '"wx/'],
                             'zlib': ['<zlib.h>'],
-                           }
-        print('Detecting library usage...')
-        for library, includes in library_includes.items():
-            if self.__has_include(folder, includes):
-                libraries.append(library)
-        print('Found libraries: {}'.format(libraries))
-        return libraries
+                            }
 
-    def __has_include(self, path, includes):
-        re_includes = [re.escape(inc) for inc in includes]
-        re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
+        self.__library_includes_re = {}
+
+        for library, includes in include_mappings.items():
+            re_includes = [re.escape(inc) for inc in includes]
+            re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
+            re_obj = re.compile(re_expr, re.MULTILINE)
+            self.__library_includes_re[library] = re_obj
+
+    def __has_include(self, path, re_expr):
         for root, _, files in os.walk(path):
             for name in files:
                 filename = os.path.join(root, name)
                 try:
                     with open(filename, 'rt', errors='ignore') as f:
                         filedata = f.read()
-                    if re.search(re_expr, filedata, re.MULTILINE):
+                    if re_expr.search(filedata):
                         return True
                 except IOError:
                     pass
         return False
+
+    def get_libraries(self, folder):
+        print('Detecting library usage...')
+        libraries = ['posix', 'gnu']
+        for library, includes_re in self.__library_includes_re.items():
+            if self.__has_include(folder, includes_re):
+                libraries.append(library)
+        print('Found libraries: {}'.format(libraries))
+        return libraries
 
 
 def get_compiler_version():
