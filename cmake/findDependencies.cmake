@@ -60,3 +60,7 @@ endif()
 if (USE_THREADS)
     find_package(Threads REQUIRED)
 endif()
+
+if (USE_BOOST)
+    find_package(Boost COMPONENTS container QUIET)
+endif()
