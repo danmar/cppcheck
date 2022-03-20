@@ -7060,7 +7060,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
             continue;
         if (!Token::Match(tok, "%var% ;|["))
             continue;
-        const Variable *var = tok->variable();
+        const Variable* var = tok->variable();
         if (!var)
             continue;
         if (var->nameToken() != tok || var->isInit())
