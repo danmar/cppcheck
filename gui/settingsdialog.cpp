@@ -120,8 +120,7 @@ SettingsDialog::~SettingsDialog()
 void SettingsDialog::initTranslationsList()
 {
     const QString current = mTranslator->getCurrentLanguage();
-    QList<TranslationInfo> translations = mTranslator->getTranslations();
-    foreach (TranslationInfo translation, translations) {
+    for (const TranslationInfo& translation : mTranslator->getTranslations()) {
         QListWidgetItem *item = new QListWidgetItem;
         item->setText(translation.mName);
         item->setData(mLangCodeRole, QVariant(translation.mCode));
@@ -238,8 +237,7 @@ void SettingsDialog::addApplication()
 
 void SettingsDialog::removeApplication()
 {
-    QList<QListWidgetItem *> selected = mUI->mListWidget->selectedItems();
-    foreach (QListWidgetItem *item, selected) {
+    for (QListWidgetItem *item : mUI->mListWidget->selectedItems()) {
         const int removeIndex = mUI->mListWidget->row(item);
         const int currentDefault = mTempApplications->getDefaultApplication();
         mTempApplications->removeApplication(removeIndex);
@@ -256,9 +254,7 @@ void SettingsDialog::removeApplication()
 
 void SettingsDialog::editApplication()
 {
-    QList<QListWidgetItem *> selected = mUI->mListWidget->selectedItems();
-    QListWidgetItem *item = nullptr;
-    foreach (item, selected) {
+    for (QListWidgetItem *item : mUI->mListWidget->selectedItems()) {
         int row = mUI->mListWidget->row(item);
         Application& app = mTempApplications->getApplication(row);
         ApplicationDialog dialog(tr("Modify an application"), app, this);

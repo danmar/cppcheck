@@ -904,7 +904,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mIncludeDirs.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::IncludeDirElementName);
-        foreach (QString incdir, mIncludeDirs) {
+        for (const QString& incdir : mIncludeDirs) {
             xmlWriter.writeStartElement(CppcheckXml::DirElementName);
             xmlWriter.writeAttribute(CppcheckXml::DirNameAttrib, incdir);
             xmlWriter.writeEndElement();
@@ -914,7 +914,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mDefines.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::DefinesElementName);
-        foreach (QString define, mDefines) {
+        for (const QString& define : mDefines) {
             xmlWriter.writeStartElement(CppcheckXml::DefineName);
             xmlWriter.writeAttribute(CppcheckXml::DefineNameAttrib, define);
             xmlWriter.writeEndElement();
@@ -936,7 +936,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mPaths.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::PathsElementName);
-        foreach (QString path, mPaths) {
+        for (const QString& path : mPaths) {
             xmlWriter.writeStartElement(CppcheckXml::PathName);
             xmlWriter.writeAttribute(CppcheckXml::PathNameAttrib, path);
             xmlWriter.writeEndElement();
@@ -946,7 +946,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mExcludedPaths.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::ExcludeElementName);
-        foreach (QString path, mExcludedPaths) {
+        for (const QString& path : mExcludedPaths) {
             xmlWriter.writeStartElement(CppcheckXml::ExcludePathName);
             xmlWriter.writeAttribute(CppcheckXml::ExcludePathNameAttrib, path);
             xmlWriter.writeEndElement();
@@ -986,7 +986,7 @@ bool ProjectFile::write(const QString &filename)
 
     if (!mSuppressions.isEmpty()) {
         xmlWriter.writeStartElement(CppcheckXml::SuppressionsElementName);
-        foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+        for (const Suppressions::Suppression &suppression : mSuppressions) {
             xmlWriter.writeStartElement(CppcheckXml::SuppressionElementName);
             if (!suppression.fileName.empty())
                 xmlWriter.writeAttribute("fileName", QString::fromStdString(suppression.fileName));
@@ -1057,7 +1057,7 @@ void ProjectFile::writeStringList(QXmlStreamWriter &xmlWriter, const QStringList
         return;
 
     xmlWriter.writeStartElement(startelementname);
-    foreach (QString str, stringlist) {
+    for (const QString& str : stringlist) {
         xmlWriter.writeStartElement(stringelementname);
         xmlWriter.writeCharacters(str);
         xmlWriter.writeEndElement();
@@ -1068,8 +1068,8 @@ void ProjectFile::writeStringList(QXmlStreamWriter &xmlWriter, const QStringList
 QStringList ProjectFile::fromNativeSeparators(const QStringList &paths)
 {
     QStringList ret;
-    foreach (const QString &path, paths)
-    ret << QDir::fromNativeSeparators(path);
+    for (const QString &path : paths)
+        ret << QDir::fromNativeSeparators(path);
     return ret;
 }
 
@@ -1159,7 +1159,7 @@ QString ProjectFile::getAddonFilePath(QString filesDir, const QString &addon)
 #endif
     ;
 
-    foreach (QString path, searchPaths) {
+    for (const QString& path : searchPaths) {
         QString f = path + addon + ".py";
         if (QFile(f).exists())
             return f;

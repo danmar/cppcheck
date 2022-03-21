@@ -25,7 +25,7 @@
 static const QStringList getTranslationNames(const TranslationHandler& handler)
 {
     QStringList names;
-    foreach (TranslationInfo translation, handler.getTranslations()) {
+    for (const TranslationInfo& translation : handler.getTranslations()) {
         names.append(translation.mName);
     }
     return names;

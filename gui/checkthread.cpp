@@ -137,7 +137,7 @@ void CheckThread::run()
 
 void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSettings, const QString &fileName)
 {
-    foreach (const QString addon, mAddonsAndTools) {
+    for (const QString& addon : mAddonsAndTools) {
         if (addon == CLANG_ANALYZER || addon == CLANG_TIDY) {
             if (!fileSettings)
                 continue;
@@ -150,17 +150,17 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 args << ("-I" + QString::fromStdString(*incIt));
             for (std::list<std::string>::const_iterator i = fileSettings->systemIncludePaths.begin(); i != fileSettings->systemIncludePaths.end(); ++i)
                 args << "-isystem" << QString::fromStdString(*i);
-            foreach (QString def, QString::fromStdString(fileSettings->defines).split(";")) {
+            for (const QString& def : QString::fromStdString(fileSettings->defines).split(";")) {
                 args << ("-D" + def);
             }
-            foreach (const std::string& U, fileSettings->undefs) {
+            for (const std::string& U : fileSettings->undefs) {
                 args << QString::fromStdString("-U" + U);
             }
 
             const QString clangPath = CheckThread::clangTidyCmd();
             if (!clangPath.isEmpty()) {
                 QDir dir(clangPath + "/../lib/clang");
-                foreach (QString ver, dir.entryList()) {
+                for (QString ver : dir.entryList()) {
                     QString includePath = dir.absolutePath() + '/' + ver + "/include";
                     if (ver[0] != '.' && QDir(includePath).exists()) {
                         args << "-isystem" << includePath;
@@ -173,7 +173,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             // To create compile_commands.json in windows see:
             // https://bitsmaker.gitlab.io/post/clang-tidy-from-vs2015/
 
-            foreach (QString includePath, mClangIncludePaths) {
+            for (QString includePath : mClangIncludePaths) {
                 if (!includePath.isEmpty()) {
                     includePath.replace("\\", "/");
                     args << "-isystem" << includePath.trimmed();
@@ -262,7 +262,7 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             {
                 const QString cmd(clangTidyCmd());
                 QString debug(cmd.contains(" ") ? ('\"' + cmd + '\"') : cmd);
-                foreach (QString arg, args) {
+                for (const QString& arg : args) {
                     if (arg.contains(" "))
                         debug += " \"" + arg + '\"';
                     else
@@ -375,7 +375,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
     }
     errorItems.append(errorItem);
 
-    foreach (const ErrorItem &e, errorItems) {
+    for (const ErrorItem &e : errorItems) {
         if (e.errorPath.isEmpty())
             continue;
         Suppressions::ErrorMessage errorMessage;
@@ -388,7 +388,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
             continue;
 
         std::list<ErrorMessage::FileLocation> callstack;
-        foreach (const QErrorPathItem &path, e.errorPath) {
+        for (const QErrorPathItem &path : e.errorPath) {
             callstack.push_back(ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column));
         }
         const std::string f0 = file0.toStdString();
@@ -401,7 +401,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
 bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) const
 {
-    foreach (const Suppressions::Suppression &suppression, mSuppressions) {
+    for (const Suppressions::Suppression &suppression : mSuppressions) {
         if (suppression.isSuppressed(errorMessage))
             return true;
     }

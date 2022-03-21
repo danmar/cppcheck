@@ -276,11 +276,11 @@ void LibraryDialog::filterFunctions(const QString& filter)
     QList<QListWidgetItem *> allItems = mUi->functions->findItems(QString(), Qt::MatchContains);
 
     if (filter.isEmpty()) {
-        foreach (QListWidgetItem *item, allItems) {
+        for (QListWidgetItem *item : allItems) {
             item->setHidden(false);
         }
     } else {
-        foreach (QListWidgetItem *item, allItems) {
+        for (QListWidgetItem *item : allItems) {
             item->setHidden(!item->text().startsWith(filter));
         }
     }
@@ -335,7 +335,7 @@ QString LibraryDialog::getArgText(const CppcheckLibraryData::Function::Arg &arg)
     s += "\n    format string: " + QString(arg.formatstr ? "true" : "false");
     s += "\n    strz: " + QString(arg.strz ? "true" : "false");
     s += "\n    valid: " + QString(arg.valid.isEmpty() ? "any" : arg.valid);
-    foreach (const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+    for (const CppcheckLibraryData::Function::Arg::MinSize &minsize : arg.minsizes) {
         s += "\n    minsize: " + minsize.type + " " + minsize.arg + " " + minsize.arg2;
     }
     return s;
@@ -344,7 +344,7 @@ QString LibraryDialog::getArgText(const CppcheckLibraryData::Function::Arg &arg)
 void LibraryDialog::updateArguments(const CppcheckLibraryData::Function &function)
 {
     mUi->arguments->clear();
-    foreach (const CppcheckLibraryData::Function::Arg &arg, function.args) {
+    for (const CppcheckLibraryData::Function::Arg &arg : function.args) {
         mUi->arguments->addItem(getArgText(arg));
     }
 }
