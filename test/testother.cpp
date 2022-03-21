@@ -96,6 +96,7 @@ private:
         TEST_CASE(varScope26);      // range for loop, map
         TEST_CASE(varScope27);      // #7733 - #if
         TEST_CASE(varScope28);      // #10527
+        TEST_CASE(varScope29);      // #10888
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1318,6 +1319,32 @@ private:
               "    if (double d = g(i); d == 1.0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope29() { // #10888
+        check("enum E { E0 };\n"
+              "struct S { int i; };\n"
+              "void f(int b) {\n"
+              "    enum E e;\n"
+              "    struct S s;\n"
+              "    if (b) {\n"
+              "        e = E0;\n"
+              "        s.i = 0;\n"
+              "        g(e, s);\n"
+              "    }\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:4]: (style) The scope of the variable 'e' can be reduced.\n"
+                      "[test.c:5]: (style) The scope of the variable 's' can be reduced.\n",
+                      errout.str());
+
+        check("void f(bool b) {\n"
+              "    std::string s;\n"
+              "    if (b) {\n"
+              "        s = \"abc\";\n"
+              "        g(s);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 's' can be reduced.\n", errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
