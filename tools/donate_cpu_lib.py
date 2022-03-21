@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.21"
+CLIENT_VERSION = "1.3.22"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -85,15 +85,22 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
     if not os.path.isabs(cppcheck_path):
         raise ValueError("cppcheck_path is not an absolute path")
     if os.path.exists(cppcheck_path):
+        print('Checking out {}'.format(version))
         subprocess.check_call(['git', 'checkout', '-f', version], cwd=cppcheck_path)
+
         # It is possible to pull branches, not tags
-        if version == 'main':
-            subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
+        if version != 'main':
+            return
+
+        print('Pulling {}'.format(version))
+        subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
     else:
         if version != 'main':
+            print('Fetching {}'.format(version))
             # Since this is a shallow clone, explicitly fetch the remote version tag
             refspec = 'refs/tags/' + version + ':ref/tags/' + version
             subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec], cwd=repo_path)
+        print('Adding worktree \'{}\' for {}'.format(cppcheck_path, version))
         subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version], cwd=repo_path)
 
 
@@ -118,9 +125,8 @@ def compile_version(cppcheck_path, jobs):
 def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
-        os.chdir(cppcheck_path)
-        subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'])
-        subprocess.check_call([cppcheck_path + '/cppcheck', '--version'])
+        subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
+        subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
     except:
         return False
     return True
@@ -217,7 +223,7 @@ def __wget(url, destfile, bandwidth_limit):
 
 def download_package(work_path, package, bandwidth_limit):
     print('Download package ' + package)
-    destfile = work_path + '/temp.tgz'
+    destfile = os.path.join(work_path, 'temp.tgz')
     if not __wget(package, destfile, bandwidth_limit):
         return None
     return destfile
@@ -225,7 +231,7 @@ def download_package(work_path, package, bandwidth_limit):
 
 def unpack_package(work_path, tgz, cpp_only=False):
     print('Unpacking..')
-    temp_path = work_path + '/temp'
+    temp_path = os.path.join(work_path, 'temp')
     __remove_tree(temp_path)
     os.mkdir(temp_path)
     found = False
@@ -303,7 +309,7 @@ def __run_command(cmd, print_cmd=True):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = True):
+def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack=True):
     print('Analyze..')
     os.chdir(work_path)
     libs = ''
@@ -317,7 +323,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = 
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2'
     options += ' -D__GNUC__ --platform=unix64'
     options += ' -rp={}'.format(dir_to_scan)
-    cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
+    cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options
     cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
@@ -368,9 +374,11 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = 
             break
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
 
+    options_j = options + ' ' + jobs
+
     if returncode == RETURN_CODE_TIMEOUT:
         print('Timeout!')
-        return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options, ''
+        return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options_j, ''
 
     # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
     has_error = returncode in (-11, -6, -4, -8, -7)
@@ -402,25 +410,25 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack = 
                 stacktrace = ''.join(internal_error_messages_list)
             else:
                 stacktrace = stdout
-        return returncode, stacktrace, '', returncode, options, ''
+        return returncode, stacktrace, '', returncode, options_j, ''
 
     if returncode != 0:
         # returncode is always 1 when this message is written
         thr_pos = stderr.find('#### ThreadExecutor')
         if thr_pos != -1:
             print('Thread!')
-            return -222, stderr[thr_pos:], '', -222, options, ''
+            return -222, stderr[thr_pos:], '', -222, options_j, ''
 
         print('Error!')
         if returncode > 0:
             returncode = -100-returncode
-        return returncode, stdout, '', returncode, options, ''
+        return returncode, stdout, '', returncode, options_j, ''
 
     if sig_num != -1:
         print('Signal!')
-        return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options, ''
+        return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options_j, ''
 
-    return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
+    return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options_j, timing_str
 
 
 def __split_results(results):
