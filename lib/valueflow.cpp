@@ -1737,10 +1737,11 @@ static const std::string& invertAssign(const std::string& assign)
         {"<<=", ">>="},
         {">>=", "<<="},
         {"^=", "^="}};
-    static std::string empty;
     auto it = lookup.find(assign);
-    if (it == lookup.end())
+    if (it == lookup.end()) {
+        static std::string empty;
         return empty;
+    }
     else
         return it->second;
 }
@@ -2988,8 +2989,8 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Error
         if (!classVar)
             errorPath.emplace_back(vartok, "Variable created here.");
         const Variable * var = vartok->variable();
-        std::string submessage;
         if (var) {
+            std::string submessage;
             switch (val->lifetimeKind) {
             case ValueFlow::Value::LifetimeKind::SubObject:
             case ValueFlow::Value::LifetimeKind::Object:
