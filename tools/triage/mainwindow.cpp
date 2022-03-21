@@ -341,12 +341,11 @@ void MainWindow::findInFilesClicked()
 
         QFile file(fileName);
         if (file.open(QIODevice::ReadOnly)) {
-            QString line;
             int lineN = 0;
             QTextStream in(&file);
             while (!in.atEnd()) {
                 ++lineN;
-                line = in.readLine();
+                QString line = in.readLine();
                 if (line.contains(text, Qt::CaseInsensitive)) {
                     ui->inFilesResult->addItem(fileName.mid(common_path_len) + QString{":"} + QString::number(lineN));
                 }
