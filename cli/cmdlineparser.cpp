@@ -937,7 +937,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         }
     }
 
-    mSettings->loadCppcheckCfg(argv[0]);
+    mSettings->loadCppcheckCfg();
 
     // Default template format..
     if (mSettings->templateFormat.empty()) {
