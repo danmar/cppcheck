@@ -146,7 +146,7 @@ class Reduce:
 
     def combinelines(self, filedata):
         if len(filedata) < 3:
-            return
+            return filedata
 
         lines = []
 
@@ -172,17 +172,19 @@ class Reduce:
                     filedata2[line] = filedata2[line].rstrip() + filedata2[line + 1].lstrip()
                     filedata2[line + 1] = ''
 
-                if self.replaceandrun('combine lines', filedata2, lines[i1] + 1, ''):
+                if self.replaceandrun('combine lines (chunk)', filedata2, lines[i1] + 1, ''):
                     filedata = filedata2
                     lines[i1:i2] = []
                     i = i1
 
-            chunksize = chunksize / 2
+            chunksize = int(chunksize / 2)
 
         for line in lines:
             fd1 = filedata[line].rstrip()
             fd2 = filedata[line + 1].lstrip()
             self.replaceandrun2('combine lines', filedata, line, fd1 + fd2, '')
+
+        return filedata
 
     def removedirectives(self, filedata):
         for i in range(len(filedata)):
@@ -334,7 +336,7 @@ def main():
         reduce.removecomments(filedata)
 
         print('combine lines..')
-        reduce.combinelines(filedata)
+        filedata = reduce.combinelines(filedata)
 
         print('remove line...')
         reduce.removeline(filedata)

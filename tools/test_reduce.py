@@ -62,3 +62,81 @@ def test_removedirectives():
 
     reduce.removedirectives(filedata)
     assert filedata == expected
+
+
+def test_combinelines_chunk():
+    """do not fail with 'TypeError: slice indices must be integers or None or have an __index__ method'"""
+
+    class ReduceTestFail(ReduceTest):
+        def runtool(self, filedata=None):
+            print(filedata)
+            return False
+
+    reduce = ReduceTestFail()
+
+    # need to have at least 11 lines ending with comma to enter chunked mode and twice as much for second interation
+    filedata = [
+        'int i,\n',
+        'j,\n',
+        'k,\n',
+        'l,\n',
+        'm,\n',
+        'n,\n',
+        'o,\n',
+        'p,\n',
+        'q,\n',
+        'r,\n',
+        's,\n',
+        't;\n',
+        'int i1,\n',
+        'j1,\n',
+        'k1,\n',
+        'l1,\n',
+        'm1,\n',
+        'n1,\n',
+        'o1,\n',
+        'p1,\n',
+        'q1,\n',
+        'r1,\n',
+        's1,\n',
+        't1;\n'
+    ]
+
+    reduce.combinelines(filedata)
+
+
+def test_combinelines_chunk_2():
+    """'filedata' is not changed by the funtion since the data is assigned to a local variable"""
+
+    reduce = ReduceTest()
+
+    # need to have at least 11 lines ending with comma to enter chunked mode
+    filedata = [
+        'int i,\n',
+        'j,\n',
+        'k,\n',
+        'l,\n',
+        'm,\n',
+        'n,\n',
+        'o,\n',
+        'p,\n',
+        'q,\n',
+        'r,\n',
+        's,\n',
+        't;\n'
+    ]
+
+    filedata2 = reduce.combinelines(filedata)
+    assert filedata == filedata
+    assert filedata2 == ['int i,j,\n',
+                         '',
+                         'l,\n',
+                         'm,\n',
+                         'n,\n',
+                         'o,\n',
+                         'p,\n',
+                         'q,\n',
+                         'r,\n',
+                         's,\n',
+                         't;\n',
+                         '']
