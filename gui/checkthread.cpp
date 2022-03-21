@@ -27,6 +27,7 @@
 #include <QDir>
 #include <QFile>
 #include <QProcess>
+#include <QRegExp>
 #include <QSettings>
 
 static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)

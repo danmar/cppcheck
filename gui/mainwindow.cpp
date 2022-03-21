@@ -51,6 +51,7 @@
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QRegExp>
 #include <QSettings>
 #include <QTimer>
 
