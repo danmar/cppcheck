@@ -957,8 +957,17 @@ void CheckOther::checkVariableScope()
             continue;
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
+        auto isWithinLambda = [](const Token* tok, const Variable* var) -> bool {
+            const Scope* scope = tok->scope();
+            while (scope && scope != var->scope()) {
+                if (scope->type == Scope::eLambda)
+                    return true;
+                scope = scope->nestedIn;
+            }
+            return false;
+        };
         for (; tok && tok != var->scope()->bodyEnd; tok = tok->next()) {
-            if (tok->str() == "{" && tok->scope() != tok->previous()->scope() && !tok->isExpandedMacro() && tok->scope()->type != Scope::eLambda) {
+            if (tok->str() == "{" && tok->scope() != tok->previous()->scope() && !tok->isExpandedMacro() && !isWithinLambda(tok, var)) {
                 if (used) {
                     bool used2 = false;
                     if (!checkInnerScope(tok, var, used2) || used2) {
