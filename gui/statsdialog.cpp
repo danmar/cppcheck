@@ -406,7 +406,7 @@ QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString
         QTextStream in(&f);
         while (!in.atEnd()) {
             QString line = in.readLine();
-            const QRegularExpression rxdate("^\\[(\\d\\d)\\.(\\d\\d)\\.(\\d\\d\\d\\d)\\]$");
+            static const QRegularExpression rxdate("^\\[(\\d\\d)\\.(\\d\\d)\\.(\\d\\d\\d\\d)\\]$");
             const QRegularExpressionMatch matchRes = rxdate.match(line);
             if (matchRes.hasMatch()) {
                 int y = matchRes.captured(3).toInt();
