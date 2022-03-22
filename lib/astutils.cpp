@@ -1942,7 +1942,6 @@ bool isWithinScope(const Token* tok, const Variable* var, Scope::ScopeType type)
     return false;
 }
 
-
 bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int varid, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
