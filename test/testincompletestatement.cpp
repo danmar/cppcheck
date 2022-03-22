@@ -497,6 +497,12 @@ private:
                       "[test.cpp:12]: (warning) Redundant code: Found unused member access.\n"
                       "[test.cpp:15]: (warning) Redundant code: Found unused member access.\n",
                       errout.str());
+
+        check("struct S { void* p; };\n"
+              "void f(S s) {\n"
+              "    delete (int*)s.p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {

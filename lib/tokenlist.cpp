@@ -529,7 +529,7 @@ static bool iscast(const Token *tok, bool cpp)
         return false;
 
     if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return" &&
-        (!cpp || tok->previous()->str() != "throw"))
+        (!cpp || !Token::Match(tok->previous(), "delete|throw")))
         return false;
 
     if (Token::simpleMatch(tok->previous(), ">") && tok->previous()->link())
