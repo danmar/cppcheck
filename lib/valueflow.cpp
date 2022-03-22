@@ -5292,7 +5292,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 });
             if (values.empty())
                 continue;
-            const bool init = vars.size() == 1 && vars.front()->nameToken() == tok->astOperand1();
+            const bool init = vars.size() == 1 && (vars.front()->nameToken() == tok->astOperand1() || tok->isSplittedVarDeclEq());
             valueFlowForwardAssign(
                 tok->astOperand2(), tok->astOperand1(), vars, values, init, tokenlist, errorLogger, settings);
             // Back propagate symbolic values
