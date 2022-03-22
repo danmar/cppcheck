@@ -30,6 +30,7 @@
 #include <QFileInfo>
 #include <QMimeData>
 #include <QPrinter>
+#include <QRegExp>
 #include <QTextDocument>
 #include <QWidget>
 

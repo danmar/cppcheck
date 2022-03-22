@@ -555,11 +555,19 @@ void ResultsView::variableDoubleClicked(QListWidgetItem* item)
 
 void ResultsView::editVariablesFilter(const QString &text)
 {
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    for (auto *item: mUI->mListAddedVariables->findItems(".*", Qt::MatchRegularExpression)) {
+#else
     for (auto *item: mUI->mListAddedVariables->findItems(".*", Qt::MatchRegExp)) {
+#endif
         QString varname = item->text().mid(0, item->text().indexOf(" "));
         item->setHidden(!varname.contains(text));
     }
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
+    for (auto *item: mUI->mListMissingVariables->findItems(".*", Qt::MatchRegularExpression))
+#else
     for (auto *item: mUI->mListMissingVariables->findItems(".*", Qt::MatchRegExp))
+#endif
         item->setHidden(!item->text().contains(text));
 }
 

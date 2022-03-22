@@ -1260,7 +1260,7 @@ void ResultsTree::updateFromOldReport(const QString &filename)
                 error->setData(data);
                 fileItem->child(j, COLUMN_SINCE_DATE)->setText(oldErrors[oldErrorIndex].sinceDate);
             } else if (oldErrorIndex < 0 || data[SINCEDATE].toString().isEmpty()) {
-                const QString sinceDate = QDate::currentDate().toString(Qt::SystemLocaleShortDate);
+                const QString sinceDate = QLocale::system().dateFormat(QLocale::ShortFormat);
                 data[SINCEDATE] = sinceDate;
                 error->setData(data);
                 fileItem->child(j, COLUMN_SINCE_DATE)->setText(sinceDate);

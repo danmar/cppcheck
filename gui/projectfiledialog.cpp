@@ -31,6 +31,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QFileInfo>
+#include <QRegExp>
 #include <QSettings>
 
 /** Return paths from QListWidget */

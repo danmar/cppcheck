@@ -51,6 +51,7 @@
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QMessageBox>
+#include <QRegExp>
 #include <QSettings>
 #include <QTimer>
 
@@ -594,7 +595,7 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
             mCurrentDirectory = inf.absolutePath();
         }
         formatAndSetTitle();
-    } else if (mode == QFileDialog::DirectoryOnly) {
+    } else if (mode == QFileDialog::Directory) {
         QString dir = QFileDialog::getExistingDirectory(this,
                                                         tr("Select directory to analyze"),
                                                         getPath(SETTINGS_LAST_CHECK_PATH));
@@ -678,7 +679,7 @@ void MainWindow::analyzeFiles()
 
 void MainWindow::analyzeDirectory()
 {
-    QStringList dir = selectFilesToAnalyze(QFileDialog::DirectoryOnly);
+    QStringList dir = selectFilesToAnalyze(QFileDialog::Directory);
     if (dir.isEmpty())
         return;
 
