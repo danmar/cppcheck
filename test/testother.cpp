@@ -97,6 +97,7 @@ private:
         TEST_CASE(varScope27);      // #7733 - #if
         TEST_CASE(varScope28);      // #10527
         TEST_CASE(varScope29);      // #10888
+        TEST_CASE(varScope30);      // #8541
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1345,6 +1346,22 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 's' can be reduced.\n", errout.str());
+    }
+
+    void varScope30() { // #8541
+        check("bool f(std::vector<int>& v, int i) {\n"
+              "    int n = 0;\n"
+              "    bool b = false;\n"
+              "    std::for_each(v.begin(), v.end(), [&](int j) {\n"
+              "        if (j == i) {\n"
+              "            ++n;\n"
+              "            if (n > 5)\n"
+              "                b = true;\n"
+              "        }\n"
+              "    });\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)

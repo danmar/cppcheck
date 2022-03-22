@@ -1929,6 +1929,19 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
     return false;
 }
 
+bool isWithinScope(const Token* tok, const Variable* var, Scope::ScopeType type)
+{
+    if (!tok || !var)
+        return false;
+    const Scope* scope = tok->scope();
+    while (scope && scope != var->scope()) {
+        if (scope->type == type)
+            return true;
+        scope = scope->nestedIn;
+    }
+    return false;
+}
+
 bool isVariableChangedByFunctionCall(const Token *tok, int indirect, nonneg int varid, const Settings *settings, bool *inconclusive)
 {
     if (!tok)
