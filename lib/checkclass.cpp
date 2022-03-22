@@ -170,7 +170,7 @@ void CheckClass::constructors()
                 if (var.isPrivate() && !var.isStatic() &&
                     (!var.isClass() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True))) {
                     ++needInit;
-                    if (!var.isInit() && !var.hasDefault())
+                    if (!var.isInit() && !var.hasDefault() && var.nameToken()->scope() == scope) // don't warn for anonymous union members
                         uninitVars.emplace_back(&var);
                     else
                         ++haveInit;
