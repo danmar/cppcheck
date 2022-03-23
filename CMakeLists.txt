@@ -13,6 +13,7 @@ include(cmake/compileroptions.cmake)
 include(cmake/compilerDefinitions.cmake)
 include(cmake/buildFiles.cmake)
 include(cmake/cxx11.cmake)
+include(cmake/printInfo.cmake)
 if (BUILD_GUI)
     include(cmake/qtCompat.cmake)
 endif()
@@ -80,5 +81,4 @@ add_subdirectory(tools/triage)   # Triage tool
 add_subdirectory(oss-fuzz) # OSS-Fuzz clients
 add_subdirectory(tools)
 
-include(cmake/printInfo.cmake)
 include(cmake/clang_tidy.cmake)
