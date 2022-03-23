@@ -812,9 +812,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             state.op.push(tok);
             if (Token::Match(tok, "%name% <") && tok->linkAt(1))
                 tok = tok->linkAt(1);
-            else if (Token::Match(tok, "%name% ..."))
-                tok = tok->next();
-            else if (Token::Match(tok->previous(), "( %name% ) ="))
+            else if (Token::Match(tok, "%name% ...") || Token::Match(tok->previous(), "( %name% ) ="))
                 tok = tok->next();
             tok = tok->next();
             if (Token::Match(tok, "%str%")) {
