@@ -359,7 +359,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
                     errorItem.severity = Severity::SeverityType::performance;
                 else if (id1.startsWith("portability"))
                     errorItem.severity = Severity::SeverityType::portability;
-                else if (id1.startsWith("cert") || (id1.startsWith("misc") && !id1.contains("unused")))
+                else if (id1.startsWith("misc") && !id1.contains("unused"))
                     errorItem.severity = Severity::SeverityType::warning;
                 else
                     errorItem.severity = Severity::SeverityType::style;
