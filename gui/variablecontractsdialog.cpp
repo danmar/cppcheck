@@ -20,7 +20,8 @@
 
 #include "ui_variablecontractsdialog.h"
 
-#include <QRegExpValidator>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 VariableContractsDialog::VariableContractsDialog(QWidget *parent, QString var) :
     QDialog(parent),
@@ -45,8 +46,8 @@ VariableContractsDialog::VariableContractsDialog(QWidget *parent, QString var) :
     mUI->mMinValue->setText(getMinMax(var, "min"));
     mUI->mMaxValue->setText(getMinMax(var, "max"));
 
-    mUI->mMinValue->setValidator(new QRegExpValidator(QRegExp("-?[0-9]*")));
-    mUI->mMaxValue->setValidator(new QRegExpValidator(QRegExp("-?[0-9]*")));
+    mUI->mMinValue->setValidator(new QRegularExpressionValidator(QRegularExpression("-?[0-9]*")));
+    mUI->mMaxValue->setValidator(new QRegularExpressionValidator(QRegularExpression("-?[0-9]*")));
 }
 
 VariableContractsDialog::~VariableContractsDialog()

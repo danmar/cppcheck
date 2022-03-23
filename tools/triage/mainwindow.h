@@ -21,6 +21,7 @@
 
 #include <QFileSystemModel>
 #include <QMainWindow>
+#include <QRegularExpression>
 #include <QString>
 
 class QListWidgetItem;
@@ -61,7 +62,7 @@ private:
 
     QStringList mAllErrors;
     QFileSystemModel mFSmodel;
-    const QRegExp mVersionRe;
+    const QRegularExpression mVersionRe;
 
     const QStringList hFiles;
     const QStringList srcFiles;

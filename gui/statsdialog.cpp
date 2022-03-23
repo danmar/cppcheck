@@ -30,7 +30,7 @@
 #include <QFileInfo>
 #include <QMimeData>
 #include <QPrinter>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTextDocument>
 #include <QWidget>
 
@@ -406,11 +406,12 @@ QLineSeries *StatsDialog::numberOfReports(const QString &fileName, const QString
         QTextStream in(&f);
         while (!in.atEnd()) {
             QString line = in.readLine();
-            QRegExp rxdate("\\[(\\d\\d)\\.(\\d\\d)\\.(\\d\\d\\d\\d)\\]");
-            if (rxdate.exactMatch(line)) {
-                int y = rxdate.cap(3).toInt();
-                int m = rxdate.cap(2).toInt();
-                int d = rxdate.cap(1).toInt();
+            const QRegularExpression rxdate("^\\[(\\d\\d)\\.(\\d\\d)\\.(\\d\\d\\d\\d)\\]$");
+            const QRegularExpressionMatch matchRes = rxdate.match(line);
+            if (matchRes.hasMatch()) {
+                int y = matchRes.captured(3).toInt();
+                int m = matchRes.captured(2).toInt();
+                int d = matchRes.captured(1).toInt();
                 QDateTime dt;
                 dt.setDate(QDate(y,m,d));
                 if (t == dt.toMSecsSinceEpoch())

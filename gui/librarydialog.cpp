@@ -28,7 +28,7 @@
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QTextStream>
 
 // TODO: get/compare functions from header
@@ -198,7 +198,8 @@ void LibraryDialog::editFunctionName(QListWidgetItem* item)
     QString functionName = item->text();
     CppcheckLibraryData::Function * const function = dynamic_cast<FunctionListItem*>(item)->function;
     if (functionName != function->name) {
-        if (QRegExp(NAMES).exactMatch(functionName)) {
+        const QRegularExpressionMatch matchRes = QRegularExpression("^" NAMES "$").match(functionName);
+        if (matchRes.hasMatch()) {
             function->name = functionName;
             mUi->buttonSave->setEnabled(true);
         } else {

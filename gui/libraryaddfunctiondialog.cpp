@@ -20,15 +20,16 @@
 
 #include "ui_libraryaddfunctiondialog.h"
 
-#include <QRegExp>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 LibraryAddFunctionDialog::LibraryAddFunctionDialog(QWidget *parent) :
     QDialog(parent),
     mUi(new Ui::LibraryAddFunctionDialog)
 {
     mUi->setupUi(this);
-    QRegExp rx(NAMES);
-    QValidator *validator = new QRegExpValidator(rx, this);
+    const QRegularExpression rx(NAMES);
+    QValidator *validator = new QRegularExpressionValidator(rx, this);
     mUi->functionName->setValidator(validator);
 }
 
