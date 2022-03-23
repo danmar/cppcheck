@@ -17,7 +17,8 @@ add_executable(dmake EXCLUDE_FROM_ALL
         ${CMAKE_SOURCE_DIR}/lib/utils.cpp
         $<TARGET_OBJECTS:simplecpp_objs>
 )
-target_include_directories(dmake PRIVATE ${CMAKE_SOURCE_DIR}/cli ${CMAKE_SOURCE_DIR}/lib ${CMAKE_SOURCE_DIR}/externals/simplecpp)
+target_include_directories(dmake PRIVATE ${CMAKE_SOURCE_DIR}/cli ${CMAKE_SOURCE_DIR}/lib)
+target_externals_include_directories(dmake PRIVATE ${CMAKE_SOURCE_DIR}/externals/simplecpp)
 if (WIN32 AND NOT BORLAND)
     if(NOT MINGW)
         target_link_libraries(dmake Shlwapi.lib)

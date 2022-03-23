@@ -37,7 +37,7 @@ CheckOptions:
     set_target_properties(cppcheck-gui PROPERTIES AUTOMOC ON)
     target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/lib/)
     if(USE_BUNDLED_TINYXML2)
-        target_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
+        target_externals_include_directories(cppcheck-gui PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
     else()
         target_include_directories(cppcheck-gui SYSTEM PRIVATE ${tinyxml2_INCLUDE_DIRS})
     endif()
