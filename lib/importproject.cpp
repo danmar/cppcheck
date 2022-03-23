@@ -414,7 +414,10 @@ bool ImportProject::importCompileCommands(std::istream &istr)
             if (obj["arguments"].is<picojson::array>()) {
                 for (const picojson::value& arg : obj["arguments"].get<picojson::array>()) {
                     if (arg.is<std::string>()) {
-                        command += arg.get<std::string>() + " ";
+                        std::string str = arg.get<std::string>();
+                        if (str.find(" ") != std::string::npos)
+                            str = "\"" + str + "\"";
+                        command += str + " ";
                     }
                 }
             } else {
