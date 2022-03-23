@@ -510,7 +510,7 @@ private:
               "void f(T* t) {\n"
               "    for (decltype(t->p) (c) = t->p; ;) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());              
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(int i, std::vector<int*> v);\n" // #10880
               "void g() {\n"
