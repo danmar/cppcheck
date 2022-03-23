@@ -51,7 +51,7 @@
 #include <QFileInfo>
 #include <QInputDialog>
 #include <QMessageBox>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QSettings>
 #include <QTimer>
 
@@ -262,9 +262,9 @@ void MainWindow::handleCLIParams(const QStringList &params)
         } else {
             loadResults(logFile);
         }
-    } else if ((index = params.indexOf(QRegExp(".*\\.cppcheck$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
+    } else if ((index = params.indexOf(QRegularExpression(".*\\.cppcheck$", QRegularExpression::CaseInsensitiveOption), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
         loadProjectFile(params[index]);
-    } else if ((index = params.indexOf(QRegExp(".*\\.xml$", Qt::CaseInsensitive), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
+    } else if ((index = params.indexOf(QRegularExpression(".*\\.xml$", QRegularExpression::CaseInsensitiveOption), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
         loadResults(params[index],QDir::currentPath());
     } else
         doAnalyzeFiles(params);
@@ -1179,7 +1179,7 @@ void MainWindow::clearResults()
     if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
         QDir dir(QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir());
         for (const QString& f: dir.entryList(QDir::Files)) {
-            if (!f.endsWith("files.txt") && !QRegExp(".*.s[0-9]+$").exactMatch(f))
+            if (!f.endsWith("files.txt") && !QRegularExpression("^.*.s[0-9]+$").match(f).hasMatch())
                 dir.remove(f);
         }
     }

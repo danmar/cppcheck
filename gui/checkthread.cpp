@@ -27,7 +27,7 @@
 #include <QDir>
 #include <QFile>
 #include <QProcess>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QSettings>
 
 static bool executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output)
@@ -307,8 +307,8 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 {
     QList<ErrorItem> errorItems;
     ErrorItem errorItem;
-    QRegExp r1("(.+):([0-9]+):([0-9]+): (note|warning|error|fatal error): (.*)");
-    QRegExp r2("(.*)\\[([a-zA-Z0-9\\-_\\.]+)\\]");
+    const QRegularExpression r1("^(.+):([0-9]+):([0-9]+): (note|warning|error|fatal error): (.*)$");
+    const QRegularExpression r2("^(.*)\\[([a-zA-Z0-9\\-_\\.]+)\\]$");
     QTextStream in(&err, QIODevice::ReadOnly);
     while (!in.atEnd()) {
         QString line = in.readLine();
@@ -327,31 +327,33 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
             continue;
         }
 
-        if (!r1.exactMatch(line))
+        const QRegularExpressionMatch r1MatchRes = r1.match(line);
+        if (!r1MatchRes.hasMatch())
             continue;
-        if (r1.cap(4) != "note") {
+        if (r1MatchRes.captured(4) != "note") {
             errorItems.append(errorItem);
             errorItem = ErrorItem();
-            errorItem.file0 = r1.cap(1);
+            errorItem.file0 = r1MatchRes.captured(1);
         }
 
         errorItem.errorPath.append(QErrorPathItem());
-        errorItem.errorPath.last().file = r1.cap(1);
-        errorItem.errorPath.last().line = r1.cap(2).toInt();
-        errorItem.errorPath.last().column = r1.cap(3).toInt();
-        if (r1.cap(4) == "warning")
+        errorItem.errorPath.last().file = r1MatchRes.captured(1);
+        errorItem.errorPath.last().line = r1MatchRes.captured(2).toInt();
+        errorItem.errorPath.last().column = r1MatchRes.captured(3).toInt();
+        if (r1MatchRes.captured(4) == "warning")
             errorItem.severity = Severity::SeverityType::warning;
-        else if (r1.cap(4) == "error" || r1.cap(4) == "fatal error")
+        else if (r1MatchRes.captured(4) == "error" || r1MatchRes.captured(4) == "fatal error")
             errorItem.severity = Severity::SeverityType::error;
 
         QString message,id;
-        if (r2.exactMatch(r1.cap(5))) {
-            message = r2.cap(1);
-            const QString id1(r2.cap(2));
+        const QRegularExpressionMatch r2MatchRes = r2.match(r1MatchRes.captured(5));
+        if (r2MatchRes.hasMatch()) {
+            message = r2MatchRes.captured(1);
+            const QString id1(r2MatchRes.captured(2));
             if (id1.startsWith("clang"))
                 id = id1;
             else
-                id = tool + '-' + r2.cap(2);
+                id = tool + '-' + r2MatchRes.captured(2);
             if (tool == CLANG_TIDY) {
                 if (id1.startsWith("performance"))
                     errorItem.severity = Severity::SeverityType::performance;
@@ -363,7 +365,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
                     errorItem.severity = Severity::SeverityType::style;
             }
         } else {
-            message = r1.cap(5);
+            message = r1MatchRes.captured(5);
             id = CLANG_ANALYZER;
         }
 

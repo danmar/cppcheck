@@ -32,6 +32,7 @@
 #include <QMimeDatabase>
 #include <QProcess>
 #include <QProgressDialog>
+#include <QRegularExpression>
 #include <QTextStream>
 
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
@@ -42,7 +43,7 @@ const int MAX_ERRORS = 100;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mVersionRe("^(master|main|your|head|[12].[0-9][0-9]?) (.*)"),
+    mVersionRe("^(master|main|your|head|[12].[0-9][0-9]?) (.*)$"),
     hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx", "*.ipp", "*.ixx"},
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
@@ -110,9 +111,10 @@ void MainWindow::load(QTextStream &textStream)
             if (!errorMessage.isEmpty())
                 mAllErrors << errorMessage;
             errorMessage.clear();
-        } else if (!url.isEmpty() && QRegExp(".*: (error|warning|style|note):.*").exactMatch(line)) {
-            if (mVersionRe.exactMatch(line)) {
-                const QString version = mVersionRe.cap(1);
+        } else if (!url.isEmpty() && QRegularExpression("^.*: (error|warning|style|note):.*$").match(line).hasMatch()) {
+            const QRegularExpressionMatch matchRes = mVersionRe.match(line);
+            if (matchRes.hasMatch()) {
+                const QString version = matchRes.captured(1);
                 if (versions.indexOf(version) < 0)
                     versions << version;
             }
@@ -260,8 +262,9 @@ void MainWindow::showResult(QListWidgetItem *item)
         return;
     const QString url = lines[0];
     QString msg = lines[1];
-    if (mVersionRe.exactMatch(msg))
-        msg = mVersionRe.cap(2);
+    const QRegularExpressionMatch matchRes = mVersionRe.match(msg);
+    if (matchRes.hasMatch())
+        msg = matchRes.captured(2);
     const QString archiveName = url.mid(url.lastIndexOf("/") + 1);
     const int pos1 = msg.indexOf(":");
     const int pos2 = msg.indexOf(":", pos1+1);

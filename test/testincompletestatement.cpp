@@ -498,7 +498,7 @@ private:
                       "[test.cpp:15]: (warning) Redundant code: Found unused member access.\n",
                       errout.str());
 
-        check("struct S { void* p; };\n"
+        check("struct S { void* p; };\n" // #10875
               "void f(S s) {\n"
               "    delete (int*)s.p;\n"
               "}\n");
@@ -509,6 +509,12 @@ private:
               "};\n"
               "void f(T* t) {\n"
               "    for (decltype(t->p) (c) = t->p; ;) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());              
+
+        check("void f(int i, std::vector<int*> v);\n" // #10880
+              "void g() {\n"
+              "    f(1, { static_cast<int*>(nullptr) });\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -13,10 +13,22 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include <sys/mman.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
+
+int uninitvar_getpw(uid_t uid, char *buf)
+{
+    uid_t someUid;
+    // cppcheck-suppress getpwCalled
+    (void)getpw(uid, buf);
+    // cppcheck-suppress getpwCalled
+    // cppcheck-suppress uninitvar
+    return getpw(someUid, buf);
+}
 
 // #9323, #9331
 void syntaxError_timercmp(struct timeval t)
