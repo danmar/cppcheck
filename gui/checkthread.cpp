@@ -221,7 +221,11 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 process.start(clangCmd(),args2);
                 process.waitForFinished();
                 const QByteArray &ba = process.readAllStandardOutput();
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+                const quint16 chksum = qChecksum(QByteArrayView(ba));
+#else
                 const quint16 chksum = qChecksum(ba.data(), ba.length());
+#endif
 
                 QFile f1(analyzerInfoFile + '.' + addon + "-E");
                 if (f1.open(QIODevice::ReadOnly | QIODevice::Text)) {
