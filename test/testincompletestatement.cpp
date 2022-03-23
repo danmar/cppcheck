@@ -503,6 +503,14 @@ private:
               "    delete (int*)s.p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n" // #10874
+              "    T* p;\n"
+              "};\n"
+              "void f(T* t) {\n"
+              "    for (decltype(t->p) (c) = t->p; ;) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
