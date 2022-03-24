@@ -81,8 +81,9 @@ jobs:
       # no 32-bit Qt available
       - name: Install Qt ${{ matrix.qt_ver }}
         if: matrix.qt_ver != '' && matrix.arch == 'x64'
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
+          aqtversion: '==2.0.6'
           version: ${{ matrix.qt_ver }}
           modules: 'qtcharts'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
