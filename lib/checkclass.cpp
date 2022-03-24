@@ -170,7 +170,7 @@ void CheckClass::constructors()
                 if (var.isPrivate() && !var.isStatic() &&
                     (!var.isClass() || (var.type() && var.type()->needInitialization == Type::NeedInitialization::True))) {
                     ++needInit;
-                    if (!var.isInit() && !var.hasDefault())
+                    if (!var.isInit() && !var.hasDefault() && var.nameToken()->scope() == scope) // don't warn for anonymous union members
                         uninitVars.emplace_back(&var);
                     else
                         ++haveInit;
@@ -778,7 +778,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
         }
 
         // Calling member variable function?
-        if (Token::Match(ftok->next(), "%var% . %name% (")) {
+        if (Token::Match(ftok->next(), "%var% . %name% (") && !(ftok->next()->valueType() && ftok->next()->valueType()->pointer)) {
             for (const Variable &var : scope->varlist) {
                 if (var.declarationId() == ftok->next()->varId()) {
                     /** @todo false negative: we assume function changes variable state */
@@ -2082,6 +2082,8 @@ bool CheckClass::isMemberVar(const Scope *scope, const Token *tok) const
 
     for (const Variable& var : scope->varlist) {
         if (var.name() == tok->str()) {
+            if (Token::Match(tok, "%name% ::"))
+                continue;
             const Token* fqTok = tok;
             while (Token::Match(fqTok->tokAt(-2), "%name% ::"))
                 fqTok = fqTok->tokAt(-2);
@@ -2559,7 +2561,8 @@ const std::list<const Token *> & CheckClass::getVirtualFunctionCalls(const Funct
         const Function * callFunction = tok->function();
         if (!callFunction ||
             function.nestedIn != callFunction->nestedIn ||
-            (tok->previous() && tok->previous()->str() == "."))
+            Token::simpleMatch(tok->previous(), ".") ||
+            !(tok->astParent() && (tok->astParent()->str() == "(" || (tok->astParent()->str() == "::" && Token::simpleMatch(tok->astParent()->astParent(), "(")))))
             continue;
 
         if (tok->previous() &&

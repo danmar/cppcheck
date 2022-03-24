@@ -243,9 +243,9 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     int ret;
 
     if (cppCheck.settings().exceptionHandling)
-        ret = check_wrapper(cppCheck, argc, argv);
+        ret = check_wrapper(cppCheck);
     else
-        ret = check_internal(cppCheck, argc, argv);
+        ret = check_internal(cppCheck);
 
     mSettings = nullptr;
     return ret;
@@ -821,12 +821,12 @@ namespace {
  * TODO Check for multi-threading issues!
  *
  */
-int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[])
+int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
 {
 #ifdef USE_WINDOWS_SEH
     FILE *outputFile = stdout;
     __try {
-        return check_internal(cppcheck, argc, argv);
+        return check_internal(cppcheck);
     } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
         // reporting to stdout may not be helpful within a GUI application...
         fputs("Please report this to the cppcheck developers!\n", outputFile);
@@ -854,23 +854,23 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
     for (std::map<int, std::string>::const_iterator sig=listofsignals.begin(); sig!=listofsignals.end(); ++sig) {
         sigaction(sig->first, &act, nullptr);
     }
-    return check_internal(cppcheck, argc, argv);
+    return check_internal(cppcheck);
 #else
-    return check_internal(cppcheck, argc, argv);
+    return check_internal(cppcheck);
 #endif
 }
 
 /*
  * That is a method which gets called from check_wrapper
  * */
-int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const char* const argv[])
+int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 {
     Settings& settings = cppcheck.settings();
     mSettings = &settings;
-    const bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
+    const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
 
     for (const std::string &lib : settings.libraries) {
-        if (!tryLoadLibrary(settings.library, argv[0], lib.c_str())) {
+        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
             const std::string msg("Failed to load the library " + lib);
             const std::list<ErrorMessage::FileLocation> callstack;
             ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
@@ -879,22 +879,15 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         }
     }
 
-    bool posix = true;
-    if (settings.posix())
-        posix = tryLoadLibrary(settings.library, argv[0], "posix.cfg");
-    bool windows = true;
-    if (settings.isWindowsPlatform())
-        windows = tryLoadLibrary(settings.library, argv[0], "windows.cfg");
-
-    if (!std || !posix || !windows) {
+    if (!std) {
         const std::list<ErrorMessage::FileLocation> callstack;
-        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg") + ". Your Cppcheck installation is broken, please re-install.");
+        const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
 #ifdef FILESDIR
         const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
                                   FILESDIR "\" and will therefore search for "
                                   "std.cfg in " FILESDIR "/cfg.");
 #else
-        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(argv[0])) + "cfg");
+        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(settings.exename)) + "cfg");
         const std::string details("The Cppcheck binary was compiled without FILESDIR set. Either the "
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
@@ -1143,9 +1136,9 @@ FILE* CppCheckExecutor::getExceptionOutput()
     return mExceptionOutput;
 }
 
-bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath, const char* filename)
+bool CppCheckExecutor::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)
 {
-    const Library::Error err = destination.load(basepath, filename);
+    const Library::Error err = destination.load(basepath.c_str(), filename);
 
     if (err.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT)
         std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;

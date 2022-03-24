@@ -529,7 +529,7 @@ static bool iscast(const Token *tok, bool cpp)
         return false;
 
     if (tok->previous() && tok->previous()->isName() && tok->previous()->str() != "return" &&
-        (!cpp || tok->previous()->str() != "throw"))
+        (!cpp || !Token::Match(tok->previous(), "delete|throw")))
         return false;
 
     if (Token::simpleMatch(tok->previous(), ">") && tok->previous()->link())
@@ -631,6 +631,8 @@ static bool iscpp11init_impl(const Token * const tok)
     if (!nameToken)
         return false;
     if (nameToken->str() == ")" && Token::simpleMatch(nameToken->link()->previous(), "decltype ("))
+        return true;
+    if (Token::simpleMatch(nameToken, ", {"))
         return true;
     if (nameToken->str() == ">" && nameToken->link())
         nameToken = nameToken->link()->previous();
@@ -812,7 +814,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             state.op.push(tok);
             if (Token::Match(tok, "%name% <") && tok->linkAt(1))
                 tok = tok->linkAt(1);
-            else if (Token::Match(tok, "%name% ..."))
+            else if (Token::Match(tok, "%name% ...") || (state.op.size() == 1 && Token::Match(tok->previous(), "( %name% ) =")))
                 tok = tok->next();
             tok = tok->next();
             if (Token::Match(tok, "%str%")) {
@@ -911,7 +913,9 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
 
 static void compilePrecedence2(Token *&tok, AST_state& state)
 {
-    compileScope(tok, state);
+    const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
+    if (!(isStartOfCpp11Init && Token::Match(tok->tokAt(-2), "new %type% {")))
+        compileScope(tok, state);
     while (tok) {
         if (tok->tokType() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
             compileUnaryOp(tok, state, compileScope);
@@ -1463,7 +1467,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             while (tok2 && tok2 != endPar && tok2->str() != ";") {
                 if (tok2->str() == "<" && tok2->link()) {
                     tok2 = tok2->link();
-                } else if (Token::Match(tok2, "%name% %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
+                } else if (Token::Match(tok2, "%name% )| %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                     init1 = tok2;
                     AST_state state1(cpp);
                     compileExpression(tok2, state1);

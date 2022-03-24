@@ -133,6 +133,7 @@ private:
         TEST_CASE(varid_in_class19);
         TEST_CASE(varid_in_class20);    // #7267
         TEST_CASE(varid_in_class21);    // #7788
+        TEST_CASE(varid_in_class22);    // #10872
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -1906,6 +1907,30 @@ private:
                                 "6:\n"
                                 "7: template < typename t1 , typename t2 >\n"
                                 "8: A :: B < t1 , t2 > :: B ( ) : x@1 ( 9 ) { }\n";
+
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
+    void varid_in_class22() {
+        const char code[] = "struct data {};\n"
+                            "    struct S {\n"
+                            "    std::vector<data> std;\n"
+                            "    void f();\n"
+                            "};\n"
+                            "void S::f() {\n"
+                            "    std::vector<data>::const_iterator end = std.end();\n"
+                            "    for (std::vector<data>::const_iterator i = std.begin(); i != end; ++i) {}\n"
+                            "}\n";
+
+        const char expected[] = "1: struct data { } ;\n"
+                                "2: struct S {\n"
+                                "3: std :: vector < data > std@1 ;\n"
+                                "4: void f ( ) ;\n"
+                                "5: } ;\n"
+                                "6: void S :: f ( ) {\n"
+                                "7: std :: vector < data > :: const_iterator end@2 ; end@2 = std@1 . end ( ) ;\n"
+                                "8: for ( std :: vector < data > :: const_iterator i@3 = std@1 . begin ( ) ; i@3 != end@2 ; ++ i@3 ) { }\n"
+                                "9: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }

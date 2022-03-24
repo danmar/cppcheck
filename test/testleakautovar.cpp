@@ -124,6 +124,7 @@ private:
         TEST_CASE(doublefree9);
         TEST_CASE(doublefree10); // #8706
         TEST_CASE(doublefree11);
+        TEST_CASE(doublefree12); // #10502
 
         // exit
         TEST_CASE(exit1);
@@ -1314,6 +1315,16 @@ private:
               "    free(q)\n"
               "}");
         ASSERT_EQUALS("[test.c:3] -> [test.c:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
+    }
+
+    void doublefree12() { // #10502
+        check("int f(FILE *fp, const bool b) {\n"
+              "    if (b)\n"
+              "        return fclose(fp);\n"
+              "    fclose(fp);\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void exit1() {

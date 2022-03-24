@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,26 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "testtranslationhandler.h"
+#ifndef smallvectorH
+#define smallvectorH
 
-#include "translationhandler.h"
+#include <cstddef>
 
-#include <QtTest>
+static constexpr std::size_t DefaultSmallVectorSize = 0;
 
-static const QStringList getTranslationNames(const TranslationHandler& handler)
+#ifdef HAVE_BOOST
+#include <boost/container/small_vector.hpp>
+
+template<typename T, std::size_t N = DefaultSmallVectorSize>
+using SmallVector = boost::container::small_vector<T, N>;
+#else
+#include <vector>
+
+template<class T, std::size_t N>
+struct TaggedAllocator : std::allocator<T>
 {
-    QStringList names;
-    for (const TranslationInfo& translation : handler.getTranslations()) {
-        names.append(translation.mName);
-    }
-    return names;
-}
+    template<class ... Ts>
+    TaggedAllocator(Ts&&... ts)
+        : std::allocator<T>(std::forward<Ts>(ts)...)
+    {}
+};
 
-void TestTranslationHandler::construct()
-{
-    TranslationHandler handler;
-    QCOMPARE(getTranslationNames(handler).size(), 13);  // 12 translations + english
-    QCOMPARE(handler.getCurrentLanguage(), QString("en"));
-}
+template<typename T, std::size_t N = DefaultSmallVectorSize>
+using SmallVector = std::vector<T, TaggedAllocator<T, N>>;
+#endif
 
-QTEST_MAIN(TestTranslationHandler)
+#endif

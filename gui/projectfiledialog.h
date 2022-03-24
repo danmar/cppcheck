@@ -19,8 +19,6 @@
 #ifndef PROJECTFILE_DIALOG_H
 #define PROJECTFILE_DIALOG_H
 
-#include "ui_projectfiledialog.h"
-
 #include "suppressions.h"
 
 #include <QDialog>
@@ -28,6 +26,9 @@
 #include <QStringList>
 
 class QWidget;
+namespace Ui {
+    class ProjectFile;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -315,7 +316,7 @@ protected:
 private:
     QStringList getProjectConfigs(const QString &fileName);
 
-    Ui::ProjectFile mUI;
+    Ui::ProjectFile *mUI;
 
     /**
      * @brief Projectfile path.

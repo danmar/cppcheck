@@ -170,7 +170,7 @@ private:
               "    (void)c;\n"
               "  }\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:9]: (debug) constStatementError not handled.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void test_numeric() {
@@ -408,6 +408,25 @@ private:
                       "[test.cpp:4]: (warning) Redundant code: Found unused cast of expression 'i'.\n",
                       errout.str());
 
+        check("namespace M {\n"
+              "    namespace N { typedef char T; }\n"
+              "}\n"
+              "void f(int i) {\n"
+              "    (M::N::T)i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Redundant code: Found unused cast of expression 'i'.\n", errout.str());
+
+        check("void f(int (g)(int a, int b)) {\n" // #10873
+              "    int p = 0, q = 1;\n"
+              "    (g)(p, q);\n"
+              "}\n"
+              "void f() {\n"
+              "  char buf[10];\n"
+              "  (sprintf)(buf, \"%d\", 42);\n"
+              "  (printf)(\"abc\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S; struct T; struct U;\n"
               "void f() {\n"
               "    T t;\n"
@@ -419,6 +438,12 @@ private:
 
         check("void f(bool b) { b ? true : false; }\n"); // #10865
         ASSERT_EQUALS("[test.cpp:1]: (warning) Redundant code: Found unused result of ternary operator.\n", errout.str());
+
+        check("struct S { void (*f)() = nullptr; };\n" // #10877
+              "void g(S* s) {\n"
+              "    (s->f == nullptr) ? nullptr : (s->f(), nullptr);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f(bool b) {\n"
               "    g() ? true : false;\n"
@@ -506,6 +531,26 @@ private:
               "    j[0][0][h()];\n"
               "    std::map<std::string, int> M;\n"
               "    M[\"abc\"]; \n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { void* p; };\n" // #10875
+              "void f(S s) {\n"
+              "    delete (int*)s.p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct T {\n" // #10874
+              "    T* p;\n"
+              "};\n"
+              "void f(T* t) {\n"
+              "    for (decltype(t->p) (c) = t->p; ;) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i, std::vector<int*> v);\n" // #10880
+              "void g() {\n"
+              "    f(1, { static_cast<int*>(nullptr) });\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

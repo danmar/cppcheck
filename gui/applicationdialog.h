@@ -19,13 +19,14 @@
 #ifndef APPLICATIONDIALOG_H
 #define APPLICATIONDIALOG_H
 
-#include "ui_application.h"
-
 #include <QDialog>
 #include <QString>
 
 class QWidget;
 class Application;
+namespace Ui {
+    class ApplicationDialog;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -67,7 +68,7 @@ protected:
      * @brief UI from the Qt designer
      *
      */
-    Ui::ApplicationDialog mUI;
+    Ui::ApplicationDialog* mUI;
 
 private:
 

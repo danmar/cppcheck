@@ -914,10 +914,12 @@ void CheckOther::checkVariableScope()
         return;
 
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || !var->isLocal() || (!var->isPointer() && !var->isReference() && !var->typeStartToken()->isStandardType()))
+        if (!var || !var->isLocal() || var->isConst())
             continue;
 
-        if (var->isConst())
+        const bool isPtrOrRef = var->isPointer() || var->isReference();
+        const bool isSimpleType = var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType() || (mTokenizer->isC() && var->type() && var->type()->isStructType());
+        if (!isPtrOrRef && !isSimpleType && !astIsContainer(var->nameToken()))
             continue;
 
         if (mTokenizer->hasIfdef(var->nameToken(), var->scope()->bodyEnd))
@@ -956,7 +958,7 @@ void CheckOther::checkVariableScope()
         bool reduce = true;
         bool used = false; // Don't warn about unused variables
         for (; tok && tok != var->scope()->bodyEnd; tok = tok->next()) {
-            if (tok->str() == "{" && tok->scope() != tok->previous()->scope() && !tok->isExpandedMacro() && tok->scope()->type != Scope::eLambda) {
+            if (tok->str() == "{" && tok->scope() != tok->previous()->scope() && !tok->isExpandedMacro() && !isWithinScope(tok, var, Scope::ScopeType::eLambda)) {
                 if (used) {
                     bool used2 = false;
                     if (!checkInnerScope(tok, var, used2) || used2) {
@@ -1759,12 +1761,12 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return true;
     if (isCPPCast(tok))
         return isWithoutSideEffects(cpp, tok) && isConstStatement(tok->astOperand2(), cpp);
-    else if (tok->isCast())
+    else if (tok->isCast() && tok->next() && tok->next()->isStandardType())
         return isWithoutSideEffects(cpp, tok->astOperand1()) && isConstStatement(tok->astOperand1(), cpp);
-    if (Token::Match(tok, "( %type%"))
-        return isConstStatement(tok->astOperand1(), cpp);
-    if (Token::Match(tok, ",|."))
+    if (Token::simpleMatch(tok, "."))
         return isConstStatement(tok->astOperand2(), cpp);
+    if (Token::simpleMatch(tok, ",")) // warn about const statement on rhs at the top level
+        return tok->astParent() ? isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp) : isConstStatement(tok->astOperand2(), cpp);
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
         return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
     if (Token::simpleMatch(tok, "[") && !Token::Match(tok->tokAt(-2), "%type% %name%") && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true)) {
@@ -2981,7 +2983,7 @@ void CheckOther::checkUnusedLabel()
             if (!tok->scope()->isExecutable())
                 tok = tok->scope()->bodyEnd;
 
-            if (Token::Match(tok, "{|}|; %name% :") && tok->strAt(1) != "default") {
+            if (Token::Match(tok, "{|}|; %name% :") && !tok->tokAt(1)->isKeyword()) {
                 const std::string tmp("goto " + tok->strAt(1));
                 if (!Token::findsimplematch(scope->bodyStart->next(), tmp.c_str(), tmp.size(), scope->bodyEnd->previous()))
                     unusedLabelError(tok->next(), tok->next()->scope()->type == Scope::eSwitch, hasIfdef);

@@ -96,6 +96,8 @@ private:
         TEST_CASE(varScope26);      // range for loop, map
         TEST_CASE(varScope27);      // #7733 - #if
         TEST_CASE(varScope28);      // #10527
+        TEST_CASE(varScope29);      // #10888
+        TEST_CASE(varScope30);      // #8541
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -156,6 +158,7 @@ private:
         TEST_CASE(duplicateExpression11); // #8916 (function call)
         TEST_CASE(duplicateExpression12); // #10026
         TEST_CASE(duplicateExpression13); // #7899
+        TEST_CASE(duplicateExpression14); // #9871
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -1315,6 +1318,48 @@ private:
         check("void f() {\n" // #10527
               "    int i{};\n"
               "    if (double d = g(i); d == 1.0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope29() { // #10888
+        check("enum E { E0 };\n"
+              "struct S { int i; };\n"
+              "void f(int b) {\n"
+              "    enum E e;\n"
+              "    struct S s;\n"
+              "    if (b) {\n"
+              "        e = E0;\n"
+              "        s.i = 0;\n"
+              "        g(e, s);\n"
+              "    }\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:4]: (style) The scope of the variable 'e' can be reduced.\n"
+                      "[test.c:5]: (style) The scope of the variable 's' can be reduced.\n",
+                      errout.str());
+
+        check("void f(bool b) {\n"
+              "    std::string s;\n"
+              "    if (b) {\n"
+              "        s = \"abc\";\n"
+              "        g(s);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 's' can be reduced.\n", errout.str());
+    }
+
+    void varScope30() { // #8541
+        check("bool f(std::vector<int>& v, int i) {\n"
+              "    int n = 0;\n"
+              "    bool b = false;\n"
+              "    std::for_each(v.begin(), v.end(), [&](int j) {\n"
+              "        if (j == i) {\n"
+              "            ++n;\n"
+              "            if (n > 5)\n"
+              "                b = true;\n"
+              "        }\n"
+              "    });\n"
+              "    return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -4070,6 +4115,11 @@ private:
               "    return 1;\n" // <- clarify for tools that function does not continue..
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    enum : uint8_t { A, B } var = A;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -5590,6 +5640,16 @@ private:
               "    if (sizeof(long) == sizeof(long long)) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void duplicateExpression14() { //#9871
+        check("int f() {\n"
+              "    int k = 7;\n"
+              "    int* f = &k;\n"
+              "    int* g = &k;\n"
+              "    return (f + 4 != g + 4);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:5]: (style) The comparison 'f+4 != g+4' is always false because 'f+4' and 'g+4' represent the same value.\n", errout.str());
     }
 
     void duplicateExpressionLoop() {
