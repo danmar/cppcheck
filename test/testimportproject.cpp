@@ -59,6 +59,7 @@ private:
         TEST_CASE(importCompileCommands8); // Windows: "C:\Users\danielm\cppcheck"
         TEST_CASE(importCompileCommands9);
         TEST_CASE(importCompileCommands10); // #10887: include path with space
+        TEST_CASE(importCompileCommands11); // include path order
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
@@ -210,7 +211,8 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(2, importer.fileSettings.size());
-        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.front());
+        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.begin()->includePaths.front());
+        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.back());
     }
 
 
@@ -280,6 +282,28 @@ private:
         ASSERT_EQUALS(1, importer.fileSettings.size());
         const ImportProject::FileSettings &fs = importer.fileSettings.front();
         ASSERT_EQUALS("/home/danielm/cppcheck/test folder/", fs.includePaths.front());
+    }
+
+    void importCompileCommands11() const { // include path order
+        const char json[] =
+            R"([{
+               "file": "1.c" ,
+               "directory": "/x",
+               "arguments": [
+                   "cc",
+                   "-I",
+                   "def",
+                   "-I",
+                   "abc"
+               ]
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        const ImportProject::FileSettings &fs = importer.fileSettings.front();
+        ASSERT_EQUALS("/x/def/", fs.includePaths.front());
+        ASSERT_EQUALS("/x/abc/", fs.includePaths.back());
     }
 
     void importCompileCommandsArgumentsSection() const {
