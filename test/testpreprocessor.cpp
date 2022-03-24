@@ -1996,8 +1996,8 @@ private:
     void predefine5() {  // #3737, #5119 - automatically define __cplusplus
         // #3737...
         const char code[] = "#ifdef __cplusplus\n123\n#endif";
-        ASSERT_EQUALS("",      preprocessor0.getcode(code, "X=123", "test.c"));
-        ASSERT_EQUALS("\n123", preprocessor0.getcode(code, "X=123", "test.cpp"));
+        ASSERT_EQUALS("",      preprocessor0.getcode(code, "", "test.c"));
+        ASSERT_EQUALS("\n123", preprocessor0.getcode(code, "", "test.cpp"));
     }
 
     void invalidElIf() {
