@@ -621,8 +621,11 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     dui.undefined = mSettings.userUndefs; // -U
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
+    // TODO: use mSettings.standards.stdValue instead
     if (Path::isCPP(filename))
         dui.std = mSettings.standards.getCPP();
+    else
+        dui.std = mSettings.standards.getC();
     return dui;
 }
 
