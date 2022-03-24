@@ -7889,7 +7889,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
             else {
                 typeTok = newTok->astOperand1();
                 if (typeTok && typeTok->str() == "{")
-                    typeTok = typeTok->astOperand2();
+                    typeTok = typeTok->astOperand1();
             }
             if (bracTok && bracTok->astOperand2() && bracTok->astOperand2()->hasKnownIntValue())
                 numElem = bracTok->astOperand2()->getKnownIntValue();
