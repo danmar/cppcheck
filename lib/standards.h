@@ -21,6 +21,8 @@
 #define standardsH
 //---------------------------------------------------------------------------
 
+#include "utils.h"
+
 #include <string>
 
 /// @addtogroup Core
@@ -83,33 +85,11 @@ struct Standards {
         }
         return Standards::CLatest;
     }
-    bool setCPP(const std::string& str) {
+    bool setCPP(std::string str) {
         stdValue = str;
-        if (str == "c++03" || str == "C++03") {
-            cpp = CPP03;
-            return true;
-        }
-        if (str == "c++11" || str == "C++11") {
-            cpp = CPP11;
-            return true;
-        }
-        if (str == "c++14" || str == "C++14") {
-            cpp = CPP14;
-            return true;
-        }
-        if (str == "c++17" || str == "C++17") {
-            cpp = CPP17;
-            return true;
-        }
-        if (str == "c++20" || str == "C++20") {
-            cpp = CPP20;
-            return true;
-        }
-        if (str == "c++23" || str == "C++23") {
-            cpp = CPP23;
-            return true;
-        }
-        return false;
+        strTolower(str);
+        cpp = getCPP(str);
+        return !stdValue.empty() && str == getCPP();
     }
     std::string getCPP() const {
         return getCPP(cpp);
