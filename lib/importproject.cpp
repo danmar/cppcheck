@@ -147,22 +147,21 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
 
 void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
-    std::list<std::string> listInc;
-    // only parse each includePath once - so remove duplicates
-    std::list<std::string> uniqueIncludePaths = in;
-    uniqueIncludePaths.sort();
-    uniqueIncludePaths.unique();
-
-    for (const std::string &it : uniqueIncludePaths) {
-        if (it.empty())
+    std::set<std::string> found;
+    const std::list<std::string> copyIn(in);
+    includePaths.clear();
+    for (const std::string &ipath : copyIn) {
+        if (ipath.empty())
             continue;
-        if (it.compare(0,2,"%(")==0)
+        if (ipath.compare(0,2,"%(")==0)
             continue;
-        std::string s(Path::fromNativeSeparators(it));
+        std::string s(Path::fromNativeSeparators(ipath));
+        if (!found.insert(s).second)
+            continue;
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
             if (!endsWith(s,'/'))
                 s += '/';
-            listInc.push_back(s);
+            includePaths.push_back(s);
             continue;
         }
 
@@ -177,9 +176,8 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         }
         if (s.empty())
             continue;
-        listInc.push_back(s + '/');
+        includePaths.push_back(s + '/');
     }
-    includePaths.swap(listInc);
 }
 
 ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings)
