@@ -1216,6 +1216,7 @@ public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type {
         UNKNOWN_TYPE,
+        POD,
         NONSTD,
         RECORD,
         SMART_POINTER,

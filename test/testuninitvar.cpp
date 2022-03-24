@@ -96,6 +96,7 @@ private:
         TEST_CASE(uninitvar_nonmember); // crash in ycmd test
 
         TEST_CASE(isVariableUsageDeref); // *p
+        TEST_CASE(isVariableUsageDerefValueflow); // *p
 
         TEST_CASE(uninitvar_memberaccess); // (&(a))->b <=> a.b
 
@@ -6096,6 +6097,41 @@ private:
                        "    void (*fp[1]) (void) = {function1};\n"
                        "    (*fp[0])();\n"
                        "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void isVariableUsageDerefValueflow()
+    {
+        // *p
+        valueFlowUninit("void f() {\n"
+                        "    char a[10];\n"
+                        "    char c = *a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: *a\n", errout.str());
+
+        // extracttests.start: extern const int SIZE;
+        valueFlowUninit("void f() {\n"
+                        "    char a[SIZE+10];\n"
+                        "    char c = *a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: *a\n", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "    char a[10];\n"
+                        "    *a += 10;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: *a\n", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "  int a[10][10];\n"
+                        "  dostuff(*a);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "    void (*fp[1]) (void) = {function1};\n"
+                        "    (*fp[0])();\n"
+                        "}");
         ASSERT_EQUALS("", errout.str());
     }
 
