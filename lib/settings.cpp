@@ -94,6 +94,10 @@ void Settings::loadCppcheckCfg()
     if (!picojson::get_last_error().empty())
         return;
     picojson::object obj = json.get<picojson::object>();
+    if (obj.count("productName") && obj["productName"].is<std::string>())
+        cppcheckCfgProductName = obj["productName"].get<std::string>();
+    if (obj.count("about") && obj["about"].is<std::string>())
+        cppcheckCfgAbout = obj["about"].get<std::string>();
     if (obj.count("addons") && obj["addons"].is<picojson::array>()) {
         for (const picojson::value &v : obj["addons"].get<picojson::array>()) {
             const std::string &s = v.get<std::string>();

@@ -475,6 +475,9 @@ private:
      * List of MRU menu actions. Needs also to store the separator.
      */
     QAction *mRecentProjectActs[MaxRecentProjects + 1];
+
+    QString mCppcheckCfgAbout;
+    QString mCppcheckCfgProductName;
 };
 /// @}
 #endif // MAINWINDOW_H

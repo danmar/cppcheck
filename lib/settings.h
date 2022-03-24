@@ -153,6 +153,12 @@ public:
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
 
+    /** cppcheck.cfg: Custom product name */
+    std::string cppcheckCfgProductName;
+
+    /** cppcheck.cfg: About text */
+    std::string cppcheckCfgAbout;
+
     /** @brief Are we running from DACA script? */
     bool daca;
 

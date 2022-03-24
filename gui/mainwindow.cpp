@@ -72,6 +72,13 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mExiting(false),
     mIsLogfileLoaded(false)
 {
+    {
+        Settings tempSettings;
+        tempSettings.loadCppcheckCfg();
+        mCppcheckCfgProductName = QString::fromStdString(tempSettings.cppcheckCfgProductName);
+        mCppcheckCfgAbout = QString::fromStdString(tempSettings.cppcheckCfgAbout);
+    }
+
     mUI->setupUi(this);
     mThread = new ThreadHandler(this);
     mUI->mResults->initialize(mSettings, mApplications, mThread);
@@ -1353,8 +1360,18 @@ void MainWindow::toggleAllChecked(bool checked)
 
 void MainWindow::about()
 {
-    AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), this);
-    dlg->exec();
+    if (!mCppcheckCfgAbout.isEmpty()) {
+        QMessageBox msg(QMessageBox::Information,
+                        tr("About"),
+                        mCppcheckCfgAbout,
+                        QMessageBox::Ok,
+                        this);
+        msg.exec();
+    }
+    else {
+        AboutDialog *dlg = new AboutDialog(CppCheck::version(), CppCheck::extraVersion(), this);
+        dlg->exec();
+    }
 }
 
 void MainWindow::showLicense()
@@ -1441,6 +1458,9 @@ void MainWindow::formatAndSetTitle(const QString &text)
     if (!extraVersion.isEmpty()) {
         nameWithVersion += " (" + extraVersion + ")";
     }
+
+    if (!mCppcheckCfgProductName.isEmpty())
+        nameWithVersion = mCppcheckCfgProductName;
 
     QString title;
     if (text.isEmpty())
