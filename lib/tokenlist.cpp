@@ -913,7 +913,9 @@ static bool isPrefixUnary(const Token* tok, bool cpp)
 
 static void compilePrecedence2(Token *&tok, AST_state& state)
 {
-    compileScope(tok, state);
+    const bool isStartOfCpp11Init = state.cpp && tok && tok->str() == "{" && iscpp11init(tok);
+    if (!(isStartOfCpp11Init && Token::Match(tok->tokAt(-2), "new %type% {")))
+        compileScope(tok, state);
     while (tok) {
         if (tok->tokType() == Token::eIncDecOp && !isPrefixUnary(tok, state.cpp)) {
             compileUnaryOp(tok, state, compileScope);

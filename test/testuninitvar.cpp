@@ -2024,6 +2024,12 @@ private:
                        "    a = *pBuf;\n"
                        "}", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class A {};\n" // #10698
+                       "void f() {\n"
+                       "    A* a = new A{};\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // class / struct..
