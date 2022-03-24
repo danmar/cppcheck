@@ -530,7 +530,7 @@ private:
               "    j[0][h()][0];\n"
               "    j[0][0][h()];\n"
               "    std::map<std::string, int> M;\n"
-              "    M[\"abc\"]; \n"
+              "    M[\"abc\"];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
