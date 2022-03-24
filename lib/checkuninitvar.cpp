@@ -1539,34 +1539,41 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-enum class FunctionUsage { None, PassedByReference, Used };
+enum class ExprUsage { None, PassedByReference, Used };
 
-static FunctionUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
+static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
 {
     const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
 
     int argnr;
     const Token* ftok = getTokenArgumentFunction(tok, argnr);
     if (!ftok)
-        return FunctionUsage::None;
+        return ExprUsage::None;
     if (ftok->function()) {
         std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
         for (const Variable* arg : args) {
             if (!arg)
                 continue;
             if (arg->isReference())
-                return FunctionUsage::PassedByReference;
+                return ExprUsage::PassedByReference;
         }
     } else {
         const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
         if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
-            return FunctionUsage::Used;
+            return ExprUsage::Used;
         bool hasIndirect = false;
         const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
         if (isuninitbad && (!addressOf || isnullbad))
-            return FunctionUsage::Used;
+            return ExprUsage::Used;
     }
-    return FunctionUsage::None;
+    return ExprUsage::None;
+}
+
+static ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
+{
+    if (indirect == 0 && Token::Match(tok->astParent(), "%cop%|%assign%") && tok->astParent()->str() != "=")
+        return ExprUsage::Used;
+    return getFunctionUsage(tok, indirect, settings);
 }
 
 static bool isLeafDot(const Token* tok)
@@ -1634,10 +1641,10 @@ void CheckUninitVar::valueFlowUninit()
                     if (Token::Match(tok->astParent(), ". %var%") && !isleaf)
                         continue;
                 }
-                FunctionUsage fusage = getFunctionUsage(tok, v->indirect, mSettings);
-                if (!v->subexpressions.empty() && fusage == FunctionUsage::PassedByReference)
+                ExprUsage usage = getExprUsage(tok, v->indirect, mSettings);
+                if (!v->subexpressions.empty() && usage == ExprUsage::PassedByReference)
                     continue;
-                if (fusage != FunctionUsage::Used) {
+                if (usage != ExprUsage::Used) {
                     if (!(Token::Match(tok->astParent(), ". %name% (") && uninitderef) &&
                         isVariableChanged(tok, v->indirect, mSettings, mTokenizer->isCPP()))
                         continue;

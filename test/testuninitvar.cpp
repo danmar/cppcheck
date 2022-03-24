@@ -6120,7 +6120,7 @@ private:
                         "    char a[10];\n"
                         "    *a += 10;\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: *a\n", errout.str());
 
         valueFlowUninit("void f() {\n"
                         "  int a[10][10];\n"
