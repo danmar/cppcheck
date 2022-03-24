@@ -814,7 +814,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             state.op.push(tok);
             if (Token::Match(tok, "%name% <") && tok->linkAt(1))
                 tok = tok->linkAt(1);
-            else if (Token::Match(tok, "%name% ..."))
+            else if (Token::Match(tok, "%name% ...") || (state.op.size() == 1 && Token::Match(tok->previous(), "( %name% ) =")))
                 tok = tok->next();
             tok = tok->next();
             if (Token::Match(tok, "%str%")) {
@@ -1467,7 +1467,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
             while (tok2 && tok2 != endPar && tok2->str() != ";") {
                 if (tok2->str() == "<" && tok2->link()) {
                     tok2 = tok2->link();
-                } else if (Token::Match(tok2, "%name% %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
+                } else if (Token::Match(tok2, "%name% )| %op%|(|[|.|:|::") || Token::Match(tok2->previous(), "[(;{}] %cop%|(")) {
                     init1 = tok2;
                     AST_state state1(cpp);
                     compileExpression(tok2, state1);

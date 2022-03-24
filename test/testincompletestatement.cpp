@@ -504,6 +504,14 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct T {\n" // #10874
+              "    T* p;\n"
+              "};\n"
+              "void f(T* t) {\n"
+              "    for (decltype(t->p) (c) = t->p; ;) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int i, std::vector<int*> v);\n" // #10880
               "void g() {\n"
               "    f(1, { static_cast<int*>(nullptr) });\n"

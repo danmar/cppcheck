@@ -6213,6 +6213,12 @@ private:
         ASSERT_EQUALS("decltypex( var1=", testAst("decltype(x) var = 1;"));
         ASSERT_EQUALS("a1bdecltypet((>2,(", testAst("a(1 > b(decltype(t)), 2);")); // #10271
         ASSERT_EQUALS("decltypex({01:?", testAst("decltype(x){} ? 0 : 1;"));
+
+        ASSERT_EQUALS("Tp* Tt* forctp.=;;( tp.", testAst("struct T { T* p; };\n" // #10874
+                                                         "void f(T * t) {\n"
+                                                         "    for (decltype(t->p) (c) = t->p; ;) {}\n"
+                                                         "}\n"));
+        ASSERT_EQUALS("x0=a, stdtie::a(x=", testAst("int x = 0, a; std::tie(a) = x;\n"));
     }
 
     void astunaryop() { // unary operators
