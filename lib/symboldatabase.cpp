@@ -6920,6 +6920,10 @@ bool ValueType::fromLibraryType(const std::string &typestr, const Settings *sett
             type = ValueType::Type::UNKNOWN_INT;
         sign = (podtype->sign == 'u') ? ValueType::UNSIGNED : ValueType::SIGNED;
         return true;
+    } else if (podtype && podtype->stdtype == Library::PodType::Type::NO) {
+        type = ValueType::Type::POD;
+        sign = ValueType::UNKNOWN_SIGN;
+        return true;
     }
 
     const Library::PlatformType *platformType = settings->library.platform_type(typestr, settings->platformString());

@@ -2338,7 +2338,7 @@ struct ValueFlowAnalyzer : Analyzer {
             } else {
                 return analyzeMatch(tok, d) | Action::Match;
             }
-        } else if (ref->isUnaryOp("*")) {
+        } else if (ref->isUnaryOp("*") && !match(ref->astOperand1())) {
             const Token* lifeTok = nullptr;
             for (const ValueFlow::Value& v:ref->astOperand1()->values()) {
                 if (!v.isLocalLifetimeValue())
@@ -7030,7 +7030,7 @@ static bool needsInitialization(const Variable* var, bool cpp)
         return true;
     if (var->type() && var->type()->needInitialization == Type::NeedInitialization::True)
         return true;
-    if (var->valueType() && var->valueType()->isPrimitive())
+    if (var->valueType() && (var->valueType()->isPrimitive() || var->valueType()->type == ValueType::Type::POD))
         return true;
     return false;
 }
@@ -7057,36 +7057,26 @@ static void addToErrorPath(ValueFlow::Value& value, const ValueFlow::Value& from
 static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDatabase*/, const Settings* settings)
 {
     for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok,"[;{}] %type%"))
-            continue;
         if (!tok->scope()->isExecutable())
             continue;
-        const Token *vardecl = tok->next();
-        bool stdtype = false;
-        bool pointer = false;
-        while (Token::Match(vardecl, "%name%|::|*") && vardecl->varId() == 0) {
-            stdtype |= vardecl->isStandardType();
-            pointer |= vardecl->str() == "*";
-            vardecl = vardecl->next();
-        }
-        // if (!stdtype && !pointer)
-        // continue;
-        if (!Token::Match(vardecl, "%var% ;"))
+        if (!Token::Match(tok, "%var% ;|["))
             continue;
-        const Variable *var = vardecl->variable();
+        const Variable* var = tok->variable();
+        if (!var)
+            continue;
+        if (var->nameToken() != tok || var->isInit())
+            continue;
         if (!needsInitialization(var, tokenlist->isCPP()))
             continue;
-        if (var->nameToken() != vardecl || var->isInit())
-            continue;
         if (!var->isLocal() || var->isStatic() || var->isExtern() || var->isReference() || var->isThrow())
-            continue;
-        if (!var->type() && !stdtype && !pointer)
             continue;
 
         ValueFlow::Value uninitValue;
         uninitValue.setKnown();
         uninitValue.valueType = ValueFlow::Value::ValueType::UNINIT;
-        uninitValue.tokvalue = vardecl;
+        uninitValue.tokvalue = tok;
+        if (var->isArray())
+            uninitValue.indirect = 1;
 
         bool partial = false;
 
@@ -7104,8 +7094,8 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
                     partial = true;
                     continue;
                 }
-                MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), vardecl, uninitValue, tokenlist);
-                valueFlowGenericForward(vardecl->next(), vardecl->scope()->bodyEnd, analyzer, settings);
+                MemberExpressionAnalyzer analyzer(memVar.nameToken()->str(), tok, uninitValue, tokenlist);
+                valueFlowGenericForward(tok->next(), tok->scope()->bodyEnd, analyzer, settings);
 
                 for (auto&& p : *analyzer.partialReads) {
                     Token* tok2 = p.first;
@@ -7135,7 +7125,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         if (partial)
             continue;
 
-        valueFlowForward(vardecl->next(), vardecl->scope()->bodyEnd, var->nameToken(), {uninitValue}, tokenlist, settings);
+        valueFlowForward(tok->next(), tok->scope()->bodyEnd, var->nameToken(), {uninitValue}, tokenlist, settings);
     }
 }
 

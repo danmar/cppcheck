@@ -335,7 +335,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     const QString dataDir = getDataDir();
     updateAddonCheckBox(mUI->mAddonThreadSafety, projectFile, dataDir, "threadsafety");
     updateAddonCheckBox(mUI->mAddonY2038, projectFile, dataDir, "y2038");
-    updateAddonCheckBox(mUI->mAddonCert, projectFile, dataDir, "cert");
     updateAddonCheckBox(mUI->mAddonMisra, projectFile, dataDir, "misra");
 
     const QString &misraFile = settings.value(SETTINGS_MISRA_FILE, QString()).toString();
@@ -410,8 +409,6 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         list << "threadsafety";
     if (mUI->mAddonY2038->isChecked())
         list << "y2038";
-    if (mUI->mAddonCert->isChecked())
-        list << "cert";
     if (mUI->mAddonMisra->isChecked())
         list << "misra";
     projectFile->setAddons(list);
