@@ -894,6 +894,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--version") == 0) {
                 mShowVersion = true;
                 mExitAfterPrint = true;
+                mSettings->loadCppcheckCfg();
                 return true;
             }
 

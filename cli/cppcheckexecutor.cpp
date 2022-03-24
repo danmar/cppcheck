@@ -109,12 +109,16 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     if (success) {
         if (parser.getShowVersion() && !parser.getShowErrorMessages()) {
-            const char * const extraVersion = CppCheck::extraVersion();
-            if (*extraVersion != 0)
-                std::cout << "Cppcheck " << CppCheck::version() << " ("
-                          << extraVersion << ')' << std::endl;
-            else
-                std::cout << "Cppcheck " << CppCheck::version() << std::endl;
+            if (!settings.cppcheckCfgProductName.empty()) {
+                std::cout << settings.cppcheckCfgProductName << std::endl;
+            } else {
+                const char * const extraVersion = CppCheck::extraVersion();
+                if (*extraVersion != 0)
+                    std::cout << "Cppcheck " << CppCheck::version() << " ("
+                              << extraVersion << ')' << std::endl;
+                else
+                    std::cout << "Cppcheck " << CppCheck::version() << std::endl;
+            }
         }
 
         if (parser.getShowErrorMessages()) {
