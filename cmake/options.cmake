@@ -45,6 +45,7 @@ option(USE_BUNDLED_TINYXML2 "Usage of bundled tinyxml2 library"                 
 option(CPPCHK_GLIBCXX_DEBUG "Usage of _GLIBCXX_DEBUG in Debug build"                        ON)
 option(USE_THREADS          "Usage of threads instead of fork() for -j"                     OFF)
 option(USE_BOOST            "Usage of Boost"                                                OFF)
+option(DISABLE_CRTDBG_MAP_ALLOC "Disable usage of Visual Studio C++ memory leak detection in Debug build" OFF)
 
 if (CMAKE_VERSION VERSION_EQUAL "3.16" OR CMAKE_VERSION VERSION_GREATER "3.16")
     set(CMAKE_DISABLE_PRECOMPILE_HEADERS Off CACHE BOOL "Disable precompiled headers")
