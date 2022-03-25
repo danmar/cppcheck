@@ -4462,8 +4462,8 @@ private:
         const char code[] = "template <typename T, int value> T Get() {return value;}\n"
                             "char f() { Get<int,10>(); }\n";
         const char exp[] = "int Get<int,10> ( ) ; "
-                            "char f ( ) { Get<int,10> ( ) ; } "
-                            "int Get<int,10> ( ) { return 10 ; }";
+                           "char f ( ) { Get<int,10> ( ) ; } "
+                           "int Get<int,10> ( ) { return 10 ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
