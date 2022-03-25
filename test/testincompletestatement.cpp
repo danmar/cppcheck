@@ -481,15 +481,15 @@ private:
               "    void g();\n"
               "};\n"
               "void f(const S& r, const S* p) {\n"
-              "	r.b;\n"
-              "	p->b;\n"
-              "	S s;\n"
-              "	(s.b);\n"
-              "	T t, u[2];\n"
-              "	t.s[1].b;\n"
-              "	t.g();\n"
-              "	u[0].g();\n"
-              "	u[1].s[0].b;\n"
+              "    r.b;\n"
+              "    p->b;\n"
+              "    S s;\n"
+              "    (s.b);\n"
+              "    T t, u[2];\n"
+              "    t.s[1].b;\n"
+              "    t.g();\n"
+              "    u[0].g();\n"
+              "    u[1].s[0].b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant code: Found unused member access.\n"
                       "[test.cpp:8]: (warning) Redundant code: Found unused member access.\n"
@@ -497,6 +497,42 @@ private:
                       "[test.cpp:12]: (warning) Redundant code: Found unused member access.\n"
                       "[test.cpp:15]: (warning) Redundant code: Found unused member access.\n",
                       errout.str());
+
+        check("struct S { int a[2]{}; };\n"
+              "struct T { S s; };\n"
+              "void f() {\n"
+              "    int i[2];\n"
+              "    i[0] = 0;\n"
+              "    i[0];\n" // <--
+              "    S s[1];\n"
+              "    s[0].a[1];\n" // <--
+              "    T t;\n"
+              "    t.s.a[1];\n" // <--
+              "    int j[2][2][1] = {};\n"
+              "    j[0][0][0];\n" // <--
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant code: Found unused array access.\n"
+                      "[test.cpp:8]: (warning) Redundant code: Found unused array access.\n"
+                      "[test.cpp:10]: (warning) Redundant code: Found unused array access.\n"
+                      "[test.cpp:12]: (warning) Redundant code: Found unused array access.\n",
+                      errout.str());
+
+        check("void g() {\n"
+              "    int j[2]{};\n"
+              "    int k[2] = {};\n"
+              "    int l[]{ 1, 2 };\n"
+              "    int m[] = { 1, 2 };\n"
+              "    h(0, j[0], 1);\n"
+              "    C c{ 0, j[0], 1 };\n"
+              "    c[0];\n"
+              "    int j[2][2][2] = {};\n"
+              "    j[h()][0][0];\n"
+              "    j[0][h()][0];\n"
+              "    j[0][0][h()];\n"
+              "    std::map<std::string, int> M;\n"
+              "    M[\"abc\"];\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         check("struct S { void* p; };\n" // #10875
               "void f(S s) {\n"
