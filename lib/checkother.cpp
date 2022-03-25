@@ -1755,6 +1755,8 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (Token::Match(tok, "<<|>>") && !astIsIntegral(tok, false))
         return false;
+    if (tok->astTop() && Token::Match(tok->astTop()->astOperand1(), "delete"))
+        return false;
     if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
         return true;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))

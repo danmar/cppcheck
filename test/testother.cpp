@@ -4796,6 +4796,11 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(const int*** p) {\n" // #10923
+              "    delete[] **p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void *f(char** c) {\n"
               "    bar(**c++);\n"
               "}");
