@@ -115,10 +115,10 @@ jobs:
         run: |
           cd win_installer || exit /b !errorlevel!
           REM Read ProductVersion
-          for /f "tokens=4 delims= " %%a in ('find "ProductVersion" productInfo.wxi') do set PRODUCTVER=%%a || exit /b !errorlevel!
+          for /f "tokens=4 delims= " %%a in ('find "ProductVersion" productInfo.wxi') do set PRODUCTVER=%%a
           REM Remove double quotes
-          set PRODUCTVER=%PRODUCTVER:"=% || exit /b !errorlevel!
-          echo ProductVersion=%PRODUCTVER% || exit /b !errorlevel!
+          set PRODUCTVER=%PRODUCTVER:"=%
+          echo ProductVersion="%PRODUCTVER%" || exit /b !errorlevel!
           msbuild -m cppcheck.wixproj -p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }} || exit /b !errorlevel!
 
       - uses: actions/upload-artifact@v2
