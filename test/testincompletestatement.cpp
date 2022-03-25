@@ -531,6 +531,7 @@ private:
               "    j[0][0][h()];\n"
               "    std::map<std::string, int> M;\n"
               "    M[\"abc\"];\n"
+              "    std::auto_ptr<Int> app[4];" // #10919
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
