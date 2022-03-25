@@ -1740,6 +1740,20 @@ static bool isVarDeclOp(const Token* tok)
     return isType(typetok, Token::Match(vartok, "%var%"));
 }
 
+static bool isBracketAccess(const Token* tok)
+{
+    if (!Token::simpleMatch(tok, "[") || !tok->astOperand1())
+        return false;
+    tok = tok->astOperand1();
+    if (tok->str() == ".")
+        tok = tok->astOperand2();
+    while (Token::simpleMatch(tok, "["))
+        tok = tok->astOperand1();
+    if (!tok || !tok->variable())
+        return false;
+    return tok->variable()->nameToken() != tok;
+}
+
 static bool isConstStatement(const Token *tok, bool cpp)
 {
     if (!tok)
@@ -1769,7 +1783,7 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return tok->astParent() ? isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp) : isConstStatement(tok->astOperand2(), cpp);
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
         return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
-    if (Token::simpleMatch(tok, "[") && !Token::Match(tok->tokAt(-2), "%type% %name%") && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true)) {
+    if (isBracketAccess(tok) && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true)) {
         if (Token::simpleMatch(tok->astParent(), "["))
             return isConstStatement(tok->astOperand2(), cpp) && isConstStatement(tok->astParent(), cpp);
         return isConstStatement(tok->astOperand2(), cpp);
