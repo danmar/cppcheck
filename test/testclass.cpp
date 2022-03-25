@@ -2562,6 +2562,27 @@ private:
                                "Base *base = new Derived;\n"
                                "delete base;");
         ASSERT_EQUALS("", errout.str());
+
+        // #9104
+        checkVirtualDestructor("struct A\n"
+                               "{\n"
+                               "    A()  { cout << \"A is constructing\\n\"; }\n"
+                               "    ~A() { cout << \"A is destructing\\n\"; }\n"
+                               "};\n"
+                               " \n"
+                               "struct Base {};\n"
+                               " \n"
+                               "struct Derived : Base\n"
+                               "{\n"
+                               "    A a;\n"
+                               "};\n"
+                               " \n"
+                               "int main(void)\n"
+                               "{\n"
+                               "    Base* p = new Derived();\n"
+                               "    delete p;\n"
+                               "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor3() {
