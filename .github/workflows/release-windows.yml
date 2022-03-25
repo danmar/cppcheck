@@ -101,7 +101,8 @@ jobs:
           copy addons\*.* win_installer\files\addons || exit /b !errorlevel!
           mkdir win_installer\files\cfg || exit /b !errorlevel!
           copy cfg\*.cfg win_installer\files\cfg || exit /b !errorlevel!
-          mkdir win_installer\files\platforms || exit /b !errorlevel!
+          :: "platforms" is a folder used by Qt as well so it already exists
+          :: mkdir win_installer\files\platforms || exit /b !errorlevel!
           copy platforms\*.xml win_installer\files\platforms || exit /b !errorlevel!
           copy bin\cppcheck.exe win_installer\files || exit /b !errorlevel!
           copy bin\cppcheck-core.dll win_installer\files || exit /b !errorlevel!
