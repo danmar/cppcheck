@@ -32,7 +32,7 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     add_compile_options(-Wall)
     add_compile_options(-Wextra)
     add_compile_options(-Wcast-qual)                # Cast for removing type qualifiers
-    add_compile_options(-Wfloat-equal)              # Floating values used in equality comparisons
+    # add_compile_options(-Wfloat-equal)              # Floating values used in equality comparisons
     add_compile_options(-Wmissing-declarations)     # If a global function is defined without a previous declaration
     add_compile_options(-Wmissing-format-attribute) #
     add_compile_options(-Wno-long-long)
@@ -82,6 +82,11 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-suggest-override) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-suggest-destructor-override) # TODO: enable when warnings are fixed in in tinyxml2
    add_compile_options_safe(-Wno-extra-semi-stmt) # TODO: enable when warnings are fixed in in tinyxml2
+   add_compile_options_safe(-Wno-implicitly-unsigned-literal)
+   add_compile_options_safe(-Wno-tautological-type-limit-compare)
+   add_compile_options_safe(-Wno-unused-member-function)
+   add_compile_options_safe(-Wno-deprecated-declarations)
+   add_compile_options_safe(-Wno-float-equal)
    add_compile_options(-Wno-disabled-macro-expansion)
 
    # warnings we are not interested in
