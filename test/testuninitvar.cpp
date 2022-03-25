@@ -6139,6 +6139,15 @@ private:
                         "    (*fp[0])();\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("template <typename T, int value> T Get() {return value;}\n"
+                        "char f() {\n"
+                        "  char buf[10];\n"
+                        "  for(int i = 0; i < Get<int,10>() ; ++i) \n"
+                        "     buf[i] = 0;\n"
+                        "  return buf[0];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberaccess() {
