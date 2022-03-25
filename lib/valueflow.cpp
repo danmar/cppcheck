@@ -6953,7 +6953,15 @@ static bool isKnown(const Token * tok)
 static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogger)
 {
     for (Token *tok = tokenlist->back(); tok; tok = tok->previous()) {
-        if (tok->str() != "(" || !tok->astOperand1() || !tok->astOperand1()->function())
+        if (tok->str() != "(" || !tok->astOperand1())
+            continue;
+
+        const Function * function = nullptr;
+        if (Token::Match(tok->previous(), "%name% ("))
+            function = tok->previous()->function();
+        else
+            function = tok->astOperand1()->function();
+        if (!function)
             continue;
 
         if (tok->hasKnownValue())
@@ -6978,7 +6986,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         }
 
         // Get scope and args of function
-        const Function * const function = tok->astOperand1()->function();
+        // const Function * const function = tok->astOperand1()->function();
         const Scope * const functionScope = function->functionScope;
         if (!functionScope || !Token::simpleMatch(functionScope->bodyStart, "{ return")) {
             if (functionScope && tokenlist->getSettings()->debugwarnings && Token::findsimplematch(functionScope->bodyStart, "return", functionScope->bodyEnd))
