@@ -3676,9 +3676,9 @@ void stdbind()
     // TODO cppcheck-suppress ignoredReturnValue #9369
     std::bind(stdbind_helper, 1);
 
-    // cppcheck-suppress unreadVariable
+    // TODO cppcheck-suppress unreadVariable
     auto f1 = std::bind(stdbind_helper, _1);
-    // cppcheck-suppress unreadVariable
+    // TODO cppcheck-suppress unreadVariable
     auto f2 = std::bind(stdbind_helper, 10);
 }
 
