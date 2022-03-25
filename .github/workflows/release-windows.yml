@@ -50,7 +50,7 @@ jobs:
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
           cmake . -G "Visual Studio 16 2019" -A x64 -DPCRE_BUILD_PCRECPP=OFF -DPCRE_BUILD_PCREGREP=OFF -DPCRE_BUILD_TESTS=OFF || exit /b !errorlevel!
-          msbuild -m PCRE.sln /p:Configuration=Release /p:Platform=x64 || exit /b !errorlevel!
+          msbuild -m PCRE.sln -p:Configuration=Release -p:Platform=x64 || exit /b !errorlevel!
           copy pcre.h ..\externals || exit /b !errorlevel!
           copy Release\pcre.lib ..\externals\pcre64.lib || exit /b !errorlevel!
 
@@ -92,7 +92,7 @@ jobs:
           del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
 
       - name: Build CLI x64 release configuration using MSBuild
-        run: msbuild -m cppcheck.sln /t:cli /p:Configuration=Release-PCRE /p:Platform=x64 || exit /b !errorlevel!
+        run: msbuild -m cppcheck.sln -t:cli -p:Configuration=Release-PCRE -p:Platform=x64 || exit /b !errorlevel!
 
       - name: Collect files
         run: |
@@ -119,7 +119,7 @@ jobs:
           REM Remove double quotes
           set PRODUCTVER=%PRODUCTVER:"=% || exit /b !errorlevel!
           echo ProductVersion=%PRODUCTVER% || exit /b !errorlevel!
-          msbuild -m cppcheck.wixproj /p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }} || exit /b !errorlevel!
+          msbuild -m cppcheck.wixproj -p:Platform=x64,ProductVersion=%PRODUCTVER%.${{ github.run_number }} || exit /b !errorlevel!
 
       - uses: actions/upload-artifact@v2
         with:
