@@ -6032,6 +6032,7 @@ private:
         ASSERT_EQUALS("adelete", testAst("void f() { delete a; }"));
         ASSERT_EQUALS("Aa*A{new=", testAst("A* a = new A{};"));
         ASSERT_EQUALS("Aa*A12,{new=", testAst("A* a = new A{ 1, 2 };"));
+        ASSERT_EQUALS("Sv0[(new", testAst("new S(v[0]);")); // #10929
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
