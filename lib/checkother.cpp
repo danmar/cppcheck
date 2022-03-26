@@ -1787,7 +1787,7 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return tok->astParent() ? isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp) : isConstStatement(tok->astOperand2(), cpp);
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
         return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
-    if (isBracketAccess(tok) && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true)) {
+    if (isBracketAccess(tok) && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true, /*checkReference*/ false)) {
         if (Token::simpleMatch(tok->astParent(), "["))
             return isConstStatement(tok->astOperand2(), cpp) && isConstStatement(tok->astParent(), cpp);
         return isConstStatement(tok->astOperand2(), cpp);
