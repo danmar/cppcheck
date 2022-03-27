@@ -1863,6 +1863,7 @@ class MisraChecker:
             return following
 
         # Zero arguments should be in form ( void )
+        # TODO: Use rawTokens or add flag when void is removed
         def checkZeroArguments(func, startCall, endCall):
             if (len(func.argument) == 0):
                 voidArg = startCall.next
