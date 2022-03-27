@@ -1065,7 +1065,7 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (!bFirstAssignment && Token::Match(tok, "* %varid%", var->declarationId())) // dereferencing means access to previous content
             return false;
 
-        if (Token::Match(tok, "= %varid%", var->declarationId()) && (var->isArray() || var->isPointer())) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
+        if (Token::Match(tok, "= %varid%", var->declarationId()) && (var->isArray() || var->isPointer() || (var->valueType() && var->valueType()->container))) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
             return false;
 
         if (tok->varId() == var->declarationId()) {
@@ -1740,6 +1740,20 @@ static bool isVarDeclOp(const Token* tok)
     return isType(typetok, Token::Match(vartok, "%var%"));
 }
 
+static bool isBracketAccess(const Token* tok)
+{
+    if (!Token::simpleMatch(tok, "[") || !tok->astOperand1())
+        return false;
+    tok = tok->astOperand1();
+    if (tok->str() == ".")
+        tok = tok->astOperand2();
+    while (Token::simpleMatch(tok, "["))
+        tok = tok->astOperand1();
+    if (!tok || !tok->variable())
+        return false;
+    return tok->variable()->nameToken() != tok;
+}
+
 static bool isConstStatement(const Token *tok, bool cpp)
 {
     if (!tok)
@@ -1755,6 +1769,8 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (Token::Match(tok, "<<|>>") && !astIsIntegral(tok, false))
         return false;
+    if (tok->astTop() && Token::simpleMatch(tok->astTop()->astOperand1(), "delete"))
+        return false;
     if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
         return true;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
@@ -1769,6 +1785,11 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return tok->astParent() ? isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp) : isConstStatement(tok->astOperand2(), cpp);
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
         return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
+    if (isBracketAccess(tok) && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true)) {
+        if (Token::simpleMatch(tok->astParent(), "["))
+            return isConstStatement(tok->astOperand2(), cpp) && isConstStatement(tok->astParent(), cpp);
+        return isConstStatement(tok->astOperand2(), cpp);
+    }
     return false;
 }
 
@@ -1800,6 +1821,13 @@ static bool isConstTop(const Token *tok)
             return tok->astParent()->astOperand2() == tok;
         else
             return tok->astParent()->astOperand1() == tok;
+    }
+    if (Token::simpleMatch(tok, "[")) {
+        const Token* bracTok = tok;
+        while (Token::simpleMatch(bracTok->astParent(), "["))
+            bracTok = bracTok->astParent();
+        if (!bracTok->astParent())
+            return true;
     }
     return false;
 }
@@ -1894,6 +1922,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Redundant code: Found unused result of ternary operator.";
     else if (tok->str() == "." && tok->tokType() == Token::Type::eOther)
         msg = "Redundant code: Found unused member access.";
+    else if (tok->str() == "[" && tok->tokType() == Token::Type::eExtendedOp)
+        msg = "Redundant code: Found unused array access.";
     else {
         reportError(tok, Severity::debug, "debug", "constStatementError not handled.");
         return;

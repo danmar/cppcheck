@@ -6219,6 +6219,8 @@ private:
                                                          "    for (decltype(t->p) (c) = t->p; ;) {}\n"
                                                          "}\n"));
         ASSERT_EQUALS("x0=a, stdtie::a(x=", testAst("int x = 0, a; std::tie(a) = x;\n"));
+        ASSERT_EQUALS("tmpa*=a*b*=,b*tmp=,", testAst("{ ((tmp) = (*a)), ((*a) = (*b)), ((*b) = (tmp)); }"));
+        ASSERT_EQUALS("a(*v=", testAst("(*(volatile unsigned int *)(a) = (v));"));
     }
 
     void astunaryop() { // unary operators
