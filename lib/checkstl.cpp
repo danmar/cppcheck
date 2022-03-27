@@ -72,6 +72,21 @@ static bool isElementAccessYield(const Library::Container::Yield& yield)
     return contains({Library::Container::Yield::ITEM, Library::Container::Yield::AT_INDEX}, yield);
 }
 
+static bool containerAppendsElement(const Library::Container* container, const Token* parent)
+{
+    if (Token::Match(parent, ". %name% (")) {
+        Library::Container::Action action = container->getAction(parent->strAt(1));
+        if (contains({Library::Container::Action::INSERT,
+                      Library::Container::Action::CHANGE,
+                      Library::Container::Action::CHANGE_INTERNAL,
+                      Library::Container::Action::PUSH,
+                      Library::Container::Action::RESIZE},
+                     action))
+            return true;
+    }
+    return false;
+}
+
 static bool containerYieldsElement(const Library::Container* container, const Token* parent)
 {
     if (Token::Match(parent, ". %name% (")) {
@@ -86,7 +101,7 @@ static const Token* getContainerIndex(const Library::Container* container, const
 {
     if (Token::Match(parent, ". %name% (")) {
         Library::Container::Yield yield = container->getYield(parent->strAt(1));
-        if (isElementAccessYield(yield) && !Token::simpleMatch(parent->tokAt(2), "( )"))
+        if (yield == Library::Container::Yield::AT_INDEX && !Token::simpleMatch(parent->tokAt(2), "( )"))
             return parent->tokAt(2)->astOperand2();
     }
     if (!container->arrayLike_indexOp && !container->stdStringLike)
@@ -133,7 +148,8 @@ void CheckStl::outOfBounds()
                     continue;
                 if (!value.errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
                     continue;
-                if (value.intvalue == 0 && (indexTok || containerYieldsElement(container, parent))) {
+                if (value.intvalue == 0 && (indexTok || (containerYieldsElement(container, parent) &&
+                                                         !containerAppendsElement(container, parent)))) {
                     std::string indexExpr;
                     if (indexTok && !indexTok->hasKnownValue())
                         indexExpr = indexTok->expressionString();
