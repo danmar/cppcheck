@@ -1771,6 +1771,8 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (tok->astTop() && Token::simpleMatch(tok->astTop()->astOperand1(), "delete"))
         return false;
+    if (Token::Match(tok, "&&|%oror%"))
+        return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp);
     if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
         return true;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
@@ -1785,7 +1787,7 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return tok->astParent() ? isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp) : isConstStatement(tok->astOperand2(), cpp);
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
         return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
-    if (isBracketAccess(tok) && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true)) {
+    if (isBracketAccess(tok) && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true, /*checkReference*/ false)) {
         if (Token::simpleMatch(tok->astParent(), "["))
             return isConstStatement(tok->astOperand2(), cpp) && isConstStatement(tok->astParent(), cpp);
         return isConstStatement(tok->astOperand2(), cpp);

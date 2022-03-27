@@ -517,7 +517,7 @@ private:
                       "[test.cpp:12]: (warning) Redundant code: Found unused array access.\n",
                       errout.str());
 
-        check("void g() {\n"
+        check("void g(std::map<std::string, std::string>& map) {\n"
               "    int j[2]{};\n"
               "    int k[2] = {};\n"
               "    int l[]{ 1, 2 };\n"
@@ -531,6 +531,7 @@ private:
               "    j[0][0][h()];\n"
               "    std::map<std::string, int> M;\n"
               "    M[\"abc\"];\n"
+              "    map[\"abc\"];\n" // #10928
               "    std::auto_ptr<Int> app[4];" // #10919
               "}\n");
         ASSERT_EQUALS("", errout.str());
@@ -607,6 +608,13 @@ private:
         check("void foo() {\n"
               "    params_given (params, \"overrides\") || (overrides = \"1\");\n"
               "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::ifstream& file) {\n" // #10930
+              "    int a{}, b{};\n"
+              "    (file >> a) || (file >> b);\n"
+              "    (file >> a) && (file >> b);\n"
+              "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 };
