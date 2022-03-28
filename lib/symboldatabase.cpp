@@ -1754,7 +1754,8 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             if (Token::Match(tok1, "%name%")) {
                 if (tok1->str() == "return")
                     return false;
-                tok1 = tok1->previous();
+                if (tok1->str() != "friend")
+                    tok1 = tok1->previous();
             }
 
             // skip over qualification
