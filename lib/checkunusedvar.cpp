@@ -1282,8 +1282,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
             const Token* scopeEnd = getEndOfExprScope(expr, scope, /*smallest*/ false);
             if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {
-                if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {
-                    reportLibraryCfgError(tok, bailoutTypeName);
+                if (!bailoutTypeName.empty()) {
+                    if (bailoutTypeName != "auto")
+                        reportLibraryCfgError(tok, bailoutTypeName);
                     continue;
                 }
 
