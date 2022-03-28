@@ -22,7 +22,6 @@
 
 #include "config.h"
 #include "errortypes.h"
-#include "tokenize.h"
 
 #include <cstddef>
 #include <istream>
@@ -32,6 +31,8 @@
 
 /// @addtogroup Core
 /// @{
+
+class Tokenizer;
 
 /** @brief class for handling suppressions */
 class CPPCHECKLIB Suppressions {

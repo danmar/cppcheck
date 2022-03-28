@@ -22,6 +22,7 @@
 #include "mathlib.h"
 #include "path.h"
 #include "utils.h"
+#include "tokenize.h"
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
@@ -447,9 +448,6 @@ const std::list<Suppressions::Suppression> &Suppressions::getSuppressions() cons
     return mSuppressions;
 }
 
-/**
- * Loop on mSuppressions over and oer again might not be so fast.
- */
 void Suppressions::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer) {
     int currLineNr = -1;
     int currFileIdx = -1;
@@ -457,9 +455,9 @@ void Suppressions::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tok
         if (currFileIdx != tok->fileIndex() || currLineNr != tok->linenr()) {
             currLineNr = tok->linenr();
             currFileIdx = tok->fileIndex();
-            for (auto &supp : mSuppressions) {
-                if (supp.fileName == tokenizer.list.file(tok) && supp.lineNumber == currLineNr) {
-                    supp.checked = true;
+            for (auto &suppression : mSuppressions) {
+                if (!suppression.checked && (suppression.lineNumber == currLineNr) && (suppression.fileName == tokenizer.list.file(tok))) {
+                    suppression.checked = true;
                 }
             }
         }

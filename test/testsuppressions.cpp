@@ -669,9 +669,9 @@ private:
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
         Suppressions suppressions;
-        auto spr = Suppressions::Suppression("unusedFunction", "test.c", 3);
-        spr.checked = true; // have to do this because fixes for #5704
-        suppressions.addSuppression(spr);
+        auto suppression = Suppressions::Suppression("unusedFunction", "test.c", 3);
+        suppression.checked = true; // have to do this because fixes for #5704
+        suppressions.addSuppression(suppression);
         ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions("test.c", false).empty());
