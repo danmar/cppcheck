@@ -555,6 +555,11 @@ private:
               "    f(1, { static_cast<int*>(nullptr) });\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* p) {\n" // #10932
+              "    int& r(*p[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {

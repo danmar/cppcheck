@@ -6201,6 +6201,7 @@ private:
         ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
         ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
         ASSERT_EQUALS("varp=", testAst("const int *var = p;"));
+        ASSERT_EQUALS("intrp0[*(&", testAst("int& r(*p[0]);"));
 
         // #9127
         const char code1[] = "using uno::Ref;\n"

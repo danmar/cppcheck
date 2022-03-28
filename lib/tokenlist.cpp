@@ -1574,7 +1574,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (typetok &&
             typecount >= 2 &&
             !Token::Match(tok, "return|throw") &&
-            Token::Match(typetok->previous(), "%name% (") &&
+            Token::Match(typetok->previous(), "%name% ( !!*") &&
             typetok->previous()->varId() == 0 &&
             !typetok->previous()->isKeyword() &&
             Token::Match(typetok->link(), ") const|;|{"))
