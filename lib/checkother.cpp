@@ -1777,8 +1777,11 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return true;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
-    if (isCPPCast(tok))
+    if (isCPPCast(tok)) {
+        if (Token::simpleMatch(tok->astOperand1(), "dynamic_cast") && Token::simpleMatch(tok->astOperand1()->next()->link()->previous(), "& >"))
+            return false;
         return isWithoutSideEffects(cpp, tok) && isConstStatement(tok->astOperand2(), cpp);
+    }
     else if (tok->isCast() && tok->next() && tok->next()->isStandardType())
         return isWithoutSideEffects(cpp, tok->astOperand1()) && isConstStatement(tok->astOperand1(), cpp);
     if (Token::simpleMatch(tok, "."))

@@ -283,6 +283,17 @@ private:
               "    ((struct foo *)(0x1234))->xy = 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(const std::exception& e) {\n" // #10918
+              "    try {\n"
+              "        dynamic_cast<const InvalidTypeException&>(e);\n"
+              "        return true;\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        return false;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void increment() {
