@@ -566,7 +566,7 @@ static bool iscast(const Token *tok, bool cpp)
             }
             return type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
                    (Token::Match(tok2, ") %any%") &&
-                    !tok2->next()->isOp() &&
+                    (!tok2->next()->isOp() || Token::Match(tok2->next(), "!|~|++|--")) &&
                     !Token::Match(tok2->next(), "[[]);,?:.]"));
         }
 

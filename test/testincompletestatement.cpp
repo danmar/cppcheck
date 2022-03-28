@@ -555,6 +555,13 @@ private:
               "    f(1, { static_cast<int*>(nullptr) });\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #10882
+              "enum E {};\n"
+              "void f(const S* s) {\n"
+              "    E e = (E)!s->i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
