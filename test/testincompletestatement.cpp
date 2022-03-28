@@ -355,6 +355,12 @@ private:
               "    for(unsigned int a=0, b; a<10; a++ ) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b, int c, int d) {\n"
+              "    Eigen::Vector4d V;\n"
+              "    V << a, b, c, d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #8451

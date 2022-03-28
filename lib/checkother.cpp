@@ -1783,8 +1783,16 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return isWithoutSideEffects(cpp, tok->astOperand1()) && isConstStatement(tok->astOperand1(), cpp);
     if (Token::simpleMatch(tok, "."))
         return isConstStatement(tok->astOperand2(), cpp);
-    if (Token::simpleMatch(tok, ",")) // warn about const statement on rhs at the top level
-        return tok->astParent() ? isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp) : isConstStatement(tok->astOperand2(), cpp);
+    if (Token::simpleMatch(tok, ",")) {
+        if (tok->astParent()) // warn about const statement on rhs at the top level
+            return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp);
+        else {
+            const Token* lml = previousBeforeAstLeftmostLeaf(tok);
+            if (lml)
+                lml = lml->next();
+            return lml && !isLikelyStream(cpp, lml) && isConstStatement(tok->astOperand2(), cpp);
+        }
+    }
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
         return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
     if (isBracketAccess(tok) && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true, /*checkReference*/ false)) {
