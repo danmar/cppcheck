@@ -7076,7 +7076,7 @@ static void valueFlowUninit(TokenList* tokenlist, SymbolDatabase* /*symbolDataba
         uninitValue.valueType = ValueFlow::Value::ValueType::UNINIT;
         uninitValue.tokvalue = tok;
         if (var->isArray())
-            uninitValue.indirect = 1;
+            uninitValue.indirect = var->dimensions().size();
 
         bool partial = false;
 
