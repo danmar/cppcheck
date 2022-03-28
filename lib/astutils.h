@@ -227,7 +227,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library);
 
 bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp);
 
-bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess = false);
+bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess = false, bool checkReference = true);
 
 bool isUniqueExpression(const Token* tok);
 

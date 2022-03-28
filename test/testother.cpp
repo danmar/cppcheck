@@ -4396,7 +4396,7 @@ private:
               "    {\n"
               "        x = y = z = 0.0;\n"
               "    }\n"
-              "    V( double x, const double y, const double &z )\n"
+              "    V( double x, const double y_, const double &z_)\n"
               "    {\n"
               "        x = x; y = y; z = z;\n"
               "    }\n"

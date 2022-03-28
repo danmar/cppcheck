@@ -1771,21 +1771,34 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (tok->astTop() && Token::simpleMatch(tok->astTop()->astOperand1(), "delete"))
         return false;
+    if (Token::Match(tok, "&&|%oror%"))
+        return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp);
     if (Token::Match(tok, "!|~|%cop%") && (tok->astOperand1() || tok->astOperand2()))
         return true;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
-    if (isCPPCast(tok))
+    if (isCPPCast(tok)) {
+        if (Token::simpleMatch(tok->astOperand1(), "dynamic_cast") && Token::simpleMatch(tok->astOperand1()->next()->link()->previous(), "& >"))
+            return false;
         return isWithoutSideEffects(cpp, tok) && isConstStatement(tok->astOperand2(), cpp);
+    }
     else if (tok->isCast() && tok->next() && tok->next()->isStandardType())
         return isWithoutSideEffects(cpp, tok->astOperand1()) && isConstStatement(tok->astOperand1(), cpp);
     if (Token::simpleMatch(tok, "."))
         return isConstStatement(tok->astOperand2(), cpp);
-    if (Token::simpleMatch(tok, ",")) // warn about const statement on rhs at the top level
-        return tok->astParent() ? isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp) : isConstStatement(tok->astOperand2(), cpp);
+    if (Token::simpleMatch(tok, ",")) {
+        if (tok->astParent()) // warn about const statement on rhs at the top level
+            return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp);
+        else {
+            const Token* lml = previousBeforeAstLeftmostLeaf(tok);
+            if (lml)
+                lml = lml->next();
+            return lml && !isLikelyStream(cpp, lml) && isConstStatement(tok->astOperand2(), cpp);
+        }
+    }
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator
         return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand1(), cpp) && isConstStatement(tok->astOperand2()->astOperand2(), cpp);
-    if (isBracketAccess(tok) && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true)) {
+    if (isBracketAccess(tok) && isWithoutSideEffects(cpp, tok->astOperand1(), /*checkArrayAccess*/ true, /*checkReference*/ false)) {
         if (Token::simpleMatch(tok->astParent(), "["))
             return isConstStatement(tok->astOperand2(), cpp) && isConstStatement(tok->astParent(), cpp);
         return isConstStatement(tok->astOperand2(), cpp);
