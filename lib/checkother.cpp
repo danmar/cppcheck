@@ -919,8 +919,7 @@ void CheckOther::checkVariableScope()
 
         const bool isPtrOrRef = var->isPointer() || var->isReference();
         const bool isSimpleType = var->typeStartToken()->isStandardType() || var->typeStartToken()->isEnumType() || (mTokenizer->isC() && var->type() && var->type()->isStructType());
-        const bool isContainer = !isPtrOrRef && !isSimpleType && astIsContainer(var->nameToken());
-        if (!isPtrOrRef && !isSimpleType && !isContainer)
+        if (!isPtrOrRef && !isSimpleType && !astIsContainer(var->nameToken())
             continue;
 
         if (mTokenizer->hasIfdef(var->nameToken(), var->scope()->bodyEnd))
@@ -1066,15 +1065,8 @@ bool CheckOther::checkInnerScope(const Token *tok, const Variable* var, bool& us
         if (!bFirstAssignment && Token::Match(tok, "* %varid%", var->declarationId())) // dereferencing means access to previous content
             return false;
 
-        const bool isContainer = var->valueType() && var->valueType()->container;
-        if (Token::Match(tok, "= %varid%", var->declarationId()) && (var->isArray() || var->isPointer() || isContainer)) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
+        if (Token::Match(tok, "= %varid%", var->declarationId()) && (var->isArray() || var->isPointer() || var->valueType() && var->valueType()->container)) // Create a copy of array/pointer. Bailout, because the memory it points to might be necessary in outer scope
             return false;
-
-        //if (isContainer && Token::Match(tok, "%varid% .", var->declarationId())) {
-        //    const Library::Container* c = getLibraryContainer(tok);
-        //    if (c && tok->astParent()&& tok->astParent()->astOperand1() && isContainerYieldElement(c->getYield(tok->astParent()->astOperand1()->str())))
-        //        return false;
-        //}
 
         if (tok->varId() == var->declarationId()) {
             used = true;
