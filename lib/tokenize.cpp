@@ -3111,6 +3111,8 @@ void Tokenizer::simplifyArrayAccessSyntax()
 void Tokenizer::simplifyParameterVoid()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "sizeof|decltype|typeof"))
+            continue;
         if (Token::Match(tok, "%name% ( void )"))
             tok->next()->deleteNext();
     }
