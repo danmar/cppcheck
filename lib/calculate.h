@@ -42,7 +42,7 @@ inline bool isEqual(float x, float y)
 template<class T>
 bool isZero(T x)
 {
-    return isEqual<T>(x, T(0));
+    return isEqual(x, T(0));
 }
 
 template<class R, class T>
