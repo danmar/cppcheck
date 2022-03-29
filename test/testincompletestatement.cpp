@@ -579,6 +579,12 @@ private:
               "    E e = (E)!s->i;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #10917
+              "bool f(S s) {\n"
+              "    return [](int i) { return i > 0; }(s.i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
