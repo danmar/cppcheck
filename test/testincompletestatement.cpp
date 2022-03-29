@@ -283,6 +283,17 @@ private:
               "    ((struct foo *)(0x1234))->xy = 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(const std::exception& e) {\n" // #10918
+              "    try {\n"
+              "        dynamic_cast<const InvalidTypeException&>(e);\n"
+              "        return true;\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        return false;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void increment() {
@@ -358,6 +369,12 @@ private:
     void commaoperator2() {
         check("void f() {\n"
               "    for(unsigned int a=0, b; a<10; a++ ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b, int c, int d) {\n"
+              "    Eigen::Vector4d V;\n"
+              "    V << a, b, c, d;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -558,6 +575,13 @@ private:
         check("void f(int i, std::vector<int*> v);\n" // #10880
               "void g() {\n"
               "    f(1, { static_cast<int*>(nullptr) });\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #10882
+              "enum E {};\n"
+              "void f(const S* s) {\n"
+              "    E e = (E)!s->i;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
