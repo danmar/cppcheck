@@ -5214,6 +5214,33 @@ private:
                         "   return testData;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10089
+        valueFlowUninit("typedef union {\n"
+                        "    struct { int x; };\n"
+                        "    int v[1];\n"
+                        "} U;\n"
+                        "void init(int* d) {\n"
+                        "    *d = 42;\n"
+                        "}\n"
+                        "void f() {\n"
+                        "    U u;\n"
+                        "    init(u.v);\n"
+                        "    printf(\"%d\\n\", u.x);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10280
+        valueFlowUninit("union U {\n"
+                        "    char c[2];\n"
+                        "    uint16_t u16;\n"
+                        "};\n"
+                        "uint16_t f(std::istream& is) {\n"
+                        "    U u;\n"
+                        "    is.read(u.c, 2);\n"
+                        "    return u.u16;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
