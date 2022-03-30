@@ -309,6 +309,11 @@ private:
               "    int x{1};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int> f(int* p) {\n"
+              "    return std::vector<int>({ p[0] });\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void cpp11init2() {
@@ -577,6 +582,11 @@ private:
               "enum E {};\n"
               "void f(const S* s) {\n"
               "    E e = (E)!s->i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* p) {\n" // #10932
+              "    int& r(*p[0]);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
