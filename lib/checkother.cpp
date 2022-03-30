@@ -1788,7 +1788,10 @@ static bool isConstStatement(const Token *tok, bool cpp)
             const Token* lml = previousBeforeAstLeftmostLeaf(tok);
             if (lml)
                 lml = lml->next();
-            return lml && !isLikelyStream(cpp, lml) && isConstStatement(tok->astOperand2(), cpp);
+            const Token* stream = lml;
+            while (stream && Token::Match(stream->astParent(), ".|[|("))
+                stream = stream->astParent();
+            return stream && !isLikelyStream(cpp, stream) && isConstStatement(tok->astOperand2(), cpp);
         }
     }
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator

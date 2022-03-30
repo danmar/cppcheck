@@ -361,6 +361,18 @@ private:
               "    V << a, b, c, d;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { Eigen::Vector4d V; };\n"
+              "struct T { int a, int b, int c, int d; };\n"
+              "void f(S& s, const T& t) {\n"
+              "    s.V << t.a, t.b, t.c, t.d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    a.b[4][3].c()->d << x , y, z;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #8451
