@@ -1610,7 +1610,7 @@ static void misra_16_7(void) {
 }
 
 static void misra_17_1(void) {
-  va_list(); // 17.1
+  va_list(); // 17.1 17.7
   va_arg(); // 17.1
   va_start(); // 17.1
   va_end(); // 17.1

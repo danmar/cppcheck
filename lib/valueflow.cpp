@@ -8248,6 +8248,10 @@ const char* ValueFlow::Value::toString(LifetimeScope lifetimeScope)
         return "Argument";
     case ValueFlow::Value::LifetimeScope::SubFunction:
         return "SubFunction";
+    case ValueFlow::Value::LifetimeScope::ThisPointer:
+        return "ThisPointer";
+    case ValueFlow::Value::LifetimeScope::ThisValue:
+        return "ThisValue";
     }
     return "";
 }
