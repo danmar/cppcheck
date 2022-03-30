@@ -580,6 +580,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct S { int i; };\n" // #10917
+              "bool f(S s) {\n"
+              "    return [](int i) { return i > 0; }(s.i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("extern int (*p);\n" // #10936
               "void f() {\n"
               "    for (int i = 0; ;) {}\n"
