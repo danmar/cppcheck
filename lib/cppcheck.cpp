@@ -861,6 +861,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     fdump << "</dump>" << std::endl;
                 }
 
+                // Need to call this even if the checksum will skip this configuration
+                mSettings.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+
                 // Skip if we already met the same simplified token list
                 if (mSettings.force || mSettings.maxConfigs > 1) {
                     const unsigned long long checksum = tokenizer.list.calculateChecksum();
