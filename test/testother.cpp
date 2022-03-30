@@ -2971,6 +2971,13 @@ private:
               "  istr >> x[0];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10744
+        check("S& f() {\n"
+              "    static S * p = new S();\n"
+              "    return *p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {

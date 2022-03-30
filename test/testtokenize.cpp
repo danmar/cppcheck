@@ -2206,6 +2206,19 @@ private:
                           "} ;",
                           tokenizeAndStringify(code));
         }
+
+        {
+            // Ticket #9515
+            const char code[] = "void(a)(void) {\n"
+                                "    static int b;\n"
+                                "    if (b) {}\n"
+                                "}\n";
+            ASSERT_EQUALS("void ( a ) ( void ) {\n"
+                          "static int b ;\n"
+                          "if ( b ) { }\n"
+                          "}",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void vardecl6() {
