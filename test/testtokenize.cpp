@@ -6032,6 +6032,7 @@ private:
         ASSERT_EQUALS("adelete", testAst("void f() { delete a; }"));
         ASSERT_EQUALS("Aa*A{new=", testAst("A* a = new A{};"));
         ASSERT_EQUALS("Aa*A12,{new=", testAst("A* a = new A{ 1, 2 };"));
+        ASSERT_EQUALS("Sv0[(new", testAst("new S(v[0]);")); // #10929
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
@@ -6220,6 +6221,8 @@ private:
                                                          "}\n"));
         ASSERT_EQUALS("x0=a, stdtie::a(x=", testAst("int x = 0, a; std::tie(a) = x;\n"));
         ASSERT_EQUALS("tmpa*=a*b*=,b*tmp=,", testAst("{ ((tmp) = (*a)), ((*a) = (*b)), ((*b) = (tmp)); }"));
+        ASSERT_EQUALS("a(*v=", testAst("(*(volatile unsigned int *)(a) = (v));"));
+        ASSERT_EQUALS("i(j=", testAst("(int&)(i) = j;"));
     }
 
     void astunaryop() { // unary operators
@@ -6295,6 +6298,8 @@ private:
         ASSERT_EQUALS("yz.(return", testAst("return (x)(y).z;"));
 
         ASSERT_EQUALS("fon!(restoring01:?,(", testAst("f((long) !on, restoring ? 0 : 1);"));
+
+        ASSERT_EQUALS("esi.!(=", testAst("E e = (E)!s->i;")); // #10882
 
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));

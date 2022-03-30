@@ -6139,6 +6139,19 @@ private:
                         "    (*fp[0])();\n"
                         "}");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("static void Foo(double* p) {\n"
+                        " p[0] = 0;\n"
+                        " p[1] = 0;\n"
+                        " p[2] = 0;\n"
+                        " p[3] = 0;\n"
+                        "}\n"
+                        "double f() {\n"
+                        "  double L[2][2];\n"
+                        "  Foo(*L);\n"
+                        "  return L[0][0];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar_memberaccess() {
