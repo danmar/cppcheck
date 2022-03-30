@@ -58,6 +58,8 @@ private:
         TEST_CASE(importCompileCommands7); // linux: "/home/danielm/cppcheck 2"
         TEST_CASE(importCompileCommands8); // Windows: "C:\Users\danielm\cppcheck"
         TEST_CASE(importCompileCommands9);
+        TEST_CASE(importCompileCommands10); // #10887: include path with space
+        TEST_CASE(importCompileCommands11); // include path order
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
@@ -209,7 +211,8 @@ private:
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
         ASSERT_EQUALS(2, importer.fileSettings.size());
-        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.front());
+        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/src/", importer.fileSettings.begin()->includePaths.front());
+        ASSERT_EQUALS("C:/Users/dan/git/test-cppcheck/mylib/second src/", importer.fileSettings.begin()->includePaths.back());
     }
 
 
@@ -254,11 +257,53 @@ private:
                  "powershell.exe -WindowStyle Hidden -NoProfile -ExecutionPolicy Bypass -File d:\\Projekte\\xyz\\firmware\\app\\xyz-lib\\build.ps1 -IAR -COMPILER_PATH \"c:\\Program Files (x86)\\IAR Systems\\Embedded Workbench 9.0\" -CONTROLLER CC1310F128 -LIB LIB_PERMANENT -COMPILER_DEFINES \"CC1310_HFXO_FREQ=24000000 DEBUG\""
               ],
               "directory" : "d:\\Projekte\\xyz\\firmware\\app",
-              "type" : "PRE"
+              "type" : "PRE",
+              "file": "1.c"
             }])";
         std::istringstream istr(json);
         TestImporter importer;
         ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+    }
+
+    void importCompileCommands10() const { // #10887
+        const char json[] =
+            R"([{
+               "file": "/home/danielm/cppcheck/1/test folder/1.c" ,
+               "directory": "",
+               "arguments": [
+                   "iccavr.exe",
+                   "-I",
+                   "/home/danielm/cppcheck/test folder"
+               ]
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        const ImportProject::FileSettings &fs = importer.fileSettings.front();
+        ASSERT_EQUALS("/home/danielm/cppcheck/test folder/", fs.includePaths.front());
+    }
+
+    void importCompileCommands11() const { // include path order
+        const char json[] =
+            R"([{
+               "file": "1.c" ,
+               "directory": "/x",
+               "arguments": [
+                   "cc",
+                   "-I",
+                   "def",
+                   "-I",
+                   "abc"
+               ]
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        const ImportProject::FileSettings &fs = importer.fileSettings.front();
+        ASSERT_EQUALS("/x/def/", fs.includePaths.front());
+        ASSERT_EQUALS("/x/abc/", fs.includePaths.back());
     }
 
     void importCompileCommandsArgumentsSection() const {

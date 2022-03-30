@@ -31,6 +31,7 @@
 #include "utils.h"
 #include "valueflow.h"
 #include "valueptr.h"
+#include "checkclass.h"
 
 #include <algorithm>
 #include <functional>
@@ -1747,7 +1748,7 @@ bool isConstExpression(const Token *tok, const Library& library, bool pure, bool
     return isConstExpression(tok->astOperand1(), library, pure, cpp) && isConstExpression(tok->astOperand2(), library, pure, cpp);
 }
 
-bool isWithoutSideEffects(bool cpp, const Token* tok)
+bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess, bool checkReference)
 {
     if (!cpp)
         return true;
@@ -1756,7 +1757,7 @@ bool isWithoutSideEffects(bool cpp, const Token* tok)
         tok = tok->astOperand2();
     if (tok && tok->varId()) {
         const Variable* var = tok->variable();
-        return var && (!var->isClass() || var->isPointer() || var->isStlType());
+        return var && ((!var->isClass() && (checkReference || !var->isReference())) || var->isPointer() || (checkArrayAccess ? var->isStlType() && !var->isStlType(CheckClass::stl_containers_not_const) : var->isStlType()));
     }
     return true;
 }
@@ -1925,6 +1926,19 @@ bool isReturnScope(const Token* const endToken, const Library* library, const To
         while (prev && !Token::Match(prev, ";|{|}") && !isEscapedOrJump(prev, functionScope, library))
             prev = prev->previous();
         return prev && prev->isName();
+    }
+    return false;
+}
+
+bool isWithinScope(const Token* tok, const Variable* var, Scope::ScopeType type)
+{
+    if (!tok || !var)
+        return false;
+    const Scope* scope = tok->scope();
+    while (scope && scope != var->scope()) {
+        if (scope->type == type)
+            return true;
+        scope = scope->nestedIn;
     }
     return false;
 }

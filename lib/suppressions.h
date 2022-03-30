@@ -32,6 +32,8 @@
 /// @addtogroup Core
 /// @{
 
+class Tokenizer;
+
 /** @brief class for handling suppressions */
 class CPPCHECKLIB Suppressions {
 public:
@@ -51,11 +53,11 @@ public:
     };
 
     struct CPPCHECKLIB Suppression {
-        Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false) {}
+        Suppression() : lineNumber(NO_LINE), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
         Suppression(const Suppression &other) {
             *this = other;
         }
-        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), thisAndNextLine(false), matched(false) {}
+        Suppression(const std::string &id, const std::string &file, int line=NO_LINE) : errorId(id), fileName(file), lineNumber(line), hash(0), thisAndNextLine(false), matched(false), checked(false) {}
 
         Suppression & operator=(const Suppression &other) {
             errorId = other.errorId;
@@ -65,6 +67,7 @@ public:
             hash = other.hash;
             thisAndNextLine = other.thisAndNextLine;
             matched = other.matched;
+            checked = other.checked;
             return *this;
         }
 
@@ -118,6 +121,7 @@ public:
         std::size_t hash;
         bool thisAndNextLine; // Special case for backwards compatibility: { // cppcheck-suppress something
         bool matched;
+        bool checked; // for inline suppressions, checked or not
 
         enum { NO_LINE = -1 };
     };
@@ -203,6 +207,12 @@ public:
      * @return list of suppressions
      */
     const std::list<Suppression> &getSuppressions() const;
+
+    /**
+     * @brief Marks Inline Suppressions as checked if source line is in the token stream
+     * @return No return.
+     */
+    void markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer);
 
 private:
     /** @brief List of error which the user doesn't want to see. */

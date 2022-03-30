@@ -3187,14 +3187,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void uninitVarUnion1() { // ticket #3196
-        check("class Fred\n"
+    void uninitVarUnion1() {
+        check("class Fred\n" // ticket #3196
               "{\n"
               "private:\n"
               "    union { int a; int b; };\n"
               "public:\n"
               "    Fred()\n"
               "    { a = 0; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class Fred {\n"
+              "private:\n"
+              "    union { int a{}; int b; };\n"
               "};");
         ASSERT_EQUALS("", errout.str());
     }

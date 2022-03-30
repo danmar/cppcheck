@@ -20,17 +20,24 @@
 #ifndef RESULTSVIEW_H
 #define RESULTSVIEW_H
 
-#include "ui_resultsview.h"
-
 #include "report.h"
 #include "showtypes.h"
 
+#include <QSet>
+#include <QString>
+#include <QWidget>
+
 class ErrorItem;
 class ApplicationList;
+class ThreadHandler;
 class QModelIndex;
 class QPrinter;
 class QSettings;
 class CheckStatistics;
+class QListWidgetItem;
+namespace Ui {
+    class ResultsView;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -195,9 +202,7 @@ public:
      * @brief Return Showtypes.
      * @return Pointer to Showtypes.
      */
-    ShowTypes * getShowTypes() const {
-        return &mUI.mTree->mShowSeverities;
-    }
+    ShowTypes * getShowTypes() const;
 
     /** Show/hide the contract tabs */
     void showContracts(bool visible);
@@ -368,7 +373,7 @@ protected:
      */
     bool mShowNoErrorsMessage;
 
-    Ui::ResultsView mUI;
+    Ui::ResultsView *mUI;
 
     CheckStatistics *mStatistics;
 

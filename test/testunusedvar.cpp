@@ -3241,6 +3241,12 @@ private:
                               "    auto&& g = std::lock_guard<std::mutex> { mutex };\n"
                               "}\n");
         TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Variable 'g' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    auto a = RAII();\n"
+                              "    auto b { RAII() };\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar47() { // #6603
@@ -5808,10 +5814,13 @@ private:
                               "    auto r = std::pair<std::string, std::string>(\"a\", \"b\");\n"
                               "    auto s = std::pair<std::string, std::string>{ \"a\", \"b\" };\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' is assigned a value that is never used.\n"
-                      "[test.cpp:3]: (style) Variable 'q' is assigned a value that is never used.\n"
-                      "[test.cpp:4]: (style) Variable 'r' is assigned a value that is never used.\n"
-                      "[test.cpp:5]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' is assigned a value that is never used.\n"
+                           "[test.cpp:3]: (style) Variable 'q' is assigned a value that is never used.\n"
+                           "[test.cpp:4]: (style) Variable 'r' is assigned a value that is never used.\n"
+                           "[test.cpp:5]: (style) Variable 's' is assigned a value that is never used.\n",
+                           "[test.cpp:2]: (style) Variable 'p' is assigned a value that is never used.\n"
+                           "[test.cpp:3]: (style) Variable 'q' is assigned a value that is never used.\n",
+                           errout.str());
     }
 
     void localVarClass() {

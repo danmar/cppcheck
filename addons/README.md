@@ -4,8 +4,6 @@ Addons are scripts that analyses Cppcheck dump files to check compatibility with
 
 ## Supported addons
 
-+ [cert.py](https://github.com/danmar/cppcheck/blob/main/addons/cert.py) 
-  Checks for compliance with the safe programming standard [CERT](http://www.cert.org/secure-coding/).
 + [misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) 
   Used to verify compliance with MISRA C 2012 - a proprietary set of guidelines to avoid such questionable code, developed for embedded systems. Since this standard is proprietary, cppcheck does not display error text by specifying only the number of violated rules (for example, [c2012-21.3]). If you want to display full texts for violated rules, you will need to create a text file containing MISRA rules, which you will have to pass when calling the script with `--rule-texts` key. Some examples of rule texts files available in [tests directory](https://github.com/danmar/cppcheck/blob/main/addons/test/misra/).
 + [y2038.py](https://github.com/danmar/cppcheck/blob/main/addons/y2038.py) 
@@ -18,13 +16,13 @@ Addons are scripts that analyses Cppcheck dump files to check compatibility with
 ### Command line interface
 
 ```bash
-cppcheck --addon=cert --addon=y2038 src/test.c
+cppcheck --addon=misc src/test.c
 ```
 
 It is also possible to call scripts as follows:
 ```bash
 cppcheck --dump --quiet src/test.c
-python cert.py src/test.c.dump
+python misc.py src/test.c.dump
 python misra.py --rule-texts=~/misra_rules.txt src/test.c.dump
 ```
 

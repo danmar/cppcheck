@@ -3935,7 +3935,7 @@ private:
               "    if (logger == nullptr)\n"
               "        logger = Fun;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (style) Condition 'logger==nullptr' is always true\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void Fun();\n"
               "typedef void (*Fn)();\n"

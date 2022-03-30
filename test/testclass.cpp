@@ -2562,6 +2562,27 @@ private:
                                "Base *base = new Derived;\n"
                                "delete base;");
         ASSERT_EQUALS("", errout.str());
+
+        // #9104
+        checkVirtualDestructor("struct A\n"
+                               "{\n"
+                               "    A()  { cout << \"A is constructing\\n\"; }\n"
+                               "    ~A() { cout << \"A is destructing\\n\"; }\n"
+                               "};\n"
+                               " \n"
+                               "struct Base {};\n"
+                               " \n"
+                               "struct Derived : Base\n"
+                               "{\n"
+                               "    A a;\n"
+                               "};\n"
+                               " \n"
+                               "int main(void)\n"
+                               "{\n"
+                               "    Base* p = new Derived();\n"
+                               "    delete p;\n"
+                               "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor3() {
@@ -7286,6 +7307,24 @@ private:
                                  "}\n");
         ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:9]: (style) Virtual function 'Copy' is called from copy constructor 'Derived(const Derived&Src)' at line 13. Dynamic binding is not used.\n",
                       errout.str());
+
+        checkVirtualFunctionCall("struct B {\n"
+                                 "    B() { auto pf = &f; }\n"
+                                 "    virtual void f() {}\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("struct B {\n"
+                                 "    B() { auto pf = &B::f; }\n"
+                                 "    virtual void f() {}\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("struct B {\n"
+                                 "    B() { (f)(); }\n"
+                                 "    virtual void f() {}\n"
+                                 "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Virtual function 'f' is called from constructor 'B()' at line 2. Dynamic binding is not used.\n", errout.str());
     }
 
     void pureVirtualFunctionCall() {
@@ -7307,6 +7346,17 @@ private:
                                  "A::A():m(A::pure())\n"
                                  "{}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
+
+        checkVirtualFunctionCall("namespace N {\n"
+                                 "  class A\n"
+                                 "  {\n"
+                                 "      virtual int pure() = 0;\n"
+                                 "      A();\n"
+                                 "      int m;\n"
+                                 "  };\n"
+                                 "}\n"
+                                 "N::A::A() : m(N::A::pure()) {}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  " {\n"
@@ -7628,6 +7678,15 @@ private:
                       "  void f(char c, std::vector<int> w = {});\n"
                       "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", "", errout.str());
+
+        checkOverride("struct T {};\n" // #10920
+                      "struct B {\n"
+                      "    virtual T f() = 0;\n"
+                      "};\n"
+                      "struct D : B {\n"
+                      "    friend T f();\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void overrideCVRefQualifiers() {

@@ -96,6 +96,8 @@ private:
         TEST_CASE(varScope26);      // range for loop, map
         TEST_CASE(varScope27);      // #7733 - #if
         TEST_CASE(varScope28);      // #10527
+        TEST_CASE(varScope29);      // #10888
+        TEST_CASE(varScope30);      // #8541
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1316,6 +1318,61 @@ private:
         check("void f() {\n" // #10527
               "    int i{};\n"
               "    if (double d = g(i); d == 1.0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope29() { // #10888
+        check("enum E { E0 };\n"
+              "struct S { int i; };\n"
+              "void f(int b) {\n"
+              "    enum E e;\n"
+              "    struct S s;\n"
+              "    if (b) {\n"
+              "        e = E0;\n"
+              "        s.i = 0;\n"
+              "        g(e, s);\n"
+              "    }\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:4]: (style) The scope of the variable 'e' can be reduced.\n"
+                      "[test.c:5]: (style) The scope of the variable 's' can be reduced.\n",
+                      errout.str());
+
+        check("void f(bool b) {\n"
+              "    std::string s;\n"
+              "    if (b) {\n"
+              "        s = \"abc\";\n"
+              "        g(s);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) The scope of the variable 's' can be reduced.\n", errout.str());
+
+        check("auto foo(std::vector<int>& vec, bool flag) {\n"
+              "    std::vector<int> dummy;\n"
+              "    std::vector<int>::iterator iter;\n"
+              "    if (flag)\n"
+              "        iter = vec.begin();\n"
+              "    else {\n"
+              "        dummy.push_back(42);\n"
+              "        iter = dummy.begin();\n"
+              "    }\n"
+              "    return *iter;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope30() { // #8541
+        check("bool f(std::vector<int>& v, int i) {\n"
+              "    int n = 0;\n"
+              "    bool b = false;\n"
+              "    std::for_each(v.begin(), v.end(), [&](int j) {\n"
+              "        if (j == i) {\n"
+              "            ++n;\n"
+              "            if (n > 5)\n"
+              "                b = true;\n"
+              "        }\n"
+              "    });\n"
+              "    return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -2914,6 +2971,13 @@ private:
               "  istr >> x[0];\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10744
+        check("S& f() {\n"
+              "    static S * p = new S();\n"
+              "    return *p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -4071,6 +4135,11 @@ private:
               "    return 1;\n" // <- clarify for tools that function does not continue..
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    enum : uint8_t { A, B } var = A;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -4334,7 +4403,7 @@ private:
               "    {\n"
               "        x = y = z = 0.0;\n"
               "    }\n"
-              "    V( double x, const double y, const double &z )\n"
+              "    V( double x, const double y_, const double &z_)\n"
               "    {\n"
               "        x = x; y = y; z = z;\n"
               "    }\n"
@@ -4745,6 +4814,11 @@ private:
               "    (***c)++;\n"
               "    return c;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const int*** p) {\n" // #10923
+              "    delete[] **p;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("void *f(char** c) {\n"

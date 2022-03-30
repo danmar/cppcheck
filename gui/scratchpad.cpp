@@ -20,24 +20,32 @@
 
 #include "mainwindow.h"
 
+#include "ui_scratchpad.h"
+
 ScratchPad::ScratchPad(MainWindow& mainWindow)
     : QDialog(&mainWindow)
+    , mUI(new Ui::ScratchPad)
     , mMainWindow(mainWindow)
 {
-    mUI.setupUi(this);
+    mUI->setupUi(this);
 
-    connect(mUI.mCheckButton, &QPushButton::clicked, this, &ScratchPad::checkButtonClicked);
+    connect(mUI->mCheckButton, &QPushButton::clicked, this, &ScratchPad::checkButtonClicked);
+}
+
+ScratchPad::~ScratchPad()
+{
+    delete mUI;
 }
 
 void ScratchPad::translate()
 {
-    mUI.retranslateUi(this);
+    mUI->retranslateUi(this);
 }
 
 void ScratchPad::checkButtonClicked()
 {
-    QString filename = mUI.lineEdit->text();
+    QString filename = mUI->lineEdit->text();
     if (filename.isEmpty())
         filename = "test.cpp";
-    mMainWindow.analyzeCode(mUI.plainTextEdit->toPlainText(), filename);
+    mMainWindow.analyzeCode(mUI->plainTextEdit->toPlainText(), filename);
 }

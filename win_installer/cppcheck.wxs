@@ -148,7 +148,6 @@
           </Directory>
           <Directory Id='AddonsFolder' Name='addons'>
             <Component Id='Addons' Guid='$(var.addonsGUID)'>
-              <File Id='cert.py' Name='cert.py' Source='$(var.AddonsDir)\cert.py' />
               <File Id='cppcheckdata.py' Name='cppcheckdata.py' Source='$(var.AddonsDir)\cppcheckdata.py' />
               <File Id='findcasts.py' Name='findcasts.py' Source='$(var.AddonsDir)\findcasts.py' />
               <File Id='misc.py' Name='misc.py' Source='$(var.AddonsDir)\misc.py' />

@@ -96,6 +96,7 @@ private:
         TEST_CASE(uninitvar_nonmember); // crash in ycmd test
 
         TEST_CASE(isVariableUsageDeref); // *p
+        TEST_CASE(isVariableUsageDerefValueflow); // *p
 
         TEST_CASE(uninitvar_memberaccess); // (&(a))->b <=> a.b
 
@@ -2022,6 +2023,12 @@ private:
                        "    char * pBuf = new(10);\n"
                        "    a = *pBuf;\n"
                        "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("class A {};\n" // #10698
+                       "void f() {\n"
+                       "    A* a = new A{};\n"
+                       "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -5207,6 +5214,33 @@ private:
                         "   return testData;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10089
+        valueFlowUninit("typedef union {\n"
+                        "    struct { int x; };\n"
+                        "    int v[1];\n"
+                        "} U;\n"
+                        "void init(int* d) {\n"
+                        "    *d = 42;\n"
+                        "}\n"
+                        "void f() {\n"
+                        "    U u;\n"
+                        "    init(u.v);\n"
+                        "    printf(\"%d\\n\", u.x);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10280
+        valueFlowUninit("union U {\n"
+                        "    char c[2];\n"
+                        "    uint16_t u16;\n"
+                        "};\n"
+                        "uint16_t f(std::istream& is) {\n"
+                        "    U u;\n"
+                        "    is.read(u.c, 2);\n"
+                        "    return u.u16;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
@@ -6096,6 +6130,54 @@ private:
                        "    void (*fp[1]) (void) = {function1};\n"
                        "    (*fp[0])();\n"
                        "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void isVariableUsageDerefValueflow()
+    {
+        // *p
+        valueFlowUninit("void f() {\n"
+                        "    char a[10];\n"
+                        "    char c = *a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: *a\n", errout.str());
+
+        // extracttests.start: extern const int SIZE;
+        valueFlowUninit("void f() {\n"
+                        "    char a[SIZE+10];\n"
+                        "    char c = *a;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: *a\n", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "    char a[10];\n"
+                        "    *a += 10;\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: *a\n", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "  int a[10][10];\n"
+                        "  dostuff(*a);\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "    void (*fp[1]) (void) = {function1};\n"
+                        "    (*fp[0])();\n"
+                        "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("static void Foo(double* p) {\n"
+                        " p[0] = 0;\n"
+                        " p[1] = 0;\n"
+                        " p[2] = 0;\n"
+                        " p[3] = 0;\n"
+                        "}\n"
+                        "double f() {\n"
+                        "  double L[2][2];\n"
+                        "  Foo(*L);\n"
+                        "  return L[0][0];\n"
+                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
