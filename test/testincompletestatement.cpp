@@ -614,6 +614,12 @@ private:
               "    return [](int i) { return i > 0; }(s.i);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("extern int (*p);\n" // #10936
+              "void f() {\n"
+              "    for (int i = 0; ;) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
