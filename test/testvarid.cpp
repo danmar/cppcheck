@@ -1735,7 +1735,7 @@ private:
                             "};";
         ASSERT_EQUALS("1: class Foo {\n"
                       "2: private:\n"
-                      "3: void f ( void ) ;\n"
+                      "3: void f ( ) ;\n"
                       "4: } ;\n",
                       tokenize(code));
     }

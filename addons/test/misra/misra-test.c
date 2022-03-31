@@ -337,7 +337,7 @@ const misra_8_1_a; // 8.1 8.4
 static int misra_8_2_a (int n, ...);
 extern int misra_8_2_b (int n);
 extern int misra_8_2_c (int); // 8.2
-static int misra_8_2_d (); // 8.2
+static int misra_8_2_d (); // TODO: 8.2
 static int misra_8_2_e (void);
 static int misra_8_2_f (vec, n )
 int *vec; // 8.2
@@ -345,13 +345,13 @@ int n; // 8.2
 {
     return vec[ n - 1 ];
 }
-static int misra_8_2_g ( /* comment */ ); // 8.2
-static int misra_8_2_h ( /* comment 1 */ /* comment 2 */ ); // 8.2
+static int misra_8_2_g ( /* comment */ ); // TODO: 8.2
+static int misra_8_2_h ( /* comment 1 */ /* comment 2 */ ); // TODO: 8.2
 static int misra_8_2_i ( /* comment */ void);
 static int misra_8_2_j ( /* comment */ void /* comment */);
 static int misra_8_2_k ( // 
  void);
-static int misra_8_2_l ( // 8.2
+static int misra_8_2_l ( // TODO: 8.2
 );
 static void misra_8_2_m(uint8_t * const x);
 static void misra_8_2_m(uint8_t * const x)
@@ -373,7 +373,7 @@ static int misra_8_2_p(
     const uint8_t *const a2
 );
 static int misra_8_2_q
-(); // 8.2
+(); // TODO: 8.2
 
 void misra_8_4_foo(void) {} // 8.4
 extern void misra_8_4_func(void);

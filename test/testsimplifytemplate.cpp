@@ -217,6 +217,7 @@ private:
         TEST_CASE(template172); // #10258 crash
         TEST_CASE(template173); // #10332 crash
         TEST_CASE(template174); // #10506 hang
+        TEST_CASE(template175); // #10908
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -1138,7 +1139,7 @@ private:
                                 "return f1<B<A>> ( 0 , reinterpret_cast < B<A> * > ( E<void*> :: Int ( -1 ) ) ) ; "
                                 "} "
                                 "} ; "
-                                "int main ( void ) { "
+                                "int main ( ) { "
                                 "C<A> ca ; "
                                 "return 0 ; "
                                 "} "
@@ -4453,6 +4454,16 @@ private:
         const char exp[] = "namespace a { int d<int> ( ) ; } "
                            "void e ( ) { a :: d<int> ( ) ; } "
                            "int a :: d<int> ( ) { return d < int > ( ) ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template175()
+    {
+        const char code[] = "template <typename T, int value> T Get() {return value;}\n"
+                            "char f() { Get<int,10>(); }\n";
+        const char exp[] = "int Get<int,10> ( ) ; "
+                           "char f ( ) { Get<int,10> ( ) ; } "
+                           "int Get<int,10> ( ) { return 10 ; }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
