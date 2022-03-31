@@ -6976,6 +6976,9 @@ std::string ValueType::dump() const
     case NONSTD:
         ret << "valueType-type=\"nonstd\"";
         break;
+    case POD:
+        ret << "valueType-type=\"pod\"";
+        break;
     case RECORD:
         ret << "valueType-type=\"record\"";
         break;

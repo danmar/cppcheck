@@ -1593,7 +1593,7 @@ void CheckOther::checkConstPointer()
         if (nonConstPointers.find(p) == nonConstPointers.end()) {
             const Token *start = (p->isArgument()) ? p->scope()->bodyStart : p->nameToken()->next();
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
-            if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
+            if (p->isStatic() || isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
                 continue;
             constVariableError(p, nullptr);
         }
@@ -1778,7 +1778,7 @@ static bool isConstStatement(const Token *tok, bool cpp)
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
     if (isCPPCast(tok)) {
-        if (Token::simpleMatch(tok->astOperand1(), "dynamic_cast") && Token::simpleMatch(tok->astOperand1()->next()->link()->previous(), "& >"))
+        if (Token::simpleMatch(tok->astOperand1(), "dynamic_cast") && Token::simpleMatch(tok->astOperand1()->linkAt(1)->previous(), "& >"))
             return false;
         return isWithoutSideEffects(cpp, tok) && isConstStatement(tok->astOperand2(), cpp);
     }
@@ -1793,7 +1793,10 @@ static bool isConstStatement(const Token *tok, bool cpp)
             const Token* lml = previousBeforeAstLeftmostLeaf(tok);
             if (lml)
                 lml = lml->next();
-            return lml && !isLikelyStream(cpp, lml) && isConstStatement(tok->astOperand2(), cpp);
+            const Token* stream = lml;
+            while (stream && Token::Match(stream->astParent(), ".|[|("))
+                stream = stream->astParent();
+            return (!stream || !isLikelyStream(cpp, stream)) && isConstStatement(tok->astOperand2(), cpp);
         }
     }
     if (Token::simpleMatch(tok, "?") && Token::simpleMatch(tok->astOperand2(), ":")) // ternary operator

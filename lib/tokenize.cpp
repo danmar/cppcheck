@@ -3108,6 +3108,16 @@ void Tokenizer::simplifyArrayAccessSyntax()
     }
 }
 
+void Tokenizer::simplifyParameterVoid()
+{
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (Token::Match(tok, "sizeof|decltype|typeof"))
+            continue;
+        if (Token::Match(tok, "%name% ( void )"))
+            tok->next()->deleteNext();
+    }
+}
+
 void Tokenizer::simplifyRedundantConsecutiveBraces()
 {
     // Remove redundant consecutive braces, i.e. '.. { { .. } } ..' -> '.. { .. } ..'.
@@ -3482,8 +3492,8 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
                 hasstruct = true;
                 typeCount = 0;
                 singleNameCount = 0;
-            } else if (tok2->str() == "const") {
-                // just skip "const"
+            } else if (Token::Match(tok2, "const|extern")) {
+                // just skip "const", "extern"
             } else if (!hasstruct && variableId.find(tok2->str()) != variableId.end() && tok2->previous()->str() != "::") {
                 ++typeCount;
                 tok2 = tok2->next();
@@ -3520,6 +3530,8 @@ static bool setVarIdParseDeclaration(const Token **tok, const std::map<std::stri
         } else if (singleNameCount >= 1 && Token::Match(tok2, "( [*&]") && Token::Match(tok2->link()->next(), "(|[")) {
             bracket = true; // Skip: Seems to be valid pointer to array or function pointer
         } else if (singleNameCount >= 1 && Token::Match(tok2, "( * %name% [") && Token::Match(tok2->linkAt(3), "] ) [;,]")) {
+            bracket = true;
+        } else if (singleNameCount >= 1 && tok2->previous() && tok2->previous()->isStandardType() && Token::Match(tok2, "( *|&| %name% ) ;")) {
             bracket = true;
         } else if (tok2->str() == "::") {
             singleNameCount = 0;
@@ -5270,6 +5282,8 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     Token::assignProgressValues(list.front());
 
     removeRedundantSemicolons();
+
+    simplifyParameterVoid();
 
     simplifyRedundantConsecutiveBraces();
 
@@ -8880,9 +8894,11 @@ bool Tokenizer::simplifyRedundantParentheses()
         if (tok->str() != "(")
             continue;
 
-        if (isCPP() && Token::simpleMatch(tok->previous(), "} (") &&
-            Token::Match(tok->previous()->link()->previous(), "%name%|> {"))
-            continue;
+        if (isCPP() && Token::simpleMatch(tok->previous(), "} (")) {
+            const Token* plp = tok->previous()->link()->previous();
+            if (Token::Match(plp, "%name%|>|] {") || (Token::simpleMatch(plp, ")") && Token::simpleMatch(plp->link()->previous(), "]")))
+                continue;
+        }
 
         if (Token::simpleMatch(tok, "( {"))
             continue;

@@ -4832,7 +4832,7 @@ private:
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "foo1");
-        functok = Token::findsimplematch(tokenizer.tokens(), "foo2 ( void ) { }");
+        functok = Token::findsimplematch(tokenizer.tokens(), "foo2 ( ) { }");
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "foo2");

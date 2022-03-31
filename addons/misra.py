@@ -1863,6 +1863,7 @@ class MisraChecker:
             return following
 
         # Zero arguments should be in form ( void )
+        # TODO: Use rawTokens or add flag when void is removed
         def checkZeroArguments(func, startCall, endCall):
             if (len(func.argument) == 0):
                 voidArg = startCall.next
@@ -1935,7 +1936,7 @@ class MisraChecker:
                 endCall = startCall.link
                 if endCall is None or endCall.str != ')':
                     continue
-                checkZeroArguments(func, startCall, endCall)
+                # checkZeroArguments(func, startCall, endCall)
                 checkDefinitionArgumentsViolations(func, startCall, endCall)
 
             # Check arguments in function declaration
@@ -1947,7 +1948,7 @@ class MisraChecker:
                 endCall = startCall.link
                 if endCall is None or endCall.str != ')':
                     continue
-                checkZeroArguments(func, startCall, endCall)
+                # checkZeroArguments(func, startCall, endCall)
                 if tokenImpl:
                     checkDeclarationArgumentsViolations(func, startCall, endCall)
                 else:

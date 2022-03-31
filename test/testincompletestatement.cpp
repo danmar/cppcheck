@@ -309,6 +309,11 @@ private:
               "    int x{1};\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int> f(int* p) {\n"
+              "    return std::vector<int>({ p[0] });\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void cpp11init2() {
@@ -370,6 +375,25 @@ private:
         check("void f(int a, int b, int c, int d) {\n"
               "    Eigen::Vector4d V;\n"
               "    V << a, b, c, d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { Eigen::Vector4d V; };\n"
+              "struct T { int a, int b, int c, int d; };\n"
+              "void f(S& s, const T& t) {\n"
+              "    s.V << t.a, t.b, t.c, t.d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { Eigen::Vector4d V[2]; };\n"
+              "void f(int a, int b, int c, int d) {\n"
+              "    S s[1];\n"
+              "    s[0].V[1] << a, b, c, d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    a.b[4][3].c()->d << x , y, z;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -577,6 +601,23 @@ private:
               "enum E {};\n"
               "void f(const S* s) {\n"
               "    E e = (E)!s->i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* p) {\n" // #10932
+              "    int& r(*p[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #10917
+              "bool f(S s) {\n"
+              "    return [](int i) { return i > 0; }(s.i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("extern int (*p);\n" // #10936
+              "void f() {\n"
+              "    for (int i = 0; ;) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 

@@ -2206,6 +2206,19 @@ private:
                           "} ;",
                           tokenizeAndStringify(code));
         }
+
+        {
+            // Ticket #9515
+            const char code[] = "void(a)(void) {\n"
+                                "    static int b;\n"
+                                "    if (b) {}\n"
+                                "}\n";
+            ASSERT_EQUALS("void ( a ) ( void ) {\n"
+                          "static int b ;\n"
+                          "if ( b ) { }\n"
+                          "}",
+                          tokenizeAndStringify(code));
+        }
     }
 
     void vardecl6() {
@@ -2495,7 +2508,7 @@ private:
                             "    unsigned short const int x = 1;\n"
                             "    return x;\n"
                             "}";
-        ASSERT_EQUALS("unsigned short f ( void ) {\n"
+        ASSERT_EQUALS("unsigned short f ( ) {\n"
                       "const unsigned short x ; x = 1 ;\n"
                       "return x ;\n"
                       "}",
@@ -3558,11 +3571,11 @@ private:
 
     void simplifyFunctionPointers6() {
         const char code1[] = "void (*fp(void))(int) {}";
-        const char expected1[] = "1: void * fp ( void ) { }\n";
+        const char expected1[] = "1: void * fp ( ) { }\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1));
 
         const char code2[] = "std::string (*fp(void))(int);";
-        const char expected2[] = "1: std :: string * fp ( void ) ;\n";
+        const char expected2[] = "1: std :: string * fp ( ) ;\n";
         ASSERT_EQUALS(expected2, tokenizeDebugListing(code2));
     }
 
@@ -4058,7 +4071,7 @@ private:
 
         {
             const char code[] = "class S { int function(void); };";
-            ASSERT_EQUALS("class S { int function ( void ) ; } ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("class S { int function ( ) ; } ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -4070,7 +4083,7 @@ private:
 
         {
             const char code[] = "int function(void);";
-            ASSERT_EQUALS("int function ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function ( ) ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -4082,13 +4095,13 @@ private:
 
         {
             const char code[] = "extern int function(void);";
-            ASSERT_EQUALS("extern int function ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("extern int function ( ) ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
         {
             const char code[] = "int function1(void); int function2(void);";
-            ASSERT_EQUALS("int function1 ( void ) ; int function2 ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function1 ( ) ; int function2 ( ) ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -4733,7 +4746,7 @@ private:
     }
 
     void simplifyCAlternativeTokens() {
-        ASSERT_EQUALS("void or ( void ) ;", tokenizeAndStringify("void or(void);", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("void or ( ) ;", tokenizeAndStringify("void or(void);", true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", true, Settings::Native, "test.cpp"));
         ASSERT_EQUALS("void f ( ) { if ( a || b ) { ; } }", tokenizeAndStringify("void f() { if (a or b); }", true, Settings::Native, "test.c"));
@@ -6172,6 +6185,7 @@ private:
         ASSERT_EQUALS("var1ab::23,{,4ab::56,{,{,{{", testAst("auto var{{1,a::b{2,3}}, {4,a::b{5,6}}};"));
         ASSERT_EQUALS("var{{,{,{{", testAst("auto var{ {{},{}}, {} };"));
         ASSERT_EQUALS("fXYabcfalse==CD:?,{,{(", testAst("f({X, {Y, abc == false ? C : D}});"));
+        ASSERT_EQUALS("stdvector::p0[{(return", testAst("return std::vector<int>({ p[0] });"));
 
         // Initialization with decltype(expr) instead of a type
         ASSERT_EQUALS("decltypex((", testAst("decltype(x)();"));
@@ -6201,6 +6215,7 @@ private:
         ASSERT_EQUALS("a1[\"\"=", testAst("char a[1]=\"\";"));
         ASSERT_EQUALS("charp*(3[char5[3[new=", testAst("char (*p)[3] = new char[5][3];"));
         ASSERT_EQUALS("varp=", testAst("const int *var = p;"));
+        ASSERT_EQUALS("intrp0[*(&", testAst("int& r(*p[0]);"));
 
         // #9127
         const char code1[] = "using uno::Ref;\n"

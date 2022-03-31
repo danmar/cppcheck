@@ -96,6 +96,7 @@ private:
         TEST_CASE(varid62);
         TEST_CASE(varid63);
         TEST_CASE(varid64); // #9928 - extern const char (*x[256])
+        TEST_CASE(varid65); // #10936
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -1174,6 +1175,29 @@ private:
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
+    void varid65() { // #10936
+        {
+            const char code[] = "extern int (*p);";
+            const char expected[] = "1: extern int ( * p@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "extern int (i);";
+            const char expected[] = "1: extern int ( i@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "int (*p);";
+            const char expected[] = "1: int ( * p@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "int (i);";
+            const char expected[] = "1: int ( i@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+    }
+
     void varid_for_1() {
         const char code[] = "void foo(int a, int b) {\n"
                             "  for (int a=1,b=2;;) {}\n"
@@ -1711,7 +1735,7 @@ private:
                             "};";
         ASSERT_EQUALS("1: class Foo {\n"
                       "2: private:\n"
-                      "3: void f ( void ) ;\n"
+                      "3: void f ( ) ;\n"
                       "4: } ;\n",
                       tokenize(code));
     }
