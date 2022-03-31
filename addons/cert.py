@@ -380,7 +380,7 @@ def api01(data):
         if scope.type!='Struct':
             continue
         token = scope.bodyStart
-                arrayFound=None
+        arrayFound = None
         # loop through the complete struct
         while token != scope.bodyEnd:
             if token.isName and token.variable:
