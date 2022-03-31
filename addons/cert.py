@@ -380,16 +380,16 @@ def api01(data):
         if scope.type!='Struct':
             continue
         token = scope.bodyStart
-        arrayFound=False
+                arrayFound=None
         # loop through the complete struct
         while token != scope.bodyEnd:
             if token.isName and token.variable:
-                if token.variable.isArray:
-                    arrayFound=True
+                if token.variable.isArray and ('char' in token.variable.typeStartToken.str):
+                    arrayFound = token
                 elif arrayFound and not token.variable.isArray and not token.variable.isConst:
-                    reportError(token, 'style', 'Avoid laying out strings in memory directly before sensitive data', 'API01-C')
+                    reportError(arrayFound, 'style', 'Avoid laying out strings in memory directly before sensitive data', 'API01-C')
                     # reset flags to report other positions in the same struct
-                    arrayFound=False
+                    arrayFound = None
             token = token.next
 
 
