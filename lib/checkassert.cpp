@@ -150,6 +150,7 @@ bool CheckAssert::checkArgument(const Token *assignIncToken, const Function *fun
         return checkVariableAssignment(variable, argsChecking.assertionScope);
     if (var->isPointer() && assignIncToken->strAt(-2) == "*")                    // TODO: what if assigned first and then dereferenced?
         return checkVariableAssignment(variable, argsChecking.assertionScope);   // Pointers need to be dereferenced, otherwise there is no error
+    return false;
 }
 //---------------------------------------------------------------------------
 

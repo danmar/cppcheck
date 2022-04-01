@@ -29,10 +29,12 @@
 #include <vector>
 
 class ErrorLogger;
+class Function;
 class Scope;
 class Settings;
 class Token;
 class Tokenizer;
+class Variable;
 
 /// @addtogroup Checks
 /// @{
