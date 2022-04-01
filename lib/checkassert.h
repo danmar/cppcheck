@@ -57,7 +57,7 @@ public:
     void assertWithSideEffects();
 
 private:
-    void sideEffectInAssertError(const Token *tok, const std::string &functionName);
+    void sideEffectInAssertError(const Token *tok, const std::string& functionName);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
@@ -87,4 +87,4 @@ private:
 };
 /// @}
 //---------------------------------------------------------------------------
-#endif   // checkassertH
+#endif // checkassertH

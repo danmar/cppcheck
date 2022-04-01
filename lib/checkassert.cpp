@@ -40,16 +40,17 @@ namespace {
     CheckAssert instance;
 }
 
-void CheckAssert::assertWithSideEffects() {
+void CheckAssert::assertWithSideEffects()
+{
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    for (const Token *tok = mTokenizer->list.front(); tok; tok = tok->next()) {
+    for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "assert ("))
             continue;
 
         const Token *endTok = tok->next()->link();
-        for (const Token *tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
+        for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
             if (Token::simpleMatch(tmp, "sizeof ("))
                 tmp = tmp->linkAt(1);
 
@@ -84,7 +85,7 @@ bool CheckAssert::isFunctionWithSideEffect(const Function *function, argumentChe
 
     if (function->isConstructor()) {
         const auto *initializationList =
-                function->constructorMemberInitialization();
+            function->constructorMemberInitialization();
         if (initializationList) {
             for (const Token *tok = initializationList; tok != scope->bodyStart; tok = tok->next()) {
                 if (tok->tokType() == Token::eIncDecOp) {
@@ -153,28 +154,28 @@ bool CheckAssert::checkArgument(const Token *assignIncToken, const Function *fun
 //---------------------------------------------------------------------------
 
 
-void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string &functionName) {
+void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& functionName)
+{
     reportError(tok, Severity::warning,
                 "assertWithSideEffect",
                 "$symbol:" + functionName + "\n"
-                                            "Assert statement calls a function which may have desired side effects: '$symbol'.\n"
-                                            "Non-pure function: '$symbol' is called inside assert statement. "
-                                            "Assert statements are removed from release builds so the code inside "
-                                            "assert statement is not executed. If the code is needed also in release "
-                                            "builds, this is a bug.",
-                CWE398, Certainty::normal);
+                "Assert statement calls a function which may have desired side effects: '$symbol'.\n"
+                "Non-pure function: '$symbol' is called inside assert statement. "
+                "Assert statements are removed from release builds so the code inside "
+                "assert statement is not executed. If the code is needed also in release "
+                "builds, this is a bug.", CWE398, Certainty::normal);
 }
 
-void CheckAssert::assignmentInAssertError(const Token *tok, const std::string &varname) {
+void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
+{
     reportError(tok, Severity::warning,
                 "assignmentInAssert",
                 "$symbol:" + varname + "\n"
-                                       "Assert statement modifies '$symbol'.\n"
-                                       "Variable '$symbol' is modified inside assert statement. "
-                                       "Assert statements are removed from release builds so the code inside "
-                                       "assert statement is not executed. If the code is needed also in release "
-                                       "builds, this is a bug.",
-                CWE398, Certainty::normal);
+                "Assert statement modifies '$symbol'.\n"
+                "Variable '$symbol' is modified inside assert statement. "
+                "Assert statements are removed from release builds so the code inside "
+                "assert statement is not executed. If the code is needed also in release "
+                "builds, this is a bug.", CWE398, Certainty::normal);
 }
 
 bool CheckAssert::isVariableAssignment(const Token *token) {

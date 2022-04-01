@@ -16,6 +16,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #include "checkassert.h"
 #include "errortypes.h"
 #include "settings.h"
@@ -23,6 +24,7 @@
 #include "tokenize.h"
 
 #include <iosfwd>
+
 
 class TestAssert : public TestFixture {
 public:
@@ -32,7 +34,7 @@ private:
     Settings settings;
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char *file, int line, const char code[], const char *filename = "test.cpp") {
+    void check_(const char* file, int line, const char code[], const char *filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -59,50 +61,55 @@ private:
     }
 
     void safeFunctionCallInAssert() {
-        check("int b = 0;\n"
-              "int foo() {\n"
-              "   int a = 3;\n"
-              "   if (b) { a = a+b; }\n"
-              "   return a;\n"
-              "}\n"
-              "assert(foo() == 3);");
+        check(
+            "int b = 0;\n"
+            "int foo() {\n"
+            "   int a = 3;\n"
+            "   if (b) { a = a+b; }\n"
+            "   return a;\n"
+            "}\n"
+            "assert(foo() == 3);");
         ASSERT_EQUALS("", errout.str());
 
-        check("int foo(int a) {\n"
-              "    int b=a+1;\n"
-              "    return b;\n"
-              "}\n"
-              "assert(foo(1) == 2);");
+        check(
+            "int foo(int a) {\n"
+            "    int b=a+1;\n"
+            "    return b;\n"
+            "}\n"
+            "assert(foo(1) == 2);");
         ASSERT_EQUALS("", errout.str());
     }
 
     void functionCallInAssert() {
-        check("int a;\n"
-              "bool b = false;\n"
-              "int foo() {\n"
-              "   if (b) { a = 1+2; }\n"
-              "   return a;\n"
-              "}\n"
-              "assert(foo() == 3);");
+        check(
+            "int a;\n"
+            "bool b = false;\n"
+            "int foo() {\n"
+            "   if (b) { a = 1+2; }\n"
+            "   return a;\n"
+            "}\n"
+            "assert(foo() == 3);");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Assert statement calls a function which may have desired side effects: 'foo'.\n", errout.str());
 
-        check("int a;\n"
-              "int foo() {\n"
-              "    a = 1+2;\n"
-              "    return a;\n"
-              "}\n"
-              "assert(foo() == 3);");
+        check(
+            "int a;\n"
+            "int foo() {\n"
+            "    a = 1+2;\n"
+            "    return a;\n"
+            "}\n"
+            "assert(foo() == 3);");
         ASSERT_EQUALS("[test.cpp:6]: (warning) Assert statement calls a function which may have desired side effects: 'foo'.\n", errout.str());
 
-        check("int a;\n"
-              "int foo() {\n"
-              "    a = 1+2;\n"
-              "    return a;\n"
-              "}\n"
-              "int bar() {\n"
-              "    return foo();\n"
-              "}\n"
-              "assert(bar() == 3);");
+        check(
+            "int a;\n"
+            "int foo() {\n"
+            "    a = 1+2;\n"
+            "    return a;\n"
+            "}\n"
+            "int bar() {\n"
+            "    return foo();\n"
+            "}\n"
+            "assert(bar() == 3);");
         ASSERT_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'bar'.\n", errout.str());
 
         //  Ticket #4937 "false positive: Assert calls a function which may have
@@ -400,9 +407,8 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo() {\n"   // #9790
-              "  assert(kad_bucket_hash(&(kad_guid) { .bytes = { 0 } }, & "
-              "(kad_guid){.bytes = { 0 }}) == -1);\n"
+        check("void foo() {\n" // #9790
+              "  assert(kad_bucket_hash(&(kad_guid) { .bytes = { 0 } }, & (kad_guid){.bytes = { 0 }}) == -1);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
