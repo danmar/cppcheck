@@ -3111,10 +3111,10 @@ void Tokenizer::simplifyArrayAccessSyntax()
 void Tokenizer::simplifyParameterVoid()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "sizeof|decltype|typeof"))
-            continue;
-        if (Token::Match(tok, "%name% ( void )"))
+        if (Token::Match(tok, "%name% ( void )") && !Token::Match(tok, "sizeof|decltype|typeof")) {
             tok->next()->deleteNext();
+            tok->next()->setRemovedVoidParameter(true);
+        }
     }
 }
 
@@ -5544,6 +5544,8 @@ void Tokenizer::dump(std::ostream &out) const
         }
         if (tok->isExpandedMacro())
             out << " isExpandedMacro=\"true\"";
+        if (tok->isRemovedVoidParameter())
+            out << " isRemovedVoidParameter=\"true\"";
         if (tok->isSplittedVarDeclComma())
             out << " isSplittedVarDeclComma=\"true\"";
         if (tok->isSplittedVarDeclEq())
