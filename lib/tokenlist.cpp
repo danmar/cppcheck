@@ -565,7 +565,7 @@ static bool iscast(const Token *tok, bool cpp)
                 return tok3 != tok2 && tok3->str() != ";";
             }
             return type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
-                   (Token::Match(tok2, ") %any%") &&
+                (Token::Match(tok2, ") %any%") &&
                     (!tok2->next()->isOp() || Token::Match(tok2->next(), "!|~|++|--")) &&
                     !Token::Match(tok2->next(), "[[]);,?:.]"));
         }
@@ -636,6 +636,13 @@ static bool iscpp11init_impl(const Token * const tok)
         return true;
     if (nameToken->str() == ">" && nameToken->link())
         nameToken = nameToken->link()->previous();
+    if (nameToken->str() == "]") {
+        const Token* newTok = nameToken->link()->previous();
+        while (Token::Match(newTok, "%type%") && !newTok->isKeyword())
+            newTok = newTok->previous();
+        if (Token::simpleMatch(newTok, "new"))
+            return true;
+    }
 
     const Token *endtok = nullptr;
     if (Token::Match(nameToken, "%name%|return|: {") &&
