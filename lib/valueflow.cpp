@@ -206,6 +206,12 @@ static void setConditionalValues(const Token* tok,
 {
     if (Token::Match(tok, "==|!=|>=|<=")) {
         true_value = ValueFlow::Value{tok, value};
+        const Variable* var1 = tok->astOperand1()->variable();
+        const Variable* var2 = tok->astOperand2()->variable();
+        if ((var1 && var1->isFloatingType()) || (var2 && var2->isFloatingType())) {
+            true_value.valueType = ValueFlow::Value::ValueType::FLOAT;
+            false_value.valueType = ValueFlow::Value::ValueType::FLOAT;
+        }
         const char* greaterThan = ">=";
         const char* lessThan = "<=";
         if (lhs)
@@ -612,8 +618,6 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
             valueType.sign == ValueType::SIGNED && tok->valueType() &&
             ValueFlow::getSizeOf(*tok->valueType(), settings) >= ValueFlow::getSizeOf(valueType, settings))
             return;
-        if (tok->valueType() && tok->valueType()->isFloat() && valueType.isIntegral())
-            value.valueType = ValueFlow::Value::ValueType::FLOAT;
         setTokenValueCast(parent, valueType, value, settings);
     }
 
