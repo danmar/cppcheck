@@ -2991,6 +2991,12 @@ private:
               "    return j;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
+
+        // #10471
+        check("void f(std::array<int, 1> const& i) {\n"
+              "    if (i[0] == 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {

@@ -620,6 +620,15 @@ private:
               "    for (int i = 0; ;) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("class T {};\n" // #10849
+              "void f() {\n"
+              "    auto g = [](const T* t) -> int {\n"
+              "        const T* u{}, * v{};\n"
+              "        return 0;\n"
+              "    };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
