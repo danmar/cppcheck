@@ -2974,10 +2974,23 @@ private:
 
         // #10744
         check("S& f() {\n"
-              "    static S * p = new S();\n"
+              "    static S* p = new S();\n"
               "    return *p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    static int i[1] = {};\n"
+              "    return i[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
+
+        check("int f() {\n"
+              "    static int i[] = { 0 };\n"
+              "    int j = i[0] + 1;\n"
+              "    return j;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
 
         // #10471
         check("void f(std::array<int, 1> const& i) {\n"
