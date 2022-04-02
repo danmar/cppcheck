@@ -2491,6 +2491,14 @@ private:
               "  if (!b && f()) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n"
+              "    if (d != 0) {\n"
+              "        int i = d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void identicalInnerCondition() {
