@@ -612,6 +612,8 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
             valueType.sign == ValueType::SIGNED && tok->valueType() &&
             ValueFlow::getSizeOf(*tok->valueType(), settings) >= ValueFlow::getSizeOf(valueType, settings))
             return;
+        if (tok->valueType() && tok->valueType()->isFloat() && valueType.isIntegral())
+            value.valueType = ValueFlow::Value::ValueType::FLOAT;
         setTokenValueCast(parent, valueType, value, settings);
     }
 

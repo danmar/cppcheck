@@ -4008,6 +4008,14 @@ private:
               "  }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n" // #10792
+              "    if (d != 0) {\n"
+              "        int i = (int)d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
