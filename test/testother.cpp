@@ -2974,10 +2974,23 @@ private:
 
         // #10744
         check("S& f() {\n"
-              "    static S * p = new S();\n"
+              "    static S* p = new S();\n"
               "    return *p;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    static int i[1] = {};\n"
+              "    return i[0];\n"
+              "}\n"
+              "int g() {\n"
+              "    static int j[] = { 0 };\n"
+              "    int k = j[0] + 1;\n"
+              "    return k;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n"
+                      "[test.cpp:6]: (style) Variable 'j' can be declared with const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
