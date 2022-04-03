@@ -374,7 +374,7 @@ static const Token *getCastTypeStartToken(const Token *parent)
 // does the operation cause a loss of information?
 static bool isNonInvertibleOperation(const Token* tok)
 {
-    return tok->isComparisonOp() || Token::Match(tok, "%|/|&|%or%|<<|>>");
+    return tok->isComparisonOp() || Token::Match(tok, "%|/|&|%or%|<<|>>|%oror%|&&");
 }
 
 static bool isComputableValue(const Token* parent, const ValueFlow::Value& value)
@@ -1549,7 +1549,19 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
     for (Token* tok = tokenList->front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
-        if (astIsUnsigned(tok) && !astIsPointer(tok)) {
+        if (Token::Match(tok, "true|false"))
+            continue;
+        if (astIsBool(tok) || Token::Match(tok, "%comp%")) {
+            ValueFlow::Value lower{-1};
+            lower.bound = ValueFlow::Value::Bound::Upper;
+            lower.setImpossible();
+            setTokenValue(tok, lower, settings);
+
+            ValueFlow::Value upper{2};
+            upper.bound = ValueFlow::Value::Bound::Lower;
+            upper.setImpossible();
+            setTokenValue(tok, upper, settings);
+        } else if (astIsUnsigned(tok) && !astIsPointer(tok)) {
             std::vector<MathLib::bigint> minvalue = minUnsignedValue(tok);
             if (minvalue.empty())
                 continue;

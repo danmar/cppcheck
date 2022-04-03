@@ -526,7 +526,7 @@ private:
 
 #define valueOfTok(code, tokstr) valueOfTok_(code, tokstr, __FILE__, __LINE__)
     ValueFlow::Value valueOfTok_(const char code[], const char tokstr[], const char* file, int line) {
-        std::list<ValueFlow::Value> values = tokenValues_(file, line, code, tokstr);
+        std::list<ValueFlow::Value> values = removeImpossible(tokenValues_(file, line, code, tokstr));
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
     }
 
@@ -552,8 +552,7 @@ private:
         ASSERT_EQUALS(0, valueOfTok("x(NULL);", "NULL").intvalue);
         ASSERT_EQUALS((int)('a'), valueOfTok("x='a';", "'a'").intvalue);
         ASSERT_EQUALS((int)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
-        TODO_ASSERT_EQUALS(
-            0xFFFFFFFF00000000, -1, valueOfTok("x=0xFFFFFFFF00000000;", "0xFFFFFFFF00000000").intvalue); // #7701
+        TODO_ASSERT_EQUALS(0xFFFFFFFF00000000, 0, valueOfTok("x=0xFFFFFFFF00000000;", "0xFFFFFFFF00000000").intvalue); // #7701
         ASSERT_EQUALS_DOUBLE(16, valueOfTok("x=(double)16;", "(").floatValue, 1e-5);
         ASSERT_EQUALS_DOUBLE(0.0625, valueOfTok("x=1/(double)16;", "/").floatValue, 1e-5);
 
@@ -977,7 +976,7 @@ private:
                 "    a = !x;\n"
                 "    if (x==0) {}\n"
                 "}";
-        values = tokenValues(code,"!");
+        values = removeImpossible(tokenValues(code, "!"));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.back().intvalue);
 
@@ -1077,22 +1076,22 @@ private:
         }
 
         // Comparison of string
-        values = tokenValues("f(\"xyz\" == \"xyz\");", "=="); // implementation defined
+        values = removeImpossible(tokenValues("f(\"xyz\" == \"xyz\");", "==")); // implementation defined
         ASSERT_EQUALS(0U, values.size()); // <- no value
 
-        values = tokenValues("f(\"xyz\" == 0);", "==");
+        values = removeImpossible(tokenValues("f(\"xyz\" == 0);", "=="));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
 
-        values = tokenValues("f(0 == \"xyz\");", "==");
+        values = removeImpossible(tokenValues("f(0 == \"xyz\");", "=="));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
 
-        values = tokenValues("f(\"xyz\" != 0);", "!=");
+        values = removeImpossible(tokenValues("f(\"xyz\" != 0);", "!="));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.front().intvalue);
 
-        values = tokenValues("f(0 != \"xyz\");", "!=");
+        values = removeImpossible(tokenValues("f(0 != \"xyz\");", "!="));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.front().intvalue);
     }
@@ -3771,7 +3770,7 @@ private:
                "  while (s.x < y)\n" // s.x does not have known value
                "    s.x++;\n"
                "}";
-        values = tokenValues(code, "<");
+        values = removeImpossible(tokenValues(code, "<"));
         ASSERT_EQUALS(1, values.size());
         ASSERT(values.front().isPossible());
         ASSERT_EQUALS(1, values.front().intvalue);
@@ -3811,7 +3810,7 @@ private:
                "  if (*b > 0) {\n" // *b does not have known value
                "  }\n"
                "}";
-        values = tokenValues(code, ">");
+        values = removeImpossible(tokenValues(code, ">"));
         ASSERT_EQUALS(1, values.size());
         ASSERT(values.front().isPossible());
         ASSERT_EQUALS(1, values.front().intvalue);
@@ -3824,7 +3823,7 @@ private:
                "        dostuff(&pvd);\n"
                "    } while (condition)\n"
                "}";
-        values = tokenValues(code, "==");
+        values = removeImpossible(tokenValues(code, "=="));
         ASSERT_EQUALS(1, values.size());
         ASSERT(values.front().isPossible());
         ASSERT_EQUALS(1, values.front().intvalue);
@@ -3834,7 +3833,7 @@ private:
                "void foo(struct S s) {\n"
                "    for (s.x = 0; s.x < 127; s.x++) {}\n"
                "}";
-        values = tokenValues(code, "<"); // TODO: comparison can be true or false
+        values = removeImpossible(tokenValues(code, "<")); // TODO: comparison can be true or false
         ASSERT_EQUALS(true, values.empty());
     }
 
@@ -5128,7 +5127,7 @@ private:
                "    if (b && i == j) return;\n"
                "    if(i != j) {}\n"
                "}\n";
-        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+        ASSERT_EQUALS(true, removeImpossible(tokenValues(code, "!=")).empty());
 
         code = "void f(int i, int j) {\n"
                "    if (i == j) {\n"
@@ -5156,7 +5155,7 @@ private:
                "        if (i != j) {}\n"
                "    }\n"
                "}\n";
-        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+        ASSERT_EQUALS(true, removeImpossible(tokenValues(code, "!=")).empty());
 
         code = "void f(bool b, int i, int j) {\n"
                "    if (b || i == j) {} else {\n"
@@ -5170,7 +5169,7 @@ private:
                "        if (i != j) {}\n"
                "    }\n"
                "}\n";
-        ASSERT_EQUALS(true, tokenValues(code, "!=").empty());
+        ASSERT_EQUALS(true, removeImpossible(tokenValues(code, "!=")).empty());
 
         code = "void foo()\n" // #8924
                "{\n"
