@@ -1549,6 +1549,8 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
     for (Token* tok = tokenList->front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
+        if (Token::Match(tok, "true|false"))
+            continue;
         if (astIsBool(tok) || Token::Match(tok, "%comp%")) {
             ValueFlow::Value lower{-1};
             lower.bound = ValueFlow::Value::Bound::Upper;
