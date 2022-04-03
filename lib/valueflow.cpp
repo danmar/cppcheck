@@ -1549,7 +1549,18 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
     for (Token* tok = tokenList->front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
-        if (astIsUnsigned(tok) && !astIsPointer(tok)) {
+        if (astIsBool(tok) || Token::Match(tok, "%comp%")) {
+            ValueFlow::Value lower{-1};
+            lower.bound = ValueFlow::Value::Bound::Upper;
+            lower.setImpossible();
+            setTokenValue(tok, lower, settings);
+
+            ValueFlow::Value upper{2};
+            upper.bound = ValueFlow::Value::Bound::Lower;
+            upper.setImpossible();
+            setTokenValue(tok, upper, settings);
+        }
+        else if (astIsUnsigned(tok) && !astIsPointer(tok)) {
             std::vector<MathLib::bigint> minvalue = minUnsignedValue(tok);
             if (minvalue.empty())
                 continue;
