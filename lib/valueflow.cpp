@@ -206,12 +206,6 @@ static void setConditionalValues(const Token* tok,
 {
     if (Token::Match(tok, "==|!=|>=|<=")) {
         true_value = ValueFlow::Value{tok, value};
-        const Variable* var1 = tok->astOperand1()->variable();
-        const Variable* var2 = tok->astOperand2()->variable();
-        if ((var1 && var1->isFloatingType()) || (var2 && var2->isFloatingType())) {
-            true_value.valueType = ValueFlow::Value::ValueType::FLOAT;
-            false_value.valueType = ValueFlow::Value::ValueType::FLOAT;
-        }
         const char* greaterThan = ">=";
         const char* lessThan = "<=";
         if (lhs)
@@ -259,12 +253,12 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
                 value1.clear();
         }
         if (!value1.empty()) {
-            if (isSaturated(value1.front()))
+            if (isSaturated(value1.front()) || astIsFloat(tok->astOperand2(), /*unknown*/ true))
                 return nullptr;
             setConditionalValues(tok, true, value1.front(), true_value, false_value);
             return tok->astOperand2();
         } else if (!value2.empty()) {
-            if (isSaturated(value2.front()))
+            if (isSaturated(value2.front()) || astIsFloat(tok->astOperand1(), /*unknown*/ true))
                 return nullptr;
             setConditionalValues(tok, false, value2.front(), true_value, false_value);
             return tok->astOperand1();
