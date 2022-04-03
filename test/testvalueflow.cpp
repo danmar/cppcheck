@@ -6428,6 +6428,12 @@ private:
                "    return x;\n"
                "}\n";
         valueOfTok(code, "x");
+
+        code = "int* g();\n"
+               "void f() {\n"
+               "    std::cout << (void*)(std::shared_ptr<int>{ g() }.get());\n"
+               "}\n";
+        valueOfTok(code, ".");
     }
 
     void valueFlowHang() {
