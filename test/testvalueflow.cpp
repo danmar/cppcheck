@@ -1077,22 +1077,22 @@ private:
         }
 
         // Comparison of string
-        values = tokenValues("f(\"xyz\" == \"xyz\");", "=="); // implementation defined
+        values = removeImpossible(tokenValues("f(\"xyz\" == \"xyz\");", "==")); // implementation defined
         ASSERT_EQUALS(0U, values.size()); // <- no value
 
-        values = tokenValues("f(\"xyz\" == 0);", "==");
+        values = removeImpossible(tokenValues("f(\"xyz\" == 0);", "=="));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
 
-        values = tokenValues("f(0 == \"xyz\");", "==");
+        values = removeImpossible(tokenValues("f(0 == \"xyz\");", "=="));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(0, values.front().intvalue);
 
-        values = tokenValues("f(\"xyz\" != 0);", "!=");
+        values = removeImpossible(tokenValues("f(\"xyz\" != 0);", "!="));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.front().intvalue);
 
-        values = tokenValues("f(0 != \"xyz\");", "!=");
+        values = removeImpossible(tokenValues("f(0 != \"xyz\");", "!="));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.front().intvalue);
     }
@@ -3811,7 +3811,7 @@ private:
                "  if (*b > 0) {\n" // *b does not have known value
                "  }\n"
                "}";
-        values = tokenValues(code, ">");
+        values = removeImpossible(tokenValues(code, ">"));
         ASSERT_EQUALS(1, values.size());
         ASSERT(values.front().isPossible());
         ASSERT_EQUALS(1, values.front().intvalue);
@@ -3824,7 +3824,7 @@ private:
                "        dostuff(&pvd);\n"
                "    } while (condition)\n"
                "}";
-        values = tokenValues(code, "==");
+        values = removeImpossible(tokenValues(code, "=="));
         ASSERT_EQUALS(1, values.size());
         ASSERT(values.front().isPossible());
         ASSERT_EQUALS(1, values.front().intvalue);
@@ -3834,7 +3834,7 @@ private:
                "void foo(struct S s) {\n"
                "    for (s.x = 0; s.x < 127; s.x++) {}\n"
                "}";
-        values = tokenValues(code, "<"); // TODO: comparison can be true or false
+        values = removeImpossible(tokenValues(code, "<")); // TODO: comparison can be true or false
         ASSERT_EQUALS(true, values.empty());
     }
 
