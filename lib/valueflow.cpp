@@ -1561,8 +1561,7 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             upper.bound = ValueFlow::Value::Bound::Lower;
             upper.setImpossible();
             setTokenValue(tok, upper, settings);
-        }
-        else if (astIsUnsigned(tok) && !astIsPointer(tok)) {
+        } else if (astIsUnsigned(tok) && !astIsPointer(tok)) {
             std::vector<MathLib::bigint> minvalue = minUnsignedValue(tok);
             if (minvalue.empty())
                 continue;

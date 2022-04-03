@@ -552,8 +552,7 @@ private:
         ASSERT_EQUALS(0, valueOfTok("x(NULL);", "NULL").intvalue);
         ASSERT_EQUALS((int)('a'), valueOfTok("x='a';", "'a'").intvalue);
         ASSERT_EQUALS((int)('\n'), valueOfTok("x='\\n';", "'\\n'").intvalue);
-        TODO_ASSERT_EQUALS(
-            0xFFFFFFFF00000000, 0, valueOfTok("x=0xFFFFFFFF00000000;", "0xFFFFFFFF00000000").intvalue); // #7701
+        TODO_ASSERT_EQUALS(0xFFFFFFFF00000000, 0, valueOfTok("x=0xFFFFFFFF00000000;", "0xFFFFFFFF00000000").intvalue); // #7701
         ASSERT_EQUALS_DOUBLE(16, valueOfTok("x=(double)16;", "(").floatValue, 1e-5);
         ASSERT_EQUALS_DOUBLE(0.0625, valueOfTok("x=1/(double)16;", "/").floatValue, 1e-5);
 
@@ -977,7 +976,7 @@ private:
                 "    a = !x;\n"
                 "    if (x==0) {}\n"
                 "}";
-        values = removeImpossible(tokenValues(code,"!"));
+        values = removeImpossible(tokenValues(code, "!"));
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(1, values.back().intvalue);
 
