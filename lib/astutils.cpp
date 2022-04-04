@@ -3177,6 +3177,12 @@ struct FwdAnalysis::Result FwdAnalysis::checkRecursive(const Token *expr, const 
                         return Result(Result::Type::READ);
                     continue;
                 }
+                const auto startEnd = parent->astParent()->astOperand2()->findExpressionStartEndTokens();
+                for (const Token* tok2 = startEnd.first; tok2 != startEnd.second; tok2 = tok2->next()) {
+                    if (tok2->tokType() == Token::eLambda)
+                        return Result(Result::Type::BAILOUT);
+                    // TODO: analyze usage in lambda
+                }
                 // ({ .. })
                 if (hasGccCompoundStatement(parent->astParent()->astOperand2()))
                     return Result(Result::Type::BAILOUT);
