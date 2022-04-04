@@ -5863,6 +5863,13 @@ private:
               "    ++x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int a, b; };\n" // #10107
+              "S f(bool x, S s) {\n"
+              "    (x) ? f.a = 42 : f.b = 42;\n"
+              "    return f;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionTemplate() {
