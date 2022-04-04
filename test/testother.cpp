@@ -8079,7 +8079,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("int f(const std::vector<int>& v) {\n"
+        check("int f(const std::vector<int>& v) {\n" //#9815
               "    int i = g();\n"
               "    i = std::distance(v.begin(), std::find_if(v.begin(), v.end(), [=](int j) { return i == j; }));\n"
               "    return i;\n"

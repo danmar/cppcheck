@@ -1432,7 +1432,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
         if (Token::simpleMatch(tok->next(), ")") && Token::simpleMatch(tok->next()->link()->previous(), "catch ("))
             continue;
         // Very likely a typelist
-        if (Token::Match(tok->tokAt(-2), "%type% ,"))
+        if (Token::Match(tok->tokAt(-2), "%type% ,") || Token::Match(tok->next(), ", %type%"))
             continue;
         // Inside template brackets
         if (Token::Match(tok->next(), "<|>") && tok->next()->link())

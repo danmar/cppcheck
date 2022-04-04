@@ -357,6 +357,7 @@ private:
         TEST_CASE(symboldatabase96); // #10126
         TEST_CASE(symboldatabase97); // #10598 - final class
         TEST_CASE(symboldatabase98); // #10451
+        TEST_CASE(symboldatabase99); // #10864
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -4877,6 +4878,11 @@ private:
             ASSERT(db);
             ASSERT_EQUALS(2, db->scopeList.size());
         }
+    }
+
+    void symboldatabase99() { // #10864
+        check("void f() { std::map<std::string, int> m; }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
