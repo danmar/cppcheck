@@ -7634,7 +7634,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         const bool isDecl = Token::Match(vnt, "%name% ;");
         bool hasInitList = false, hasInitSize = false, isPointerInit = false;
-        if (!isDecl) {
+        if (!isDecl && !hasFixedSize) {
             hasInitList = Token::Match(vnt, "%name% {") && Token::simpleMatch(vnt->next()->link(), "} ;");
             if (!hasInitList)
                 hasInitList = Token::Match(vnt, "%name% ( {") && Token::simpleMatch(vnt->linkAt(2), "} ) ;");
