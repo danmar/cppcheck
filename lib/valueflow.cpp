@@ -7622,7 +7622,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
         bool known = true;
         if (!var || !var->isLocal() || var->isPointer() || var->isReference())
             continue;
-        const bool hasFixedSize = Token::simpleMatch(var->typeStartToken(), "std :: array"); 
+        const bool hasFixedSize = Token::simpleMatch(var->typeStartToken(), "std :: array");
         if (var->isStatic() && !hasFixedSize)
             continue;
         if (!var->valueType() || !var->valueType()->container)
