@@ -4888,7 +4888,9 @@ private:
                       "}\n");
         ASSERT(db);
         ASSERT_EQUALS(1, db->functionScopes.size());
-        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) { return s.className == "T"; });
+        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+            return s.className == "T";
+        });
         ASSERT(it != db->scopeList.end());
         const Function* function = findFunctionByName("f", &*it);
         ASSERT(function && function->token->str() == "f");
