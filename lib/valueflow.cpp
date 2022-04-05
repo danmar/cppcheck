@@ -7596,7 +7596,9 @@ static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bo
     return {};
 }
 
-static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const std::vector<const Token*>& args, const Library::Container* container, bool known)
+static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const std::vector<const Token*>& args,
+                                                                         const Library::Container* container,
+                                                                         bool known)
 {
     if (astIsIntegral(args[0], false)) { // { count, i } or { count }
         if (args.size() == 1 || (args.size() > 1 && !astIsIntegral(args[1], false)))
@@ -7640,7 +7642,6 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const s
     return {};
 }
 
-
 static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                                                      const ValueType* valueType,
                                                      const Settings* settings,
@@ -7672,9 +7673,9 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
 }
 
 static std::vector<ValueFlow::Value> getContainerSizeFromConstructor(const Token* tok,
-                                                     const ValueType* valueType,
-                                                     const Settings* settings,
-                                                     bool known = true)
+                                                                     const ValueType* valueType,
+                                                                     const Settings* settings,
+                                                                     bool known = true)
 {
     std::vector<const Token*> args = getArguments(tok);
     if (args.empty())
@@ -7685,10 +7686,10 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructor(const Token
     return getContainerSizeFromConstructorArgs(args, valueType->container, known);
 }
 
-static void valueFlowContainerSize(TokenList *tokenlist, 
-                                    SymbolDatabase* symboldatabase,
-                                    ErrorLogger * /*errorLogger*/,
-                                    const Settings *settings)
+static void valueFlowContainerSize(TokenList* tokenlist,
+                                   SymbolDatabase* symboldatabase,
+                                   ErrorLogger* /*errorLogger*/,
+                                   const Settings* settings)
 {
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
@@ -7725,10 +7726,11 @@ static void valueFlowContainerSize(TokenList *tokenlist,
             continue;
         if (!staticSize) {
             if (!Token::Match(var->nameToken(), "%name% ;") &&
-                !(Token::Match(var->nameToken(), "%name% {") && Token::simpleMatch(var->nameToken()->next()->link(), "} ;")) &&
+                !(Token::Match(var->nameToken(), "%name% {") &&
+                  Token::simpleMatch(var->nameToken()->next()->link(), "} ;")) &&
                 !Token::Match(var->nameToken(), "%name% ("))
                 continue;
-            }
+        }
         if (var->nameToken()->astTop() && Token::Match(var->nameToken()->astTop()->previous(), "for|while"))
             known = !isVariableChanged(var, settings, true);
         std::vector<ValueFlow::Value> values{ValueFlow::Value{size}};
@@ -7770,11 +7772,13 @@ static void valueFlowContainerSize(TokenList *tokenlist,
                 if (containerTok->exprId() == 0)
                     continue;
                 if (astIsContainer(containerTok) && containerTok->valueType()->container->size_templateArgNo < 0) {
-                    std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3), containerTok->valueType(), settings);
+                    std::vector<ValueFlow::Value> values =
+                        getInitListSize(tok->tokAt(3), containerTok->valueType(), settings);
                     for (const ValueFlow::Value& value : values)
                         valueFlowContainerForward(containerTok->next(), containerTok, value, tokenlist);
                 }
-            } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container) {
+            } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() &&
+                       tok->astOperand1()->valueType()->container) {
                 const Token* containerTok = tok->astOperand1();
                 if (containerTok->exprId() == 0)
                     continue;
