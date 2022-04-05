@@ -357,6 +357,7 @@ private:
         TEST_CASE(symboldatabase96); // #10126
         TEST_CASE(symboldatabase97); // #10598 - final class
         TEST_CASE(symboldatabase98); // #10451
+        TEST_CASE(symboldatabase100); // #10174
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -4877,6 +4878,23 @@ private:
             ASSERT(db);
             ASSERT_EQUALS(2, db->scopeList.size());
         }
+    }
+
+    void symboldatabase100() { // #10174
+        GET_SYMBOL_DB("namespace N {\n"
+                      "    struct S {};\n"
+                      "    struct T { void f(S s); };\n"
+                      "    void T::f(N::S s) {}\n"
+                      "}\n");
+        ASSERT(db);
+        ASSERT_EQUALS(1, db->functionScopes.size());
+        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+            return s.className == "T";
+        });
+        ASSERT(it != db->scopeList.end());
+        const Function* function = findFunctionByName("f", &*it);
+        ASSERT(function && function->token->str() == "f");
+        ASSERT(function->hasBody());
     }
 
     void createSymbolDatabaseFindAllScopes1() {
