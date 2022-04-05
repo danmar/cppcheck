@@ -7335,6 +7335,17 @@ private:
                                  "    virtual void f() {}\n"
                                  "};\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Virtual function 'f' is called from constructor 'B()' at line 2. Dynamic binding is not used.\n", errout.str());
+
+        checkVirtualFunctionCall("class S {\n" // don't crash
+                                 "    ~S();\n"
+                                 "public:\n"
+                                 "    S();\n"
+                                 "};\n"
+                                 "S::S() {\n"
+                                 "    typeid(S);\n"
+                                 "}\n"
+                                 "S::~S() = default;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {
