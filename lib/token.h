@@ -644,6 +644,13 @@ public:
         setFlag(fIsInline, b);
     }
 
+    bool isRemovedVoidParameter() const {
+        return getFlag(fIsRemovedVoidParameter);
+    }
+    void setRemovedVoidParameter(bool b) {
+        setFlag(fIsRemovedVoidParameter, b);
+    }
+
     bool isTemplate() const {
         return getFlag(fIsTemplate);
     }
@@ -1263,6 +1270,7 @@ private:
         fIsInline               = (1ULL << 32), // Is this a inline type
         fIsTemplate             = (1ULL << 33),
         fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ...; ...)
+        fIsRemovedVoidParameter = (1ULL << 35), // A void function parameter has been removed
     };
 
     Token::Type mTokType;

@@ -1466,6 +1466,9 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 
 static bool isExpression(const Token* tok)
 {
+    if (Token::simpleMatch(tok, "{") && tok->scope() && tok->scope()->bodyStart != tok &&
+        (tok->astOperand1() || tok->astOperand2()))
+        return true;
     if (!Token::Match(tok, "(|.|[|::|?|:|++|--|%cop%|%assign%"))
         return false;
     if (Token::Match(tok, "*|&|&&")) {
@@ -4557,7 +4560,7 @@ bool Scope::isVariableDeclaration(const Token* const tok, const Token*& vartok, 
     if (!localVarTok)
         return false;
 
-    if (localVarTok->str() == "const")
+    while (Token::Match(localVarTok, "const|*|&"))
         localVarTok = localVarTok->next();
 
     if (Token::Match(localVarTok, "%name% ;|=") || (localVarTok && localVarTok->varId() && localVarTok->strAt(1) == ":")) {
@@ -6374,7 +6377,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
         } else if (const Library::Container *container = settings->library.detectContainer(type)) {
             valuetype->type = ValueType::Type::CONTAINER;
             valuetype->container = container;
-            while (Token::Match(type, "%type%|::|<")) {
+            while (Token::Match(type, "%type%|::|<") && type->str() != "const") {
                 if (type->str() == "<" && type->link()) {
                     if (container->type_templateArgNo >= 0) {
                         const Token *templateType = type->next();
