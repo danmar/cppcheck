@@ -1548,7 +1548,9 @@ void CheckOther::checkConstPointer()
             continue;
         if (!tok->variable()->isLocal() && !tok->variable()->isArgument())
             continue;
-        if (tok == tok->variable()->nameToken())
+        const Token* const nameTok = tok->variable()->nameToken();
+        // declarations of (static) pointers are (not) split up, array declarations are never split up
+        if (tok == nameTok && (!Token::simpleMatch(tok->variable()->typeStartToken()->previous(), "static") || Token::simpleMatch(nameTok->next(), "[")))
             continue;
         if (!tok->valueType())
             continue;
@@ -1561,7 +1563,7 @@ void CheckOther::checkConstPointer()
         bool deref = false;
         if (parent && parent->isUnaryOp("*"))
             deref = true;
-        else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok)
+        else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && parent->astOperand1() != nameTok)
             deref = true;
         if (deref) {
             if (Token::Match(parent->astParent(), "%cop%") && !parent->astParent()->isUnaryOp("&") && !parent->astParent()->isUnaryOp("*"))
@@ -1593,7 +1595,7 @@ void CheckOther::checkConstPointer()
         if (nonConstPointers.find(p) == nonConstPointers.end()) {
             const Token *start = (p->isArgument()) ? p->scope()->bodyStart : p->nameToken()->next();
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
-            if (p->isStatic() || isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
+            if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
                 continue;
             constVariableError(p, nullptr);
         }
@@ -2424,7 +2426,9 @@ void CheckOther::checkDuplicateExpression()
                     }
                 }
             } else if (styleEnabled && tok->astOperand1() && tok->astOperand2() && tok->str() == ":" && tok->astParent() && tok->astParent()->str() == "?") {
-                if (!isVariableChanged(tok->astParent(), /*indirect*/ 0, mSettings, mTokenizer->isCPP()) && !tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()))
+                if (!tok->astOperand1()->values().empty() && !tok->astOperand2()->values().empty() && isEqualKnownValue(tok->astOperand1(), tok->astOperand2()) &&
+                    !isVariableChanged(tok->astParent(), /*indirect*/ 0, mSettings, mTokenizer->isCPP()) &&
+                    isConstStatement(tok->astOperand1(), mTokenizer->isCPP()) && isConstStatement(tok->astOperand2(), mTokenizer->isCPP()))
                     duplicateValueTernaryError(tok);
                 else if (isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, false, true, &errorPath))
                     duplicateExpressionTernaryError(tok, errorPath);

@@ -374,7 +374,7 @@ static const Token *getCastTypeStartToken(const Token *parent)
 // does the operation cause a loss of information?
 static bool isNonInvertibleOperation(const Token* tok)
 {
-    return tok->isComparisonOp() || Token::Match(tok, "%|/|&|%or%|<<|>>");
+    return tok->isComparisonOp() || Token::Match(tok, "%|/|&|%or%|<<|>>|%oror%|&&");
 }
 
 static bool isComputableValue(const Token* parent, const ValueFlow::Value& value)
@@ -1549,7 +1549,19 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
     for (Token* tok = tokenList->front(); tok; tok = tok->next()) {
         if (tok->hasKnownIntValue())
             continue;
-        if (astIsUnsigned(tok) && !astIsPointer(tok)) {
+        if (Token::Match(tok, "true|false"))
+            continue;
+        if (astIsBool(tok) || Token::Match(tok, "%comp%")) {
+            ValueFlow::Value lower{-1};
+            lower.bound = ValueFlow::Value::Bound::Upper;
+            lower.setImpossible();
+            setTokenValue(tok, lower, settings);
+
+            ValueFlow::Value upper{2};
+            upper.bound = ValueFlow::Value::Bound::Lower;
+            upper.setImpossible();
+            setTokenValue(tok, upper, settings);
+        } else if (astIsUnsigned(tok) && !astIsPointer(tok)) {
             std::vector<MathLib::bigint> minvalue = minUnsignedValue(tok);
             if (minvalue.empty())
                 continue;
@@ -7620,7 +7632,10 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
         bool known = true;
-        if (!var || !var->isLocal() || var->isPointer() || var->isReference() || var->isStatic())
+        if (!var || !var->isLocal() || var->isPointer() || var->isReference())
+            continue;
+        const bool hasFixedSize = Token::simpleMatch(var->typeStartToken(), "std :: array");
+        if (var->isStatic() && !hasFixedSize)
             continue;
         if (!var->valueType() || !var->valueType()->container)
             continue;
@@ -7631,7 +7646,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         const bool isDecl = Token::Match(vnt, "%name% ;");
         bool hasInitList = false, hasInitSize = false, isPointerInit = false;
-        if (!isDecl) {
+        if (!isDecl && !hasFixedSize) {
             hasInitList = Token::Match(vnt, "%name% {") && Token::simpleMatch(vnt->next()->link(), "} ;");
             if (!hasInitList)
                 hasInitList = Token::Match(vnt, "%name% ( {") && Token::simpleMatch(vnt->linkAt(2), "} ) ;");
@@ -7640,7 +7655,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             if (!hasInitList && !hasInitSize)
                 isPointerInit = Token::Match(vnt, "%name% ( %var% ,");
         }
-        if (!isDecl && !hasInitList && !hasInitSize && !isPointerInit)
+        if (!isDecl && !hasInitList && !hasInitSize && !isPointerInit && !hasFixedSize)
             continue;
         if (vnt->astTop() && Token::Match(vnt->astTop()->previous(), "for|while"))
             known = !isVariableChanged(var, settings, true);
@@ -7888,7 +7903,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
             }
             else {
                 typeTok = newTok->astOperand1();
-                if (typeTok && typeTok->str() == "{")
+                if (typeTok->str() == "{")
                     typeTok = typeTok->astOperand1();
             }
             if (bracTok && bracTok->astOperand2() && bracTok->astOperand2()->hasKnownIntValue())

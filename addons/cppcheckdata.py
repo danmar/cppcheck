@@ -202,6 +202,7 @@ class Token:
         isUnsigned         Is this token a unsigned type
         isSigned           Is this token a signed type
         isExpandedMacro    Is this token a expanded macro token
+        isRemovedVoidParameter  Has void parameter been removed?
         isSplittedVarDeclComma  Is this a comma changed to semicolon in a splitted variable declaration ('int a,b;' => 'int a; int b;')
         isSplittedVarDeclEq     Is this a '=' changed to semicolon in a splitted variable declaration ('int a=5;' => 'int a; a=5;')
         isImplicitInt      Is this token an implicit "int"?
@@ -254,6 +255,7 @@ class Token:
     isUnsigned = False
     isSigned = False
     isExpandedMacro = False
+    isRemovedVoidParameter = False
     isSplittedVarDeclComma = False
     isSplittedVarDeclEq = False
     isImplicitInt = False
@@ -318,6 +320,8 @@ class Token:
                 self.isLogicalOp = True
         if element.get('isExpandedMacro'):
             self.isExpandedMacro = True
+        if element.get('isRemovedVoidParameter'):
+            self.isRemovedVoidParameter = True
         if element.get('isSplittedVarDeclComma'):
             self.isSplittedVarDeclComma = True
         if element.get('isSplittedVarDeclEq'):
