@@ -7632,7 +7632,10 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
         bool known = true;
-        if (!var || !var->isLocal() || var->isPointer() || var->isReference() || var->isStatic())
+        if (!var || !var->isLocal() || var->isPointer() || var->isReference())
+            continue;
+        const bool hasFixedSize = Token::simpleMatch(var->typeStartToken(), "std :: array");
+        if (var->isStatic() && !hasFixedSize)
             continue;
         if (!var->valueType() || !var->valueType()->container)
             continue;
@@ -7643,7 +7646,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             continue;
         const bool isDecl = Token::Match(vnt, "%name% ;");
         bool hasInitList = false, hasInitSize = false, isPointerInit = false;
-        if (!isDecl) {
+        if (!isDecl && !hasFixedSize) {
             hasInitList = Token::Match(vnt, "%name% {") && Token::simpleMatch(vnt->next()->link(), "} ;");
             if (!hasInitList)
                 hasInitList = Token::Match(vnt, "%name% ( {") && Token::simpleMatch(vnt->linkAt(2), "} ) ;");
@@ -7652,7 +7655,7 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
             if (!hasInitList && !hasInitSize)
                 isPointerInit = Token::Match(vnt, "%name% ( %var% ,");
         }
-        if (!isDecl && !hasInitList && !hasInitSize && !isPointerInit)
+        if (!isDecl && !hasInitList && !hasInitSize && !isPointerInit && !hasFixedSize)
             continue;
         if (vnt->astTop() && Token::Match(vnt->astTop()->previous(), "for|while"))
             known = !isVariableChanged(var, settings, true);

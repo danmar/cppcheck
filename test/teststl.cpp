@@ -787,6 +787,22 @@ private:
         TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
                            "",
                            errout.str());
+
+        check("void f() {\n"
+              "    std::array<int, 10> a = {};\n"
+              "    a[10];\n"
+              "    constexpr std::array<int, 10> b = {};\n"
+              "    b[10];\n"
+              "    const std::array<int, 10> c = {};\n"
+              "    c[10];\n"
+              "    static constexpr std::array<int, 10> d = {};\n"
+              "    d[10];\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'a[10]', if 'a' size is 10 and '10' is 10\n"
+                      "test.cpp:5:error:Out of bounds access in 'b[10]', if 'b' size is 10 and '10' is 10\n"
+                      "test.cpp:7:error:Out of bounds access in 'c[10]', if 'c' size is 10 and '10' is 10\n"
+                      "test.cpp:9:error:Out of bounds access in 'd[10]', if 'd' size is 10 and '10' is 10\n",
+                      errout.str());
     }
 
     void outOfBoundsSymbolic()
