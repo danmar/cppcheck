@@ -4008,6 +4008,15 @@ private:
               "  }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const uint32_t u) {\n"
+              "	const uint32_t v = u < 4;\n"
+              "	if (v) {\n"
+              "		const uint32_t w = v < 2;\n"
+              "		if (w) {}\n"
+              "	}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
     }
 
     void alwaysTrueSymbolic()

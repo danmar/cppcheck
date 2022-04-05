@@ -2687,6 +2687,20 @@ private:
             const char exp[] = "1: auto g@1 ; g@1 = [ ] ( std :: function < void ( ) > p@2 ) { } ;\n";
             ASSERT_EQUALS(exp, tokenize(code));
         }
+        // # 10849
+        {
+            const char code[] = "class T {};\n"
+                                "auto g = [](const T* t) -> int {\n"
+                                "    const T* u{}, *v{};\n"
+                                "    return 0;\n"
+                                "};\n";
+            const char exp[] = "1: class T { } ;\n"
+                               "2: auto g@1 ; g@1 = [ ] ( const T * t@2 ) . int {\n"
+                               "3: const T * u@3 { } ; const T * v@4 { } ;\n"
+                               "4: return 0 ;\n"
+                               "5: } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
     }
 
     void varid_lambda_mutable() {

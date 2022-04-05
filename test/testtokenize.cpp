@@ -6046,6 +6046,7 @@ private:
         ASSERT_EQUALS("Aa*A{new=", testAst("A* a = new A{};"));
         ASSERT_EQUALS("Aa*A12,{new=", testAst("A* a = new A{ 1, 2 };"));
         ASSERT_EQUALS("Sv0[(new", testAst("new S(v[0]);")); // #10929
+        ASSERT_EQUALS("SS::x(px0>intx[{newint1[{new:?(:", testAst("S::S(int x) : p(x > 0 ? new int[x]{} : new int[1]{}) {}")); // #10793
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));

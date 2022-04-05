@@ -3111,10 +3111,10 @@ void Tokenizer::simplifyArrayAccessSyntax()
 void Tokenizer::simplifyParameterVoid()
 {
     for (Token* tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "sizeof|decltype|typeof"))
-            continue;
-        if (Token::Match(tok, "%name% ( void )"))
+        if (Token::Match(tok, "%name% ( void )") && !Token::Match(tok, "sizeof|decltype|typeof")) {
             tok->next()->deleteNext();
+            tok->next()->setRemovedVoidParameter(true);
+        }
     }
 }
 
@@ -5544,6 +5544,8 @@ void Tokenizer::dump(std::ostream &out) const
         }
         if (tok->isExpandedMacro())
             out << " isExpandedMacro=\"true\"";
+        if (tok->isRemovedVoidParameter())
+            out << " isRemovedVoidParameter=\"true\"";
         if (tok->isSplittedVarDeclComma())
             out << " isSplittedVarDeclComma=\"true\"";
         if (tok->isSplittedVarDeclEq())
@@ -7321,11 +7323,21 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 if (!tok->next()->link())
                     syntaxError(tokBegin);
                 // Check for lambdas before skipping
-                for (Token* tok2 = tok->next(); tok2 != tok->next()->link(); tok2 = tok2->next()) {
-                    Token* lambdaEnd = findLambdaEndScope(tok2);
-                    if (!lambdaEnd)
-                        continue;
-                    simplifyVarDecl(lambdaEnd->link()->next(), lambdaEnd, only_k_r_fpar);
+                if (Token::Match(tok->tokAt(-2), ") . %name%")) { // trailing return type
+                    // TODO: support lambda without parameter clause?
+                    Token* lambdaStart = tok->linkAt(-2)->previous();
+                    if (Token::simpleMatch(lambdaStart, "]"))
+                        lambdaStart = lambdaStart->link();
+                    Token* lambdaEnd = findLambdaEndScope(lambdaStart);
+                    if (lambdaEnd)
+                        simplifyVarDecl(lambdaEnd->link()->next(), lambdaEnd, only_k_r_fpar);
+                } else {
+                    for (Token* tok2 = tok->next(); tok2 != tok->next()->link(); tok2 = tok2->next()) {
+                        Token* lambdaEnd = findLambdaEndScope(tok2);
+                        if (!lambdaEnd)
+                            continue;
+                        simplifyVarDecl(lambdaEnd->link()->next(), lambdaEnd, only_k_r_fpar);
+                    }
                 }
                 tok = tok->next()->link();
             }
