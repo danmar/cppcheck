@@ -5437,6 +5437,10 @@ struct ConditionHandler {
         // Whether to insert impossible values for the condition or only use possible values
         bool impossible = true;
 
+        bool isBool() const {
+            return astIsBool(vartok);
+        }
+
         Condition() : vartok(nullptr), true_values(), false_values(), inverted(false), impossible(true) {}
     };
 
@@ -5647,7 +5651,7 @@ struct ConditionHandler {
                 elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
                 if (cond.impossible && isConditionKnown(condTok, true)) {
                     insertImpossible(thenValues, cond.true_values);
-                    if (condTok == cond.vartok && astIsBool(condTok))
+                    if (cond.isBool())
                         insertNegateKnown(thenValues, cond.true_values);
                 }
             }
@@ -5676,7 +5680,7 @@ struct ConditionHandler {
                         values = thenValues;
                     else if (op == "||")
                         values = elseValues;
-                    if (Token::Match(condTok, "==|!=") || (condTok == cond.vartok && astIsBool(condTok)))
+                    if (Token::Match(condTok, "==|!=") || cond.isBool())
                         changePossibleToKnown(values);
                     if (astIsFloat(cond.vartok, false) ||
                         (!cond.vartok->valueType() &&
