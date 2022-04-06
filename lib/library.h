@@ -31,10 +31,13 @@
 #include <set>
 #include <string>
 #include <unordered_map>
+#include <memory>
 #include <utility>
 #include <vector>
 
 class Token;
+class TokenList;
+class Settings;
 
 namespace tinyxml2 {
     class XMLDocument;
@@ -649,6 +652,8 @@ private:
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
+
+std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue, const Settings* settings, std::unordered_map<nonneg int, const Token*>* lookupVarId = nullptr);
 
 /// @}
 //---------------------------------------------------------------------------

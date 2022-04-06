@@ -774,6 +774,29 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
     return v;
 }
 
+ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args, const std::string& returnValue, const Settings* settings)
+{
+    static std::unordered_map<std::string, std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>> functions = {};
+    if (functions.count(returnValue) == 0) {
+
+        std::unordered_map<nonneg int, const Token*> lookupVarId;
+        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, &lookupVarId);
+
+        functions[returnValue] = [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {
+            if (!expr)
+                return ValueFlow::Value::unknown();
+            ProgramMemory pm{};
+            for (const auto& p : xargs) {
+                auto it = lookupVarId.find(p.first);
+                if (it != lookupVarId.end())
+                    pm.setValue(it->second, p.second);
+            }
+            return execute(expr.get(), pm, settings);
+        };
+    }
+    return functions.at(returnValue)(args);
+}
+
 void execute(const Token* expr,
              ProgramMemory* const programMemory,
              MathLib::bigint* result,
