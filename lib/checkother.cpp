@@ -1792,11 +1792,11 @@ static bool isConstStatement(const Token *tok, bool cpp)
         if (tok->astParent()) // warn about const statement on rhs at the top level
             return isConstStatement(tok->astOperand1(), cpp) && isConstStatement(tok->astOperand2(), cpp);
         else {
-            const Token* lml = previousBeforeAstLeftmostLeaf(tok);
+            const Token* lml = previousBeforeAstLeftmostLeaf(tok); // don't warn about matrix/vector assignment (e.g. Eigen)
             if (lml)
                 lml = lml->next();
             const Token* stream = lml;
-            while (stream && Token::Match(stream->astParent(), ".|[|("))
+            while (stream && Token::Match(stream->astParent(), ".|[|(|*"))
                 stream = stream->astParent();
             return (!stream || !isLikelyStream(cpp, stream)) && isConstStatement(tok->astOperand2(), cpp);
         }
