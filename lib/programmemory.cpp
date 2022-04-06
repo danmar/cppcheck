@@ -599,36 +599,6 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
             else if (!v.isImpossible())
                 return ValueFlow::Value{v.intvalue == 0};
         }
-
-    } else if (Token::Match(expr->previous(), "%name% (")) {
-        const Token* ftok = expr->previous();
-        const Function* f = ftok->function();
-        // TODO: Evaluate inline functions
-        if (!f && settings) {
-            std::unordered_map<nonneg int, ValueFlow::Value> args;
-            int argn = 0;
-            for(const Token* tok:getArguments(expr)) {
-                ValueFlow::Value result = execute(tok, pm, settings);
-                if (!result.isUninitValue())
-                    args[argn] = result;
-                argn++;
-            }
-            // strlen is a special builtin
-            if (Token::simpleMatch(ftok, "strlen")) {
-                if (args.count(0) > 0) {
-                    ValueFlow::Value v = args.at(0);
-                    if (v.isTokValue() && v.tokvalue->tokType() == Token::eString) {
-                        v.valueType = ValueFlow::Value::ValueType::INT;
-                        v.intvalue = Token::getStrLength(v.tokvalue);
-                        v.tokvalue = nullptr;
-                        return v;
-                    }
-                }
-            } else {
-                const std::string& returnValue = settings->library.returnValue(ftok);
-                return evaluateLibraryFunction(args, returnValue, settings);
-            }
-        }
     } else if (expr->isAssignmentOp() && expr->astOperand1() && expr->astOperand2() && expr->astOperand1()->exprId() > 0) {
         ValueFlow::Value rhs = execute(expr->astOperand2(), pm);
         if (rhs.isUninitValue())
@@ -760,6 +730,36 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     }
 
     if (Token::Match(expr->previous(), ">|%name% {|(")) {
+        const Token* ftok = expr->previous();
+        const Function* f = ftok->function();
+        // TODO: Evaluate inline functions as well
+        if (!f && settings && expr->str() == "(") {
+            std::unordered_map<nonneg int, ValueFlow::Value> args;
+            int argn = 0;
+            for(const Token* tok:getArguments(expr)) {
+                ValueFlow::Value result = execute(tok, pm, settings);
+                if (!result.isUninitValue())
+                    args[argn] = result;
+                argn++;
+            }
+            // strlen is a special builtin
+            if (Token::simpleMatch(ftok, "strlen")) {
+                if (args.count(0) > 0) {
+                    ValueFlow::Value v = args.at(0);
+                    if (v.isTokValue() && v.tokvalue->tokType() == Token::eString) {
+                        v.valueType = ValueFlow::Value::ValueType::INT;
+                        v.intvalue = Token::getStrLength(v.tokvalue);
+                        v.tokvalue = nullptr;
+                        return v;
+                    }
+                }
+            } else {
+                const std::string& returnValue = settings->library.returnValue(ftok);
+                if (!returnValue.empty())
+                    return evaluateLibraryFunction(args, returnValue, settings);
+            }
+        }
+        // Check if functon modifies argument
         visitAstNodes(expr->astOperand2(), [&](const Token* child) {
             if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
                 ValueFlow::Value& v = pm.at(child->exprId());
