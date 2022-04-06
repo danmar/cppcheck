@@ -165,6 +165,10 @@ ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueF
 
 ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars);
 
+ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
+                                         const std::string& returnValue,
+                                         const Settings* settings);
+
 #endif
 
 

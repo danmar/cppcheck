@@ -6759,69 +6759,23 @@ static void valueFlowLibraryFunction(Token *tok, const std::string &returnValue,
     }
     if (returnValue.find("arg") != std::string::npos && argValues.empty())
         return;
-
-    TokenList tokenList(settings);
-    {
-        const std::string code = "return " + returnValue + ";";
-        std::istringstream istr(code);
-        if (!tokenList.createTokens(istr))
-            return;
-    }
-
-    // combine operators, set links, etc..
-    std::stack<Token *> lpar;
-    for (Token *tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
-        if (Token::Match(tok2, "[!<>=] =")) {
-            tok2->str(tok2->str() + "=");
-            tok2->deleteNext();
-        } else if (tok2->str() == "(")
-            lpar.push(tok2);
-        else if (tok2->str() == ")") {
-            if (lpar.empty())
-                return;
-            Token::createMutualLinks(lpar.top(), tok2);
-            lpar.pop();
-        }
-    }
-    if (!lpar.empty())
-        return;
-
-    // set varids
-    std::unordered_map<nonneg int, const Token*> lookupVarId;
-    for (Token* tok2 = tokenList.front(); tok2; tok2 = tok2->next()) {
-        if (tok2->str().compare(0, 3, "arg") != 0)
-            continue;
-        nonneg int id = std::atoi(tok2->str().c_str() + 3);
-        tok2->varId(id);
-        lookupVarId[id] = tok2;
-    }
-
-    // Evaluate expression
-    tokenList.createAst();
-    Token* expr = tokenList.front()->astOperand1();
-    ValueFlow::valueFlowConstantFoldAST(expr, settings);
-
     productParams(argValues, [&](const std::unordered_map<nonneg int, ValueFlow::Value>& arg) {
-        ProgramMemory pm{};
-        for (const auto& p : arg) {
-            const Token* varTok = lookupVarId[p.first];
-            pm.setValue(varTok, p.second);
-        }
-        MathLib::bigint result = 0;
-        bool error = false;
-        execute(expr, &pm, &result, &error);
-        if (error)
+        ValueFlow::Value value = evaluateLibraryFunction(arg, returnValue, settings);
+        if (value.isUninitValue())
             return;
-        ValueFlow::Value value(result);
-        value.setKnown();
+        ValueFlow::Value::ValueKind kind = ValueFlow::Value::ValueKind::Known;
         for (auto&& p : arg) {
             if (p.second.isPossible())
-                value.setPossible();
+                kind = p.second.valueKind;
             if (p.second.isInconclusive()) {
-                value.setInconclusive();
+                kind = p.second.valueKind;
                 break;
             }
         }
+        if (value.isImpossible() && kind != ValueFlow::Value::ValueKind::Known)
+            return;
+        if (!value.isImpossible())
+            value.valueKind = kind;
         setTokenValue(tok, value, settings);
     });
 }
