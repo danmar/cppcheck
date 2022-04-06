@@ -5610,7 +5610,7 @@ struct ConditionHandler {
 
     static Token* skipNotAndCasts(Token* tok, bool* inverted = nullptr)
     {
-        for (;tok->astParent();tok = tok->astParent()) {
+        for (; tok->astParent(); tok = tok->astParent()) {
             if (Token::simpleMatch(tok->astParent(), "!")) {
                 if (inverted)
                     *inverted ^= true;
