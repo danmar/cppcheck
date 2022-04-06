@@ -6122,6 +6122,21 @@ static void valueFlowInferCondition(TokenList* tokenlist,
 }
 
 struct SymbolicConditionHandler : SimpleConditionHandler {
+
+    static bool isNegatedBool(const Token* tok)
+    {
+        if (!Token::simpleMatch(tok, "!"))
+            return false;
+        return (astIsBool(tok->astOperand1()));
+    }
+
+    static const Token* skipNot(const Token* tok)
+    {
+        if (!Token::simpleMatch(tok, "!"))
+            return tok;
+        return tok->astOperand1();
+    }
+
     virtual std::vector<Condition> parse(const Token* tok, const Settings*) const override
     {
         if (!Token::Match(tok, "%comp%"))
@@ -6134,27 +6149,36 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
             return {};
 
         std::vector<Condition> result;
-        for (int i = 0; i < 2; i++) {
-            const bool lhs = i == 0;
-            const Token* vartok = lhs ? tok->astOperand1() : tok->astOperand2();
-            const Token* valuetok = lhs ? tok->astOperand2() : tok->astOperand1();
-            if (valuetok->exprId() == 0)
-                continue;
-            if (valuetok->hasKnownSymbolicValue(vartok))
-                continue;
-            if (vartok->hasKnownSymbolicValue(valuetok))
-                continue;
-            ValueFlow::Value true_value;
-            ValueFlow::Value false_value;
-            setConditionalValues(tok, !lhs, 0, true_value, false_value);
-            setSymbolic(true_value, valuetok);
-            setSymbolic(false_value, valuetok);
+        auto addCond = [&](const Token* lhsTok, const Token* rhsTok, bool inverted) {
+            for (int i = 0; i < 2; i++) {
+                const bool lhs = i == 0;
+                const Token* vartok = lhs ? lhsTok : rhsTok;
+                const Token* valuetok = lhs ? rhsTok : lhsTok;
+                if (valuetok->exprId() == 0)
+                    continue;
+                if (valuetok->hasKnownSymbolicValue(vartok))
+                    continue;
+                if (vartok->hasKnownSymbolicValue(valuetok))
+                    continue;
+                ValueFlow::Value true_value;
+                ValueFlow::Value false_value;
+                setConditionalValues(tok, !lhs, 0, true_value, false_value);
+                setSymbolic(true_value, valuetok);
+                setSymbolic(false_value, valuetok);
 
-            Condition cond;
-            cond.true_values = {true_value};
-            cond.false_values = {false_value};
-            cond.vartok = vartok;
-            result.push_back(cond);
+                Condition cond;
+                cond.true_values = {true_value};
+                cond.false_values = {false_value};
+                cond.vartok = vartok;
+                cond.inverted = inverted;
+                result.push_back(cond);
+            }
+        };
+        addCond(tok->astOperand1(), tok->astOperand2(), false);
+        if (Token::Match(tok, "==|!=") && (isNegatedBool(tok->astOperand1()) || isNegatedBool(tok->astOperand2()))) {
+            const Token* lhsTok = skipNot(tok->astOperand1());
+            const Token* rhsTok = skipNot(tok->astOperand2());
+            addCond(lhsTok, rhsTok, !(isNegatedBool(tok->astOperand1()) && isNegatedBool(tok->astOperand2())));
         }
         return result;
     }
