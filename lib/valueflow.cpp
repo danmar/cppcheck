@@ -5248,23 +5248,13 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
 {
     for (const Scope * scope : symboldatabase->functionScopes) {
         std::unordered_map<nonneg int, std::unordered_set<nonneg int>> backAssigns;
-        std::set<nonneg int> aliased;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-            // Alias
-            if (tok->isUnaryOp("&")) {
-                aliased.insert(tok->astOperand1()->exprId());
-                continue;
-            }
-
             // Assignment
             if ((tok->str() != "=" && !isVariableInit(tok)) || (tok->astParent()))
                 continue;
 
             // Lhs should be a variable
             if (!tok->astOperand1() || !tok->astOperand1()->exprId())
-                continue;
-            const nonneg int exprid = tok->astOperand1()->exprId();
-            if (aliased.find(exprid) != aliased.end())
                 continue;
             std::vector<const Variable*> vars = getLHSVariables(tok);
 
