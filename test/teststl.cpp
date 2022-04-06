@@ -911,6 +911,13 @@ private:
               "    *it = 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> vec;\n"
+              "    auto it = vec.begin();\n"
+              "    *it = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void iterator1() {
