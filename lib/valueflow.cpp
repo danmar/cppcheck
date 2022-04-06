@@ -5604,7 +5604,7 @@ struct ConditionHandler {
         });
     }
 
-    static Token* getConditionParent(Token* tok, bool* inverted = nullptr)
+    static Token* skipNotAndCasts(Token* tok, bool* inverted = nullptr)
     {
         for (;tok->astParent();tok = tok->astParent()) {
             if (Token::simpleMatch(tok->astParent(), "!")) {
@@ -5632,37 +5632,37 @@ struct ConditionHandler {
                         SymbolDatabase* symboldatabase,
                         ErrorLogger* errorLogger,
                         const Settings* settings) const {
-        traverseCondition(tokenlist, symboldatabase, [&](const Condition& cond, Token* tok, const Scope* scope) {
-            const Token* top = tok->astTop();
+        traverseCondition(tokenlist, symboldatabase, [&](const Condition& cond, Token* condTok, const Scope* scope) {
+            const Token* top = condTok->astTop();
 
             std::list<ValueFlow::Value> thenValues;
             std::list<ValueFlow::Value> elseValues;
 
-            if (!Token::Match(tok, "!=|=|(|.") && tok != cond.vartok) {
+            if (!Token::Match(condTok, "!=|=|(|.") && condTok != cond.vartok) {
                 thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
-                if (cond.impossible && isConditionKnown(tok, false))
+                if (cond.impossible && isConditionKnown(condTok, false))
                     insertImpossible(elseValues, cond.false_values);
             }
-            if (!Token::Match(tok, "==|!")) {
+            if (!Token::Match(condTok, "==|!")) {
                 elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
-                if (cond.impossible && isConditionKnown(tok, true)) {
+                if (cond.impossible && isConditionKnown(condTok, true)) {
                     insertImpossible(thenValues, cond.true_values);
-                    if (tok == cond.vartok && astIsBool(tok))
+                    if (condTok == cond.vartok && astIsBool(condTok))
                         insertNegateKnown(thenValues, cond.true_values);
                 }
             }
 
             bool inverted = cond.inverted;
-            Token* condParent = getConditionParent(tok, &inverted);
+            Token* ctx = skipNotAndCasts(condTok, &inverted);
             if (inverted)
                 std::swap(thenValues, elseValues);
 
-            if (Token::Match(condParent->astParent(), "%oror%|&&")) {
-                Token* parent = condParent->astParent();
-                if (astIsRHS(condParent) && astIsLHS(parent) && parent->astParent() &&
+            if (Token::Match(ctx->astParent(), "%oror%|&&")) {
+                Token* parent = ctx->astParent();
+                if (astIsRHS(ctx) && astIsLHS(parent) && parent->astParent() &&
                     parent->str() == parent->astParent()->str())
                     parent = parent->astParent();
-                else if (!astIsLHS(condParent)) {
+                else if (!astIsLHS(ctx)) {
                     parent = nullptr;
                 }
                 if (parent) {
@@ -5676,7 +5676,7 @@ struct ConditionHandler {
                         values = thenValues;
                     else if (op == "||")
                         values = elseValues;
-                    if (Token::Match(tok, "==|!=") || (tok == cond.vartok && astIsBool(tok)))
+                    if (Token::Match(condTok, "==|!=") || (condTok == cond.vartok && astIsBool(condTok)))
                         changePossibleToKnown(values);
                     if (astIsFloat(cond.vartok, false) ||
                         (!cond.vartok->valueType() &&
@@ -5695,7 +5695,7 @@ struct ConditionHandler {
             }
 
             {
-                const Token* tok2 = tok;
+                const Token* tok2 = condTok;
                 std::string op;
                 bool mixedOperators = false;
                 while (tok2->astParent()) {
@@ -5729,11 +5729,11 @@ struct ConditionHandler {
                 }
             }
 
-            Token* condTop = condParent->astParent();
+            Token* condTop = ctx->astParent();
             {
                 bool inverted2 = false;
                 while (Token::Match(condTop, "%oror%|&&")) {
-                    Token* parent = getConditionParent(condTop, &inverted2)->astParent();
+                    Token* parent = skipNotAndCasts(condTop, &inverted2)->astParent();
                     if (!parent)
                         break;
                     condTop = parent;
@@ -5754,9 +5754,9 @@ struct ConditionHandler {
                 return;
 
             if (top->previous()->str() == "for") {
-                if (!Token::Match(tok, "%comp%"))
+                if (!Token::Match(condTok, "%comp%"))
                     return;
-                if (!Token::simpleMatch(tok->astParent(), ";"))
+                if (!Token::simpleMatch(condTok->astParent(), ";"))
                     return;
                 const Token* stepTok = getStepTok(top);
                 if (cond.vartok->varId() == 0)
@@ -5775,9 +5775,9 @@ struct ConditionHandler {
                     return;
                 if (Token::simpleMatch(stepTok, "--") && bounds.count(ValueFlow::Value::Bound::Upper) > 0)
                     return;
-                const Token* childTok = tok->astOperand1();
+                const Token* childTok = condTok->astOperand1();
                 if (!childTok)
-                    childTok = tok->astOperand2();
+                    childTok = condTok->astOperand2();
                 if (!childTok)
                     return;
                 if (childTok->varId() != cond.vartok->varId())
@@ -5795,7 +5795,7 @@ struct ConditionHandler {
                 ProgramMemory pm;
                 execute(initTok, &pm, nullptr, nullptr);
                 MathLib::bigint result = 1;
-                execute(tok, &pm, &result, nullptr);
+                execute(condTok, &pm, &result, nullptr);
                 if (result == 0)
                     return;
                 // Remove condition since for condition is not redundant
@@ -5824,7 +5824,7 @@ struct ConditionHandler {
                 if (!startToken)
                     continue;
                 std::list<ValueFlow::Value>& values = (i == 0 ? thenValues : elseValues);
-                valueFlowSetConditionToKnown(tok, values, i == 0);
+                valueFlowSetConditionToKnown(condTok, values, i == 0);
 
                 Analyzer::Result r =
                     forward(startTokens[i], startTokens[i]->link(), cond.vartok, values, tokenlist, settings);
@@ -5859,7 +5859,7 @@ struct ConditionHandler {
                 bool dead_if = deadBranch[0];
                 bool dead_else = deadBranch[1];
                 const Token* unknownFunction = nullptr;
-                if (tok->astParent() && Token::Match(top->previous(), "while|for ("))
+                if (condTok->astParent() && Token::Match(top->previous(), "while|for ("))
                     dead_if = !isBreakScope(after);
                 else if (!dead_if)
                     dead_if = isReturnScope(after, &settings->library, &unknownFunction);
@@ -5905,7 +5905,7 @@ struct ConditionHandler {
                     return;
 
                 if (dead_if || dead_else) {
-                    const Token* parent = tok->astParent();
+                    const Token* parent = condTok->astParent();
                     // Skip the not operator
                     while (Token::simpleMatch(parent, "!"))
                         parent = parent->astParent();
@@ -5923,8 +5923,8 @@ struct ConditionHandler {
                         values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
                         changeKnownToPossible(values);
                     } else {
-                        valueFlowSetConditionToKnown(tok, values, true);
-                        valueFlowSetConditionToKnown(tok, values, false);
+                        valueFlowSetConditionToKnown(condTok, values, true);
+                        valueFlowSetConditionToKnown(condTok, values, false);
                     }
                 }
                 if (values.empty())
