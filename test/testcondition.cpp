@@ -4027,7 +4027,8 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'strlen(\"abc\")==3' is always true\n"
                       "[test.cpp:3]: (style) Condition 'strlen(\"abc\")==1' is always false\n"
                       "[test.cpp:4]: (style) Condition 'wcslen(L\"abc\")==3' is always true\n"
-                      "[test.cpp:5]: (style) Condition 'wcslen(L\"abc\")==1' is always false\n", errout.str());
+                      "[test.cpp:5]: (style) Condition 'wcslen(L\"abc\")==1' is always false\n",
+                      errout.str());
     }
 
     void alwaysTrueSymbolic()

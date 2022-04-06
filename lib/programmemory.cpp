@@ -736,7 +736,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         if (!f && settings && expr->str() == "(") {
             std::unordered_map<nonneg int, ValueFlow::Value> args;
             int argn = 0;
-            for(const Token* tok:getArguments(expr)) {
+            for (const Token* tok : getArguments(expr)) {
                 ValueFlow::Value result = execute(tok, pm, settings);
                 if (!result.isUninitValue())
                     args[argn] = result;
@@ -804,15 +804,20 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
     return v;
 }
 
-ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args, const std::string& returnValue, const Settings* settings)
+ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
+                                         const std::string& returnValue,
+                                         const Settings* settings)
 {
-    static std::unordered_map<std::string, std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>> functions = {};
+    static std::unordered_map<std::string,
+                              std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>>
+    functions = {};
     if (functions.count(returnValue) == 0) {
 
         std::unordered_map<nonneg int, const Token*> lookupVarId;
         std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, &lookupVarId);
 
-        functions[returnValue] = [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {
+        functions[returnValue] =
+            [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {
             if (!expr)
                 return ValueFlow::Value::unknown();
             ProgramMemory pm{};

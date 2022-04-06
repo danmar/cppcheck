@@ -1652,7 +1652,9 @@ Library::TypeCheck Library::getTypeCheck(const std::string &check, const std::st
     return it == mTypeChecks.end() ? TypeCheck::def : it->second;
 }
 
-std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue, const Settings* settings, std::unordered_map<nonneg int, const Token*>* lookupVarId)
+std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                 const Settings* settings,
+                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId)
 {
     std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(settings);
     {
@@ -1663,8 +1665,8 @@ std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
     }
 
     // combine operators, set links, etc..
-    std::stack<Token *> lpar;
-    for (Token *tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
+    std::stack<Token*> lpar;
+    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
         if (Token::Match(tok2, "[!<>=] =")) {
             tok2->str(tok2->str() + "=");
             tok2->deleteNext();
