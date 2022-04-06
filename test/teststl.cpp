@@ -906,10 +906,10 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
-                "    std::vector<int> vec;\n"
-                "    std::vector<int>::iterator it = vec.begin();\n"
-                "    *it = 1;\n"
-                "}\n");
+              "    std::vector<int> vec;\n"
+              "    std::vector<int>::iterator it = vec.begin();\n"
+              "    *it = 1;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

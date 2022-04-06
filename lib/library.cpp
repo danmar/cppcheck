@@ -1198,7 +1198,7 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
     return nullptr;
 }
 
-const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool * isIterator) const
+const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool* isIterator) const
 {
     const Library::Container* c = detectContainer(typeStart);
     if (c) {

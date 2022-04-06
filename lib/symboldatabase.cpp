@@ -6365,9 +6365,10 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 typeTokens.addtoken("::", 0, 0, 0, false);
                 pos1 = pos2 + 2;
             } while (pos1 < type->str().size());
-            const Library::Container *container = settings->library.detectContainerOrIterator(typeTokens.front(), &isIterator);
+            const Library::Container* container =
+                settings->library.detectContainerOrIterator(typeTokens.front(), &isIterator);
             if (container) {
-                if (isIterator) 
+                if (isIterator)
                     valuetype->type = ValueType::Type::ITERATOR;
                 else
                     valuetype->type = ValueType::Type::CONTAINER;
@@ -6378,8 +6379,8 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 if (valuetype->typeScope)
                     valuetype->type = (scope->type == Scope::ScopeType::eClass) ? ValueType::Type::RECORD : ValueType::Type::NONSTD;
             }
-        } else if (const Library::Container *container = settings->library.detectContainerOrIterator(type, &isIterator)) {
-            if (isIterator) 
+        } else if (const Library::Container* container = settings->library.detectContainerOrIterator(type, &isIterator)) {
+            if (isIterator)
                 valuetype->type = ValueType::Type::ITERATOR;
             else
                 valuetype->type = ValueType::Type::CONTAINER;
@@ -6808,7 +6809,7 @@ void SymbolDatabase::setValueTypeInTokenList(bool reportDebugWarnings, Token *to
             if (Token::Match(typeTok, "( std| ::| nothrow )"))
                 typeTok = typeTok->link()->next();
             bool isIterator = false;
-            if (const Library::Container *c = mSettings->library.detectContainerOrIterator(typeTok, &isIterator)) {
+            if (const Library::Container* c = mSettings->library.detectContainerOrIterator(typeTok, &isIterator)) {
                 ValueType vt;
                 vt.pointer = 1;
                 vt.container = c;
