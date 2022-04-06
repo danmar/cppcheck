@@ -398,7 +398,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("struct V {\n"
-              "    Eigen::Vector3d & operator[](int i) { return v[i]; }\n"
+              "    Eigen::Vector3d& operator[](int i) { return v[i]; }\n"
               "    void f(int a, int b, int c);\n"
               "    Eigen::Vector3d v[1];\n"
               "};\n"
