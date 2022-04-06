@@ -5754,6 +5754,9 @@ struct ConditionHandler {
                 return;
             }
 
+            if (condTop != top && condTop->str() != ";")
+                return;
+
             if (!Token::Match(top->previous(), "if|while|for ("))
                 return;
 

@@ -135,6 +135,7 @@ private:
         TEST_CASE(nullpointer89); // #10640
         TEST_CASE(nullpointer90); // #6098
         TEST_CASE(nullpointer91); // #10678
+        TEST_CASE(nullpointer92);
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2678,6 +2679,23 @@ private:
               "    PEnd = g();\n"
               "    const int Length = PEnd == nullptr ? 0 : PEnd - PBeg;\n"
               "  };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer92()
+    {
+        check("bool g(bool);\n"
+              "int f(int* i) {\n"
+              "    if (!g(!!i)) return 0;\n"
+              "    return *i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool g(bool);\n"
+              "int f(int* i) {\n"
+              "    if (!g(!i)) return 0;\n"
+              "    return *i;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
