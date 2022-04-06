@@ -5016,10 +5016,11 @@ static void valueFlowSymbolicInfer(TokenList* tokenlist, SymbolDatabase* symbold
     }
 }
 
+template<class ContainerOfValue>
 static void valueFlowForwardConst(Token* start,
                                   const Token* end,
                                   const Variable* var,
-                                  const std::list<ValueFlow::Value>& values,
+                                  const ContainerOfValue& values,
                                   const Settings* const settings)
 {
     for (Token* tok = start; tok != end; tok = tok->next()) {
@@ -5030,12 +5031,11 @@ static void valueFlowForwardConst(Token* start,
             [&] {
                 // Follow references
                 std::vector<ReferenceToken> refs = followAllReferences(tok);
-                ValueFlow::Value::ValueKind refKind =
-                    refs.size() == 1 ? ValueFlow::Value::ValueKind::Known : ValueFlow::Value::ValueKind::Inconclusive;
                 for (const ReferenceToken& ref : refs) {
                     if (ref.token->varId() == var->declarationId()) {
                         for (ValueFlow::Value value : values) {
-                            value.valueKind = refKind;
+                            if (refs.size() > 1)
+                                value.setInconclusive();
                             value.errorPath.insert(value.errorPath.end(), ref.errors.begin(), ref.errors.end());
                             setTokenValue(tok, value, settings);
                         }
@@ -7596,18 +7596,38 @@ static std::vector<ValueFlow::Value> makeContainerSizeValue(const Token* tok, bo
     return {};
 }
 
-static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
-                                                     const Library::Container* container,
-                                                     bool known = true)
+static std::vector<ValueFlow::Value> getContainerSizeFromConstructorArgs(const std::vector<const Token*>& args,
+                                                                         const Library::Container* container,
+                                                                         bool known)
 {
-    std::vector<const Token*> args = getArguments(tok);
-    if (!args.empty() && container->stdStringLike) {
-        if (astIsGenericChar(args[0])) // init list of chars
-            return { makeContainerSizeValue(args.size(), known) };
-        if (astIsIntegral(args[0], false)) { // { count, 'c' }
-            if (args.size() > 1)
-                return {makeContainerSizeValue(args[0], known)};
-        } else if (astIsPointer(args[0])) {
+    if (astIsIntegral(args[0], false)) { // { count, i } or { count }
+        if (args.size() == 1 || (args.size() > 1 && !astIsIntegral(args[1], false)))
+            return {makeContainerSizeValue(args[0], known)};
+    } else if (astIsContainer(args[0]) && args.size() == 1) { // copy constructor
+        return getContainerValues(args[0]);
+    } else if (isIteratorPair(args)) {
+        std::vector<ValueFlow::Value> result = getContainerValues(args[0]);
+        if (!result.empty())
+            return result;
+        // (ptr, ptr + size)
+        if (astIsPointer(args[0]) && args[0]->exprId() != 0) {
+            // (ptr, ptr) is empty
+            // TODO: Use lifetime values to check if it points to the same address
+            if (args[0]->exprId() == args[1]->exprId())
+                return {makeContainerSizeValue(std::size_t{0}, known)};
+            // TODO: Insert iterator positions for pointers
+            if (Token::simpleMatch(args[1], "+")) {
+                nonneg int eid = args[0]->exprId();
+                const Token* vartok = args[1]->astOperand1();
+                const Token* sizetok = args[1]->astOperand2();
+                if (sizetok->exprId() == eid)
+                    std::swap(vartok, sizetok);
+                if (vartok->exprId() == eid && sizetok->hasKnownIntValue())
+                    return {makeContainerSizeValue(sizetok, known)};
+            }
+        }
+    } else if (container->stdStringLike) {
+        if (astIsPointer(args[0])) {
             // TODO: Try to read size of string literal { "abc" }
             if (args.size() == 2 && astIsIntegral(args[1], false)) // { char*, count }
                 return {makeContainerSizeValue(args[1], known)};
@@ -7618,102 +7638,126 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
                 return {makeContainerSizeValue(args[2], known)};
             // TODO: { str, pos }, { ..., alloc }
         }
-        return {};
-    } else if ((args.size() == 1 && astIsContainer(args[0]) && args[0]->valueType()->container == container) ||
-               isIteratorPair(args)) {
-        return getContainerValues(args[0]);
     }
+    return {};
+}
+
+static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
+                                                     const ValueType* valueType,
+                                                     const Settings* settings,
+                                                     bool known = true)
+{
+    std::vector<const Token*> args = getArguments(tok);
+    if (args.empty())
+        return {makeContainerSizeValue(std::size_t{0}, known)};
+    bool initList = true;
+    // Try to disambiguate init list from constructor
+    if (args.size() < 4) {
+        initList = !isIteratorPair(args) && !(args.size() < 3 && astIsIntegral(args[0], false));
+        const Token* containerTypeToken = valueType->containerTypeToken;
+        if (valueType->container->stdStringLike) {
+            initList = astIsGenericChar(args[0]) && !astIsPointer(args[0]);
+        } else if (containerTypeToken && settings) {
+            ValueType vt = ValueType::parseDecl(containerTypeToken, settings);
+            if (vt.pointer > 0 && astIsPointer(args[0]))
+                initList = true;
+            else if (vt.type == ValueType::ITERATOR && astIsIterator(args[0]))
+                initList = true;
+            else if (vt.isIntegral() && astIsIntegral(args[0], false))
+                initList = true;
+        }
+    }
+    if (!initList)
+        return getContainerSizeFromConstructorArgs(args, valueType->container, known);
     return {makeContainerSizeValue(args.size(), known)};
 }
 
-static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger * /*errorLogger*/, const Settings *settings)
+static std::vector<ValueFlow::Value> getContainerSizeFromConstructor(const Token* tok,
+                                                                     const ValueType* valueType,
+                                                                     const Settings* settings,
+                                                                     bool known = true)
 {
-    std::map<int, std::size_t> static_sizes;
+    std::vector<const Token*> args = getArguments(tok);
+    if (args.empty())
+        return {makeContainerSizeValue(std::size_t{0}, known)};
+    // Init list in constructor
+    if (args.size() == 1 && Token::simpleMatch(args[0], "{"))
+        return getInitListSize(args[0], valueType, settings, known);
+    return getContainerSizeFromConstructorArgs(args, valueType->container, known);
+}
+
+static void valueFlowContainerSize(TokenList* tokenlist,
+                                   SymbolDatabase* symboldatabase,
+                                   ErrorLogger* /*errorLogger*/,
+                                   const Settings* settings)
+{
     // declaration
     for (const Variable *var : symboldatabase->variableList()) {
-        bool known = true;
-        if (!var || !var->isLocal() || var->isPointer() || var->isReference())
-            continue;
-        const bool hasFixedSize = Token::simpleMatch(var->typeStartToken(), "std :: array");
-        if (var->isStatic() && !hasFixedSize)
+        if (!var)
             continue;
         if (!var->valueType() || !var->valueType()->container)
             continue;
-        const Token* const vnt = var->nameToken();
-        if (!astIsContainer(vnt))
+        if (!astIsContainer(var->nameToken()))
             continue;
-        if (vnt->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
-            continue;
-        const bool isDecl = Token::Match(vnt, "%name% ;");
-        bool hasInitList = false, hasInitSize = false, isPointerInit = false;
-        if (!isDecl && !hasFixedSize) {
-            hasInitList = Token::Match(vnt, "%name% {") && Token::simpleMatch(vnt->next()->link(), "} ;");
-            if (!hasInitList)
-                hasInitList = Token::Match(vnt, "%name% ( {") && Token::simpleMatch(vnt->linkAt(2), "} ) ;");
-            if (!hasInitList)
-                hasInitSize = Token::Match(vnt, "%name% (|{ %num%|%var% )|}");
-            if (!hasInitList && !hasInitSize)
-                isPointerInit = Token::Match(vnt, "%name% ( %var% ,");
-        }
-        if (!isDecl && !hasInitList && !hasInitSize && !isPointerInit && !hasFixedSize)
-            continue;
-        if (vnt->astTop() && Token::Match(vnt->astTop()->previous(), "for|while"))
-            known = !isVariableChanged(var, settings, true);
+
+        bool known = true;
+        int size = 0;
+        bool nonLocal = !var->isLocal() || var->isPointer() || var->isReference() || var->isStatic();
+        bool constSize = var->isConst() && !nonLocal;
+        bool staticSize = false;
         if (var->valueType()->container->size_templateArgNo >= 0) {
-            if (var->dimensions().size() == 1 && var->dimensions().front().known)
-                static_sizes[var->declarationId()] = var->dimensions().front().num;
-            continue;
+            staticSize = true;
+            constSize = true;
+            size = -1;
+            if (var->dimensions().size() == 1) {
+                const Dimension& dim = var->dimensions().front();
+                if (dim.known) {
+                    size = dim.num;
+                } else if (dim.tok && dim.tok->hasKnownIntValue()) {
+                    size = dim.tok->values().front().intvalue;
+                }
+            }
+            if (size < 0)
+                continue;
         }
-        std::vector<ValueFlow::Value> values{ValueFlow::Value{0}};
+        if (!staticSize && !var->isConst() && nonLocal)
+            continue;
+        if (var->nameToken()->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
+            continue;
+        if (!staticSize) {
+            if (!Token::Match(var->nameToken(), "%name% ;") &&
+                !(Token::Match(var->nameToken(), "%name% {") &&
+                  Token::simpleMatch(var->nameToken()->next()->link(), "} ;")) &&
+                !Token::Match(var->nameToken(), "%name% ("))
+                continue;
+        }
+        if (var->nameToken()->astTop() && Token::Match(var->nameToken()->astTop()->previous(), "for|while"))
+            known = !isVariableChanged(var, settings, true);
+        std::vector<ValueFlow::Value> values{ValueFlow::Value{size}};
         values.back().valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
         if (known)
             values.back().setKnown();
-        if (hasInitList) {
-            const Token* initList = vnt->next();
-            if (Token::simpleMatch(initList, "("))
-                initList = initList->next();
-            values = getInitListSize(initList, var->valueType()->container, known);
-        }
-        else if (hasInitSize) {
-            const Token* sizeTok = vnt->next()->astOperand2();
-            if (!sizeTok || !sizeTok->hasKnownIntValue())
-                continue;
-            values.back().intvalue = sizeTok->getKnownIntValue();
-        }
-        else if (isPointerInit) { // (ptr, ptr + size)
-            const Token* commaTok = vnt->next()->astOperand2();
-            if (commaTok && commaTok->str() == "," && commaTok->astOperand1() && commaTok->astOperand2() && commaTok->astOperand2()->isArithmeticalOp() && commaTok->astOperand2()->str() == "+") {
-                const Token* varTok1 = commaTok->astOperand1();
-                const Token* plusTok = commaTok->astOperand2();
-                if (varTok1->varId() && plusTok->astOperand1() && plusTok->astOperand2() && varTok1->valueType() && varTok1->valueType()->pointer) {
-                    const Token* sizeTok = nullptr;
-                    if (varTok1->varId() == plusTok->astOperand1()->varId())
-                        sizeTok = plusTok->astOperand2();
-                    else if (varTok1->varId() == plusTok->astOperand2()->varId())
-                        sizeTok = plusTok->astOperand1();
-                    if (!sizeTok || !sizeTok->hasKnownIntValue())
-                        continue;
-                    values.back().intvalue = sizeTok->getKnownIntValue();
-                }
-                else
-                    continue;
+        if (!staticSize) {
+            if (Token::simpleMatch(var->nameToken()->next(), "{")) {
+                const Token* initList = var->nameToken()->next();
+                values = getInitListSize(initList, var->valueType(), settings, known);
+            } else if (Token::simpleMatch(var->nameToken()->next(), "(")) {
+                const Token* constructorArgs = var->nameToken()->next();
+                values = getContainerSizeFromConstructor(constructorArgs, var->valueType(), settings, known);
             }
-            else
-                continue;
         }
-        for (const ValueFlow::Value& value : values)
-            valueFlowContainerForward(vnt->next(), vnt, value, tokenlist);
+        for (const ValueFlow::Value& value : values) {
+            if (constSize)
+                valueFlowForwardConst(var->nameToken()->next(), var->scope()->bodyEnd, var, values, settings);
+            else
+                valueFlowContainerForward(var->nameToken()->next(), var->nameToken(), value, tokenlist);
+        }
     }
 
     // after assignment
     for (const Scope *functionScope : symboldatabase->functionScopes) {
         for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (static_sizes.count(tok->varId()) > 0) {
-                ValueFlow::Value value(static_sizes.at(tok->varId()));
-                value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
-                value.setKnown();
-                setTokenValue(const_cast<Token*>(tok), value, settings);
-            } else if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
+            if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
                 const Token *containerTok = tok->next();
                 if (containerTok->exprId() == 0)
                     continue;
@@ -7728,11 +7772,13 @@ static void valueFlowContainerSize(TokenList *tokenlist, SymbolDatabase* symbold
                 if (containerTok->exprId() == 0)
                     continue;
                 if (astIsContainer(containerTok) && containerTok->valueType()->container->size_templateArgNo < 0) {
-                    std::vector<ValueFlow::Value> values = getInitListSize(tok->tokAt(3), containerTok->valueType()->container);
+                    std::vector<ValueFlow::Value> values =
+                        getInitListSize(tok->tokAt(3), containerTok->valueType(), settings);
                     for (const ValueFlow::Value& value : values)
                         valueFlowContainerForward(containerTok->next(), containerTok, value, tokenlist);
                 }
-            } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->container) {
+            } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() &&
+                       tok->astOperand1()->valueType()->container) {
                 const Token* containerTok = tok->astOperand1();
                 if (containerTok->exprId() == 0)
                     continue;
