@@ -7649,6 +7649,8 @@ static void valueFlowContainerSize(TokenList* tokenlist,
     for (const Variable *var : symboldatabase->variableList()) {
         if (!var)
             continue;
+        if (!var->scope() || !var->scope()->bodyEnd || !var->scope()->bodyStart)
+            continue;
         if (!var->valueType() || !var->valueType()->container)
             continue;
         if (!astIsContainer(var->nameToken()))

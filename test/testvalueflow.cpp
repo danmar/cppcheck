@@ -6434,6 +6434,12 @@ private:
                "    std::cout << (void*)(std::shared_ptr<int>{ g() }.get());\n"
                "}\n";
         valueOfTok(code, ".");
+
+        code = "class T;\n"
+               "struct S {\n"
+               "    void f(std::array<T*, 2>& a);\n"
+               "};\n";
+        valueOfTok(code, "a");
     }
 
     void valueFlowHang() {
