@@ -357,6 +357,7 @@ private:
         TEST_CASE(symboldatabase96); // #10126
         TEST_CASE(symboldatabase97); // #10598 - final class
         TEST_CASE(symboldatabase98); // #10451
+        TEST_CASE(symboldatabase99); // #10864
         TEST_CASE(symboldatabase100); // #10174
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
@@ -4880,6 +4881,11 @@ private:
         }
     }
 
+    void symboldatabase99() { // #10864
+        check("void f() { std::map<std::string, int> m; }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void symboldatabase100() {
         {
             GET_SYMBOL_DB("namespace N {\n" // #10174
@@ -4917,6 +4923,29 @@ private:
             ASSERT(it != db->scopeList.end());
             const Function* function = findFunctionByName("A", &*it);
             ASSERT(function && function->token->str() == "A");
+            ASSERT(function->hasBody());
+        }
+        {
+            GET_SYMBOL_DB("namespace N {\n" // #10260
+                          "    namespace O {\n"
+                          "        struct B;\n"
+                          "    }\n"
+                          "}\n"
+                          "struct I {\n"
+                          "    using B = N::O::B;\n"
+                          "};\n"
+                          "struct A : I {\n"
+                          "    void f(B*);\n"
+                          "};\n"
+                          "void A::f(N::O::B*) {}\n");
+            ASSERT(db);
+            ASSERT_EQUALS(1, db->functionScopes.size());
+            auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+                return s.className == "A";
+            });
+            ASSERT(it != db->scopeList.end());
+            const Function* function = findFunctionByName("f", &*it);
+            ASSERT(function && function->token->str() == "f");
             ASSERT(function->hasBody());
         }
     }
