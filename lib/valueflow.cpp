@@ -5623,7 +5623,7 @@ struct ConditionHandler {
             }
             if (tok->astParent()->isCast() && astIsBool(tok->astParent()))
                 continue;
-            return tok->astParent();
+            return tok;
         }
         return tok;
     }
@@ -5657,12 +5657,12 @@ struct ConditionHandler {
             if (inverted)
                 std::swap(thenValues, elseValues);
 
-            if (Token::Match(condParent, "%oror%|&&")) {
-                Token* parent = condParent;
-                if (astIsRHS(tok) && astIsLHS(parent) && parent->astParent() &&
+            if (Token::Match(condParent->astParent(), "%oror%|&&")) {
+                Token* parent = condParent->astParent();
+                if (astIsRHS(condParent) && astIsLHS(parent) && parent->astParent() &&
                     parent->str() == parent->astParent()->str())
                     parent = parent->astParent();
-                else if (!astIsLHS(tok)) {
+                else if (!astIsLHS(condParent)) {
                     parent = nullptr;
                 }
                 if (parent) {
@@ -5729,11 +5729,15 @@ struct ConditionHandler {
                 }
             }
 
-            Token* condTop = condParent;
+            Token* condTop = condParent->astParent();
             {
                 bool inverted2 = false;
-                while (Token::Match(condTop, "%oror%|&&") && condTop->astParent())
-                    condTop = getConditionParent(condTop, &inverted2);
+                while (Token::Match(condTop, "%oror%|&&")) {
+                    Token* parent = getConditionParent(condTop, &inverted2)->astParent();
+                    if (!parent)
+                        break;
+                    condTop = parent;
+                }
                 if (inverted2)
                     std::swap(thenValues, elseValues);
             }
