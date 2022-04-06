@@ -283,6 +283,17 @@ private:
               "    ((struct foo *)(0x1234))->xy = 1;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(const std::exception& e) {\n" // #10918
+              "    try {\n"
+              "        dynamic_cast<const InvalidTypeException&>(e);\n"
+              "        return true;\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        return false;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void increment() {
@@ -297,6 +308,11 @@ private:
         check("void f() {\n"
               "    int x{1};\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<int> f(int* p) {\n"
+              "    return std::vector<int>({ p[0] });\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -353,6 +369,31 @@ private:
     void commaoperator2() {
         check("void f() {\n"
               "    for(unsigned int a=0, b; a<10; a++ ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int a, int b, int c, int d) {\n"
+              "    Eigen::Vector4d V;\n"
+              "    V << a, b, c, d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { Eigen::Vector4d V; };\n"
+              "struct T { int a, int b, int c, int d; };\n"
+              "void f(S& s, const T& t) {\n"
+              "    s.V << t.a, t.b, t.c, t.d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { Eigen::Vector4d V[2]; };\n"
+              "void f(int a, int b, int c, int d) {\n"
+              "    S s[1];\n"
+              "    s[0].V[1] << a, b, c, d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    a.b[4][3].c()->d << x , y, z;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -481,15 +522,15 @@ private:
               "    void g();\n"
               "};\n"
               "void f(const S& r, const S* p) {\n"
-              "	r.b;\n"
-              "	p->b;\n"
-              "	S s;\n"
-              "	(s.b);\n"
-              "	T t, u[2];\n"
-              "	t.s[1].b;\n"
-              "	t.g();\n"
-              "	u[0].g();\n"
-              "	u[1].s[0].b;\n"
+              "    r.b;\n"
+              "    p->b;\n"
+              "    S s;\n"
+              "    (s.b);\n"
+              "    T t, u[2];\n"
+              "    t.s[1].b;\n"
+              "    t.g();\n"
+              "    u[0].g();\n"
+              "    u[1].s[0].b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (warning) Redundant code: Found unused member access.\n"
                       "[test.cpp:8]: (warning) Redundant code: Found unused member access.\n"
@@ -497,6 +538,44 @@ private:
                       "[test.cpp:12]: (warning) Redundant code: Found unused member access.\n"
                       "[test.cpp:15]: (warning) Redundant code: Found unused member access.\n",
                       errout.str());
+
+        check("struct S { int a[2]{}; };\n"
+              "struct T { S s; };\n"
+              "void f() {\n"
+              "    int i[2];\n"
+              "    i[0] = 0;\n"
+              "    i[0];\n" // <--
+              "    S s[1];\n"
+              "    s[0].a[1];\n" // <--
+              "    T t;\n"
+              "    t.s.a[1];\n" // <--
+              "    int j[2][2][1] = {};\n"
+              "    j[0][0][0];\n" // <--
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (warning) Redundant code: Found unused array access.\n"
+                      "[test.cpp:8]: (warning) Redundant code: Found unused array access.\n"
+                      "[test.cpp:10]: (warning) Redundant code: Found unused array access.\n"
+                      "[test.cpp:12]: (warning) Redundant code: Found unused array access.\n",
+                      errout.str());
+
+        check("void g(std::map<std::string, std::string>& map) {\n"
+              "    int j[2]{};\n"
+              "    int k[2] = {};\n"
+              "    int l[]{ 1, 2 };\n"
+              "    int m[] = { 1, 2 };\n"
+              "    h(0, j[0], 1);\n"
+              "    C c{ 0, j[0], 1 };\n"
+              "    c[0];\n"
+              "    int j[2][2][2] = {};\n"
+              "    j[h()][0][0];\n"
+              "    j[0][h()][0];\n"
+              "    j[0][0][h()];\n"
+              "    std::map<std::string, int> M;\n"
+              "    M[\"abc\"];\n"
+              "    map[\"abc\"];\n" // #10928
+              "    std::auto_ptr<Int> app[4];" // #10919
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         check("struct S { void* p; };\n" // #10875
               "void f(S s) {\n"
@@ -515,6 +594,39 @@ private:
         check("void f(int i, std::vector<int*> v);\n" // #10880
               "void g() {\n"
               "    f(1, { static_cast<int*>(nullptr) });\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #10882
+              "enum E {};\n"
+              "void f(const S* s) {\n"
+              "    E e = (E)!s->i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int* p) {\n" // #10932
+              "    int& r(*p[0]);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int i; };\n" // #10917
+              "bool f(S s) {\n"
+              "    return [](int i) { return i > 0; }(s.i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("extern int (*p);\n" // #10936
+              "void f() {\n"
+              "    for (int i = 0; ;) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class T {};\n" // #10849
+              "void f() {\n"
+              "    auto g = [](const T* t) -> int {\n"
+              "        const T* u{}, * v{};\n"
+              "        return 0;\n"
+              "    };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -570,6 +682,13 @@ private:
         check("void foo() {\n"
               "    params_given (params, \"overrides\") || (overrides = \"1\");\n"
               "}", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::ifstream& file) {\n" // #10930
+              "    int a{}, b{};\n"
+              "    (file >> a) || (file >> b);\n"
+              "    (file >> a) && (file >> b);\n"
+              "}\n", true);
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -566,7 +566,7 @@ static bool iscast(const Token *tok, bool cpp)
             }
             return type || tok2->strAt(-1) == "*" || Token::simpleMatch(tok2, ") ~") ||
                    (Token::Match(tok2, ") %any%") &&
-                    !tok2->next()->isOp() &&
+                    (!tok2->next()->isOp() || Token::Match(tok2->next(), "!|~|++|--")) &&
                     !Token::Match(tok2->next(), "[[]);,?:.]"));
         }
 
@@ -636,6 +636,13 @@ static bool iscpp11init_impl(const Token * const tok)
         return true;
     if (nameToken->str() == ">" && nameToken->link())
         nameToken = nameToken->link()->previous();
+    if (nameToken->str() == "]") {
+        const Token* newTok = nameToken->link()->previous();
+        while (Token::Match(newTok, "%type%") && !newTok->isKeyword())
+            newTok = newTok->previous();
+        if (Token::simpleMatch(newTok, "new"))
+            return true;
+    }
 
     const Token *endtok = nullptr;
     if (Token::Match(nameToken, "%name%|return|: {") &&
@@ -643,7 +650,7 @@ static bool iscpp11init_impl(const Token * const tok)
         endtok = nameToken->linkAt(1);
     else if (Token::Match(nameToken,"%name% <") && Token::simpleMatch(nameToken->linkAt(1),"> {"))
         endtok = nameToken->linkAt(1)->linkAt(1);
-    else if (Token::Match(nameToken->previous(), "%name% ( {"))
+    else if (Token::Match(nameToken->previous(), "%name%|> ( {"))
         endtok = nameToken->linkAt(1);
     else
         return false;
@@ -814,7 +821,7 @@ static void compileTerm(Token *&tok, AST_state& state)
             state.op.push(tok);
             if (Token::Match(tok, "%name% <") && tok->linkAt(1))
                 tok = tok->linkAt(1);
-            else if (Token::Match(tok, "%name% ...") || (state.op.size() == 1 && Token::Match(tok->previous(), "( %name% ) =")))
+            else if (Token::Match(tok, "%name% ...") || (state.op.size() == 1 && state.depth == 0 && Token::Match(tok->tokAt(-3), "!!& ) ( %name% ) =")))
                 tok = tok->next();
             tok = tok->next();
             if (Token::Match(tok, "%str%")) {
@@ -1540,7 +1547,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
     if (Token::Match(tok, "%type% <") && tok->linkAt(1) && !Token::Match(tok->linkAt(1), "> [({]"))
         return tok->linkAt(1);
 
-    if (cpp && Token::Match(tok, "%type% ::|<|%name%")) {
+    if (cpp && !tok->isKeyword() && Token::Match(tok, "%type% ::|<|%name%")) {
         Token *tok2 = tok;
         while (true) {
             if (Token::Match(tok2, "%name%|> :: %name%"))
@@ -1559,7 +1566,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         }
     }
 
-    if (Token::Match(tok, "%type% %name%|*|&|::") && tok->str() != "return") {
+    if (Token::Match(tok, "%type% %name%|*|&|::") && !Token::Match(tok, "return|new")) {
         int typecount = 0;
         Token *typetok = tok;
         while (Token::Match(typetok, "%type%|::|*|&")) {
@@ -1574,7 +1581,7 @@ static Token * createAstAtToken(Token *tok, bool cpp)
         if (typetok &&
             typecount >= 2 &&
             !Token::Match(tok, "return|throw") &&
-            Token::Match(typetok->previous(), "%name% (") &&
+            Token::Match(typetok->previous(), "%name% ( !!*") &&
             typetok->previous()->varId() == 0 &&
             !typetok->previous()->isKeyword() &&
             Token::Match(typetok->link(), ") const|;|{"))

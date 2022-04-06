@@ -2565,6 +2565,13 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "	std::queue<int> q;\n"
+              "	auto& h = q.emplace();\n"
+              "    h = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainerView()
@@ -3196,7 +3203,8 @@ private:
               "A f() {\n"
               "    return A{0};\n"
               "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:8]: (error) Returning object that will be invalid when returning.\n",
+                      errout.str());
 
         check("struct A {\n"
               "    int n;\n"

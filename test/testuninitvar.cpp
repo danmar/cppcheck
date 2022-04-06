@@ -5214,6 +5214,33 @@ private:
                         "   return testData;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10089
+        valueFlowUninit("typedef union {\n"
+                        "    struct { int x; };\n"
+                        "    int v[1];\n"
+                        "} U;\n"
+                        "void init(int* d) {\n"
+                        "    *d = 42;\n"
+                        "}\n"
+                        "void f() {\n"
+                        "    U u;\n"
+                        "    init(u.v);\n"
+                        "    printf(\"%d\\n\", u.x);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10280
+        valueFlowUninit("union U {\n"
+                        "    char c[2];\n"
+                        "    uint16_t u16;\n"
+                        "};\n"
+                        "uint16_t f(std::istream& is) {\n"
+                        "    U u;\n"
+                        "    is.read(u.c, 2);\n"
+                        "    return u.u16;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
@@ -6138,6 +6165,28 @@ private:
                         "    void (*fp[1]) (void) = {function1};\n"
                         "    (*fp[0])();\n"
                         "}");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("template <typename T, int value> T Get() {return value;}\n"
+                        "char f() {\n"
+                        "  char buf[10];\n"
+                        "  for(int i = 0; i < Get<int,10>() ; ++i) \n"
+                        "     buf[i] = 0;\n"
+                        "  return buf[0];\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("static void Foo(double* p) {\n"
+                        " p[0] = 0;\n"
+                        " p[1] = 0;\n"
+                        " p[2] = 0;\n"
+                        " p[3] = 0;\n"
+                        "}\n"
+                        "double f() {\n"
+                        "  double L[2][2];\n"
+                        "  Foo(*L);\n"
+                        "  return L[0][0];\n"
+                        "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

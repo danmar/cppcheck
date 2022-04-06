@@ -193,6 +193,7 @@ private:
         TEST_CASE(const74); // ticket #10671
         TEST_CASE(const75); // ticket #10065
         TEST_CASE(const76); // ticket #10825
+        TEST_CASE(const77); // ticket #10307
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -2562,6 +2563,27 @@ private:
                                "Base *base = new Derived;\n"
                                "delete base;");
         ASSERT_EQUALS("", errout.str());
+
+        // #9104
+        checkVirtualDestructor("struct A\n"
+                               "{\n"
+                               "    A()  { cout << \"A is constructing\\n\"; }\n"
+                               "    ~A() { cout << \"A is destructing\\n\"; }\n"
+                               "};\n"
+                               " \n"
+                               "struct Base {};\n"
+                               " \n"
+                               "struct Derived : Base\n"
+                               "{\n"
+                               "    A a;\n"
+                               "};\n"
+                               " \n"
+                               "int main(void)\n"
+                               "{\n"
+                               "    Base* p = new Derived();\n"
+                               "    delete p;\n"
+                               "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor3() {
@@ -6010,6 +6032,15 @@ private:
                       errout.str());
     }
 
+    void const77() { // #10307
+        checkConst("template <typename T>\n"
+                   "struct S {\n"
+                   "    std::vector<T> const* f() const { return p; }\n"
+                   "    std::vector<T> const* p;\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
@@ -7304,6 +7335,17 @@ private:
                                  "    virtual void f() {}\n"
                                  "};\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Virtual function 'f' is called from constructor 'B()' at line 2. Dynamic binding is not used.\n", errout.str());
+
+        checkVirtualFunctionCall("class S {\n" // don't crash
+                                 "    ~S();\n"
+                                 "public:\n"
+                                 "    S();\n"
+                                 "};\n"
+                                 "S::S() {\n"
+                                 "    typeid(S);\n"
+                                 "}\n"
+                                 "S::~S() = default;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {
@@ -7657,6 +7699,15 @@ private:
                       "  void f(char c, std::vector<int> w = {});\n"
                       "};\n");
         TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", "", errout.str());
+
+        checkOverride("struct T {};\n" // #10920
+                      "struct B {\n"
+                      "    virtual T f() = 0;\n"
+                      "};\n"
+                      "struct D : B {\n"
+                      "    friend T f();\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void overrideCVRefQualifiers() {
