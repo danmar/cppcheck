@@ -2323,7 +2323,8 @@ private:
               "    auto it = g().begin();\n"
               "    return it;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning iterator that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning iterator that will be invalid when returning.\n",
+                      errout.str());
 
         check("std::vector<int> g();\n"
               "int& f() {\n"
