@@ -70,16 +70,16 @@ win32 {
 
 RESOURCES = gui.qrc
 FORMS = about.ui \
-        application.ui \
-        file.ui \
+        applicationdialog.ui \
+        fileview.ui \
         functioncontractdialog.ui \
         helpdialog.ui \
         mainwindow.ui \
-        projectfiledialog.ui \
+        projectfile.ui \
         resultsview.ui \
         scratchpad.ui \
         settings.ui \
-        stats.ui \
+        statsdialog.ui \
         librarydialog.ui \
         libraryaddfunctiondialog.ui \
         libraryeditargdialog.ui \

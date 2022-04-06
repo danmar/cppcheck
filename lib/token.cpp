@@ -2065,6 +2065,7 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
             continue;
         }
         std::sort(adjValues.begin(), adjValues.end(), [&values](ValueIterator xx, ValueIterator yy) {
+            (void)values;
             assert(xx != values.end() && yy != values.end());
             return xx->compareValue(*yy, ValueFlow::less{});
         });
@@ -2132,7 +2133,7 @@ bool Token::addValue(const ValueFlow::Value &value)
         });
     }
 
-    // Dont add a value if its already known
+    // Don't add a value if its already known
     if (!value.isKnown() && mImpl->mValues &&
         std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& x) {
         return x.isKnown() && sameValueType(x, value) && !x.equalValue(value);

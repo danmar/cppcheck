@@ -187,6 +187,7 @@ private:
         TEST_CASE(simplifyTypedef138);
         TEST_CASE(simplifyTypedef139);
         TEST_CASE(simplifyTypedef140); // #10798
+        TEST_CASE(simplifyTypedef141); // #10144
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -3039,7 +3040,16 @@ private:
                                 "enum class E { A };\n";
             ASSERT_EQUALS("enum class E { A } ;", tok(code));
         }
+    }
 
+    void simplifyTypedef141() { // #10144
+        const char code[] = "class C {\n"
+                            "    struct I {\n"
+                            "        using vt = const std::string;\n"
+                            "        using ptr = vt*;\n"
+                            "    };\n"
+                            "};\n";
+        ASSERT_EQUALS("class C { struct I { } ; } ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {

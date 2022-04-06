@@ -838,7 +838,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
             var->second.type = allocation.type;
             var->second.allocTok = allocation.allocTok;
         }
-    } else if (allocation.status != VarInfo::NOALLOC && allocation.status != VarInfo::OWNED) {
+    } else if (allocation.status != VarInfo::NOALLOC && allocation.status != VarInfo::OWNED && !Token::simpleMatch(tok->astTop(), "return")) {
         alloctype[arg->varId()].status = VarInfo::DEALLOC;
         alloctype[arg->varId()].allocTok = tok;
     }
@@ -1006,7 +1006,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                     tok2 = tok3->tokAt(4);
                 else
                     continue;
-                if (Token::Match(tok2, "[});,]")) {
+                if (Token::Match(tok2, "[});,+]")) {
                     used = true;
                     break;
                 }

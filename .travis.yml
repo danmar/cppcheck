@@ -62,13 +62,6 @@ matrix:
         - ${CPPCHECK} --dump misc-test.cpp
         - python3 ../misc.py -verify misc-test.cpp.dump
         - cd ../../
-# check addons/cert.py
-        - cd addons/test
-        - ${CPPCHECK} --dump cert-test.c
-        - python3 ../cert.py -verify cert-test.c.dump
-        - ${CPPCHECK} --dump cert-test.cpp
-        - python3 ../cert.py -verify cert-test.cpp.dump
-        - cd ../../
 # check addons/misra.py
         - cd addons/test
         # We'll force C89 standard to enable an additional verification for

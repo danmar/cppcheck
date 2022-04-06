@@ -30,7 +30,7 @@ class VariableContractsDialog : public QDialog {
 
 public:
     explicit VariableContractsDialog(QWidget *parent, QString var);
-    ~VariableContractsDialog();
+    ~VariableContractsDialog() override;
 
     QString getVarname() const;
     QString getMin() const;

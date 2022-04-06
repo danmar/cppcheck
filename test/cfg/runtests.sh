@@ -70,9 +70,9 @@ ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive ${DIR}std.cpp
 # windows.cpp
 # Syntax check via g++ does not work because it can not find a valid windows.h
 #${CXX} ${CXX_OPT} ${DIR}windows.cpp
-${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32A  ${DIR}windows.cpp
-${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32W  ${DIR}windows.cpp
-${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32A --library=windows ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win32W --library=windows ${DIR}windows.cpp
+${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --platform=win64  --library=windows ${DIR}windows.cpp
 
 # wxwidgets.cpp
 set +e

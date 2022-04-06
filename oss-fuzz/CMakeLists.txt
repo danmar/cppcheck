@@ -25,7 +25,7 @@ if (ENABLE_OSS_FUZZ AND CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         target_link_libraries(fuzz-client PRIVATE ${Z3_LIBRARIES})
     endif()
     if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
-        target_link_libraries(fuzz-client PRIVATE tinyxml2)
+        target_link_libraries(fuzz-client PRIVATE ${tinyxml2_LIBRARIES})
     endif()
 
     add_executable(translate EXCLUDE_FROM_ALL

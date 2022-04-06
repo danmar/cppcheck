@@ -35,7 +35,7 @@ class ApplicationList : public QObject {
 public:
 
     explicit ApplicationList(QObject *parent = nullptr);
-    virtual ~ApplicationList();
+    ~ApplicationList() override;
 
     /**
      * @brief Load all applications

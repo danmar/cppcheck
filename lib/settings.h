@@ -97,7 +97,7 @@ private:
 public:
     Settings();
 
-    void loadCppcheckCfg(const std::string &executable);
+    void loadCppcheckCfg();
 
     /** @brief addons, either filename of python/json file or json data */
     std::list<std::string> addons;
@@ -152,6 +152,12 @@ public:
 
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
+
+    /** cppcheck.cfg: Custom product name */
+    std::string cppcheckCfgProductName;
+
+    /** cppcheck.cfg: About text */
+    std::string cppcheckCfgAbout;
 
     /** @brief Are we running from DACA script? */
     bool daca;

@@ -75,6 +75,7 @@ static bool isRaiiClass(const ValueType *valueType, bool cpp, bool defaultReturn
             return true;
         return defaultReturn;
 
+    case ValueType::Type::POD:
     case ValueType::Type::SMART_POINTER:
     case ValueType::Type::CONTAINER:
     case ValueType::Type::ITERATOR:
@@ -729,7 +730,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                     variables.addVar(&*i, type, true);
                     break;
                 } else if (defValTok->str() == ";" || defValTok->str() == "," || defValTok->str() == ")") {
-                    variables.addVar(&*i, type, i->isStatic());
+                    variables.addVar(&*i, type, i->isStatic() && i->scope()->type != Scope::eFunction);
                     break;
                 }
             }
@@ -1203,7 +1204,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
                 tok = tok->next();
             }
-            if (tok->astParent() && tok->str() != "(") {
+            if (tok->astParent() && !tok->astParent()->isAssignmentOp() && tok->str() != "(") {
                 const Token *parent = tok->astParent();
                 while (Token::Match(parent, "%oror%|%comp%|!|&&"))
                     parent = parent->astParent();
@@ -1282,8 +1283,9 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             FwdAnalysis fwdAnalysis(mTokenizer->isCPP(), mSettings->library);
             const Token* scopeEnd = getEndOfExprScope(expr, scope, /*smallest*/ false);
             if (fwdAnalysis.unusedValue(expr, start, scopeEnd)) {
-                if (!bailoutTypeName.empty() && bailoutTypeName != "auto") {
-                    reportLibraryCfgError(tok, bailoutTypeName);
+                if (!bailoutTypeName.empty()) {
+                    if (bailoutTypeName != "auto")
+                        reportLibraryCfgError(tok, bailoutTypeName);
                     continue;
                 }
 
@@ -1337,14 +1339,21 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
                 unassignedVariableError(usage._var->nameToken(), varname);
             else if (!usage._var->isMaybeUnused() && !usage._modified && !usage._read && var) {
-                if (usage._lastAccess->linenr() == var->nameToken()->linenr() && var->nameToken()->next()->isSplittedVarDeclEq()) {
-                    bool error = true;
+                const Token* vnt = var->nameToken();
+                bool error = false;
+                if (vnt->next()->isSplittedVarDeclEq()) {
+                    const Token* nextStmt = vnt->tokAt(2);
+                    while (nextStmt && nextStmt->str() != ";")
+                        nextStmt = nextStmt->next();
+                    error = precedes(usage._lastAccess, nextStmt);
+                }
+                if (error) {
                     if (mTokenizer->isCPP() && var->isClass() &&
                         (!var->valueType() || var->valueType()->type == ValueType::Type::UNKNOWN_TYPE)) {
                         const std::string typeName = var->getTypeName();
                         switch (mSettings->library.getTypeCheck("unusedvar", typeName)) {
                         case Library::TypeCheck::def:
-                            reportLibraryCfgError(var->nameToken(), typeName);
+                            reportLibraryCfgError(vnt, typeName);
                             break;
                         case Library::TypeCheck::check:
                             break;
@@ -1353,7 +1362,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                         }
                     }
                     if (error)
-                        unreadVariableError(usage._var->nameToken(), varname, false);
+                        unreadVariableError(vnt, varname, false);
                 }
             }
         }

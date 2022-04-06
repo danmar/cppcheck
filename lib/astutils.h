@@ -30,6 +30,7 @@
 
 #include "config.h"
 #include "errortypes.h"
+#include "symboldatabase.h"
 
 class Function;
 class Library;
@@ -226,7 +227,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library);
 
 bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp);
 
-bool isWithoutSideEffects(bool cpp, const Token* tok);
+bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess = false, bool checkReference = true);
 
 bool isUniqueExpression(const Token* tok);
 
@@ -237,6 +238,11 @@ bool isReturnScope(const Token* const endToken,
                    const Library* library = nullptr,
                    const Token** unknownFunc = nullptr,
                    bool functionScope = false);
+
+/** Is tok within a scope of the given type, nested within var's scope? */
+bool isWithinScope(const Token* tok,
+                   const Variable* var,
+                   Scope::ScopeType type);
 
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);

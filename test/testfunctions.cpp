@@ -374,7 +374,7 @@ private:
         check("void f()\n"
               "{\n"
               "    time_t t = 0;"
-              "    std::localtime(&t);\n"
+              "    auto lt = std::localtime(&t);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
 

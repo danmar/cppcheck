@@ -107,4 +107,16 @@ static const std::string emptyString;
 #error "No threading model defined"
 #endif
 
+#define STRINGISIZE(...) #__VA_ARGS__
+
+#ifdef __clang__
+#define SUPPRESS_WARNING(warning, ...)_Pragma("clang diagnostic push") _Pragma(STRINGISIZE(clang diagnostic ignored warning)) __VA_ARGS__ _Pragma("clang diagnostic pop")
+#define SUPPRESS_DEPRECATED_WARNING(...) SUPPRESS_WARNING("-Wdeprecated", __VA_ARGS__)
+#define SUPPRESS_FLOAT_EQUAL_WARNING(...) SUPPRESS_WARNING("-Wfloat-equal", __VA_ARGS__)
+#else
+#define SUPPRESS_DEPRECATED_WARNING(...) __VA_ARGS__
+#define SUPPRESS_FLOAT_EQUAL_WARNING(...) __VA_ARGS__
+#endif
+
+
 #endif // configH

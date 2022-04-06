@@ -1129,7 +1129,7 @@ public:
      */
     const Function *findFunction(const Token *tok, bool requireConst=false) const;
 
-    const Scope *findRecordInNestedList(const std::string & name) const;
+    const Scope *findRecordInNestedList(const std::string & name, bool isC = false) const;
     Scope *findRecordInNestedList(const std::string & name) {
         return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));
     }
@@ -1216,6 +1216,7 @@ public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type {
         UNKNOWN_TYPE,
+        POD,
         NONSTD,
         RECORD,
         SMART_POINTER,

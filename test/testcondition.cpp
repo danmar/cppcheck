@@ -3935,7 +3935,7 @@ private:
               "    if (logger == nullptr)\n"
               "        logger = Fun;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (style) Condition 'logger==nullptr' is always true\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void Fun();\n"
               "typedef void (*Fn)();\n"
@@ -4008,6 +4008,27 @@ private:
               "  }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const uint32_t u) {\n"
+              "	const uint32_t v = u < 4;\n"
+              "	if (v) {\n"
+              "		const uint32_t w = v < 2;\n"
+              "		if (w) {}\n"
+              "	}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
+
+        check("void f() {\n"
+              "    if(strlen(\"abc\") == 3) {;}\n"
+              "    if(strlen(\"abc\") == 1) {;}\n"
+              "    if(wcslen(L\"abc\") == 3) {;}\n"
+              "    if(wcslen(L\"abc\") == 1) {;}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'strlen(\"abc\")==3' is always true\n"
+                      "[test.cpp:3]: (style) Condition 'strlen(\"abc\")==1' is always false\n"
+                      "[test.cpp:4]: (style) Condition 'wcslen(L\"abc\")==3' is always true\n"
+                      "[test.cpp:5]: (style) Condition 'wcslen(L\"abc\")==1' is always false\n",
+                      errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4431,6 +4452,22 @@ private:
               "   }\n"
               "   while (0);\n"
               "   if (pool) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10863
+        check("void f(const int A[], int Len) {\n"
+              "  if (Len <= 0)\n"
+              "    return;\n"
+              "  int I = 0;\n"
+              "  while (I < Len) {\n"
+              "    int K = I + 1;\n"
+              "    for (; K < Len; K++) {\n"
+              "      if (A[I] != A[K])\n"
+              "        break;\n"
+              "    } \n"
+              "    I = K;   \n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

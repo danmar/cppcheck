@@ -124,6 +124,7 @@ private:
         TEST_CASE(doublefree9);
         TEST_CASE(doublefree10); // #8706
         TEST_CASE(doublefree11);
+        TEST_CASE(doublefree12); // #10502
 
         // exit
         TEST_CASE(exit1);
@@ -184,6 +185,7 @@ private:
         TEST_CASE(return6); // #8282 return {p, p}
         TEST_CASE(return7); // #9343 return (uint8_t*)x
         TEST_CASE(return8);
+        TEST_CASE(return9);
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -1315,6 +1317,16 @@ private:
         ASSERT_EQUALS("[test.c:3] -> [test.c:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
     }
 
+    void doublefree12() { // #10502
+        check("int f(FILE *fp, const bool b) {\n"
+              "    if (b)\n"
+              "        return fclose(fp);\n"
+              "    fclose(fp);\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -2100,6 +2112,14 @@ private:
         check("char* f() {\n"
               "    void *x = malloc(1);\n"
               "    return (char*)(x);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void return9() {
+        check("void* f() {\n"
+              "    void *x = malloc (sizeof (struct alloc));\n"
+              "    return x + sizeof (struct alloc);\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }

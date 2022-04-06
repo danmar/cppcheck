@@ -96,6 +96,7 @@ private:
         TEST_CASE(varid62);
         TEST_CASE(varid63);
         TEST_CASE(varid64); // #9928 - extern const char (*x[256])
+        TEST_CASE(varid65); // #10936
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -133,6 +134,7 @@ private:
         TEST_CASE(varid_in_class19);
         TEST_CASE(varid_in_class20);    // #7267
         TEST_CASE(varid_in_class21);    // #7788
+        TEST_CASE(varid_in_class22);    // #10872
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -1173,6 +1175,29 @@ private:
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
+    void varid65() { // #10936
+        {
+            const char code[] = "extern int (*p);";
+            const char expected[] = "1: extern int ( * p@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "extern int (i);";
+            const char expected[] = "1: extern int ( i@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "int (*p);";
+            const char expected[] = "1: int ( * p@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "int (i);";
+            const char expected[] = "1: int ( i@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+    }
+
     void varid_for_1() {
         const char code[] = "void foo(int a, int b) {\n"
                             "  for (int a=1,b=2;;) {}\n"
@@ -1710,7 +1735,7 @@ private:
                             "};";
         ASSERT_EQUALS("1: class Foo {\n"
                       "2: private:\n"
-                      "3: void f ( void ) ;\n"
+                      "3: void f ( ) ;\n"
                       "4: } ;\n",
                       tokenize(code));
     }
@@ -1906,6 +1931,30 @@ private:
                                 "6:\n"
                                 "7: template < typename t1 , typename t2 >\n"
                                 "8: A :: B < t1 , t2 > :: B ( ) : x@1 ( 9 ) { }\n";
+
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
+    void varid_in_class22() {
+        const char code[] = "struct data {};\n"
+                            "    struct S {\n"
+                            "    std::vector<data> std;\n"
+                            "    void f();\n"
+                            "};\n"
+                            "void S::f() {\n"
+                            "    std::vector<data>::const_iterator end = std.end();\n"
+                            "    for (std::vector<data>::const_iterator i = std.begin(); i != end; ++i) {}\n"
+                            "}\n";
+
+        const char expected[] = "1: struct data { } ;\n"
+                                "2: struct S {\n"
+                                "3: std :: vector < data > std@1 ;\n"
+                                "4: void f ( ) ;\n"
+                                "5: } ;\n"
+                                "6: void S :: f ( ) {\n"
+                                "7: std :: vector < data > :: const_iterator end@2 ; end@2 = std@1 . end ( ) ;\n"
+                                "8: for ( std :: vector < data > :: const_iterator i@3 = std@1 . begin ( ) ; i@3 != end@2 ; ++ i@3 ) { }\n"
+                                "9: }\n";
 
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
@@ -2609,34 +2658,70 @@ private:
 
     void varid_lambda_arg() {
         // #8664
-        const char code1[] = "static void func(int ec) {\n"
-                             "    func2([](const std::error_code& ec) { return ec; });\n"
-                             "}";
-        const char exp1[] = "1: static void func ( int ec@1 ) {\n"
-                            "2: func2 ( [ ] ( const std :: error_code & ec@2 ) { return ec@2 ; } ) ;\n"
-                            "3: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
-
-        const char code2[] = "static void func(int ec) {\n"
-                             "    func2([](int x, const std::error_code& ec) { return x + ec; });\n"
-                             "}";
-        const char exp2[] = "1: static void func ( int ec@1 ) {\n"
-                            "2: func2 ( [ ] ( int x@2 , const std :: error_code & ec@3 ) { return x@2 + ec@3 ; } ) ;\n"
-                            "3: }\n";
-        ASSERT_EQUALS(exp2, tokenize(code2));
+        {
+            const char code[] = "static void func(int ec) {\n"
+                                "    func2([](const std::error_code& ec) { return ec; });\n"
+                                "}";
+            const char exp[] = "1: static void func ( int ec@1 ) {\n"
+                               "2: func2 ( [ ] ( const std :: error_code & ec@2 ) { return ec@2 ; } ) ;\n"
+                               "3: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        {
+            const char code[] = "static void func(int ec) {\n"
+                                "    func2([](int x, const std::error_code& ec) { return x + ec; });\n"
+                                "}";
+            const char exp[] = "1: static void func ( int ec@1 ) {\n"
+                               "2: func2 ( [ ] ( int x@2 , const std :: error_code & ec@3 ) { return x@2 + ec@3 ; } ) ;\n"
+                               "3: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // #9384
+        {
+            const char code[] = "auto g = [](const std::string& s) -> std::string { return {}; };\n";
+            const char exp[] = "1: auto g@1 ; g@1 = [ ] ( const std :: string & s@2 ) . std :: string { return { } ; } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        {
+            const char code[] = "auto g = [](std::function<void()> p) {};\n";
+            const char exp[] = "1: auto g@1 ; g@1 = [ ] ( std :: function < void ( ) > p@2 ) { } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // # 10849
+        {
+            const char code[] = "class T {};\n"
+                                "auto g = [](const T* t) -> int {\n"
+                                "    const T* u{}, *v{};\n"
+                                "    return 0;\n"
+                                "};\n";
+            const char exp[] = "1: class T { } ;\n"
+                               "2: auto g@1 ; g@1 = [ ] ( const T * t@2 ) . int {\n"
+                               "3: const T * u@3 { } ; const T * v@4 { } ;\n"
+                               "4: return 0 ;\n"
+                               "5: } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
     }
 
     void varid_lambda_mutable() {
         // #8957
-        const char code1[] = "static void func() {\n"
-                             "    auto x = []() mutable {};\n"
-                             "    dostuff(x);\n"
-                             "}";
-        const char exp1[] = "1: static void func ( ) {\n"
-                            "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
-                            "3: dostuff ( x@1 ) ;\n"
-                            "4: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
+        {
+            const char code[] = "static void func() {\n"
+                                "    auto x = []() mutable {};\n"
+                                "    dostuff(x);\n"
+                                "}";
+            const char exp[] = "1: static void func ( ) {\n"
+                               "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
+                               "3: dostuff ( x@1 ) ;\n"
+                               "4: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // #9384
+        {
+            const char code[] = "auto g = [](int i) mutable {};\n";
+            const char exp[] = "1: auto g@1 ; g@1 = [ ] ( int i@2 ) mutable { } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
     }
 
     void varid_trailing_return1() { // #8889

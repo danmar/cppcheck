@@ -19,12 +19,13 @@
 #ifndef ABOUT_DIALOG_H
 #define ABOUT_DIALOG_H
 
-#include "ui_about.h"
-
 #include <QDialog>
 #include <QString>
 
 class QWidget;
+namespace Ui {
+    class About;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -40,8 +41,10 @@ public:
                 const QString &extraVersion,
                 QWidget *parent = nullptr);
 
+    ~AboutDialog() override;
+
 private:
-    Ui::About mUI;
+    Ui::About* mUI;
 };
 /// @}
 #endif // ABOUT_DIALOG_H

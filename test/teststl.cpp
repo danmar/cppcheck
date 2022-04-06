@@ -729,6 +729,101 @@ private:
             "test.cpp:2:note:condition 'v.empty()'\n"
             "test.cpp:2:note:Access out of bounds\n",
             errout.str());
+
+        check("std::vector<int> g() {\n" // #10779
+              "    std::vector<int> v(10);\n"
+              "    for(int i = 0; i <= 10; ++i)\n"
+              "        v[i] = 42;\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[i]', if 'v' size is 10 and 'i' is 10\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    int s = 2;\n"
+              "    std::vector <int> v(s);\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 2 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    std::vector <int> v({ 1, 2, 3 });\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    char c[] = { 1, 2, 3 };\n"
+              "    std::vector<char> v(c, sizeof(c) + c);\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    char c[] = { 1, 2, 3 };\n"
+              "    std::vector<char> v{ c, c + sizeof(c) };\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    int i[] = { 1, 2, 3 };\n"
+              "    std::vector<int> v(i, i + sizeof(i) / 4);\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n" // #6615
+              "    int i[] = { 1, 2, 3 };\n"
+              "    std::vector<int> v(i, i + sizeof(i) / sizeof(int));\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                           "",
+                           errout.str());
+
+        check("void f() {\n"
+              "    std::array<int, 10> a = {};\n"
+              "    a[10];\n"
+              "    constexpr std::array<int, 10> b = {};\n"
+              "    b[10];\n"
+              "    const std::array<int, 10> c = {};\n"
+              "    c[10];\n"
+              "    static constexpr std::array<int, 10> d = {};\n"
+              "    d[10];\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'a[10]', if 'a' size is 10 and '10' is 10\n"
+                      "test.cpp:5:error:Out of bounds access in 'b[10]', if 'b' size is 10 and '10' is 10\n"
+                      "test.cpp:7:error:Out of bounds access in 'c[10]', if 'c' size is 10 and '10' is 10\n"
+                      "test.cpp:9:error:Out of bounds access in 'd[10]', if 'd' size is 10 and '10' is 10\n",
+                      errout.str());
+
+        check("struct test_fixed {\n"
+              "    std::array<int, 10> array = {};\n"
+              "    void index(int i) { array[i]; }\n"
+              "};\n"
+              "void f() {\n"
+              "    test_fixed x = test_fixed();\n"
+              "    x.index(10);\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
+                      errout.str());
+
+        check("struct test_constexpr {\n"
+              "    static constexpr std::array<int, 10> array = {};\n"
+              "    void index(int i) { array[i]; }\n"
+              "};\n"
+              "void f() {\n"
+              "    test_constexpr x = test_constexpr();\n"
+              "    x.index(10);\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
+                      errout.str());
     }
 
     void outOfBoundsSymbolic()
@@ -3846,6 +3941,14 @@ private:
               "    f(p.c_str());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" //#9161
+              "    const char* f() const noexcept {\n"
+              "        return (\"\" + m).c_str();\n"
+              "    }\n"
+              "    std::string m;\n"
+              "};\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
     }
 
     void uselessCalls() {
