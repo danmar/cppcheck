@@ -5604,6 +5604,30 @@ struct ConditionHandler {
         });
     }
 
+    static Token* getConditionParent(Token* tok, bool* inverted = nullptr)
+    {
+        for (;tok->astParent();tok = tok->astParent()) {
+            if (Token::simpleMatch(tok->astParent(), "!")) {
+                if (inverted)
+                    *inverted ^= true;
+                continue;
+            }
+            if (Token::Match(tok->astParent(), "==|!=")) {
+                Token* sibling = tok->astSibling();
+                if (sibling->hasKnownIntValue() && (astIsBool(tok) || astIsBool(sibling))) {
+                    bool value = sibling->values().front().intvalue;
+                    if (inverted)
+                        *inverted ^= value == Token::simpleMatch(tok->astParent(), "!=");
+                    continue;
+                }
+            }
+            if (tok->astParent()->isCast() && astIsBool(tok->astParent()))
+                continue;
+            return tok->astParent();
+        }
+        return tok;
+    }
+
     void afterCondition(TokenList* tokenlist,
                         SymbolDatabase* symboldatabase,
                         ErrorLogger* errorLogger,
@@ -5628,11 +5652,13 @@ struct ConditionHandler {
                 }
             }
 
-            if (cond.inverted)
+            bool inverted = cond.inverted;
+            Token* condParent = getConditionParent(tok, &inverted);
+            if (inverted)
                 std::swap(thenValues, elseValues);
 
-            if (Token::Match(tok->astParent(), "%oror%|&&")) {
-                Token* parent = tok->astParent();
+            if (Token::Match(condParent, "%oror%|&&")) {
+                Token* parent = condParent;
                 if (astIsRHS(tok) && astIsLHS(parent) && parent->astParent() &&
                     parent->str() == parent->astParent()->str())
                     parent = parent->astParent();
@@ -5703,25 +5729,17 @@ struct ConditionHandler {
                 }
             }
 
-            // if astParent is "!" we need to invert codeblock
+            Token* condTop = condParent;
             {
-                const Token* tok2 = tok;
-                while (tok2 && tok2->astParent() && tok2->astParent()->str() != "?") {
-                    const Token* parent = tok2->astParent();
-                    while (parent && parent->str() == "&&")
-                        parent = parent->astParent();
-                    if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false")))
-                        std::swap(thenValues, elseValues);
-                    tok2 = parent;
-                }
+                bool inverted2 = false;
+                while (Token::Match(condTop, "%oror%|&&") && condTop->astParent())
+                    condTop = getConditionParent(condTop, &inverted2);
+                if (inverted2)
+                    std::swap(thenValues, elseValues);
             }
 
-            Token* condTop = tok;
-            while (Token::Match(condTop->astParent(), "%oror%|&&|!"))
-                condTop = condTop->astParent();
-
-            if (Token::simpleMatch(condTop->astParent(), "?")) {
-                Token* colon = condTop->astParent()->astOperand2();
+            if (Token::simpleMatch(condTop, "?")) {
+                Token* colon = condTop->astOperand2();
                 forward(colon->astOperand1(), cond.vartok, thenValues, tokenlist, settings);
                 forward(colon->astOperand2(), cond.vartok, elseValues, tokenlist, settings);
                 // TODO: Handle after condition
