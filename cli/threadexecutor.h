@@ -84,10 +84,7 @@ public:
     /**
      * @return true if support for threads exist.
      */
-    static bool isEnabled() {
-        return true;
-    }
-
+    static bool isEnabled();
 };
 
 /// @}
