@@ -7676,7 +7676,7 @@ void Tokenizer::simplifyStaticConst()
                 }
                 if (behindOther)
                     break;
-                if (isCPP() && Token::Match(leftTok, ">")) {
+                if (isCPP() && Token::simpleMatch(leftTok, ">")) {
                     Token* opening = leftTok->findOpeningBracket();
                     if (opening) {
                         leftTok = opening;
