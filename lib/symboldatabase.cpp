@@ -1240,7 +1240,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                     membertok = membertok->astOperand2();
             }
 
-            if (membertok) {
+            if (membertok && membertok != tok) {
                 const Variable *var = tok->variable();
                 if (var->typeScope()) {
                     const Variable *membervar = var->typeScope()->getVariable(membertok->str());

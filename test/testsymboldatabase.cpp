@@ -185,6 +185,7 @@ private:
         TEST_CASE(arrayMemberVar1);
         TEST_CASE(arrayMemberVar2);
         TEST_CASE(arrayMemberVar3);
+        TEST_CASE(arrayMemberVar4);
         TEST_CASE(staticMemberVar);
         TEST_CASE(getVariableFromVarIdBoundsCheck);
 
@@ -1431,6 +1432,19 @@ private:
         ASSERT(db != nullptr);
         ASSERT(tok && tok->variable() && Token::simpleMatch(tok->variable()->typeStartToken(), "int x ;"));
         ASSERT(tok && tok->varId() == 3U); // It's possible to set a varId
+    }
+
+    void arrayMemberVar4() {
+        GET_SYMBOL_DB("struct S { unsigned char* s; };\n"
+                      "struct T { S s[38]; };\n"
+                      "void f(T* t) {\n"
+                      "    t->s;\n"
+                      "}\n");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), ". s");
+        tok = tok ? tok->next() : nullptr;
+        ASSERT(db != nullptr);
+        ASSERT(tok && tok->variable() && Token::simpleMatch(tok->variable()->typeStartToken(), "S s [ 38 ] ;"));
+        ASSERT(tok && tok->varId() == 4U);
     }
 
     void staticMemberVar() {
