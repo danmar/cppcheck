@@ -1165,7 +1165,7 @@ private:
 
     void varid63() {
         const char code[] = "void f(boost::optional<int> const& x) {}";
-        const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        const char expected[] = "1: void f ( const boost :: optional < int > & x@1 ) { }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 

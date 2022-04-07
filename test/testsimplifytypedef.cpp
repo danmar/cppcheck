@@ -1391,7 +1391,7 @@ private:
                                 "I i;";
 
             // The expected result..
-            const char expected[] = "std :: pair < int , int > const i ;";
+            const char expected[] = "const std :: pair < int , int > i ;";
             ASSERT_EQUALS(expected, tok(code));
         }
 
