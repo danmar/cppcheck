@@ -6952,7 +6952,6 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         }
 
         // Get scope and args of function
-        // const Function * const function = tok->astOperand1()->function();
         const Scope * const functionScope = function->functionScope;
         if (!functionScope || !Token::simpleMatch(functionScope->bodyStart, "{ return")) {
             if (functionScope && tokenlist->getSettings()->debugwarnings && Token::findsimplematch(functionScope->bodyStart, "return", functionScope->bodyEnd))
