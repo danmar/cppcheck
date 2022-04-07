@@ -253,12 +253,12 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
                 value1.clear();
         }
         if (!value1.empty()) {
-            if (isSaturated(value1.front()))
+            if (isSaturated(value1.front()) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
                 return nullptr;
             setConditionalValues(tok, true, value1.front(), true_value, false_value);
             return tok->astOperand2();
         } else if (!value2.empty()) {
-            if (isSaturated(value2.front()))
+            if (isSaturated(value2.front()) || astIsFloat(tok->astOperand1(), /*unknown*/ false))
                 return nullptr;
             setConditionalValues(tok, false, value2.front(), true_value, false_value);
             return tok->astOperand1();

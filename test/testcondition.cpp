@@ -2491,6 +2491,14 @@ private:
               "  if (!b && f()) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n"
+              "    if (d != 0) {\n"
+              "        int i = d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void identicalInnerCondition() {
@@ -4017,6 +4025,31 @@ private:
               "	}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
+
+        check("void f(double d) {\n" // #10792
+              "    if (d != 0) {\n"
+              "        int i = (int)d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n"
+              "    if (0 != d) {\n"
+              "        int i = (int)d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { double d; }\n"
+              "void f(A a) {\n"
+              "    if (a.d != 0) {\n"
+              "        int i = a.d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "    if(strlen(\"abc\") == 3) {;}\n"
