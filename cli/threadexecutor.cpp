@@ -556,4 +556,3 @@ unsigned int STDCALL ThreadExecutor::threadProc(LogWriter* logWriter)
 bool ThreadExecutor::isEnabled() {
     return true;
 }
-
