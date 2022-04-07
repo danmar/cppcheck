@@ -5437,6 +5437,10 @@ struct ConditionHandler {
         // Whether to insert impossible values for the condition or only use possible values
         bool impossible = true;
 
+        bool isBool() const {
+            return astIsBool(vartok);
+        }
+
         Condition() : vartok(nullptr), true_values(), false_values(), inverted(false), impossible(true) {}
     };
 
@@ -5604,39 +5608,65 @@ struct ConditionHandler {
         });
     }
 
+    static Token* skipNotAndCasts(Token* tok, bool* inverted = nullptr)
+    {
+        for (; tok->astParent(); tok = tok->astParent()) {
+            if (Token::simpleMatch(tok->astParent(), "!")) {
+                if (inverted)
+                    *inverted ^= true;
+                continue;
+            }
+            if (Token::Match(tok->astParent(), "==|!=")) {
+                Token* sibling = tok->astSibling();
+                if (sibling->hasKnownIntValue() && (astIsBool(tok) || astIsBool(sibling))) {
+                    bool value = sibling->values().front().intvalue;
+                    if (inverted)
+                        *inverted ^= value == Token::simpleMatch(tok->astParent(), "!=");
+                    continue;
+                }
+            }
+            if (tok->astParent()->isCast() && astIsBool(tok->astParent()))
+                continue;
+            return tok;
+        }
+        return tok;
+    }
+
     void afterCondition(TokenList* tokenlist,
                         SymbolDatabase* symboldatabase,
                         ErrorLogger* errorLogger,
                         const Settings* settings) const {
-        traverseCondition(tokenlist, symboldatabase, [&](const Condition& cond, Token* tok, const Scope* scope) {
-            const Token* top = tok->astTop();
+        traverseCondition(tokenlist, symboldatabase, [&](const Condition& cond, Token* condTok, const Scope* scope) {
+            const Token* top = condTok->astTop();
 
             std::list<ValueFlow::Value> thenValues;
             std::list<ValueFlow::Value> elseValues;
 
-            if (!Token::Match(tok, "!=|=|(|.") && tok != cond.vartok) {
+            if (!Token::Match(condTok, "!=|=|(|.") && condTok != cond.vartok) {
                 thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
-                if (cond.impossible && isConditionKnown(tok, false))
+                if (cond.impossible && isConditionKnown(condTok, false))
                     insertImpossible(elseValues, cond.false_values);
             }
-            if (!Token::Match(tok, "==|!")) {
+            if (!Token::Match(condTok, "==|!")) {
                 elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
-                if (cond.impossible && isConditionKnown(tok, true)) {
+                if (cond.impossible && isConditionKnown(condTok, true)) {
                     insertImpossible(thenValues, cond.true_values);
-                    if (tok == cond.vartok && astIsBool(tok))
+                    if (cond.isBool())
                         insertNegateKnown(thenValues, cond.true_values);
                 }
             }
 
-            if (cond.inverted)
+            bool inverted = cond.inverted;
+            Token* ctx = skipNotAndCasts(condTok, &inverted);
+            if (inverted)
                 std::swap(thenValues, elseValues);
 
-            if (Token::Match(tok->astParent(), "%oror%|&&")) {
-                Token* parent = tok->astParent();
-                if (astIsRHS(tok) && astIsLHS(parent) && parent->astParent() &&
+            if (Token::Match(ctx->astParent(), "%oror%|&&")) {
+                Token* parent = ctx->astParent();
+                if (astIsRHS(ctx) && astIsLHS(parent) && parent->astParent() &&
                     parent->str() == parent->astParent()->str())
                     parent = parent->astParent();
-                else if (!astIsLHS(tok)) {
+                else if (!astIsLHS(ctx)) {
                     parent = nullptr;
                 }
                 if (parent) {
@@ -5650,7 +5680,7 @@ struct ConditionHandler {
                         values = thenValues;
                     else if (op == "||")
                         values = elseValues;
-                    if (Token::Match(tok, "==|!=") || (tok == cond.vartok && astIsBool(tok)))
+                    if (Token::Match(condTok, "==|!=") || cond.isBool())
                         changePossibleToKnown(values);
                     if (astIsFloat(cond.vartok, false) ||
                         (!cond.vartok->valueType() &&
@@ -5669,7 +5699,7 @@ struct ConditionHandler {
             }
 
             {
-                const Token* tok2 = tok;
+                const Token* tok2 = condTok;
                 std::string op;
                 bool mixedOperators = false;
                 while (tok2->astParent()) {
@@ -5703,38 +5733,37 @@ struct ConditionHandler {
                 }
             }
 
-            // if astParent is "!" we need to invert codeblock
+            Token* condTop = ctx->astParent();
             {
-                const Token* tok2 = tok;
-                while (tok2 && tok2->astParent() && tok2->astParent()->str() != "?") {
-                    const Token* parent = tok2->astParent();
-                    while (parent && parent->str() == "&&")
-                        parent = parent->astParent();
-                    if (parent && (parent->str() == "!" || Token::simpleMatch(parent, "== false")))
-                        std::swap(thenValues, elseValues);
-                    tok2 = parent;
+                bool inverted2 = false;
+                while (Token::Match(condTop, "%oror%|&&")) {
+                    Token* parent = skipNotAndCasts(condTop, &inverted2)->astParent();
+                    if (!parent)
+                        break;
+                    condTop = parent;
                 }
+                if (inverted2)
+                    std::swap(thenValues, elseValues);
             }
 
-            Token* condTop = tok;
-            while (Token::Match(condTop->astParent(), "%oror%|&&|!"))
-                condTop = condTop->astParent();
-
-            if (Token::simpleMatch(condTop->astParent(), "?")) {
-                Token* colon = condTop->astParent()->astOperand2();
+            if (Token::simpleMatch(condTop, "?")) {
+                Token* colon = condTop->astOperand2();
                 forward(colon->astOperand1(), cond.vartok, thenValues, tokenlist, settings);
                 forward(colon->astOperand2(), cond.vartok, elseValues, tokenlist, settings);
                 // TODO: Handle after condition
                 return;
             }
 
+            if (condTop != top && condTop->str() != ";")
+                return;
+
             if (!Token::Match(top->previous(), "if|while|for ("))
                 return;
 
             if (top->previous()->str() == "for") {
-                if (!Token::Match(tok, "%comp%"))
+                if (!Token::Match(condTok, "%comp%"))
                     return;
-                if (!Token::simpleMatch(tok->astParent(), ";"))
+                if (!Token::simpleMatch(condTok->astParent(), ";"))
                     return;
                 const Token* stepTok = getStepTok(top);
                 if (cond.vartok->varId() == 0)
@@ -5753,9 +5782,9 @@ struct ConditionHandler {
                     return;
                 if (Token::simpleMatch(stepTok, "--") && bounds.count(ValueFlow::Value::Bound::Upper) > 0)
                     return;
-                const Token* childTok = tok->astOperand1();
+                const Token* childTok = condTok->astOperand1();
                 if (!childTok)
-                    childTok = tok->astOperand2();
+                    childTok = condTok->astOperand2();
                 if (!childTok)
                     return;
                 if (childTok->varId() != cond.vartok->varId())
@@ -5773,7 +5802,7 @@ struct ConditionHandler {
                 ProgramMemory pm;
                 execute(initTok, &pm, nullptr, nullptr);
                 MathLib::bigint result = 1;
-                execute(tok, &pm, &result, nullptr);
+                execute(condTok, &pm, &result, nullptr);
                 if (result == 0)
                     return;
                 // Remove condition since for condition is not redundant
@@ -5802,7 +5831,7 @@ struct ConditionHandler {
                 if (!startToken)
                     continue;
                 std::list<ValueFlow::Value>& values = (i == 0 ? thenValues : elseValues);
-                valueFlowSetConditionToKnown(tok, values, i == 0);
+                valueFlowSetConditionToKnown(condTok, values, i == 0);
 
                 Analyzer::Result r =
                     forward(startTokens[i], startTokens[i]->link(), cond.vartok, values, tokenlist, settings);
@@ -5837,7 +5866,7 @@ struct ConditionHandler {
                 bool dead_if = deadBranch[0];
                 bool dead_else = deadBranch[1];
                 const Token* unknownFunction = nullptr;
-                if (tok->astParent() && Token::Match(top->previous(), "while|for ("))
+                if (condTok->astParent() && Token::Match(top->previous(), "while|for ("))
                     dead_if = !isBreakScope(after);
                 else if (!dead_if)
                     dead_if = isReturnScope(after, &settings->library, &unknownFunction);
@@ -5883,7 +5912,7 @@ struct ConditionHandler {
                     return;
 
                 if (dead_if || dead_else) {
-                    const Token* parent = tok->astParent();
+                    const Token* parent = condTok->astParent();
                     // Skip the not operator
                     while (Token::simpleMatch(parent, "!"))
                         parent = parent->astParent();
@@ -5901,8 +5930,8 @@ struct ConditionHandler {
                         values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
                         changeKnownToPossible(values);
                     } else {
-                        valueFlowSetConditionToKnown(tok, values, true);
-                        valueFlowSetConditionToKnown(tok, values, false);
+                        valueFlowSetConditionToKnown(condTok, values, true);
+                        valueFlowSetConditionToKnown(condTok, values, false);
                     }
                 }
                 if (values.empty())
@@ -6096,6 +6125,21 @@ static void valueFlowInferCondition(TokenList* tokenlist,
 }
 
 struct SymbolicConditionHandler : SimpleConditionHandler {
+
+    static bool isNegatedBool(const Token* tok)
+    {
+        if (!Token::simpleMatch(tok, "!"))
+            return false;
+        return (astIsBool(tok->astOperand1()));
+    }
+
+    static const Token* skipNot(const Token* tok)
+    {
+        if (!Token::simpleMatch(tok, "!"))
+            return tok;
+        return tok->astOperand1();
+    }
+
     virtual std::vector<Condition> parse(const Token* tok, const Settings*) const override
     {
         if (!Token::Match(tok, "%comp%"))
@@ -6108,27 +6152,36 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
             return {};
 
         std::vector<Condition> result;
-        for (int i = 0; i < 2; i++) {
-            const bool lhs = i == 0;
-            const Token* vartok = lhs ? tok->astOperand1() : tok->astOperand2();
-            const Token* valuetok = lhs ? tok->astOperand2() : tok->astOperand1();
-            if (valuetok->exprId() == 0)
-                continue;
-            if (valuetok->hasKnownSymbolicValue(vartok))
-                continue;
-            if (vartok->hasKnownSymbolicValue(valuetok))
-                continue;
-            ValueFlow::Value true_value;
-            ValueFlow::Value false_value;
-            setConditionalValues(tok, !lhs, 0, true_value, false_value);
-            setSymbolic(true_value, valuetok);
-            setSymbolic(false_value, valuetok);
+        auto addCond = [&](const Token* lhsTok, const Token* rhsTok, bool inverted) {
+            for (int i = 0; i < 2; i++) {
+                const bool lhs = i == 0;
+                const Token* vartok = lhs ? lhsTok : rhsTok;
+                const Token* valuetok = lhs ? rhsTok : lhsTok;
+                if (valuetok->exprId() == 0)
+                    continue;
+                if (valuetok->hasKnownSymbolicValue(vartok))
+                    continue;
+                if (vartok->hasKnownSymbolicValue(valuetok))
+                    continue;
+                ValueFlow::Value true_value;
+                ValueFlow::Value false_value;
+                setConditionalValues(tok, !lhs, 0, true_value, false_value);
+                setSymbolic(true_value, valuetok);
+                setSymbolic(false_value, valuetok);
 
-            Condition cond;
-            cond.true_values = {true_value};
-            cond.false_values = {false_value};
-            cond.vartok = vartok;
-            result.push_back(cond);
+                Condition cond;
+                cond.true_values = {true_value};
+                cond.false_values = {false_value};
+                cond.vartok = vartok;
+                cond.inverted = inverted;
+                result.push_back(cond);
+            }
+        };
+        addCond(tok->astOperand1(), tok->astOperand2(), false);
+        if (Token::Match(tok, "==|!=") && (isNegatedBool(tok->astOperand1()) || isNegatedBool(tok->astOperand2()))) {
+            const Token* lhsTok = skipNot(tok->astOperand1());
+            const Token* rhsTok = skipNot(tok->astOperand2());
+            addCond(lhsTok, rhsTok, !(isNegatedBool(tok->astOperand1()) && isNegatedBool(tok->astOperand2())));
         }
         return result;
     }

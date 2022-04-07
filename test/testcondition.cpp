@@ -4029,6 +4029,13 @@ private:
                       "[test.cpp:4]: (style) Condition 'wcslen(L\"abc\")==3' is always true\n"
                       "[test.cpp:5]: (style) Condition 'wcslen(L\"abc\")==1' is always false\n",
                       errout.str());
+
+        check("int foo(bool a, bool b) {\n"
+              "  if(!a && b && (!a == !b))\n"
+              "   return 1;\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a==!b' is always false\n", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4167,6 +4174,13 @@ private:
               "        return CMD_OK;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int foo(bool a, bool b) {\n"
+              "  if((!a == !b) && !a && b)\n"
+              "   return 1;\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'b' is always false\n", errout.str());
     }
 
     void alwaysTrueInfer() {
