@@ -439,6 +439,17 @@ private:
               "    return sizeof(p[0]) / 4;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
+
+        check("struct S {\n"
+              "    unsigned char* s;\n"
+              "};\n"
+              "struct T {\n"
+              "    S s[38];\n"
+              "};\n"
+              "void f(T* t) {\n"
+              "    for (size_t i = 0; i < sizeof(t->s) / sizeof(t->s[0]); i++) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPointerSizeof() {
