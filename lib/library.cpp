@@ -1198,6 +1198,20 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
     return nullptr;
 }
 
+const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool* isIterator) const
+{
+    const Library::Container* c = detectContainer(typeStart);
+    if (c) {
+        if (isIterator)
+            *isIterator = false;
+        return c;
+    }
+    c = detectContainer(typeStart, true);
+    if (c && isIterator)
+        *isIterator = true;
+    return c;
+}
+
 bool Library::isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback)
 {
     if (!cond)

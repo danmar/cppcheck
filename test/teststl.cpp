@@ -904,6 +904,22 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> vec;\n"
+              "    std::vector<int>::iterator it = vec.begin();\n"
+              "    *it = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Out of bounds access in expression 'it' because 'vec' is empty.\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> vec;\n"
+              "    auto it = vec.begin();\n"
+              "    *it = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Out of bounds access in expression 'it' because 'vec' is empty.\n",
+                      errout.str());
     }
 
     void iterator1() {
@@ -984,7 +1000,9 @@ private:
               "    std::list<int>::iterator it = l1.begin();\n"
               "    l2.insert(it, 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n"
+                      "[test.cpp:6]: (error) Iterator 'it' from different container 'l2' are used together.\n",
+                      errout.str());
 
         check("void foo() {\n" // #5803
               "    std::list<int> l1;\n"
@@ -1416,10 +1434,8 @@ private:
     }
 
     void iterator18() {
-        check("void foo()\n"
+        check("void foo(std::list<int> l1, std::list<int> l2)\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2;\n"
               "    std::list<int>::iterator it1 = l1.begin();\n"
               "    std::list<int>::iterator it2 = l1.end();\n"
               "    while (++it1 != --it2)\n"
@@ -1428,10 +1444,8 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo()\n"
+        check("void foo(std::list<int> l1, std::list<int> l2)\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2;\n"
               "    std::list<int>::iterator it1 = l1.begin();\n"
               "    std::list<int>::iterator it2 = l1.end();\n"
               "    while (it1++ != --it2)\n"
@@ -1440,17 +1454,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo()\n"
+        check("void foo(std::list<int> l1, std::list<int> l2)\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2;\n"
               "    std::list<int>::iterator it1 = l1.begin();\n"
               "    std::list<int>::iterator it2 = l1.end();\n"
               "    if (--it2 > it1++)\n"
               "    {\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
     }
 
     void iterator19() {
