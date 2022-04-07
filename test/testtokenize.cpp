@@ -2076,7 +2076,8 @@ private:
         ASSERT_EQUALS("{ std :: vector < int > x ; x = y ; }", tokenizeAndStringify(code2));
     }
 
-    void vardecl_stl_3() {
+    void vardecl_stl_3()
+    {
         const char code1[] = "{ std::string const x = \"abc\"; }";
         ASSERT_EQUALS("{ const std :: string x = \"abc\" ; }", tokenizeAndStringify(code1));
 

@@ -7496,7 +7496,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             }
 
             // east const
-            if (Token::simpleMatch(tok2,  "const"))
+            if (Token::simpleMatch(tok2, "const"))
                 isconst = true;
         }
 
