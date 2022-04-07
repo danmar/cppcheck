@@ -1770,15 +1770,16 @@ private:
     void array_index_62()
     {
         check("struct X {\n"
-            "    static int GetSize() {return 11;}\n"
-            "};\n"
-            "char f() {\n"
-            "    char buf[10]= {0};\n"
-            "    for(int i = 0; i < X::GetSize(); ++i) \n"
-            "       buf[i] = 0;\n"
-            "    return buf[0];\n"
-            "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+              "    static int GetSize() {return 11;}\n"
+              "};\n"
+              "char f() {\n"
+              "    char buf[10]= {0};\n"
+              "    for(int i = 0; i < X::GetSize(); ++i) \n"
+              "       buf[i] = 0;\n"
+              "    return buf[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n",
+                      errout.str());
     }
 
     void array_index_multidim() {

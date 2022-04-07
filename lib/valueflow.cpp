@@ -6922,7 +6922,7 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
         if (tok->str() != "(" || !tok->astOperand1())
             continue;
 
-        const Function * function = nullptr;
+        const Function* function = nullptr;
         if (Token::Match(tok->previous(), "%name% ("))
             function = tok->previous()->function();
         else
