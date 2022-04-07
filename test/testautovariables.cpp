@@ -2318,18 +2318,19 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Returning iterator that will be invalid when returning.\n",
                       errout.str());
 
-        check("std::vector<int> f();\n"
+        check("std::vector<int> g();\n"
               "auto f() {\n"
               "    auto it = g().begin();\n"
               "    return it;\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning iterator that will be invalid when returning.\n",
+                      errout.str());
 
-        check("std::vector<int> f();\n"
+        check("std::vector<int> g();\n"
               "int& f() {\n"
               "    return *g().begin();\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
 
         check("struct A {\n"
               "    std::vector<std::string> v;\n"
