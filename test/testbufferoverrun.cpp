@@ -186,6 +186,7 @@ private:
         TEST_CASE(array_index_59); // #10413
         TEST_CASE(array_index_60); // #10617, #9824
         TEST_CASE(array_index_61); // #10621
+        TEST_CASE(array_index_62); // #7684
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1764,6 +1765,21 @@ private:
               "  return M[i]; \n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_62()
+    {
+        check("struct X {\n"
+              "    static int GetSize() {return 11;}\n"
+              "};\n"
+              "char f() {\n"
+              "    char buf[10]= {0};\n"
+              "    for(int i = 0; i < X::GetSize(); ++i) \n"
+              "       buf[i] = 0;\n"
+              "    return buf[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n",
+                      errout.str());
     }
 
     void array_index_multidim() {

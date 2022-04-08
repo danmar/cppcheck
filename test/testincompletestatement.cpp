@@ -372,6 +372,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void g();\n" // #10952
+              "bool f() {\n"
+              "    return (void)g(), false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int a, int b, int c, int d) {\n"
               "    Eigen::Vector4d V;\n"
               "    V << a, b, c, d;\n"
@@ -394,6 +400,16 @@ private:
 
         check("void f() {\n"
               "    a.b[4][3].c()->d << x , y, z;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct V {\n"
+              "    Eigen::Vector3d& operator[](int i) { return v[i]; }\n"
+              "    void f(int a, int b, int c);\n"
+              "    Eigen::Vector3d v[1];\n"
+              "};\n"
+              "void V::f(int a, int b, int c) {\n"
+              "    (*this)[0] << a, b, c;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -949,6 +949,9 @@ static const Token * followVariableExpression(const Token * tok, bool cpp, const
         return tok;
     if (isStructuredBindingVariable(var))
         return tok;
+    // assigning a floating point value to an integer does not preserve the value
+    if (var->valueType() && var->valueType()->isIntegral() && varTok->valueType() && varTok->valueType()->isFloat())
+        return tok;
     const Token * lastTok = precedes(tok, end) ? end : tok;
     // If this is in a loop then check if variables are modified in the entire scope
     const Token * endToken = (isInLoopCondition(tok) || isInLoopCondition(varTok) || var->scope() != tok->scope()) ? var->scope()->bodyEnd : lastTok;
