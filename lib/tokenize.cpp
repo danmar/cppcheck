@@ -7494,6 +7494,10 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                 ++typelen;
                 tok2 = tok2->next();
             }
+
+            // east const
+            if (Token::simpleMatch(tok2, "const"))
+                isconst = true;
         }
 
         //pattern: "%type% *| ... *| const| %name% ,|="
@@ -7672,6 +7676,13 @@ void Tokenizer::simplifyStaticConst()
                 }
                 if (behindOther)
                     break;
+                if (isCPP() && Token::simpleMatch(leftTok, ">")) {
+                    Token* opening = leftTok->findOpeningBracket();
+                    if (opening) {
+                        leftTok = opening;
+                        continue;
+                    }
+                }
                 if (!Token::Match(leftTok, "%type%|struct|::") ||
                     (isCPP() && Token::Match(leftTok, "private:|protected:|public:|operator|template"))) {
                     break;

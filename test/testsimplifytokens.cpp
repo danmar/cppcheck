@@ -4142,7 +4142,7 @@ private:
     void simplifyOperator2() {
         // #6576
         ASSERT_EQUALS("template < class T > class SharedPtr { "
-                      "SharedPtr & operator= ( SharedPtr < Y > const & r ) ; "
+                      "SharedPtr & operator= ( const SharedPtr < Y > & r ) ; "
                       "} ; "
                       "class TClass { "
                       "public: TClass & operator= ( const TClass & rhs ) ; "
