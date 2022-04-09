@@ -1134,6 +1134,11 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (inconclusive && !printInconclusive)
                 continue;
 
+            const bool isUnknown = (expr1 && expr1->valueType() && expr1->valueType()->type == ValueType::UNKNOWN_TYPE) ||
+                                   (expr2 && expr2->valueType() && expr2->valueType()->type == ValueType::UNKNOWN_TYPE);
+            if (isUnknown)
+                continue;
+
             const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
 
             ErrorPath errorPath;
@@ -1440,6 +1445,12 @@ void CheckCondition::alwaysTrueFalse()
             const bool returnExpression = Token::simpleMatch(tok->astTop(), "return") && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
 
             if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression || returnExpression))
+                continue;
+
+            const Token* expr1 = tok->astOperand1(), *expr2 = tok->astOperand2();
+            const bool isUnknown = (expr1 && expr1->valueType() && expr1->valueType()->type == ValueType::UNKNOWN_TYPE) ||
+                                   (expr2 && expr2->valueType() && expr2->valueType()->type == ValueType::UNKNOWN_TYPE);
+            if (isUnknown)
                 continue;
 
             // Don't warn when there are expanded macros..

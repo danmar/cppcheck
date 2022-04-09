@@ -1209,6 +1209,14 @@ private:
               "  if (x && x != ZERO) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int N) {\n" // #9789
+              "    T a[20] = { 0 };\n"
+              "    for (int i = 0; i < N; ++i) {\n"
+              "        if (0 < a[i] && a[i] < 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectLogicOperator5() { // complex expressions
