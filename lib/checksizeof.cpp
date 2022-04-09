@@ -377,16 +377,23 @@ void CheckSizeof::suspiciousSizeofCalculation()
         if (Token::simpleMatch(tok, "sizeof (")) {
             const Token* lPar = tok->astParent();
             if (lPar && lPar->str() == "(") {
-                const Token* const end = lPar->link();
-                const Token* varTok = end->previous();
+                const Token* const rPar = lPar->link();
+                const Token* varTok = rPar->previous();
                 while (varTok && varTok->str() == "]")
-                    varTok = varTok->link()->previous();
-                const Variable* var = varTok ? varTok->variable() : nullptr;
-                if ((varTok && varTok->str() == "*") || (var && var->isPointer() && !var->isArray() && !(lPar->astOperand2() && lPar->astOperand2()->str() == "*"))) {
-                    if (lPar->astParent() && lPar->astParent()->str() == "/")
+                    varTok = varTok->link()->previous();                
+                if (lPar->astParent() && lPar->astParent()->str() == "/") {
+                    const Variable* var = varTok ? varTok->variable() : nullptr;
+                    if (var && var->isPointer() && !var->isArray() && !(lPar->astOperand2() && lPar->astOperand2()->str() == "*"))
                         divideSizeofError(tok);
+                    else if (varTok && varTok->str() == "*") {
+                        const Token* arrTok = lPar->astParent()->astOperand1();
+                        arrTok = arrTok ? arrTok->next() : nullptr;
+                        const Variable* var = arrTok ? arrTok->variable() : nullptr;
+                        if (var && var->isPointer() && !var->isArray())
+                            divideSizeofError(tok);
+                    }
                 }
-                else if (Token::simpleMatch(end, ") * sizeof") && end->next()->astOperand1() == tok->next())
+                else if (Token::simpleMatch(rPar, ") * sizeof") && rPar->next()->astOperand1() == tok->next())
                     multiplySizeofError(tok);
             }
         }

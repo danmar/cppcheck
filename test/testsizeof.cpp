@@ -434,6 +434,12 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() {\n"
+              "    const char* a[N];\n"
+              "    for (int i = 0; i < (int)(sizeof(a) / sizeof(char*)); i++) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("int f(const S& s) {\n"
               "    int** p;\n"
               "    return sizeof(p[0]) / 4;\n"
