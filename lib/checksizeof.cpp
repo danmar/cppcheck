@@ -380,7 +380,7 @@ void CheckSizeof::suspiciousSizeofCalculation()
                 const Token* const rPar = lPar->link();
                 const Token* varTok = rPar->previous();
                 while (varTok && varTok->str() == "]")
-                    varTok = varTok->link()->previous();                
+                    varTok = varTok->link()->previous();
                 if (lPar->astParent() && lPar->astParent()->str() == "/") {
                     const Variable* var = varTok ? varTok->variable() : nullptr;
                     if (var && var->isPointer() && !var->isArray() && !(lPar->astOperand2() && lPar->astOperand2()->str() == "*"))
