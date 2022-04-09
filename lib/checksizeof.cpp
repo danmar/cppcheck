@@ -388,7 +388,7 @@ void CheckSizeof::suspiciousSizeofCalculation()
                     else if (varTok && varTok->str() == "*") {
                         const Token* arrTok = lPar->astParent()->astOperand1();
                         arrTok = arrTok ? arrTok->next() : nullptr;
-                        const Variable* var = arrTok ? arrTok->variable() : nullptr;
+                        var = arrTok ? arrTok->variable() : nullptr;
                         if (var && var->isPointer() && !var->isArray())
                             divideSizeofError(tok);
                     }
