@@ -3439,7 +3439,7 @@ void Tokenizer::calculateScopes()
                 // New scope is opening, record it here
                 std::shared_ptr<ScopeInfo2> newScopeInfo = std::make_shared<ScopeInfo2>(tok->scopeInfo()->name, tok->link(), tok->scopeInfo()->usingNamespaces);
 
-                if (newScopeInfo->name != "" && nextScopeNameAddition != "")
+                if (!newScopeInfo->name.empty() && !nextScopeNameAddition.empty())
                     newScopeInfo->name.append(" :: ");
                 newScopeInfo->name.append(nextScopeNameAddition);
                 nextScopeNameAddition = "";

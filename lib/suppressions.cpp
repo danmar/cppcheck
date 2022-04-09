@@ -258,7 +258,7 @@ std::string Suppressions::addSuppressions(const std::list<Suppression> &suppress
 {
     for (const auto &newSuppression : suppressions) {
         auto errmsg = addSuppression(newSuppression);
-        if (errmsg != "")
+        if (!errmsg.empty())
             return errmsg;
     }
     return "";
