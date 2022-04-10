@@ -6442,6 +6442,9 @@ private:
                "    void f(std::array<T*, 2>& a);\n"
                "};\n";
         valueOfTok(code, "a");
+
+        code = "void f(const char * const x) { !!system(x); }\n";
+        valueOfTok(code, "x");
     }
 
     void valueFlowHang() {
