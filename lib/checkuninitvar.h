@@ -75,6 +75,7 @@ public:
         checkUninitVar.check();
     }
 
+    bool diag(const Token* tok);
     /** Check for uninitialized variables */
     void check();
     void checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs);
@@ -131,6 +132,7 @@ public:
     void uninitStructMemberError(const Token *tok, const std::string &membername);
 
 private:
+    std::set<const Token*> mUninitDiags;
     Check::FileInfo *getFileInfo() const;
     bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const;
 
