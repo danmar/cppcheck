@@ -1,2 +1,14 @@
 release notes for cppcheck-2.8
 
+- Lifetime analysis can now track lifetime across user-defined constructors when they are inline and using member initializer list.
+- SymbolDatabase can now deduce iterator types from how they are specified in the library files.
+- ValueFlow can evaluate class member functions that return known values.
+- Improve duplicateValueTenary to not warn when used as an lvalue or when one branch has side effects
+- Fix variableScope to not warn when variables are used in lambda functions
+- Fix unassignedVariable warnings when using structured bindings
+- Fix redundantInitialization warning when variable is used in a lambda
+- Fix variableScope warnings when using if/while init-statement
+- Improve lifetime analysis when returning variadic template expressions
+- Detect more statements with constStatement
+- Detect variableScope for more types
+- Improvements to unreadVariable
