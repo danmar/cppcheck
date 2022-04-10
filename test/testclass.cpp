@@ -193,6 +193,7 @@ private:
         TEST_CASE(const74); // ticket #10671
         TEST_CASE(const75); // ticket #10065
         TEST_CASE(const76); // ticket #10825
+        TEST_CASE(const77); // ticket #10307
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -6031,6 +6032,15 @@ private:
                       errout.str());
     }
 
+    void const77() { // #10307
+        checkConst("template <typename T>\n"
+                   "struct S {\n"
+                   "    std::vector<T> const* f() const { return p; }\n"
+                   "    std::vector<T> const* p;\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
@@ -7325,6 +7335,17 @@ private:
                                  "    virtual void f() {}\n"
                                  "};\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Virtual function 'f' is called from constructor 'B()' at line 2. Dynamic binding is not used.\n", errout.str());
+
+        checkVirtualFunctionCall("class S {\n" // don't crash
+                                 "    ~S();\n"
+                                 "public:\n"
+                                 "    S();\n"
+                                 "};\n"
+                                 "S::S() {\n"
+                                 "    typeid(S);\n"
+                                 "}\n"
+                                 "S::~S() = default;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {

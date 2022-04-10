@@ -2974,8 +2974,27 @@ private:
 
         // #10744
         check("S& f() {\n"
-              "    static S * p = new S();\n"
+              "    static S* p = new S();\n"
               "    return *p;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    static int i[1] = {};\n"
+              "    return i[0];\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
+
+        check("int f() {\n"
+              "    static int i[] = { 0 };\n"
+              "    int j = i[0] + 1;\n"
+              "    return j;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
+
+        // #10471
+        check("void f(std::array<int, 1> const& i) {\n"
+              "    if (i[0] == 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -5844,6 +5863,13 @@ private:
               "    ++x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { int a, b; };\n" // #10107
+              "S f(bool x, S s) {\n"
+              "    (x) ? f.a = 42 : f.b = 42;\n"
+              "    return f;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void duplicateExpressionTemplate() {
@@ -8076,6 +8102,13 @@ private:
               "    std::shared_ptr<int> i = g();\n"
               "    h();\n"
               "    i = nullptr;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int>& v) {\n" // #9815
+              "    int i = g();\n"
+              "    i = std::distance(v.begin(), std::find_if(v.begin(), v.end(), [=](int j) { return i == j; }));\n"
+              "    return i;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

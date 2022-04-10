@@ -8,6 +8,7 @@ import locale
 import operator
 import optparse
 import os
+import re
 import sys
 import subprocess
 
@@ -498,6 +499,22 @@ def tr_str(td_th, line, id, cwe, severity, message, author, author_mail, date, a
     return '<tr%s>%s</tr>' % (tr_attributes, ret)
 
 
+def to_css_selector(tag):
+    # https://www.w3.org/TR/CSS2/syndata.html#characters
+    # Note: for our usage, we don't consider escaped characters
+    invalid_css_chars = re.compile(r"[^-_a-zA-Z0-9\u00A0-\uFFFF]")
+    invalid_start = re.compile(r"^([0-9]|-[0-9]|--)")
+    # Replace forbidden characters by an hyphen
+    valid_chars = invalid_css_chars.sub("-", tag)
+    # Check that the start of the tag doesn't break the rules
+    start_invalid = invalid_start.match(valid_chars)
+    if start_invalid:
+        # otherwise, append a token to make it valid
+        valid_chars_valid_start = "cpp" + valid_chars
+    else:
+        valid_chars_valid_start = valid_chars
+    return valid_chars_valid_start
+
 class AnnotateCodeFormatter(HtmlFormatter):
     errors = []
 
@@ -821,7 +838,12 @@ if __name__ == '__main__':
         stat_fmt = "\n            <tr><td><input type=\"checkbox\" class=\"idToggle\" onclick=\"toggleDisplay(this)\" id=\"{}\" name=\"{}\" checked></td><td>{}</td><td>{}</td></tr>"
         for occurrences in reversed(range(cnt_min, cnt_max + 1)):
             for _id in [k for k, v in sorted(counter.items()) if v == occurrences]:
-                stat_html.append(stat_fmt.format(_id, _id, dict(counter.most_common())[_id], _id))
+                stat_html.append(stat_fmt.format(
+                    to_css_selector(_id),
+                    to_css_selector(_id),
+                    dict(counter.most_common())[_id],
+                    _id
+                ))
 
         output_file.write(HTML_HEAD % (options.title, '', options.title, ''))
         output_file.write(filter_bar(filter_enabled))
@@ -881,7 +903,7 @@ if __name__ == '__main__':
                     tr_str('td', line, error["id"], cwe_url, error["severity"], error["msg"],
                            git_blame_dict.get('author', 'Unknown'), git_blame_dict.get('author-mail', '---'),
                            git_blame_dict.get('author-time', '---'),
-                           tr_class=error["id"] + ' sev_' + error["severity"] + ' issue',
+                           tr_class=to_css_selector(error["id"]) + ' sev_' + error["severity"] + ' issue',
                            message_class=message_class,
                            add_author=add_author_information,
                            htmlfile=htmlfile))

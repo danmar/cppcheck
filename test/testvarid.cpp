@@ -96,6 +96,7 @@ private:
         TEST_CASE(varid62);
         TEST_CASE(varid63);
         TEST_CASE(varid64); // #9928 - extern const char (*x[256])
+        TEST_CASE(varid65); // #10936
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -1164,7 +1165,7 @@ private:
 
     void varid63() {
         const char code[] = "void f(boost::optional<int> const& x) {}";
-        const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        const char expected[] = "1: void f ( const boost :: optional < int > & x@1 ) { }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
@@ -1172,6 +1173,29 @@ private:
         const char code[] = "extern const char (*x[256]);";
         const char expected[] = "1: extern const char ( * x@1 [ 256 ] ) ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid65() { // #10936
+        {
+            const char code[] = "extern int (*p);";
+            const char expected[] = "1: extern int ( * p@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "extern int (i);";
+            const char expected[] = "1: extern int ( i@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "int (*p);";
+            const char expected[] = "1: int ( * p@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "int (i);";
+            const char expected[] = "1: int ( i@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
     }
 
     void varid_for_1() {
@@ -1711,7 +1735,7 @@ private:
                             "};";
         ASSERT_EQUALS("1: class Foo {\n"
                       "2: private:\n"
-                      "3: void f ( void ) ;\n"
+                      "3: void f ( ) ;\n"
                       "4: } ;\n",
                       tokenize(code));
     }
@@ -2661,6 +2685,20 @@ private:
         {
             const char code[] = "auto g = [](std::function<void()> p) {};\n";
             const char exp[] = "1: auto g@1 ; g@1 = [ ] ( std :: function < void ( ) > p@2 ) { } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // # 10849
+        {
+            const char code[] = "class T {};\n"
+                                "auto g = [](const T* t) -> int {\n"
+                                "    const T* u{}, *v{};\n"
+                                "    return 0;\n"
+                                "};\n";
+            const char exp[] = "1: class T { } ;\n"
+                               "2: auto g@1 ; g@1 = [ ] ( const T * t@2 ) . int {\n"
+                               "3: const T * u@3 { } ; const T * v@4 { } ;\n"
+                               "4: return 0 ;\n"
+                               "5: } ;\n";
             ASSERT_EQUALS(exp, tokenize(code));
         }
     }

@@ -305,6 +305,7 @@ void validCode()
     wordInit = HIWORD(dwordInit);
     // cppcheck-suppress redundantAssignment
     byteInit = HIBYTE(wordInit);
+    // cppcheck-suppress knownConditionTrueFalse
     if (byteInit) {}
 
     bool boolVar;

@@ -730,6 +730,36 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     }
 
     if (Token::Match(expr->previous(), ">|%name% {|(")) {
+        const Token* ftok = expr->previous();
+        const Function* f = ftok->function();
+        // TODO: Evaluate inline functions as well
+        if (!f && settings && expr->str() == "(") {
+            std::unordered_map<nonneg int, ValueFlow::Value> args;
+            int argn = 0;
+            for (const Token* tok : getArguments(expr)) {
+                ValueFlow::Value result = execute(tok, pm, settings);
+                if (!result.isUninitValue())
+                    args[argn] = result;
+                argn++;
+            }
+            // strlen is a special builtin
+            if (Token::simpleMatch(ftok, "strlen")) {
+                if (args.count(0) > 0) {
+                    ValueFlow::Value v = args.at(0);
+                    if (v.isTokValue() && v.tokvalue->tokType() == Token::eString) {
+                        v.valueType = ValueFlow::Value::ValueType::INT;
+                        v.intvalue = Token::getStrLength(v.tokvalue);
+                        v.tokvalue = nullptr;
+                        return v;
+                    }
+                }
+            } else {
+                const std::string& returnValue = settings->library.returnValue(ftok);
+                if (!returnValue.empty())
+                    return evaluateLibraryFunction(args, returnValue, settings);
+            }
+        }
+        // Check if functon modifies argument
         visitAstNodes(expr->astOperand2(), [&](const Token* child) {
             if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
                 ValueFlow::Value& v = pm.at(child->exprId());
@@ -772,6 +802,34 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
         return v2;
     }
     return v;
+}
+
+ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
+                                         const std::string& returnValue,
+                                         const Settings* settings)
+{
+    static std::unordered_map<std::string,
+                              std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>>
+    functions = {};
+    if (functions.count(returnValue) == 0) {
+
+        std::unordered_map<nonneg int, const Token*> lookupVarId;
+        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, &lookupVarId);
+
+        functions[returnValue] =
+            [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {
+            if (!expr)
+                return ValueFlow::Value::unknown();
+            ProgramMemory pm{};
+            for (const auto& p : xargs) {
+                auto it = lookupVarId.find(p.first);
+                if (it != lookupVarId.end())
+                    pm.setValue(it->second, p.second);
+            }
+            return execute(expr.get(), pm, settings);
+        };
+    }
+    return functions.at(returnValue)(args);
 }
 
 void execute(const Token* expr,

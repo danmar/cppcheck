@@ -767,9 +767,8 @@ private:
               "    std::vector<char> v{ c, c + sizeof(c) };\n"
               "    v[100] = 1;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
 
         check("void f() {\n"
               "    int i[] = { 1, 2, 3 };\n"
@@ -787,6 +786,44 @@ private:
         TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
                            "",
                            errout.str());
+
+        check("void f() {\n"
+              "    std::array<int, 10> a = {};\n"
+              "    a[10];\n"
+              "    constexpr std::array<int, 10> b = {};\n"
+              "    b[10];\n"
+              "    const std::array<int, 10> c = {};\n"
+              "    c[10];\n"
+              "    static constexpr std::array<int, 10> d = {};\n"
+              "    d[10];\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'a[10]', if 'a' size is 10 and '10' is 10\n"
+                      "test.cpp:5:error:Out of bounds access in 'b[10]', if 'b' size is 10 and '10' is 10\n"
+                      "test.cpp:7:error:Out of bounds access in 'c[10]', if 'c' size is 10 and '10' is 10\n"
+                      "test.cpp:9:error:Out of bounds access in 'd[10]', if 'd' size is 10 and '10' is 10\n",
+                      errout.str());
+
+        check("struct test_fixed {\n"
+              "    std::array<int, 10> array = {};\n"
+              "    void index(int i) { array[i]; }\n"
+              "};\n"
+              "void f() {\n"
+              "    test_fixed x = test_fixed();\n"
+              "    x.index(10);\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
+                      errout.str());
+
+        check("struct test_constexpr {\n"
+              "    static constexpr std::array<int, 10> array = {};\n"
+              "    void index(int i) { array[i]; }\n"
+              "};\n"
+              "void f() {\n"
+              "    test_constexpr x = test_constexpr();\n"
+              "    x.index(10);\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
+                      errout.str());
     }
 
     void outOfBoundsSymbolic()
@@ -867,6 +904,22 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> vec;\n"
+              "    std::vector<int>::iterator it = vec.begin();\n"
+              "    *it = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Out of bounds access in expression 'it' because 'vec' is empty.\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> vec;\n"
+              "    auto it = vec.begin();\n"
+              "    *it = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Out of bounds access in expression 'it' because 'vec' is empty.\n",
+                      errout.str());
     }
 
     void iterator1() {
@@ -947,7 +1000,9 @@ private:
               "    std::list<int>::iterator it = l1.begin();\n"
               "    l2.insert(it, 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n"
+                      "[test.cpp:6]: (error) Iterator 'it' from different container 'l2' are used together.\n",
+                      errout.str());
 
         check("void foo() {\n" // #5803
               "    std::list<int> l1;\n"
@@ -1379,10 +1434,8 @@ private:
     }
 
     void iterator18() {
-        check("void foo()\n"
+        check("void foo(std::list<int> l1, std::list<int> l2)\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2;\n"
               "    std::list<int>::iterator it1 = l1.begin();\n"
               "    std::list<int>::iterator it2 = l1.end();\n"
               "    while (++it1 != --it2)\n"
@@ -1391,10 +1444,8 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo()\n"
+        check("void foo(std::list<int> l1, std::list<int> l2)\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2;\n"
               "    std::list<int>::iterator it1 = l1.begin();\n"
               "    std::list<int>::iterator it2 = l1.end();\n"
               "    while (it1++ != --it2)\n"
@@ -1403,17 +1454,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo()\n"
+        check("void foo(std::list<int> l1, std::list<int> l2)\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2;\n"
               "    std::list<int>::iterator it1 = l1.begin();\n"
               "    std::list<int>::iterator it2 = l1.end();\n"
               "    if (--it2 > it1++)\n"
               "    {\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
     }
 
     void iterator19() {

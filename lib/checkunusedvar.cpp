@@ -704,7 +704,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::referenceArray;
             else if (i->isArray())
                 type = (i->dimensions().size() == 1U) ? Variables::array : Variables::pointerArray;
-            else if (i->isReference())
+            else if (i->isReference() && !(i->valueType() && i->valueType()->type == ValueType::UNKNOWN_TYPE && Token::simpleMatch(i->typeStartToken(), "auto")))
                 type = Variables::reference;
             else if (i->nameToken()->previous()->str() == "*" && i->nameToken()->strAt(-2) == "*")
                 type = Variables::pointerPointer;

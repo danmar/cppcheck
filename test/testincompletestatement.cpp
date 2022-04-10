@@ -372,9 +372,44 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void g();\n" // #10952
+              "bool f() {\n"
+              "    return (void)g(), false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int a, int b, int c, int d) {\n"
               "    Eigen::Vector4d V;\n"
               "    V << a, b, c, d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { Eigen::Vector4d V; };\n"
+              "struct T { int a, int b, int c, int d; };\n"
+              "void f(S& s, const T& t) {\n"
+              "    s.V << t.a, t.b, t.c, t.d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { Eigen::Vector4d V[2]; };\n"
+              "void f(int a, int b, int c, int d) {\n"
+              "    S s[1];\n"
+              "    s[0].V[1] << a, b, c, d;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    a.b[4][3].c()->d << x , y, z;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct V {\n"
+              "    Eigen::Vector3d& operator[](int i) { return v[i]; }\n"
+              "    void f(int a, int b, int c);\n"
+              "    Eigen::Vector3d v[1];\n"
+              "};\n"
+              "void V::f(int a, int b, int c) {\n"
+              "    (*this)[0] << a, b, c;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -593,6 +628,21 @@ private:
         check("struct S { int i; };\n" // #10917
               "bool f(S s) {\n"
               "    return [](int i) { return i > 0; }(s.i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("extern int (*p);\n" // #10936
+              "void f() {\n"
+              "    for (int i = 0; ;) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class T {};\n" // #10849
+              "void f() {\n"
+              "    auto g = [](const T* t) -> int {\n"
+              "        const T* u{}, * v{};\n"
+              "        return 0;\n"
+              "    };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

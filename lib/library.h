@@ -28,6 +28,7 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -35,6 +36,8 @@
 #include <vector>
 
 class Token;
+class TokenList;
+class Settings;
 
 namespace tinyxml2 {
     class XMLDocument;
@@ -282,6 +285,7 @@ public:
     };
     std::map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
+    const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
 
     class ArgumentChecks {
     public:
@@ -649,6 +653,10 @@ private:
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
+
+std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                 const Settings* settings,
+                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId = nullptr);
 
 /// @}
 //---------------------------------------------------------------------------

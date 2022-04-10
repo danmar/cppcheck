@@ -1864,17 +1864,11 @@ class MisraChecker:
 
         # Zero arguments should be in form ( void )
         def checkZeroArguments(func, startCall, endCall):
-            if (len(func.argument) == 0):
-                voidArg = startCall.next
-                while voidArg is not endCall:
-                    if voidArg.str == 'void':
-                        break
-                    voidArg = voidArg.next
-                if not voidArg.str == 'void':
-                    if func.tokenDef.next:
-                        self.reportError(func.tokenDef.next, 8, 2)
-                    else:
-                        self.reportError(func.tokenDef, 8, 2)
+            if not startCall.isRemovedVoidParameter and len(func.argument) == 0:
+                if func.tokenDef.next:
+                    self.reportError(func.tokenDef.next, 8, 2)
+                else:
+                    self.reportError(func.tokenDef, 8, 2)
 
         def checkDeclarationArgumentsViolations(func, startCall, endCall):
             # Collect the tokens for the arguments in function definition

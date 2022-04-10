@@ -1198,6 +1198,20 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
     return nullptr;
 }
 
+const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool* isIterator) const
+{
+    const Library::Container* c = detectContainer(typeStart);
+    if (c) {
+        if (isIterator)
+            *isIterator = false;
+        return c;
+    }
+    c = detectContainer(typeStart, true);
+    if (c && isIterator)
+        *isIterator = true;
+    return c;
+}
+
 bool Library::isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback)
 {
     if (!cond)
@@ -1650,4 +1664,51 @@ Library::TypeCheck Library::getTypeCheck(const std::string &check, const std::st
 {
     auto it = mTypeChecks.find(std::pair<std::string, std::string>(check, typeName));
     return it == mTypeChecks.end() ? TypeCheck::def : it->second;
+}
+
+std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                 const Settings* settings,
+                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId)
+{
+    std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(settings);
+    {
+        const std::string code = "return " + returnValue + ";";
+        std::istringstream istr(code);
+        if (!tokenList->createTokens(istr))
+            return nullptr;
+    }
+
+    // combine operators, set links, etc..
+    std::stack<Token*> lpar;
+    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
+        if (Token::Match(tok2, "[!<>=] =")) {
+            tok2->str(tok2->str() + "=");
+            tok2->deleteNext();
+        } else if (tok2->str() == "(")
+            lpar.push(tok2);
+        else if (tok2->str() == ")") {
+            if (lpar.empty())
+                return nullptr;
+            Token::createMutualLinks(lpar.top(), tok2);
+            lpar.pop();
+        }
+    }
+    if (!lpar.empty())
+        return nullptr;
+
+    // set varids
+    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
+        if (tok2->str().compare(0, 3, "arg") != 0)
+            continue;
+        nonneg int id = std::atoi(tok2->str().c_str() + 3);
+        tok2->varId(id);
+        if (lookupVarId)
+            (*lookupVarId)[id] = tok2;
+    }
+
+    // Evaluate expression
+    tokenList->createAst();
+    Token* expr = tokenList->front()->astOperand1();
+    ValueFlow::valueFlowConstantFoldAST(expr, settings);
+    return {tokenList, expr};
 }

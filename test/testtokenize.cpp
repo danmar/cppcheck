@@ -222,6 +222,7 @@ private:
         TEST_CASE(vardecl28);
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
+        TEST_CASE(vardecl_stl_3);
         TEST_CASE(vardecl_template_1);
         TEST_CASE(vardecl_template_2);
         TEST_CASE(vardecl_union);
@@ -2075,6 +2076,15 @@ private:
         ASSERT_EQUALS("{ std :: vector < int > x ; x = y ; }", tokenizeAndStringify(code2));
     }
 
+    void vardecl_stl_3()
+    {
+        const char code1[] = "{ std::string const x = \"abc\"; }";
+        ASSERT_EQUALS("{ const std :: string x = \"abc\" ; }", tokenizeAndStringify(code1));
+
+        const char code2[] = "{ std::vector<int> const x = y; }";
+        ASSERT_EQUALS("{ const std :: vector < int > x = y ; }", tokenizeAndStringify(code2));
+    }
+
     void vardecl_template_1() {
         // ticket #1046
         const char code1[] = "b<(1<<24),10,24> u, v;";
@@ -2508,7 +2518,7 @@ private:
                             "    unsigned short const int x = 1;\n"
                             "    return x;\n"
                             "}";
-        ASSERT_EQUALS("unsigned short f ( void ) {\n"
+        ASSERT_EQUALS("unsigned short f ( ) {\n"
                       "const unsigned short x ; x = 1 ;\n"
                       "return x ;\n"
                       "}",
@@ -3571,11 +3581,11 @@ private:
 
     void simplifyFunctionPointers6() {
         const char code1[] = "void (*fp(void))(int) {}";
-        const char expected1[] = "1: void * fp ( void ) { }\n";
+        const char expected1[] = "1: void * fp ( ) { }\n";
         ASSERT_EQUALS(expected1, tokenizeDebugListing(code1));
 
         const char code2[] = "std::string (*fp(void))(int);";
-        const char expected2[] = "1: std :: string * fp ( void ) ;\n";
+        const char expected2[] = "1: std :: string * fp ( ) ;\n";
         ASSERT_EQUALS(expected2, tokenizeDebugListing(code2));
     }
 
@@ -4071,7 +4081,7 @@ private:
 
         {
             const char code[] = "class S { int function(void); };";
-            ASSERT_EQUALS("class S { int function ( void ) ; } ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("class S { int function ( ) ; } ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -4083,7 +4093,7 @@ private:
 
         {
             const char code[] = "int function(void);";
-            ASSERT_EQUALS("int function ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function ( ) ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -4095,13 +4105,13 @@ private:
 
         {
             const char code[] = "extern int function(void);";
-            ASSERT_EQUALS("extern int function ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("extern int function ( ) ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
         {
             const char code[] = "int function1(void); int function2(void);";
-            ASSERT_EQUALS("int function1 ( void ) ; int function2 ( void ) ;", tokenizeAndStringify(code));
+            ASSERT_EQUALS("int function1 ( ) ; int function2 ( ) ;", tokenizeAndStringify(code));
             ASSERT_EQUALS("", errout.str());
         }
 
@@ -4746,7 +4756,7 @@ private:
     }
 
     void simplifyCAlternativeTokens() {
-        ASSERT_EQUALS("void or ( void ) ;", tokenizeAndStringify("void or(void);", true, Settings::Native, "test.c"));
+        ASSERT_EQUALS("void or ( ) ;", tokenizeAndStringify("void or(void);", true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", true, Settings::Native, "test.c"));
         ASSERT_EQUALS("void f ( ) { if ( a && b ) { ; } }", tokenizeAndStringify("void f() { if (a and b); }", true, Settings::Native, "test.cpp"));
         ASSERT_EQUALS("void f ( ) { if ( a || b ) { ; } }", tokenizeAndStringify("void f() { if (a or b); }", true, Settings::Native, "test.c"));
@@ -6046,6 +6056,7 @@ private:
         ASSERT_EQUALS("Aa*A{new=", testAst("A* a = new A{};"));
         ASSERT_EQUALS("Aa*A12,{new=", testAst("A* a = new A{ 1, 2 };"));
         ASSERT_EQUALS("Sv0[(new", testAst("new S(v[0]);")); // #10929
+        ASSERT_EQUALS("SS::x(px0>intx[{newint1[{new:?(:", testAst("S::S(int x) : p(x > 0 ? new int[x]{} : new int[1]{}) {}")); // #10793
 
         // placement new
         ASSERT_EQUALS("X12,3,(new ab,c,", testAst("new (a,b,c) X(1,2,3);"));
