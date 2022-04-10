@@ -5736,6 +5736,9 @@ struct ConditionHandler {
                     std::swap(thenValues, elseValues);
             }
 
+            if (!condTop)
+                return;
+
             if (Token::simpleMatch(condTop, "?")) {
                 Token* colon = condTop->astOperand2();
                 forward(colon->astOperand1(), cond.vartok, thenValues, tokenlist, settings);

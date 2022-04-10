@@ -373,16 +373,29 @@ void CheckSizeof::suspiciousSizeofCalculation()
     if (!mSettings->severity.isEnabled(Severity::warning) || !mSettings->certainty.isEnabled(Certainty::inconclusive))
         return;
 
-    // TODO: Use AST here. This should be possible as soon as sizeof without brackets is correctly parsed
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            const Token* const end = tok->linkAt(1);
-            const Variable* var = end->previous()->variable();
-            if (end->strAt(-1) == "*" || (var && var->isPointer() && !var->isArray())) {
-                if (end->strAt(1) == "/")
-                    divideSizeofError(tok);
-            } else if (Token::simpleMatch(end, ") * sizeof") && end->next()->astOperand1() == tok->next())
-                multiplySizeofError(tok);
+            const Token* lPar = tok->astParent();
+            if (lPar && lPar->str() == "(") {
+                const Token* const rPar = lPar->link();
+                const Token* varTok = rPar->previous();
+                while (varTok && varTok->str() == "]")
+                    varTok = varTok->link()->previous();
+                if (lPar->astParent() && lPar->astParent()->str() == "/") {
+                    const Variable* var = varTok ? varTok->variable() : nullptr;
+                    if (var && var->isPointer() && !var->isArray() && !(lPar->astOperand2() && lPar->astOperand2()->str() == "*"))
+                        divideSizeofError(tok);
+                    else if (varTok && varTok->str() == "*") {
+                        const Token* arrTok = lPar->astParent()->astOperand1();
+                        arrTok = arrTok ? arrTok->next() : nullptr;
+                        var = arrTok ? arrTok->variable() : nullptr;
+                        if (var && var->isPointer() && !var->isArray())
+                            divideSizeofError(tok);
+                    }
+                }
+                else if (Token::simpleMatch(rPar, ") * sizeof") && rPar->next()->astOperand1() == tok->next())
+                    multiplySizeofError(tok);
+            }
         }
     }
 }
