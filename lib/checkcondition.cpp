@@ -1490,8 +1490,10 @@ void CheckCondition::alwaysTrueFalse()
             if (hasSizeof)
                 continue;
 
-            if (!isIfConstexpr(tok))
-                alwaysTrueFalseError(tok, &tok->values().front());
+            if (isIfConstexpr(tok))
+                continue;
+
+            alwaysTrueFalseError(tok, &tok->values().front());
         }
     }
 }
