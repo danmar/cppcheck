@@ -71,7 +71,7 @@ jobs:
       - name: Create .qm
         run: |
           cd gui
-          lupdate gui.pro
+          lupdate gui.pro -no-obsolete
           lrelease gui.pro -removeidentical
 
       - name: Matchcompiler
