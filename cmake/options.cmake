@@ -1,4 +1,3 @@
-#------------------------------------------------------
 # Build type
 #------------------------------------------------------
 set(CMAKE_CONFIGURATION_TYPES "Debug;Release;RelWithDebInfo;MinSizeRel" CACHE STRING "Configs" FORCE)
@@ -40,7 +39,6 @@ option(BUILD_GUI            "Build the qt application"                          
 option(WITH_QCHART          "When building GUI(need BUILD_GUI=ON), use Qt5 Charts"          OFF)
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
-option(USE_Z3               "Usage of z3 library"                                           OFF)
 option(USE_BUNDLED_TINYXML2 "Usage of bundled tinyxml2 library"                             ON)
 option(CPPCHK_GLIBCXX_DEBUG "Usage of _GLIBCXX_DEBUG in Debug build"                        ON)
 option(USE_THREADS          "Usage of threads instead of fork() for -j"                     OFF)

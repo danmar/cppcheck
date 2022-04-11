@@ -33,5 +33,4 @@ private:
     // We don't care about the output in the benchmark tests.
     void reportOut(const std::string & /*outmsg*/, Color /*c*/ = Color::Reset) override {}
     void reportErr(const ErrorMessage & /*msg*/) override {}
-    void bughuntingReport(const std::string & /*str*/) override {}
 };

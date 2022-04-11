@@ -2409,21 +2409,6 @@ const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) cons
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-bool Token::isImpossibleIntValue(const MathLib::bigint val) const
-{
-    if (!mImpl->mValues)
-        return false;
-    for (const auto& v : *mImpl->mValues) {
-        if (v.isIntValue() && v.isImpossible() && v.intvalue == val)
-            return true;
-        if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && val > v.intvalue)
-            return true;
-        if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && val < v.intvalue)
-            return true;
-    }
-    return false;
-}
-
 const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
 {
     if (!mImpl->mValues)

@@ -26,11 +26,11 @@ jobs:
       - name: Install missing software on ubuntu
         run: |
           apt-get update
-          apt-get install -y make libz3-dev libpcre3-dev
+          apt-get install -y make libpcre3-dev
           apt-get install -y clang-13
 
       - name: Build
-        run: make -j$(nproc) cppcheck testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes VERIFY=1
+        run: make -j$(nproc) cppcheck testrunner HAVE_RULES=yes MATCHCOMPILER=yes VERIFY=1
         env:
           CC: clang-13
           CXX: clang++-13
@@ -46,8 +46,4 @@ jobs:
 #          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings cli lib
 #          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQT_VERSION=0x050000 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=qt -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings gui/*.cpp
 #          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings test/*.cpp tools
-
-# TODO: This does takes too long to run
-#      - name: Bughunting lib
-#        run: ./cppcheck -D__CPPCHECK__ --bug-hunting -j$(nproc) lib
 

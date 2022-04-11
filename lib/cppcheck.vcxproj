@@ -1,4 +1,3 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug-PCRE|Win32">
@@ -39,7 +38,6 @@
     <ClCompile Include="..\externals\tinyxml2\tinyxml2.cpp" />
     <ClCompile Include="analyzerinfo.cpp" />
     <ClCompile Include="astutils.cpp" />
-    <ClCompile Include="bughuntingchecks.cpp" />
     <ClCompile Include="check.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
@@ -81,7 +79,6 @@
     <ClCompile Include="ctu.cpp" />
     <ClCompile Include="errorlogger.cpp" />
     <ClCompile Include="errortypes.cpp" />
-    <ClCompile Include="exprengine.cpp" />
     <ClCompile Include="infer.cpp" />
     <ClCompile Include="library.cpp" />
     <ClCompile Include="mathlib.cpp" />
@@ -111,7 +108,6 @@
     <ClInclude Include="..\externals\tinyxml2\tinyxml2.h" />
     <ClInclude Include="analyzerinfo.h" />
     <ClInclude Include="astutils.h" />
-    <ClInclude Include="bughuntingchecks.h" />
     <ClInclude Include="check.h" />
     <ClInclude Include="check64bit.h" />
     <ClInclude Include="checkassert.h" />
