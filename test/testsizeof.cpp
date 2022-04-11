@@ -458,13 +458,13 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("struct S {\n"
-          "    struct T {\n"
-          "        char* c[3];\n"
-          "    } t[1];\n"
-          "};\n"
-          "void f(S* s) {\n"
-          "    for (int i = 0; i != sizeof(s->t[0].c) / sizeof(char*); i++) {}\n"
-          "}\n");
+              "    struct T {\n"
+              "        char* c[3];\n"
+              "    } t[1];\n"
+              "};\n"
+              "void f(S* s) {\n"
+              "    for (int i = 0; i != sizeof(s->t[0].c) / sizeof(char*); i++) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
