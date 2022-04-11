@@ -3438,6 +3438,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #9954
+        check("void f() {\n"
+              "    const size_t a(8 * sizeof(short));\n"
+              "    const size_t b(8 * sizeof(int));\n"
+              "    if constexpr (a == 16 && b == 16) {}\n"
+              "    else if constexpr (a == 16 && b == 32) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #9319
         check("struct S {\n"
               "  int a;\n"
