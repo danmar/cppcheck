@@ -1080,7 +1080,7 @@ private:
                 "auto operator<=>(const X & a, const X & b) -> decltype(1 <=> 2) {\n"
                 "    return std::strong_ordering::less;\n"
                 "}\n";
-        values = tokenValues(code, "<=>"); // don't throw
+        tokenValues(code, "<=>"); // don't throw
 
         // Comparison of string
         values = removeImpossible(tokenValues("f(\"xyz\" == \"xyz\");", "==")); // implementation defined
