@@ -111,6 +111,10 @@ R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
         return wrap(x >= y);
     case '<=':
         return wrap(x <= y);
+    case '<=>':
+        if (error)
+            *error = true;
+        return R{};
     }
     throw InternalError(nullptr, "Unknown operator: " + s);
 }
