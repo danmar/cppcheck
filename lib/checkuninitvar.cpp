@@ -1539,7 +1539,7 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-enum class ExprUsage { None, PassedByReference, Used };
+enum class ExprUsage { None, NotUsed, PassedByReference, Used };
 
 static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
 {
@@ -1571,6 +1571,12 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
 
 static ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
 {
+    if (indirect > 0 && tok->astParent()) {
+        if (Token::Match(tok->astParent(), "%assign%") && astIsRhs(tok))
+            return ExprUsage::NotUsed;
+        if (tok->astParent()->isCast())
+            return ExprUsage::NotUsed;
+    }
     if (indirect == 0 && Token::Match(tok->astParent(), "%cop%|%assign%") && tok->astParent()->str() != "=")
         return ExprUsage::Used;
     return getFunctionUsage(tok, indirect, settings);
@@ -1603,7 +1609,7 @@ void CheckUninitVar::valueFlowUninit()
                 }
                 if (ids.count(tok->exprId()) > 0)
                     continue;
-                if (!tok->variable() && !tok->isUnaryOp("*"))
+                if (!tok->variable() && !tok->isUnaryOp("*") && !tok->isUnaryOp("&"))
                     continue;
                 if (Token::Match(tok, "%name% ("))
                     continue;
@@ -1642,6 +1648,8 @@ void CheckUninitVar::valueFlowUninit()
                         continue;
                 }
                 ExprUsage usage = getExprUsage(tok, v->indirect, mSettings);
+                if (usage == ExprUsage::NotUsed)
+                    continue;
                 if (!v->subexpressions.empty() && usage == ExprUsage::PassedByReference)
                     continue;
                 if (usage != ExprUsage::Used) {

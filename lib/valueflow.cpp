@@ -576,6 +576,10 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     if (value.isUninitValue()) {
         if (Token::Match(tok, ". %var%"))
             setTokenValue(tok->next(), value, settings);
+        if (parent->isCast()) {
+            setTokenValue(parent, value, settings);
+            return;
+        }
         ValueFlow::Value pvalue = value;
         if (!value.subexpressions.empty() && Token::Match(parent, ". %var%")) {
             if (contains(value.subexpressions, parent->next()->str()))
