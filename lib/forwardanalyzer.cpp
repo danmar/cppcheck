@@ -131,9 +131,13 @@ struct ForwardTraversal {
             // If we are in a loop then jump to the end
             if (out)
                 *out = loopEnds.back();
-        } else if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
-            traverseRecursive(tok->astOperand1(), f, traverseUnknown);
+        } else if (Token::Match(tok, "return|throw")) {
             traverseRecursive(tok->astOperand2(), f, traverseUnknown);
+            traverseRecursive(tok->astOperand1(), f, traverseUnknown);
+            return Break(Analyzer::Terminate::Escape);
+        } else if (Token::Match(tok, "%name% (") && isEscapeFunction(tok, &settings->library)) {
+            // Traverse the parameters of the function before escaping
+            traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Escape);
         } else if (isUnevaluated(tok)) {
             if (out)

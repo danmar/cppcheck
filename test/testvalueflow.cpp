@@ -3472,6 +3472,12 @@ private:
                "  if (x == 42) {}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 11));
+
+        code = "void f() {\n"
+               "    int x = 1;\n"
+               "    exit(x);\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 1));
     }
 
     void valueFlowForwardTernary() {
