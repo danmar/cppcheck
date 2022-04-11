@@ -28,7 +28,7 @@ LibraryAddFunctionDialog::LibraryAddFunctionDialog(QWidget *parent) :
     mUi(new Ui::LibraryAddFunctionDialog)
 {
     mUi->setupUi(this);
-    const QRegularExpression rx(NAMES);
+    static const QRegularExpression rx(NAMES);
     QValidator *validator = new QRegularExpressionValidator(rx, this);
     mUi->functionName->setValidator(validator);
 }
