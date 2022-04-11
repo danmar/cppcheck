@@ -388,7 +388,7 @@ void CheckSizeof::suspiciousSizeofCalculation()
                     else if (varTok && varTok->str() == "*") {
                         const Token* arrTok = lPar->astParent()->astOperand1();
                         arrTok = arrTok ? arrTok->astOperand2() : nullptr;
-                        while (Token::Match(arrTok, ".|["))
+                        while (Token::Match(arrTok, "."))
                             arrTok = arrTok->astOperand2();
                         var = arrTok ? arrTok->variable() : nullptr;
                         if (var && var->isPointer() && !var->isArray())
