@@ -409,13 +409,6 @@ Parameters: -l(line) (file)</source>
     </message>
 </context>
 <context>
-    <name>LogView</name>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="26"/>
@@ -459,10 +452,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="93"/>
         <source>&amp;Toolbars</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Check</source>
-        <translation type="obsolete">&amp;Check</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="135"/>
@@ -528,10 +517,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="277"/>
         <source>Ctrl+D</source>
         <translation type="unfinished">Ctrl+D</translation>
-    </message>
-    <message>
-        <source>&amp;Recheck files</source>
-        <translation type="obsolete">&amp;Recheck files</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="289"/>
@@ -670,14 +655,6 @@ Parameters: -l(line) (file)</source>
         <translation>Windows 64-bit</translation>
     </message>
     <message>
-        <source>C++11</source>
-        <translation type="obsolete">C++11</translation>
-    </message>
-    <message>
-        <source>C99</source>
-        <translation type="obsolete">C99</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="751"/>
         <source>&amp;Print...</source>
         <translation type="unfinished"></translation>
@@ -701,26 +678,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="770"/>
         <source>Open library editor</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Gtk</source>
-        <translation type="obsolete">Gtk</translation>
-    </message>
-    <message>
-        <source>Posix</source>
-        <translation type="obsolete">Posix</translation>
-    </message>
-    <message>
-        <source>C11</source>
-        <translation type="obsolete">C11</translation>
-    </message>
-    <message>
-        <source>C89</source>
-        <translation type="obsolete">C89</translation>
-    </message>
-    <message>
-        <source>C++03</source>
-        <translation type="obsolete">C++03</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="395"/>
@@ -985,14 +942,6 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished">&amp;Help</translation>
     </message>
     <message>
-        <source>Select directory to check</source>
-        <translation type="obsolete">Select directory to check</translation>
-    </message>
-    <message>
-        <source>No suitable files found to check!</source>
-        <translation type="obsolete">No suitable files found to check!</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="92"/>
         <location filename="mainwindow.cpp" line="1439"/>
         <source>Quick Filter:</source>
@@ -1047,10 +996,6 @@ Do you want to load this project file instead?</source>
         <translation type="unfinished">Authors</translation>
     </message>
     <message>
-        <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation type="obsolete">XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1357"/>
         <source>Save the report file</source>
         <translation type="unfinished">Save the report file</translation>
@@ -1072,10 +1017,6 @@ This is probably because the settings were changed between the Cppcheck versions
         <location filename="mainwindow.cpp" line="562"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">Select files to check</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="776"/>
@@ -1132,10 +1073,6 @@ This is probably because the settings were changed between the Cppcheck versions
         <location filename="mainwindow.cpp" line="1372"/>
         <source>CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cppcheck - %1</source>
-        <translation type="vanished">Cppcheck - %1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1477"/>
@@ -1368,13 +1305,6 @@ Options:
         <location filename="platforms.cpp" line="43"/>
         <source>Windows 64-bit</source>
         <translation>Windows 64-bit</translation>
-    </message>
-</context>
-<context>
-    <name>Project</name>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
     </message>
 </context>
 <context>
@@ -2020,14 +1950,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Copy filename</source>
-        <translation type="obsolete">Copy filename</translation>
-    </message>
-    <message>
-        <source>Copy full path</source>
-        <translation type="obsolete">Copy full path</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="651"/>
         <source>Hide</source>
         <translation type="unfinished"></translation>
@@ -2218,10 +2140,6 @@ To toggle what kind of errors are shown, open view menu.</translation>
         <location filename="resultsview.cpp" line="484"/>
         <source>Copy complete Log</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No errors found, nothing to save.</source>
-        <translation type="obsolete">No errors found, nothing to save.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="181"/>

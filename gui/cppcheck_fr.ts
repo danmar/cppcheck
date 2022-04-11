@@ -452,10 +452,6 @@ Paramètres : -l(ligne) (fichier)</translation>
         <translation>&amp;Aide</translation>
     </message>
     <message>
-        <source>&amp;Check</source>
-        <translation type="obsolete">&amp;Vérifier</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="170"/>
         <source>&amp;Edit</source>
         <translation>&amp;Édition</translation>
@@ -499,10 +495,6 @@ Paramètres : -l(ligne) (fichier)</translation>
         <location filename="mainwindow.ui" line="277"/>
         <source>Ctrl+D</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Recheck files</source>
-        <translation type="obsolete">&amp;Revérifier les fichiers</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="289"/>
@@ -580,14 +572,6 @@ Paramètres : -l(ligne) (fichier)</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>No suitable files found to check!</source>
-        <translation type="obsolete">Pas de fichiers trouvés à vérifier !</translation>
-    </message>
-    <message>
-        <source>Select directory to check</source>
-        <translation type="obsolete">Sélectionner le répertoire à vérifier</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1335"/>
         <source>License</source>
         <translation>Licence</translation>
@@ -634,30 +618,10 @@ Paramètres : -l(ligne) (fichier)</translation>
         <translation>Catégories</translation>
     </message>
     <message>
-        <source>Check files</source>
-        <translation type="obsolete">Vérifier les fichiers</translation>
-    </message>
-    <message>
-        <source>Check directory</source>
-        <translation type="obsolete">Vérifier un répertoire</translation>
-    </message>
-    <message>
-        <source>Stop checking</source>
-        <translation type="obsolete">Arrêter la vérification</translation>
-    </message>
-    <message>
-        <source>Style warnings</source>
-        <translation type="obsolete">Avertissement de style</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="369"/>
         <location filename="mainwindow.ui" line="372"/>
         <source>Show style warnings</source>
         <translation>Afficher les avertissements de style</translation>
-    </message>
-    <message>
-        <source>Errors</source>
-        <translation type="obsolete">Erreurs</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="387"/>
@@ -731,18 +695,10 @@ Paramètres : -l(ligne) (fichier)</translation>
         <translation>Statistiques</translation>
     </message>
     <message>
-        <source>Warnings</source>
-        <translation type="obsolete">Avertissements</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="533"/>
         <location filename="mainwindow.ui" line="536"/>
         <source>Show warnings</source>
         <translation>Afficher les avertissements</translation>
-    </message>
-    <message>
-        <source>Performance warnings</source>
-        <translation type="obsolete">Avertissements de performance</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="551"/>
@@ -767,10 +723,6 @@ Paramètres : -l(ligne) (fichier)</translation>
         <translation>Afficher les messages d&apos;information</translation>
     </message>
     <message>
-        <source>Portability</source>
-        <translation type="obsolete">Portabilité</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="592"/>
         <source>Show portability warnings</source>
         <translation>Afficher les problèmes de portabilité</translation>
@@ -784,14 +736,6 @@ Paramètres : -l(ligne) (fichier)</translation>
         <location filename="mainwindow.cpp" line="1176"/>
         <source>Open the report file</source>
         <translation>Ouvrir le rapport</translation>
-    </message>
-    <message>
-        <source>Checking is running.
-
-Do you want to stop the checking and exit Cppcheck?</source>
-        <translation type="obsolete">Vérification en cours.
-
-Voulez-vous arrêter la vérification et quitter CppCheck ?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1477"/>
@@ -898,18 +842,6 @@ Do you want to remove the file from the recently used projects -list?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Current results will be cleared.
-
-Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation type="vanished">Les résultats courant seront effacés.
-
-L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vous confirmar l&apos;opération ?</translation>
-    </message>
-    <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">Sélectionner les fichiers à vérifier</translation>
-    </message>
-    <message>
         <location filename="main.cpp" line="114"/>
         <source>Cppcheck GUI - Command line parameters</source>
         <translation type="unfinished"></translation>
@@ -997,18 +929,6 @@ L&apos;ouverture d&apos;un nouveau fichier XML effacera les resultats. Voulez-vo
         <location filename="mainwindow.ui" line="770"/>
         <source>Open library editor</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Auto-detect language</source>
-        <translation type="obsolete">Auto-detection du langage</translation>
-    </message>
-    <message>
-        <source>&amp;Recheck modified files</source>
-        <translation type="obsolete">&amp;Revérifier les fichiers modifiés</translation>
-    </message>
-    <message>
-        <source>&amp;Recheck all files</source>
-        <translation type="obsolete">&amp;Revérifier tous les fichiers</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="806"/>
@@ -1381,17 +1301,6 @@ Do you want to proceed?</source>
     </message>
 </context>
 <context>
-    <name>Project</name>
-    <message>
-        <source>Could not read the project file.</source>
-        <translation type="obsolete">Impossible de lire le fichier projet.</translation>
-    </message>
-    <message>
-        <source>Could not write the project file.</source>
-        <translation type="obsolete">Impossible d&apos;écrire dans le fichier projet.</translation>
-    </message>
-</context>
-<context>
     <name>ProjectFile</name>
     <message>
         <location filename="projectfile.ui" line="14"/>
@@ -1407,10 +1316,6 @@ Do you want to proceed?</source>
         <location filename="projectfile.ui" line="221"/>
         <source>Defines:</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Project</source>
-        <translation type="obsolete">Projet</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="181"/>
@@ -1434,18 +1339,6 @@ Do you want to proceed?</source>
         <translation>Supprimer</translation>
     </message>
     <message>
-        <source>Includes</source>
-        <translation type="obsolete">Inclusions</translation>
-    </message>
-    <message>
-        <source>Include directories:</source>
-        <translation type="obsolete">Inclure les répertoires</translation>
-    </message>
-    <message>
-        <source>Root:</source>
-        <translation type="obsolete">Répertoire racine</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="330"/>
         <source>Up</source>
         <translation>Monter</translation>
@@ -1456,21 +1349,9 @@ Do you want to proceed?</source>
         <translation>Descendre</translation>
     </message>
     <message>
-        <source>Exclude</source>
-        <translation type="obsolete">Exclure</translation>
-    </message>
-    <message>
-        <source>Libraries:</source>
-        <translation type="obsolete">Bibliothèques</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="686"/>
         <source>Suppressions</source>
         <translation>Suppressions</translation>
-    </message>
-    <message>
-        <source>Suppression list:</source>
-        <translation type="obsolete">Liste de suppressions</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="697"/>
@@ -1801,25 +1682,6 @@ Do you want to proceed?</source>
     </message>
 </context>
 <context>
-    <name>QDialogButtonBox</name>
-    <message>
-        <source>OK</source>
-        <translation type="vanished">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Annuler</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">Fermer</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="vanished">Sauvegarder</translation>
-    </message>
-</context>
-<context>
     <name>QObject</name>
     <message>
         <location filename="translationhandler.cpp" line="111"/>
@@ -2033,18 +1895,6 @@ Do you want to proceed?</source>
         <translation>Fichier indéterminé</translation>
     </message>
     <message>
-        <source>Copy filename</source>
-        <translation type="obsolete">Copier le nom du fichier</translation>
-    </message>
-    <message>
-        <source>Copy full path</source>
-        <translation type="obsolete">Copier le chemin complet</translation>
-    </message>
-    <message>
-        <source>Copy message</source>
-        <translation type="obsolete">Copier le message</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="731"/>
         <location filename="resultstree.cpp" line="745"/>
         <source>Cppcheck</source>
@@ -2083,14 +1933,6 @@ Merci de vérifier que le chemin de l&apos;application et que les paramètres so
         <location filename="resultstree.cpp" line="772"/>
         <source>Could not find the file!</source>
         <translation>Fichier introuvable !</translation>
-    </message>
-    <message>
-        <source>Could not find file:
-%1
-Please select the directory where file is located.</source>
-        <translation type="obsolete">Fichier introuvable:
-%1
-Veuillez sélectionner le répertoire où est situé le fichier.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="840"/>
@@ -2140,10 +1982,6 @@ Please select the default editor application in preferences/Applications.</sourc
         <location filename="resultstree.cpp" line="1423"/>
         <source>Id</source>
         <translation>Id</translation>
-    </message>
-    <message>
-        <source>Copy message id</source>
-        <translation type="obsolete">Copier l&apos;identifiant du message</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="652"/>
@@ -2248,10 +2086,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>No errors found, nothing to save.</source>
-        <translation type="vanished">Pas d&apos;erreurs trouvées, rien à sauvegarder.</translation>
-    </message>
-    <message>
         <location filename="resultsview.cpp" line="181"/>
         <location filename="resultsview.cpp" line="189"/>
         <source>Failed to save the report.</source>
@@ -2262,14 +2096,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <location filename="resultsview.cpp" line="353"/>
         <source>Failed to read the report.</source>
         <translation>Erreur lors de la lecture du rapport</translation>
-    </message>
-    <message>
-        <source>Summary</source>
-        <translation type="obsolete">Résumé</translation>
-    </message>
-    <message>
-        <source>Message</source>
-        <translation type="obsolete">Message</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="262"/>
@@ -2403,10 +2229,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <translation>Sauvegarder le chemin complet des fichiers dans les rapports</translation>
     </message>
     <message>
-        <source>Include paths:</source>
-        <translation type="obsolete">Inclure les chemins</translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="195"/>
         <source>Add...</source>
         <translation>Ajouter...</translation>
@@ -2430,14 +2252,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <location filename="settings.ui" line="273"/>
         <source>Language</source>
         <translation>Langue</translation>
-    </message>
-    <message>
-        <source>Paths</source>
-        <translation type="obsolete">Chemins</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="obsolete">Editer</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
@@ -2574,10 +2388,6 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
         <location filename="settingsdialog.cpp" line="108"/>
         <source>N/A</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select include directory</source>
-        <translation type="obsolete">Selectionner un répertoire à inclure</translation>
     </message>
     <message>
         <location filename="settingsdialog.cpp" line="290"/>

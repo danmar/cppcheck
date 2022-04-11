@@ -421,33 +421,6 @@ Parameters: -l(lijn) (bestand)</translation>
     </message>
 </context>
 <context>
-    <name>LogView</name>
-    <message>
-        <source>Checking Log</source>
-        <translation type="obsolete">Controleer log</translation>
-    </message>
-    <message>
-        <source>Clear</source>
-        <translation type="obsolete">Wis</translation>
-    </message>
-    <message>
-        <source>Save Log</source>
-        <translation type="obsolete">Opslaan log</translation>
-    </message>
-    <message>
-        <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="obsolete">Tekst bestanden (*.txt *.log);;Alle bestanden(*.*)</translation>
-    </message>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
-    </message>
-    <message>
-        <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="obsolete">Kan bestand: &quot;%1&quot; niet openen om te schrijven</translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="26"/>
@@ -491,10 +464,6 @@ Parameters: -l(lijn) (bestand)</translation>
         <location filename="mainwindow.ui" line="93"/>
         <source>&amp;Toolbars</source>
         <translation>&amp;Werkbalken</translation>
-    </message>
-    <message>
-        <source>&amp;Check</source>
-        <translation type="obsolete">&amp;Controleer</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="135"/>
@@ -562,10 +531,6 @@ Parameters: -l(lijn) (bestand)</translation>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <source>&amp;Recheck files</source>
-        <translation type="obsolete">&amp;Opnieuw controleren</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="289"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
@@ -613,32 +578,16 @@ Parameters: -l(lijn) (bestand)</translation>
         <translation>&amp;Voorkeuren</translation>
     </message>
     <message>
-        <source>Errors</source>
-        <translation type="obsolete">Fouten</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="387"/>
         <location filename="mainwindow.ui" line="390"/>
         <source>Show errors</source>
         <translation>Toon fouten</translation>
     </message>
     <message>
-        <source>Show S&amp;cratchpad...</source>
-        <translation type="obsolete">Toon S&amp;cratchpad...</translation>
-    </message>
-    <message>
-        <source>Warnings</source>
-        <translation type="obsolete">Waarschuwingen</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="533"/>
         <location filename="mainwindow.ui" line="536"/>
         <source>Show warnings</source>
         <translation>Toon waarschuwingen</translation>
-    </message>
-    <message>
-        <source>Performance warnings</source>
-        <translation type="obsolete">Presentatie waarschuwingen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="551"/>
@@ -661,10 +610,6 @@ Parameters: -l(lijn) (bestand)</translation>
         <location filename="mainwindow.ui" line="577"/>
         <source>Show information messages</source>
         <translation>Toon informatie bericht</translation>
-    </message>
-    <message>
-        <source>Portability</source>
-        <translation type="obsolete">Portabiliteit</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="592"/>
@@ -988,10 +933,6 @@ Parameters: -l(lijn) (bestand)</translation>
         <translation>Categorieën</translation>
     </message>
     <message>
-        <source>Style warnings</source>
-        <translation type="obsolete">Stijl waarschuwingen</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="369"/>
         <location filename="mainwindow.ui" line="372"/>
         <source>Show style warnings</source>
@@ -1013,14 +954,6 @@ Parameters: -l(lijn) (bestand)</translation>
         <translation>&amp;Help</translation>
     </message>
     <message>
-        <source>Select directory to check</source>
-        <translation type="obsolete">Selecteer een map om te controleren</translation>
-    </message>
-    <message>
-        <source>No suitable files found to check!</source>
-        <translation type="obsolete">Geen geschikte bestanden gevonden om te controleren!</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="92"/>
         <location filename="mainwindow.cpp" line="1439"/>
         <source>Quick Filter:</source>
@@ -1038,13 +971,6 @@ Parameters: -l(lijn) (bestand)</translation>
 Do you want to load this project file instead?</source>
         <translation>Project bestand gevonden: %1
 Wilt u dit project laden in plaats van?</translation>
-    </message>
-    <message>
-        <source>Found project files from the directory.
-
-Do you want to proceed checking without using any of these project files?</source>
-        <translation type="obsolete">Project bestanden gevonden in de map.
-Wil je verder wilt gaan zonder controle van deze project bestanden?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="785"/>
@@ -1083,11 +1009,6 @@ Wil je verder wilt gaan zonder controle van deze project bestanden?</translation
         <translation>Auteurs</translation>
     </message>
     <message>
-        <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <oldsource>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</oldsource>
-        <translation type="obsolete">XML bestanden (*.xml);;Tekst bestanden (*.txt);;CSV bestanden (*.csv)</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1357"/>
         <source>Save the report file</source>
         <translation>Rapport opslaan </translation>
@@ -1111,10 +1032,6 @@ Dit is waarschijnlijk omdat de instellingen zijn gewijzigd tussen de versies van
         <location filename="mainwindow.cpp" line="562"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>Je moet project bestanden sluiten voordat je nieuwe bestanden of mappen selekteerd!</translation>
-    </message>
-    <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">Selecteer bestanden om te controleren</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="776"/>
@@ -1158,33 +1075,9 @@ Dit is waarschijnlijk omdat de instellingen zijn gewijzigd tussen de versies van
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Current results will be cleared.
-
-Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation type="vanished">Huidige resultaten zullen worden gewist
-
-Een nieuw XML-bestand openen zal de huidige resultaten wissen Wilt u verder gaan?</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1176"/>
         <source>Open the report file</source>
         <translation>Open het rapport bestand</translation>
-    </message>
-    <message>
-        <source>Checking is running.
-
-Do you want to stop the checking and exit Cppcheck?</source>
-        <translation type="obsolete">Het controleren loopt.
-
-Wil je het controleren stoppen en Cppcheck sluiten?</translation>
-    </message>
-    <message>
-        <source>XML files version 1 (*.xml)</source>
-        <translation type="obsolete">XML files version 1 (*.xml)</translation>
-    </message>
-    <message>
-        <source>XML files version 2 (*.xml)</source>
-        <translation type="obsolete">XML files version 2 (*.xml)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1368"/>
@@ -1195,10 +1088,6 @@ Wil je het controleren stoppen en Cppcheck sluiten?</translation>
         <location filename="mainwindow.cpp" line="1372"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV bestanden (*.csv)</translation>
-    </message>
-    <message>
-        <source>Cppcheck - %1</source>
-        <translation type="vanished">Cppcheck - %1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1477"/>
@@ -1337,29 +1226,6 @@ Kan niet worden gevonden!
 Wilt u het bestand van de onlangs gebruikte project verwijderen -lijst?</translation>
     </message>
     <message>
-        <source>Cppcheck GUI.
-
-Syntax:
-    cppcheck-gui [OPTIONS] [files or paths]
-
-Options:
-    -h, --help     Print this help
-    -p &lt;file&gt;      Open given project file and start checking it
-    -l &lt;file&gt;      Open given results xml file
-    -d &lt;directory&gt; Specify the directory that was checked to generate the results xml specified with -l
-    -v, --version  Show program version</source>
-        <translation type="obsolete">Cppcheck GUI.
-Syntax:
-....cppcheck-gui [Opies] [bestanden of paden]
-
-Opties:
-.....-h, --help     Print deze help
-.....-p &lt;bestand&gt;......Open project bestand en start de controle
-.....-l &lt;bestand&gt;......Open gegeven resultaten xml bestand
-.....-d &lt;map&gt; Geef de map aan wat gecontroleerd werd om de xml resultaten te genereren met gespecificeerde -l
-.....-v,.--versie  Toon versie van programma</translation>
-    </message>
-    <message>
         <location filename="main.cpp" line="99"/>
         <source>Cppcheck GUI.
 
@@ -1431,10 +1297,6 @@ Options:
 <context>
     <name>Platforms</name>
     <message>
-        <source>Built-in</source>
-        <translation type="obsolete">Gemaakt in</translation>
-    </message>
-    <message>
         <location filename="platforms.cpp" line="38"/>
         <source>Native</source>
         <translation type="unfinished"></translation>
@@ -1466,30 +1328,11 @@ Options:
     </message>
 </context>
 <context>
-    <name>Project</name>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
-    </message>
-    <message>
-        <source>Could not read the project file.</source>
-        <translation type="obsolete">Kon project bestand niet lezen.</translation>
-    </message>
-    <message>
-        <source>Could not write the project file.</source>
-        <translation type="obsolete">Kon niet naar project bestand schrijven.</translation>
-    </message>
-</context>
-<context>
     <name>ProjectFile</name>
     <message>
         <location filename="projectfile.ui" line="14"/>
         <source>Project File</source>
         <translation>Project Bestand</translation>
-    </message>
-    <message>
-        <source>Project</source>
-        <translation type="obsolete">Project</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="24"/>
@@ -1507,11 +1350,6 @@ Options:
         <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
         <oldsource>Defines must be separated by a semicolon &apos;;&apos;</oldsource>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Root:</source>
-        <oldsource>Root:</oldsource>
-        <translation type="obsolete">Hoofdmap:</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="389"/>
@@ -1673,14 +1511,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Includes</source>
-        <translation type="obsolete">Inclusief</translation>
-    </message>
-    <message>
-        <source>Include directories:</source>
-        <translation type="obsolete">Include mappen:</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="330"/>
         <source>Up</source>
         <translation>Omhoog</translation>
@@ -1744,10 +1574,6 @@ Options:
         <location filename="projectfile.ui" line="380"/>
         <source>Libraries</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Exclude</source>
-        <translation type="obsolete">Exclusief</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="686"/>
@@ -1882,21 +1708,6 @@ Options:
         <location filename="projectfiledialog.cpp" line="867"/>
         <source>MISRA rule texts file (%1)</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QDialogButtonBox</name>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Annuleer</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">Sluit</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="vanished">Opslaan</translation>
     </message>
 </context>
 <context>
@@ -2146,10 +1957,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>[Inconclusive]</source>
-        <translation type="obsolete">[Onduidelijk]</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="347"/>
         <source>debug</source>
         <translation></translation>
@@ -2163,22 +1970,6 @@ Options:
         <location filename="resultstree.cpp" line="649"/>
         <source>Recheck</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copy filename</source>
-        <translation type="obsolete">Kopier bestandsnaam</translation>
-    </message>
-    <message>
-        <source>Copy full path</source>
-        <translation type="obsolete">Kopieer volledig pad</translation>
-    </message>
-    <message>
-        <source>Copy message</source>
-        <translation type="obsolete">Kopieer bericht</translation>
-    </message>
-    <message>
-        <source>Copy message id</source>
-        <translation type="obsolete">Kopieer bericht id</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="651"/>
@@ -2248,13 +2039,6 @@ Please check the application path and parameters are correct.</source>
         <translation>Kon applicatie %1 niet starten
 
 Gelieve te controleren of de het pad en de parameters correct zijn.</translation>
-    </message>
-    <message>
-        <source>Could not find file:
-%1
-Please select the directory where file is located.</source>
-        <translation type="obsolete">%1
-Selecteer de map waarin het bestand zich bevindt.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="840"/>
@@ -2354,14 +2138,6 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Summary</source>
-        <translation type="obsolete">Overzicht</translation>
-    </message>
-    <message>
-        <source>Message</source>
-        <translation type="obsolete">Bericht</translation>
-    </message>
-    <message>
         <location filename="resultsview.cpp" line="401"/>
         <source>First included by</source>
         <translation type="unfinished"></translation>
@@ -2390,10 +2166,6 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
         <location filename="resultsview.cpp" line="484"/>
         <source>Copy complete Log</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No errors found, nothing to save.</source>
-        <translation type="vanished">Geen fouten gevonden; geen data om op te slaan.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="181"/>
@@ -2456,10 +2228,6 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
         <location filename="settings.ui" line="24"/>
         <source>General</source>
         <translation>Algemeen</translation>
-    </message>
-    <message>
-        <source>Include paths:</source>
-        <translation type="obsolete">Include paden:</translation>
     </message>
     <message>
         <location filename="settings.ui" line="195"/>
@@ -2600,14 +2368,6 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Paths</source>
-        <translation type="obsolete">Paden</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="obsolete">Bewerk</translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="209"/>
         <source>Remove</source>
         <translation>Verwijder</translation>
@@ -2647,18 +2407,6 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
         <location filename="settings.ui" line="273"/>
         <source>Language</source>
         <translation>Taal</translation>
-    </message>
-    <message>
-        <source>Advanced</source>
-        <translation type="obsolete">Geavanceerd</translation>
-    </message>
-    <message>
-        <source>&amp;Show inconclusive errors</source>
-        <translation type="obsolete">&amp;Toon onduidelijke fouten</translation>
-    </message>
-    <message>
-        <source>S&amp;how internal warnings in log</source>
-        <translation type="obsolete">T&amp;oon interne waarschuwingen in log</translation>
     </message>
 </context>
 <context>
@@ -2707,10 +2455,6 @@ Gebruik het uitzicht menu om te selecteren welke fouten getoond worden.</transla
         <location filename="settingsdialog.cpp" line="383"/>
         <source>Select clang path</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select include directory</source>
-        <translation type="obsolete">Selecteer include map</translation>
     </message>
 </context>
 <context>

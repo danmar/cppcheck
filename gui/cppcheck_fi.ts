@@ -411,13 +411,6 @@ Parameters: -l(line) (file)</source>
     </message>
 </context>
 <context>
-    <name>LogView</name>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="26"/>
@@ -461,10 +454,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="93"/>
         <source>&amp;Toolbars</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Check</source>
-        <translation type="obsolete">&amp;Tarkista</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="135"/>
@@ -530,10 +519,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="277"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
-    </message>
-    <message>
-        <source>&amp;Recheck files</source>
-        <translation type="obsolete">Tarkista tiedostot &amp;uudelleen</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="289"/>
@@ -959,14 +944,6 @@ Parameters: -l(line) (file)</source>
         <translation>&amp;Ohje</translation>
     </message>
     <message>
-        <source>Select directory to check</source>
-        <translation type="obsolete">Valitse tarkistettava hakemisto</translation>
-    </message>
-    <message>
-        <source>No suitable files found to check!</source>
-        <translation type="obsolete">Tarkistettavaksi sopivia tiedostoja ei löytynyt!</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="92"/>
         <location filename="mainwindow.cpp" line="1439"/>
         <source>Quick Filter:</source>
@@ -1021,11 +998,6 @@ Do you want to load this project file instead?</source>
         <translation>Tekijät</translation>
     </message>
     <message>
-        <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <oldsource>XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</oldsource>
-        <translation type="obsolete">XML-tiedostot (*.xml);;Tekstitiedostot (*.txt);;CSV-tiedostot (*.csv)</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1357"/>
         <source>Save the report file</source>
         <translation>Tallenna raportti</translation>
@@ -1047,10 +1019,6 @@ This is probably because the settings were changed between the Cppcheck versions
         <location filename="mainwindow.cpp" line="562"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">Valitse tarkistettavat tiedostot</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="776"/>
@@ -1107,10 +1075,6 @@ This is probably because the settings were changed between the Cppcheck versions
         <location filename="mainwindow.cpp" line="1372"/>
         <source>CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cppcheck - %1</source>
-        <translation type="vanished">Cppcheck - %1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1477"/>
@@ -1343,13 +1307,6 @@ Options:
         <location filename="platforms.cpp" line="43"/>
         <source>Windows 64-bit</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Project</name>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
     </message>
 </context>
 <context>
@@ -1997,14 +1954,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Copy filename</source>
-        <translation type="obsolete">Kopioi tiedostonimi</translation>
-    </message>
-    <message>
-        <source>Copy full path</source>
-        <translation type="obsolete">Kopioi tiedoston koko polku</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="651"/>
         <source>Hide</source>
         <translation type="unfinished"></translation>
@@ -2196,10 +2145,6 @@ Määrittääksesi minkä tyyppisiä virheitä näytetään, avaa näkymä valik
         <location filename="resultsview.cpp" line="484"/>
         <source>Copy complete Log</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No errors found, nothing to save.</source>
-        <translation type="vanished">Virheitä ei löytynyt, ei mitään tallennettavaa.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="181"/>
