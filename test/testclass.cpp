@@ -194,6 +194,7 @@ private:
         TEST_CASE(const75); // ticket #10065
         TEST_CASE(const76); // ticket #10825
         TEST_CASE(const77); // ticket #10307
+        TEST_CASE(const78); // ticket #10315
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -6038,6 +6039,26 @@ private:
                    "    std::vector<T> const* f() const { return p; }\n"
                    "    std::vector<T> const* p;\n"
                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const78() { // #10315
+        checkConst("struct S {\n"
+                   "    typedef void(S::* F)();\n"
+                   "    void g(F f);\n"
+                   "};\n"
+                   "void S::g(F f) {\n"
+                   "    (this->*f)();\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    using F = void(S::*)();\n"
+                   "    void g(F f);\n"
+                   "};\n"
+                   "void S::g(F f) {\n"
+                   "    (this->*f)();\n"
+                   "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

@@ -134,10 +134,3 @@ int ThreadResult::getFileCount() const
     QMutexLocker locker(&mutex);
     return mFiles.size() + mFileSettings.size();
 }
-
-void ThreadResult::bughuntingReport(const std::string &str)
-{
-    if (str.empty())
-        return;
-    emit bughuntingReportLine(QString::fromStdString(str));
-}

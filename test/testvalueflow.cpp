@@ -3472,6 +3472,12 @@ private:
                "  if (x == 42) {}\n"
                "}";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, 11));
+
+        code = "void f() {\n"
+               "    int x = 1;\n"
+               "    exit(x);\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 1));
     }
 
     void valueFlowForwardTernary() {
@@ -6442,6 +6448,9 @@ private:
                "    void f(std::array<T*, 2>& a);\n"
                "};\n";
         valueOfTok(code, "a");
+
+        code = "void f(const char * const x) { !!system(x); }\n";
+        valueOfTok(code, "x");
     }
 
     void valueFlowHang() {

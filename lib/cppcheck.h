@@ -206,8 +206,6 @@ private:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
 
-    void bughuntingReport(const std::string &str) override;
-
     std::list<std::string> mErrorList;
     Settings mSettings;
 

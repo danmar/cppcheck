@@ -15,11 +15,6 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Install missing software
-        run: |
-          sudo apt-get update
-          sudo apt-get install libz3-dev
-
       - name: Cache Qt ${{ env.QT_VERSION }}
         id: cache-qt
         uses: actions/cache@v1  # not v2!
@@ -44,7 +39,7 @@ jobs:
         run: |
           mkdir cmake.output
           pushd cmake.output
-          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
 
       - name: Generate dependencies
         run: |
@@ -68,7 +63,7 @@ jobs:
         run: |
           mkdir cmake.output.notest
           pushd cmake.output.notest
-          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=0 -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=0 -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
 
       - name: Generate dependencies (no test)
         run: |

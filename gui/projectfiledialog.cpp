@@ -210,7 +210,6 @@ ProjectFileDialog::ProjectFileDialog(ProjectFile *projectFile, QWidget *parent)
     connect(mUI->mListSuppressions, &QListWidget::doubleClicked, this, &ProjectFileDialog::editSuppression);
     connect(mUI->mBtnBrowseMisraFile, &QPushButton::clicked, this, &ProjectFileDialog::browseMisraFile);
     connect(mUI->mChkAllVsConfigs, &QCheckBox::clicked, this, &ProjectFileDialog::checkAllVSConfigs);
-    connect(mUI->mBtnNormalAnalysis, &QCheckBox::toggled, mUI->mBtnSafeClasses, &QCheckBox::setEnabled);
     loadFromProjectFile(projectFile);
 }
 
@@ -282,7 +281,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     else
         mUI->mBtnCppcheckParser->setChecked(true);
     mUI->mBtnSafeClasses->setChecked(projectFile->safeChecks.classes);
-    mUI->mBtnBugHunting->setChecked(projectFile->bugHunting);
     setExcludedPaths(projectFile->getExcludedPaths());
     setLibraries(projectFile->getLibraries());
     const QString platform = projectFile->getPlatform();
@@ -376,7 +374,6 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
     projectFile->setLibraries(getLibraries());
     projectFile->clangParser = mUI->mBtnClangParser->isChecked();
     projectFile->safeChecks.classes = mUI->mBtnSafeClasses->isChecked();
-    projectFile->bugHunting = mUI->mBtnBugHunting->isChecked();
     if (mUI->mComboBoxPlatform->currentText().endsWith(".xml"))
         projectFile->setPlatform(mUI->mComboBoxPlatform->currentText());
     else {

@@ -16,7 +16,6 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils
-          sudo apt-get install libz3-dev libz3-4
           sudo apt-get install lcov
           sudo apt-get install libcppunit-dev
           python -m pip install pip --upgrade
@@ -24,7 +23,7 @@ jobs:
 
       - name: Compile instrumented
         run: |
-          make -j$(nproc) test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" USE_Z3=yes HAVE_RULES=yes
+          make -j$(nproc) test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes
           
       - name: Generate coverage report
         run: |

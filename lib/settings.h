@@ -108,16 +108,6 @@ public:
     /** @brief Paths used as base for conversion to relative paths. */
     std::vector<std::string> basePaths;
 
-    /** @brief Bug hunting */
-    bool bugHunting;
-
-    /** @brief Max time for bug hunting analysis in seconds, after
-     * timeout the analysis will just stop. */
-    int bugHuntingCheckFunctionMaxTime;
-
-    /** Filename for bug hunting report */
-    std::string bugHuntingReport;
-
     /** @brief --cppcheck-build-dir. Always uses / as path separator. No trailing path separator. */
     std::string buildDir;
 
@@ -162,9 +152,6 @@ public:
     /** @brief Are we running from DACA script? */
     bool daca;
 
-    /** @brief Debug bug hunting */
-    bool debugBugHunting;
-
     /** @brief Is --debug-normal given? */
     bool debugnormal;
 
@@ -203,14 +190,6 @@ public:
 
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool force;
-
-    std::map<std::string, std::string> functionContracts;
-
-    struct VariableContracts {
-        std::string minValue;
-        std::string maxValue;
-    };
-    std::map<std::string, VariableContracts> variableContracts;
 
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */

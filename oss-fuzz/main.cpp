@@ -50,9 +50,6 @@ public:
         (void)stage;
         (void)value;
     }
-    void bughuntingReport(const std::string &str) override {
-        (void)str;
-    }
 };
 
 

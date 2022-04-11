@@ -25,8 +25,6 @@ jobs:
     env:
       # see https://www.pcre.org/original/changelog.txt
       PCRE_VERSION: 8.45
-      # see https://github.com/Z3Prover/z3/releases:
-      Z3_VERSION: 4.8.15
 
     steps:
       - uses: actions/checkout@v2
@@ -71,25 +69,6 @@ jobs:
           )
         env:
           CL: /MP
-
-      - name: Cache Z3 Library
-        id: cache-z3
-        uses: actions/cache@v2
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
-        with:
-          path: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win.zip
-          key: z3-${{ env.Z3_VERSION }}-${{ matrix.arch }}-win
-
-      - name: Download Z3 library
-        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-z3.outputs.cache-hit != 'true'
-        run: |
-          curl -fsSL https://github.com/Z3Prover/z3/releases/download/z3-%Z3_VERSION%/z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -o z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip || exit /b !errorlevel!
-
-      - name: Install Z3 library
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
-        run: |
-          7z x z3-%Z3_VERSION%-${{ matrix.arch }}-win.zip -oexternals -r -y || exit /b !errorlevel!
-          move externals\z3-%Z3_VERSION%-${{ matrix.arch }}-win externals\z3 || exit /b !errorlevel!
 
       - name: Cache Qt ${{ matrix.qt_ver }}
         if: matrix.qt_ver != '' && matrix.arch == 'x64'
