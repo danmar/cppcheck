@@ -30,8 +30,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup msbuild.exe
-        uses: microsoft/setup-msbuild@v1.0.2
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
 
       - name: Cache PCRE
         id: cache-pcre
@@ -79,7 +79,6 @@ jobs:
 
       - name: Build x64 release GUI
         run: |
-          call "C:\Program Files (x86)\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
           cd gui
           qmake HAVE_QCHART=yes
           nmake release
