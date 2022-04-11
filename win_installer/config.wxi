@@ -8,7 +8,6 @@
   <?define PtfsDir = "files\platforms" ?>
   <?define AddonsDir = "files\addons" ?>
   <?define QtDllDir = "files" ?>
-  <?define Z3DllDir = "files" ?>
 
   <?if $(var.Platform) = x64 ?>
     <?define CrtMergeModule = "$(env.VCToolsRedistDir)\MergeModules\Microsoft_VC142_CRT_x64.msm" ?>

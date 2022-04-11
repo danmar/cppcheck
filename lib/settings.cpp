@@ -35,9 +35,7 @@ const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
 Settings::Settings()
-    : bugHunting(false),
-    bugHuntingCheckFunctionMaxTime(60),
-    checkAllConfigurations(true),
+    : checkAllConfigurations(true),
     checkConfiguration(false),
     checkHeaders(true),
     checkLibrary(false),
@@ -46,7 +44,6 @@ Settings::Settings()
     clangExecutable("clang"),
     clangTidy(false),
     daca(false),
-    debugBugHunting(false),
     debugnormal(false),
     debugSimplified(false),
     debugtemplate(false),

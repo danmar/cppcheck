@@ -45,7 +45,6 @@
     <ClCompile Include="testcppcheck.cpp" />
     <ClCompile Include="testerrorlogger.cpp" />
     <ClCompile Include="testexceptionsafety.cpp" />
-    <ClCompile Include="testexprengine.cpp" />
     <ClCompile Include="testfilelister.cpp" />
     <ClCompile Include="testgarbage.cpp" />
     <ClCompile Include="testimportproject.cpp" />

@@ -409,7 +409,6 @@ public:
             return MathLib::isInt(op1);
         }
     };
-    static std::vector<InvalidArgValue> getInvalidArgValues(const std::string &validExpr);
 
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
@@ -556,8 +555,6 @@ public:
     /** Suppress/check a type */
     enum class TypeCheck { def, check, suppress };
     TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
-
-    bool bugHunting;
 
 private:
     // load a <function> xml node

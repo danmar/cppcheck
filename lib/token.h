@@ -1170,8 +1170,6 @@ public:
         return mImpl->mValues->front().intvalue;
     }
 
-    bool isImpossibleIntValue(const MathLib::bigint val) const;
-
     const ValueFlow::Value* getValue(const MathLib::bigint val) const;
 
     const ValueFlow::Value* getMaxValue(bool condition, MathLib::bigint path = 0) const;
