@@ -3988,11 +3988,11 @@ private:
               "};\n"
               "void S::f(const char** pp) {\n"
               "    try {\n"
-              "        *ppStr = member.c_str();\n"
+              "        *pp = member.c_str();\n"
               "    }\n"
               "    catch (...) {\n"
               "        s = \"xyz\";\n"
-              "        *ppStr = member.c_str();\n"
+              "        *pp = member.c_str();\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
