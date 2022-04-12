@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15]
+        os: [ubuntu-20.04]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -35,178 +35,12 @@ jobs:
           python3 -m pip install pip --upgrade
           python3 -m pip install pytest
 
-      - name: CMake build on ubuntu (with GUI / system tinyxml2)
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          mkdir cmake.output.tinyxml2
-          cd cmake.output.tinyxml2
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off ..
-          cmake --build . -- -j$(nproc)
-          cd ..
-
-      - name: Run CMake test (system tinyxml2)
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          cmake --build cmake.output.tinyxml2 --target check -- -j$(nproc)
-
-      - name: CMake build on ubuntu (with GUI)
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          mkdir cmake.output
-          cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On ..
-          cmake --build . -- -j$(nproc)
-          cd ..
-
-      - name: CMake build on macos (with GUI)
-        if: contains(matrix.os, 'macos')
-        run: |
-          mkdir cmake.output
-          cd cmake.output
-          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 ..
-          cmake --build . -- -j$(nproc)
-          cd ..
-
-      - name: Run CMake test
-        run: |
-          cmake --build cmake.output --target check -- -j$(nproc)
-
-      - name: Run CTest
-        run: |
-          cd cmake.output
-          ctest -j$(nproc)
-          cd ..
-
-      - name: Build and test with Unsigned char
-        run: |
-          make clean
-          make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
-          ./testrunner TestSymbolDatabase
-
-      - name: Check syntax with NONNEG
-        run: |
-          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
-
-      - name: Build cppcheck
-        run: |
-          make clean
-          make -j$(nproc) HAVE_RULES=yes
-
-      - name: Build test
-        run: |
-          make -j$(nproc) testrunner HAVE_RULES=yes
-
-      - name: Run test
-        run: |
-          make -j$(nproc) check HAVE_RULES=yes
-
-      # the script uses sed parameters not supported by MacOS
-      - name: Run extra tests
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          tools/generate_and_run_more_tests.sh
-
-      - name: Run test/cli
-        run: |
-          cd test/cli
-          python3 -m pytest test-*.py
-          cd ../../..
-          ln -s cppcheck 'cpp check'
-          cd 'cpp check/test/cli'
-          python3 -m pytest test-*.py
-
-      # fails on macos since some includes (e.g. sys/epoll.h) are not available
-      - name: Run cfg tests
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          make -j$(nproc) checkcfg
-
-      # it seems macos has no "wc" command
-      - name: Run showtimetop5 tests
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          ./tools/test_showtimetop5.sh
-
-      - name: Run --dump test
-        run: |
-          ./cppcheck test/testpreprocessor.cpp --dump
-          xmllint --noout test/testpreprocessor.cpp.dump
-
-      - name: Validate
-        run: |
-          make -j$(nproc) checkCWEEntries validateXML
-
-      - name: Test addons
-        run: |
-          ./cppcheck --addon=threadsafety addons/test/threadsafety
-          ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
-          ./cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
-          cd addons/test
-          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
-          ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
-
       - name: Build GUI on ubuntu
         if: contains(matrix.os, 'ubuntu')
         run: |
           pushd gui
           qmake CONFIG+=debug HAVE_QCHART=yes
           make -j$(nproc)
-
-      - name: Run GUI tests on ubuntu
-        if: contains(matrix.os, 'ubuntu')
-        run: |
-          pushd gui/test/cppchecklibrarydata
-          qmake CONFIG+=debug
-          make -j$(nproc)
-          ./test-cppchecklibrarydata
-          popd
-          pushd gui/test/filelist
-          qmake CONFIG+=debug
-          make -j$(nproc)
-          # TODO: requires X session
-          #./test-filelist
-          popd
-          pushd gui/test/projectfile
-          qmake CONFIG+=debug
-          make -j$(nproc)
-          ./test-projectfile
-          popd
-          pushd gui/test/translationhandler
-          qmake CONFIG+=debug
-          make -j$(nproc)
-          # TODO: requires X session
-          #./test-translationhandler
-          popd
-          pushd gui/test/xmlreportv2
-          qmake CONFIG+=debug
-          make -j$(nproc)
-          # TODO: requires X session
-          #./test-xmlreportv2
-
-      - name: Generate Qt help file on ubuntu 18.04
-        if: matrix.os == 'ubuntu-18.04'
-        run: |
-          pushd gui/help
-          qcollectiongenerator online-help.qhcp -o online-help.qhc
-
-      - name: Generate Qt help file on ubuntu 20.04
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          pushd gui/help
-          qhelpgenerator online-help.qhcp -o online-help.qhc
-
-      - name: Build triage on ubuntu
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          pushd tools/triage
-          qmake CONFIG+=debug
-          make -j$(nproc)
-
-      - name: Build Fuzzer
-        if: matrix.os == 'ubuntu-20.04'
-        run: |
-          pushd oss-fuzz
-          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
 
       - name: Self check (build)
         if: matrix.os == 'ubuntu-20.04'
