@@ -2220,7 +2220,7 @@ private:
             const Scope* f = db->findScopeByName("f");
             ASSERT(f && f->type == Scope::eFunction && f->function);
 
-            ASSERT(f->function->argumentList.size() == 2 && f->function->argumentList.front().index() == 0 && f->function->argumentList.front().name() == "" && f->function->argumentList.back().index() == 1);
+            ASSERT(f->function->argumentList.size() == 2 && f->function->argumentList.front().index() == 0 && f->function->argumentList.front().name().empty() && f->function->argumentList.back().index() == 1);
             ASSERT_EQUALS("", errout.str());
         }
         {

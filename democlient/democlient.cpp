@@ -44,8 +44,6 @@ public:
         cppcheck.check("test.cpp", code);
     }
 
-    void bughuntingReport(const std::string&) override {}
-
     void reportOut(const std::string &outmsg, Color c) override {}
     void reportErr(const ErrorMessage &msg) override {
         const std::string s = msg.toString(true);

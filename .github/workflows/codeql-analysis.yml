@@ -24,7 +24,6 @@ jobs:
       run: |
          sudo apt-get update
          sudo apt-get install libxml2-utils
-         sudo apt-get install libz3-dev libz3-4
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
@@ -38,7 +37,7 @@ jobs:
         setup-python-dependencies: false 
 
     - run: |
-         make -j$(nproc) USE_Z3=yes HAVE_RULES=yes cppcheck
+         make -j$(nproc) HAVE_RULES=yes cppcheck
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v1

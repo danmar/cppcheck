@@ -187,8 +187,6 @@ signals:
 
     void debugError(const ErrorItem &item);
 
-    void bughuntingReportLine(QString line);
-
 public slots:
 
     /**

@@ -136,6 +136,7 @@ private:
         TEST_CASE(nullpointer90); // #6098
         TEST_CASE(nullpointer91); // #10678
         TEST_CASE(nullpointer92);
+        TEST_CASE(nullpointer93); // #3929
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2698,6 +2699,28 @@ private:
               "    return *i;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer93() // #3929
+    {
+        check("int* GetThing( ) { return 0; }\n"
+              "int main() {\n"
+              "        int* myNull = GetThing();\n"
+              "        *myNull=42;\n"
+              "        return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: myNull\n", errout.str());
+
+        check("struct foo {\n"
+              "    int* GetThing(void) { return 0; }\n"
+              "};\n"
+              "int main(void) {\n"
+              "        foo myFoo;\n"
+              "        int* myNull = myFoo.GetThing();\n"
+              "        *myNull=42;\n"
+              "        return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Null pointer dereference: myNull\n", errout.str());
     }
 
     void nullpointer_addressOf() { // address of

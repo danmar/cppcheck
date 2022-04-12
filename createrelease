@@ -13,9 +13,6 @@
 # make clean && make CXXFLAGS=-O2 MATCHCOMPILER=yes -j4
 # ./cppcheck -D__CPPCHECK__ --std=c++11 --library=cppcheck-lib --enable=style --inconclusive --inline-suppr --suppress=bitwiseOnBoolean --suppress=shadowFunction --suppress=useStlAlgorithm --suppress=*:externals/picojson.h --suppress=functionConst --suppress=functionStatic --xml cli gui/*.cpp lib 2> selfcheck.xml
 #
-# check --bug-hunting output:
-# make clean && make -j4 USE_Z3=yes CXXFLAGS=-O2 MATCHCOMPILER=yes && ./cppcheck -D__CPPCHECK__ --bug-hunting --xml lib 2> bughunting.xml
-#
 # Update translations
 #   lupdate gui.pro
 #
@@ -131,7 +128,7 @@ cp -R ~/cppcheck/cfg .
 cp -R ~/cppcheck/addons .
 cp -R ~/cppcheck/platforms .
 cd ~/cppcheck
-make clean ; make -j4 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes USE_Z3=yes
+make clean ; make -j4 FILESDIR=~/.cppcheck/$tag MATCHCOMPILER=yes
 mv cppcheck ~/.cppcheck/cppcheck-$tag
 
 git checkout main

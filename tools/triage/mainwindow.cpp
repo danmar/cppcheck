@@ -111,7 +111,10 @@ void MainWindow::load(QTextStream &textStream)
             if (!errorMessage.isEmpty())
                 mAllErrors << errorMessage;
             errorMessage.clear();
-        } else if (!url.isEmpty() && QRegularExpression("^.*: (error|warning|style|note):.*$").match(line).hasMatch()) {
+        } else if (!url.isEmpty()) {
+            static const QRegularExpression severityRe("^.*: (error|warning|style|note):.*$");
+            if (severityRe.match(line).hasMatch())
+                continue;
             const QRegularExpressionMatch matchRes = mVersionRe.match(line);
             if (matchRes.hasMatch()) {
                 const QString version = matchRes.captured(1);

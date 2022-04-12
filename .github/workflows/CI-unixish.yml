@@ -22,18 +22,13 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install libxml2-utils
-          sudo apt-get install libz3-dev libtinyxml2-dev
+          sudo apt-get install libtinyxml2-dev
           sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qt5-default
-
-      - name: Fix missing z3_version.h
-        if: matrix.os == 'ubuntu-18.04'
-        run: |
-          cp externals/z3_version_old.h externals/z3_version.h
 
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
-          brew install coreutils python3 z3 qt@5
+          brew install coreutils python3 qt@5
 
       - name: Install missing Python packages
         run: |
@@ -45,7 +40,7 @@ jobs:
         run: |
           mkdir cmake.output.tinyxml2
           cd cmake.output.tinyxml2
-          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off ..
           cmake --build . -- -j$(nproc)
           cd ..
 
@@ -59,7 +54,7 @@ jobs:
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On ..
           cmake --build . -- -j$(nproc)
           cd ..
 
@@ -68,7 +63,7 @@ jobs:
         run: |
           mkdir cmake.output
           cd cmake.output
-          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 ..
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 ..
           cmake --build . -- -j$(nproc)
           cd ..
 
@@ -95,15 +90,15 @@ jobs:
       - name: Build cppcheck
         run: |
           make clean
-          make -j$(nproc) USE_Z3=yes HAVE_RULES=yes
+          make -j$(nproc) HAVE_RULES=yes
 
       - name: Build test
         run: |
-          make -j$(nproc) testrunner USE_Z3=yes HAVE_RULES=yes
+          make -j$(nproc) testrunner HAVE_RULES=yes
 
       - name: Run test
         run: |
-          make -j$(nproc) check USE_Z3=yes HAVE_RULES=yes
+          make -j$(nproc) check HAVE_RULES=yes
 
       # the script uses sed parameters not supported by MacOS
       - name: Run extra tests

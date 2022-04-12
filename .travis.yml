@@ -18,7 +18,7 @@ env:
 before_install:
 # install needed deps
  - travis_retry sudo apt-get update -qq
- - travis_retry sudo apt-get install -qq python3-pip libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy libopencv-dev libz3-dev
+ - travis_retry sudo apt-get install -qq python3-pip libxml2-utils libpcre3 gdb unzip wx-common xmlstarlet python3-dev liblua5.3-dev libcurl3 libcairo2-dev libsigc++-2.0-dev tidy libopencv-dev
 # Python 2 modules 
  - travis_retry python2 -m pip install --user pytest==4.6.4
  - travis_retry python2 -m pip install --user unittest2
@@ -32,7 +32,6 @@ before_install:
  - travis_retry python3 -m pip install --user requests # imported by tools/pr.py
  - travis_retry python3 -m pip install --user pygments
  - travis_retry python3 -m pip install --user natsort
- - cp externals/z3_version_old.h externals/z3_version.h # because travis z3 version is old
 
 matrix:
 # do notify immediately about it when a job of a build fails.

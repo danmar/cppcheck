@@ -645,15 +645,6 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 menu.addSeparator();
             }
 
-            const bool bughunting = !multipleSelection && mContextItem->data().toMap().value("id").toString().startsWith("bughunting");
-
-            if (bughunting && !getFunction(mContextItem).isEmpty()) {
-                QAction *editContract = new QAction(tr("Edit contract.."), &menu);
-                connect(editContract, &QAction::triggered, this, &ResultsTree::editContract);
-                menu.addAction(editContract);
-                menu.addSeparator();
-            }
-
             //Create an action for the application
             QAction *recheckSelectedFiles   = new QAction(tr("Recheck"), &menu);
             QAction *copy                   = new QAction(tr("Copy"), &menu);
@@ -677,15 +668,10 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(hide);
             menu.addAction(hideallid);
 
-            if (!bughunting) {
-                QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
-                menu.addAction(suppress);
-                connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
-            } else {
-                QAction *suppress = new QAction(tr("Suppress"), &menu);
-                menu.addAction(suppress);
-                connect(suppress, &QAction::triggered, this, &ResultsTree::suppressHash);
-            }
+            QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
+            menu.addAction(suppress);
+            connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
+
             menu.addSeparator();
             menu.addAction(opencontainingfolder);
 
@@ -1105,11 +1091,6 @@ void ResultsTree::openContainingFolder()
         filePath = QFileInfo(filePath).absolutePath();
         QDesktopServices::openUrl(QUrl::fromLocalFile(filePath));
     }
-}
-
-void ResultsTree::editContract()
-{
-    emit editFunctionContract(getFunction(mContextItem));
 }
 
 void ResultsTree::tagSelectedItems(const QString &tag)

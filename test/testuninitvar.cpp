@@ -5241,6 +5241,12 @@ private:
                         "    return u.u16;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "  char src, dest;\n"
+                        "  std::memcpy(&dest, &src, 1);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: &src\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

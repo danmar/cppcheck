@@ -55,7 +55,6 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(mUI->mTree, &ResultsTree::checkSelected, this, &ResultsView::checkSelected);
     connect(mUI->mTree, &ResultsTree::treeSelectionChanged, this, &ResultsView::updateDetails);
     connect(mUI->mTree, &ResultsTree::suppressIds, this, &ResultsView::suppressIds);
-    connect(mUI->mTree, &ResultsTree::editFunctionContract, this, &ResultsView::editFunctionContract);
     connect(this, &ResultsView::showResults, mUI->mTree, &ResultsTree::showResults);
     connect(this, &ResultsView::showCppcheckResults, mUI->mTree, &ResultsTree::showCppcheckResults);
     connect(this, &ResultsView::showClangResults, mUI->mTree, &ResultsTree::showClangResults);
@@ -63,21 +62,7 @@ ResultsView::ResultsView(QWidget * parent) :
     connect(this, &ResultsView::expandAllResults, mUI->mTree, &ResultsTree::expandAll);
     connect(this, &ResultsView::showHiddenResults, mUI->mTree, &ResultsTree::showHiddenResults);
 
-    // Function contracts
-    connect(mUI->mListAddedContracts, &QListWidget::itemDoubleClicked, this, &ResultsView::contractDoubleClicked);
-    connect(mUI->mListMissingContracts, &QListWidget::itemDoubleClicked, this, &ResultsView::contractDoubleClicked);
-    mUI->mListAddedContracts->installEventFilter(this);
-
-    // Variable contracts
-    connect(mUI->mListAddedVariables, &QListWidget::itemDoubleClicked, this, &ResultsView::variableDoubleClicked);
-    connect(mUI->mListMissingVariables, &QListWidget::itemDoubleClicked, this, &ResultsView::variableDoubleClicked);
-    connect(mUI->mEditVariablesFilter, &QLineEdit::textChanged, this, &ResultsView::editVariablesFilter);
-    mUI->mListAddedVariables->installEventFilter(this);
-
     mUI->mListLog->setContextMenuPolicy(Qt::CustomContextMenu);
-
-    mUI->mListAddedContracts->setSortingEnabled(true);
-    mUI->mListMissingContracts->setSortingEnabled(true);
 }
 
 void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler)
@@ -98,28 +83,6 @@ void ResultsView::initialize(QSettings *settings, ApplicationList *list, ThreadH
 ResultsView::~ResultsView()
 {
     delete mUI;
-}
-
-void ResultsView::setAddedFunctionContracts(const QStringList &addedContracts)
-{
-    mUI->mListAddedContracts->clear();
-    mUI->mListAddedContracts->addItems(addedContracts);
-    for (const QString& f: addedContracts) {
-        auto res = mUI->mListMissingContracts->findItems(f, Qt::MatchExactly);
-        if (!res.empty())
-            delete res.front();
-    }
-}
-
-void ResultsView::setAddedVariableContracts(const QStringList &added)
-{
-    mUI->mListAddedVariables->clear();
-    mUI->mListAddedVariables->addItems(added);
-    for (const QString& var: added) {
-        for (auto *item: mUI->mListMissingVariables->findItems(var, Qt::MatchExactly))
-            delete item;
-        mVariableContracts.insert(var);
-    }
 }
 
 void ResultsView::clear(bool results)
@@ -148,25 +111,9 @@ void ResultsView::clearRecheckFile(const QString &filename)
     mUI->mTree->clearRecheckFile(filename);
 }
 
-void ResultsView::clearContracts()
-{
-    mUI->mListAddedContracts->clear();
-    mUI->mListAddedVariables->clear();
-    mUI->mListMissingContracts->clear();
-    mUI->mListMissingVariables->clear();
-    mFunctionContracts.clear();
-    mVariableContracts.clear();
-}
-
 ShowTypes * ResultsView::getShowTypes() const
 {
     return &mUI->mTree->mShowSeverities;
-}
-
-void ResultsView::showContracts(bool visible)
-{
-    mUI->mTabFunctionContracts->setVisible(visible);
-    mUI->mTabVariableContracts->setVisible(visible);
 }
 
 void ResultsView::progress(int value, const QString& description)
@@ -497,25 +444,6 @@ void ResultsView::debugError(const ErrorItem &item)
     mUI->mListLog->addItem(item.toString());
 }
 
-void ResultsView::bughuntingReportLine(const QString& line)
-{
-    for (const QString& s: line.split("\n")) {
-        if (s.startsWith("[intvar] ")) {
-            const QString varname = s.mid(9);
-            if (!mVariableContracts.contains(varname)) {
-                mVariableContracts.insert(varname);
-                mUI->mListMissingVariables->addItem(varname);
-            }
-        } else if (s.startsWith("[missing contract] ")) {
-            const QString functionName = s.mid(19);
-            if (!mFunctionContracts.contains(functionName)) {
-                mFunctionContracts.insert(functionName);
-                mUI->mListMissingContracts->addItem(functionName);
-            }
-        }
-    }
-}
-
 void ResultsView::logClear()
 {
     mUI->mListLog->clear();
@@ -543,34 +471,6 @@ void ResultsView::logCopyComplete()
     clipboard->setText(logText);
 }
 
-void ResultsView::contractDoubleClicked(QListWidgetItem* item)
-{
-    emit editFunctionContract(item->text());
-}
-
-void ResultsView::variableDoubleClicked(QListWidgetItem* item)
-{
-    emit editVariableContract(item->text());
-}
-
-void ResultsView::editVariablesFilter(const QString &text)
-{
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-    for (auto *item: mUI->mListAddedVariables->findItems(".*", Qt::MatchRegularExpression)) {
-#else
-    for (auto *item: mUI->mListAddedVariables->findItems(".*", Qt::MatchRegExp)) {
-#endif
-        QString varname = item->text().mid(0, item->text().indexOf(" "));
-        item->setHidden(!varname.contains(text));
-    }
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 15, 0))
-    for (auto *item: mUI->mListMissingVariables->findItems(".*", Qt::MatchRegularExpression))
-#else
-    for (auto *item: mUI->mListMissingVariables->findItems(".*", Qt::MatchRegExp))
-#endif
-        item->setHidden(!item->text().contains(text));
-}
-
 void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
 {
     if (mUI->mListLog->count() <= 0)
@@ -584,33 +484,4 @@ void ResultsView::on_mListLog_customContextMenuRequested(const QPoint &pos)
     contextMenu.addAction(tr("Copy complete Log"), this, SLOT(logCopyComplete()));
 
     contextMenu.exec(globalPos);
-}
-
-bool ResultsView::eventFilter(QObject *target, QEvent *event)
-{
-    if (event->type() == QEvent::KeyPress) {
-        if (target == mUI->mListAddedVariables) {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-            if (keyEvent->key() == Qt::Key_Delete) {
-                for (auto *i: mUI->mListAddedVariables->selectedItems()) {
-                    emit deleteVariableContract(i->text().mid(0, i->text().indexOf(" ")));
-                    delete i;
-                }
-                return true;
-            }
-        }
-
-        if (target == mUI->mListAddedContracts) {
-            QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-            if (keyEvent->key() == Qt::Key_Delete) {
-                for (auto *i: mUI->mListAddedContracts->selectedItems()) {
-                    emit deleteFunctionContract(i->text());
-                    delete i;
-                }
-
-                return true;
-            }
-        }
-    }
-    return QObject::eventFilter(target, event);
 }

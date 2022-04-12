@@ -125,8 +125,13 @@ def compile_version(cppcheck_path, jobs):
 def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
-        subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
-        subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
+        os.chdir(cppcheck_path)
+        if sys.platform == 'win32':
+            subprocess.call(['MSBuild.exe', cppcheck_path + '/cppcheck.sln', '/property:Configuration=Release', '/property:Platform=x64'])
+            subprocess.call([cppcheck_path + '/bin/cppcheck.exe', '--version'])
+        else:
+            subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
+            subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
     except:
         return False
     return True
@@ -279,7 +284,10 @@ def __run_command(cmd, print_cmd=True):
         print(cmd)
     start_time = time.time()
     comm = None
-    p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+    if sys.platform == 'win32':
+        p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    else:
+        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
@@ -323,8 +331,12 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack=Tr
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2'
     options += ' -D__GNUC__ --platform=unix64'
     options += ' -rp={}'.format(dir_to_scan)
-    cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options
-    cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+    if sys.platform == 'win32':
+        cppcheck_cmd = cppcheck_path + '/bin/cppcheck.exe ' + options
+        cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+    else:
+        cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options
+        cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
     # collect messages

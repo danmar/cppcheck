@@ -1209,6 +1209,14 @@ private:
               "  if (x && x != ZERO) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int N) {\n" // #9789
+              "    T a[20] = { 0 };\n"
+              "    for (int i = 0; i < N; ++i) {\n"
+              "        if (0 < a[i] && a[i] < 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectLogicOperator5() { // complex expressions
@@ -3428,6 +3436,15 @@ private:
               "    else\n"
               "        return 1;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9954
+        check("void f() {\n"
+              "    const size_t a(8 * sizeof(short));\n"
+              "    const size_t b(8 * sizeof(int));\n"
+              "    if constexpr (a == 16 && b == 16) {}\n"
+              "    else if constexpr (a == 16 && b == 32) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         // #9319

@@ -91,10 +91,6 @@ public:
         report(msg, MessageType::REPORT_INFO);
     }
 
-    void bughuntingReport(const std::string &str) override {
-        writeToPipe(REPORT_VERIFICATION, str);
-    }
-
     void writeEnd(const std::string& str) {
         writeToPipe(CHILD_END, str);
     }
@@ -423,12 +419,6 @@ public:
 
     void reportInfo(const ErrorMessage &msg) override {
         report(msg, MessageType::REPORT_INFO);
-    }
-
-    void bughuntingReport(const std::string &str) override
-    {
-        std::lock_guard<std::mutex> lg(mReportSync);
-        mThreadExecutor.mErrorLogger.bughuntingReport(str);
     }
 
     ThreadExecutor &mThreadExecutor;

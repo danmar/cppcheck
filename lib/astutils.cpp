@@ -2129,7 +2129,8 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     const Token * const tok1 = tok;
 
     // address of variable
-    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
+    if (tok->astParent() && tok->astParent()->isUnaryOp("&"))
+        indirect++;
 
     int argnr;
     tok = getTokenArgumentFunction(tok, argnr);
@@ -2148,25 +2149,27 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
     const bool possiblyPassedByReference = (parenTok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)}]"));
 
     if (!tok->function() && !tok->variable() && Token::Match(tok, "%name%")) {
-        // Check if direction (in, out, inout) is specified in the library configuration and use that
-        if (!addressOf && settings) {
+        if (settings) {
+            const bool requireInit = settings->library.isuninitargbad(tok, 1 + argnr);
+            const bool requireNonNull = settings->library.isnullargbad(tok, 1 + argnr);
+            // Check if direction (in, out, inout) is specified in the library configuration and use that
             const Library::ArgumentChecks::Direction argDirection = settings->library.getArgDirection(tok, 1 + argnr);
             if (argDirection == Library::ArgumentChecks::Direction::DIR_IN)
                 return false;
             else if (argDirection == Library::ArgumentChecks::Direction::DIR_OUT ||
                      argDirection == Library::ArgumentChecks::Direction::DIR_INOUT) {
-                // With out or inout the direction of the content is specified, not a pointer itself, so ignore pointers for now
-                const ValueType * const valueType = tok1->valueType();
-                if ((valueType && valueType->pointer == indirect) || (indirect == 0 && isArray(tok1))) {
+                if (indirect == 0 && isArray(tok1))
                     return true;
-                }
+                // Assume that if the variable must be initialized then the indirection is 1
+                if (indirect > 0 && requireInit && requireNonNull)
+                    return true;
             }
-        }
 
-        // if the library says 0 is invalid
-        // => it is assumed that parameter is an in parameter (TODO: this is a bad heuristic)
-        if (!addressOf && settings && settings->library.isnullargbad(tok, 1+argnr))
-            return false;
+            // if the library says 0 is invalid
+            // => it is assumed that parameter is an in parameter (TODO: this is a bad heuristic)
+            if (indirect == 0 && requireNonNull)
+                return false;
+        }
         // possible pass-by-reference => inconclusive
         if (possiblyPassedByReference) {
             if (inconclusive != nullptr)
@@ -2183,7 +2186,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         if (!arg)
             continue;
         conclusive = true;
-        if (addressOf || indirect > 0) {
+        if (indirect > 0) {
             if (!arg->isConst() && arg->isPointer())
                 return true;
             // If const is applied to the pointer, then the value can still be modified

@@ -576,6 +576,10 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     if (value.isUninitValue()) {
         if (Token::Match(tok, ". %var%"))
             setTokenValue(tok->next(), value, settings);
+        if (parent->isCast()) {
+            setTokenValue(parent, value, settings);
+            return;
+        }
         ValueFlow::Value pvalue = value;
         if (!value.subexpressions.empty() && Token::Match(parent, ". %var%")) {
             if (contains(value.subexpressions, parent->next()->str()))
@@ -3437,13 +3441,11 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
     const Token* parent = nullptr;
     const ValueType* vt = tok->valueType();
     std::vector<ValueType> vtParents = getParentValueTypes(tok, settings, &parent);
-    if (vt) {
-        for (const ValueType& vtParent : vtParents) {
-            if (isLifetimeBorrowed(vt, &vtParent))
-                return true;
-            if (isLifetimeOwned(vt, &vtParent))
-                return false;
-        }
+    for (const ValueType& vtParent : vtParents) {
+        if (isLifetimeBorrowed(vt, &vtParent))
+            return true;
+        if (isLifetimeOwned(vt, &vtParent))
+            return false;
     }
     if (parent) {
         if (isDifferentType(tok, parent))
@@ -4564,7 +4566,7 @@ static bool isOpenParenthesisMemberFunctionCallOfVarId(const Token * openParenth
 {
     const Token * varTok = openParenthesisToken->tokAt(-3);
     return Token::Match(varTok, "%varid% . %name% (", varId) &&
-           varTok->next()->originalName() == emptyString;
+           varTok->next()->originalName().empty();
 }
 
 static const Token * findOpenParentesisOfMove(const Token * moveVarTok)
@@ -4603,7 +4605,7 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
 
         for (Token* tok = const_cast<Token*>(start); tok != scope->bodyEnd; tok = tok->next()) {
             Token * varTok;
-            if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName() == emptyString) {
+            if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName().empty()) {
                 varTok = tok;
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::MOVED;
@@ -5735,6 +5737,9 @@ struct ConditionHandler {
                 if (inverted2)
                     std::swap(thenValues, elseValues);
             }
+
+            if (!condTop)
+                return;
 
             if (Token::simpleMatch(condTop, "?")) {
                 Token* colon = condTop->astOperand2();
@@ -7726,7 +7731,7 @@ static void valueFlowContainerSize(TokenList* tokenlist,
             if (size < 0)
                 continue;
         }
-        if (!staticSize && !var->isConst() && nonLocal)
+        if (!staticSize && nonLocal)
             continue;
         if (var->nameToken()->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
             continue;
