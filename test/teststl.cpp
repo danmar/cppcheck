@@ -824,6 +824,26 @@ private:
               "}\n");
         ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
                       errout.str());
+
+        checkNormal("struct A {\n"
+                    "    const std::vector<int>& v;\n"
+                    "    A(const std::vector<int>& x) : v(x)\n"
+                    "    {}\n"
+                    "    int f() const {\n"
+                    "        return v[0];\n"
+                    "    }\n"
+                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("struct A {\n"
+                    "    static const std::vector<int> v;\n"
+                    "    int f() const {\n"
+                    "        return v[0];\n"
+                    "    }\n"
+                    "};\n"
+                    "const std::vector<int> A::v = {1, 2};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void outOfBoundsSymbolic()
