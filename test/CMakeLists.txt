@@ -59,6 +59,12 @@ if (BUILD_TESTS)
                 DEPENDS cppcheck validateCFG)
     endif()
 
+    add_custom_target(test $<TARGET_FILE:testrunner>
+            DEPENDS cppcheck testrunner)
+
+    add_custom_target(check $<TARGET_FILE:testrunner> -q
+            DEPENDS cppcheck testrunner)
+
     if (REGISTER_TESTS)
         # CMP0064 requires 3.4
         # CMAKE_MATCH_<n> usage for if (MATCHES) requires 3.9
@@ -80,7 +86,7 @@ if (BUILD_TESTS)
             if (${NAME} IN_LIST SKIP_TESTS)
             elseif(TEST ${NAME})
             else()
-                add_test(NAME ${NAME} COMMAND testrunner ${NAME} WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
+                add_test(NAME ${NAME} COMMAND $<TARGET_FILE:testrunner> ${NAME} WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
             endif()
         endfunction()
 
