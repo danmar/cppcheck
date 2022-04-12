@@ -59,8 +59,9 @@ if (BUILD_TESTS)
                 DEPENDS cppcheck validateCFG)
     endif()
 
-    add_custom_target(test $<TARGET_FILE:testrunner>
-            DEPENDS cppcheck testrunner)
+    # TODO: the target name "test" is reservered by CTest
+    #add_custom_target(test $<TARGET_FILE:testrunner>
+    #        DEPENDS cppcheck testrunner)
 
     add_custom_target(check $<TARGET_FILE:testrunner> -q
             DEPENDS cppcheck testrunner)
