@@ -1992,7 +1992,7 @@ void CheckClass::checkConst()
                     bool inTemplArgList = false, isConstTemplArg = false;
                     for (const Token* tok = start; tok != end; tok = tok->next()) {
                         if (tok->str() == "{") // end of trailing return type
-                          return false;
+                            return false;
                         if (tok->str() == "<") {
                             if (!tok->link())
                                 mSymbolDatabase->debugMessage(tok, "debug", "CheckClass::checkConst found unlinked template argument list '" + tok->expressionString() + "'.");
