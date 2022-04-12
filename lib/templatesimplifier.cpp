@@ -2135,7 +2135,7 @@ void TemplateSimplifier::expandTemplate(
                             addNamespace(templateDeclaration, tok3);
                         }
                         mTokenList.addtoken(newName, tok3);
-                    } else if (!Token::Match(tok3->next(), ":|{|=|;|["))
+                    } else if (!Token::Match(tok3->next(), ":|{|=|;|[|]"))
                         tok3->str(newName);
                     continue;
                 }
