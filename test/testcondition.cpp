@@ -3800,6 +3800,14 @@ private:
               "    do {} while (i++ == 0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10454
+        check("struct S {\n"
+              "    int f() const { return g() ? 0 : 1; }\n"
+              "    bool g() const { return u == 18446744073709551615ULL; }\n"
+              "    unsigned long long u{};\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
