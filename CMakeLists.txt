@@ -23,7 +23,6 @@ file(GLOB addons "addons/*.py")
 file(GLOB cfgs "cfg/*.cfg")
 file(GLOB platforms "platforms/*.xml")
 
-find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)
 if (LIBXML2_XMLLINT_EXECUTABLE)
     add_custom_target(validateCFG ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng)
     foreach(cfg ${cfgs})

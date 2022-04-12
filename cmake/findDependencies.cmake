@@ -52,3 +52,5 @@ endif()
 if (USE_BOOST)
     find_package(Boost COMPONENTS container QUIET)
 endif()
+
+find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)
