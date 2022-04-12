@@ -383,7 +383,10 @@ validateXML: createXMLExamples
 	xmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml
 
 checkCWEEntries: /tmp/errorlist.xml
-	./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml
+	$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python3)))
+	$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python)))
+	$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(error Did not find a Python interpreter)))
+	$(PYTHON_INTERPRETER) tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml
 .PHONY: validateRules
 validateRules:
 	xmllint --noout rules/*.xml
