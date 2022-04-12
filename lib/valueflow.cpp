@@ -7733,7 +7733,7 @@ static void valueFlowContainerSize(TokenList* tokenlist,
             if (size < 0)
                 continue;
         }
-        if (!staticSize && !var->isConst() && nonLocal)
+        if (!staticSize && nonLocal)
             continue;
         if (var->nameToken()->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
             continue;
