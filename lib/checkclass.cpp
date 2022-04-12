@@ -2012,7 +2012,7 @@ void CheckClass::checkConst()
                     }
                     return false;
                 };
-                
+
                 if (isPointerOrReference(func.retDef, func.tokenDef))
                     continue;
             }
