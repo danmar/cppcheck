@@ -13,8 +13,6 @@ symbolDatabaseWarning:tools/triage/moc_*.cpp
 
 # --debug-warnings suppressions
 valueFlowBailout
-valueFlowBailoutIncompleteVar
-autoNoType
 bailoutUninitVar
 
 *:gui/test/*
