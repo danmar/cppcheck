@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "suppressions.h"
 
+#include <cstddef>
 #include <map>
 
 #include <QObject>

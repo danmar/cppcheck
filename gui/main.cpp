@@ -29,6 +29,7 @@
 #else
 #include <iostream>
 #endif
+#include <string>
 
 #include <QApplication>
 #include <QCoreApplication>

@@ -34,6 +34,7 @@
 #include <iosfwd>
 #include <list>
 #include <memory>
+#include <stack>
 #include <string>
 
 #include <tinyxml2.h>

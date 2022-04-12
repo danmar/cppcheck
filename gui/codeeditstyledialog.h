@@ -26,7 +26,10 @@
 class CodeEditor;
 class SelectColorButton;
 class SelectFontWeightCombo;
+class QObject;
 class QPushButton;
+class QStringList;
+class QWidget;
 
 class StyleEditDialog : public QDialog {
     Q_OBJECT

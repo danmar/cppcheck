@@ -22,6 +22,7 @@
 #include <QDialog>
 
 class MainWindow;
+class QObject;
 namespace Ui {
     class ScratchPad;
 }

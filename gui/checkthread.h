@@ -25,6 +25,7 @@
 
 #include <QThread>
 
+class QObject;
 class Settings;
 class ThreadResult;
 

@@ -21,11 +21,13 @@
 #include "testutils.h"
 #include "threadexecutor.h"
 
+#include <algorithm>
 #include <cstddef>
 #include <map>
 #include <ostream>
 #include <string>
 #include <utility>
+#include <vector>
 
 class TestThreadExecutor : public TestFixture {
 public:

@@ -23,6 +23,8 @@
 #include <QPainter>
 #include <QShortcut>
 
+class QTextDocument;
+
 
 Highlighter::Highlighter(QTextDocument *parent,
                          CodeEditorStyle *widgetStyle) :

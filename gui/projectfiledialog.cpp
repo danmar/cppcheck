@@ -23,10 +23,15 @@
 #include "importproject.h"
 #include "library.h"
 #include "newsuppressiondialog.h"
+#include "platform.h"
 #include "platforms.h"
 #include "projectfile.h"
+#include "settings.h"
 
 #include "ui_projectfile.h"
+
+#include <list>
+#include <string>
 
 #include <QDir>
 #include <QFileDialog>
@@ -34,6 +39,8 @@
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QSettings>
+
+class QModelIndex;
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)

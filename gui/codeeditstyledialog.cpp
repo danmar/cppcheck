@@ -24,6 +24,8 @@
 #include <QDialogButtonBox>
 #include <QFormLayout>
 
+class QWidget;
+
 const QString StyleEditDialog::mSampleDocument(
     "/*****\n"
     "* Multiline Comment\n"

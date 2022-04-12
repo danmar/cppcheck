@@ -24,8 +24,11 @@
 #include <QSyntaxHighlighter>
 
 class CodeEditorStyle;
+class QObject;
 class QPaintEvent;
+class QRect;
 class QResizeEvent;
+class QTextDocument;
 
 class Highlighter : public QSyntaxHighlighter {
     Q_OBJECT

@@ -18,6 +18,7 @@
 
 #include "settingsdialog.h"
 
+#include "application.h"
 #include "applicationdialog.h"
 #include "applicationlist.h"
 #include "codeeditorstyle.h"

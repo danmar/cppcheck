@@ -25,6 +25,11 @@
 
 #include "ui_newsuppressiondialog.h"
 
+#include <functional>
+#include <string>
+
+class QWidget;
+
 NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     QDialog(parent),
     mUI(new Ui::NewSuppressionDialog)

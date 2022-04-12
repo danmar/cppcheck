@@ -36,10 +36,6 @@
 class ErrorLogger;
 class Settings;
 class Token;
-class Function;
-class Scope;
-class Type;
-class Variable;
 
 namespace CTU {
     class FileInfo;

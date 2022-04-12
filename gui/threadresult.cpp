@@ -21,6 +21,7 @@
 #include "common.h"
 #include "erroritem.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 
 #include <QFile>
 

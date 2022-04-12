@@ -26,8 +26,12 @@
 #include "projectfile.h"
 #include "report.h"
 #include "showtypes.h"
+#include "suppressions.h"
 #include "threadhandler.h"
 #include "xmlreportv2.h"
+
+#include <string>
+#include <utility>
 
 #include <QAction>
 #include <QApplication>

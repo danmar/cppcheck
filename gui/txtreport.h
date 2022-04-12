@@ -24,6 +24,9 @@
 #include <QString>
 #include <QTextStream>
 
+class ErrorItem;
+class QObject;
+
 /// @addtogroup GUI
 /// @{
 
