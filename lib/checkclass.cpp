@@ -2207,8 +2207,12 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
             if (v && v->isMutable())
                 continue;
 
-            if (tok1->str() == "this" && tok1->previous()->isAssignmentOp())
-                return false;
+            if (tok1->str() == "this") {
+                if (tok1->previous()->isAssignmentOp())
+                    return false;
+                if (Token::Match(tok1->previous(), "( this . * %var% )")) // call using ptr to member function TODO: check constness
+                    return false;
+            }
 
             // non const pointer cast
             if (tok1->valueType() && tok1->valueType()->pointer > 0 && tok1->astParent() && tok1->astParent()->isCast() && !Token::simpleMatch(tok1->astParent(), "( const"))

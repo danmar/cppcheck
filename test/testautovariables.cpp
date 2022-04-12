@@ -2573,6 +2573,12 @@ private:
               "    h = 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::string s) {\n"
+              "    std::string ss = (\":\" + s).c_str();\n"
+              "    return ss;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainerView()

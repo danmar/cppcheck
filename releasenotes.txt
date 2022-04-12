@@ -12,3 +12,5 @@ release notes for cppcheck-2.8
 - Detect more statements with constStatement
 - Detect variableScope for more types
 - Improvements to unreadVariable
+- Detect more instances of C style casts
+- Warn if the return value of new is discarded
