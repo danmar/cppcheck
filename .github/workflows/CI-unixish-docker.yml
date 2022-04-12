@@ -23,7 +23,7 @@ jobs:
       - name: Install missing software on CentOS 7
         if: matrix.image == 'centos:7'
         run: |
-          yum install -y cmake gcc-c++ make
+          yum install -y cmake gcc-c++ make which python3
           yum install -y pcre-devel
 
       - name: Install missing software on ubuntu
