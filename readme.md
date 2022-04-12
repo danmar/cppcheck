@@ -1,8 +1,8 @@
 # **Cppcheck** 
 
-|GitHub Actions|Linux Build Status|Windows Build Status|OSS-Fuzz|Coverity Scan Build Status|License|
-|:-:|:--:|:--:|:--:|:--:|:-:|
-|[![Github Action Status](https://github.com/danmar/cppcheck/workflows/CI/badge.svg)](https://github.com/danmar/cppcheck/actions?query=workflow%3ACI)|[![Linux Build Status](https://img.shields.io/travis/danmar/cppcheck/main.svg?label=Linux%20build)](https://travis-ci.org/danmar/cppcheck)|[![Windows Build Status](https://img.shields.io/appveyor/ci/danmar/cppcheck/main.svg?label=Windows%20build)](https://ci.appveyor.com/project/danmar/cppcheck/branch/main)|[![OSS-Fuzz](https://oss-fuzz-build-logs.storage.googleapis.com/badges/cppcheck.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:cppcheck)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0) 
+|GitHub Actions|OSS-Fuzz|Coverity Scan Build Status|License|
+|:-:|:--:|:--:|:--:|
+|[![Github Action Status](https://github.com/danmar/cppcheck/workflows/CI/badge.svg)](https://github.com/danmar/cppcheck/actions?query=workflow%3ACI)|[![OSS-Fuzz](https://oss-fuzz-build-logs.storage.googleapis.com/badges/cppcheck.svg)](https://bugs.chromium.org/p/oss-fuzz/issues/list?sort=-opened&can=1&q=proj:cppcheck)|[![Coverity Scan Build Status](https://img.shields.io/coverity/scan/512.svg)](https://scan.coverity.com/projects/512)|[![License](https://img.shields.io/badge/license-GPL3.0-blue.svg)](https://opensource.org/licenses/GPL-3.0) 
 
 ## About the name
 
@@ -27,7 +27,7 @@ You can stop the script whenever you like with Ctrl C.
 
 ## Compiling
 
-Any C++11 compiler should work. For compilers with partial C++11 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2013 / GCC 4.6 then it will work.
+Any C++11 compiler should work. For compilers with partial C++11 support it may work. If your compiler has the C++11 features that are available in Visual Studio 2013 / GCC 4.8 then it will work.
 
 To build the GUI, you need Qt.
 
@@ -39,7 +39,7 @@ There are multiple compilation choices:
 * Windows: Visual Studio (VS 2013 and above)
 * Windows: Qt Creator + mingw
 * gnu make
-* g++ 4.6 (or later)
+* g++ 4.8 (or later)
 * clang++
 
 ### cmake
@@ -79,6 +79,14 @@ make
 Use the cppcheck.sln file. The file is configured for Visual Studio 2019, but the platform toolset can be changed easily to older or newer versions. The solution contains platform targets for both x86 and x64.
 
 To compile with rules, select "Release-PCRE" or "Debug-PCRE" configuration. pcre.lib (pcre64.lib for x64 builds) and pcre.h are expected to be in /externals then. A current version of PCRE for Visual Studio can be obtained using [vcpkg](https://github.com/microsoft/vcpkg).
+
+### Visual Studio (from command line)
+
+If you do not wish to use the Visual Studio IDE, you can compile cppcheck from the command line the following command.
+
+```shell
+msbuild cppcheck.sln
+```
 
 ### VS Code (on Windows)
 
@@ -196,7 +204,17 @@ g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Ilib -Iexternals -Iexternals/sim
 ### MinGW
 
 ```shell
-mingw32-make LDFLAGS=-lshlwapi
+mingw32-make
+```
+
+If you encounter the following error with `MATCHCOMPILER=yes` you need to specify your Python interpreter via `PYTHON_INTERPRETER`.
+
+```
+process_begin: CreateProcess(NULL, which python3, ...) failed.
+makefile:24: pipe: No error
+process_begin: CreateProcess(NULL, which python, ...) failed.
+makefile:27: pipe: No error
+makefile:30: *** Did not find a Python interpreter.  Stop.
 ```
 
 ### Other Compiler/IDE

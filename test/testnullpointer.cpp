@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,19 +18,23 @@
 
 #include "check.h"
 #include "checknullpointer.h"
-#include "config.h"
 #include "ctu.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <string>
+#include <unordered_map>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
 
 class TestNullPointer : public TestFixture {
 public:
@@ -39,7 +43,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
         settings.severity.enable(Severity::warning);
 
@@ -125,6 +129,14 @@ private:
         TEST_CASE(nullpointer83); // #9870
         TEST_CASE(nullpointer84); // #9873
         TEST_CASE(nullpointer85); // #10210
+        TEST_CASE(nullpointer86);
+        TEST_CASE(nullpointer87); // #9291
+        TEST_CASE(nullpointer88); // #9949
+        TEST_CASE(nullpointer89); // #10640
+        TEST_CASE(nullpointer90); // #6098
+        TEST_CASE(nullpointer91); // #10678
+        TEST_CASE(nullpointer92);
+        TEST_CASE(nullpointer93); // #3929
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -155,10 +167,11 @@ private:
         TEST_CASE(addNull);
         TEST_CASE(isPointerDeRefFunctionDecl);
 
-        TEST_CASE(ctu);
+        TEST_CASE(ctuTest);
     }
 
-    void check(const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool inconclusive = false, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -167,8 +180,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        if (!tokenizer.tokenize(istr, filename))
-            return;
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check for null pointer dereferences..
         CheckNullPointer checkNullPointer;
@@ -1199,6 +1211,12 @@ private:
                   "}", true);
             ASSERT_EQUALS("", errout.str());
         }
+
+        check("void f() {\n" // #5979
+              "    int* const crash = 0;\n"
+              "    *crash = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: crash\n", errout.str());
     }
 
     // Ticket #2350
@@ -1450,7 +1468,9 @@ private:
               "            : s->value - 1; // <-- null ptr dereference\n"
               "  return i;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Possible null pointer dereference: s\n", "", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:3] -> [test.cpp:4]: (warning) Either the condition 's' is redundant or there is possible null pointer dereference: s.\n",
+            errout.str());
     }
 
     void nullpointer30() { // #6392
@@ -2547,6 +2567,162 @@ private:
             errout.str());
     }
 
+    void nullpointer86()
+    {
+        check("struct A {\n"
+              "    A* a() const;\n"
+              "    int b() const;\n"
+              "};\n"
+              "A* f(A* t) {\n"
+              "    if (t->b() == 0) {\n"
+              "        return t;\n"
+              "    }\n"
+              "    return t->a();\n"
+              "}\n"
+              "void g(A* t) {\n"
+              "    t = f(t->a());\n"
+              "    if (!t->a()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer87() // #9291
+    {
+        check("int f(bool b, int* x) {\n"
+              "    if (b && x == nullptr)\n"
+              "        return 0;\n"
+              "    else if (!b && x == nullptr)\n"
+              "        return 1;\n"
+              "    else if (!b && x != nullptr)\n"
+              "        return *x;\n"
+              "    else\n"
+              "        return *x + 1;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:6] -> [test.cpp:9]: (warning) Either the condition 'x!=nullptr' is redundant or there is possible null pointer dereference: x.\n", errout.str());
+
+        check("void f(int n, int* p) {\n"
+              "    int* r = nullptr;\n"
+              "    if (n < 0)\n"
+              "        return;\n"
+              "    if (n == 0)\n"
+              "        r = p;\n"
+              "    else if (n > 0)\n"
+              "        r = p + 1;\n"
+              "    *r;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer88() // #9949
+    {
+        check("struct S { char **ppc; };\n"
+              "int alloc(struct S* s) {\n"
+              "    char** ppc = malloc(4096);\n"
+              "    if (ppc != NULL) {\n"
+              "        s->ppc = ppc;\n"
+              "        return 1;\n"
+              "    }\n"
+              "    return 0;\n"
+              "}\n"
+              "void f() {\n"
+              "    struct S* s = malloc(sizeof(struct S));\n"
+              "    s->ppc = NULL;\n"
+              "    if (alloc(s))\n"
+              "        s->ppc[0] = \"\";\n"
+              "}\n", /*inconclusive*/ false, "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer89() // #10640
+    {
+        check("typedef struct {\n"
+              "    int x;\n"
+              "} foo_t;\n"
+              "typedef struct {\n"
+              "    foo_t *y;\n"
+              "} bar_t;\n"
+              "void f(bar_t *ptr) {\n"
+              "    if(ptr->y->x)\n"
+              "        if(ptr->y != nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:9] -> [test.cpp:8]: (warning) Either the condition 'ptr->y!=nullptr' is redundant or there is possible null pointer dereference: ptr->y.\n",
+            errout.str());
+    }
+
+    void nullpointer90() // #6098
+    {
+        check("std::string definitionToName(Definition *ctx)\n"
+              "{\n"
+              "  if (ctx->definitionType()==Definition::TypeMember)\n"                           // possible null pointer dereference
+              "  {\n"
+              "     return \"y\";\n"
+              "  }\n"
+              "  else if (ctx)\n"                           // ctx is checked against null
+              "  {\n"
+              "    if(ctx->definitionType()!=Definition::TypeMember)\n"
+              "    {\n"
+              "       return \"x\";\n"
+              "    }\n"
+              "  }\n"
+              "  return \"unknown\";\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:3]: (warning) Either the condition 'ctx' is redundant or there is possible null pointer dereference: ctx.\n",
+            errout.str());
+    }
+
+    void nullpointer91() // #10678
+    {
+        check("void f(const char* PBeg, const char* PEnd) {\n"
+              "  while (PEnd != nullptr) {\n"
+              "    const int N = h(PEnd);\n"
+              "    PEnd = g();\n"
+              "    const int Length = PEnd == nullptr ? 0 : PEnd - PBeg;\n"
+              "  };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer92()
+    {
+        check("bool g(bool);\n"
+              "int f(int* i) {\n"
+              "    if (!g(!!i)) return 0;\n"
+              "    return *i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool g(bool);\n"
+              "int f(int* i) {\n"
+              "    if (!g(!i)) return 0;\n"
+              "    return *i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer93() // #3929
+    {
+        check("int* GetThing( ) { return 0; }\n"
+              "int main() {\n"
+              "        int* myNull = GetThing();\n"
+              "        *myNull=42;\n"
+              "        return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Null pointer dereference: myNull\n", errout.str());
+
+        check("struct foo {\n"
+              "    int* GetThing(void) { return 0; }\n"
+              "};\n"
+              "int main(void) {\n"
+              "        foo myFoo;\n"
+              "        int* myNull = myFoo.GetThing();\n"
+              "        *myNull=42;\n"
+              "        return 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Null pointer dereference: myNull\n", errout.str());
+    }
+
     void nullpointer_addressOf() { // address of
         check("void f() {\n"
               "  struct X *x = 0;\n"
@@ -2558,6 +2734,16 @@ private:
               "  struct X *x = 0;\n"
               "  if (addr == &x->y.z[0]) {}\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        checkP("typedef int Count;\n" // #10018
+               "#define offsetof(TYPE, MEMBER) ((Count) & ((TYPE*)0)->MEMBER)\n"
+               "struct S {\n"
+               "    int a[20];\n"
+               "};\n"
+               "int g(int i) {\n"
+               "    return offsetof(S, a[i]);\n"
+               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3369,6 +3555,16 @@ private:
                       "[test.cpp:5]: (error) Null pointer dereference\n"
                       "[test.cpp:6]: (error) Null pointer dereference\n"
                       "[test.cpp:7]: (error) Null pointer dereference\n", errout.str());
+
+        check("std::string f() {\n" // #9827
+              "  char* p = NULL;\n"
+              "  int r = g(p);\n"
+              "  if (!r)\n"
+              "    return \"\";\n"
+              "  std::string s(p);\n"
+              "  return s;\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointerStdStream() {
@@ -3434,7 +3630,7 @@ private:
               "    stringstream out;\n"
               "    out << ((ip >> 0) & 0xFF);\n"
               "    return out.str();\n"
-              "}n", true);
+              "}", true);
         ASSERT_EQUALS("", errout.str());
         // avoid regression from first fix attempt for #5811...
         check("void deserialize(const std::string &data) {\n"
@@ -3666,7 +3862,7 @@ private:
         Settings settings1;
         Tokenizer tokenizer(&settings1,this);
         std::istringstream code("void f() { int a,b,c; x(a,b,c); }");
-        tokenizer.tokenize(code,"test.c");
+        ASSERT_EQUALS(true, tokenizer.tokenize(code, "test.c"));
         const Token *xtok = Token::findsimplematch(tokenizer.tokens(), "x");
 
         // nothing bad..
@@ -3988,14 +4184,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void ctu(const char code[]) {
+#define ctu(code) ctu_(code, __FILE__, __LINE__)
+    void ctu_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CTU::FileInfo *ctu = CTU::getFileInfo(&tokenizer);
 
@@ -4011,7 +4208,7 @@ private:
         delete ctu;
     }
 
-    void ctu() {
+    void ctuTest() {
         setMultiline();
 
         ctu("void f(int *fp) {\n"

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,16 +17,23 @@
  */
 
 #include "checkcondition.h"
+#include "errortypes.h"
 #include "library.h"
+#include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
+#include <iosfwd>
 #include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
+
+#include <tinyxml2.h>
 
 class TestCondition : public TestFixture {
 public:
@@ -36,7 +43,7 @@ private:
     Settings settings0;
     Settings settings1;
 
-    void run() OVERRIDE {
+    void run() override {
         // known platform..
         settings0.platform(cppcheck::Platform::PlatformType::Native);
         settings1.platform(cppcheck::Platform::PlatformType::Native);
@@ -493,6 +500,7 @@ private:
         ASSERT_EQUALS("",errout.str()); //correct for negative 'a'
     }
 
+#define checkPureFunction(code) checkPureFunction_(code, __FILE__, __LINE__)
     void multicompare() {
         check("void foo(int x)\n"
               "{\n"
@@ -532,14 +540,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
     }
 
-    void checkPureFunction(const char code[]) {
+    void checkPureFunction_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckCondition checkCondition;
         checkCondition.runChecks(&tokenizer, &settings1, this);
@@ -1200,6 +1208,14 @@ private:
               "void f(int x) {\n"
               "  if (x && x != ZERO) {}\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int N) {\n" // #9789
+              "    T a[20] = { 0 };\n"
+              "    for (int i = 0; i < N; ++i) {\n"
+              "        if (0 < a[i] && a[i] < 1) {}\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2483,6 +2499,14 @@ private:
               "  if (!b && f()) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n"
+              "    if (d != 0) {\n"
+              "        int i = d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void identicalInnerCondition() {
@@ -3414,6 +3438,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #9954
+        check("void f() {\n"
+              "    const size_t a(8 * sizeof(short));\n"
+              "    const size_t b(8 * sizeof(int));\n"
+              "    if constexpr (a == 16 && b == 16) {}\n"
+              "    else if constexpr (a == 16 && b == 32) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #9319
         check("struct S {\n"
               "  int a;\n"
@@ -3801,6 +3834,259 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #10582
+        check("static void fun(message_t *message) {\n"
+              "    if (message->length >= 1) {\n"
+              "        switch (data[0]) {}\n"
+              "    }\n"
+              "    uint8_t d0 = message->length > 0 ? data[0] : 0xff;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8266
+        check("void f(bool b) {\n"
+              "    if (b)\n"
+              "        return;\n"
+              "    if (g(&b) || b)\n"
+              "        return;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9720
+        check("bool bar(int &);\n"
+              "void f(int a, int b) {\n"
+              "    if (a + b == 3)\n"
+              "        return;\n"
+              "    if (bar(a) && (a + b == 3)) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10437
+        check("void f() {\n"
+              "  Obj* PObj = nullptr;\n"
+              "  bool b = false;\n"
+              "  if (GetObj(PObj) && PObj != nullptr)\n"
+              "    b = true;\n"
+              "  if (b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10223
+        check("static volatile sig_atomic_t is_running;\n"
+              "static void handler(int signum) {\n"
+              "    is_running = 0;\n"
+              "}\n"
+              "void f() {\n"
+              "    signal(SIGINT, &handler);\n"
+              "    is_running = 1;\n"
+              "    while (is_running) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10659
+        check("auto func(const std::tuple<int, int>& t) {\n"
+              "  auto& [foo, bar] = t;\n"
+              "  std::cout << foo << bar << std::endl;\n"
+              "  return foo < bar;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10484
+        check("void f() {\n"
+              "    static bool init = true;\n"
+              "    if (init)\n"
+              "        init = false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static bool init(true);\n"
+              "    if (init)\n"
+              "        init = false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static bool init{ true };\n"
+              "    if (init)\n"
+              "        init = false;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10248
+        check("void f() {\n"
+              "    static int var(1);\n"
+              "    if (var == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static int var{ 1 };\n"
+              "    if (var == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "using Fn = void (*)();\n"
+              "void f() {\n"
+              "    static Fn logger = nullptr;\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "using Fn = void (*)();\n"
+              "void f() {\n"
+              "    static Fn logger(nullptr);\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "using Fn = void (*)();\n"
+              "void f() {\n"
+              "    static Fn logger{ nullptr };\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "typedef void (*Fn)();\n"
+              "void f() {\n"
+              "    static Fn logger = nullptr;\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "typedef void (*Fn)();\n"
+              "void f() {\n"
+              "    static Fn logger(nullptr);\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void Fun();\n"
+              "typedef void (*Fn)();\n"
+              "void f() {\n"
+              "    static Fn logger{ nullptr };\n"
+              "    if (logger == nullptr)\n"
+              "        logger = Fun;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9256
+        check("bool f() {\n"
+              "    bool b = false;\n"
+              "    b = true;\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10702
+        check("struct Object {\n"
+              "  int _count=0;\n"
+              "   void increment() { ++_count;}\n"
+              "   auto get() const { return _count; }\n"
+              "};\n"
+              "struct Modifier {\n"
+              "Object & _object;\n"
+              "  explicit Modifier(Object & object) : _object(object) {}\n"
+              "  void do_something() { _object.increment(); }\n"
+              "};\n"
+              "struct Foo {\n"
+              "  Object _object;\n"
+              "  void foo() {\n"
+              "    Modifier mod(_object);\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "    mod.do_something();\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Object {\n"
+              "  int _count=0;\n"
+              "   auto get() const;\n"
+              "};\n"
+              "struct Modifier {\n"
+              "Object & _object;\n"
+              "  explicit Modifier(Object & object);\n"
+              "  void do_something();\n"
+              "};\n"
+              "struct Foo {\n"
+              "  Object _object;\n"
+              "  void foo() {\n"
+              "    Modifier mod(_object);\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "    mod.do_something();\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const uint32_t u) {\n"
+              "	const uint32_t v = u < 4;\n"
+              "	if (v) {\n"
+              "		const uint32_t w = v < 2;\n"
+              "		if (w) {}\n"
+              "	}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
+
+        check("void f(double d) {\n" // #10792
+              "    if (d != 0) {\n"
+              "        int i = (int)d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n"
+              "    if (0 != d) {\n"
+              "        int i = (int)d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { double d; }\n"
+              "void f(A a) {\n"
+              "    if (a.d != 0) {\n"
+              "        int i = a.d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if(strlen(\"abc\") == 3) {;}\n"
+              "    if(strlen(\"abc\") == 1) {;}\n"
+              "    if(wcslen(L\"abc\") == 3) {;}\n"
+              "    if(wcslen(L\"abc\") == 1) {;}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'strlen(\"abc\")==3' is always true\n"
+                      "[test.cpp:3]: (style) Condition 'strlen(\"abc\")==1' is always false\n"
+                      "[test.cpp:4]: (style) Condition 'wcslen(L\"abc\")==3' is always true\n"
+                      "[test.cpp:5]: (style) Condition 'wcslen(L\"abc\")==1' is always false\n",
+                      errout.str());
+
+        check("int foo(bool a, bool b) {\n"
+              "  if(!a && b && (!a == !b))\n"
+              "   return 1;\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a==!b' is always false\n", errout.str());
+
         // #10454
         check("struct S {\n"
               "    int f() const { return g() ? 0 : 1; }\n"
@@ -3893,6 +4179,66 @@ private:
               "    return delta;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10555
+        check("struct C {\n"
+              "  int GetI() const { return i; }\n"
+              "  int i{};\n"
+              "};\n"
+              "struct B {\n"
+              "    C *m_PC{};\n"
+              "    Modify();\n"
+              "};\n"
+              "struct D : B {\n"
+              "  void test();  \n"
+              "};\n"
+              "void D::test() {\n"
+              "    const int I = m_PC->GetI();\n"
+              "    Modify();\n"
+              "    if (m_PC->GetI() != I) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10624
+        check("struct Data {\n"
+              "  Base* PBase{};\n"
+              "};\n"
+              "void f(Data* BaseData) {\n"
+              "  Base* PObj = BaseData->PBase;\n"
+              "  if (PObj == nullptr)\n"
+              "    return;\n"
+              "  Derived* pD = dynamic_cast<Derived*>(PObj);\n"
+              "  if (pD) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #9549
+        check("void f(const uint32_t v) {\n"
+              "    const uint32_t v16 = v >> 16;\n"
+              "    if (v16) {\n"
+              "        const uint32_t v8 = v16 >> 8;\n"
+              "        if (v8) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10649
+        check("void foo(struct diag_msg *msg) {\n"
+              "    msg = msg->next;\n"
+              "    if (msg == NULL)\n"
+              "        return CMD_OK;\n"
+              "    msg = msg->next;\n"
+              "    if (msg == NULL)\n"
+              "        return CMD_OK;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int foo(bool a, bool b) {\n"
+              "  if((!a == !b) && !a && b)\n"
+              "   return 1;\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'b' is always false\n", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -4123,6 +4469,16 @@ private:
               "        if( s.size() < 3 ) return;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10226
+        check("int f(std::vector<int>::iterator it, const std::vector<int>& vector) {\n"
+              "    if (!(it != vector.end() && it != vector.begin()))\n"
+              "        throw 0;\n"
+              "    if (it != vector.end() && *it == 0)\n"
+              "        return -1;\n"
+              "    return *it;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'it!=vector.end()' is always true\n", errout.str());
     }
 
     void alwaysTrueLoop()
@@ -4155,6 +4511,35 @@ private:
               "    bFirst = false;\n"
               "  } while (true);\n"
               "  return bFirst;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "   void * pool = NULL;\n"
+              "   do {\n"
+              "      pool = malloc(40);\n"
+              "      if (dostuff())\n"
+              "         break;\n"
+              "      pool = NULL;\n"
+              "   }\n"
+              "   while (0);\n"
+              "   if (pool) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10863
+        check("void f(const int A[], int Len) {\n"
+              "  if (Len <= 0)\n"
+              "    return;\n"
+              "  int I = 0;\n"
+              "  while (I < Len) {\n"
+              "    int K = I + 1;\n"
+              "    for (; K < Len; K++) {\n"
+              "      if (A[I] != A[K])\n"
+              "        break;\n"
+              "    } \n"
+              "    I = K;   \n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "testsuite.h"
 
 #include <algorithm>
+#include <functional>
 #include <list>
 #include <string>
 
@@ -37,15 +38,14 @@ private:
     public:
         std::list<std::string> id;
 
-        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) OVERRIDE {}
-        void bughuntingReport(const std::string & /*str*/) OVERRIDE {}
+        void reportOut(const std::string & /*outmsg*/, Color = Color::Reset) override {}
 
-        void reportErr(const ErrorMessage &msg) OVERRIDE {
+        void reportErr(const ErrorMessage &msg) override {
             id.push_back(msg.id);
         }
     };
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(instancesSorted);
         TEST_CASE(classInfoFormat);
         TEST_CASE(getErrorMessages);

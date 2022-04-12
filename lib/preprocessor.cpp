@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,16 +20,21 @@
 #include "preprocessor.h"
 
 #include "errorlogger.h"
+#include "errortypes.h"
 #include "library.h"
 #include "path.h"
 #include "settings.h"
-#include "simplecpp.h"
+#include "standards.h"
 #include "suppressions.h"
 
 #include <algorithm>
+#include <cstddef>
 #include <cstdint>
 #include <iterator> // back_inserter
+#include <memory>
 #include <utility>
+
+#include <simplecpp.h>
 
 static bool sameline(const simplecpp::Token *tok1, const simplecpp::Token *tok2)
 {
@@ -557,36 +562,6 @@ void Preprocessor::preprocess(std::istream &istr, std::map<std::string, std::str
             result[c] = getcode(tokens1, c, files, false);
         }
     }
-}
-
-std::string Preprocessor::removeSpaceNearNL(const std::string &str)
-{
-    std::string tmp;
-    char prev = '\n'; // treat start of file as newline
-    for (std::size_t i = 0; i < str.size(); i++) {
-        if (str[i] == ' ' &&
-            (prev == '\n' ||
-             i + 1 >= str.size() || // treat end of file as newline
-             str[i+1] == '\n'
-            )
-            ) {
-            // Ignore space that has new line in either side of it
-        } else {
-            tmp.append(1, str[i]);
-            prev = str[i];
-        }
-    }
-
-    return tmp;
-}
-
-void Preprocessor::preprocessWhitespaces(std::string &processedFile)
-{
-    // Replace all tabs with spaces..
-    std::replace(processedFile.begin(), processedFile.end(), '\t', ' ');
-
-    // Remove space characters that are after or before new line character
-    processedFile = removeSpaceNearNL(processedFile);
 }
 
 void Preprocessor::preprocess(std::istream &srcCodeStream, std::string &processedFile, std::list<std::string> &resultConfigurations, const std::string &filename, const std::list<std::string> &includePaths)

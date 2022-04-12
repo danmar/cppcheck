@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,21 @@
 #include "mathlib.h"
 #include "path.h"
 #include "symboldatabase.h"
-#include "tinyxml2.h"
 #include "token.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "valueflow.h"
 
 #include <cctype>
+#include <climits>
 #include <cstdlib>
 #include <cstring>
+#include <iosfwd>
 #include <list>
+#include <memory>
 #include <string>
+
+#include <tinyxml2.h>
 
 static std::vector<std::string> getnames(const char *names)
 {
@@ -56,7 +61,7 @@ static void gettokenlistfromvalid(const std::string& valid, TokenList& tokenList
     }
 }
 
-Library::Library() : bugHunting(false), mAllocId(0)
+Library::Library() : mAllocId(0)
 {}
 
 Library::Error Library::load(const char exename[], const char path[])
@@ -184,6 +189,7 @@ Library::Container::Action Library::Container::actionFrom(const std::string& act
         return Container::Action::NO_ACTION;
 }
 
+// cppcheck-suppress unusedFunction - only used in unit tests
 bool Library::loadxmldata(const char xmldata[], std::size_t len)
 {
     tinyxml2::XMLDocument doc;
@@ -505,6 +511,15 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                             container.unstableErase = true;
                         if (unstableType.find("insert") != std::string::npos)
                             container.unstableInsert = true;
+                    }
+                } else if (containerNodeName == "rangeItemRecordType") {
+                    for (const tinyxml2::XMLElement* memberNode = node->FirstChildElement(); memberNode; memberNode = memberNode->NextSiblingElement()) {
+                        const char *memberName = memberNode->Attribute("name");
+                        const char *memberTemplateParameter = memberNode->Attribute("templateParameter");
+                        struct Container::RangeItemRecordTypeItem member;
+                        member.name = memberName ? memberName : "";
+                        member.templateParameter = memberTemplateParameter ? std::atoi(memberTemplateParameter) : -1;
+                        container.rangeItemRecordType.emplace_back(member);
                     }
                 } else
                     unknown_elements.insert(containerNodeName);
@@ -877,56 +892,6 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
     return Error(ErrorCode::OK);
 }
 
-std::vector<Library::InvalidArgValue> Library::getInvalidArgValues(const std::string &validExpr)
-{
-    std::vector<Library::InvalidArgValue> valid;
-    TokenList tokenList(nullptr);
-    gettokenlistfromvalid(validExpr, tokenList);
-    for (const Token *tok = tokenList.front(); tok; tok = tok ? tok->next() : nullptr) {
-        if (tok->str() == ",")
-            continue;
-        if (Token::Match(tok, ": %num%")) {
-            valid.push_back(InvalidArgValue{InvalidArgValue::Type::le, tok->next()->str(), std::string()});
-            tok = tok->tokAt(2);
-        } else if (Token::Match(tok, "%num% : %num%")) {
-            valid.push_back(InvalidArgValue{InvalidArgValue::Type::range, tok->str(), tok->strAt(2)});
-            tok = tok->tokAt(3);
-        } else if (Token::Match(tok, "%num% :")) {
-            valid.push_back(InvalidArgValue{InvalidArgValue::Type::ge, tok->str(), std::string()});
-            tok = tok->tokAt(2);
-        } else if (Token::Match(tok, "%num%")) {
-            valid.push_back(InvalidArgValue{InvalidArgValue::Type::eq, tok->str(), std::string()});
-            tok = tok->next();
-        }
-    }
-
-    std::vector<Library::InvalidArgValue> invalid;
-    if (valid.empty())
-        return invalid;
-
-    if (valid[0].type == InvalidArgValue::Type::ge || valid[0].type == InvalidArgValue::Type::eq)
-        invalid.push_back(InvalidArgValue{InvalidArgValue::Type::lt, valid[0].op1, std::string()});
-    if (valid.back().type == InvalidArgValue::Type::le || valid.back().type == InvalidArgValue::Type::eq)
-        invalid.push_back(InvalidArgValue{InvalidArgValue::Type::gt, valid[0].op1, std::string()});
-    for (int i = 0; i + 1 < valid.size(); i++) {
-        const InvalidArgValue &v1 = valid[i];
-        const InvalidArgValue &v2 = valid[i + 1];
-        if (v1.type == InvalidArgValue::Type::le && v2.type == InvalidArgValue::Type::ge) {
-            if (v1.isInt()) {
-                MathLib::bigint op1 = MathLib::toLongNumber(v1.op1);
-                MathLib::bigint op2 = MathLib::toLongNumber(v2.op1);
-                if (op1 + 1 == op2 - 1)
-                    invalid.push_back(InvalidArgValue{InvalidArgValue::Type::eq, MathLib::toString(op1 + 1), std::string()});
-                else
-                    invalid.push_back(InvalidArgValue{InvalidArgValue::Type::range, MathLib::toString(op1 + 1), MathLib::toString(op2 - 1)});
-            }
-        }
-    }
-
-    return invalid;
-}
-
-
 bool Library::isIntArgValid(const Token *ftok, int argnr, const MathLib::bigint argvalue) const
 {
     const ArgumentChecks *ac = getarg(ftok, argnr);
@@ -1181,6 +1146,20 @@ const Library::Container* Library::detectContainer(const Token* typeStart, bool 
         }
     }
     return nullptr;
+}
+
+const Library::Container* Library::detectContainerOrIterator(const Token* typeStart, bool* isIterator) const
+{
+    const Library::Container* c = detectContainer(typeStart);
+    if (c) {
+        if (isIterator)
+            *isIterator = false;
+        return c;
+    }
+    c = detectContainer(typeStart, true);
+    if (c && isIterator)
+        *isIterator = true;
+    return c;
 }
 
 bool Library::isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback)
@@ -1455,7 +1434,7 @@ bool Library::isnoreturn(const Token *ftok) const
     if (it == mNoReturn.end())
         return false;
     if (it->second == FalseTrueMaybe::Maybe)
-        return !bugHunting; // in bugHunting "maybe" means function is not noreturn
+        return true;
     return it->second == FalseTrueMaybe::True;
 }
 
@@ -1469,7 +1448,7 @@ bool Library::isnotnoreturn(const Token *ftok) const
     if (it == mNoReturn.end())
         return false;
     if (it->second == FalseTrueMaybe::Maybe)
-        return bugHunting; // in bugHunting "maybe" means function is not noreturn
+        return false;
     return it->second == FalseTrueMaybe::False;
 }
 
@@ -1568,6 +1547,8 @@ const Token* Library::getContainerFromYield(const Token* tok, Library::Container
     }
     return nullptr;
 }
+
+// cppcheck-suppress unusedFunction
 const Token* Library::getContainerFromAction(const Token* tok, Library::Container::Action action) const
 {
     if (!tok)
@@ -1633,4 +1614,51 @@ Library::TypeCheck Library::getTypeCheck(const std::string &check, const std::st
 {
     auto it = mTypeChecks.find(std::pair<std::string, std::string>(check, typeName));
     return it == mTypeChecks.end() ? TypeCheck::def : it->second;
+}
+
+std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                 const Settings* settings,
+                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId)
+{
+    std::shared_ptr<TokenList> tokenList = std::make_shared<TokenList>(settings);
+    {
+        const std::string code = "return " + returnValue + ";";
+        std::istringstream istr(code);
+        if (!tokenList->createTokens(istr))
+            return nullptr;
+    }
+
+    // combine operators, set links, etc..
+    std::stack<Token*> lpar;
+    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
+        if (Token::Match(tok2, "[!<>=] =")) {
+            tok2->str(tok2->str() + "=");
+            tok2->deleteNext();
+        } else if (tok2->str() == "(")
+            lpar.push(tok2);
+        else if (tok2->str() == ")") {
+            if (lpar.empty())
+                return nullptr;
+            Token::createMutualLinks(lpar.top(), tok2);
+            lpar.pop();
+        }
+    }
+    if (!lpar.empty())
+        return nullptr;
+
+    // set varids
+    for (Token* tok2 = tokenList->front(); tok2; tok2 = tok2->next()) {
+        if (tok2->str().compare(0, 3, "arg") != 0)
+            continue;
+        nonneg int id = std::atoi(tok2->str().c_str() + 3);
+        tok2->varId(id);
+        if (lookupVarId)
+            (*lookupVarId)[id] = tok2;
+    }
+
+    // Evaluate expression
+    tokenList->createAst();
+    Token* expr = tokenList->front()->astOperand1();
+    ValueFlow::valueFlowConstantFoldAST(expr, settings);
+    return {tokenList, expr};
 }

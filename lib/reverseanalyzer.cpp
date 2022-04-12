@@ -1,14 +1,39 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "reverseanalyzer.h"
+
 #include "analyzer.h"
 #include "astutils.h"
 #include "errortypes.h"
 #include "forwardanalyzer.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
 #include "valueptr.h"
 
 #include <algorithm>
+#include <cstddef>
+#include <string>
+#include <tuple>
+#include <utility>
+#include <vector>
 
 struct ReverseTraversal {
     ReverseTraversal(const ValuePtr<Analyzer>& analyzer, const Settings* settings)
@@ -38,6 +63,44 @@ struct ReverseTraversal {
         if (action.isInvalid())
             return false;
         return true;
+    }
+
+    Token* getParentFunction(Token* tok)
+    {
+        if (!tok)
+            return nullptr;
+        if (!tok->astParent())
+            return nullptr;
+        int argn = -1;
+        if (Token* ftok = getTokenArgumentFunction(tok, argn)) {
+            while (!Token::Match(ftok, "(|{")) {
+                if (!ftok)
+                    return nullptr;
+                if (ftok->index() >= tok->index())
+                    return nullptr;
+                if (ftok->link())
+                    ftok = ftok->link()->next();
+                else
+                    ftok = ftok->next();
+            }
+            if (ftok == tok)
+                return nullptr;
+            return ftok;
+        }
+        return nullptr;
+    }
+
+    Token* getTopFunction(Token* tok)
+    {
+        if (!tok)
+            return nullptr;
+        if (!tok->astParent())
+            return tok;
+        Token* parent = tok;
+        Token* top = tok;
+        while ((parent = getParentFunction(parent)))
+            top = parent;
+        return top;
     }
 
     bool updateRecursive(Token* start) {
@@ -95,6 +158,8 @@ struct ReverseTraversal {
             }
             if (tok != parent->astOperand2())
                 continue;
+            if (Token::simpleMatch(parent, ":"))
+                parent = parent->astParent();
             if (!Token::Match(parent, "%oror%|&&|?"))
                 continue;
             Token* condTok = parent->astOperand1();
@@ -121,12 +186,17 @@ struct ReverseTraversal {
         if (start == end)
             return;
         std::size_t i = start->index();
-        for (Token* tok = start->previous(); tok != end; tok = tok->previous()) {
+        for (Token* tok = start->previous(); succeeds(tok, end); tok = tok->previous()) {
             if (tok->index() >= i)
                 throw InternalError(tok, "Cyclic reverse analysis.");
             i = tok->index();
             if (tok == start || (tok->str() == "{" && (tok->scope()->type == Scope::ScopeType::eFunction ||
                                                        tok->scope()->type == Scope::ScopeType::eLambda))) {
+                const Function* f = tok->scope()->function;
+                if (f && f->isConstructor()) {
+                    if (const Token* initList = f->constructorMemberInitialization())
+                        traverse(tok->previous(), tok->tokAt(initList->index() - tok->index()));
+                }
                 break;
             }
             if (Token::Match(tok, "return|break|continue"))
@@ -193,6 +263,16 @@ struct ReverseTraversal {
                 tok = previousBeforeAstLeftmostLeaf(assignTop)->next();
                 continue;
             }
+            if (tok->str() == ")" && !isUnevaluated(tok)) {
+                if (Token* top = getTopFunction(tok->link())) {
+                    if (!updateRecursive(top))
+                        break;
+                    Token* next = previousBeforeAstLeftmostLeaf(top);
+                    if (next && precedes(next, tok))
+                        tok = next->next();
+                }
+                continue;
+            }
             if (tok->str() == "}") {
                 Token* condTok = getCondTokFromEnd(tok);
                 if (!condTok)
@@ -249,6 +329,12 @@ struct ReverseTraversal {
                     if (action.isModified())
                         break;
                 }
+                Token* condTok = getCondTokFromEnd(tok->link());
+                if (condTok) {
+                    Analyzer::Result r = valueFlowGenericForward(condTok, analyzer, settings);
+                    if (r.action.isModified())
+                        break;
+                }
                 if (Token::simpleMatch(tok->tokAt(-2), "} else {"))
                     tok = tok->linkAt(-2);
                 if (Token::simpleMatch(tok->previous(), ") {"))
@@ -263,12 +349,23 @@ struct ReverseTraversal {
                 tok = parent;
                 continue;
             }
+            if (tok->str() == "case") {
+                const Scope* scope = tok->scope();
+                while (scope && scope->type != Scope::eSwitch)
+                    scope = scope->nestedIn;
+                if (!scope || scope->type != Scope::eSwitch)
+                    break;
+                tok = tok->tokAt(scope->bodyStart->index() - tok->index() - 1);
+                continue;
+            }
             if (!update(tok))
                 break;
         }
     }
 
     static Token* assignExpr(Token* tok) {
+        if (Token::Match(tok, ")|}"))
+            tok = tok->link();
         while (tok->astParent() && (astIsRHS(tok) || !tok->astParent()->isBinaryOp())) {
             if (tok->astParent()->isAssignmentOp())
                 return tok->astParent();

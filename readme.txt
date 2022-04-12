@@ -15,20 +15,12 @@ Manual
 Compiling
 
     Any C++11 compiler should work. For compilers with partial C++11 support it may work. If
-    your compiler has the C++11 features that are available in Visual Studio 2013 / GCC 4.6
+    your compiler has the C++11 features that are available in Visual Studio 2013 / GCC 4.8
     then it will work.
 
     To build the GUI, you need Qt.
 
     While building the command line tool, PCRE is optional. It is used if you build with rules.
-
-    For "bug hunting" you need Z3. Installing Z3:
-     * debian: "sudo apt-get install libz3-dev
-     * windows:
-       32-bit: https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x86-win.zip
-       64-bit: https://github.com/Z3Prover/z3/releases/download/z3-4.8.7/z3-4.8.7-x64-win.zip
-    If you do not want to install z3 in some "system" include/lib paths you can put the files in
-    cppcheck/externals/z3/include and cppcheck/externals/z3/bin
 
     There are multiple compilation choices:
       * qmake - cross platform build tool
@@ -36,7 +28,7 @@ Compiling
       * Windows: Visual Studio
       * Windows: Qt Creator + mingw
       * gnu make
-      * g++ 4.6 (or later)
+      * g++ 4.8 (or later)
       * clang++
 
     cmake

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,14 +28,16 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
 class Token;
+class TokenList;
+class Settings;
 
 namespace tinyxml2 {
     class XMLDocument;
@@ -69,7 +71,7 @@ public:
     Error load(const char exename[], const char path[]);
     Error load(const tinyxml2::XMLDocument &doc);
 
-    /** this is primarily meant for unit tests. it only returns true/false */
+    /** this is used for unit tests */
     bool loadxmldata(const char xmldata[], std::size_t len);
 
     struct AllocFunc {
@@ -246,9 +248,14 @@ public:
             Action action;
             Yield yield;
         };
+        struct RangeItemRecordTypeItem {
+            std::string name;
+            int templateParameter;
+        };
         std::string startPattern, startPattern2, endPattern, itEndPattern;
         std::map<std::string, Function> functions;
         int type_templateArgNo;
+        std::vector<RangeItemRecordTypeItem> rangeItemRecordType;
         int size_templateArgNo;
         bool arrayLike_indexOp;
         bool stdStringLike;
@@ -278,6 +285,7 @@ public:
     };
     std::map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
+    const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
 
     class ArgumentChecks {
     public:
@@ -401,7 +409,6 @@ public:
             return MathLib::isInt(op1);
         }
     };
-    static std::vector<InvalidArgValue> getInvalidArgValues(const std::string &validExpr);
 
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
@@ -549,8 +556,6 @@ public:
     enum class TypeCheck { def, check, suppress };
     TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
 
-    bool bugHunting;
-
 private:
     // load a <function> xml node
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
@@ -645,6 +650,10 @@ private:
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
+
+std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                 const Settings* settings,
+                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId = nullptr);
 
 /// @}
 //---------------------------------------------------------------------------

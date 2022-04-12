@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,14 @@
 
 
 #include "checkio.h"
+#include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <iosfwd>
 
 
 class TestIO : public TestFixture {
@@ -31,7 +35,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "windows.cfg");
         LOAD_LIB_2(settings.library, "qt.cfg");
@@ -50,6 +54,7 @@ private:
         TEST_CASE(testScanf2);
         TEST_CASE(testScanf3); // #3494
         TEST_CASE(testScanf4); // #ticket 2553
+        TEST_CASE(testScanf5); // #10632
 
         TEST_CASE(testScanfArgument);
         TEST_CASE(testPrintfArgument);
@@ -77,7 +82,8 @@ private:
         TEST_CASE(testStdDistance); // #10304
     }
 
-    void check(const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified, bool onlyFormatStr = false) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char* code, bool inconclusive = false, bool portability = false, Settings::PlatformType platform = Settings::Unspecified, bool onlyFormatStr = false) {
         // Clear the error buffer..
         errout.str("");
 
@@ -92,7 +98,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckIO checkIO(&tokenizer, &settings, this);
@@ -771,6 +777,15 @@ private:
               "  scanf (\"%70s\",str);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:4]: (error) Width 70 given in format string (no. 1) is larger than destination buffer 'str[8]', use %7s to prevent overflowing it.\n", errout.str());
+    }
+
+    void testScanf5() { // #10632
+        check("char s1[42], s2[42];\n"
+              "void test() {\n"
+              "    scanf(\"%42s%42[a-z]\", s1, s2);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Width 42 given in format string (no. 1) is larger than destination buffer 's1[42]', use %41s to prevent overflowing it.\n"
+                      "[test.cpp:3]: (error) Width 42 given in format string (no. 2) is larger than destination buffer 's2[42]', use %41[a-z] to prevent overflowing it.\n", errout.str());
     }
 
 
@@ -2102,6 +2117,11 @@ private:
             ASSERT_EQUALS("[test.cpp:3]: (warning) %s in format string (no. 1) requires a 'char *' but the argument type is 'const char *'.\n"
                           "[test.cpp:3]: (warning) scanf() without field width limits can crash with huge input data.\n", errout.str());
         }
+
+        check("void f() {\n" // #7038
+              "    scanf(\"%i\", \"abc\" + 1);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) %i in format string (no. 1) requires 'int *' but the argument type is 'const char *'.\n", errout.str());
     }
 
     void testPrintfArgument() {
@@ -3280,6 +3300,12 @@ private:
               "  printf(\"%f\", x.f(4.0));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    printf(\"%lu\", sizeof(char));\n"
+              "}\n", false, true, Settings::Win64);
+        ASSERT_EQUALS("[test.cpp:2]: (portability) %lu in format string (no. 1) requires 'unsigned long' but the argument type is 'size_t {aka unsigned long long}'.\n",
+                      errout.str());
     }
 
     void testPrintfArgumentVariables() {
@@ -4610,9 +4636,12 @@ private:
 
         check("void f() {\n"
               "  char str[8];\n"
-              "  scanf_s(\"%8c\", str, sizeof(str))\n"
-              "  scanf_s(\"%9c\", str, sizeof(str))\n"
-              "}\n", false, false, Settings::Win32A);
+              "  scanf_s(\"%8c\", str, sizeof(str));\n"
+              "  scanf_s(\"%9c\", str, sizeof(str));\n"
+              "}\n",
+              false,
+              false,
+              Settings::Win32A);
         ASSERT_EQUALS("[test.cpp:4]: (error) Width 9 given in format string (no. 1) is larger than destination buffer 'str[8]', use %8c to prevent overflowing it.\n", errout.str());
 
         check("void foo() {\n"

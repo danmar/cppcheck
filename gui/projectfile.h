@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,14 +19,14 @@
 #ifndef PROJECT_FILE_H
 #define PROJECT_FILE_H
 
+#include "settings.h"
+#include "suppressions.h"
+
 #include <map>
+
 #include <QObject>
 #include <QString>
 #include <QStringList>
-
-#include "suppressions.h"
-
-#include <settings.h>
 
 class QXmlStreamReader;
 class QXmlStreamWriter;
@@ -46,7 +46,7 @@ class ProjectFile : public QObject {
 public:
     explicit ProjectFile(QObject *parent = nullptr);
     explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
-    ~ProjectFile() {
+    ~ProjectFile() override {
         if (this == mActiveProject) mActiveProject = nullptr;
     }
 
@@ -228,26 +228,6 @@ public:
         mMaxTemplateRecursion = maxTemplateRecursion;
     }
 
-    const std::map<std::string,std::string>& getFunctionContracts() const {
-        return mFunctionContracts;
-    }
-
-    const std::map<QString, Settings::VariableContracts>& getVariableContracts() const {
-        return mVariableContracts;
-    }
-
-    void setVariableContracts(QString var, QString min, QString max) {
-        mVariableContracts[var] = Settings::VariableContracts{min.toStdString(), max.toStdString()};
-    }
-
-    void deleteFunctionContract(QString function) {
-        mFunctionContracts.erase(function.toStdString());
-    }
-
-    void deleteVariableContract(QString var) {
-        mVariableContracts.erase(var);
-    }
-
     /**
      * @brief Get filename for the project file.
      * @return file name.
@@ -312,9 +292,6 @@ public:
      */
     void setLibraries(const QStringList &libraries);
 
-    /** Set contract for a function */
-    void setFunctionContract(QString function, QString expects);
-
     /**
      * @brief Set platform.
      * @param platform platform.
@@ -350,7 +327,7 @@ public:
     }
 
     /** Set tags for a warning */
-    void setWarningTags(std::size_t hash, QString tags);
+    void setWarningTags(std::size_t hash, const QString& tags);
 
     /** Get tags for a warning */
     QString getWarningTags(std::size_t hash) const;
@@ -391,8 +368,6 @@ public:
     /** Use Clang parser */
     bool clangParser;
 
-    /** Bug hunting */
-    bool bugHunting;
 protected:
 
     /**
@@ -436,18 +411,6 @@ protected:
      * @param reader XML stream reader.
      */
     void readExcludes(QXmlStreamReader &reader);
-
-    /**
-     * @brief Read function contracts.
-     * @param reader XML stream reader.
-     */
-    void readFunctionContracts(QXmlStreamReader &reader);
-
-    /**
-     * @brief Read variable constraints.
-     * @param reader XML stream reader.
-     */
-    void readVariableContracts(QXmlStreamReader &reader);
 
     /**
      * @brief Read lists of Visual Studio configurations
@@ -563,10 +526,6 @@ private:
      * @brief List of libraries.
      */
     QStringList mLibraries;
-
-    std::map<std::string, std::string> mFunctionContracts;
-
-    std::map<QString, Settings::VariableContracts> mVariableContracts;
 
     /**
      * @brief Platform

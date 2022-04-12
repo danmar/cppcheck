@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,9 @@
 
 #include <iostream>
 #include <list>
+#include <memory>
 #include <utility>
+#include <vector>
 
 //---------------------------------------------------------------------------
 
@@ -753,7 +755,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 if (rhs->varId() == tok->varId()) {
                     // simple assignment
                     varInfo->erase(tok->varId());
-                } else if (rhs->str() == "(" && mSettings->library.returnValue(rhs->astOperand1()) != emptyString) {
+                } else if (rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
                     // #9298, assignment through return value of a function
                     const std::string &returnValue = mSettings->library.returnValue(rhs->astOperand1());
                     if (returnValue.compare(0, 3, "arg") == 0) {
@@ -836,7 +838,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
             var->second.type = allocation.type;
             var->second.allocTok = allocation.allocTok;
         }
-    } else if (allocation.status != VarInfo::NOALLOC) {
+    } else if (allocation.status != VarInfo::NOALLOC && allocation.status != VarInfo::OWNED && !Token::simpleMatch(tok->astTop(), "return")) {
         alloctype[arg->varId()].status = VarInfo::DEALLOC;
         alloctype[arg->varId()].allocTok = tok;
     }
@@ -859,10 +861,17 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
     int argNr = 1;
     for (const Token *funcArg = tokFirstArg; funcArg; funcArg = funcArg->nextArgument()) {
         const Token* arg = funcArg;
-        if (mTokenizer->isCPP() && arg->str() == "new") {
-            arg = arg->next();
-            if (Token::simpleMatch(arg, "( std :: nothrow )"))
-                arg = arg->tokAt(5);
+        if (mTokenizer->isCPP()) {
+            int tokAdvance = 0;
+            if (arg->str() == "new")
+                tokAdvance = 1;
+            else if (Token::simpleMatch(arg, "* new"))
+                tokAdvance = 2;
+            if (tokAdvance > 0) {
+                arg = arg->tokAt(tokAdvance);
+                if (Token::simpleMatch(arg, "( std :: nothrow )"))
+                    arg = arg->tokAt(5);
+            }
         }
 
         // Skip casts
@@ -997,7 +1006,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                     tok2 = tok3->tokAt(4);
                 else
                     continue;
-                if (Token::Match(tok2, "[});,]")) {
+                if (Token::Match(tok2, "[});,+]")) {
                     used = true;
                     break;
                 }

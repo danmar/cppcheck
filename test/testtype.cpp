@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,14 @@
  */
 
 #include "checktype.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
+#include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 #include <string>
 
 class TestType : public TestFixture {
@@ -31,7 +34,7 @@ public:
 private:
 
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(checkTooBigShift_Unix32);
         TEST_CASE(checkIntegerOverflow);
         TEST_CASE(signConversion);
@@ -40,7 +43,8 @@ private:
         TEST_CASE(checkFloatToIntegerOverflow);
     }
 
-    void check(const char code[], Settings* settings = nullptr, const char filename[] = "test.cpp", const std::string& standard = "c++11") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], Settings* settings = nullptr, const char filename[] = "test.cpp", const std::string& standard = "c++11") {
         // Clear the error buffer..
         errout.str("");
 
@@ -55,7 +59,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check..
         CheckType checkType(&tokenizer, settings, this);
@@ -165,6 +169,17 @@ private:
               "    UINFO(x << 1234);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #8640
+        check("int f (void)\n"
+              "{\n"
+              "    constexpr const int a = 1;\n"
+              "    constexpr const int shift[1] = {32};\n"
+              "    constexpr const int ret = a << shift[0];\n" // shift too many bits
+              "    return ret;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Shifting 32-bit value by 32 bits is undefined behaviour\n"
+                      "[test.cpp:5]: (error) Signed integer overflow for expression 'a<<shift[0]'.\n", errout.str());
 
         // #8885
         check("int f(int k, int rm) {\n"

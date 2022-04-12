@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,9 +35,7 @@ const char Settings::SafeChecks::XmlInternalFunctions[] = "internal-functions";
 const char Settings::SafeChecks::XmlExternalVariables[] = "external-variables";
 
 Settings::Settings()
-    : bugHunting(false),
-    bugHuntingCheckFunctionMaxTime(60),
-    checkAllConfigurations(true),
+    : checkAllConfigurations(true),
     checkConfiguration(false),
     checkHeaders(true),
     checkLibrary(false),
@@ -46,7 +44,6 @@ Settings::Settings()
     clangExecutable("clang"),
     clangTidy(false),
     daca(false),
-    debugBugHunting(false),
     debugnormal(false),
     debugSimplified(false),
     debugtemplate(false),
@@ -59,7 +56,9 @@ Settings::Settings()
     inlineSuppressions(false),
     jobs(1),
     jointSuppressionReport(false),
+#ifdef THREADING_MODEL_FORK
     loadAverage(0),
+#endif
     maxConfigs(12),
     maxCtuDepth(2),
     maxTemplateRecursion(100),
@@ -76,9 +75,15 @@ Settings::Settings()
     certainty.setEnabled(Certainty::normal, true);
 }
 
-void Settings::loadCppcheckCfg(const std::string &filename)
+void Settings::loadCppcheckCfg()
 {
-    std::ifstream fin(filename);
+    std::string fileName = Path::getPathFromFilename(exename) + "cppcheck.cfg";
+#ifdef FILESDIR
+    if (Path::fileExists(FILESDIR "/cppcheck.cfg"))
+        fileName = FILESDIR "/cppcheck.cfg";
+#endif
+
+    std::ifstream fin(fileName);
     if (!fin.is_open())
         return;
     picojson::value json;
@@ -86,11 +91,15 @@ void Settings::loadCppcheckCfg(const std::string &filename)
     if (!picojson::get_last_error().empty())
         return;
     picojson::object obj = json.get<picojson::object>();
+    if (obj.count("productName") && obj["productName"].is<std::string>())
+        cppcheckCfgProductName = obj["productName"].get<std::string>();
+    if (obj.count("about") && obj["about"].is<std::string>())
+        cppcheckCfgAbout = obj["about"].get<std::string>();
     if (obj.count("addons") && obj["addons"].is<picojson::array>()) {
         for (const picojson::value &v : obj["addons"].get<picojson::array>()) {
             const std::string &s = v.get<std::string>();
             if (!Path::isAbsolute(s))
-                addons.push_back(Path::getPathFromFilename(filename) + s);
+                addons.push_back(Path::getPathFromFilename(fileName) + s);
             else
                 addons.push_back(s);
         }

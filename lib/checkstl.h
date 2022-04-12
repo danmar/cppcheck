@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenize.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <string>
@@ -53,7 +52,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** run checks, the token list is not simplified */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (!tokenizer->isCPP()) {
             return;
         }
@@ -63,7 +62,6 @@ public:
         checkStl.if_find();
         checkStl.checkFindInsert();
         checkStl.iterators();
-        checkStl.mismatchingContainers();
         checkStl.missingComparison();
         checkStl.outOfBounds();
         checkStl.outOfBoundsIndexExpression();
@@ -179,9 +177,6 @@ public:
      */
     void dereferenceErasedError(const Token* erased, const Token* deref, const std::string& itername, bool inconclusive);
 
-    /** @brief Reading from empty stl container (using valueflow) */
-    void readingEmptyStlContainer2();
-
     /** @brief Look for loops that can replaced with std algorithms */
     void useStlAlgorithm();
 
@@ -238,7 +233,7 @@ private:
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         ErrorPath errorPath;
         CheckStl c(nullptr, settings, errorLogger);
         c.outOfBoundsError(nullptr, "container", nullptr, "x", nullptr);
@@ -283,7 +278,7 @@ private:
         return "STL usage";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Check for invalid usage of STL:\n"
                "- out of bounds errors\n"
                "- misuse of iterators when iterating through a container\n"

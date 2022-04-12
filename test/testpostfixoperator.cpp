@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,12 @@
 
 
 #include "checkpostfixoperator.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 
 class TestPostfixOperator : public TestFixture {
 public:
@@ -30,22 +32,22 @@ public:
 private:
     Settings settings;
 
-
-    void check(const char code[]) {
+#define check(code) check_(code, __FILE__, __LINE__)
+    void check_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for postfix operators..
         CheckPostfixOperator checkPostfixOperator(&tokenizer, &settings, this);
         checkPostfixOperator.postfixOperator();
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::performance);
 
         TEST_CASE(testsimple);

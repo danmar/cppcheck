@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,18 +17,30 @@
  */
 
 #include "clangimport.h"
+
+#include "errortypes.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
+#include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 #include "utils.h"
+#include "valueflow.h"
 
-#include <cstring>
 #include <algorithm>
-#include <iostream>
-#include <memory>
-#include <stack>
-#include <vector>
 #include <cctype>
+#include <cstdlib>
+#include <cstring>
+#include <iostream>
+#include <list>
+#include <map>
+#include <memory>
+#include <set>
+#include <stack>
+#include <string>
+#include <utility>
+#include <vector>
 
 static const std::string AccessSpecDecl = "AccessSpecDecl";
 static const std::string ArraySubscriptExpr = "ArraySubscriptExpr";
@@ -265,7 +277,7 @@ namespace clangimport {
         std::vector<const Variable *> getVariableList() const {
             std::vector<const Variable *> ret;
             ret.resize(mVarId + 1, nullptr);
-            for (auto it: mDeclMap) {
+            for (const auto& it: mDeclMap) {
                 if (it.second.var)
                     ret[it.second.var->declarationId()] = it.second.var;
             }
@@ -402,6 +414,8 @@ std::string clangimport::AstNode::getSpelling() const
         return "";
     if (str.compare(0,8,"<invalid") == 0)
         return "";
+    if (nodeType == RecordDecl && str == "struct")
+        return "";
     return str;
 }
 
@@ -453,7 +467,7 @@ std::string clangimport::AstNode::getTemplateParameters() const
     if (children.empty() || children[0]->nodeType != TemplateArgument)
         return "";
     std::string templateParameters;
-    for (AstNodePtr child: children) {
+    for (const AstNodePtr& child: children) {
         if (child->nodeType == TemplateArgument) {
             if (templateParameters.empty())
                 templateParameters = "<";
@@ -469,7 +483,7 @@ void clangimport::AstNode::dumpAst(int num, int indent) const
 {
     (void)num;
     std::cout << std::string(indent, ' ') << nodeType;
-    for (auto tok: mExtTokens)
+    for (const auto& tok: mExtTokens)
         std::cout << " " << tok;
     std::cout << std::endl;
     for (int c = 0; c < children.size(); ++c) {
@@ -499,7 +513,7 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
     mFile = file;
     mLine = line;
     mCol = col;
-    for (auto child: children) {
+    for (const auto& child: children) {
         if (child)
             child->setLocations(tokenList, file, line, col);
     }
@@ -664,7 +678,7 @@ Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType 
     tokenList->back()->scope(scope);
     mData->scopeAccessControl[scope] = scope->defaultAccess();
     if (!children2.empty()) {
-        for (AstNodePtr astNode: children2) {
+        for (const AstNodePtr &astNode: children2) {
             if (astNode->nodeType == "VisibilityAttr")
                 continue;
             if (astNode->nodeType == AccessSpecDecl) {
@@ -742,7 +756,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return nullptr;
     }
     if (nodeType == ClassTemplateDecl) {
-        for (AstNodePtr child: children) {
+        for (const AstNodePtr& child: children) {
             if (child->nodeType == ClassTemplateSpecializationDecl)
                 child->createTokens(tokenList);
         }
@@ -773,7 +787,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         return assign;
     }
     if (nodeType == CompoundStmt) {
-        for (AstNodePtr child: children) {
+        for (const AstNodePtr& child: children) {
             child->createTokens(tokenList);
             if (!Token::Match(tokenList->back(), "[;{}]"))
                 child->addtoken(tokenList, ";");
@@ -1029,7 +1043,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     }
     if (nodeType == FunctionTemplateDecl) {
         bool first = true;
-        for (AstNodePtr child: children) {
+        for (const AstNodePtr& child: children) {
             if (child->nodeType == FunctionDecl) {
                 if (!first)
                     child->createTokens(tokenList);
@@ -1081,7 +1095,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
         const Scope *scope = tokenList->back()->scope();
         Token *start = addtoken(tokenList, "{");
         start->scope(scope);
-        for (AstNodePtr child: children) {
+        for (const AstNodePtr& child: children) {
             if (tokenList->back()->str() != "{")
                 addtoken(tokenList, ",");
             child->createTokens(tokenList);
@@ -1098,7 +1112,7 @@ Token *clangimport::AstNode::createTokens(TokenList *tokenList)
     if (nodeType == LabelStmt) {
         addtoken(tokenList, unquote(mExtTokens.back()));
         addtoken(tokenList, ":");
-        for (auto child: children)
+        for (const auto& child: children)
             child->createTokens(tokenList);
         return nullptr;
     }
@@ -1416,7 +1430,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
     /*Token *nameToken =*/ addtoken(tokenList, className);
     // base classes
     bool firstBase = true;
-    for (AstNodePtr child: children) {
+    for (const AstNodePtr &child: children) {
         if (child->nodeType == "public" || child->nodeType == "protected" || child->nodeType == "private") {
             addtoken(tokenList, firstBase ? ":" : ",");
             addtoken(tokenList, child->nodeType);
@@ -1427,7 +1441,7 @@ void clangimport::AstNode::createTokensForCXXRecord(TokenList *tokenList)
     // definition
     if (isDefinition()) {
         std::vector<AstNodePtr> children2;
-        for (AstNodePtr child: children) {
+        for (const AstNodePtr &child: children) {
             if (child->nodeType == CXXConstructorDecl ||
                 child->nodeType == CXXDestructorDecl ||
                 child->nodeType == CXXMethodDecl ||

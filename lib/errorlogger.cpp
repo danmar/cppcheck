@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,16 +24,18 @@
 #include "path.h"
 #include "token.h"
 #include "tokenlist.h"
-#include "utils.h"
 
-#include <string>
-#include <tinyxml2.h>
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
 #include <iomanip>
+#include <memory>
+#include <string>
+
+#include <tinyxml2.h>
 
 InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
     token(tok), errorMessage(errorMsg), type(type)
@@ -59,14 +61,6 @@ InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type
         break;
     }
 }
-
-static std::size_t calculateWarningHash(const TokenList *tokenList, const std::string &msg)
-{
-    if (!tokenList)
-        return 0;
-    return std::hash<std::string> {}(msg + "\n" + tokenList->front()->stringifyList(false, true, false, false, false));
-}
-
 ErrorMessage::ErrorMessage()
     : incomplete(false), severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
 {}
@@ -120,7 +114,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, Certainty::CertaintyLevel certainty, bool bugHunting)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
     : id(id), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
@@ -137,15 +131,10 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 
     setmsg(msg);
 
-    std::ostringstream hashWarning;
-    for (const Token *tok: callstack)
-        hashWarning << std::hex << (tok ? tok->index() : 0) << " ";
-    hashWarning << mShortMessage;
-
-    hash = bugHunting ? calculateWarningHash(list, hashWarning.str()) : 0;
+    hash = 0; // calculateWarningHash(list, hashWarning.str());
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty, bool bugHunting)
+ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
     : id(id), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
@@ -169,12 +158,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 
     setmsg(msg);
 
-    std::ostringstream hashWarning;
-    for (const ErrorPathItem &e: errorPath)
-        hashWarning << std::hex << (e.first ? e.first->index() : 0) << " ";
-    hashWarning << mShortMessage;
-
-    hash = bugHunting ? calculateWarningHash(tokenList, hashWarning.str()) : 0;
+    hash = 0; // calculateWarningHash(tokenList, hashWarning.str());
 }
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
@@ -218,6 +202,8 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const int line = strline ? std::atoi(strline) : 0;
             const int column = strcolumn ? std::atoi(strcolumn) : 0;
             callStack.emplace_front(file, info, line, column);
+        } else if (std::strcmp(e->Name(),"symbol")==0) {
+            mSymbolNames += e->GetText();
         }
     }
 }

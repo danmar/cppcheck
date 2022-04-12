@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,15 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
+#include "standards.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
-#include "tokenlist.h"
 
+#include <istream>
 #include <string>
 
 
@@ -37,7 +39,7 @@ private:
     Settings settings_std;
     Settings settings_windows;
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings_std.library, "std.cfg");
         LOAD_LIB_2(settings_windows.library, "windows.cfg");
         settings0.severity.enable(Severity::portability);
@@ -205,8 +207,6 @@ private:
         // ticket #3140
         TEST_CASE(while0for);
 
-        TEST_CASE(duplicateDefinition); // ticket #3565
-
         // remove "std::" on some standard functions
         TEST_CASE(removestd);
 
@@ -240,6 +240,9 @@ private:
 
         // remove calling convention __cdecl, __stdcall, ...
         TEST_CASE(simplifyCallingConvention);
+
+        // remove __attribute, __attribute__
+        TEST_CASE(simplifyAttribute);
 
         TEST_CASE(simplifyFunctorCall);
 
@@ -326,6 +329,7 @@ private:
         TEST_CASE(simplifyKnownVariables60);    // #6829
         TEST_CASE(simplifyKnownVariables61);    // #7805
         TEST_CASE(simplifyKnownVariables62);    // #5666 - p=&str[0]
+        TEST_CASE(simplifyKnownVariables63);    // #10798
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
@@ -341,6 +345,7 @@ private:
         TEST_CASE(simplifyKnownVariablesGlobalVars);
         TEST_CASE(simplifyKnownVariablesReturn);   // 3500 - return
         TEST_CASE(simplifyKnownVariablesPointerAliasFunctionCall); // #7440
+        TEST_CASE(simplifyKnownVariablesNamespace); // #10059
 
         TEST_CASE(simplifyCasts1);
         TEST_CASE(simplifyCasts2);
@@ -370,14 +375,15 @@ private:
         TEST_CASE(simplifyVarDeclInitLists);
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
+#define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tok_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings0.platform(type);
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -385,14 +391,15 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
-    std::string tokWithWindows(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
+#define tokWithWindows(...) tokWithWindows_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokWithWindows_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
         errout.str("");
 
         settings_windows.platform(type);
         Tokenizer tokenizer(&settings_windows, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -400,44 +407,47 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
 
-    std::string tok(const char code[], const char filename[], bool simplify = true) {
+    std::string tok_(const char* file, int line, const char code[], const char filename[], bool simplify = true) {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
         if (simplify)
             tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-    std::string tokWithNewlines(const char code[]) {
+#define tokWithNewlines(code) tokWithNewlines_(code, __FILE__, __LINE__)
+    std::string tokWithNewlines_(const char code[], const char* file, int line) {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false);
     }
 
-    std::string tokWithStdLib(const char code[]) {
+#define tokWithStdLib(code) tokWithStdLib_(code, __FILE__, __LINE__)
+    std::string tokWithStdLib_(const char code[], const char* file, int line) {
         errout.str("");
 
         Tokenizer tokenizer(&settings_std, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-    std::string tokenizeAndStringify(const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
+#define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
 
         settings1.debugwarnings = true;
@@ -447,7 +457,7 @@ private:
         // tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, linenr);
         if (simplify)
             tokenizer.simplifyTokenList2();
 
@@ -467,12 +477,13 @@ private:
             return "";
     }
 
-    std::string tokenizeDebugListing(const char code[], bool simplify = false, const char filename[] = "test.cpp") {
+#define tokenizeDebugListing(...) tokenizeDebugListing_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tokenizeDebugListing_(const char* file, int line, const char code[], bool simplify = false, const char filename[] = "test.cpp") {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         if (simplify)
             tokenizer.simplifyTokenList2();
@@ -1999,7 +2010,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -2011,7 +2022,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -2023,7 +2034,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -2035,7 +2046,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -2047,7 +2058,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
     }
@@ -2448,6 +2459,10 @@ private:
                "sizeof(char[20][3]);\n"
                "sizeof(char[unknown][3]);";
         ASSERT_EQUALS("20 ; 60 ; sizeof ( char [ unknown ] [ 3 ] ) ;", tok(code));
+
+        code = "char(*Helper())[1];\n"
+               "sizeof(*Helper());\n";
+        TODO_ASSERT_EQUALS("char ( * Helper ( ) ) [ 1 ] ; 1 ;", "char ( * Helper ( ) ) [ 1 ] ; sizeof ( * Helper ( ) ) ;", tok(code));
     }
 
     void sizeof5() {
@@ -3101,14 +3116,14 @@ private:
         }
     }
 
-
-    std::string simplifyIfAndWhileAssign(const char code[]) {
+#define simplifyIfAndWhileAssign(code) simplifyIfAndWhileAssign_(code, __FILE__, __LINE__)
+    std::string simplifyIfAndWhileAssign_(const char code[], const char* file, int line) {
         // tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        tokenizer.simplifyIfAndWhileAssign();
+        (tokenizer.simplifyIfAndWhileAssign)();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
@@ -3195,7 +3210,7 @@ private:
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr("{ while (!(m = q->push<Message>(x))) {} }");
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
         tokenizer.simplifyTokenList2();
 
         ASSERT_EQUALS("{ m = q . push < Message > ( x ) ; while ( ! m ) { m = q . push < Message > ( x ) ; } }", tokenizer.tokens()->stringifyList(nullptr, false));
@@ -4127,7 +4142,7 @@ private:
     void simplifyOperator2() {
         // #6576
         ASSERT_EQUALS("template < class T > class SharedPtr { "
-                      "SharedPtr & operator= ( SharedPtr < Y > const & r ) ; "
+                      "SharedPtr & operator= ( const SharedPtr < Y > & r ) ; "
                       "} ; "
                       "class TClass { "
                       "public: TClass & operator= ( const TClass & rhs ) ; "
@@ -4440,14 +4455,6 @@ private:
         ASSERT_EQUALS("void f ( ) { }", tok("void f() { int n = 0; for (signed long long i = 0; i < n; i++) { a; } }"));
         // #8059
         ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 0 ; ++ i ) { } return i ; }", tok("void f() { int i; for (i=0;i<0;++i){ dostuff(); } return i; }"));
-    }
-
-    void duplicateDefinition() { // #3565 - wrongly detects duplicate definition
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr("{ x ; return a not_eq x; }");
-        tokenizer.tokenize(istr, "test.c");
-        Token *x_token = tokenizer.list.front()->tokAt(5);
-        ASSERT_EQUALS(false, tokenizer.duplicateDefinition(&x_token));
     }
 
     void removestd() {
@@ -4936,6 +4943,16 @@ private:
         ASSERT_EQUALS("enum E { CALLBACK } ;", tok("enum E { CALLBACK } ;", true, Settings::Unix32));
     }
 
+    void simplifyAttribute() {
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) int f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__((visibility(\"default\"))) int f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute ((visibility(\"default\"))) int f();", true));
+        ASSERT_EQUALS("int f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) __attribute__ ((warn_unused_result)) int f();", true));
+        ASSERT_EQUALS("blah :: blah f ( ) ;", tok("__attribute__ ((visibility(\"default\"))) blah::blah f();", true));
+        ASSERT_EQUALS("template < T > Result < T > f ( ) ;", tok("template<T> __attribute__ ((warn_unused_result)) Result<T> f();", true));
+        ASSERT_EQUALS("template < T , U > Result < T , U > f ( ) ;", tok("template<T, U> __attribute__ ((warn_unused_result)) Result<T, U> f();", true));
+    }
+
     void simplifyFunctorCall() {
         ASSERT_EQUALS("IncrementFunctor ( ) ( a ) ;", tok("IncrementFunctor()(a);", true));
     }
@@ -5234,14 +5251,15 @@ private:
                           "}"));
     }
 
-    std::string simplifyKnownVariables(const char code[]) {
+#define simplifyKnownVariables(code) simplifyKnownVariables_(code, __FILE__, __LINE__)
+    std::string simplifyKnownVariables_(const char code[], const char* file, int line) {
         errout.str("");
 
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        tokenizer.simplifyKnownVariables();
+        (tokenizer.simplifyKnownVariables)();
 
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
@@ -6629,6 +6647,12 @@ private:
                                            "}", /*simplify=*/ true));
     }
 
+    void simplifyKnownVariables63() { // #10798
+        tokenizeAndStringify("typedef void (*a)();\n"
+                             "enum class E { a };\n");
+        ASSERT_EQUALS("", errout.str()); // don't throw
+    }
+
     void simplifyKnownVariablesBailOutAssign1() {
         const char code[] = "int foo() {\n"
                             "    int i; i = 0;\n"
@@ -6856,6 +6880,69 @@ private:
                             "delete [ ] data ;\n"
                             "}";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code, /*simplify=*/ true));
+    }
+
+    void simplifyKnownVariablesNamespace() {
+        { // #10059
+            const char code[] = "namespace N {\n"
+                                "    const int n = 0;\n"
+                                "    namespace M { const int m = 0; }\n"
+                                "}\n"
+                                "using namespace N;\n"
+                                "int i(n);\n"
+                                "int j(M::m);\n"
+                                "using namespace N::M;\n"
+                                "int k(m);\n"
+                                "int l(N::M::m);\n";
+            const char exp[]  = "\n\n##file 0\n"
+                                "1: namespace N {\n"
+                                "2: const int n@1 = 0 ;\n"
+                                "3: namespace M { const int m@2 = 0 ; }\n"
+                                "4: }\n"
+                                "5: using namespace N ;\n"
+                                "6: int i ; i = n@1 ;\n"
+                                "7: int j ( M :: m@2 ) ;\n"
+                                "8: using namespace N :: M ;\n"
+                                "9: int k ; k = m@2 ;\n"
+                                "10: int l ( N :: M :: m@2 ) ;\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
+        }
+        { // #10835
+            const char code[] = "using namespace X;\n"
+                                "namespace N {\n"
+                                "    struct A {\n"
+                                "        static int i;\n"
+                                "        struct B {\n"
+                                "            double x;\n"
+                                "            void f();\n"
+                                "        };\n"
+                                "    };\n"
+                                "}\n"
+                                "namespace N {\n"
+                                "    int A::i = 0;\n"
+                                "    void A::B::f() {\n"
+                                "        x = 0;\n"
+                                "    }\n"
+                                "}\n";
+            const char exp[]  = "\n\n##file 0\n"
+                                "1: using namespace X ;\n"
+                                "2: namespace N {\n"
+                                "3: struct A {\n"
+                                "4: static int i@1 ;\n"
+                                "5: struct B {\n"
+                                "6: double x@2 ;\n"
+                                "7: void f ( ) ;\n"
+                                "8: } ;\n"
+                                "9: } ;\n"
+                                "10: }\n"
+                                "11: namespace N {\n"
+                                "12: int A :: i@1 = 0 ;\n"
+                                "13: void A :: B :: f ( ) {\n"
+                                "14: x@2 = 0 ;\n"
+                                "15: }\n"
+                                "16: }\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
+        }
     }
 
     void simplifyKnownVariablesClassMember() {

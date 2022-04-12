@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2020 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,32 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef smallvectorH
+#define smallvectorH
 
-//---------------------------------------------------------------------------
-#ifndef bughuntingchecksH
-#define bughuntingchecksH
-//---------------------------------------------------------------------------
+#include <cstddef>
 
-#include "exprengine.h"
+static constexpr std::size_t DefaultSmallVectorSize = 0;
+
+#ifdef HAVE_BOOST
+#include <boost/container/small_vector.hpp>
+
+template<typename T, std::size_t N = DefaultSmallVectorSize>
+using SmallVector = boost::container::small_vector<T, N>;
+#else
 #include <vector>
 
-void addBughuntingChecks(std::vector<ExprEngine::Callback> *callbacks);
+template<class T, std::size_t N>
+struct TaggedAllocator : std::allocator<T>
+{
+    template<class ... Ts>
+    explicit TaggedAllocator(Ts&&... ts)
+        : std::allocator<T>(std::forward<Ts>(ts)...)
+    {}
+};
 
-//---------------------------------------------------------------------------
-#endif // bughuntingchecksH
+template<typename T, std::size_t N = DefaultSmallVectorSize>
+using SmallVector = std::vector<T, TaggedAllocator<T, N>>;
+#endif
+
+#endif

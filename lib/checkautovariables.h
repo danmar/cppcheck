@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,6 +34,10 @@ class Tokenizer;
 class ErrorLogger;
 class Variable;
 
+namespace ValueFlow {
+    class Value;
+}
+
 /// @addtogroup Checks
 /** @brief Various small checks for automatic variables */
 /// @{
@@ -49,7 +53,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckAutoVariables checkAutoVariables(tokenizer, settings, errorLogger);
         checkAutoVariables.assignFunctionArg();
         checkAutoVariables.checkVarLifetime();
@@ -79,7 +83,7 @@ private:
     void errorReturnDanglingLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorInvalidLifetime(const Token *tok, const ValueFlow::Value* val);
     void errorDanglngLifetime(const Token *tok, const ValueFlow::Value *val);
-    void errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val);
+    void errorDanglingTemporaryLifetime(const Token* tok, const ValueFlow::Value* val, const Token* tempTok);
     void errorReturnReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
     void errorDanglingReference(const Token *tok, const Variable *var, ErrorPath errorPath);
     void errorDanglingTempReference(const Token* tok, ErrorPath errorPath, bool inconclusive);
@@ -89,7 +93,7 @@ private:
     void errorUselessAssignmentArg(const Token *tok);
     void errorUselessAssignmentPtrArg(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         ErrorPath errorPath;
         CheckAutoVariables c(nullptr,settings,errorLogger);
         c.errorAutoVariableAssignment(nullptr, false);
@@ -106,14 +110,14 @@ private:
         c.errorReturnDanglingLifetime(nullptr, nullptr);
         c.errorInvalidLifetime(nullptr, nullptr);
         c.errorDanglngLifetime(nullptr, nullptr);
-        c.errorDanglingTemporaryLifetime(nullptr, nullptr);
+        c.errorDanglingTemporaryLifetime(nullptr, nullptr, nullptr);
     }
 
     static std::string myName() {
         return "Auto Variables";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "A pointer to a variable is only valid as long as the variable is in scope.\n"
                "Check:\n"
                "- returning a pointer to auto or temporary variable\n"

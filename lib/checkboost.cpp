@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,11 @@
 
 #include "checkboost.h"
 
+#include "errortypes.h"
 #include "symboldatabase.h"
 #include "token.h"
+
+#include <vector>
 
 // Register this check class (by creating a static instance of it)
 namespace {

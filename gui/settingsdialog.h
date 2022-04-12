@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,13 +21,16 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
-#include "ui_settings.h"
 
 class QSettings;
 class QWidget;
 class ApplicationList;
 class TranslationHandler;
 class CodeEditorStyle;
+class QCheckBox;
+namespace Ui {
+    class Settings;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -43,7 +46,7 @@ public:
                    TranslationHandler *translator,
                    QWidget *parent = nullptr);
     SettingsDialog(const SettingsDialog &) = delete;
-    virtual ~SettingsDialog();
+    ~SettingsDialog() override;
     SettingsDialog &operator=(const SettingsDialog &) = delete;
 
     /**
@@ -229,7 +232,7 @@ protected:
      * @brief Dialog from UI designer
      *
      */
-    Ui::Settings mUI;
+    Ui::Settings *mUI;
 private:
     void manageStyleControls();
 

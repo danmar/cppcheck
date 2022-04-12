@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,12 +17,16 @@
  */
 
 #include "check.h"
+#include "errortypes.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 #include <list>
+#include <string>
 
 
 class TestGarbage : public TestFixture {
@@ -32,7 +36,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.debugwarnings = true;
         settings.severity.fill();
         settings.certainty.fill();
@@ -242,6 +246,12 @@ private:
         TEST_CASE(garbageCode214);
         TEST_CASE(garbageCode215); // daca@home script with extension .c
         TEST_CASE(garbageCode216); // #7884
+        TEST_CASE(garbageCode217); // #10011
+        TEST_CASE(garbageCode218); // #8763
+        TEST_CASE(garbageCode219); // #10101
+        TEST_CASE(garbageCode220); // #6832
+        TEST_CASE(garbageCode221);
+        TEST_CASE(garbageCode222); // #10763
 
         TEST_CASE(garbageCodeFuzzerClientMode1); // test cases created with the fuzzer client, mode 1
 
@@ -259,6 +269,7 @@ private:
         TEST_CASE(nonGarbageCode1); // #8346
     }
 
+#define checkCodeInternal(code, filename) checkCodeInternal_(code, filename, __FILE__, __LINE__)
     std::string checkCode(const std::string &code, bool cpp = true) {
         // double the tests - run each example as C as well as C++
         const char* const filename = cpp ? "test.cpp" : "test.c";
@@ -272,13 +283,13 @@ private:
         return checkCodeInternal(code, filename);
     }
 
-    std::string checkCodeInternal(const std::string &code, const char* filename) {
+    std::string checkCodeInternal_(const std::string &code, const char* filename, const char* file, int line) {
         errout.str("");
 
         // tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // call all "runChecks" in all registered Check classes
         for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it) {
@@ -288,11 +299,12 @@ private:
         return tokenizer.tokens()->stringifyList(false, false, false, true, false, nullptr, nullptr);
     }
 
-    std::string getSyntaxError(const char code[]) {
+#define getSyntaxError(code) getSyntaxError_(code, __FILE__, __LINE__)
+    std::string getSyntaxError_(const char code[], const char* file, int line) {
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         try {
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         } catch (InternalError& e) {
             if (e.id != "syntaxError")
                 return "";
@@ -309,7 +321,7 @@ private:
             errout.str("");
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("", errout.str());
         }
     }
@@ -357,7 +369,7 @@ private:
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
         try {
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             assertThrowFail(__FILE__, __LINE__);
         } catch (InternalError& e) {
             ASSERT_EQUALS("syntax error", e.errorMessage);
@@ -391,14 +403,14 @@ private:
             errout.str("");
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.c");
+            ASSERT(tokenizer.tokenize(istr, "test.c"));
             ASSERT_EQUALS("", errout.str());
         }
         {
             errout.str("");
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(code);
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT(tokenizer.tokenize(istr, "test.cpp"));
             ASSERT_EQUALS("[test.cpp:1]: (information) The code 'class x y {' is not handled. You can use -I or --include to add handling of this code.\n", errout.str());
         }
     }
@@ -646,7 +658,7 @@ private:
     }
 
     void garbageCode43() { // #6703
-        ASSERT_THROW(checkCode("int { }; struct A<void> a = { }"), InternalError);
+        checkCode("int { }; struct A<void> a = { }");
     }
 
     void garbageCode44() { // #6704
@@ -1671,6 +1683,34 @@ private:
         checkCode("template<typename> struct A {};\n"
                   "template<typename...T> struct A<T::T...> {}; \n"
                   "A<int> a;");
+    }
+
+    void garbageCode217() { // #10011
+        ASSERT_THROW(checkCode("void f() {\n"
+                               "    auto p;\n"
+                               "    if (g(p)) {}\n"
+                               "    assert();\n"
+                               "}"), InternalError);
+    }
+
+    void garbageCode218() { // #8763
+        checkCode("d f(){t n0000 const[]n0000+0!=n0000,(0)}"); // don't crash
+    }
+    void garbageCode219() { // #10101
+        checkCode("typedef void (*func) (addr) ;\n"
+                  "void bar(void) {\n"
+                  "    func f;\n"
+                  "    f & = (func)42;\n"
+                  "}\n"); // don't crash
+    }
+    void garbageCode220() { // #6832
+        ASSERT_THROW(checkCode("(){(){{()}}return;{switch()0 case(){}break;l:()}}\n"), InternalError);  // don't crash
+    }
+    void garbageCode221() {
+        ASSERT_THROW(checkCode("struct A<0<;\n"), InternalError);  // don't crash
+    }
+    void garbageCode222() { // #10763
+        ASSERT_THROW(checkCode("template<template<class>\n"), InternalError);  // don't crash
     }
 
     void syntaxErrorFirstToken() {

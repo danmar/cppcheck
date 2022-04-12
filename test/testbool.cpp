@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,12 @@
 
 
 #include "checkbool.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 
 class TestBool : public TestFixture {
 public:
@@ -30,7 +32,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::warning);
         settings.certainty.enable(Certainty::inconclusive);
@@ -75,7 +77,8 @@ private:
         TEST_CASE(returnNonBoolClass);
     }
 
-    void check(const char code[], bool experimental = false, const char filename[] = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool experimental = false, const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
@@ -84,7 +87,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check...
         CheckBool checkBool(&tokenizer, &settings, this);
@@ -848,6 +851,12 @@ private:
         check("bool f();\n"
               "bool g() {\n"
               "  return f() | f();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("uint8 outcode(float p) {\n"
+              "    float d = 0.;\n"
+              "    return ((p - xm >= d) << 1) | (x - p > d);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

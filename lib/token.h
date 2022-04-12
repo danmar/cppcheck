@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,15 @@
 #include "templatesimplifier.h"
 #include "utils.h"
 
+#include <cstdint>
 #include <cstddef>
 #include <functional>
 #include <list>
 #include <memory>
 #include <ostream>
+#include <set>
 #include <string>
+#include <utility>
 #include <vector>
 
 class Enumerator;
@@ -43,8 +46,8 @@ class Type;
 class ValueType;
 class Variable;
 class TokenList;
-
 class ConstTokenRange;
+class Token;
 
 /**
  * @brief This struct stores pointers to the front and back tokens of the list this token is in.
@@ -641,11 +644,25 @@ public:
         setFlag(fIsInline, b);
     }
 
+    bool isRemovedVoidParameter() const {
+        return getFlag(fIsRemovedVoidParameter);
+    }
+    void setRemovedVoidParameter(bool b) {
+        setFlag(fIsRemovedVoidParameter, b);
+    }
+
     bool isTemplate() const {
         return getFlag(fIsTemplate);
     }
     void isTemplate(bool b) {
         setFlag(fIsTemplate, b);
+    }
+
+    bool isSimplifiedScope() const {
+        return getFlag(fIsSimplifedScope);
+    }
+    void isSimplifiedScope(bool b) {
+        setFlag(fIsSimplifedScope, b);
     }
 
     bool isBitfield() const {
@@ -810,7 +827,12 @@ public:
      * @param prepend Insert the new token before this token when it's not
      * the first one on the tokens list.
      */
-    void insertToken(const std::string &tokenStr, const std::string &originalNameStr=emptyString, bool prepend=false);
+    Token* insertToken(const std::string& tokenStr, const std::string& originalNameStr = emptyString, bool prepend = false);
+
+    Token* insertTokenBefore(const std::string& tokenStr, const std::string& originalNameStr = emptyString)
+    {
+        return insertToken(tokenStr, originalNameStr, true);
+    }
 
     Token *previous() const {
         return mPrevious;
@@ -858,7 +880,7 @@ public:
     void printOut(const char *title, const std::vector<std::string> &fileNames) const;
 
     /**
-     * print out tokens
+     * print out tokens - used for debugging
      */
     void printLines(int lines=5) const;
 
@@ -1148,8 +1170,6 @@ public:
         return mImpl->mValues->front().intvalue;
     }
 
-    bool isImpossibleIntValue(const MathLib::bigint val) const;
-
     const ValueFlow::Value* getValue(const MathLib::bigint val) const;
 
     const ValueFlow::Value* getMaxValue(bool condition, MathLib::bigint path = 0) const;
@@ -1165,8 +1185,6 @@ public:
 
     const Token *getValueTokenMaxStrLength() const;
     const Token *getValueTokenMinStrSize(const Settings *settings) const;
-
-    const Token *getValueTokenDeadPointer() const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
@@ -1248,7 +1266,9 @@ private:
         fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
         fIsImplicitInt          = (1U << 31),   // Is "int" token implicitly added?
         fIsInline               = (1ULL << 32), // Is this a inline type
-        fIsTemplate             = (1ULL << 33)
+        fIsTemplate             = (1ULL << 33),
+        fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ...; ...)
+        fIsRemovedVoidParameter = (1ULL << 35), // A void function parameter has been removed
     };
 
     Token::Type mTokType;

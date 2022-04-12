@@ -15,10 +15,12 @@ SOURCES += testfilelist.cpp \
     ../../filelist.cpp \
     ../../../lib/pathmatch.cpp \
     ../../../lib/path.cpp \
+    ../../../lib/utils.cpp \
     ../../../externals/simplecpp/simplecpp.cpp
 
 HEADERS += testfilelist.h \
     ../../filelist.h \
     ../../../lib/pathmatch.h \
     ../../../lib/path.h \
+    ../../../lib/utils.h \
     ../../../externals/simplecpp/simplecpp.h

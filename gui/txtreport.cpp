@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,8 +18,9 @@
 
 #include "txtreport.h"
 
-#include <QDir>
 #include "erroritem.h"
+
+#include <QDir>
 
 TxtReport::TxtReport(const QString &filename) :
     Report(filename)
@@ -76,5 +77,9 @@ void TxtReport::writeError(const ErrorItem &error)
     line += temp.arg(GuiSeverity::toString(error.severity));
     line += error.summary;
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
+    mTxtWriter << line << Qt::endl;
+#else
     mTxtWriter << line << endl;
+#endif
 }

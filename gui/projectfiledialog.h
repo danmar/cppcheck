@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,16 +19,16 @@
 #ifndef PROJECTFILE_DIALOG_H
 #define PROJECTFILE_DIALOG_H
 
+#include "suppressions.h"
+
 #include <QDialog>
 #include <QString>
 #include <QStringList>
 
-#include "suppressions.h"
-
-#include "ui_projectfiledialog.h"
-
 class QWidget;
-class QCheckBox;
+namespace Ui {
+    class ProjectFile;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -43,7 +43,7 @@ class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
     explicit ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = nullptr);
-    virtual ~ProjectFileDialog();
+    ~ProjectFileDialog() override;
 
 private:
     void loadFromProjectFile(const ProjectFile *projectFile);
@@ -316,15 +316,12 @@ protected:
 private:
     QStringList getProjectConfigs(const QString &fileName);
 
-    Ui::ProjectFile mUI;
+    Ui::ProjectFile *mUI;
 
     /**
      * @brief Projectfile path.
      */
     ProjectFile *mProjectFile;
-
-    /** @brief Library checkboxes */
-    QList<QCheckBox*> mLibraryCheckboxes;
 
     QString getExistingDirectory(const QString &caption, bool trailingSlash);
 

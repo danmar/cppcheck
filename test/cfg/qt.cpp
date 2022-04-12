@@ -49,6 +49,27 @@ QString::iterator QString3()
     return it;
 }
 
+void QString4()
+{
+    // cppcheck-suppress unusedVariable
+    QString qs;
+}
+
+// cppcheck-suppress passedByValue
+bool QString5(QString s) { // #10710
+    return s.isEmpty();
+}
+
+// cppcheck-suppress passedByValue
+QStringList QString6(QString s) {
+    return QStringList{ "*" + s + "*" };
+}
+
+// cppcheck-suppress passedByValue
+bool QString7(QString s, const QString& l) {
+    return l.startsWith(s);
+}
+
 void QByteArray1(QByteArray byteArrayArg)
 {
     for (int i = 0; i <= byteArrayArg.size(); ++i) {
@@ -121,6 +142,17 @@ void QList1(QList<int> intListArg)
     (void)qstringList4[0];
 }
 
+QList<int> QList2() { // #10556
+    QList<int> v;
+
+    for (int i = 0; i < 4; ++i)
+    {
+        v.append(i);
+        (void)v.at(i);
+    }
+    return v;
+}
+
 QList<int>::iterator QList3()
 {
     QList<int> qlist1;
@@ -136,6 +168,7 @@ QList<int>::iterator QList3()
 
 void QLinkedList1()
 {
+    // cppcheck-suppress unreadVariable
     QLinkedList<QString> qstringLinkedList1{"one", "two"};
 
     QLinkedList<QString> qstringLinkedList2 = {"one", "two"};
@@ -279,6 +312,7 @@ QVector<int>::iterator QVector2()
     return it;
 }
 
+// cppcheck-suppress passedByValue
 void duplicateExpression_QString_Compare(QString style) //#8723
 {
     // cppcheck-suppress duplicateExpression

@@ -1,3 +1,20 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "color.h"
 #include "cppcheck.h"
@@ -20,21 +37,18 @@ public:
         cppcheck.check("test.cpp", code);
     }
 
-    void reportOut(const std::string &outmsg, Color) OVERRIDE {
+    void reportOut(const std::string &outmsg, Color) override {
         (void)outmsg;
     }
-    void reportErr(const ErrorMessage &msg) OVERRIDE {
+    void reportErr(const ErrorMessage &msg) override {
         (void)msg;
     }
     void reportProgress(const std::string& filename,
                         const char stage[],
-                        const std::size_t value) OVERRIDE {
+                        const std::size_t value) override {
         (void)filename;
         (void)stage;
         (void)value;
-    }
-    void bughuntingReport(const std::string &str) OVERRIDE {
-        (void)str;
     }
 };
 

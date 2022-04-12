@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,6 +23,7 @@
 #include "color.h"
 #include "config.h"
 #include "cppcheck.h"
+#include "errortypes.h"
 #include "filelister.h"
 #include "importproject.h"
 #include "library.h"
@@ -35,13 +36,17 @@
 #include "utils.h"
 #include "checkunusedfunctions.h"
 
+#include <algorithm>
+#include <atomic>
 #include <csignal>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
 #include <cstring>
+#include <functional>
 #include <iostream>
 #include <list>
 #include <memory>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -57,8 +62,7 @@
 #   include <ucontext.h>
 #endif
 #ifdef __linux__
-#include <sys/syscall.h>
-#include <sys/types.h>
+#include <syscall.h>
 #endif
 #endif
 
@@ -88,13 +92,12 @@
 /*static*/ FILE* CppCheckExecutor::mExceptionOutput = stdout;
 
 CppCheckExecutor::CppCheckExecutor()
-    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mBugHuntingReport(nullptr), mShowAllErrors(false)
+    : mSettings(nullptr), mLatestProgressOutputTime(0), mErrorOutput(nullptr), mShowAllErrors(false)
 {}
 
 CppCheckExecutor::~CppCheckExecutor()
 {
     delete mErrorOutput;
-    delete mBugHuntingReport;
 }
 
 bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* const argv[])
@@ -105,12 +108,16 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
     if (success) {
         if (parser.getShowVersion() && !parser.getShowErrorMessages()) {
-            const char * const extraVersion = CppCheck::extraVersion();
-            if (*extraVersion != 0)
-                std::cout << "Cppcheck " << CppCheck::version() << " ("
-                          << extraVersion << ')' << std::endl;
-            else
-                std::cout << "Cppcheck " << CppCheck::version() << std::endl;
+            if (!settings.cppcheckCfgProductName.empty()) {
+                std::cout << settings.cppcheckCfgProductName << std::endl;
+            } else {
+                const char * const extraVersion = CppCheck::extraVersion();
+                if (*extraVersion != 0)
+                    std::cout << "Cppcheck " << CppCheck::version() << " ("
+                              << extraVersion << ')' << std::endl;
+                else
+                    std::cout << "Cppcheck " << CppCheck::version() << std::endl;
+            }
         }
 
         if (parser.getShowErrorMessages()) {
@@ -167,12 +174,12 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 #else
     const bool caseSensitive = true;
 #endif
-    if (!mSettings->project.fileSettings.empty() && !mSettings->fileFilter.empty()) {
+    if (!mSettings->project.fileSettings.empty() && !mSettings->fileFilters.empty()) {
         // filter only for the selected filenames from all project files
         std::list<ImportProject::FileSettings> newList;
 
         for (const ImportProject::FileSettings &fsetting : settings.project.fileSettings) {
-            if (matchglob(mSettings->fileFilter, fsetting.filename)) {
+            if (matchglobs(mSettings->fileFilters, fsetting.filename)) {
                 newList.emplace_back(fsetting);
             }
         }
@@ -198,10 +205,10 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
         if (!ignored.empty())
             std::cout << "cppcheck: Maybe all paths were ignored?" << std::endl;
         return false;
-    } else if (!mSettings->fileFilter.empty() && settings.project.fileSettings.empty()) {
+    } else if (!mSettings->fileFilters.empty() && settings.project.fileSettings.empty()) {
         std::map<std::string, std::size_t> newMap;
         for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i)
-            if (matchglob(mSettings->fileFilter, i->first)) {
+            if (matchglobs(mSettings->fileFilters, i->first)) {
                 newMap[i->first] = i->second;
             }
         mFiles = newMap;
@@ -239,9 +246,9 @@ int CppCheckExecutor::check(int argc, const char* const argv[])
     int ret;
 
     if (cppCheck.settings().exceptionHandling)
-        ret = check_wrapper(cppCheck, argc, argv);
+        ret = check_wrapper(cppCheck);
     else
-        ret = check_internal(cppCheck, argc, argv);
+        ret = check_internal(cppCheck);
 
     mSettings = nullptr;
     return ret;
@@ -335,10 +342,10 @@ static void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool l
     }
 #undef ADDRESSDISPLAYLENGTH
 #else
-    UNUSED(output);
-    UNUSED(demangling);
-    UNUSED(maxdepth);
-    UNUSED(lowMem);
+    (void)output;
+    (void)demangling;
+    (void)maxdepth;
+    (void)lowMem;
 #endif
 }
 
@@ -406,7 +413,7 @@ static void CppcheckSignalHandler(int signo, siginfo_t * info, void * context)
         type = (int)uc->uc_mcontext.gregs[REG_ERR] & 2;
     }
 #else
-    UNUSED(context);
+    (void)context;
     killid = getpid();
 #endif
 
@@ -817,12 +824,12 @@ namespace {
  * TODO Check for multi-threading issues!
  *
  */
-int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* const argv[])
+int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
 {
 #ifdef USE_WINDOWS_SEH
     FILE *outputFile = stdout;
     __try {
-        return check_internal(cppcheck, argc, argv);
+        return check_internal(cppcheck);
     } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
         // reporting to stdout may not be helpful within a GUI application...
         fputs("Please report this to the cppcheck developers!\n", outputFile);
@@ -850,23 +857,23 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck, int argc, const char* co
     for (std::map<int, std::string>::const_iterator sig=listofsignals.begin(); sig!=listofsignals.end(); ++sig) {
         sigaction(sig->first, &act, nullptr);
     }
-    return check_internal(cppcheck, argc, argv);
+    return check_internal(cppcheck);
 #else
-    return check_internal(cppcheck, argc, argv);
+    return check_internal(cppcheck);
 #endif
 }
 
 /*
  * That is a method which gets called from check_wrapper
  * */
-int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const char* const argv[])
+int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 {
     Settings& settings = cppcheck.settings();
     mSettings = &settings;
-    const bool std = tryLoadLibrary(settings.library, argv[0], "std.cfg");
+    const bool std = tryLoadLibrary(settings.library, settings.exename, "std.cfg");
 
     for (const std::string &lib : settings.libraries) {
-        if (!tryLoadLibrary(settings.library, argv[0], lib.c_str())) {
+        if (!tryLoadLibrary(settings.library, settings.exename, lib.c_str())) {
             const std::string msg("Failed to load the library " + lib);
             const std::list<ErrorMessage::FileLocation> callstack;
             ErrorMessage errmsg(callstack, emptyString, Severity::information, msg, "failedToLoadCfg", Certainty::normal);
@@ -875,22 +882,15 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck, int /*argc*/, const cha
         }
     }
 
-    bool posix = true;
-    if (settings.posix())
-        posix = tryLoadLibrary(settings.library, argv[0], "posix.cfg");
-    bool windows = true;
-    if (settings.isWindowsPlatform())
-        windows = tryLoadLibrary(settings.library, argv[0], "windows.cfg");
-
-    if (!std || !posix || !windows) {
+    if (!std) {
         const std::list<ErrorMessage::FileLocation> callstack;
-        const std::string msg("Failed to load " + std::string(!std ? "std.cfg" : !posix ? "posix.cfg" : "windows.cfg") + ". Your Cppcheck installation is broken, please re-install.");
+        const std::string msg("Failed to load std.cfg. Your Cppcheck installation is broken, please re-install.");
 #ifdef FILESDIR
         const std::string details("The Cppcheck binary was compiled with FILESDIR set to \""
                                   FILESDIR "\" and will therefore search for "
                                   "std.cfg in " FILESDIR "/cfg.");
 #else
-        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(argv[0])) + "cfg");
+        const std::string cfgfolder(Path::fromNativeSeparators(Path::getPathFromFilename(settings.exename)) + "cfg");
         const std::string details("The Cppcheck binary was compiled without FILESDIR set. Either the "
                                   "std.cfg should be available in " + cfgfolder + " or the FILESDIR "
                                   "should be configured.");
@@ -1120,15 +1120,6 @@ void CppCheckExecutor::reportErr(const ErrorMessage &msg)
         reportErr(msg.toString(mSettings->verbose, mSettings->templateFormat, mSettings->templateLocation));
 }
 
-void CppCheckExecutor::bughuntingReport(const std::string &str)
-{
-    if (!mSettings || str.empty())
-        return;
-    if (!mBugHuntingReport)
-        mBugHuntingReport = new std::ofstream(mSettings->bugHuntingReport);
-    (*mBugHuntingReport) << str << std::endl;
-}
-
 void CppCheckExecutor::setExceptionOutput(FILE* exceptionOutput)
 {
     mExceptionOutput = exceptionOutput;
@@ -1139,9 +1130,9 @@ FILE* CppCheckExecutor::getExceptionOutput()
     return mExceptionOutput;
 }
 
-bool CppCheckExecutor::tryLoadLibrary(Library& destination, const char* basepath, const char* filename)
+bool CppCheckExecutor::tryLoadLibrary(Library& destination, const std::string& basepath, const char* filename)
 {
-    const Library::Error err = destination.load(basepath, filename);
+    const Library::Error err = destination.load(basepath.c_str(), filename);
 
     if (err.errorcode == Library::ErrorCode::UNKNOWN_ELEMENT)
         std::cout << "cppcheck: Found unknown elements in configuration file '" << filename << "': " << err.reason << std::endl;

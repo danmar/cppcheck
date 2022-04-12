@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 #include "cmdlineparser.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "redirect.h"
 #include "settings.h"
@@ -40,7 +41,7 @@ private:
     Settings settings;
     CmdLineParser defParser;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(nooptions);
         TEST_CASE(helpshort);
         TEST_CASE(helplong);
@@ -130,6 +131,7 @@ private:
         TEST_CASE(errorlistverbose2);
         TEST_CASE(ignorepathsnopath);
 
+        // TODO
         // Disabling these tests since they use relative paths to the
         // testrunner executable.
         //TEST_CASE(ignorepaths1);
@@ -974,8 +976,8 @@ private:
             ASSERT_EQUALS("src/", parser.getIgnoredPaths()[0]);
             ASSERT_EQUALS("module/", parser.getIgnoredPaths()[1]);
         }
-     */
-    void ignorepaths4() {
+
+       void ignorepaths4() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-i", "src", "-i", "module", "file.cpp"};
         CmdLineParser parser(&settings);
@@ -983,8 +985,8 @@ private:
         ASSERT_EQUALS(2, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("src/", parser.getIgnoredPaths()[0]);
         ASSERT_EQUALS("module/", parser.getIgnoredPaths()[1]);
-    }
-    /*
+       }
+
         void ignorefilepaths1() {
             REDIRECT;
             const char * const argv[] = {"cppcheck", "-ifoo.cpp", "file.cpp"};
@@ -993,15 +995,16 @@ private:
             ASSERT_EQUALS(1, parser.getIgnoredPaths().size());
             ASSERT_EQUALS("foo.cpp", parser.getIgnoredPaths()[0]);
         }
-     */
-    void ignorefilepaths2() {
+
+       void ignorefilepaths2() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "-isrc/foo.cpp", "file.cpp"};
         CmdLineParser parser(&settings);
         ASSERT(parser.parseFromArgs(3, argv));
         ASSERT_EQUALS(1, parser.getIgnoredPaths().size());
         ASSERT_EQUALS("src/foo.cpp", parser.getIgnoredPaths()[0]);
-    }
+       }
+     */
 
     void checkconfig() {
         REDIRECT;

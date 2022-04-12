@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,10 @@ class Function;
 class Settings;
 class Tokenizer;
 
+namespace CTU {
+    class FileInfo;
+}
+
 /// @addtogroup Checks
 /** @brief Check for functions never called */
 /// @{
@@ -59,13 +63,13 @@ public:
     void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
 
     // Return true if an error is reported.
-    bool check(ErrorLogger * const errorLogger, const Settings& settings);
+    bool check(ErrorLogger * const errorLogger, const Settings& settings) const;
 
     /** @brief Parse current TU and extract file info */
-    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const OVERRIDE;
+    Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;
 
     /** @brief Analyse all file infos for all TU */
-    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) OVERRIDE;
+    bool analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<Check::FileInfo*> &fileInfo, const Settings& settings, ErrorLogger &errorLogger) override;
 
     static CheckUnusedFunctions instance;
 
@@ -76,11 +80,11 @@ public:
 
 private:
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings * /*settings*/) const override {
         CheckUnusedFunctions::unusedFunctionError(errorLogger, emptyString, 0, "funcName");
     }
 
-    void runChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) OVERRIDE {}
+    void runChecks(const Tokenizer * /*tokenizer*/, const Settings * /*settings*/, ErrorLogger * /*errorLogger*/) override {}
 
     /**
      * Dummy implementation, just to provide error for --errorlist
@@ -93,7 +97,7 @@ private:
         return "Unused functions";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Check for functions that are never called\n";
     }
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,19 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <tinyxml2.h>
-
 #include "checkfunctions.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "standards.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <iosfwd>
+#include <list>
+#include <string>
+
+#include <tinyxml2.h>
 
 class TestFunctions : public TestFixture {
 public:
@@ -33,7 +37,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::style);
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::performance);
@@ -95,7 +99,8 @@ private:
         TEST_CASE(returnLocalStdMove5);
     }
 
-    void check(const char code[], const char filename[]="test.cpp", const Settings* settings_=nullptr) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp", const Settings* settings_ = nullptr) {
         // Clear the error buffer..
         errout.str("");
 
@@ -105,7 +110,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings_, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         CheckFunctions checkFunctions(&tokenizer, settings_, this);
         checkFunctions.runChecks(&tokenizer, settings_, this);
@@ -369,7 +374,7 @@ private:
         check("void f()\n"
               "{\n"
               "    time_t t = 0;"
-              "    std::localtime(&t);\n"
+              "    auto lt = std::localtime(&t);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (portability) Non reentrant function 'localtime' called. For threadsafe applications it is recommended to use the reentrant replacement function 'localtime_r'.\n", errout.str());
 
@@ -463,6 +468,44 @@ private:
 
         check("void f() { strtol(a,b,10); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int>& v) {\n" //  #10754
+              "    int N = -1;\n"
+              "    for (long i = 0; i < g(); i++)\n"
+              "        N = h(N);\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Invalid v.resize() argument nr 1. The value is -1 but the valid values are '0:'.\n", errout.str());
+
+        check("void f(std::vector<int>& v, int N) {\n"
+              "    if (N < -1)\n"
+              "        return;\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:4]: (warning) Either the condition 'N<-1' is redundant or v.resize() argument nr 1 can have invalid value. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v, int N) {\n"
+              "    if (N == -1) {}\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Either the condition 'N==-1' is redundant or v.resize() argument nr 1 can have invalid value. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v, int N, bool b) {\n"
+              "    if (b)\n"
+              "        N = -1;\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Invalid v.resize() argument nr 1. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v) {\n"
+              "    int N = -1;\n"
+              "    v.resize(N);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid v.resize() argument nr 1. The value is -1 but the valid values are '0:'.\n",
+                      errout.str());
     }
 
     void invalidFunctionUsageStrings() {
@@ -1441,6 +1484,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("bool test(unsigned char v1, int v2) {\n"
+              "    switch (v1) {\n"
+              "        case 0:\n"
+              "            switch (v2) {\n"
+              "            case 48000:\n"
+              "                break;\n"
+              "            }\n"
+              "            return false;\n"
+              "        default:\n"
+              "            return true;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // if/else
         check("int f(int x) {\n"
               "    if (x) {\n"
@@ -1496,6 +1553,25 @@ private:
 
         check("int f(int x) { if (x) return 1; else return bar({1}, {}); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("auto f() -> void {}"); // #10342
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S1 {\n" // #7433
+              "    S1& operator=(const S1& r) { if (this != &r) { i = r.i; } }\n"
+              "    int i;\n"
+              "};\n"
+              "struct S2 {\n"
+              "    S2& operator=(const S2& s) { if (this != &s) { j = s.j; } return *this; }\n"
+              "    int j;\n"
+              "};\n"
+              "struct S3 {\n"
+              "    S3& operator=(const S3& t) { if (this != &t) { k = t.k; return *this; } }\n"
+              "    int k;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Found a exit path from function with non-void return type that has missing return statement\n"
+                      "[test.cpp:10]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
+                      errout.str());
     }
 
     // NRVO check

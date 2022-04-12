@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,6 +19,7 @@
 #include "token.h"
 
 #include "astutils.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -30,12 +31,17 @@
 #include <algorithm>
 #include <cassert>
 #include <cctype>
+#include <climits>
+#include <cstdio>
+#include <cstdint>
 #include <cstring>
 #include <functional>
 #include <iostream>
+#include <iterator>
 #include <map>
 #include <set>
 #include <stack>
+#include <unordered_set>
 #include <utility>
 
 const std::list<ValueFlow::Value> TokenImpl::mEmptyValueList;
@@ -580,7 +586,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_l
         return false; // shortcut
     const char *current = pattern;
     const char *end = pattern + pattern_len;
-    const char *next = (const char*)std::memchr(pattern, ' ', pattern_len);
+    const char *next = static_cast<const char*>(std::memchr(pattern, ' ', pattern_len));
     if (!next)
         next = end;
 
@@ -1021,7 +1027,7 @@ void Token::function(const Function *f)
         tokType(eName);
 }
 
-void Token::insertToken(const std::string &tokenStr, const std::string &originalNameStr, bool prepend)
+Token* Token::insertToken(const std::string& tokenStr, const std::string& originalNameStr, bool prepend)
 {
     Token *newToken;
     if (mStr.empty())
@@ -1072,11 +1078,11 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
                         while (Token::Match(tok1->previous(), "const|volatile|final|override|&|&&|noexcept"))
                             tok1 = tok1->previous();
                         if (tok1->strAt(-1) != ")")
-                            return;
+                            return newToken;
                     } else if (Token::Match(newToken->tokAt(-2), ":|, %name%")) {
                         tok1 = tok1->tokAt(-2);
                         if (tok1->strAt(-1) != ")")
-                            return;
+                            return newToken;
                     }
                     if (tok1->strAt(-1) == ">")
                         tok1 = tok1->previous()->findOpeningBracket();
@@ -1149,6 +1155,7 @@ void Token::insertToken(const std::string &tokenStr, const std::string &original
             }
         }
     }
+    return newToken;
 }
 
 void Token::eraseTokens(Token *begin, const Token *end)
@@ -1184,6 +1191,7 @@ void Token::printOut(const char *title, const std::vector<std::string> &fileName
     std::cout << stringifyList(stringifyOptions::forPrintOut(), &fileNames, nullptr) << std::endl;
 }
 
+// cppcheck-suppress unusedFunction - used for debugging
 void Token::printLines(int lines) const
 {
     const Token *end = this;
@@ -1257,6 +1265,9 @@ std::string Token::stringifyList(const stringifyOptions& options, const std::vec
     unsigned int fileIndex = options.files ? ~0U : mImpl->mFileIndex;
     std::map<int, unsigned int> lineNumbers;
     for (const Token *tok = this; tok != end; tok = tok->next()) {
+        assert(tok && "end precedes token");
+        if (!tok)
+            return ret;
         bool fileChange = false;
         if (tok->mImpl->mFileIndex != fileIndex) {
             if (fileIndex != ~0U) {
@@ -1914,46 +1925,6 @@ const Token *Token::getValueTokenMaxStrLength() const
     return ret;
 }
 
-static const Scope *getfunctionscope(const Scope *s)
-{
-    while (s && s->type != Scope::eFunction)
-        s = s->nestedIn;
-    return s;
-}
-
-const Token *Token::getValueTokenDeadPointer() const
-{
-    const Scope * const functionscope = getfunctionscope(this->scope());
-
-    std::list<ValueFlow::Value>::const_iterator it;
-    for (it = values().begin(); it != values().end(); ++it) {
-        // Is this a pointer alias?
-        if (!it->isTokValue() || (it->tokvalue && it->tokvalue->str() != "&"))
-            continue;
-        // Get variable
-        const Token *vartok = it->tokvalue->astOperand1();
-        if (!vartok || !vartok->isName() || !vartok->variable())
-            continue;
-        const Variable * const var = vartok->variable();
-        if (var->isStatic() || var->isReference())
-            continue;
-        if (!var->scope())
-            return nullptr; // #6804
-        if (var->scope()->type == Scope::eUnion && var->scope()->nestedIn == this->scope())
-            continue;
-        // variable must be in same function (not in subfunction)
-        if (functionscope != getfunctionscope(var->scope()))
-            continue;
-        // Is variable defined in this scope or upper scope?
-        const Scope *s = this->scope();
-        while ((s != nullptr) && (s != var->scope()))
-            s = s->nestedIn;
-        if (!s)
-            return it->tokvalue;
-    }
-    return nullptr;
-}
-
 static bool isAdjacent(const ValueFlow::Value& x, const ValueFlow::Value& y)
 {
     if (x.bound != ValueFlow::Value::Bound::Point && x.bound == y.bound)
@@ -2094,6 +2065,7 @@ static void mergeAdjacent(std::list<ValueFlow::Value>& values)
             continue;
         }
         std::sort(adjValues.begin(), adjValues.end(), [&values](ValueIterator xx, ValueIterator yy) {
+            (void)values;
             assert(xx != values.end() && yy != values.end());
             return xx->compareValue(*yy, ValueFlow::less{});
         });
@@ -2161,7 +2133,14 @@ bool Token::addValue(const ValueFlow::Value &value)
         });
     }
 
-    // assert(!value.isPossible() || !mImpl->mValues || std::none_of(mImpl->mValues->begin(), mImpl->mValues->end(),
+    // Don't add a value if its already known
+    if (!value.isKnown() && mImpl->mValues &&
+        std::any_of(mImpl->mValues->begin(), mImpl->mValues->end(), [&](const ValueFlow::Value& x) {
+        return x.isKnown() && sameValueType(x, value) && !x.equalValue(value);
+    }))
+        return false;
+
+    // assert(value.isKnown() || !mImpl->mValues || std::none_of(mImpl->mValues->begin(), mImpl->mValues->end(),
     // [&](const ValueFlow::Value& x) {
     //     return x.isKnown() && sameValueType(x, value);
     // }));
@@ -2203,6 +2182,8 @@ bool Token::addValue(const ValueFlow::Value &value)
 
         // Add value
         if (it == mImpl->mValues->end()) {
+            // If the errorPath has gotten this large then there must be something wrong
+            assert(value.errorPath.size() < 64);
             ValueFlow::Value v(value);
             if (v.varId == 0)
                 v.varId = mImpl->mVarId;
@@ -2264,6 +2245,7 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         return nullptr;
     if (typeTok != nullptr)
         *typeTok = tok;
+    const Token* lhsVarTok{};
     if (Token::simpleMatch(tok, "return")) {
         const Scope *scope = tok->scope();
         if (!scope)
@@ -2286,8 +2268,8 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
         return function->retType;
     } else if (Token::Match(tok->previous(), "%type%|= (|{")) {
         return typeOf(tok->previous(), typeTok);
-    } else if (Token::simpleMatch(tok, "=")) {
-        return Token::typeOf(getLHSVariableToken(tok), typeTok);
+    } else if (Token::simpleMatch(tok, "=") && (lhsVarTok = getLHSVariableToken(tok)) != tok->next()) {
+        return Token::typeOf(lhsVarTok, typeTok);
     } else if (Token::simpleMatch(tok, ".")) {
         return Token::typeOf(tok->astOperand2(), typeTok);
     } else if (Token::simpleMatch(tok, "[")) {
@@ -2427,21 +2409,6 @@ const ValueFlow::Value* Token::getKnownValue(ValueFlow::Value::ValueType t) cons
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
-bool Token::isImpossibleIntValue(const MathLib::bigint val) const
-{
-    if (!mImpl->mValues)
-        return false;
-    for (const auto& v : *mImpl->mValues) {
-        if (v.isIntValue() && v.isImpossible() && v.intvalue == val)
-            return true;
-        if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Lower && val > v.intvalue)
-            return true;
-        if (v.isIntValue() && v.bound == ValueFlow::Value::Bound::Upper && val < v.intvalue)
-            return true;
-    }
-    return false;
-}
-
 const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
 {
     if (!mImpl->mValues)
@@ -2462,7 +2429,7 @@ const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path)
             continue;
         if (value.isImpossible())
             continue;
-        if (value.path != 0 && value.path != path)
+        if (path > -0 && value.path != 0 && value.path != path)
             continue;
         if ((!ret || value.intvalue > ret->intvalue) &&
             ((value.condition != nullptr) == condition))
@@ -2482,6 +2449,7 @@ const ValueFlow::Value* Token::getMovedValue() const
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
+// cppcheck-suppress unusedFunction
 const ValueFlow::Value* Token::getContainerSizeValue(const MathLib::bigint val) const
 {
     if (!mImpl->mValues)

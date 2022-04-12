@@ -18,6 +18,9 @@
 
 #include "testcppchecklibrarydata.h"
 
+#include <QDebug>
+#include <QTest>
+
 const QString TestCppcheckLibraryData::TempCfgFile = "./tmp.cfg";
 
 void TestCppcheckLibraryData::init()
@@ -88,15 +91,15 @@ void TestCppcheckLibraryData::podtypeValid()
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.podtypes.size(), 2);
 
-    QCOMPARE(libraryData.podtypes[0].name, "bool");
+    QCOMPARE(libraryData.podtypes[0].name, QString("bool"));
     QCOMPARE(libraryData.podtypes[0].stdtype.isEmpty(), true);
     QCOMPARE(libraryData.podtypes[0].sign.isEmpty(), true);
     QCOMPARE(libraryData.podtypes[0].size.isEmpty(), true);
 
-    QCOMPARE(libraryData.podtypes[1].name, "ulong");
-    QCOMPARE(libraryData.podtypes[1].stdtype, "uint32_t");
-    QCOMPARE(libraryData.podtypes[1].sign, "u");
-    QCOMPARE(libraryData.podtypes[1].size, "4");
+    QCOMPARE(libraryData.podtypes[1].name, QString("ulong"));
+    QCOMPARE(libraryData.podtypes[1].stdtype, QString("uint32_t"));
+    QCOMPARE(libraryData.podtypes[1].sign, QString("u"));
+    QCOMPARE(libraryData.podtypes[1].size, QString("4"));
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);
@@ -133,18 +136,18 @@ void TestCppcheckLibraryData::typechecksValid()
 
     CppcheckLibraryData::TypeChecks check = libraryData.typeChecks[0];
     QCOMPARE(check.size(), 2);
-    QCOMPARE(check[0].first, "suppress");
-    QCOMPARE(check[0].second, "std::insert_iterator");
-    QCOMPARE(check[1].first, "check");
-    QCOMPARE(check[1].second, "std::pair");
+    QCOMPARE(check[0].first, QString("suppress"));
+    QCOMPARE(check[0].second, QString("std::insert_iterator"));
+    QCOMPARE(check[1].first, QString("check"));
+    QCOMPARE(check[1].second, QString("std::pair"));
 
     check = libraryData.typeChecks[1];
     QCOMPARE(check.isEmpty(), true);
 
     check = libraryData.typeChecks[2];
     QCOMPARE(check.size(), 1);
-    QCOMPARE(check[0].first, "check");
-    QCOMPARE(check[0].second, "std::tuple");
+    QCOMPARE(check[0].first, QString("check"));
+    QCOMPARE(check[0].second, QString("std::tuple"));
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);
@@ -179,9 +182,9 @@ void TestCppcheckLibraryData::smartPointerValid()
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.smartPointers.size(), 3);
 
-    QCOMPARE(libraryData.smartPointers[0], "wxObjectDataPtr");
-    QCOMPARE(libraryData.smartPointers[1], "wxScopedArray");
-    QCOMPARE(libraryData.smartPointers[2], "wxScopedPtr");
+    QCOMPARE(libraryData.smartPointers[0], QString("wxObjectDataPtr"));
+    QCOMPARE(libraryData.smartPointers[1], QString("wxScopedArray"));
+    QCOMPARE(libraryData.smartPointers[2], QString("wxScopedPtr"));
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);
@@ -211,26 +214,26 @@ void TestCppcheckLibraryData::platformTypeValid()
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.platformTypes.size(), 3);
 
-    QCOMPARE(libraryData.platformTypes[0].name, "platform");
-    QCOMPARE(libraryData.platformTypes[0].value, "with attribute and empty");
+    QCOMPARE(libraryData.platformTypes[0].name, QString("platform"));
+    QCOMPARE(libraryData.platformTypes[0].value, QString("with attribute and empty"));
     QCOMPARE(libraryData.platformTypes[0].types.size(), 0);
     QCOMPARE(libraryData.platformTypes[0].platforms.size(), 2);
-    QCOMPARE(libraryData.platformTypes[0].platforms[0], "win64");
+    QCOMPARE(libraryData.platformTypes[0].platforms[0], QString("win64"));
     QCOMPARE(libraryData.platformTypes[0].platforms[1].isEmpty(), true);
 
-    QCOMPARE(libraryData.platformTypes[1].name, "types");
-    QCOMPARE(libraryData.platformTypes[1].value, "all");
+    QCOMPARE(libraryData.platformTypes[1].name, QString("types"));
+    QCOMPARE(libraryData.platformTypes[1].value, QString("all"));
     QCOMPARE(libraryData.platformTypes[1].types.size(), 5);
     QCOMPARE(libraryData.platformTypes[1].types,
              QStringList({"unsigned", "long", "pointer", "const_ptr", "ptr_ptr"}));
     QCOMPARE(libraryData.platformTypes[1].platforms.isEmpty(), true);
 
-    QCOMPARE(libraryData.platformTypes[2].name, "types and platform");
+    QCOMPARE(libraryData.platformTypes[2].name, QString("types and platform"));
     QCOMPARE(libraryData.platformTypes[2].value.isEmpty(), true);
     QCOMPARE(libraryData.platformTypes[2].types.size(), 2);
     QCOMPARE(libraryData.platformTypes[2].types, QStringList({"pointer", "ptr_ptr"}));
     QCOMPARE(libraryData.platformTypes[2].platforms.size(), 1);
-    QCOMPARE(libraryData.platformTypes[2].platforms[0], "win32");
+    QCOMPARE(libraryData.platformTypes[2].platforms[0], QString("win32"));
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);
@@ -268,55 +271,55 @@ void TestCppcheckLibraryData::memoryResourceValid()
 
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.memoryresource.size(), 2);
-    QCOMPARE(libraryData.memoryresource[0].type, "memory");
+    QCOMPARE(libraryData.memoryresource[0].type, QString("memory"));
     QCOMPARE(libraryData.memoryresource[0].alloc.size(), 4);
     QCOMPARE(libraryData.memoryresource[0].dealloc.size(), 1);
     QCOMPARE(libraryData.memoryresource[0].use.size(), 0);
 
-    QCOMPARE(libraryData.memoryresource[0].alloc[0].name, "malloc");
-    QCOMPARE(libraryData.memoryresource[0].alloc[0].bufferSize, "malloc");
+    QCOMPARE(libraryData.memoryresource[0].alloc[0].name, QString("malloc"));
+    QCOMPARE(libraryData.memoryresource[0].alloc[0].bufferSize, QString("malloc"));
     QCOMPARE(libraryData.memoryresource[0].alloc[0].isRealloc, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[0].init, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[0].arg, -1);
     QCOMPARE(libraryData.memoryresource[0].alloc[0].reallocArg, -1);
 
-    QCOMPARE(libraryData.memoryresource[0].alloc[1].name, "calloc");
-    QCOMPARE(libraryData.memoryresource[0].alloc[1].bufferSize, "calloc");
+    QCOMPARE(libraryData.memoryresource[0].alloc[1].name, QString("calloc"));
+    QCOMPARE(libraryData.memoryresource[0].alloc[1].bufferSize, QString("calloc"));
     QCOMPARE(libraryData.memoryresource[0].alloc[1].isRealloc, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[1].init, true);
     QCOMPARE(libraryData.memoryresource[0].alloc[1].arg, -1);
     QCOMPARE(libraryData.memoryresource[0].alloc[1].reallocArg, -1);
 
-    QCOMPARE(libraryData.memoryresource[0].alloc[2].name, "realloc");
-    QCOMPARE(libraryData.memoryresource[0].alloc[2].bufferSize, "malloc:2");
+    QCOMPARE(libraryData.memoryresource[0].alloc[2].name, QString("realloc"));
+    QCOMPARE(libraryData.memoryresource[0].alloc[2].bufferSize, QString("malloc:2"));
     QCOMPARE(libraryData.memoryresource[0].alloc[2].isRealloc, true);
     QCOMPARE(libraryData.memoryresource[0].alloc[2].init, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[2].arg, -1);
     QCOMPARE(libraryData.memoryresource[0].alloc[2].reallocArg, -1);
 
-    QCOMPARE(libraryData.memoryresource[0].alloc[3].name, "UuidToString");
+    QCOMPARE(libraryData.memoryresource[0].alloc[3].name, QString("UuidToString"));
     QCOMPARE(libraryData.memoryresource[0].alloc[3].bufferSize.isEmpty(), true);
     QCOMPARE(libraryData.memoryresource[0].alloc[3].isRealloc, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[3].init, false);
     QCOMPARE(libraryData.memoryresource[0].alloc[3].arg, 2);
     QCOMPARE(libraryData.memoryresource[0].alloc[3].reallocArg, -1);
 
-    QCOMPARE(libraryData.memoryresource[0].dealloc[0].name, "HeapFree");
+    QCOMPARE(libraryData.memoryresource[0].dealloc[0].name, QString("HeapFree"));
     QCOMPARE(libraryData.memoryresource[0].dealloc[0].arg, 3);
 
-    QCOMPARE(libraryData.memoryresource[1].type, "resource");
+    QCOMPARE(libraryData.memoryresource[1].type, QString("resource"));
     QCOMPARE(libraryData.memoryresource[1].alloc.size(), 1);
     QCOMPARE(libraryData.memoryresource[1].dealloc.size(), 1);
     QCOMPARE(libraryData.memoryresource[1].use.size(), 0);
 
-    QCOMPARE(libraryData.memoryresource[1].alloc[0].name, "_wfopen_s");
+    QCOMPARE(libraryData.memoryresource[1].alloc[0].name, QString("_wfopen_s"));
     QCOMPARE(libraryData.memoryresource[1].alloc[0].bufferSize.isEmpty(), true);
     QCOMPARE(libraryData.memoryresource[1].alloc[0].isRealloc, false);
     QCOMPARE(libraryData.memoryresource[1].alloc[0].init, true);
     QCOMPARE(libraryData.memoryresource[1].alloc[0].arg, 1);
     QCOMPARE(libraryData.memoryresource[1].alloc[0].reallocArg, -1);
 
-    QCOMPARE(libraryData.memoryresource[1].dealloc[0].name, "fclose");
+    QCOMPARE(libraryData.memoryresource[1].dealloc[0].name, QString("fclose"));
     QCOMPARE(libraryData.memoryresource[1].dealloc[0].arg, -1);
 
     // Save library data to file
@@ -368,8 +371,8 @@ void TestCppcheckLibraryData::defineValid()
 
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.defines.size(), 2);
-    QCOMPARE(libraryData.defines[0].name, "INT8_MIN");
-    QCOMPARE(libraryData.defines[0].value, "-128");
+    QCOMPARE(libraryData.defines[0].name, QString("INT8_MIN"));
+    QCOMPARE(libraryData.defines[0].value, QString("-128"));
     QCOMPARE(libraryData.defines[1].name.isEmpty(), true);
     QCOMPARE(libraryData.defines[1].value.isEmpty(), true);
 
@@ -403,7 +406,7 @@ void TestCppcheckLibraryData::undefineValid()
 
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.undefines.size(), 2);
-    QCOMPARE(libraryData.undefines[0], "INT8_MIN");
+    QCOMPARE(libraryData.undefines[0], QString("INT8_MIN"));
     QCOMPARE(libraryData.undefines[1].isEmpty(), true);
 
     // Save library data to file
@@ -435,9 +438,9 @@ void TestCppcheckLibraryData::reflectionValid()
     QCOMPARE(libraryData.reflections.size(), 2);
     QCOMPARE(libraryData.reflections[0].calls.size(), 2);
     QCOMPARE(libraryData.reflections[0].calls[0].arg, 2);
-    QCOMPARE(libraryData.reflections[0].calls[0].name, "invokeMethod");
+    QCOMPARE(libraryData.reflections[0].calls[0].name, QString("invokeMethod"));
     QCOMPARE(libraryData.reflections[0].calls[1].arg, 1);
-    QCOMPARE(libraryData.reflections[0].calls[1].name, "callFunction");
+    QCOMPARE(libraryData.reflections[0].calls[1].name, QString("callFunction"));
     QCOMPARE(libraryData.reflections[1].calls.isEmpty(), true);
 
     // Save library data to file
@@ -476,7 +479,7 @@ void TestCppcheckLibraryData::markupValid()
 
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.markups.size(), 1);
-    QCOMPARE(libraryData.markups[0].ext, ".qml");
+    QCOMPARE(libraryData.markups[0].ext, QString(".qml"));
     QCOMPARE(libraryData.markups[0].reportErrors, false);
     QCOMPARE(libraryData.markups[0].afterCode, true);
 
@@ -487,7 +490,7 @@ void TestCppcheckLibraryData::markupValid()
     QCOMPARE(libraryData.markups[0].importer, QStringList("connect"));
 
     QCOMPARE(libraryData.markups[0].exporter.size(), 1);
-    QCOMPARE(libraryData.markups[0].exporter[0].prefix, "Q_PROPERTY");
+    QCOMPARE(libraryData.markups[0].exporter[0].prefix, QString("Q_PROPERTY"));
     QCOMPARE(libraryData.markups[0].exporter[0].suffixList.size(), 1);
     QCOMPARE(libraryData.markups[0].exporter[0].suffixList, QStringList("READ"));
     QCOMPARE(libraryData.markups[0].exporter[0].prefixList.size(), 3);
@@ -497,13 +500,13 @@ void TestCppcheckLibraryData::markupValid()
     QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks.size(), 5);
     QCOMPARE(libraryData.markups[0].codeBlocks[0].blocks, QStringList({"onClicked", "onFinished", "onTriggered", "onPressed", "onTouch"}));
     QCOMPARE(libraryData.markups[0].codeBlocks[0].offset, 3);
-    QCOMPARE(libraryData.markups[0].codeBlocks[0].start, "{");
-    QCOMPARE(libraryData.markups[0].codeBlocks[0].end, "}");
+    QCOMPARE(libraryData.markups[0].codeBlocks[0].start, QString("{"));
+    QCOMPARE(libraryData.markups[0].codeBlocks[0].end, QString("}"));
     QCOMPARE(libraryData.markups[0].codeBlocks[1].blocks.size(), 1);
     QCOMPARE(libraryData.markups[0].codeBlocks[1].blocks, QStringList("function"));
     QCOMPARE(libraryData.markups[0].codeBlocks[1].offset, 2);
-    QCOMPARE(libraryData.markups[0].codeBlocks[1].start, "{");
-    QCOMPARE(libraryData.markups[0].codeBlocks[1].end, "}");
+    QCOMPARE(libraryData.markups[0].codeBlocks[1].start, QString("{"));
+    QCOMPARE(libraryData.markups[0].codeBlocks[1].end, QString("}"));
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);

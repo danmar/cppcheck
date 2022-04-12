@@ -1,6 +1,28 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "forwardanalyzer.h"
+
 #include "analyzer.h"
 #include "astutils.h"
+#include "config.h"
+#include "errortypes.h"
+#include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -9,8 +31,13 @@
 #include <algorithm>
 #include <cstdio>
 #include <functional>
+#include <list>
+#include <memory>
+#include <string>
 #include <tuple>
+#include <type_traits>
 #include <utility>
+#include <vector>
 
 struct OnExit {
     std::function<void()> f;
@@ -89,12 +116,13 @@ struct ForwardTraversal {
         return evalCond(tok, ctx).first;
     }
 
+    // cppcheck-suppress unusedFunction
     bool isConditionFalse(const Token* tok, const Token* ctx = nullptr) const {
         return evalCond(tok, ctx).second;
     }
 
-    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-    Progress traverseTok(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, T** out = nullptr) {
+    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+    Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
         if (Token::Match(tok, "asm|goto|setjmp|longjmp"))
             return Break(Analyzer::Terminate::Bail);
         else if (Token::simpleMatch(tok, "continue")) {
@@ -103,9 +131,13 @@ struct ForwardTraversal {
             // If we are in a loop then jump to the end
             if (out)
                 *out = loopEnds.back();
-        } else if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
-            traverseRecursive(tok->astOperand1(), f, traverseUnknown);
+        } else if (Token::Match(tok, "return|throw")) {
             traverseRecursive(tok->astOperand2(), f, traverseUnknown);
+            traverseRecursive(tok->astOperand1(), f, traverseUnknown);
+            return Break(Analyzer::Terminate::Escape);
+        } else if (Token::Match(tok, "%name% (") && isEscapeFunction(tok, &settings->library)) {
+            // Traverse the parameters of the function before escaping
+            traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Escape);
         } else if (isUnevaluated(tok)) {
             if (out)
@@ -134,8 +166,8 @@ struct ForwardTraversal {
         return Progress::Continue;
     }
 
-    template<class T, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-    Progress traverseRecursive(T* tok, std::function<Progress(T*)> f, bool traverseUnknown, unsigned int recursion=0) {
+    template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+    Progress traverseRecursive(T* tok, F f, bool traverseUnknown, unsigned int recursion=0) {
         if (!tok)
             return Progress::Continue;
         if (recursion > 10000)
@@ -145,7 +177,8 @@ struct ForwardTraversal {
         // Evaluate:
         //     1. RHS of assignment before LHS
         //     2. Unary op before operand
-        if (tok->isAssignmentOp() || !secondOp)
+        //     3. Function arguments before function call
+        if (tok->isAssignmentOp() || !secondOp || isFunctionCall(tok))
             std::swap(firstOp, secondOp);
         if (firstOp && traverseRecursive(firstOp, f, traverseUnknown, recursion+1) == Progress::Break)
             return Break();
@@ -206,7 +239,7 @@ struct ForwardTraversal {
     }
 
     Progress updateTok(Token* tok, Token** out = nullptr) {
-        std::function<Progress(Token*)> f = [this](Token* tok2) {
+        auto f = [this](Token* tok2) {
             return update(tok2);
         };
         return traverseTok(tok, f, false, out);
@@ -214,14 +247,14 @@ struct ForwardTraversal {
 
     Progress updateRecursive(Token* tok) {
         forked = false;
-        std::function<Progress(Token*)> f = [this](Token* tok2) {
+        auto f = [this](Token* tok2) {
             return update(tok2);
         };
         return traverseRecursive(tok, f, false);
     }
 
-    template<class T>
-    T* findRange(T* start, const Token* end, std::function<bool(Analyzer::Action)> pred) {
+    template<class T, class F>
+    T* findRange(T* start, const Token* end, F pred) {
         for (T* tok = start; tok && tok != end; tok = tok->next()) {
             Analyzer::Action action = analyzer->analyze(tok, Analyzer::Direction::Forward);
             if (pred(action))
@@ -232,7 +265,7 @@ struct ForwardTraversal {
 
     Analyzer::Action analyzeRecursive(const Token* start) {
         Analyzer::Action result = Analyzer::Action::None;
-        std::function<Progress(const Token*)> f = [&](const Token* tok) {
+        auto f = [&](const Token* tok) {
             result = analyzer->analyze(tok, Analyzer::Direction::Forward);
             if (result.isModified() || result.isInconclusive())
                 return Break();
@@ -281,6 +314,10 @@ struct ForwardTraversal {
 
     static bool hasGoto(const Token* endBlock) {
         return Token::findsimplematch(endBlock->link(), "goto", endBlock);
+    }
+
+    static bool hasJump(const Token* endBlock) {
+        return Token::findmatch(endBlock->link(), "goto|break", endBlock);
     }
 
     bool hasInnerReturnScope(const Token* start, const Token* end) const {
@@ -403,8 +440,16 @@ struct ForwardTraversal {
         bool checkElse = false;
         if (condTok && !Token::simpleMatch(condTok, ":"))
             std::tie(checkThen, checkElse) = evalCond(condTok, isDoWhile ? endBlock->previous() : nullptr);
-        if (checkElse && exit)
+        // exiting a do while(false)
+        if (checkElse && exit) {
+            if (hasJump(endBlock)) {
+                if (!analyzer->lowerToPossible())
+                    return Break(Analyzer::Terminate::Bail);
+                if (analyzer->isConditional() && stopUpdates())
+                    return Break(Analyzer::Terminate::Conditional);
+            }
             return Progress::Continue;
+        }
         Analyzer::Action bodyAnalysis = analyzeScope(endBlock);
         Analyzer::Action allAnalysis = bodyAnalysis;
         Analyzer::Action condAnalysis;
@@ -757,6 +802,21 @@ struct ForwardTraversal {
         return false;
     }
 
+    static bool isFunctionCall(const Token* tok)
+    {
+        if (!Token::simpleMatch(tok, "("))
+            return false;
+        if (tok->isCast())
+            return false;
+        if (!tok->isBinaryOp())
+            return false;
+        if (Token::simpleMatch(tok->link(), ") {"))
+            return false;
+        if (isUnevaluated(tok))
+            return false;
+        return Token::Match(tok->previous(), "%name%|)|]|>");
+    }
+
     static Token* assignExpr(Token* tok) {
         while (tok->astParent() && astIsLHS(tok)) {
             if (tok->astParent()->isAssignmentOp())
@@ -782,34 +842,6 @@ struct ForwardTraversal {
             parent = parent->astParent();
         }
         return parent && (parent->str() == ":" || parent->astOperand2() == tok);
-    }
-
-    static Token* getInitTok(Token* tok) {
-        if (!tok)
-            return nullptr;
-        if (Token::Match(tok, "%name% ("))
-            return getInitTok(tok->next());
-        if (tok->str() !=  "(")
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2(), ";"))
-            return nullptr;
-        if (Token::simpleMatch(tok->astOperand2()->astOperand1(), ";"))
-            return nullptr;
-        return tok->astOperand2()->astOperand1();
-    }
-
-    static Token* getStepTok(Token* tok) {
-        if (!tok)
-            return nullptr;
-        if (Token::Match(tok, "%name% ("))
-            return getStepTok(tok->next());
-        if (tok->str() != "(")
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2(), ";"))
-            return nullptr;
-        if (!Token::simpleMatch(tok->astOperand2()->astOperand2(), ";"))
-            return nullptr;
-        return tok->astOperand2()->astOperand2()->astOperand2();
     }
 
     static Token* getStepTokFromEnd(Token* tok) {

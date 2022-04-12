@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include "platform.h"
 #include "utils.h"
 
+#include <iosfwd>
 #include <list>
 #include <map>
 #include <set>
@@ -52,6 +53,7 @@ public:
     enum class Type {
         UNKNOWN,
         MISSING,
+        FAILURE,
         COMPILE_DB,
         VS_SLN,
         VS_VCXPROJ,
@@ -102,16 +104,18 @@ public:
 
     void ignorePaths(const std::vector<std::string> &ipaths);
     void ignoreOtherConfigs(const std::string &cfg);
-    void ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType);
 
     Type import(const std::string &filename, Settings *settings=nullptr);
 protected:
-    void importCompileCommands(std::istream &istr);
+    bool importCompileCommands(std::istream &istr);
     bool importCppcheckGuiProject(std::istream &istr, Settings *settings);
+    virtual bool sourceFileExists(const std::string &file);
 private:
-    void importSln(std::istream &istr, const std::string &path, const std::string &fileFilter);
-    void importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::string &fileFilter);
-    void importBcb6Prj(const std::string &projectFilename);
+    bool importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters);
+    bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters);
+    bool importBcb6Prj(const std::string &projectFilename);
+
+    static void printError(const std::string &message);
 
     void setRelativePaths(const std::string &filename);
 
@@ -149,14 +153,7 @@ namespace CppcheckXml {
     const char ExcludePathName[] = "path";
     const char ExcludePathNameAttrib[] = "name";
     const char FunctionContracts[] = "function-contracts";
-    const char FunctionContract[] = "contract";
-    const char ContractFunction[] = "function";
-    const char ContractExpects[] = "expects";
     const char VariableContractsElementName[] = "variable-contracts";
-    const char VariableContractItemElementName[] = "var";
-    const char VariableContractVarName[] = "name";
-    const char VariableContractMin[] = "min";
-    const char VariableContractMax[] = "max";
     const char LibrariesElementName[] = "libraries";
     const char LibraryElementName[] = "library";
     const char PlatformElementName[] = "platform";

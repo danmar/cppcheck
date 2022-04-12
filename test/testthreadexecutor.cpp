@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,12 @@
 
 #include "settings.h"
 #include "testsuite.h"
+#include "testutils.h"
 #include "threadexecutor.h"
 
+#include <cstddef>
 #include <map>
+#include <ostream>
 #include <string>
 #include <utility>
 
@@ -47,18 +50,20 @@ private:
         for (int i = 1; i <= files; ++i) {
             std::ostringstream oss;
             oss << "file_" << i << ".cpp";
-            filemap[oss.str()] = 1;
+            filemap[oss.str()] = data.size();
         }
 
         settings.jobs = jobs;
         ThreadExecutor executor(filemap, settings, *this);
+        std::vector<ScopedFile> scopedfiles;
+        scopedfiles.reserve(filemap.size());
         for (std::map<std::string, std::size_t>::const_iterator i = filemap.begin(); i != filemap.end(); ++i)
-            executor.addFileContent(i->first, data);
+            scopedfiles.emplace_back(i->first, data);
 
         ASSERT_EQUALS(result, executor.check());
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(deadlock_with_many_errors);

@@ -150,7 +150,7 @@
               <optional>
                 <attribute name="type">
                   <data type="string">
-                    <param name="pattern">([a-zA-Z_][a-zA-Z_0-9:]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*([a-zA-Z_][a-zA-Z_0-9]*([ ]?[*&amp;])*)+</param>
+                    <param name="pattern">(::)?([a-zA-Z_:][a-zA-Z_0-9:]*[ ])*([a-zA-Z_][a-zA-Z_0-9]*::)*([a-zA-Z_][a-zA-Z_0-9]*([ ]?[*&amp; ])*)+</param>
                   </data>
                 </attribute>
               </optional>
@@ -453,6 +453,14 @@
               </optional>
               <empty/>
             </element>
+            <element name="rangeItemRecordType">
+              <oneOrMore>
+                <element name="member">
+                  <attribute name="name"><ref name="DATA-NAME"/></attribute>
+                  <attribute name="templateParameter"><data type="integer"/></attribute>
+                </element>
+              </oneOrMore>
+            </element>
             <element name="size">
               <optional>
                 <attribute name="templateParameter"><data type="integer"/></attribute>
@@ -526,6 +534,18 @@
               </choice>
             </zeroOrMore>
           </element>
+          <element name="operatorEqVarError">
+            <zeroOrMore>
+              <choice>
+                <element name="check">
+                  <ref name="DATA-EXTNAME"/>
+                </element>
+                <element name="suppress">
+                  <ref name="DATA-EXTNAME"/>
+                </element>
+              </choice>
+            </zeroOrMore>
+          </element>          
         </optional>
       </element>
 
@@ -590,7 +610,7 @@
   <define name="ARGNO">
     <data type="integer">
       <param name="minInclusive">1</param>
-      <param name="maxInclusive">20</param>
+      <param name="maxInclusive">40</param>
     </data>
   </define>
 

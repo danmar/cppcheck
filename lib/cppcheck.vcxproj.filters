@@ -161,9 +161,6 @@
     <ClCompile Include="ctu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="exprengine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pathanalysis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -182,13 +179,13 @@
     <ClCompile Include="summaries.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="bughuntingchecks.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="reverseanalyzer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="color.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="infer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -361,9 +358,6 @@
     <ClInclude Include="summaries.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="bughuntingchecks.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="tokenrange.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -371,6 +365,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="color.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="infer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

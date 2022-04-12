@@ -1,8 +1,27 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "codeeditor.h"
 
-#include <QShortcut>
-#include <QPainter>
 #include "codeeditorstyle.h"
+
+#include <QPainter>
+#include <QShortcut>
 
 
 Highlighter::Highlighter(QTextDocument *parent,
@@ -93,7 +112,7 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "volatile"
                     << "wchar_­t"
                     << "while";
-    foreach (const QString &pattern, keywordPatterns) {
+    for (const QString &pattern : keywordPatterns) {
         rule.pattern = QRegularExpression("\\b" + pattern + "\\b");
         rule.format = mKeywordFormat;
         rule.ruleRole = RuleRole::Keyword;
@@ -137,7 +156,7 @@ Highlighter::Highlighter(QTextDocument *parent,
 void Highlighter::setSymbols(const QStringList &symbols)
 {
     mHighlightingRulesWithSymbols = mHighlightingRules;
-    foreach (const QString &sym, symbols) {
+    for (const QString &sym : symbols) {
         HighlightingRule rule;
         rule.pattern = QRegularExpression("\\b" + sym + "\\b");
         rule.format = mSymbolFormat;
@@ -172,7 +191,7 @@ void Highlighter::setStyle(const CodeEditorStyle &newStyle)
 
 void Highlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, mHighlightingRulesWithSymbols) {
+    for (const HighlightingRule &rule : mHighlightingRulesWithSymbols) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
@@ -318,7 +337,11 @@ int CodeEditor::lineNumberAreaWidth()
         ++digits;
     }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+#else
     int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+#endif
     return space;
 }
 

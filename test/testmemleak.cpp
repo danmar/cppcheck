@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -15,16 +15,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include "checkmemoryleak.h"
-#include "config.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
+#include <iosfwd>
 #include <list>
+#include <memory>
 #include <string>
+
+class TestMemleakInClass;
+class TestMemleakNoVar;
+class TestMemleakStructMember;
 
 
 class TestMemleak : private TestFixture {
@@ -34,23 +41,24 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(testFunctionReturnType);
         TEST_CASE(open);
     }
 
-    CheckMemoryLeak::AllocType functionReturnType(const char code[]) {
+#define functionReturnType(code) functionReturnType_(code, __FILE__, __LINE__)
+    CheckMemoryLeak::AllocType functionReturnType_(const char code[], const char* file, int line) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         const CheckMemoryLeak c(&tokenizer, this, &settings);
 
-        return c.functionReturnType(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
+        return (c.functionReturnType)(&tokenizer.getSymbolDatabase()->scopeList.front().functionList.front());
     }
 
     void testFunctionReturnType() {
@@ -98,7 +106,7 @@ private:
 
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
 
         // there is no allocation
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "ret =");
@@ -122,7 +130,8 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void check(const char code[]) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
@@ -131,7 +140,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInFunction checkMemoryLeak(&tokenizer, settings, this);
@@ -139,7 +148,7 @@ private:
     }
 
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings1.library, "std.cfg");
         LOAD_LIB_2(settings1.library, "posix.cfg");
         LOAD_LIB_2(settings2.library, "std.cfg");
@@ -467,21 +476,21 @@ private:
      * Tokenize and execute leak check for given code
      * @param code Source code
      */
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakInClass checkMemoryLeak(&tokenizer, &settings, this);
-        checkMemoryLeak.check();
+        (checkMemoryLeak.check)();
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::style);
 
@@ -511,6 +520,8 @@ private:
         TEST_CASE(class23); // ticket #3303
         TEST_CASE(class24); // ticket #3806 - false positive in copy constructor
         TEST_CASE(class25); // ticket #4367 - false positive implementation for destructor is not seen
+        TEST_CASE(class26); // ticket #10789
+        TEST_CASE(class27); // ticket #8126
 
         TEST_CASE(staticvar);
 
@@ -1360,8 +1371,10 @@ private:
               "public:\n"
               "    A() : b(new B()), c(new C(b)) { }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
-                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                           "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
+                           "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n",
+                           errout.str());
 
         check("struct B { };\n"
               "struct C\n"
@@ -1380,8 +1393,10 @@ private:
               "       c = new C(b);\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
-                      "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n"
+                           "[test.cpp:10]: (style) Class 'A' is unsafe, 'A::c' can leak by wrong usage.\n",
+                           "[test.cpp:9]: (style) Class 'A' is unsafe, 'A::b' can leak by wrong usage.\n",
+                           errout.str());
     }
 
     void class22() { // ticket #3012 - false positive
@@ -1434,6 +1449,28 @@ private:
               "    ~Fred();\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void class26() { // ticket #10789 - crash
+        check("class C;\n"
+              "struct S {\n"
+              "    S() { p = new C; }\n"
+              "    ~S();\n"
+              "    C* p;\n"
+              "};\n"
+              "S::~S() = default;\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Class 'S' is unsafe, 'S::p' can leak by wrong usage.\n", errout.str());
+    }
+
+    void class27() { // ticket #8126 - array of pointers
+        check("struct S {\n"
+              "    S() {\n"
+              "        for (int i = 0; i < 5; i++)\n"
+              "            a[i] = new char[3];\n"
+              "    }\n"
+              "    char* a[5];\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Class 'S' is unsafe, 'S::a' can leak by wrong usage.\n", errout.str());
     }
 
     void staticvar() {
@@ -1639,21 +1676,21 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[], bool isCPP = true) {
+    void check_(const char* file, int line, const char code[], bool isCPP = true) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, isCPP ? "test.cpp" : "test.c");
+        ASSERT_LOC(tokenizer.tokenize(istr, isCPP ? "test.cpp" : "test.c"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakStructMember checkMemoryLeakStructMember(&tokenizer, &settings, this);
-        checkMemoryLeakStructMember.check();
+        (checkMemoryLeakStructMember.check)();
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
         LOAD_LIB_2(settings.library, "posix.cfg");
 
@@ -1679,6 +1716,7 @@ private:
         TEST_CASE(function2);   // #2848: Taking address in function
         TEST_CASE(function3);   // #3024: kernel list
         TEST_CASE(function4);   // #3038: Deallocating in function
+        TEST_CASE(function5);   // #10381, #10382, #10158
 
         // Handle if-else
         TEST_CASE(ifelse);
@@ -1914,6 +1952,29 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void function5() {
+        check("struct s f() {\n" // #10381
+              "    struct s s1;\n"
+              "    s1->x = malloc(1);\n"
+              "    return (s1);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct nc_rpc nc_rpc_getconfig() {\n" // #10382
+              "    struct nc_rpc rpc;\n"
+              "    rpc->filter = malloc(1);\n"
+              "    return (nc_rpc)rpc;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("T* f(const char *str) {\n" // #10158
+              "    S* s = malloc(sizeof(S));\n"
+              "    s->str = strdup(str);\n"
+              "    return NewT(s);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void ifelse() {
         check("static void foo()\n"
               "{\n"
@@ -2120,21 +2181,21 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for memory leaks..
         CheckMemoryLeakNoVar checkMemoryLeakNoVar(&tokenizer, &settings, this);
-        checkMemoryLeakNoVar.check();
+        (checkMemoryLeakNoVar.check)();
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.certainty.setEnabled(Certainty::inconclusive, true);
         settings.libraries.emplace_back("posix");
         settings.severity.enable(Severity::warning);
@@ -2154,6 +2215,8 @@ private:
 
         // Test getAllocationType for subfunction
         TEST_CASE(getAllocationType);
+
+        TEST_CASE(crash1); // #10729
     }
 
     void functionParameter() {
@@ -2379,6 +2442,77 @@ private:
               "  unary_right_comma (a);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    new int[10];\n"
+              "    new int[10][5];\n"
+              "    new int[10]();\n"
+              "    new int[10]{};\n"
+              "    new int[] { 1, 2, 3 };\n"
+              "    new std::string;\n"
+              "    new int;\n"
+              "    new int();\n"
+              "    new int(1);\n"
+              "    new int{};\n"
+              "    new int{ 1 };\n"
+              "    new uint8_t[4];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:3]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:4]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:5]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:6]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:7]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:8]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:9]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:10]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:11]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:12]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:13]: (error) Return value of allocation function 'new' is not stored.\n",
+                      errout.str());
+
+        check("void f(int* p) {\n"
+              "    new auto('c');\n"
+              "    new(p) int;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n"
+                           "[test.cpp:3]: (error) Return value of allocation function 'new' is not stored.\n",
+                           "",
+                           errout.str());
+
+        check("void g(int* p) {\n"
+              "    new QWidget;\n"
+              "    new QWidget();\n"
+              "    new QWidget{ this };\n"
+              "    h(new int[10], 1);\n"
+              "    h(new int[10][5], 1);\n"
+              "    h(new int[10](), 1);\n"
+              "    h(new int[10]{}, 1);\n"
+              "    h(new int[] { 1, 2, 3 }, 1);\n"
+              "    h(new auto('c'), 1);\n"
+              "    h(new std::string, 1);\n"
+              "    h(new int, 1);\n"
+              "    h(new int{}, 1);\n"
+              "    h(new int(), 1);\n"
+              "    h(new int{ 1 }, 1);\n"
+              "    h(new int(1), 1);\n"
+              "    h(new(p) int, 1);\n"
+              "    h(new QWidget, 1);\n"
+              "    C{ new int[10], 1 };\n"
+              "    C{ new int[10](), 1 };\n"
+              "    C{ new int[10]{}, 1 };\n"
+              "    C{ new int[] { 1, 2, 3 }, 1 };\n"
+              "    C{ new auto('c'), 1 };\n"
+              "    C{ new std::string, 1 };\n"
+              "    C{ new int, 1 };\n"
+              "    C{ new int{}, 1 };\n"
+              "    C{ new int(), 1 };\n"
+              "    C{ new int{ 1 }, 1 };\n"
+              "    C{ new int(1), 1 };\n"
+              "    C{ new(p) int, 1 };\n"
+              "    C{ new QWidget, 1 };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerFunctionParam() {
@@ -2519,6 +2653,38 @@ private:
               "\n"
               "void f() {\n"
               "  makeThing();\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10631
+        check("struct Thing {\n"
+              "    Thing();\n"
+              "};\n"
+              "std::vector<Thing*> g_things;\n"
+              "Thing* makeThing() {\n"
+              "    Thing* n = new Thing();\n"
+              "    return n;\n"
+              "}\n"
+              "Thing::Thing() {\n"
+              "    g_things.push_back(this);\n"
+              "}\n"
+              "void f() {\n"
+              "    makeThing();\n"
+              "    for(Thing* t : g_things) {\n"
+              "        delete t;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void crash1() { // #10729
+        check("void foo() {\n"
+              "    extern void *realloc (void *ptr, size_t size);\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n"
+              "    extern void *malloc (size_t size);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

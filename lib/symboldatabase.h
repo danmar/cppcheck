@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,12 +25,12 @@
 #include "library.h"
 #include "mathlib.h"
 #include "token.h"
-#include "utils.h"
 
 #include <cctype>
-#include <cstddef>
+#include <iosfwd>
 #include <list>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -215,9 +215,10 @@ class CPPCHECKLIB Variable {
     /**
      * @brief parse and save array dimension information
      * @param settings Platform settings and library
+     * @param isContainer Is the array container-like?
      * @return true if array, false if not
      */
-    bool arrayDimensions(const Settings* settings);
+    bool arrayDimensions(const Settings* settings, bool* isContainer);
 
 public:
     Variable(const Token *name_, const Token *start_, const Token *end_,
@@ -1128,13 +1129,7 @@ public:
      */
     const Function *findFunction(const Token *tok, bool requireConst=false) const;
 
-    /**
-     * @brief find if name is in nested list
-     * @param name name of nested scope
-     */
-    Scope *findInNestedList(const std::string & name);
-
-    const Scope *findRecordInNestedList(const std::string & name) const;
+    const Scope *findRecordInNestedList(const std::string & name, bool isC = false) const;
     Scope *findRecordInNestedList(const std::string & name) {
         return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));
     }
@@ -1191,6 +1186,8 @@ public:
 
     const Scope *findRecordInBase(const std::string &name) const;
 
+    std::vector<const Scope*> findAssociatedScopes() const;
+
 private:
     /**
      * @brief helper function for getVariableList()
@@ -1219,6 +1216,7 @@ public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type {
         UNKNOWN_TYPE,
+        POD,
         NONSTD,
         RECORD,
         SMART_POINTER,
@@ -1373,11 +1371,12 @@ public:
      */
     const Function *findFunction(const Token *tok) const;
 
+    /** For unit testing only */
     const Scope *findScopeByName(const std::string& name) const;
 
-    const Type* findType(const Token *startTok, const Scope *startScope) const;
-    Type* findType(const Token *startTok, Scope *startScope) const {
-        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope)));
+    const Type* findType(const Token *startTok, const Scope *startScope, bool lookOutside = false) const;
+    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) const {
+        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope), lookOutside));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
@@ -1452,10 +1451,12 @@ private:
     void createSymbolDatabaseSetScopePointers();
     void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
+    // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseEscapeFunctions();
+    // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);

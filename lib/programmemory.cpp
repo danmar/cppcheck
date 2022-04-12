@@ -1,34 +1,68 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
 
 #include "programmemory.h"
+
 #include "astutils.h"
 #include "calculate.h"
-#include "errortypes.h"
+#include "infer.h"
+#include "library.h"
 #include "mathlib.h"
 #include "settings.h"
 #include "symboldatabase.h"
 #include "token.h"
+#include "utils.h"
 #include "valueflow.h"
+#include "valueptr.h"
+
 #include <algorithm>
 #include <cassert>
-#include <cmath>
 #include <functional>
-#include <limits>
+#include <list>
 #include <memory>
+#include <string>
+#include <type_traits>
+#include <utility>
+#include <vector>
 
-void ProgramMemory::setValue(nonneg int exprid, const ValueFlow::Value& value)
+nonneg int ExprIdToken::getExpressionId() const {
+    return tok ? tok->exprId() : exprid;
+}
+
+std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 {
-    values[exprid] = value;
+    return std::hash<nonneg int>()(etok.getExpressionId());
+}
+
+void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
+    mValues[expr] = value;
 }
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
-    const ProgramMemory::Map::const_iterator it = values.find(exprid);
-    const bool found = it != values.end() && (impossible || !it->second.isImpossible());
+    const ProgramMemory::Map::const_iterator it = mValues.find(exprid);
+    const bool found = it != mValues.end() && (impossible || !it->second.isImpossible());
     if (found)
         return &it->second;
     else
         return nullptr;
 }
 
+// cppcheck-suppress unusedFunction
 bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
@@ -39,12 +73,12 @@ bool ProgramMemory::getIntValue(nonneg int exprid, MathLib::bigint* result) cons
     return false;
 }
 
-void ProgramMemory::setIntValue(nonneg int exprid, MathLib::bigint value, bool impossible)
+void ProgramMemory::setIntValue(const Token* expr, MathLib::bigint value, bool impossible)
 {
     ValueFlow::Value v(value);
     if (impossible)
         v.setImpossible();
-    values[exprid] = v;
+    mValues[expr] = v;
 }
 
 bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
@@ -57,6 +91,7 @@ bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
     return false;
 }
 
+// cppcheck-suppress unusedFunction
 bool ProgramMemory::getContainerSizeValue(nonneg int exprid, MathLib::bigint* result) const
 {
     const ValueFlow::Value* value = getValue(exprid);
@@ -82,81 +117,95 @@ bool ProgramMemory::getContainerEmptyValue(nonneg int exprid, MathLib::bigint* r
     return false;
 }
 
-void ProgramMemory::setContainerSizeValue(nonneg int exprid, MathLib::bigint value, bool isEqual)
+void ProgramMemory::setContainerSizeValue(const Token* expr, MathLib::bigint value, bool isEqual)
 {
     ValueFlow::Value v(value);
     v.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
     if (!isEqual)
         v.valueKind = ValueFlow::Value::ValueKind::Impossible;
-    values[exprid] = v;
+    mValues[expr] = v;
 }
 
-void ProgramMemory::setUnknown(nonneg int exprid)
-{
-    values[exprid].valueType = ValueFlow::Value::ValueType::UNINIT;
+void ProgramMemory::setUnknown(const Token* expr) {
+    mValues[expr].valueType = ValueFlow::Value::ValueType::UNINIT;
 }
 
 bool ProgramMemory::hasValue(nonneg int exprid)
 {
-    return values.find(exprid) != values.end();
+    return mValues.find(exprid) != mValues.end();
+}
+
+const ValueFlow::Value& ProgramMemory::at(nonneg int exprid) const {
+    return mValues.at(exprid);
+}
+ValueFlow::Value& ProgramMemory::at(nonneg int exprid) {
+    return mValues.at(exprid);
+}
+
+void ProgramMemory::erase_if(const std::function<bool(const ExprIdToken&)>& pred)
+{
+    for (auto it = mValues.begin(); it != mValues.end();) {
+        if (pred(it->first))
+            it = mValues.erase(it);
+        else
+            ++it;
+    }
 }
 
 void ProgramMemory::swap(ProgramMemory &pm)
 {
-    values.swap(pm.values);
+    mValues.swap(pm.mValues);
 }
 
 void ProgramMemory::clear()
 {
-    values.clear();
+    mValues.clear();
 }
 
 bool ProgramMemory::empty() const
 {
-    return values.empty();
+    return mValues.empty();
 }
 
 void ProgramMemory::replace(const ProgramMemory &pm)
 {
-    for (auto&& p : pm.values) {
-        values[p.first] = p.second;
+    for (auto&& p : pm.mValues) {
+        mValues[p.first] = p.second;
     }
 }
 
 void ProgramMemory::insert(const ProgramMemory &pm)
 {
-    for (auto&& p:pm.values)
-        values.insert(p);
+    for (auto&& p : pm)
+        mValues.insert(p);
 }
 
-bool conditionIsFalse(const Token *condition, const ProgramMemory &programMemory)
+static bool evaluateCondition(const std::string& op,
+                              MathLib::bigint r,
+                              const Token* condition,
+                              ProgramMemory& pm,
+                              const Settings* settings)
 {
     if (!condition)
         return false;
-    if (condition->str() == "&&") {
-        return conditionIsFalse(condition->astOperand1(), programMemory) ||
-               conditionIsFalse(condition->astOperand2(), programMemory);
+    if (condition->str() == op) {
+        return evaluateCondition(op, r, condition->astOperand1(), pm, settings) ||
+               evaluateCondition(op, r, condition->astOperand2(), pm, settings);
     }
-    ProgramMemory progmem(programMemory);
     MathLib::bigint result = 0;
     bool error = false;
-    execute(condition, &progmem, &result, &error);
-    return !error && result == 0;
+    execute(condition, &pm, &result, &error, settings);
+    return !error && result == r;
 }
 
-bool conditionIsTrue(const Token *condition, const ProgramMemory &programMemory)
+bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings)
 {
-    if (!condition)
-        return false;
-    if (condition->str() == "||") {
-        return conditionIsTrue(condition->astOperand1(), programMemory) ||
-               conditionIsTrue(condition->astOperand2(), programMemory);
-    }
-    ProgramMemory progmem(programMemory);
-    bool error = false;
-    MathLib::bigint result = 0;
-    execute(condition, &progmem, &result, &error);
-    return !error && result == 1;
+    return evaluateCondition("&&", 0, condition, pm, settings);
+}
+
+bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings)
+{
+    return evaluateCondition("||", 1, condition, pm, settings);
 }
 
 static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
@@ -192,11 +241,12 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return;
         if (endTok && isExpressionChanged(vartok, tok->next(), endTok, settings, true))
             return;
-        bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
-        pm.setIntValue(vartok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue, impossible);
+        const bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
+        const ValueFlow::Value& v = then ? truevalue : falsevalue;
+        pm.setValue(vartok, impossible ? asImpossible(v) : v);
         const Token* containerTok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
         if (containerTok)
-            pm.setContainerSizeValue(containerTok->exprId(), then ? truevalue.intvalue : falsevalue.intvalue, !impossible);
+            pm.setContainerSizeValue(containerTok, v.intvalue, !impossible);
     } else if (Token::simpleMatch(tok, "!")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, !then);
     } else if (then && Token::simpleMatch(tok, "&&")) {
@@ -215,14 +265,12 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
                 programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, then);
         }
     } else if (tok->exprId() > 0) {
-        if (then && !astIsPointer(tok) && !astIsBool(tok))
-            return;
         if (endTok && isExpressionChanged(tok, tok->next(), endTok, settings, true))
             return;
-        pm.setIntValue(tok->exprId(), then);
+        pm.setIntValue(tok, 0, then);
         const Token* containerTok = settings->library.getContainerFromYield(tok, Library::Container::Yield::EMPTY);
         if (containerTok)
-            pm.setContainerSizeValue(containerTok->exprId(), 0, then);
+            pm.setContainerSizeValue(containerTok, 0, then);
     }
 }
 
@@ -265,7 +313,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                     continue;
                 if (vartok == tok)
                     continue;
-                pm.setValue(vartok->exprId(), p.second);
+                pm.setValue(vartok, p.second);
                 setvar = true;
             }
             if (!setvar) {
@@ -274,14 +322,14 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                     bool error = false;
                     execute(valuetok, &pm, &result, &error);
                     if (!error)
-                        pm.setIntValue(vartok->exprId(), result);
+                        pm.setIntValue(vartok, result);
                     else
-                        pm.setUnknown(vartok->exprId());
+                        pm.setUnknown(vartok);
                 }
             }
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
                    isVariableChanged(tok2, 0, nullptr, true)) {
-            pm.setUnknown(tok2->exprId());
+            pm.setUnknown(tok2);
         }
 
         if (tok2->str() == "{") {
@@ -318,13 +366,9 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
 
 static void removeModifiedVars(ProgramMemory& pm, const Token* tok, const Token* origin)
 {
-    for (auto i = pm.values.begin(), last = pm.values.end(); i != last;) {
-        if (isVariableChanged(origin, tok, i->first, false, nullptr, true)) {
-            i = pm.values.erase(i);
-        } else {
-            ++i;
-        }
-    }
+    pm.erase_if([&](const ExprIdToken& e) {
+        return isVariableChanged(origin, tok, e.getExpressionId(), false, nullptr, true);
+    });
 }
 
 static ProgramMemory getInitialProgramState(const Token* tok,
@@ -346,32 +390,35 @@ ProgramMemoryState::ProgramMemoryState(const Settings* s) : state(), origins(), 
 void ProgramMemoryState::insert(const ProgramMemory &pm, const Token* origin)
 {
     if (origin)
-        for (auto&& p:pm.values)
-            origins.insert(std::make_pair(p.first, origin));
+        for (auto&& p : pm)
+            origins.insert(std::make_pair(p.first.getExpressionId(), origin));
     state.insert(pm);
 }
 
 void ProgramMemoryState::replace(const ProgramMemory &pm, const Token* origin)
 {
     if (origin)
-        for (auto&& p:pm.values)
-            origins[p.first] = origin;
+        for (auto&& p : pm)
+            origins[p.first.getExpressionId()] = origin;
     state.replace(pm);
+}
+
+static void addVars(ProgramMemory& pm, const ProgramMemory::Map& vars)
+{
+    for (const auto& p:vars) {
+        const ValueFlow::Value &value = p.second;
+        pm.setValue(p.first.tok, value);
+    }
 }
 
 void ProgramMemoryState::addState(const Token* tok, const ProgramMemory::Map& vars)
 {
     ProgramMemory pm = state;
-    for (const auto& p:vars) {
-        nonneg int exprid = p.first;
-        const ValueFlow::Value &value = p.second;
-        pm.setValue(exprid, value);
-        if (value.varId)
-            pm.setIntValue(value.varId, value.varvalue);
-    }
+    addVars(pm, vars);
     fillProgramMemoryFromConditions(pm, tok, settings);
     ProgramMemory local = pm;
     fillProgramMemoryFromAssignments(pm, tok, local, vars);
+    addVars(pm, vars);
     replace(pm, tok);
 }
 
@@ -379,7 +426,7 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 {
     ProgramMemory pm = state;
     if (isEmpty)
-        pm.setContainerSizeValue(tok->exprId(), 0, b);
+        pm.setContainerSizeValue(tok, 0, b);
     else
         programMemoryParseCondition(pm, tok, nullptr, settings, b);
     const Token* origin = tok;
@@ -391,16 +438,15 @@ void ProgramMemoryState::assume(const Token* tok, bool b, bool isEmpty)
 
 void ProgramMemoryState::removeModifiedVars(const Token* tok)
 {
-    for (auto i = state.values.begin(), last = state.values.end(); i != last;) {
-        const Token* start = origins[i->first];
-        const Token* expr = findExpression(start ? start : tok, i->first);
+    state.erase_if([&](const ExprIdToken& e) {
+        const Token* start = origins[e.getExpressionId()];
+        const Token* expr = e.tok;
         if (!expr || isExpressionChanged(expr, start, tok, settings, true)) {
-            origins.erase(i->first);
-            i = state.values.erase(i);
-        } else {
-            ++i;
+            origins.erase(e.getExpressionId());
+            return true;
         }
-    }
+        return false;
+    });
 }
 
 ProgramMemory ProgramMemoryState::get(const Token* tok, const Token* ctx, const ProgramMemory::Map& vars) const
@@ -432,28 +478,23 @@ ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars)
     fillProgramMemoryFromConditions(programMemory, tok, nullptr);
     ProgramMemory state;
     for (const auto& p:vars) {
-        nonneg int exprid = p.first;
         const ValueFlow::Value &value = p.second;
-        programMemory.setValue(exprid, value);
-        if (value.varId)
-            programMemory.setIntValue(value.varId, value.varvalue);
+        programMemory.setValue(p.first.tok, value);
     }
     state = programMemory;
     fillProgramMemoryFromAssignments(programMemory, tok, state, vars);
     return programMemory;
 }
 
-ProgramMemory getProgramMemory(const Token* tok, nonneg int exprid, const ValueFlow::Value& value, const Settings *settings)
+ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings)
 {
     ProgramMemory programMemory;
     programMemory.replace(getInitialProgramState(tok, value.tokvalue));
     programMemory.replace(getInitialProgramState(tok, value.condition));
     fillProgramMemoryFromConditions(programMemory, tok, settings);
-    programMemory.setValue(exprid, value);
-    if (value.varId)
-        programMemory.setIntValue(value.varId, value.varvalue);
+    programMemory.setValue(expr, value);
     const ProgramMemory state = programMemory;
-    fillProgramMemoryFromAssignments(programMemory, tok, state, {{exprid, value}});
+    fillProgramMemoryFromAssignments(programMemory, tok, state, {{expr, value}});
     return programMemory;
 }
 
@@ -521,7 +562,9 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     return result;
 }
 
-static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
+static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
+
+static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const Settings* settings)
 {
     ValueFlow::Value unknown = ValueFlow::Value::unknown();
     const ValueFlow::Value* value = nullptr;
@@ -563,7 +606,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         if (expr->str() != "=") {
             if (!pm.hasValue(expr->astOperand1()->exprId()))
                 return unknown;
-            ValueFlow::Value& lhs = pm.values.at(expr->astOperand1()->exprId());
+            ValueFlow::Value& lhs = pm.at(expr->astOperand1()->exprId());
             rhs = evaluate(removeAssign(expr->str()), lhs, rhs);
             if (lhs.isIntValue())
                 ValueFlow::Value::visitValue(rhs, std::bind(assign{}, std::ref(lhs.intvalue), std::placeholders::_1));
@@ -573,7 +616,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
                 return unknown;
             return lhs;
         } else {
-            pm.values[expr->astOperand1()->exprId()] = rhs;
+            pm.setValue(expr->astOperand1(), rhs);
             return rhs;
         }
     } else if (expr->str() == "&&" && expr->astOperand1() && expr->astOperand2()) {
@@ -596,7 +639,7 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
     } else if (Token::Match(expr, "++|--") && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
         if (!pm.hasValue(expr->astOperand1()->exprId()))
             return unknown;
-        ValueFlow::Value& lhs = pm.values.at(expr->astOperand1()->exprId());
+        ValueFlow::Value& lhs = pm.at(expr->astOperand1()->exprId());
         if (!lhs.isIntValue())
             return unknown;
         // overflow
@@ -637,14 +680,18 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
         if (!lhs.isUninitValue() && !rhs.isUninitValue())
             return evaluate(expr->str(), lhs, rhs);
         if (expr->isComparisonOp()) {
-            if (rhs.isIntValue() && !rhs.isImpossible()) {
-                ValueFlow::Value v = inferCondition(expr->str(), expr->astOperand1(), rhs.intvalue);
-                if (v.isKnown())
-                    return v;
-            } else if (lhs.isIntValue() && !lhs.isImpossible()) {
-                ValueFlow::Value v = inferCondition(expr->str(), lhs.intvalue, expr->astOperand2());
-                if (v.isKnown())
-                    return v;
+            if (rhs.isIntValue()) {
+                std::vector<ValueFlow::Value> result =
+                    infer(makeIntegralInferModel(), expr->str(), expr->astOperand1()->values(), {rhs});
+                if (result.empty() || !result.front().isKnown())
+                    return unknown;
+                return result.front();
+            } else if (lhs.isIntValue()) {
+                std::vector<ValueFlow::Value> result =
+                    infer(makeIntegralInferModel(), expr->str(), {lhs}, expr->astOperand2()->values());
+                if (result.empty() || !result.front().isKnown())
+                    return unknown;
+                return result.front();
             }
         }
     }
@@ -674,17 +721,127 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm)
             return execute(expr->astOperand1(), pm);
     }
     if (expr->exprId() > 0 && pm.hasValue(expr->exprId())) {
-        return pm.values.at(expr->exprId());
+        ValueFlow::Value result = pm.at(expr->exprId());
+        if (result.isImpossible() && result.isIntValue() && result.intvalue == 0 && isUsedAsBool(expr)) {
+            result.intvalue = !result.intvalue;
+            result.setKnown();
+        }
+        return result;
+    }
+
+    if (Token::Match(expr->previous(), ">|%name% {|(")) {
+        const Token* ftok = expr->previous();
+        const Function* f = ftok->function();
+        // TODO: Evaluate inline functions as well
+        if (!f && settings && expr->str() == "(") {
+            std::unordered_map<nonneg int, ValueFlow::Value> args;
+            int argn = 0;
+            for (const Token* tok : getArguments(expr)) {
+                ValueFlow::Value result = execute(tok, pm, settings);
+                if (!result.isUninitValue())
+                    args[argn] = result;
+                argn++;
+            }
+            // strlen is a special builtin
+            if (Token::simpleMatch(ftok, "strlen")) {
+                if (args.count(0) > 0) {
+                    ValueFlow::Value v = args.at(0);
+                    if (v.isTokValue() && v.tokvalue->tokType() == Token::eString) {
+                        v.valueType = ValueFlow::Value::ValueType::INT;
+                        v.intvalue = Token::getStrLength(v.tokvalue);
+                        v.tokvalue = nullptr;
+                        return v;
+                    }
+                }
+            } else {
+                const std::string& returnValue = settings->library.returnValue(ftok);
+                if (!returnValue.empty())
+                    return evaluateLibraryFunction(args, returnValue, settings);
+            }
+        }
+        // Check if functon modifies argument
+        visitAstNodes(expr->astOperand2(), [&](const Token* child) {
+            if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
+                ValueFlow::Value& v = pm.at(child->exprId());
+                if (v.valueType == ValueFlow::Value::ValueType::CONTAINER_SIZE) {
+                    if (isContainerSizeChanged(child, settings))
+                        v = unknown;
+                } else if (v.valueType != ValueFlow::Value::ValueType::UNINIT) {
+                    if (isVariableChanged(child, v.indirect, settings, true))
+                        v = unknown;
+                }
+            }
+            return ChildrenToVisit::op1_and_op2;
+        });
     }
 
     return unknown;
 }
 
-void execute(const Token* expr, ProgramMemory* const programMemory, MathLib::bigint* result, bool* error)
+static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings)
 {
-    ValueFlow::Value v = execute(expr, *programMemory);
-    if (!v.isIntValue() || v.isImpossible())
-        *error = true;
-    else
+    ValueFlow::Value v = executeImpl(expr, pm, settings);
+    if (!v.isUninitValue())
+        return v;
+    if (!expr)
+        return v;
+    if (pm.hasValue(expr->exprId()))
+        return pm.at(expr->exprId());
+    // Find symbolic values
+    for (const ValueFlow::Value& value : expr->values()) {
+        if (!value.isSymbolicValue())
+            continue;
+        // TODO: Handle possible symbolic values
+        if (!value.isKnown())
+            continue;
+        if (!pm.hasValue(value.tokvalue->exprId()))
+            continue;
+        ValueFlow::Value v2 = pm.at(value.tokvalue->exprId());
+        v2.intvalue += value.intvalue;
+        v2.valueKind = value.valueKind;
+        return v2;
+    }
+    return v;
+}
+
+ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
+                                         const std::string& returnValue,
+                                         const Settings* settings)
+{
+    static std::unordered_map<std::string,
+                              std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>>
+    functions = {};
+    if (functions.count(returnValue) == 0) {
+
+        std::unordered_map<nonneg int, const Token*> lookupVarId;
+        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, &lookupVarId);
+
+        functions[returnValue] =
+            [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {
+            if (!expr)
+                return ValueFlow::Value::unknown();
+            ProgramMemory pm{};
+            for (const auto& p : xargs) {
+                auto it = lookupVarId.find(p.first);
+                if (it != lookupVarId.end())
+                    pm.setValue(it->second, p.second);
+            }
+            return execute(expr.get(), pm, settings);
+        };
+    }
+    return functions.at(returnValue)(args);
+}
+
+void execute(const Token* expr,
+             ProgramMemory* const programMemory,
+             MathLib::bigint* result,
+             bool* error,
+             const Settings* settings)
+{
+    ValueFlow::Value v = execute(expr, *programMemory, settings);
+    if (!v.isIntValue() || v.isImpossible()) {
+        if (error)
+            *error = true;
+    } else if (result)
         *result = v.intvalue;
 }

@@ -15,10 +15,12 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.16"
+CLIENT_VERSION = "1.3.22"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
+
+CPPCHECK_REPO_URL = "https://github.com/danmar/cppcheck.git"
 
 # Return code that is used to mark a timed out analysis
 RETURN_CODE_TIMEOUT = -999
@@ -32,45 +34,74 @@ def check_requirements():
         except OSError:
             print("Error: '{}' is required".format(app))
             result = False
+    try:
+        import psutil
+    except ImportError as e:
+        print("Error: {}. Module is required.".format(e))
+        result = False
     return result
 
 
-def get_cppcheck(cppcheck_path, work_path):
-    print('Get Cppcheck..')
-    for i in range(5):
-        if os.path.exists(cppcheck_path):
-            try:
-                os.chdir(cppcheck_path)
-                try:
-                    subprocess.check_call(['git', 'checkout', '-f', 'main'])
-                except subprocess.CalledProcessError:
-                    subprocess.check_call(['git', 'checkout', '-f', 'master'])
-                    subprocess.check_call(['git', 'pull'])
-                    subprocess.check_call(['git', 'checkout', 'origin/main', '-b', 'main'])
-                subprocess.check_call(['git', 'pull'])
-            except:
-                print('Failed to update Cppcheck sources! Retrying..')
-                time.sleep(10)
-                continue
-        else:
-            try:
-                subprocess.check_call(['git', 'clone', 'https://github.com/danmar/cppcheck.git', cppcheck_path])
-            except:
-                print('Failed to clone, will try again in 10 minutes..')
-                time.sleep(600)
-                continue
-        time.sleep(2)
-        return True
-    if os.path.exists(cppcheck_path):
-        print('Failed to update Cppcheck sources, trying a fresh clone..')
+# Try and retry with exponential backoff if an exception is raised
+def try_retry(fun, fargs=(), max_tries=5):
+    sleep_duration = 5.0
+    for i in range(max_tries):
         try:
-            os.chdir(work_path)
-            shutil.rmtree(cppcheck_path)
-            get_cppcheck(cppcheck_path, work_path)
-        except:
-            print('Failed to remove Cppcheck folder, please manually remove ' + work_path)
-            return False
-    return False
+            return fun(*fargs)
+        except KeyboardInterrupt as e:
+            # Do not retry in case of user abort
+            raise e
+        except BaseException as e:
+            if i < max_tries - 1:
+                print("{} in {}: {}".format(type(e).__name__, fun.__name__, str(e)))
+                print("Trying {} again in {} seconds".format(fun.__name__, sleep_duration))
+                time.sleep(sleep_duration)
+                sleep_duration *= 2.0
+            else:
+                print("Maximum number of tries reached for {}".format(fun.__name__))
+                raise e
+
+
+def clone_cppcheck(repo_path, migrate_from_path):
+    repo_git_dir = os.path.join(repo_path, '.git')
+    if os.path.exists(repo_git_dir):
+        return
+    # Attempt to migrate clone directory used prior to 1.3.17
+    if os.path.exists(migrate_from_path):
+        os.rename(migrate_from_path, repo_path)
+    else:
+        # A shallow git clone (depth = 1) is enough for building and scanning.
+        # Do not checkout until fetch_cppcheck_version.
+        subprocess.check_call(['git', 'clone', '--depth=1', '--no-checkout', CPPCHECK_REPO_URL, repo_path])
+        # Checkout an empty branch to allow "git worktree add" for main later on
+    try:
+        # git >= 2.27
+        subprocess.check_call(['git', 'switch', '--orphan', 'empty'], cwd=repo_path)
+    except subprocess.CalledProcessError:
+        subprocess.check_call(['git', 'checkout', '--orphan', 'empty'], cwd=repo_path)
+
+
+def checkout_cppcheck_version(repo_path, version, cppcheck_path):
+    if not os.path.isabs(cppcheck_path):
+        raise ValueError("cppcheck_path is not an absolute path")
+    if os.path.exists(cppcheck_path):
+        print('Checking out {}'.format(version))
+        subprocess.check_call(['git', 'checkout', '-f', version], cwd=cppcheck_path)
+
+        # It is possible to pull branches, not tags
+        if version != 'main':
+            return
+
+        print('Pulling {}'.format(version))
+        subprocess.check_call(['git', 'pull'], cwd=cppcheck_path)
+    else:
+        if version != 'main':
+            print('Fetching {}'.format(version))
+            # Since this is a shallow clone, explicitly fetch the remote version tag
+            refspec = 'refs/tags/' + version + ':ref/tags/' + version
+            subprocess.check_call(['git', 'fetch', '--depth=1', 'origin', refspec], cwd=repo_path)
+        print('Adding worktree \'{}\' for {}'.format(cppcheck_path, version))
+        subprocess.check_call(['git', 'worktree', 'add', cppcheck_path,  version], cwd=repo_path)
 
 
 def get_cppcheck_info(cppcheck_path):
@@ -81,33 +112,27 @@ def get_cppcheck_info(cppcheck_path):
         return ''
 
 
-def compile_version(work_path, jobs, version):
-    if os.path.isfile(work_path + '/' + version + '/cppcheck'):
+def compile_version(cppcheck_path, jobs):
+    if os.path.isfile(os.path.join(cppcheck_path, 'cppcheck')):
         return True
-    os.chdir(work_path + '/cppcheck')
-    subprocess.call(['git', 'checkout', version])
-    subprocess.call(['make', 'clean'])
-    subprocess.call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g'])
-    if os.path.isfile(work_path + '/cppcheck/cppcheck'):
-        os.mkdir(work_path + '/' + version)
-        dest_path = work_path + '/' + version + '/'
-        subprocess.call(['cp', '-R', work_path + '/cppcheck/cfg', dest_path])
-        subprocess.call(['cp', 'cppcheck', dest_path])
-    subprocess.call(['git', 'checkout', 'main'])
-    try:
-        subprocess.call([work_path + '/' + version + '/cppcheck', '--version'])
-    except OSError:
-        return False
-    return True
+    # Build
+    ret = compile_cppcheck(cppcheck_path, jobs)
+    # Clean intermediate build files
+    subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', 'cppcheck'], cwd=cppcheck_path)
+    return ret
 
 
 def compile_cppcheck(cppcheck_path, jobs):
-    print('Compiling Cppcheck..')
+    print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
         os.chdir(cppcheck_path)
-        subprocess.call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g'])
-        subprocess.call([cppcheck_path + '/cppcheck', '--version'])
-    except OSError:
+        if sys.platform == 'win32':
+            subprocess.call(['MSBuild.exe', cppcheck_path + '/cppcheck.sln', '/property:Configuration=Release', '/property:Platform=x64'])
+            subprocess.call([cppcheck_path + '/bin/cppcheck.exe', '--version'])
+        else:
+            subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
+            subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
+    except:
         return False
     return True
 
@@ -157,7 +182,7 @@ def get_package(server_address, package_index=None):
     return package.decode('utf-8')
 
 
-def handle_remove_readonly(func, path, exc):
+def __handle_remove_readonly(func, path, exc):
     import stat
     if not os.access(path, os.W_OK):
         # Is the error an access error ?
@@ -165,14 +190,14 @@ def handle_remove_readonly(func, path, exc):
         func(path)
 
 
-def remove_tree(folder_name):
+def __remove_tree(folder_name):
     if not os.path.exists(folder_name):
         return
     count = 5
     while count > 0:
         count -= 1
         try:
-            shutil.rmtree(folder_name, onerror=handle_remove_readonly)
+            shutil.rmtree(folder_name, onerror=__handle_remove_readonly)
             break
         except OSError as err:
             time.sleep(30)
@@ -181,7 +206,7 @@ def remove_tree(folder_name):
                 sys.exit(1)
 
 
-def wget(url, destfile, bandwidth_limit):
+def __wget(url, destfile, bandwidth_limit):
     if os.path.exists(destfile):
         if os.path.isfile(destfile):
             os.remove(destfile)
@@ -203,29 +228,34 @@ def wget(url, destfile, bandwidth_limit):
 
 def download_package(work_path, package, bandwidth_limit):
     print('Download package ' + package)
-    destfile = work_path + '/temp.tgz'
-    if not wget(package, destfile, bandwidth_limit):
+    destfile = os.path.join(work_path, 'temp.tgz')
+    if not __wget(package, destfile, bandwidth_limit):
         return None
     return destfile
 
 
-def unpack_package(work_path, tgz):
+def unpack_package(work_path, tgz, cpp_only=False):
     print('Unpacking..')
-    temp_path = work_path + '/temp'
-    remove_tree(temp_path)
+    temp_path = os.path.join(work_path, 'temp')
+    __remove_tree(temp_path)
     os.mkdir(temp_path)
     found = False
     if tarfile.is_tarfile(tgz):
         with tarfile.open(tgz) as tf:
             for member in tf:
+                header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
+                source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
+                c_source_endings = ('.c',)
+                if not cpp_only:
+                    source_endings = source_endings + c_source_endings
                 if member.name.startswith(('/', '..')):
                     # Skip dangerous file names
                     continue
-                elif member.name.lower().endswith(('.c', '.cpp', '.cxx', '.cc', '.c++', '.h', '.hpp',
-                                                   '.h++', '.hxx', '.hh', '.tpp', '.txx', '.ipp', '.ixx', '.qml')):
+                elif member.name.lower().endswith(header_endings + source_endings):
                     try:
                         tf.extract(member.name, temp_path)
-                        found = True
+                        if member.name.lower().endswith(source_endings):
+                            found = True
                     except OSError:
                         pass
                     except AttributeError:
@@ -233,7 +263,7 @@ def unpack_package(work_path, tgz):
     return found
 
 
-def has_include(path, includes):
+def __has_include(path, includes):
     re_includes = [re.escape(inc) for inc in includes]
     re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
     for root, _, files in os.walk(path):
@@ -249,11 +279,15 @@ def has_include(path, includes):
     return False
 
 
-def run_command(cmd):
-    print(cmd)
+def __run_command(cmd, print_cmd=True):
+    if print_cmd:
+        print(cmd)
     start_time = time.time()
     comm = None
-    p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+    if sys.platform == 'win32':
+        p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    else:
+        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
@@ -283,7 +317,7 @@ def run_command(cmd):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, jobs, libraries):
+def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack=True):
     print('Analyze..')
     os.chdir(work_path)
     libs = ''
@@ -297,9 +331,13 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --template=daca2'
     options += ' -D__GNUC__ --platform=unix64'
     options += ' -rp={}'.format(dir_to_scan)
-    cppcheck_cmd = cppcheck_path + '/cppcheck' + ' ' + options
-    cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
-    returncode, stdout, stderr, elapsed_time = run_command(cmd)
+    if sys.platform == 'win32':
+        cppcheck_cmd = cppcheck_path + '/bin/cppcheck.exe ' + options
+        cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+    else:
+        cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options
+        cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+    returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
     # collect messages
     information_messages_list = []
@@ -348,9 +386,11 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
             break
     print('cppcheck finished with ' + str(returncode) + ('' if sig_num == -1 else ' (signal ' + str(sig_num) + ')'))
 
+    options_j = options + ' ' + jobs
+
     if returncode == RETURN_CODE_TIMEOUT:
         print('Timeout!')
-        return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options, ''
+        return returncode, ''.join(internal_error_messages_list), '', elapsed_time, options_j, ''
 
     # generate stack trace for SIGSEGV, SIGABRT, SIGILL, SIGFPE, SIGBUS
     has_error = returncode in (-11, -6, -4, -8, -7)
@@ -361,14 +401,14 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
         if has_sig:
             returncode = -sig_num
         stacktrace = ''
-        if cppcheck_path == 'cppcheck':
+        if capture_callstack:
             # re-run within gdb to get a stacktrace
             cmd = 'gdb --batch --eval-command=run --eval-command="bt 50" --return-child-result --args ' + cppcheck_cmd + " -j1 "
             if sig_file is not None:
                 cmd += sig_file
             else:
                 cmd += dir_to_scan
-            _, st_stdout, _, _ = run_command(cmd)
+            _, st_stdout, _, _ = __run_command(cmd)
             gdb_pos = st_stdout.find(" received signal")
             if not gdb_pos == -1:
                 last_check_pos = st_stdout.rfind('Checking ', 0, gdb_pos)
@@ -382,28 +422,28 @@ def scan_package(work_path, cppcheck_path, jobs, libraries):
                 stacktrace = ''.join(internal_error_messages_list)
             else:
                 stacktrace = stdout
-        return returncode, stacktrace, '', returncode, options, ''
+        return returncode, stacktrace, '', returncode, options_j, ''
 
     if returncode != 0:
         # returncode is always 1 when this message is written
         thr_pos = stderr.find('#### ThreadExecutor')
         if thr_pos != -1:
             print('Thread!')
-            return -222, stderr[thr_pos:], '', -222, options, ''
+            return -222, stderr[thr_pos:], '', -222, options_j, ''
 
         print('Error!')
         if returncode > 0:
             returncode = -100-returncode
-        return returncode, stdout, '', returncode, options, ''
+        return returncode, stdout, '', returncode, options_j, ''
 
     if sig_num != -1:
         print('Signal!')
-        return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options, ''
+        return -sig_num, ''.join(internal_error_messages_list), '', -sig_num, options_j, ''
 
-    return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options, timing_str
+    return count, ''.join(issue_messages_list), ''.join(information_messages_list), elapsed_time, options_j, timing_str
 
 
-def split_results(results):
+def __split_results(results):
     ret = []
     w = None
     for line in results.split('\n'):
@@ -421,8 +461,8 @@ def split_results(results):
 def diff_results(ver1, results1, ver2, results2):
     print('Diff results..')
     ret = ''
-    r1 = sorted(split_results(results1))
-    r2 = sorted(split_results(results2))
+    r1 = sorted(__split_results(results1))
+    r2 = sorted(__split_results(results2))
     i1 = 0
     i2 = 0
     while i1 < len(r1) and i2 < len(r2):
@@ -445,7 +485,7 @@ def diff_results(ver1, results1, ver2, results2):
     return ret
 
 
-def send_all(connection, data):
+def __send_all(connection, data):
     bytes_ = data.encode('ascii', 'ignore')
     while bytes_:
         num = connection.send(bytes_)
@@ -463,7 +503,7 @@ def upload_results(package, results, server_address):
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.connect(server_address)
                 cmd = 'write\n'
-                send_all(sock, cmd + package + '\n' + results + '\nDONE')
+                __send_all(sock, cmd + package + '\n' + results + '\nDONE')
             print('Results have been successfully uploaded.')
             return True
         except socket.error as err:
@@ -482,7 +522,7 @@ def upload_info(package, info_output, server_address):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
                 sock.connect(server_address)
-                send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
+                __send_all(sock, 'write_info\n' + package + '\n' + info_output + '\nDONE')
             print('Information output has been successfully uploaded.')
             return True
         except socket.error as err:
@@ -531,13 +571,13 @@ def get_libraries():
                        'zlib': ['<zlib.h>'],
                       }
     for library, includes in library_includes.items():
-        if has_include('temp', includes):
+        if __has_include('temp', includes):
             libraries.append(library)
     return libraries
 
 
 def get_compiler_version():
-    _, stdout, _, _ = run_command('g++ --version')
+    _, stdout, _, _ = __run_command('g++ --version', False)
     return stdout.split('\n')[0]
 
 

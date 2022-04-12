@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,14 +18,24 @@
 
 
 #include "checkleakautovar.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <simplecpp.h>
-#include <tinyxml2.h>
+#include <iosfwd>
+#include <map>
+#include <string>
+#include <utility>
 #include <vector>
+
+#include <simplecpp.h>
+
+#include <tinyxml2.h>
+
+class TestLeakAutoVarStrcpy;
+class TestLeakAutoVarWindows;
 
 class TestLeakAutoVar : public TestFixture {
 public:
@@ -34,7 +44,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         int id = 0;
         while (!Library::ismemory(++id));
         settings.library.setalloc("malloc", id, -1);
@@ -101,6 +111,7 @@ private:
         TEST_CASE(deallocuse6); // #4034: FP. x = p = f();
         TEST_CASE(deallocuse7); // #6467, #6469, #6473
         TEST_CASE(deallocuse8); // #1765
+        TEST_CASE(deallocuse9); // #9781
 
         TEST_CASE(doublefree1);
         TEST_CASE(doublefree2);
@@ -113,6 +124,7 @@ private:
         TEST_CASE(doublefree9);
         TEST_CASE(doublefree10); // #8706
         TEST_CASE(doublefree11);
+        TEST_CASE(doublefree12); // #10502
 
         // exit
         TEST_CASE(exit1);
@@ -149,6 +161,8 @@ private:
         TEST_CASE(ifelse20); // #10182
         TEST_CASE(ifelse21);
         TEST_CASE(ifelse22); // #10187
+        TEST_CASE(ifelse23); // #5473
+        TEST_CASE(ifelse24); // #1733
 
         // switch
         TEST_CASE(switch1);
@@ -171,6 +185,7 @@ private:
         TEST_CASE(return6); // #8282 return {p, p}
         TEST_CASE(return7); // #9343 return (uint8_t*)x
         TEST_CASE(return8);
+        TEST_CASE(return9);
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -201,14 +216,15 @@ private:
         TEST_CASE(functionCallCastConfig); // #9652
     }
 
-    void check(const char code[], bool cpp = false) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], bool cpp = false) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, cpp?"test.cpp":"test.c");
+        ASSERT_LOC(tokenizer.tokenize(istr, cpp ? "test.cpp" : "test.c"), file, line);
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -217,14 +233,14 @@ private:
         c.runChecks(&tokenizer, &settings, this);
     }
 
-    void check(const char code[], Settings & settings_) {
+    void check_(const char* file, int line, const char code[], Settings & settings_) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings_, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for leaks..
         CheckLeakAutoVar c;
@@ -470,6 +486,12 @@ private:
               "    TestType *tt = new TestType();\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:7]: (error) Memory leak: tt\n", errout.str());
+
+        check("void f(Bar& b) {\n" // #7622
+              "    char* data = new char[10];\n"
+              "    b = Bar(*new Foo(data));\n"
+              "}", /*cpp*/ true);
+        ASSERT_EQUALS("[test.cpp:4]: (information) --check-library: Function Foo() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 
     void realloc1() {
@@ -687,6 +709,25 @@ private:
               "    *ptr = 0;\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", errout.str());
+    }
+
+    void deallocuse9() {
+        check("void f(Type* p) {\n" // #9781
+              "  std::shared_ptr<Type> sp(p);\n"
+              "  bool b = p->foo();\n"
+              "  return b;\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n" // #8635
+              "    std::vector<std::unique_ptr<A>> array_;\n"
+              "    A* foo() {\n"
+              "        A* a = new A();\n"
+              "        array_.push_back(std::unique_ptr<A>(a));\n"
+              "        return a;\n"
+              "    }\n"
+              "};\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree1() {  // #3895
@@ -1276,6 +1317,16 @@ private:
         ASSERT_EQUALS("[test.c:3] -> [test.c:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
     }
 
+    void doublefree12() { // #10502
+        check("int f(FILE *fp, const bool b) {\n"
+              "    if (b)\n"
+              "        return fclose(fp);\n"
+              "    fclose(fp);\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -1672,6 +1723,61 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void ifelse23() { // #5473
+        check("void f() {\n"
+              "    if (FILE* fp = fopen(\"x\", \"r\")) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.c:2]: (error) Resource leak: fp\n", errout.str());
+    }
+
+    void ifelse24() { // #1733
+        Settings s;
+        LOAD_LIB_2(s.library, "std.cfg");
+        LOAD_LIB_2(s.library, "posix.cfg");
+
+        check("void f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp;\n"
+              "    if (NULL == x || NULL == (fp = fopen(temp, \"rt\")))\n"
+              "        return;\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: temp\n"
+                      "[test.cpp:6]: (error) Memory leak: temp\n"
+                      "[test.cpp:6]: (error) Resource leak: fp\n",
+                      errout.str());
+
+        check("FILE* f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp = fopen(temp, \"rt\");\n"
+              "    return fp;\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: temp\n", errout.str());
+
+        check("FILE* f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp = NULL;\n"
+              "    fopen_s(&fp, temp, \"rt\");\n"
+              "    return fp;\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: temp\n", errout.str());
+
+        check("void f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    FILE* fp = fopen(\"a.txt\", \"rb\");\n"
+              "    if (fp)\n"
+              "        freopen(temp, \"rt\", fp);\n"
+              "}\n", s);
+        ASSERT_EQUALS("[test.cpp:6]: (error) Memory leak: temp\n"
+                      "[test.cpp:6]: (error) Resource leak: fp\n",
+                      errout.str());
+
+        check("FILE* f() {\n"
+              "    char* temp = strdup(\"temp.txt\");\n"
+              "    return fopen(temp, \"rt\");\n"
+              "}\n", s);
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: temp\n", "", errout.str());
+    }
+
     void switch1() {
         check("void f() {\n"
               "    char *p = 0;\n"
@@ -1823,13 +1929,15 @@ private:
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) { free(f); }};\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
 
         check("void f() {\n"
               "    FILE*f=fopen(fname,a);\n"
               "    std::shared_ptr<FILE> fp{f, [](FILE* x) {}};\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3]: (error) Mismatching allocation and deallocation: f\n", "", errout.str());
 
         check("class C;\n"
               "void f() {\n"
@@ -2004,6 +2112,14 @@ private:
         check("char* f() {\n"
               "    void *x = malloc(1);\n"
               "    return (char*)(x);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void return9() {
+        check("void* f() {\n"
+              "    void *x = malloc (sizeof (struct alloc));\n"
+              "    return x + sizeof (struct alloc);\n"
               "}", true);
         ASSERT_EQUALS("", errout.str());
     }
@@ -2272,7 +2388,7 @@ private:
         c.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(recursiveCountLimit); // #5872 #6157 #9097
@@ -2307,14 +2423,14 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for leaks..
         CheckLeakAutoVar checkLeak;
@@ -2323,7 +2439,7 @@ private:
         checkLeak.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "std.cfg");
 
         TEST_CASE(returnedValue); // #9298
@@ -2357,21 +2473,21 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[]) {
+    void check_(const char* file, int line, const char code[]) {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.c");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.c"), file, line);
 
         // Check for leaks..
         CheckLeakAutoVar checkLeak;
         checkLeak.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         LOAD_LIB_2(settings.library, "windows.cfg");
 
         TEST_CASE(heapDoubleFree);

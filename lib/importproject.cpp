@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,18 +20,25 @@
 
 #include "path.h"
 #include "settings.h"
+#include "standards.h"
 #include "suppressions.h"
-#include "tinyxml2.h"
 #include "token.h"
 #include "tokenize.h"
 #include "utils.h"
-#define PICOJSON_USE_INT64
-#include <picojson.h>
 
+#include <algorithm>
+#include <cstdlib>
 #include <cstring>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
+#include <iostream>
+#include <iterator>
+
 #include <utility>
 
+#include <tinyxml2.h>
+
+#define PICOJSON_USE_INT64
+#include <picojson.h>
 
 ImportProject::ImportProject()
 {
@@ -70,16 +77,6 @@ void ImportProject::ignoreOtherConfigs(const std::string &cfg)
 {
     for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
         if (it->cfg != cfg)
-            fileSettings.erase(it++);
-        else
-            ++it;
-    }
-}
-
-void ImportProject::ignoreOtherPlatforms(cppcheck::Platform::PlatformType platformType)
-{
-    for (std::list<FileSettings>::iterator it = fileSettings.begin(); it != fileSettings.end();) {
-        if (it->platformType != cppcheck::Platform::Unspecified && it->platformType != platformType)
             fileSettings.erase(it++);
         else
             ++it;
@@ -150,22 +147,21 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
 
 void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
-    std::list<std::string> listInc;
-    // only parse each includePath once - so remove duplicates
-    std::list<std::string> uniqueIncludePaths = in;
-    uniqueIncludePaths.sort();
-    uniqueIncludePaths.unique();
-
-    for (const std::string &it : uniqueIncludePaths) {
-        if (it.empty())
+    std::set<std::string> found;
+    const std::list<std::string> copyIn(in);
+    includePaths.clear();
+    for (const std::string &ipath : copyIn) {
+        if (ipath.empty())
             continue;
-        if (it.compare(0,2,"%(")==0)
+        if (ipath.compare(0,2,"%(")==0)
             continue;
-        std::string s(Path::fromNativeSeparators(it));
+        std::string s(Path::fromNativeSeparators(ipath));
+        if (!found.insert(s).second)
+            continue;
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
             if (!endsWith(s,'/'))
                 s += '/';
-            listInc.push_back(s);
+            includePaths.push_back(s);
             continue;
         }
 
@@ -180,9 +176,8 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         }
         if (s.empty())
             continue;
-        listInc.push_back(s + '/');
+        includePaths.push_back(s + '/');
     }
-    includePaths.swap(listInc);
 }
 
 ImportProject::Type ImportProject::import(const std::string &filename, Settings *settings)
@@ -195,31 +190,39 @@ ImportProject::Type ImportProject::import(const std::string &filename, Settings 
     if (!mPath.empty() && !endsWith(mPath,'/'))
         mPath += '/';
 
-    const std::string fileFilter = settings ? settings->fileFilter : std::string();
+    const std::vector<std::string> fileFilters =
+        settings ? settings->fileFilters : std::vector<std::string>();
 
     if (endsWith(filename, ".json")) {
-        importCompileCommands(fin);
-        setRelativePaths(filename);
-        return ImportProject::Type::COMPILE_DB;
+        if (importCompileCommands(fin)) {
+            setRelativePaths(filename);
+            return ImportProject::Type::COMPILE_DB;
+        }
     } else if (endsWith(filename, ".sln")) {
-        importSln(fin, mPath, fileFilter);
-        setRelativePaths(filename);
-        return ImportProject::Type::VS_SLN;
+        if (importSln(fin, mPath, fileFilters)) {
+            setRelativePaths(filename);
+            return ImportProject::Type::VS_SLN;
+        }
     } else if (endsWith(filename, ".vcxproj")) {
         std::map<std::string, std::string, cppcheck::stricmp> variables;
-        importVcxproj(filename, variables, emptyString, fileFilter);
-        setRelativePaths(filename);
-        return ImportProject::Type::VS_VCXPROJ;
+        if (importVcxproj(filename, variables, emptyString, fileFilters)) {
+            setRelativePaths(filename);
+            return ImportProject::Type::VS_VCXPROJ;
+        }
     } else if (endsWith(filename, ".bpr")) {
-        importBcb6Prj(filename);
-        setRelativePaths(filename);
-        return ImportProject::Type::BORLAND;
+        if (importBcb6Prj(filename)) {
+            setRelativePaths(filename);
+            return ImportProject::Type::BORLAND;
+        }
     } else if (settings && endsWith(filename, ".cppcheck")) {
-        const bool success = importCppcheckGuiProject(fin, settings);
-        setRelativePaths(filename);
-        return success ? ImportProject::Type::CPPCHECK_GUI : ImportProject::Type::MISSING;
+        if (importCppcheckGuiProject(fin, settings)) {
+            setRelativePaths(filename);
+            return ImportProject::Type::CPPCHECK_GUI;
+        }
+    } else {
+        return ImportProject::Type::UNKNOWN;
     }
-    return ImportProject::Type::UNKNOWN;
+    return ImportProject::Type::FAILURE;
 }
 
 static std::string readUntil(const std::string &command, std::string::size_type *pos, const char until[])
@@ -384,12 +387,14 @@ void ImportProject::FileSettings::parseCommand(std::string command)
     setDefines(defs);
 }
 
-void ImportProject::importCompileCommands(std::istream &istr)
+bool ImportProject::importCompileCommands(std::istream &istr)
 {
     picojson::value compileCommands;
     istr >> compileCommands;
-    if (!compileCommands.is<picojson::array>())
-        return;
+    if (!compileCommands.is<picojson::array>()) {
+        printError("compilation database is not a JSON array");
+        return false;
+    }
 
     for (const picojson::value &fileInfo : compileCommands.get<picojson::array>()) {
         picojson::object obj = fileInfo.get<picojson::object>();
@@ -402,26 +407,38 @@ void ImportProject::importCompileCommands(std::istream &istr)
 
         const std::string directory = dirpath;
 
-        std::ostringstream comm;
-        if (obj.find("arguments") != obj.end()) {
+        std::string command;
+        if (obj.count("arguments")) {
             if (obj["arguments"].is<picojson::array>()) {
                 for (const picojson::value& arg : obj["arguments"].get<picojson::array>()) {
                     if (arg.is<std::string>()) {
-                        comm << arg.get<std::string>() << " ";
+                        std::string str = arg.get<std::string>();
+                        if (str.find(" ") != std::string::npos)
+                            str = "\"" + str + "\"";
+                        command += str + " ";
                     }
                 }
             } else {
-                return;
+                printError("'arguments' field in compilation database entry is not a JSON array");
+                return false;
             }
-        } else if (obj.find("command") != obj.end()) {
+        } else if (obj.count("command")) {
             if (obj["command"].is<std::string>()) {
-                comm << obj["command"].get<std::string>();
+                command = obj["command"].get<std::string>();
+            } else {
+                printError("'command' field in compilation database entry is not a string");
+                return false;
             }
         } else {
-            return;
+            printError("no 'arguments' or 'command' field found in compilation database entry");
+            return false;
         }
 
-        const std::string command = comm.str();
+        if (!obj.count("file") || !obj["file"].is<std::string>()) {
+            printError("skip compilation database entry because it does not have a proper 'file' field");
+            continue;
+        }
+
         const std::string file = Path::fromNativeSeparators(obj["file"].get<std::string>());
 
         // Accept file?
@@ -440,19 +457,41 @@ void ImportProject::importCompileCommands(std::istream &istr)
 #endif
         else
             fs.filename = Path::simplifyPath(directory + file);
+        if (!sourceFileExists(fs.filename)) {
+            printError("'" + fs.filename + "' from compilation database does not exist");
+            return false;
+        }
         fs.parseCommand(command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths(directory, fs.includePaths, variables);
         fileSettings.push_back(fs);
     }
+
+    return true;
 }
 
-void ImportProject::importSln(std::istream &istr, const std::string &path, const std::string &fileFilter)
+bool ImportProject::importSln(std::istream &istr, const std::string &path, const std::vector<std::string> &fileFilters)
 {
+    std::string line;
+
+    if (!std::getline(istr,line)) {
+        printError("Visual Studio solution file is empty");
+        return false;
+    }
+
+    if (line.find("Microsoft Visual Studio Solution File") != 0) {
+        // Skip BOM
+        if (!std::getline(istr, line) || line.find("Microsoft Visual Studio Solution File") != 0) {
+            printError("Visual Studio solution file header not found");
+            return false;
+        }
+    }
+
     std::map<std::string,std::string,cppcheck::stricmp> variables;
     variables["SolutionDir"] = path;
 
-    std::string line;
+    bool found = false;
+
     while (std::getline(istr,line)) {
         if (line.compare(0,8,"Project(")!=0)
             continue;
@@ -465,8 +504,19 @@ void ImportProject::importSln(std::istream &istr, const std::string &path, const
         std::string vcxproj(line.substr(pos1+1, pos-pos1+7));
         if (!Path::isAbsolute(vcxproj))
             vcxproj = path + vcxproj;
-        importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString, fileFilter);
+        if (!importVcxproj(Path::fromNativeSeparators(vcxproj), variables, emptyString, fileFilters)) {
+            printError("failed to load '" + vcxproj + "' from Visual Studio solution");
+            return false;
+        }
+        found = true;
     }
+
+    if (!found) {
+        printError("no projects found in Visual Studio solution file");
+        return false;
+    }
+
+    return true;
 }
 
 namespace {
@@ -505,6 +555,7 @@ namespace {
             for (const tinyxml2::XMLElement *e1 = idg->FirstChildElement(); e1; e1 = e1->NextSiblingElement()) {
                 if (std::strcmp(e1->Name(), "ClCompile") != 0)
                     continue;
+                enhancedInstructionSet = "StreamingSIMDExtensions2";
                 for (const tinyxml2::XMLElement *e = e1->FirstChildElement(); e; e = e->NextSiblingElement()) {
                     if (e->GetText()) {
                         if (std::strcmp(e->Name(), "PreprocessorDefinitions") == 0)
@@ -522,6 +573,8 @@ namespace {
                                 cppstd = Standards::CPP20;
                             else if (std::strcmp(e->GetText(), "stdcpplatest") == 0)
                                 cppstd = Standards::CPPLatest;
+                        } else if (std::strcmp(e->Name(), "EnableEnhancedInstructionSet") == 0) {
+                            enhancedInstructionSet = e->GetText();
                         }
                     }
                 }
@@ -559,6 +612,7 @@ namespace {
             return false;
         }
         std::string condition;
+        std::string enhancedInstructionSet;
         std::string preprocessorDefinitions;
         std::string additionalIncludePaths;
         Standards::cppstd_t cppstd = Standards::CPPLatest;
@@ -658,7 +712,7 @@ static void loadVisualStudioProperties(const std::string &props, std::map<std::s
     }
 }
 
-void ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::string &fileFilter)
+bool ImportProject::importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters)
 {
     variables["ProjectDir"] = Path::simplifyPath(Path::getPathFromFilename(filename));
 
@@ -671,11 +725,15 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(filename.c_str());
-    if (error != tinyxml2::XML_SUCCESS)
-        return;
+    if (error != tinyxml2::XML_SUCCESS) {
+        printError(std::string("Visual Studio project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
+        return false;
+    }
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
-    if (rootnode == nullptr)
-        return;
+    if (rootnode == nullptr) {
+        printError("Visual Studio project file has no XML root node");
+        return false;
+    }
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
         if (std::strcmp(node->Name(), "ItemGroup") == 0) {
             const char *labelAttribute = node->Attribute("Label");
@@ -718,14 +776,14 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
 
     for (const std::string &c : compileList) {
         const std::string cfilename = Path::simplifyPath(Path::isAbsolute(c) ? c : Path::getPathFromFilename(filename) + c);
-        if (!fileFilter.empty() && !matchglob(fileFilter, cfilename))
+        if (!fileFilters.empty() && !matchglobs(fileFilters, cfilename))
             continue;
 
         for (const ProjectConfiguration &p : projectConfigurationList) {
 
             if (!guiProject.checkVsConfigs.empty()) {
                 bool doChecking = false;
-                for (std::string config : guiProject.checkVsConfigs)
+                for (const std::string& config : guiProject.checkVsConfigs)
                     if (config == p.configuration) {
                         doChecking = true;
                         break;
@@ -759,6 +817,16 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
                 else if (i.cppstd == Standards::CPP20)
                     fs.standard = "c++20";
                 fs.defines += ';' + i.preprocessorDefinitions;
+                if (i.enhancedInstructionSet == "StreamingSIMDExtensions")
+                    fs.defines += ";__SSE__";
+                else if (i.enhancedInstructionSet == "StreamingSIMDExtensions2")
+                    fs.defines += ";__SSE2__";
+                else if (i.enhancedInstructionSet == "AdvancedVectorExtensions")
+                    fs.defines += ";__AVX__";
+                else if (i.enhancedInstructionSet == "AdvancedVectorExtensions2")
+                    fs.defines += ";__AVX2__";
+                else if (i.enhancedInstructionSet == "AdvancedVectorExtensions512")
+                    fs.defines += ";__AVX512__";
                 additionalIncludePaths += ';' + i.additionalIncludePaths;
             }
             fs.setDefines(fs.defines);
@@ -766,17 +834,23 @@ void ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             fileSettings.push_back(fs);
         }
     }
+
+    return true;
 }
 
-void ImportProject::importBcb6Prj(const std::string &projectFilename)
+bool ImportProject::importBcb6Prj(const std::string &projectFilename)
 {
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLError error = doc.LoadFile(projectFilename.c_str());
-    if (error != tinyxml2::XML_SUCCESS)
-        return;
+    if (error != tinyxml2::XML_SUCCESS) {
+        printError(std::string("Borland project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
+        return false;
+    }
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
-    if (rootnode == nullptr)
-        return;
+    if (rootnode == nullptr) {
+        printError("Borland project file has no XML root node");
+        return false;
+    }
 
     const std::string& projectDir = Path::simplifyPath(Path::getPathFromFilename(projectFilename));
 
@@ -1026,6 +1100,8 @@ void ImportProject::importBcb6Prj(const std::string &projectFilename)
         fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c);
         fileSettings.push_back(fs);
     }
+
+    return true;
 }
 
 static std::string joinRelativePath(const std::string &path1, const std::string &path2)
@@ -1068,11 +1144,16 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
 {
     tinyxml2::XMLDocument doc;
     const std::string xmldata = istream_to_string(istr);
-    if (doc.Parse(xmldata.data(), xmldata.size()) != tinyxml2::XML_SUCCESS)
+    const tinyxml2::XMLError error = doc.Parse(xmldata.data(), xmldata.size());
+    if (error != tinyxml2::XML_SUCCESS) {
+        printError(std::string("Cppcheck GUI project file is not a valid XML - ") + tinyxml2::XMLDocument::ErrorIDToName(error));
         return false;
+    }
     const tinyxml2::XMLElement * const rootnode = doc.FirstChildElement();
-    if (rootnode == nullptr || strcmp(rootnode->Name(), CppcheckXml::ProjectElementName) != 0)
+    if (rootnode == nullptr || strcmp(rootnode->Name(), CppcheckXml::ProjectElementName) != 0) {
+        printError("Cppcheck GUI project file has no XML root node");
         return false;
+    }
 
     const std::string &path = mPath;
 
@@ -1087,7 +1168,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             temp.basePaths.push_back(joinRelativePath(path, node->Attribute(CppcheckXml::RootPathNameAttrib)));
             temp.relativePaths = true;
         } else if (strcmp(node->Name(), CppcheckXml::BugHunting) == 0)
-            temp.bugHunting = true;
+            ;
         else if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
             temp.buildDir = joinRelativePath(path, node->GetText() ? node->GetText() : "");
         else if (strcmp(node->Name(), CppcheckXml::IncludeDirElementName) == 0)
@@ -1103,26 +1184,11 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             paths = readXmlStringList(node, path, CppcheckXml::PathName, CppcheckXml::PathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::ExcludeElementName) == 0)
             guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::ExcludePathName, CppcheckXml::ExcludePathNameAttrib);
-        else if (strcmp(node->Name(), CppcheckXml::FunctionContracts) == 0) {
-            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
-                if (strcmp(child->Name(), CppcheckXml::FunctionContract) == 0) {
-                    const char *function = child->Attribute(CppcheckXml::ContractFunction);
-                    const char *expects = child->Attribute(CppcheckXml::ContractExpects);
-                    if (function && expects)
-                        temp.functionContracts[function] = expects;
-                }
-            }
-        } else if (strcmp(node->Name(), CppcheckXml::VariableContractsElementName) == 0) {
-            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
-                if (strcmp(child->Name(), CppcheckXml::VariableContractItemElementName) == 0) {
-                    const char *name = child->Attribute(CppcheckXml::VariableContractVarName);
-                    const char *min = child->Attribute(CppcheckXml::VariableContractMin);
-                    const char *max = child->Attribute(CppcheckXml::VariableContractMax);
-                    if (name)
-                        temp.variableContracts[name] = Settings::VariableContracts{min?min:"", max?max:""};
-                }
-            }
-        } else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::FunctionContracts) == 0)
+            ;
+        else if (strcmp(node->Name(), CppcheckXml::VariableContractsElementName) == 0)
+            ;
+        else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
             guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::LibrariesElementName) == 0)
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
@@ -1208,8 +1274,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->maxCtuDepth = temp.maxCtuDepth;
     settings->maxTemplateRecursion = temp.maxTemplateRecursion;
     settings->safeChecks = temp.safeChecks;
-    settings->bugHunting = temp.bugHunting;
-    settings->functionContracts = temp.functionContracts;
+
     return true;
 }
 
@@ -1257,4 +1322,14 @@ void ImportProject::setRelativePaths(const std::string &filename)
         for (auto &includePath: fs.includePaths)
             includePath = Path::getRelativePath(includePath, basePaths);
     }
+}
+
+void ImportProject::printError(const std::string &message)
+{
+    std::cout << "cppcheck: error: " << message << std::endl;
+}
+
+bool ImportProject::sourceFileExists(const std::string &file)
+{
+    return Path::fileExists(file);
 }

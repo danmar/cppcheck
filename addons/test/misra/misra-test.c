@@ -65,6 +65,19 @@ static _Noreturn void misra_1_4_func(void) // 1.4
     printf_s("hello"); // 1.4
 }
 
+#define MISRA_2_2 (1*60)
+
+static void misra_2_2(int x) {
+    int a;
+    a = x + 0; // 2.2
+    a = 0 + x; // 2.2
+    a = x * 0; // 2.2
+    a = 0 * x; // 2.2
+    a = x * 1; // 2.2
+    a = 1 * x; // 2.2
+    a = MISRA_2_2;
+    (void)a;
+}
 
 /* // */   // 3.1
 /* /* */   // 3.1
@@ -265,31 +278,13 @@ static void misra_7_1(void) {
   int x = 066; // 7.1
 }
 
-static void misra_7_2_call_test(int a, unsigned int b, unsigned int c) { } // 2.7
-
-static void misra_7_2_call_va_test(int a, ...) { } // 2.7
-
 static void misra_7_2(void) {
-    uint32_t a = 2147483647;
-    const uint32_t b = 2147483648U;
-    const uint32_t c = 2147483648; // 7.2 10.3
-    uint32_t d = 2147483649; // 7.2 10.3
-
-    uint8_t e = 0x80; // 7.2 10.3
-    uint8_t f = 0x80U;
-    uint16_t g = 0x8000; // 7.2 10.3
-    uint16_t h = 0x8000U;
-    uint32_t i = 0x80000000; // 7.2
-    uint32_t j = 0x80000000U;
-    uint64_t k = 0x8000000000000000; // TODO 7.2
-    uint64_t l = 0x8000000000000000ULL;
-
-    uint32_t m = 1 + 0x80000000; // 7.2 10.4
-
-    misra_7_2_call_test(1, 2, 2147483648U);
-    misra_7_2_call_test(1, 2, 2147483648); // 7.2
-    misra_7_2_call_test(1, 0x80000000, 3); // 7.2
-    misra_7_2_call_va_test(1, 2, 3);
+    uint32_t a = 0x7fffffff;
+    uint32_t b = 0x80000000; // 7.2
+    uint32_t c = 0x80000000U;
+    uint32_t d = 2147483647;
+    uint64_t e = 2147483648;
+    uint32_t f = 2147483648U;
 }
 
 // The addon should not generate false positives for the identifiers.
@@ -381,6 +376,8 @@ static int misra_8_2_q
 (); // 8.2
 
 void misra_8_4_foo(void) {} // 8.4
+extern void misra_8_4_func(void);
+void misra_8_4_func(void) {}
 static void misra_8_4_bar(void) {} // Declared in header
 extern int16_t misra_8_4_count; // no-warning
 int16_t misra_8_4_count = 0; // Compliant
@@ -611,7 +608,7 @@ static void misra_10_1(uint32_t u, char c1, char c2, uint8_t u8) {
   int32_t i;
   char c;
   enum { E1 = 1 };
-  i = 3 << 1; // 10.1 10.6
+  i = 3 << 1; // 10.1
   i = (u & u) << 4; // no-warning
   c = c1 & c2; // 10.1
   c = c1 << 1; // 10.1
@@ -724,10 +721,10 @@ static void misra_10_5(uint16_t x) {
 struct misra_10_6_s {
     unsigned int a:4;
 };
-static void misra_10_6(u8 x, u32 a, u32 b, char c1, char c2) {
-  u16 y = x+x; // 10.6
+static void misra_10_6(u8 x, char c1, char c2) {
+  u16 y1 = x+x; // 10.6
+  u16 y2 = (0x100u - 0x80u); // rhs is not a composite expression because it's a constant expression
   u16 z = ~u8 x ;//10.6
-  u32 c = ( u16) ( u32 a + u32 b ); //10.6
   s32 i = c1 - c2; // 10.3 FIXME: False positive for 10.6 (this is compliant). Trac #9488
   struct misra_10_6_s s;
   s.a = x & 1U; // no-warning (#10487)
@@ -1414,6 +1411,16 @@ static void misra_15_6(void) {
   do {} while (x<0); // no-warning
 }
 
+static void misra_15_6_fp(void)
+{
+    uint8_t value = 0U;
+    do // Test
+    {
+        value++;
+    }
+    while (value < 2U);
+}
+
 #if defined(M_20_9) && M_20_9 > 1 // no-warning (#10380)
 #endif
 
@@ -1548,6 +1555,8 @@ static void misra_16_3(void) {
     case 2:
         x++;
   } // 16.3
+
+  #define M_16_3(a,b,default) { (a), (b), (default) },
 }
 
 static void misra_16_4(void) {
@@ -1601,7 +1610,7 @@ static void misra_16_7(void) {
 }
 
 static void misra_17_1(void) {
-  va_list(); // 17.1
+  va_list(); // 17.1 17.7
   va_arg(); // 17.1
   va_start(); // 17.1
   va_end(); // 17.1

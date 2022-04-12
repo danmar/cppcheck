@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2021 Cppcheck team.
+// Copyright (C) 2007-2022 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -17,6 +17,9 @@
 #include "options.h"
 #include "testsuite.h"
 
+#include <set>
+#include <string>
+
 
 class TestOptions : public TestFixture {
 public:
@@ -25,7 +28,7 @@ public:
 
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(which_test);
         TEST_CASE(which_test_method);
         TEST_CASE(no_test_method);

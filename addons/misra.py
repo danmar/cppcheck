@@ -25,6 +25,7 @@ import argparse
 import codecs
 import string
 import copy
+import subprocess
 
 try:
     from itertools import izip as zip
@@ -421,6 +422,28 @@ def get_type_conversion_to_from(token):
             return (lhs.variable.typeStartToken, rhs.variable.typeStartToken)
 
     return None
+
+
+def is_composite_expr(expr, composite_operator=False):
+    """MISRA C 2012, section 8.10.3"""
+    if expr is None:
+        return False
+
+    if not composite_operator:
+        if (expr.str in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~')):
+            return is_composite_expr(expr.astOperand1,True) or is_composite_expr(expr.astOperand2, True)
+        if expr.str == '?' and simpleMatch(expr.astOperand2, ':'):
+            colon = expr.astOperand2
+            return is_composite_expr(colon.astOperand1,True) or is_composite_expr(colon.astOperand2, True)
+        return False
+
+    # non constant expression?
+    if expr.isNumber:
+        return False
+    if expr.astOperand1 or expr.astOperand2:
+        return is_composite_expr(expr.astOperand1,True) or is_composite_expr(expr.astOperand2, True)
+    return True
+
 
 def getEssentialTypeCategory(expr):
     if not expr:
@@ -1009,16 +1032,14 @@ def isNoReturnScope(tok):
 
 
 # Return the token which the value is assigned to
-def getAssignedVariableToken(valueToken):
-    if not valueToken:
+def getAssignedVariableToken(vartok):
+    if not vartok:
         return None
-    if not valueToken.astParent:
-        return None
-    operator = valueToken.astParent
-    if operator.isAssignmentOp:
-        return operator.astOperand1
-    if operator.isArithmeticalOp:
-        return getAssignedVariableToken(operator)
+    parent = vartok.astParent
+    while parent and parent.isArithmeticalOp:
+        parent = parent.astParent
+    if parent and parent.isAssignmentOp:
+        return parent.astOperand1
     return None
 
 # If the value is used as a return value, return the function definition
@@ -1297,6 +1318,8 @@ class MisraChecker:
         self._ctu_summary_identifiers = False
         self._ctu_summary_usage = False
 
+        self.path_premium_addon = None
+
     def __repr__(self):
         attrs = ["settings", "verify_expected", "verify_actual", "violations",
                  "ruleTexts", "suppressedRules", "filePrefix",
@@ -1372,7 +1395,9 @@ class MisraChecker:
                 local_identifiers.append(identifier(var.nameToken))
             elif var.isStatic:
                 names.append(var.nameToken.str)
-                internal_identifiers.append(identifier(var.nameToken))
+                i = identifier(var.nameToken)
+                i['inlinefunc'] = False
+                internal_identifiers.append(i)
             else:
                 names.append(var.nameToken.str)
                 i = identifier(var.nameToken)
@@ -1383,9 +1408,14 @@ class MisraChecker:
             if func.tokenDef is None:
                 continue
             if func.isStatic:
-                internal_identifiers.append(identifier(func.tokenDef))
-            else:
                 i = identifier(func.tokenDef)
+                i['inlinefunc'] = func.isInlineKeyword
+                internal_identifiers.append(i)
+            else:
+                if func.token is None:
+                    i = identifier(func.tokenDef)
+                else:
+                    i = identifier(func.token)
                 i['decl'] = func.token is None
                 external_identifiers.append(i)
 
@@ -1404,12 +1434,12 @@ class MisraChecker:
                 continue
             if token.function and token.scope.isExecutable:
                 if (not token.function.isStatic) and (token.str not in names):
-                    names.append(token.str)
+                    names.append({'name': token.str, 'file': token.file})
             elif token.variable:
                 if token == token.variable.nameToken:
                     continue
                 if token.variable.access == 'Global' and (not token.variable.isStatic) and (token.str not in names):
-                    names.append(token.str)
+                    names.append({'name': token.str, 'file': token.file})
 
         if len(names) > 0:
             cppcheckdata.reportSummary(dumpfile, 'MisraUsage', names)
@@ -1432,6 +1462,25 @@ class MisraChecker:
                                  'wcscpy_s', 'wcsncpy_s', 'wmemcpy_s', 'wmemmove_s', 'wcscat_s', 'wcsncat_s', 'wcstok_s', 'wcsnlen_s',
                                  'wcrtomb_s', 'mbsrtowcs_s', 'wcsrtombs_s'):
                     self.reportError(token, 1, 4)
+
+    def misra_2_2(self, cfg):
+        for token in cfg.tokenlist:
+            if token.isExpandedMacro:
+                continue
+            if (token.str in '+-') and token.astOperand2:
+                if simpleMatch(token.astOperand1, '0'):
+                    self.reportError(token.astOperand1, 2, 2)
+                elif simpleMatch(token.astOperand2, '0'):
+                    self.reportError(token.astOperand2, 2, 2)
+            if token.str == '*' and token.astOperand2:
+                if simpleMatch(token.astOperand2, '0'):
+                    self.reportError(token.astOperand1, 2, 2)
+                elif simpleMatch(token.astOperand1, '0'):
+                    self.reportError(token.astOperand2, 2, 2)
+                elif simpleMatch(token.astOperand1, '1'):
+                    self.reportError(token.astOperand1, 2, 2)
+                elif simpleMatch(token.astOperand2, '1'):
+                    self.reportError(token.astOperand2, 2, 2)
 
     def misra_2_3(self, dumpfile, typedefInfo):
         self._save_ctu_summary_typedefs(dumpfile, typedefInfo)
@@ -1742,41 +1791,9 @@ class MisraChecker:
                 self.reportError(tok, 7, 1)
 
     def misra_7_2(self, data):
-        # Large constant numbers that are assigned to a variable should have an
-        # u/U suffix if the variable type is unsigned.
-        def reportErrorIfMissingSuffix(variable, value):
-            if 'U' in value.str.upper():
-                return
-            if value and value.isNumber:
-                if variable and variable.valueType and variable.valueType.sign == 'unsigned':
-                    if variable.valueType.type in ['char', 'short', 'int', 'long', 'long long']:
-                        limit = 1 << (bitsOfEssentialType(variable.valueType.type) -1)
-                        v = value.getKnownIntValue()
-                        if v is not None and v >= limit:
-                            self.reportError(value, 7, 2)
-
         for token in data.tokenlist:
-            # Check normal variable assignment
-            if token.valueType and token.isNumber:
-                variable = getAssignedVariableToken(token)
-                reportErrorIfMissingSuffix(variable, token)
-
-            # Check use as function parameter
-            if isFunctionCall(token) and token.astOperand1 and token.astOperand1.function:
-                functionDeclaration = token.astOperand1.function
-
-                if functionDeclaration.tokenDef:
-                    if functionDeclaration.tokenDef is token.astOperand1:
-                        # Token is not a function call, but it is the definition of the function
-                        continue
-
-                    parametersUsed = getArguments(token)
-                    for i in range(len(parametersUsed)):
-                        usedParameter = parametersUsed[i]
-                        if usedParameter.isNumber:
-                            parameterDefinition = functionDeclaration.argument.get(i+1)
-                            if parameterDefinition and parameterDefinition.nameToken:
-                                reportErrorIfMissingSuffix(parameterDefinition.nameToken, usedParameter)
+            if token.isInt and ('U' not in token.str.upper()) and token.valueType and token.valueType.sign == 'unsigned':
+                self.reportError(token, 7, 2)
 
     def misra_7_3(self, rawTokens):
         compiled = re.compile(r'^[0-9.]+[Uu]*l+[Uu]*$')
@@ -1847,17 +1864,11 @@ class MisraChecker:
 
         # Zero arguments should be in form ( void )
         def checkZeroArguments(func, startCall, endCall):
-            if (len(func.argument) == 0):
-                voidArg = startCall.next
-                while voidArg is not endCall:
-                    if voidArg.str == 'void':
-                        break
-                    voidArg = voidArg.next
-                if not voidArg.str == 'void':
-                    if func.tokenDef.next:
-                        self.reportError(func.tokenDef.next, 8, 2)
-                    else:
-                        self.reportError(func.tokenDef, 8, 2)
+            if not startCall.isRemovedVoidParameter and len(func.argument) == 0:
+                if func.tokenDef.next:
+                    self.reportError(func.tokenDef.next, 8, 2)
+                else:
+                    self.reportError(func.tokenDef, 8, 2)
 
         def checkDeclarationArgumentsViolations(func, startCall, endCall):
             # Collect the tokens for the arguments in function definition
@@ -1968,7 +1979,7 @@ class MisraChecker:
                 continue
             if not is_source_file(func.token.file):
                 continue
-            if func.token.file != func.tokenDef.file:
+            if func.token != func.tokenDef:
                 continue
             if func.tokenDef.str == 'main':
                 continue
@@ -2260,8 +2271,7 @@ class MisraChecker:
         for token in data.tokenlist:
             if token.str != '=' or not token.astOperand1 or not token.astOperand2:
                 continue
-            if (token.astOperand2.str not in ('+', '-', '*', '/', '%', '&', '|', '^', '>>', "<<", "?", ":", '~') and
-                    not isCast(token.astOperand2)):
+            if not is_composite_expr(token.astOperand2):
                 continue
             vt1 = token.astOperand1.valueType
             vt2 = token.astOperand2.valueType
@@ -2832,14 +2842,41 @@ class MisraChecker:
         state = 0
         indent = 0
         tok1 = None
+        def tokAt(tok,i):
+            while i < 0 and tok:
+                tok = tok.previous
+                if tok.str.startswith('//') or tok.str.startswith('/*'):
+                    continue
+                i += 1
+            while i > 0 and tok:
+                tok = tok.next
+                if tok.str.startswith('//') or tok.str.startswith('/*'):
+                    continue
+                i -= 1
+            return tok
+
+        def strtokens(tok, i1, i2):
+            tok1 = tokAt(tok, i1)
+            tok2 = tokAt(tok, i2)
+            tok = tok1
+            s = ''
+            while tok != tok2:
+                if tok.str.startswith('//') or tok.str.startswith('/*'):
+                    tok = tok.next
+                    continue
+                s += ' ' + tok.str
+                tok = tok.next
+            s += ' ' + tok.str
+            return s[1:]
+
         for token in rawTokens:
             if token.str in ['if', 'for', 'while']:
-                if simpleMatch(token.previous, '# if'):
+                if strtokens(token,-1,0) == '# if':
                     continue
-                if simpleMatch(token.previous, "} while"):
+                if strtokens(token,-1,0) == "} while":
                     # is there a 'do { .. } while'?
-                    start = rawlink(token.previous)
-                    if start and simpleMatch(start.previous, 'do {'):
+                    start = rawlink(tokAt(token,-1))
+                    if start and strtokens(start, -1, 0) == 'do {':
                         continue
                 if state == 2:
                     self.reportError(tok1, 15, 6)
@@ -2847,9 +2884,9 @@ class MisraChecker:
                 indent = 0
                 tok1 = token
             elif token.str == 'else':
-                if simpleMatch(token.previous, '# else'):
+                if strtokens(token,-1,0) == '# else':
                     continue
-                if simpleMatch(token, 'else if'):
+                if strtokens(token,0,1) == 'else if':
                     continue
                 if state == 2:
                     self.reportError(tok1, 15, 6)
@@ -2923,15 +2960,24 @@ class MisraChecker:
         STATE_OK = 2  # a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
         STATE_SWITCH = 3  # walking through switch statement scope
 
+        define = None
         state = STATE_NONE
-        end_swtich_token = None  # end '}' for the switch scope
+        end_switch_token = None  # end '}' for the switch scope
         for token in rawTokens:
+            if simpleMatch(token, '# define'):
+                define = token
+            if define:
+                if token.linenr != define.linenr:
+                    define = None
+                else:
+                    continue
+
             # Find switch scope borders
             if token.str == 'switch':
                 state = STATE_SWITCH
             if state == STATE_SWITCH:
                 if token.str == '{':
-                    end_swtich_token = findRawLink(token)
+                    end_switch_token = findRawLink(token)
                 else:
                     continue
 
@@ -2940,7 +2986,7 @@ class MisraChecker:
             elif token.str == ';':
                 if state == STATE_BREAK:
                     state = STATE_OK
-                elif token.next and token.next == end_swtich_token:
+                elif token.next and token.next == end_switch_token:
                     self.reportError(token.next, 16, 3)
                 else:
                     state = STATE_NONE
@@ -3081,6 +3127,11 @@ class MisraChecker:
                         if tok.function and tok.function == call:
                             self.reportError(tok, 17, 2)
                         tok = tok.next
+
+    def misra_17_3(self, cfg):
+        for w in cfg.clang_warnings:
+            if w['message'].endswith('[-Wimplicit-function-declaration]'):
+                self.reportError(cppcheckdata.Location(w), 17, 3)
 
     def misra_17_6(self, rawTokens):
         for token in rawTokens:
@@ -4009,7 +4060,13 @@ class MisraChecker:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
-                errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
+                if self.path_premium_addon:
+                    errmsg = ''
+                    for line in subprocess.check_output([self.path_premium_addon, '--cli', '--get-rule-text=' + errorId]).strip().decode('ascii').split('\n'):
+                        if not line.startswith('{'):
+                            errmsg = line
+                else:
+                    errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 errmsg = 'misra violation %s with no text in the supplied rule-texts-file' % (ruleNum)
 
@@ -4200,6 +4257,7 @@ class MisraChecker:
                 self.printStatus('Checking %s, config %s...' % (dumpfile, cfg.name))
 
             self.executeCheck(104, self.misra_1_4, cfg)
+            self.executeCheck(202, self.misra_2_2, cfg)
             self.executeCheck(203, self.misra_2_3, dumpfile, cfg.typedefInfo)
             self.executeCheck(204, self.misra_2_4, dumpfile, cfg)
             self.executeCheck(205, self.misra_2_5, dumpfile, cfg)
@@ -4294,6 +4352,7 @@ class MisraChecker:
             self.executeCheck(1607, self.misra_16_7, cfg)
             self.executeCheck(1701, self.misra_17_1, cfg)
             self.executeCheck(1702, self.misra_17_2, cfg)
+            self.executeCheck(1703, self.misra_17_3, cfg)
             if cfgNumber == 0:
                 self.executeCheck(1706, self.misra_17_6, data.rawTokens)
             self.executeCheck(1707, self.misra_17_7, cfg)
@@ -4341,6 +4400,10 @@ class MisraChecker:
             self.executeCheck(2209, self.misra_22_9, cfg)
             self.executeCheck(2210, self.misra_22_10, cfg)
 
+            # Premium MISRA checking, deep analysis
+            if cfgNumber == 0 and self.path_premium_addon:
+                subprocess.check_output([self.path_premium_addon, '--cli', '--misra', dumpfile])
+
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []
         all_tagname_info = []
@@ -4349,7 +4412,7 @@ class MisraChecker:
         all_external_identifiers_def = {}
         all_internal_identifiers = {}
         all_local_identifiers = {}
-        all_usage_count = {}
+        all_usage_files = {}
 
         from cppcheckdata import Location
 
@@ -4427,8 +4490,9 @@ class MisraChecker:
                 if summary_type == 'MisraInternalIdentifiers':
                     for s in summary_data:
                         if s['name'] in all_internal_identifiers:
-                            self.reportError(Location(s), 5, 9)
-                            self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
+                            if not s['inlinefunc'] or s['file'] != all_internal_identifiers[s['name']]['file']:
+                                self.reportError(Location(s), 5, 9)
+                                self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
                         all_internal_identifiers[s['name']] = s
 
                 if summary_type == 'MisraLocalIdentifiers':
@@ -4437,10 +4501,10 @@ class MisraChecker:
 
                 if summary_type == 'MisraUsage':
                     for s in summary_data:
-                        if s in all_usage_count:
-                            all_usage_count[s] += 1
+                        if s['name'] in all_usage_files:
+                            all_usage_files[s['name']].append(s['file'])
                         else:
-                            all_usage_count[s] = 1
+                            all_usage_files[s['name']] = [s['file']]
 
         for ti in all_typedef_info:
             if not ti['used']:
@@ -4467,9 +4531,12 @@ class MisraChecker:
                 self.reportError(Location(local_identifier), 5, 8)
                 self.reportError(Location(external_identifier), 5, 8)
 
-        for name, count in all_usage_count.items():
+        for name, files in all_usage_files.items():
             #print('%s:%i' % (name, count))
-            if count != 1:
+            count = len(files)
+            if count != 1 or name not in all_external_identifiers_def:
+                continue
+            if files[0] != Location(all_external_identifiers_def[name]).file:
                 continue
             if name in all_external_identifiers:
                 self.reportError(Location(all_external_identifiers[name]), 8, 7)
@@ -4533,6 +4600,8 @@ def main():
     settings = MisraSettings(args)
     checker = MisraChecker(settings)
 
+    checker.path_premium_addon = cppcheckdata.get_path_premium_addon()
+
     if args.generate_table:
         generateTable()
         sys.exit(0)
@@ -4593,6 +4662,14 @@ def main():
                 sys.exit(exitCode)
 
     checker.analyse_ctu_info(ctu_info_files)
+
+    if args.file_list and checker.path_premium_addon:
+        premium_command = [checker.path_premium_addon, '--misra', '--file-list', args.file_list]
+        if args.cli:
+            premium_command.append('--cli')
+        for line in subprocess.check_output(premium_command).decode('ascii').split('\n'):
+            if re.search(r'"errorId".*:.*"misra-', line) is not None:
+                print(line.strip())
 
     if settings.verify:
         sys.exit(exitCode)

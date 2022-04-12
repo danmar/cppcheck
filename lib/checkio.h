@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "utils.h"
 
 #include <ostream>
 #include <string>
@@ -50,7 +49,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckIO checkIO(tokenizer, settings, errorLogger);
 
         checkIO.checkWrongPrintfScanfArguments();
@@ -130,11 +129,11 @@ private:
     void invalidPrintfArgTypeError_sint(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidPrintfArgTypeError_float(const Token* tok, nonneg int numFormat, const std::string& specifier, const ArgumentInfo* argInfo);
     void invalidLengthModifierError(const Token* tok, nonneg int numFormat, const std::string& modifier);
-    void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, char c);
+    void invalidScanfFormatWidthError(const Token* tok, nonneg int numFormat, int width, const Variable *var, const std::string& specifier);
     static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
     static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckIO c(nullptr, settings, errorLogger);
 
         c.coutCerrMisusageError(nullptr,  "cout");
@@ -157,8 +156,8 @@ private:
         c.invalidPrintfArgTypeError_sint(nullptr,  1, "i", nullptr);
         c.invalidPrintfArgTypeError_float(nullptr,  1, "f", nullptr);
         c.invalidLengthModifierError(nullptr,  1, "I");
-        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, 's');
-        c.invalidScanfFormatWidthError(nullptr,  99, -1, nullptr, 's');
+        c.invalidScanfFormatWidthError(nullptr,  10, 5, nullptr, "s");
+        c.invalidScanfFormatWidthError(nullptr,  99, -1, nullptr, "s");
         c.wrongPrintfScanfPosixParameterPositionError(nullptr,  "printf", 2, 1);
     }
 
@@ -166,7 +165,7 @@ private:
         return "IO using format string";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Check format string input/output operations.\n"
                "- Bad usage of the function 'sprintf' (overlapping data)\n"
                "- Missing or wrong width specifiers in 'scanf' format string\n"

@@ -30,16 +30,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install libxml2-utils
           sudo apt-get install valgrind
-          sudo apt-get install libz3-dev libz3-4 libz3-4-dbgsym
           sudo apt-get install libc6-dbg-amd64-cross
 
       - name: Build cppcheck
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
+          CXXFLAGS="-O1 -g" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Build test
         run: |
-          CXXFLAGS="-O1 -g" make -j$(nproc) testrunner USE_Z3=yes HAVE_RULES=yes MATCHCOMPILER=yes
+          CXXFLAGS="-O1 -g" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run valgrind
         run: |

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Cppcheck - A tool for static C/C++ code analysis
-# Copyright (C) 2007-2019 Cppcheck team.
+# Copyright (C) 2007-2021 Cppcheck team.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -355,10 +355,7 @@ if filename is not None:
         if not os.path.exists(codedir):
             os.mkdir(codedir)
 
-        testfile = filename
-        if testfile.find('/'):
-            testfile = testfile[testfile.rfind('/'):]
-        testfile = testfile[:testfile.find('.')]
+        testfile = os.path.splitext(os.path.basename(filename))[0]
 
         for node in e.nodes:
             if onlyTP and node['expected'] == '':

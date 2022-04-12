@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Cppcheck - A tool for static C/C++ code analysis
-# Copyright (C) 2007-2019 Cppcheck team.
+# Copyright (C) 2007-2021 Cppcheck team.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -384,6 +384,10 @@ class MatchCompiler:
             is_simplematch = func == 'simpleMatch'
             pattern_start = 0
             while True:
+                # skip comments
+                if line.strip().startswith('//'):
+                    break
+
                 pos1 = line.find('Token::' + func + '(', pattern_start)
                 if pos1 == -1:
                     break

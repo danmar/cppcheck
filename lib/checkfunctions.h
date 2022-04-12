@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,9 +24,9 @@
 
 #include "check.h"
 #include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
-#include "errortypes.h"
 
 #include <map>
 #include <string>
@@ -58,7 +58,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckFunctions checkFunctions(tokenizer, settings, errorLogger);
 
         checkFunctions.checkIgnoredReturnValue();
@@ -123,7 +123,7 @@ private:
     void missingReturnError(const Token *tok);
     void copyElisionError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckFunctions c(nullptr, settings, errorLogger);
 
         for (std::map<std::string, Library::WarnInfo>::const_iterator i = settings->library.functionwarn.cbegin(); i != settings->library.functionwarn.cend(); ++i) {
@@ -147,7 +147,7 @@ private:
         return "Check function usage";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Check function usage:\n"
                "- missing 'return' in non-void function\n"
                "- return value of certain functions not used\n"

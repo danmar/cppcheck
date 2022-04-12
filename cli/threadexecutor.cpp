@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,59 +19,53 @@
 #include "threadexecutor.h"
 
 #include "color.h"
-#include "config.h"
 #include "cppcheck.h"
 #include "cppcheckexecutor.h"
+#include "errorlogger.h"
 #include "importproject.h"
 #include "settings.h"
 #include "suppressions.h"
 
 #include <algorithm>
-#include <cerrno>
 #include <cstdlib>
-#include <cstring>
+#include <functional>
 #include <iostream>
 #include <utility>
 
 #ifdef __SVR4  // Solaris
 #include <sys/loadavg.h>
 #endif
+
 #ifdef THREADING_MODEL_FORK
+#include "config.h"
+#include "errortypes.h"
+
 #if defined(__linux__)
 #include <sys/prctl.h>
 #endif
+#include <cerrno>
+#include <cstring>
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <fcntl.h>
+#include <csignal>
 #include <unistd.h>
+
+// required for FD_ZERO
+using std::memset;
 #endif
-#ifdef THREADING_MODEL_WIN
+
+#ifdef THREADING_MODEL_THREAD
 #include <future>
 #include <numeric>
 #endif
 
-// required for FD_ZERO
-using std::memset;
-
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
-    : mFiles(files), mSettings(settings), mErrorLogger(errorLogger), mFileCount(0)
-    // Not initialized mFileSync, mErrorSync, mReportSync
-{
-#if defined(THREADING_MODEL_FORK)
-    mWpipe = 0;
-#elif defined(THREADING_MODEL_WIN)
-    mProcessedFiles = 0;
-    mTotalFiles = 0;
-    mProcessedSize = 0;
-    mTotalFileSize = 0;
-#endif
-}
+    : mFiles(files), mSettings(settings), mErrorLogger(errorLogger)
+{}
 
 ThreadExecutor::~ThreadExecutor()
-{
-    //dtor
-}
-
+{}
 
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is for platforms that support fork() only ////////////////////
@@ -79,10 +73,64 @@ ThreadExecutor::~ThreadExecutor()
 
 #if defined(THREADING_MODEL_FORK)
 
-void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
-{
-    mFileContents[path] = content;
-}
+class PipeWriter : public ErrorLogger {
+public:
+    enum PipeSignal {REPORT_OUT='1',REPORT_ERROR='2', REPORT_INFO='3', REPORT_VERIFICATION='4', CHILD_END='5'};
+
+    explicit PipeWriter(int pipe) : mWpipe(pipe) {}
+
+    void reportOut(const std::string &outmsg, Color c) override {
+        writeToPipe(REPORT_OUT, ::toString(c) + outmsg + ::toString(Color::Reset));
+    }
+
+    void reportErr(const ErrorMessage &msg) override {
+        report(msg, MessageType::REPORT_ERROR);
+    }
+
+    void reportInfo(const ErrorMessage &msg) override {
+        report(msg, MessageType::REPORT_INFO);
+    }
+
+    void writeEnd(const std::string& str) {
+        writeToPipe(CHILD_END, str);
+    }
+
+private:
+    enum class MessageType {REPORT_ERROR, REPORT_INFO};
+
+    void report(const ErrorMessage &msg, MessageType msgType) {
+        PipeSignal pipeSignal;
+        switch (msgType) {
+        case MessageType::REPORT_ERROR:
+            pipeSignal = REPORT_ERROR;
+            break;
+        case MessageType::REPORT_INFO:
+            pipeSignal = REPORT_INFO;
+            break;
+        }
+
+        writeToPipe(pipeSignal, msg.serialize());
+    }
+
+    void writeToPipe(PipeSignal type, const std::string &data)
+    {
+        unsigned int len = static_cast<unsigned int>(data.length() + 1);
+        char *out = new char[len + 1 + sizeof(len)];
+        out[0] = static_cast<char>(type);
+        std::memcpy(&(out[1]), &len, sizeof(len));
+        std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
+        if (write(mWpipe, out, len + 1 + sizeof(len)) <= 0) {
+            delete[] out;
+            out = nullptr;
+            std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
+            std::exit(EXIT_FAILURE);
+        }
+
+        delete[] out;
+    }
+
+    const int mWpipe;
+};
 
 int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
 {
@@ -96,7 +144,7 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
         return -1;
     }
 
-    if (type != REPORT_OUT && type != REPORT_ERROR && type != REPORT_INFO && type != CHILD_END) {
+    if (type != PipeWriter::REPORT_OUT && type != PipeWriter::REPORT_ERROR && type != PipeWriter::REPORT_INFO && type != PipeWriter::CHILD_END) {
         std::cerr << "#### ThreadExecutor::handleRead error, type was:" << type << std::endl;
         std::exit(EXIT_FAILURE);
     }
@@ -117,9 +165,9 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
     }
     buf[readIntoBuf] = 0;
 
-    if (type == REPORT_OUT) {
+    if (type == PipeWriter::REPORT_OUT) {
         mErrorLogger.reportOut(buf);
-    } else if (type == REPORT_ERROR || type == REPORT_INFO) {
+    } else if (type == PipeWriter::REPORT_ERROR || type == PipeWriter::REPORT_INFO) {
         ErrorMessage msg;
         try {
             msg.deserialize(buf);
@@ -133,13 +181,13 @@ int ThreadExecutor::handleRead(int rpipe, unsigned int &result)
             std::string errmsg = msg.toString(mSettings.verbose);
             if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
                 mErrorList.emplace_back(errmsg);
-                if (type == REPORT_ERROR)
+                if (type == PipeWriter::REPORT_ERROR)
                     mErrorLogger.reportErr(msg);
                 else
                     mErrorLogger.reportInfo(msg);
             }
         }
-    } else if (type == CHILD_END) {
+    } else if (type == PipeWriter::CHILD_END) {
         std::istringstream iss(buf);
         unsigned int fileResult = 0;
         iss >> fileResult;
@@ -174,7 +222,7 @@ bool ThreadExecutor::checkLoadAverage(size_t nchildren)
 
 unsigned int ThreadExecutor::check()
 {
-    mFileCount = 0;
+    unsigned int fileCount = 0;
     unsigned int result = 0;
 
     std::size_t totalfilesize = 0;
@@ -219,17 +267,14 @@ unsigned int ThreadExecutor::check()
                 prctl(PR_SET_PDEATHSIG, SIGHUP);
 #endif
                 close(pipes[0]);
-                mWpipe = pipes[1];
 
-                CppCheck fileChecker(*this, false, CppCheckExecutor::executeCommand);
+                PipeWriter pipewriter(pipes[1]);
+                CppCheck fileChecker(pipewriter, false, CppCheckExecutor::executeCommand);
                 fileChecker.settings() = mSettings;
                 unsigned int resultOfCheck = 0;
 
                 if (iFileSettings != mSettings.project.fileSettings.end()) {
                     resultOfCheck = fileChecker.check(*iFileSettings);
-                } else if (!mFileContents.empty() && mFileContents.find(iFile->first) != mFileContents.end()) {
-                    // File content was given as a string
-                    resultOfCheck = fileChecker.check(iFile->first, mFileContents[iFile->first]);
                 } else {
                     // Read file from a file
                     resultOfCheck = fileChecker.check(iFile->first);
@@ -237,7 +282,7 @@ unsigned int ThreadExecutor::check()
 
                 std::ostringstream oss;
                 oss << resultOfCheck;
-                writeToPipe(CHILD_END, oss.str());
+                pipewriter.writeEnd(oss.str());
                 std::exit(EXIT_SUCCESS);
             }
 
@@ -280,10 +325,10 @@ unsigned int ThreadExecutor::check()
                                 }
                             }
 
-                            mFileCount++;
+                            fileCount++;
                             processedsize += size;
                             if (!mSettings.quiet)
-                                CppCheckExecutor::reportStatus(mFileCount, mFiles.size() + mSettings.project.fileSettings.size(), processedsize, totalfilesize);
+                                CppCheckExecutor::reportStatus(fileCount, mFiles.size() + mSettings.project.fileSettings.size(), processedsize, totalfilesize);
 
                             close(*rp);
                             rp = rpipes.erase(rp);
@@ -329,43 +374,6 @@ unsigned int ThreadExecutor::check()
     return result;
 }
 
-void ThreadExecutor::writeToPipe(PipeSignal type, const std::string &data)
-{
-    unsigned int len = static_cast<unsigned int>(data.length() + 1);
-    char *out = new char[len + 1 + sizeof(len)];
-    out[0] = static_cast<char>(type);
-    std::memcpy(&(out[1]), &len, sizeof(len));
-    std::memcpy(&(out[1+sizeof(len)]), data.c_str(), len);
-    if (write(mWpipe, out, len + 1 + sizeof(len)) <= 0) {
-        delete[] out;
-        out = nullptr;
-        std::cerr << "#### ThreadExecutor::writeToPipe, Failed to write to pipe" << std::endl;
-        std::exit(EXIT_FAILURE);
-    }
-
-    delete[] out;
-}
-
-void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
-{
-    writeToPipe(REPORT_OUT, ::toString(c) + outmsg + ::toString(Color::Reset));
-}
-
-void ThreadExecutor::reportErr(const ErrorMessage &msg)
-{
-    writeToPipe(REPORT_ERROR, msg.serialize());
-}
-
-void ThreadExecutor::reportInfo(const ErrorMessage &msg)
-{
-    writeToPipe(REPORT_INFO, msg.serialize());
-}
-
-void ThreadExecutor::bughuntingReport(const std::string &str)
-{
-    writeToPipe(REPORT_VERIFICATION, str);
-}
-
 void ThreadExecutor::reportInternalChildErr(const std::string &childname, const std::string &msg)
 {
     std::list<ErrorMessage::FileLocation> locations;
@@ -381,32 +389,97 @@ void ThreadExecutor::reportInternalChildErr(const std::string &childname, const 
         mErrorLogger.reportErr(errmsg);
 }
 
-#elif defined(THREADING_MODEL_WIN)
+#elif defined(THREADING_MODEL_THREAD)
 
-void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
+class ThreadExecutor::LogWriter : public ErrorLogger
 {
-    mFileContents[path] = content;
-}
+public:
+    LogWriter(ThreadExecutor &threadExecutor)
+        : mThreadExecutor(threadExecutor), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0), mTotalFileSize(0) {
+
+        mItNextFile = threadExecutor.mFiles.begin();
+        mItNextFileSettings = threadExecutor.mSettings.project.fileSettings.begin();
+
+        mTotalFiles = threadExecutor.mFiles.size() + threadExecutor.mSettings.project.fileSettings.size();
+        for (std::map<std::string, std::size_t>::const_iterator i = threadExecutor.mFiles.begin(); i != threadExecutor.mFiles.end(); ++i) {
+            mTotalFileSize += i->second;
+        }
+    }
+
+    void reportOut(const std::string &outmsg, Color c) override
+    {
+        std::lock_guard<std::mutex> lg(mReportSync);
+
+        mThreadExecutor.mErrorLogger.reportOut(outmsg, c);
+    }
+
+    void reportErr(const ErrorMessage &msg) override {
+        report(msg, MessageType::REPORT_ERROR);
+    }
+
+    void reportInfo(const ErrorMessage &msg) override {
+        report(msg, MessageType::REPORT_INFO);
+    }
+
+    ThreadExecutor &mThreadExecutor;
+
+    std::map<std::string, std::size_t>::const_iterator mItNextFile;
+    std::list<ImportProject::FileSettings>::const_iterator mItNextFileSettings;
+
+    std::size_t mProcessedFiles;
+    std::size_t mTotalFiles;
+    std::size_t mProcessedSize;
+    std::size_t mTotalFileSize;
+
+    std::mutex mFileSync;
+    std::mutex mErrorSync;
+    std::mutex mReportSync;
+
+private:
+    enum class MessageType {REPORT_ERROR, REPORT_INFO};
+
+    void report(const ErrorMessage &msg, MessageType msgType)
+    {
+        if (mThreadExecutor.mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
+            return;
+
+        // Alert only about unique errors
+        bool reportError = false;
+        const std::string errmsg = msg.toString(mThreadExecutor.mSettings.verbose);
+
+        {
+            std::lock_guard<std::mutex> lg(mErrorSync);
+            if (std::find(mThreadExecutor.mErrorList.begin(), mThreadExecutor.mErrorList.end(), errmsg) == mThreadExecutor.mErrorList.end()) {
+                mThreadExecutor.mErrorList.emplace_back(errmsg);
+                reportError = true;
+            }
+        }
+
+        if (reportError) {
+            std::lock_guard<std::mutex> lg(mReportSync);
+
+            switch (msgType) {
+            case MessageType::REPORT_ERROR:
+                mThreadExecutor.mErrorLogger.reportErr(msg);
+                break;
+            case MessageType::REPORT_INFO:
+                mThreadExecutor.mErrorLogger.reportInfo(msg);
+                break;
+            }
+        }
+    }
+};
 
 unsigned int ThreadExecutor::check()
 {
     std::vector<std::future<unsigned int>> threadFutures;
     threadFutures.reserve(mSettings.jobs);
 
-    mItNextFile = mFiles.begin();
-    mItNextFileSettings = mSettings.project.fileSettings.begin();
-
-    mProcessedFiles = 0;
-    mProcessedSize = 0;
-    mTotalFiles = mFiles.size() + mSettings.project.fileSettings.size();
-    mTotalFileSize = 0;
-    for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
-        mTotalFileSize += i->second;
-    }
+    LogWriter logwriter(*this);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {
-            threadFutures.emplace_back(std::async(std::launch::async, threadProc, this));
+            threadFutures.emplace_back(std::async(std::launch::async, threadProc, &logwriter));
         }
         catch (const std::system_error &e) {
             std::cerr << "#### ThreadExecutor::check exception :" << e.what() << std::endl;
@@ -419,134 +492,57 @@ unsigned int ThreadExecutor::check()
     });
 }
 
-unsigned int __stdcall ThreadExecutor::threadProc(ThreadExecutor* threadExecutor)
+unsigned int STDCALL ThreadExecutor::threadProc(LogWriter* logWriter)
 {
     unsigned int result = 0;
 
-    std::map<std::string, std::size_t>::const_iterator &itFile = threadExecutor->mItNextFile;
-    std::list<ImportProject::FileSettings>::const_iterator &itFileSettings = threadExecutor->mItNextFileSettings;
+    std::map<std::string, std::size_t>::const_iterator &itFile = logWriter->mItNextFile;
+    std::list<ImportProject::FileSettings>::const_iterator &itFileSettings = logWriter->mItNextFileSettings;
 
     // guard static members of CppCheck against concurrent access
-    threadExecutor->mFileSync.lock();
+    logWriter->mFileSync.lock();
 
     for (;;) {
-        if (itFile == threadExecutor->mFiles.end() && itFileSettings == threadExecutor->mSettings.project.fileSettings.end()) {
-            threadExecutor->mFileSync.unlock();
+        if (itFile == logWriter->mThreadExecutor.mFiles.end() && itFileSettings == logWriter->mThreadExecutor.mSettings.project.fileSettings.end()) {
+            logWriter->mFileSync.unlock();
             break;
         }
 
-        CppCheck fileChecker(*threadExecutor, false, CppCheckExecutor::executeCommand);
-        fileChecker.settings() = threadExecutor->mSettings;
+        CppCheck fileChecker(*logWriter, false, CppCheckExecutor::executeCommand);
+        fileChecker.settings() = logWriter->mThreadExecutor.mSettings;
 
         std::size_t fileSize = 0;
-        if (itFile != threadExecutor->mFiles.end()) {
+        if (itFile != logWriter->mThreadExecutor.mFiles.end()) {
             const std::string &file = itFile->first;
             fileSize = itFile->second;
             ++itFile;
 
-            threadExecutor->mFileSync.unlock();
+            logWriter->mFileSync.unlock();
 
-            const std::map<std::string, std::string>::const_iterator fileContent = threadExecutor->mFileContents.find(file);
-            if (fileContent != threadExecutor->mFileContents.end()) {
-                // File content was given as a string
-                result += fileChecker.check(file, fileContent->second);
-            } else {
-                // Read file from a file
-                result += fileChecker.check(file);
-            }
+            // Read file from a file
+            result += fileChecker.check(file);
         } else { // file settings..
             const ImportProject::FileSettings &fs = *itFileSettings;
             ++itFileSettings;
-            threadExecutor->mFileSync.unlock();
+            logWriter->mFileSync.unlock();
             result += fileChecker.check(fs);
-            if (threadExecutor->mSettings.clangTidy)
+            if (logWriter->mThreadExecutor.mSettings.clangTidy)
                 fileChecker.analyseClangTidy(fs);
         }
 
-        threadExecutor->mFileSync.lock();
+        logWriter->mFileSync.lock();
 
-        threadExecutor->mProcessedSize += fileSize;
-        threadExecutor->mProcessedFiles++;
-        if (!threadExecutor->mSettings.quiet) {
-            std::lock_guard<std::mutex> lg(threadExecutor->mReportSync);
-            CppCheckExecutor::reportStatus(threadExecutor->mProcessedFiles, threadExecutor->mTotalFiles, threadExecutor->mProcessedSize, threadExecutor->mTotalFileSize);
+        logWriter->mProcessedSize += fileSize;
+        logWriter->mProcessedFiles++;
+        if (!logWriter->mThreadExecutor.mSettings.quiet) {
+            std::lock_guard<std::mutex> lg(logWriter->mReportSync);
+            CppCheckExecutor::reportStatus(logWriter->mProcessedFiles, logWriter->mTotalFiles, logWriter->mProcessedSize, logWriter->mTotalFileSize);
         }
     }
     return result;
 }
-
-void ThreadExecutor::reportOut(const std::string &outmsg, Color c)
-{
-    std::lock_guard<std::mutex> lg(mReportSync);
-
-    mErrorLogger.reportOut(outmsg, c);
-}
-void ThreadExecutor::reportErr(const ErrorMessage &msg)
-{
-    report(msg, MessageType::REPORT_ERROR);
-}
-
-void ThreadExecutor::reportInfo(const ErrorMessage &msg)
-{
-    report(msg, MessageType::REPORT_INFO);
-}
-
-void ThreadExecutor::bughuntingReport(const std::string  & /*str*/)
-{
-    // TODO
-}
-
-void ThreadExecutor::report(const ErrorMessage &msg, MessageType msgType)
-{
-    if (mSettings.nomsg.isSuppressed(msg.toSuppressionsErrorMessage()))
-        return;
-
-    // Alert only about unique errors
-    bool reportError = false;
-    const std::string errmsg = msg.toString(mSettings.verbose);
-
-    {
-        std::lock_guard<std::mutex> lg(mErrorSync);
-        if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-            mErrorList.emplace_back(errmsg);
-            reportError = true;
-        }
-    }
-
-
-    if (reportError) {
-        std::lock_guard<std::mutex> lg(mReportSync);
-
-        switch (msgType) {
-        case MessageType::REPORT_ERROR:
-            mErrorLogger.reportErr(msg);
-            break;
-        case MessageType::REPORT_INFO:
-            mErrorLogger.reportInfo(msg);
-            break;
-        }
-    }
-}
-
-#else
-
-void ThreadExecutor::addFileContent(const std::string & /*path*/, const std::string & /*content*/)
-{}
-
-unsigned int ThreadExecutor::check()
-{
-    return 0;
-}
-
-void ThreadExecutor::reportOut(const std::string & /*outmsg*/, Color)
-{}
-void ThreadExecutor::reportErr(const ErrorMessage & /*msg*/)
-{}
-
-void ThreadExecutor::reportInfo(const ErrorMessage & /*msg*/)
-{}
-
-void ThreadExecutor::bughuntingReport(const std::string & /*str*/)
-{}
-
 #endif
+
+bool ThreadExecutor::isEnabled() {
+    return true;
+}

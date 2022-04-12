@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,12 @@
 #define valueflowH
 //---------------------------------------------------------------------------
 
-#include "astutils.h"
 #include "config.h"
 #include "mathlib.h"
-#include "utils.h"
 
+#include <algorithm>
 #include <cassert>
+#include <cstdlib>
 #include <functional>
 #include <list>
 #include <string>
@@ -35,12 +35,17 @@
 #include <vector>
 
 class ErrorLogger;
+struct InferModel;
 class Settings;
 class SymbolDatabase;
 class Token;
 class TokenList;
 class ValueType;
 class Variable;
+class Scope;
+
+template<class T>
+class ValuePtr;
 
 namespace ValueFlow {
     struct increment {
@@ -94,6 +99,7 @@ namespace ValueFlow {
             varId(0U),
             safe(false),
             conditional(false),
+            macro(false),
             defaultArg(false),
             indirect(0),
             path(0),
@@ -342,6 +348,9 @@ namespace ValueFlow {
         /** Conditional value */
         bool conditional;
 
+        /** Value is is from an expanded macro */
+        bool macro;
+
         /** Is this value passed as default parameter to the function? */
         bool defaultArg;
 
@@ -368,7 +377,7 @@ namespace ValueFlow {
             Address
         } lifetimeKind;
 
-        enum class LifetimeScope { Local, Argument, SubFunction } lifetimeScope;
+        enum class LifetimeScope { Local, Argument, SubFunction, ThisPointer, ThisValue } lifetimeScope;
 
         static const char* toString(MoveKind moveKind);
         static const char* toString(LifetimeKind lifetimeKind);
@@ -449,6 +458,10 @@ namespace ValueFlow {
     std::vector<ValueFlow::Value> isOutOfBounds(const Value& size, const Token* indexTok, bool possible = true);
 }
 
+ValueFlow::Value asImpossible(ValueFlow::Value v);
+
+bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
+
 struct LifetimeToken {
     const Token* token;
     bool addressOf;
@@ -484,6 +497,8 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
 ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok);
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
+CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
+
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                                              bool escape = false,
                                              ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{});
@@ -502,6 +517,10 @@ std::string lifetimeMessage(const Token *tok, const ValueFlow::Value *val, Value
 
 CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive = false);
 
-CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token *tok, bool inconclusive = false, bool subfunction = false);
+CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok,
+                                                               bool inconclusive = false,
+                                                               MathLib::bigint path = 0);
+
+const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope = nullptr, bool smallest = true);
 
 #endif // valueflowH

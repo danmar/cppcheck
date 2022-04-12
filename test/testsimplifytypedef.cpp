@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,7 @@
  */
 
 
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -24,11 +25,13 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <map>
 #include <sstream>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include <simplecpp.h>
-
-
-struct InternalError;
 
 
 class TestSimplifyTypedef : public TestFixture {
@@ -41,7 +44,7 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void run() OVERRIDE {
+    void run() override {
         settings0.severity.enable(Severity::style);
         settings2.severity.enable(Severity::style);
 
@@ -181,6 +184,10 @@ private:
         TEST_CASE(simplifyTypedef135); // ticket #10068
         TEST_CASE(simplifyTypedef136);
         TEST_CASE(simplifyTypedef137);
+        TEST_CASE(simplifyTypedef138);
+        TEST_CASE(simplifyTypedef139);
+        TEST_CASE(simplifyTypedef140); // #10798
+        TEST_CASE(simplifyTypedef141); // #10144
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -198,7 +205,8 @@ private:
         TEST_CASE(simplifyTypedefMacro);
     }
 
-    std::string tok(const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
+#define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tok_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
         errout.str("");
 
         settings0.certainty.enable(Certainty::inconclusive);
@@ -207,7 +215,7 @@ private:
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr, !simplify);
     }
@@ -249,15 +257,15 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-
-    void checkSimplifyTypedef(const char code[]) {
+#define checkSimplifyTypedef(code) checkSimplifyTypedef_(code, __FILE__, __LINE__)
+    void checkSimplifyTypedef_(const char code[], const char* file, int line) {
         errout.str("");
         // Tokenize..
         settings2.certainty.enable(Certainty::inconclusive);
         settings2.debugwarnings = true;   // show warnings about unhandled typedef
         Tokenizer tokenizer(&settings2, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
     }
 
 
@@ -1383,7 +1391,7 @@ private:
                                 "I i;";
 
             // The expected result..
-            const char expected[] = "std :: pair < int , int > const i ;";
+            const char expected[] = "const std :: pair < int , int > i ;";
             ASSERT_EQUALS(expected, tok(code));
         }
 
@@ -2995,6 +3003,53 @@ private:
             ASSERT_EQUALS(exp, tok(code, true, Settings::Native, true));
             ASSERT_EQUALS("", errout.str());
         }
+    }
+
+    void simplifyTypedef138() {
+        const char code[] = "namespace foo { class Bar; }\n"
+                            "class Baz;\n"
+                            "typedef foo::Bar C;\n"
+                            "namespace bar {\n"
+                            "class C : Baz {};\n"
+                            "}\n";
+        ASSERT_EQUALS("namespace foo { class Bar ; } class Baz ; namespace bar { class C : Baz { } ; }", tok(code));
+    }
+
+    void simplifyTypedef139()
+    {
+        const char code[] = "typedef struct c a;\n"
+                            "struct {\n"
+                            "  a *b;\n"
+                            "} * d;\n"
+                            "void e(a *a) {\n"
+                            "  if (a < d[0].b) {}\n"
+                            "}\n";
+        ASSERT_EQUALS(
+            "struct Anonymous0 { struct c * b ; } ; struct Anonymous0 * d ; void e ( struct c * a ) { if ( a < d [ 0 ] . b ) { } }",
+            tok(code));
+    }
+
+    void simplifyTypedef140() { // #10798
+        {
+            const char code[] = "typedef void (*b)();\n"
+                                "enum class E { a, b, c };\n";
+            ASSERT_EQUALS("enum class E { a , b , c } ;", tok(code));
+        }
+        {
+            const char code[] = "typedef int A;\n"
+                                "enum class E { A };\n";
+            ASSERT_EQUALS("enum class E { A } ;", tok(code));
+        }
+    }
+
+    void simplifyTypedef141() { // #10144
+        const char code[] = "class C {\n"
+                            "    struct I {\n"
+                            "        using vt = const std::string;\n"
+                            "        using ptr = vt*;\n"
+                            "    };\n"
+                            "};\n";
+        ASSERT_EQUALS("class C { struct I { } ; } ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {

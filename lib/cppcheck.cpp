@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,33 +22,44 @@
 #include "clangimport.h"
 #include "color.h"
 #include "ctu.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "path.h"
 #include "platform.h"
 #include "preprocessor.h" // Preprocessor
+#include "standards.h"
 #include "suppressions.h"
 #include "timer.h"
+#include "token.h"
 #include "tokenize.h" // Tokenizer
 #include "tokenlist.h"
+#include "utils.h"
+#include "valueflow.h"
 #include "version.h"
 
-#include "exprengine.h"
-#include <string>
-
-#define PICOJSON_USE_INT64
-#include <picojson.h>
-#include <simplecpp.h>
-#include <tinyxml2.h>
 #include <algorithm>
+#include <cstdio>
+#include <cstdint>
 #include <cstring>
+#include <cctype>
+#include <cstdlib>
+#include <exception>
+#include <iostream> // <- TEMPORARY
+#include <memory>
 #include <new>
 #include <set>
 #include <stdexcept>
+#include <string>
+#include <utility>
 #include <vector>
-#include <memory>
-#include <iostream> // <- TEMPORARY
-#include <cstdio>
+
+#define PICOJSON_USE_INT64
+#include <picojson.h>
+
+#include <simplecpp.h>
+
+#include <tinyxml2.h>
 
 #ifdef HAVE_RULES
 #ifdef _WIN32
@@ -56,6 +67,8 @@
 #endif
 #include <pcre.h>
 #endif
+
+class SymbolDatabase;
 
 static const char Version[] = CPPCHECK_VERSION_STRING;
 static const char ExtraVersion[] = "";
@@ -133,7 +146,7 @@ namespace {
             if (obj.count("executable")) {
                 if (!obj["executable"].is<std::string>())
                     return "Loading " + fileName + " failed. executable must be a string.";
-                executable = getFullPath(obj["executable"].get<std::string>(), exename);
+                executable = getFullPath(obj["executable"].get<std::string>(), fileName);
                 return "";
             }
 
@@ -345,7 +358,6 @@ CppCheck::CppCheck(ErrorLogger &errorLogger,
                    std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
     : mErrorLogger(errorLogger)
     , mExitCode(0)
-    , mSuppressInternalErrorFound(false)
     , mUseGlobalSuppressions(useGlobalSuppressions)
     , mTooManyConfigs(false)
     , mSimplify(true)
@@ -371,7 +383,7 @@ const char * CppCheck::extraVersion()
     return ExtraVersion;
 }
 
-static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMessage&)> reportErr)
+static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMessage&)> reportErr, std::vector<ErrorMessage> *warnings)
 {
     std::string line;
     while (std::getline(is, line)) {
@@ -381,6 +393,8 @@ static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMe
         std::string::size_type pos3 = line.find(": error: ");
         if (pos3 == std::string::npos)
             pos3 = line.find(": fatal error:");
+        if (warnings && pos3 == std::string::npos)
+            pos3 = line.find(": warning:");
         if (pos3 == std::string::npos)
             continue;
 
@@ -408,6 +422,12 @@ static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMe
                             msg,
                             "syntaxError",
                             Certainty::normal);
+
+        if (line.compare(pos3, 10, ": warning:") == 0) {
+            warnings->push_back(errmsg);
+            continue;
+        }
+
         reportErr(errmsg);
 
         return true;
@@ -459,19 +479,20 @@ unsigned int CppCheck::check(const std::string &path)
         }
 
         // Ensure there are not syntax errors...
+        std::vector<ErrorMessage> compilerWarnings;
         if (!mSettings.buildDir.empty()) {
             std::ifstream fin(clangStderr);
             auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
-            if (reportClangErrors(fin, reportError))
+            if (reportClangErrors(fin, reportError, &compilerWarnings))
                 return 0;
         } else {
             std::istringstream istr(output2);
             auto reportError = [this](const ErrorMessage& errorMessage) {
                 reportErr(errorMessage);
             };
-            if (reportClangErrors(istr, reportError))
+            if (reportClangErrors(istr, reportError, &compilerWarnings))
                 return 0;
         }
 
@@ -496,6 +517,8 @@ unsigned int CppCheck::check(const std::string &path)
             createDumpFile(mSettings, path, tokenizer.list.getFiles(), nullptr, fdump, dumpFile);
             if (fdump.is_open()) {
                 fdump << "<dump cfg=\"\">" << std::endl;
+                for (const ErrorMessage& errmsg: compilerWarnings)
+                    fdump << "  <clang-warning file=\"" << toxml(errmsg.callStack.front().getfile()) << "\" line=\"" << errmsg.callStack.front().line << "\" column=\"" << errmsg.callStack.front().column << "\" message=\"" << toxml(errmsg.shortMessage()) << "\"/>\n";
                 fdump << "  <standards>" << std::endl;
                 fdump << "    <c version=\"" << mSettings.standards.getC() << "\"/>" << std::endl;
                 fdump << "    <cpp version=\"" << mSettings.standards.getCPP() << "\"/>" << std::endl;
@@ -560,7 +583,6 @@ unsigned int CppCheck::check(const ImportProject::FileSettings &fs)
 unsigned int CppCheck::checkFile(const std::string& filename, const std::string &cfgname, std::istream& fileStream)
 {
     mExitCode = 0;
-    mSuppressInternalErrorFound = false;
 
     // only show debug warnings for accepted C/C++ source files
     if (!Path::acceptFile(filename))
@@ -838,6 +860,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     fdump << "</dump>" << std::endl;
                 }
 
+                // Need to call this even if the checksum will skip this configuration
+                mSettings.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+
                 // Skip if we already met the same simplified token list
                 if (mSettings.force || mSettings.maxConfigs > 1) {
                     const unsigned long long checksum = tokenizer.list.calculateChecksum();
@@ -990,44 +1015,39 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
-    mSettings.library.bugHunting = mSettings.bugHunting;
-    if (mSettings.bugHunting)
-        ExprEngine::runChecks(this, &tokenizer, &mSettings);
-    else {
-        // call all "runChecks" in all registered Check classes
-        for (Check *check : Check::instances()) {
-            if (Settings::terminated())
-                return;
-
-            if (Tokenizer::isMaxTime())
-                return;
-
-            Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
-            check->runChecks(&tokenizer, &mSettings, this);
-        }
-
-        if (mSettings.clang)
-            // TODO: Use CTU for Clang analysis
+    // call all "runChecks" in all registered Check classes
+    for (Check *check : Check::instances()) {
+        if (Settings::terminated())
             return;
 
-        // Analyse the tokens..
+        if (Tokenizer::isMaxTime())
+            return;
 
-        CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
-        if (fi1) {
-            mFileInfo.push_back(fi1);
-            mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
-        }
-
-        for (const Check *check : Check::instances()) {
-            Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
-            if (fi != nullptr) {
-                mFileInfo.push_back(fi);
-                mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
-            }
-        }
-
-        executeRules("normal", tokenizer);
+        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
+        check->runChecks(&tokenizer, &mSettings, this);
     }
+
+    if (mSettings.clang)
+        // TODO: Use CTU for Clang analysis
+        return;
+
+    // Analyse the tokens..
+
+    CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
+    if (fi1) {
+        mFileInfo.push_back(fi1);
+        mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+    }
+
+    for (const Check *check : Check::instances()) {
+        Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
+        if (fi != nullptr) {
+            mFileInfo.push_back(fi);
+            mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+        }
+    }
+
+    executeRules("normal", tokenizer);
 }
 
 //---------------------------------------------------------------------------
@@ -1343,7 +1363,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             mExitCode = 1;
             continue;
         }
-        if (addon != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
+        if (addonInfo.name != "misra" && !addonInfo.ctu && endsWith(files.back(), ".ctu-info"))
             continue;
 
         const std::string results =
@@ -1490,8 +1510,6 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
 void CppCheck::reportErr(const ErrorMessage &msg)
 {
-    mSuppressInternalErrorFound = false;
-
     if (!mSettings.library.reportErrors(msg.file0))
         return;
 
@@ -1509,12 +1527,10 @@ void CppCheck::reportErr(const ErrorMessage &msg)
 
     if (mUseGlobalSuppressions) {
         if (mSettings.nomsg.isSuppressed(errorMessage)) {
-            mSuppressInternalErrorFound = true;
             return;
         }
     } else {
         if (mSettings.nomsg.isSuppressedLocal(errorMessage)) {
-            mSuppressInternalErrorFound = true;
             return;
         }
     }
@@ -1550,11 +1566,6 @@ void CppCheck::reportInfo(const ErrorMessage &msg)
 
 void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, std::size_t /*sizedone*/, std::size_t /*sizetotal*/)
 {}
-
-void CppCheck::bughuntingReport(const std::string &str)
-{
-    mErrorLogger.bughuntingReport(str);
-}
 
 void CppCheck::getErrorMessages()
 {
@@ -1627,7 +1638,6 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
         const std::string lineNumString = line.substr(endNamePos + 1, endLinePos - endNamePos - 1);
         const std::string columnNumString = line.substr(endLinePos + 1, endColumnPos - endLinePos - 1);
-        const std::string errorTypeString = line.substr(endColumnPos + 1, endMsgTypePos - endColumnPos - 1);
         const std::string messageString = line.substr(endMsgTypePos + 1, endErrorPos - endMsgTypePos - 1);
         const std::string errorString = line.substr(endErrorPos, line.length());
 

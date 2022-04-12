@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,9 +18,12 @@
 
 
 #include "checkassert.h"
+#include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <iosfwd>
 
 
 class TestAssert : public TestFixture {
@@ -30,21 +33,22 @@ public:
 private:
     Settings settings;
 
-    void check(const char code[], const char *filename = "test.cpp") {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], const char *filename = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, filename);
+        ASSERT_LOC(tokenizer.tokenize(istr, filename), file, line);
 
         // Check..
         CheckAssert checkAssert;
         checkAssert.runChecks(&tokenizer, &settings, this);
     }
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
 
         TEST_CASE(assignmentInAssert);
@@ -232,6 +236,11 @@ private:
     void crash() {
         check("void foo() {\n"
               "  assert(sizeof(struct { int a[x++]; })==sizeof(int));\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo() {\n" // #9790
+              "  assert(kad_bucket_hash(&(kad_guid) { .bytes = { 0 } }, & (kad_guid){.bytes = { 0 }}) == -1);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }

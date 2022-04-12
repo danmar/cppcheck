@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,10 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+#include "valueflow.h"
 
+#include <algorithm>
+#include <iosfwd>
 #include <string>
 #include <vector>
 
@@ -41,7 +44,7 @@ private:
     std::vector<std::string> extendedOps;
     std::vector<std::string> assignmentOps;
 
-    void run() OVERRIDE {
+    void run() override {
         arithmeticalOps = { "+", "-", "*", "/", "%", "<<", ">>" };
         logicalOps = { "&&", "||", "!" };
         comparisonOps = { "==", "!=", "<", "<=", ">", ">=" };
@@ -132,12 +135,13 @@ private:
         TokenList::deleteTokens(token);
     }
 
-    bool Match(const std::string &code, const std::string &pattern, unsigned int varid=0) {
+#define MatchCheck(...) MatchCheck_(__FILE__, __LINE__, __VA_ARGS__)
+    bool MatchCheck_(const char* file, int line, const std::string& code, const std::string& pattern, unsigned int varid = 0) {
         static const Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(";" + code + ";");
         try {
-            tokenizer.tokenize(istr, "test.cpp");
+            ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         } catch (...) {}
         return Token::Match(tokenizer.tokens()->next(), pattern.c_str(), varid);
     }
@@ -762,7 +766,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            ASSERT_EQUALS(true, Match(*test_op, "%op%"));
+            ASSERT_EQUALS(true, MatchCheck(*test_op, "%op%"));
         }
 
         // Negative test against other operators
@@ -771,7 +775,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            ASSERT_EQUALS_MSG(false, Match(*other_op, "%op%"), "Failing other operator: " + *other_op);
+            ASSERT_EQUALS_MSG(false, MatchCheck(*other_op, "%op%"), "Failing other operator: " + *other_op);
         }
     }
 
@@ -784,7 +788,7 @@ private:
 
         std::vector<std::string>::const_iterator test_op, test_ops_end = test_ops.end();
         for (test_op = test_ops.begin(); test_op != test_ops_end; ++test_op) {
-            ASSERT_EQUALS(true, Match(*test_op, "%cop%"));
+            ASSERT_EQUALS(true, MatchCheck(*test_op, "%cop%"));
         }
 
         // Negative test against other operators
@@ -794,7 +798,7 @@ private:
 
         std::vector<std::string>::const_iterator other_op, other_ops_end = other_ops.end();
         for (other_op = other_ops.begin(); other_op != other_ops_end; ++other_op) {
-            ASSERT_EQUALS_MSG(false, Match(*other_op, "%cop%"), "Failing other operator: " + *other_op);
+            ASSERT_EQUALS_MSG(false, MatchCheck(*other_op, "%cop%"), "Failing other operator: " + *other_op);
         }
     }
 
@@ -1099,14 +1103,14 @@ private:
         ASSERT(t == nullptr);
     }
 
-    void findClosingBracket() {
+    void findClosingBracket() const {
         givenACodeSampleToTokenize var("template<typename X, typename...Y> struct S : public Fred<Wilma<Y...>> {}");
 
         const Token* const t = var.tokens()->next()->findClosingBracket();
         ASSERT(Token::simpleMatch(t, "> struct"));
     }
 
-    void expressionString() {
+    void expressionString() const {
         givenACodeSampleToTokenize var1("void f() { *((unsigned long long *)x) = 0; }");
         const Token *const tok1 = Token::findsimplematch(var1.tokens(), "*");
         ASSERT_EQUALS("*((unsigned long long*)x)", tok1->expressionString());
@@ -1128,7 +1132,7 @@ private:
         ASSERT_EQUALS("x=\"\\x00\\x01\\x02\\x03\\x04\\x05\\x06\\x07\"", data6.tokens()->next()->expressionString());
     }
 
-    void hasKnownIntValue() {
+    void hasKnownIntValue() const {
         // pointer might be NULL
         ValueFlow::Value v1(0);
 

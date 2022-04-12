@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,13 @@
 
 #include <functional>
 #include <set>
+#include <stack>
 #include <string>
 #include <vector>
 
+#include "config.h"
 #include "errortypes.h"
-#include "utils.h"
+#include "symboldatabase.h"
 
 class Function;
 class Library;
@@ -47,8 +49,37 @@ enum class ChildrenToVisit {
 /**
  * Visit AST nodes recursively. The order is not "well defined"
  */
-void visitAstNodes(const Token *ast, std::function<ChildrenToVisit(const Token *)> visitor);
-void visitAstNodes(Token *ast, std::function<ChildrenToVisit(Token *)> visitor);
+template<class T, class TFunc, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+void visitAstNodes(T *ast, const TFunc &visitor)
+{
+    if (!ast)
+        return;
+
+    std::stack<T *, std::vector<T *>> tokens;
+    T *tok = ast;
+    do {
+        ChildrenToVisit c = visitor(tok);
+
+        if (c == ChildrenToVisit::done)
+            break;
+        if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2) {
+            T *t2 = tok->astOperand2();
+            if (t2)
+                tokens.push(t2);
+        }
+        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2) {
+            T *t1 = tok->astOperand1();
+            if (t1)
+                tokens.push(t1);
+        }
+
+        if (tokens.empty())
+            break;
+
+        tok = tokens.top();
+        tokens.pop();
+    } while (true);
+}
 
 const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred);
 const Token* findExpression(const nonneg int exprid,
@@ -64,6 +95,7 @@ bool astHasToken(const Token* root, const Token * tok);
 
 bool astHasVar(const Token * tok, nonneg int varid);
 
+bool astIsPrimitive(const Token* tok);
 /** Is expression a 'signed char' if no promotion is used */
 bool astIsSignedChar(const Token *tok);
 /** Is expression a 'char' if no promotion is used? */
@@ -81,6 +113,7 @@ bool astIsBool(const Token *tok);
 bool astIsPointer(const Token *tok);
 
 bool astIsSmartPointer(const Token* tok);
+bool astIsUniqueSmartPointer(const Token* tok);
 
 bool astIsIterator(const Token *tok);
 
@@ -103,6 +136,8 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
+bool isVariableDecl(const Token* tok);
+
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown = false);
 
 const Token* previousBeforeAstLeftmostLeaf(const Token* tok);
@@ -117,12 +152,19 @@ const Token* astParentSkipParens(const Token* tok);
 const Token* getParentMember(const Token * tok);
 
 const Token* getParentLifetime(const Token* tok);
+const Token* getParentLifetime(bool cpp, const Token* tok, const Library* library);
 
 bool astIsLHS(const Token* tok);
 bool astIsRHS(const Token* tok);
 
 Token* getCondTok(Token* tok);
 const Token* getCondTok(const Token* tok);
+
+Token* getInitTok(Token* tok);
+const Token* getInitTok(const Token* tok);
+
+Token* getStepTok(Token* tok);
+const Token* getStepTok(const Token* tok);
 
 Token* getCondTokFromEnd(Token* endBlock);
 const Token* getCondTokFromEnd(const Token* endBlock);
@@ -143,6 +185,7 @@ bool extractForLoopValues(const Token *forToken,
                           long long * const lastValue);
 
 bool precedes(const Token * tok1, const Token * tok2);
+bool succeeds(const Token* tok1, const Token* tok2);
 
 bool exprDependsOnThis(const Token* expr, bool onVar = true, nonneg int depth = 0);
 
@@ -161,8 +204,6 @@ const Token* followReferences(const Token* tok, ErrorPath* errors = nullptr);
 bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2, const Library& library, bool pure, bool followVar, ErrorPath* errors=nullptr);
 
 bool isEqualKnownValue(const Token * const tok1, const Token * const tok2);
-
-bool isDifferentKnownValues(const Token * const tok1, const Token * const tok2);
 
 /**
  * Is token used a boolean, that is to say cast to a bool, or used as a condition in a if/while/for
@@ -186,7 +227,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library);
 
 bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp);
 
-bool isWithoutSideEffects(bool cpp, const Token* tok);
+bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess = false, bool checkReference = true);
 
 bool isUniqueExpression(const Token* tok);
 
@@ -198,8 +239,14 @@ bool isReturnScope(const Token* const endToken,
                    const Token** unknownFunc = nullptr,
                    bool functionScope = false);
 
+/** Is tok within a scope of the given type, nested within var's scope? */
+bool isWithinScope(const Token* tok,
+                   const Variable* var,
+                   Scope::ScopeType type);
+
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);
+Token* getTokenArgumentFunction(Token* tok, int& argn);
 
 std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr);
 
@@ -354,8 +401,6 @@ public:
         bool known;
         const Token *token;
     };
-
-    std::vector<KnownAndToken> valueFlow(const Token *expr, const Token *startToken, const Token *endToken);
 
     /** Is there some possible alias for given expression */
     bool possiblyAliased(const Token *expr, const Token *startToken) const;

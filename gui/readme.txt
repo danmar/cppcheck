@@ -61,10 +61,10 @@ and compile the translations. lupdate updates translations files from the code
 and lrelease compiles translation files use with the executable.
 
 To update translations:
-- run lupdate gui.pro to update the translation files to match the code. This
+- run "lupdate gui.pro -no-obsolete" to update the translation files to match the code. This
   command updates all the .ts files. Which can be then edited to translate
   the application.
 
 To compile translations:
-- run lrelease gui.pro to compile .ts files to .qm files which are used by the
+- run "lrelease gui.pro" to compile .ts files to .qm files which are used by the
   executable.

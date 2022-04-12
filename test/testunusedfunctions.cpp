@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,11 +17,13 @@
  */
 
 #include "checkunusedfunctions.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
 
+#include <sstream>
 #include <string>
 
 class TestUnusedFunctions : public TestFixture {
@@ -31,7 +33,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::style);
 
         TEST_CASE(incondition);
@@ -53,6 +55,7 @@ private:
         TEST_CASE(unusedMain);
         TEST_CASE(initializationIsNotAFunction);
         TEST_CASE(operator1);   // #3195
+        TEST_CASE(operator2);   // #7974
         TEST_CASE(returnRef);
         TEST_CASE(attribute); // #3471 - FP __attribute__(constructor)
         TEST_CASE(initializer_list);
@@ -68,7 +71,8 @@ private:
         TEST_CASE(operatorOverload);
     }
 
-    void check(const char code[], Settings::PlatformType platform = Settings::Native) {
+#define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
+    void check_(const char* file, int line, const char code[], Settings::PlatformType platform = Settings::Native) {
         // Clear the error buffer..
         errout.str("");
 
@@ -77,14 +81,14 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check for unused functions..
         CheckUnusedFunctions checkUnusedFunctions(&tokenizer, &settings, this);
         checkUnusedFunctions.parseTokens(tokenizer,  "someFile.c", &settings);
         // check() returns error if and only if errout is not empty.
-        if (checkUnusedFunctions.check(this, settings)) {
-            ASSERT(errout.str() != "");
+        if ((checkUnusedFunctions.check)(this, settings)) {
+            ASSERT(!errout.str().empty());
         } else {
             ASSERT_EQUALS("", errout.str());
         }
@@ -326,6 +330,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void operator2() { // #7974
+        check("bool operator==(const data_t& a, const data_t& b) {\n"
+              "    return (a.fd == b.fd);\n"
+              "}\n"
+              "bool operator==(const event& a, const event& b) {\n"
+              "    return ((a.events == b.events) && (a.data == b.data));\n"
+              "}\n"
+              "int main(event a, event b) {\n"
+              "    return a == b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void returnRef() {
         check("int& foo() {return x;}");
         ASSERT_EQUALS("[test.cpp:1]: (style) The function 'foo' is never used.\n", errout.str());
@@ -439,13 +456,13 @@ private:
 
             Tokenizer tokenizer2(&settings, this);
             std::istringstream istr(code);
-            tokenizer2.tokenize(istr, fname.str().c_str());
+            ASSERT(tokenizer2.tokenize(istr, fname.str().c_str()));
 
             c.parseTokens(tokenizer2, "someFile.c", &settings);
         }
 
         // Check for unused functions..
-        c.check(this, settings);
+        (c.check)(this, settings);
 
         ASSERT_EQUALS("[test1.cpp:1]: (style) The function 'f' is never used.\n", errout.str());
     }

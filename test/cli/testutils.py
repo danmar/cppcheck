@@ -4,6 +4,9 @@ import os
 import subprocess
 
 # Create Cppcheck project file
+import sys
+
+
 def create_gui_project_file(project_file, root_path=None, import_project=None, paths=None, exclude_paths=None, suppressions=None, addon=None):
     cppcheck_xml = ('<?xml version="1.0" encoding="UTF-8"?>\n'
                     '<project version="1">\n')
@@ -40,15 +43,28 @@ def create_gui_project_file(project_file, root_path=None, import_project=None, p
     f.close()
 
 
+def lookup_cppcheck_exe():
+    # path the script is located in
+    script_path = os.path.dirname(os.path.realpath(__file__))
+
+    exe_name = "cppcheck"
+
+    if sys.platform == "win32":
+        exe_name += ".exe"
+
+    for base in (script_path + '/../../', './'):
+        for path in ('', 'bin/', 'bin/debug/'):
+            exe_path = base + path + exe_name
+            if os.path.isfile(exe_path):
+                return exe_path
+
+    return None
+
+
 # Run Cppcheck with args
 def cppcheck(args):
-    exe = None
-    for ext in ('', '.exe'):
-        for base in ('../../', '../../../'):
-            for path in ('', 'bin/', 'bin/debug/'):
-                if (exe is None) and os.path.isfile(base + path + 'cppcheck' + ext):
-                    exe = base + path + 'cppcheck' + ext
-    assert exe is not None
+    exe = lookup_cppcheck_exe()
+    assert exe is not None, 'no cppcheck binary found'
 
     logging.info(exe + ' ' + ' '.join(args))
     p = subprocess.Popen([exe] + args, stdout=subprocess.PIPE, stderr=subprocess.PIPE)

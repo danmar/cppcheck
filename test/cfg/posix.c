@@ -29,6 +29,94 @@
 #include <wchar.h>
 #include <string.h>
 
+// Note: Since glibc 2.28, this function symbol is no longer available to newly linked applications.
+void invalidFunctionArg_llseek(int fd, loff_t offset, int origin)
+{
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(-1, offset, SEEK_SET);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, -1);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, 3);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, 42+SEEK_SET);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, SEEK_SET+42);
+    // No invalidFunctionArg warning is expected for
+    // cppcheck-suppress llseekCalled
+    (void)llseek(0, offset, origin);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, origin);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, SEEK_SET);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, SEEK_CUR);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, SEEK_END);
+}
+
+void invalidFunctionArg_lseek64(int fd, off_t offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(-1, offset, SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)lseek64(0, offset, origin);
+    (void)lseek64(fd, offset, origin);
+    (void)lseek64(fd, offset, SEEK_SET);
+    (void)lseek64(fd, offset, SEEK_CUR);
+    (void)lseek64(fd, offset, SEEK_END);
+}
+
+void invalidFunctionArg_lseek(int fd, off_t offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(-1, offset, SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)lseek(0, offset, origin);
+    (void)lseek(fd, offset, origin);
+    (void)lseek(fd, offset, SEEK_SET);
+    (void)lseek(fd, offset, SEEK_CUR);
+    (void)lseek(fd, offset, SEEK_END);
+}
+
+void invalidFunctionArg_fseeko(FILE* stream, off_t offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)fseeko(stream, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fseeko(stream, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fseeko(stream, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fseeko(stream, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)fseeko(stream, offset, origin);
+    (void)fseeko(stream, offset, SEEK_SET);
+    (void)fseeko(stream, offset, SEEK_CUR);
+    (void)fseeko(stream, offset, SEEK_END);
+}
+
 char * overlappingWriteFunction_stpcpy(char *src, char *dest)
 {
     // No warning shall be shown:
@@ -268,6 +356,15 @@ void * memleak_mmap2() // #8327
     return NULL;
 }
 
+void * identicalCondition_mmap(int fd, size_t size) // #9940
+{
+    void* buffer = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (buffer == MAP_FAILED) {
+        return NULL;
+    }
+    return buffer;
+}
+
 void resourceLeak_fdopen(int fd)
 {
     // cppcheck-suppress unreadVariable
@@ -496,7 +593,7 @@ void timet_h(struct timespec* ptp1)
     clock_settime(clk_id2, ptp1);
 
     struct timespec tp;
-    // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, &tp); // #6577 - false negative
     // cppcheck-suppress uninitvar
     clock_settime(clk_id3, &tp);

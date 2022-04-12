@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,13 +16,20 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <tinyxml2.h>
-
+#include "check.h"
 #include "checkclass.h"
+#include "errortypes.h"
 #include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "tokenize.h"
+
+#include <iosfwd>
+#include <list>
+#include <string>
+#include <vector>
+
+#include <tinyxml2.h>
 
 
 class TestClass : public TestFixture {
@@ -33,7 +40,7 @@ private:
     Settings settings0;
     Settings settings1;
 
-    void run() OVERRIDE {
+    void run() override {
         settings0.severity.enable(Severity::style);
         settings1.severity.enable(Severity::warning);
 
@@ -46,6 +53,12 @@ private:
                                    "    <dealloc>free</dealloc>\n"
                                    "  </memory>\n"
                                    "  <smart-pointer class-name=\"std::shared_ptr\"/>\n"
+                                   "  <container id=\"stdVector\" startPattern=\"std :: vector &lt;\" itEndPattern=\"&gt; :: const_iterator\">\n"
+                                   "    <access>\n"
+                                   "      <function name=\"begin\" yields=\"start-iterator\"/>\n"
+                                   "      <function name=\"end\" yields=\"end-iterator\"/>\n"
+                                   "    </access>\n"
+                                   "  </container>\n"
                                    "</def>";
             tinyxml2::XMLDocument doc;
             doc.Parse(xmldata, sizeof(xmldata));
@@ -71,6 +84,7 @@ private:
         TEST_CASE(copyConstructor3); // defaulted/deleted
         TEST_CASE(copyConstructor4); // base class with private constructor
         TEST_CASE(copyConstructor5); // multiple inheritance
+        TEST_CASE(copyConstructor6); // array of pointers
         TEST_CASE(noOperatorEq); // class with memory management should have operator eq
         TEST_CASE(noDestructor); // class with memory management should have destructor
 
@@ -173,6 +187,14 @@ private:
         TEST_CASE(const68); // ticket #6471
         TEST_CASE(const69); // ticket #9806
         TEST_CASE(const70); // variadic template can receive more arguments than in its definition
+        TEST_CASE(const71); // ticket #10146
+        TEST_CASE(const72); // ticket #10520
+        TEST_CASE(const73); // ticket #10735
+        TEST_CASE(const74); // ticket #10671
+        TEST_CASE(const75); // ticket #10065
+        TEST_CASE(const76); // ticket #10825
+        TEST_CASE(const77); // ticket #10307
+        TEST_CASE(const78); // ticket #10315
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -201,6 +223,8 @@ private:
         TEST_CASE(const_shared_ptr);
         TEST_CASE(constPtrToConstPtr);
         TEST_CASE(constTrailingReturnType);
+        TEST_CASE(staticArrayPtrOverload);
+        TEST_CASE(qualifiedNameMember); // #10872
 
         TEST_CASE(initializerListOrder);
         TEST_CASE(initializerListUsage);
@@ -219,16 +243,17 @@ private:
         TEST_CASE(override1);
         TEST_CASE(overrideCVRefQualifiers);
 
-        TEST_CASE(checkThisUseAfterFree);
+        TEST_CASE(thisUseAfterFree);
 
         TEST_CASE(unsafeClassRefMember);
 
         TEST_CASE(ctuOneDefinitionRule);
 
-        TEST_CASE(getFileInfo);
+        TEST_CASE(testGetFileInfo);
     }
 
-    void checkCopyCtorAndEqOperator(const char code[]) {
+#define checkCopyCtorAndEqOperator(code) checkCopyCtorAndEqOperator_(code, __FILE__, __LINE__)
+    void checkCopyCtorAndEqOperator_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -237,11 +262,11 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkCopyCtorAndEqOperator();
+        (checkClass.checkCopyCtorAndEqOperator)();
     }
 
     void copyCtorAndEqOperator() {
@@ -333,18 +358,19 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkExplicitConstructors(const char code[]) {
+#define checkExplicitConstructors(code) checkExplicitConstructors_(code, __FILE__, __LINE__)
+    void checkExplicitConstructors_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);
-        checkClass.checkExplicitConstructors();
+        (checkClass.checkExplicitConstructors)();
     }
 
     void explicitConstructors() {
@@ -440,20 +466,34 @@ private:
                                   "    A(int, int y=2) {}"
                                   "};");
         ASSERT_EQUALS("[test.cpp:1]: (style) Struct 'A' has a constructor with 1 argument that is not explicit.\n", errout.str());
+
+        checkExplicitConstructors("struct Foo {\n" // #10515
+                                  "    template <typename T>\n"
+                                  "    explicit constexpr Foo(T) {}\n"
+                                  "};\n"
+                                  "struct Bar {\n"
+                                  "    template <typename T>\n"
+                                  "    constexpr explicit Bar(T) {}\n"
+                                  "};\n"
+                                  "struct Baz {\n"
+                                  "    explicit constexpr Baz(int) {}\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
-    void checkDuplInheritedMembers(const char code[]) {
+#define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
+    void checkDuplInheritedMembers_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
-        checkClass.checkDuplInheritedMembers();
+        (checkClass.checkDuplInheritedMembers)();
     }
 
     void duplInheritedMembers() {
@@ -596,14 +636,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkCopyConstructor(const char code[]) {
+#define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)
+    void checkCopyConstructor_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);
@@ -932,6 +973,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void copyConstructor6() {
+        checkCopyConstructor("struct S {\n"
+                             "    S() {\n"
+                             "        for (int i = 0; i < 5; i++)\n"
+                             "            a[i] = new char[3];\n"
+                             "    }\n"
+                             "    char* a[5];\n"
+                             "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (warning) Struct 'S' does not have a copy constructor which is recommended since it has dynamic memory/resource allocation(s).\n"
+                           "[test.cpp:4]: (warning) Struct 'S' does not have a operator= which is recommended since it has dynamic memory/resource allocation(s).\n"
+                           "[test.cpp:4]: (warning) Struct 'S' does not have a destructor which is recommended since it has dynamic memory/resource allocation(s).\n",
+                           "",
+                           errout.str());
+    }
+
     void noOperatorEq() {
         checkCopyConstructor("struct F {\n"
                              "   char* c;\n"
@@ -1027,14 +1083,15 @@ private:
     }
 
     // Check that operator Equal returns reference to this
-    void checkOpertorEqRetRefThis(const char code[]) {
+#define checkOpertorEqRetRefThis(code) checkOpertorEqRetRefThis_(code, __FILE__, __LINE__)
+    void checkOpertorEqRetRefThis_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);
@@ -1490,14 +1547,15 @@ private:
     }
 
     // Check that operator Equal checks for assignment to self
-    void checkOpertorEqToSelf(const char code[]) {
+#define checkOpertorEqToSelf(code) checkOpertorEqToSelf_(code, __FILE__, __LINE__)
+    void checkOpertorEqToSelf_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
@@ -2448,7 +2506,8 @@ private:
     }
 
     // Check that base classes have virtual destructors
-    void checkVirtualDestructor(const char code[], bool inconclusive = false) {
+#define checkVirtualDestructor(...) checkVirtualDestructor_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkVirtualDestructor_(const char* file, int line, const char code[], bool inconclusive = false) {
         // Clear the error log
         errout.str("");
 
@@ -2458,7 +2517,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings0, this);
@@ -2505,6 +2564,27 @@ private:
                                "Base *base = new Derived;\n"
                                "delete base;");
         ASSERT_EQUALS("", errout.str());
+
+        // #9104
+        checkVirtualDestructor("struct A\n"
+                               "{\n"
+                               "    A()  { cout << \"A is constructing\\n\"; }\n"
+                               "    ~A() { cout << \"A is destructing\\n\"; }\n"
+                               "};\n"
+                               " \n"
+                               "struct Base {};\n"
+                               " \n"
+                               "struct Derived : Base\n"
+                               "{\n"
+                               "    A a;\n"
+                               "};\n"
+                               " \n"
+                               "int main(void)\n"
+                               "{\n"
+                               "    Base* p = new Derived();\n"
+                               "    delete p;\n"
+                               "}");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Class 'Base' which is inherited by class 'Derived' does not have a virtual destructor.\n", errout.str());
     }
 
     void virtualDestructor3() {
@@ -2742,21 +2822,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkNoMemset(const char code[]) {
+
+#define checkNoMemset(...) checkNoMemset_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkNoMemset_(const char* file, int line, const char code[]) {
         Settings settings;
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::portability);
-        checkNoMemset(code,settings);
+        checkNoMemset_(file, line, code, settings);
     }
 
-    void checkNoMemset(const char code[], const Settings &settings) {
+    void checkNoMemset_(const char* file, int line, const char code[], const Settings &settings) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
@@ -3338,15 +3420,15 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-
-    void checkThisSubtraction(const char code[]) {
+#define checkThisSubtraction(code) checkThisSubtraction_(code, __FILE__, __LINE__)
+    void checkThisSubtraction_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
@@ -3371,7 +3453,8 @@ private:
                       "[test.cpp:3]: (warning) Suspicious pointer subtraction. Did you intend to write '->'?\n", errout.str());
     }
 
-    void checkConst(const char code[], Settings *s = nullptr, bool inconclusive = true) {
+#define checkConst(...) checkConst_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkConst_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -3383,10 +3466,10 @@ private:
         // Tokenize..
         Tokenizer tokenizer(s, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, s, this);
-        checkClass.checkConst();
+        (checkClass.checkConst)();
     }
 
     void const1() {
@@ -5761,6 +5844,224 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void const71() { // #10146
+        checkConst("struct Bar {\n"
+                   "    int j = 5;\n"
+                   "    void f(int& i) const { i += j; }\n"
+                   "};\n"
+                   "struct Foo {\n"
+                   "    Bar bar;\n"
+                   "    int k{};\n"
+                   "    void g() { bar.f(k); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    A a;\n"
+                   "    void f(int j, int*& p) {\n"
+                   "        p = &(((a[j])));\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const72() { // #10520
+        checkConst("struct S {\n"
+                   "    explicit S(int* p) : mp(p) {}\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    explicit S(int* p) : mp(p) {}\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S(&i); }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return { &i }; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    explicit S(const int* p) : mp(p) {}\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    explicit S(const int* p) : mp(p) {}\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S(&i); }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return S{ &i }; }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+
+        checkConst("struct S {\n"
+                   "    const int* mp{};\n"
+                   "};\n"
+                   "struct C {\n"
+                   "    int i{};\n"
+                   "    S f() { return { &i }; }\n"
+                   "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:7]: (style, inconclusive) Technically the member function 'C::f' can be const.\n", "", errout.str());
+    }
+
+    void const73() {
+        checkConst("struct A {\n"
+                   "    int* operator[](int i);\n"
+                   "    const int* operator[](int i) const;\n"
+                   "};\n"
+                   "struct S {\n"
+                   "    A a;\n"
+                   "    void f(int j) {\n"
+                   "        int* p = a[j];\n"
+                   "        *p = 0;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n" // #10758
+                   "    T* h;\n"
+                   "    void f(); \n"
+                   "};\n"
+                   "void S::f() {\n"
+                   "    char* c = h->x[y];\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:3]: (style, inconclusive) Technically the member function 'S::f' can be const.\n", errout.str());
+    }
+
+    void const74() { // #10671
+        checkConst("class A {\n"
+                   "    std::vector<std::string> m_str;\n"
+                   "public:\n"
+                   "    A() {}\n"
+                   "    void bar(void) {\n"
+                   "        for(std::vector<std::string>::const_iterator it = m_str.begin(); it != m_str.end(); ++it) {;}\n"
+                   "    }\n"
+                   "};");
+        ASSERT_EQUALS("[test.cpp:5]: (style, inconclusive) Technically the member function 'A::bar' can be const.\n", errout.str());
+
+        // Don't crash
+        checkConst("struct S {\n"
+                   "    std::vector<T*> v;\n"
+                   "    void f() const;\n"
+                   "};\n"
+                   "void S::f() const {\n"
+                   "    for (std::vector<T*>::const_iterator it = v.begin(), end = v.end(); it != end; ++it) {}\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const75() { // #10065
+        checkConst("namespace N { int i = 0; }\n"
+                   "struct S {\n"
+                   "    int i;\n"
+                   "    void f() {\n"
+                   "        if (N::i) {}\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+
+        checkConst("int i = 0;\n"
+                   "struct S {\n"
+                   "    int i;\n"
+                   "    void f() {\n"
+                   "        if (::i) {}\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+
+        checkConst("namespace N {\n"
+                   "    struct S {\n"
+                   "        int i;\n"
+                   "        void f() {\n"
+                   "            if (N::S::i) {}\n"
+                   "        }\n"
+                   "    };\n"
+                   "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style, inconclusive) Technically the member function 'N::S::f' can be const.\n", errout.str());
+    }
+
+    void const76() { // #10825
+        checkConst("struct S {\n"
+                   "    enum E {};\n"
+                   "    void f(const T* t);\n"
+                   "    E e;\n"
+                   "};\n"
+                   "struct T { void e(); };\n"
+                   "void S::f(const T* t) {\n"
+                   "    const_cast<T*>(t)->e();\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (performance, inconclusive) Technically the member function 'S::f' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
+    }
+
+    void const77() { // #10307
+        checkConst("template <typename T>\n"
+                   "struct S {\n"
+                   "    std::vector<T> const* f() const { return p; }\n"
+                   "    std::vector<T> const* p;\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const78() { // #10315
+        checkConst("struct S {\n"
+                   "    typedef void(S::* F)();\n"
+                   "    void g(F f);\n"
+                   "};\n"
+                   "void S::g(F f) {\n"
+                   "    (this->*f)();\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    using F = void(S::*)();\n"
+                   "    void g(F f);\n"
+                   "};\n"
+                   "void S::g(F f) {\n"
+                   "    (this->*f)();\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void const_handleDefaultParameters() {
         checkConst("struct Foo {\n"
                    "    void foo1(int i, int j = 0) {\n"
@@ -6559,7 +6860,40 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkInitializerListOrder(const char code[]) {
+    void staticArrayPtrOverload() {
+        checkConst("struct S {\n"
+                   "    template<size_t N>\n"
+                   "    void f(const std::array<std::string_view, N>& sv);\n"
+                   "    template<long N>\n"
+                   "    void f(const char* const (&StrArr)[N]);\n"
+                   "};\n"
+                   "template<size_t N>\n"
+                   "void S::f(const std::array<std::string_view, N>& sv) {\n"
+                   "    const char* ptrs[N]{};\n"
+                   "    return f(ptrs);\n"
+                   "}\n"
+                   "template void S::f(const std::array<std::string_view, 3>& sv);\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void qualifiedNameMember() { // #10872
+        Settings s;
+        s.severity.enable(Severity::style);
+        s.debugwarnings = true;
+        LOAD_LIB_2(s.library, "std.cfg");
+        checkConst("struct data {};\n"
+                   "    struct S {\n"
+                   "    std::vector<data> std;\n"
+                   "    void f();\n"
+                   "};\n"
+                   "void S::f() {\n"
+                   "    std::vector<data>::const_iterator end = std.end();\n"
+                   "}\n", &s);
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4]: (style, inconclusive) Technically the member function 'S::f' can be const.\n", errout.str());
+    }
+
+#define checkInitializerListOrder(code) checkInitializerListOrder_(code, __FILE__, __LINE__)
+    void checkInitializerListOrder_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
@@ -6569,7 +6903,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, &settings0, this);
         checkClass.initializerListOrder();
@@ -6593,7 +6927,8 @@ private:
                       "[test.cpp:4] -> [test.cpp:2]: (style, inconclusive) Member variable 'Fred::a' is in the wrong place in the initializer list.\n", errout.str());
     }
 
-    void checkInitializationListUsage(const char code[]) {
+#define checkInitializationListUsage(code) checkInitializationListUsage_(code, __FILE__, __LINE__)
+    void checkInitializationListUsage_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
@@ -6604,7 +6939,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, &settings, this);
         checkClass.initializationListUsage();
@@ -6808,17 +7143,18 @@ private:
     }
 
 
-    void checkSelfInitialization(const char code[]) {
+#define checkSelfInitialization(code) checkSelfInitialization_(code, __FILE__, __LINE__)
+    void checkSelfInitialization_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings0, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, &settings0, this);
-        checkClass.checkSelfInitialization();
+        (checkClass.checkSelfInitialization)();
     }
 
     void selfInitialization() {
@@ -6901,7 +7237,9 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkVirtualFunctionCall(const char code[], Settings *s = nullptr, bool inconclusive = true) {
+
+#define checkVirtualFunctionCall(...) checkVirtualFunctionCall_(__FILE__, __LINE__, __VA_ARGS__)
+    void checkVirtualFunctionCall_(const char* file, int line, const char code[], Settings *s = nullptr, bool inconclusive = true) {
         // Clear the error log
         errout.str("");
 
@@ -6916,7 +7254,7 @@ private:
         // Tokenize..
         Tokenizer tokenizer(s, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         CheckClass checkClass(&tokenizer, s, this);
         checkClass.checkVirtualFunctionCallInConstructor();
@@ -6968,6 +7306,67 @@ private:
                                  "    A() { f(); }\n"
                                  "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("class B {\n"
+                                 "public:"
+                                 "    virtual void f() {}\n"
+                                 "};\n"
+                                 "class A : B {\n"
+                                 "public:"
+                                 "    void f() override final {}\n"
+                                 "    A() { f(); }\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("class Base {\n"
+                                 "public:\n"
+                                 "    virtual void Copy(const Base& Src) = 0;\n"
+                                 "};\n"
+                                 "class Derived : public Base {\n"
+                                 "public:\n"
+                                 "    Derived() : i(0) {}\n"
+                                 "    Derived(const Derived& Src);\n"
+                                 "    void Copy(const Base& Src) override;\n"
+                                 "    int i;\n"
+                                 "};\n"
+                                 "Derived::Derived(const Derived& Src) {\n"
+                                 "    Copy(Src);\n"
+                                 "}\n"
+                                 "void Derived::Copy(const Base& Src) {\n"
+                                 "    auto d = dynamic_cast<const Derived&>(Src);\n"
+                                 "    i = d.i;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:13] -> [test.cpp:9]: (style) Virtual function 'Copy' is called from copy constructor 'Derived(const Derived&Src)' at line 13. Dynamic binding is not used.\n",
+                      errout.str());
+
+        checkVirtualFunctionCall("struct B {\n"
+                                 "    B() { auto pf = &f; }\n"
+                                 "    virtual void f() {}\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("struct B {\n"
+                                 "    B() { auto pf = &B::f; }\n"
+                                 "    virtual void f() {}\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("struct B {\n"
+                                 "    B() { (f)(); }\n"
+                                 "    virtual void f() {}\n"
+                                 "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Virtual function 'f' is called from constructor 'B()' at line 2. Dynamic binding is not used.\n", errout.str());
+
+        checkVirtualFunctionCall("class S {\n" // don't crash
+                                 "    ~S();\n"
+                                 "public:\n"
+                                 "    S();\n"
+                                 "};\n"
+                                 "S::S() {\n"
+                                 "    typeid(S);\n"
+                                 "}\n"
+                                 "S::~S() = default;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {
@@ -6989,6 +7388,17 @@ private:
                                  "A::A():m(A::pure())\n"
                                  "{}");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:3]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
+
+        checkVirtualFunctionCall("namespace N {\n"
+                                 "  class A\n"
+                                 "  {\n"
+                                 "      virtual int pure() = 0;\n"
+                                 "      A();\n"
+                                 "      int m;\n"
+                                 "  };\n"
+                                 "}\n"
+                                 "N::A::A() : m(N::A::pure()) {}\n");
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:4]: (warning) Call of pure virtual function 'pure' in constructor.\n", errout.str());
 
         checkVirtualFunctionCall("class A\n"
                                  " {\n"
@@ -7164,7 +7574,9 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkOverride(const char code[]) {
+
+#define checkOverride(code) checkOverride_(code, __FILE__, __LINE__)
+    void checkOverride_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -7173,11 +7585,11 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkOverride();
+        (checkClass.checkOverride)();
     }
 
     void override1() {
@@ -7226,6 +7638,97 @@ private:
                       "   void foo(int);\n"
                       "};");
         ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct B {\n" // #9092
+                      "    virtual int f(int i) const = 0;\n"
+                      "};\n"
+                      "namespace N {\n"
+                      "    struct D : B {\n"
+                      "        virtual int f(int i) const;\n"
+                      "    };\n"
+                      "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:6]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(double);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(int);\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char, int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char, int);\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char, int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char, double);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char, int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c = '\\0', double);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char, int);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c = '\\0', int);\n"
+                      "};\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char c, std::vector<int>);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c, std::vector<double>);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char c, std::vector<int>);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c, std::set<int>);\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkOverride("struct A {\n"
+                      "    virtual void f(char c, std::vector<int> v);\n"
+                      "};\n"
+                      "struct D : A {\n"
+                      "  void f(char c, std::vector<int> w = {});\n"
+                      "};\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The function 'f' overrides a function in a base class but is not marked with a 'override' specifier.\n", "", errout.str());
+
+        checkOverride("struct T {};\n" // #10920
+                      "struct B {\n"
+                      "    virtual T f() = 0;\n"
+                      "};\n"
+                      "struct D : B {\n"
+                      "    friend T f();\n"
+                      "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void overrideCVRefQualifiers() {
@@ -7246,7 +7749,9 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkUnsafeClassRefMember(const char code[]) {
+
+#define checkUnsafeClassRefMember(code) checkUnsafeClassRefMember_(code, __FILE__, __LINE__)
+    void checkUnsafeClassRefMember_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
         Settings settings;
@@ -7256,11 +7761,11 @@ private:
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings, this);
-        checkClass.checkUnsafeClassRefMember();
+        (checkClass.checkUnsafeClassRefMember)();
     }
 
     void unsafeClassRefMember() {
@@ -7268,21 +7773,23 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unsafe class: The const reference member 'C::s' is initialized by a const reference constructor argument. You need to be careful about lifetime issues.\n", errout.str());
     }
 
-    void checkThisUseAfterFree(const char code[]) {
+
+#define checkThisUseAfterFree(code) checkThisUseAfterFree_(code, __FILE__, __LINE__)
+    void checkThisUseAfterFree_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
-        checkClass.checkThisUseAfterFree();
+        (checkClass.checkThisUseAfterFree)();
     }
 
-    void checkThisUseAfterFree() {
+    void thisUseAfterFree() {
         setMultiline();
 
         // Calling method..
@@ -7432,7 +7939,7 @@ private:
         for (const std::string& c: code) {
             Tokenizer tokenizer(&settings, this);
             std::istringstream istr(c);
-            tokenizer.tokenize(istr, (std::to_string(fileInfo.size()) + ".cpp").c_str());
+            ASSERT(tokenizer.tokenize(istr, (std::to_string(fileInfo.size()) + ".cpp").c_str()));
             fileInfo.push_back(check.getFileInfo(&tokenizer, &settings));
         }
 
@@ -7463,24 +7970,26 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void getFileInfo(const char code[]) {
+
+#define getFileInfo(code) getFileInfo_(code, __FILE__, __LINE__)
+    void getFileInfo_(const char code[], const char* file, int line) {
         // Clear the error log
         errout.str("");
 
         // Tokenize..
         Tokenizer tokenizer(&settings1, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         // Check..
         CheckClass checkClass(&tokenizer, &settings1, this);
 
-        Check::FileInfo * fileInfo = checkClass.getFileInfo(&tokenizer, &settings1);
+        Check::FileInfo * fileInfo = (checkClass.getFileInfo)(&tokenizer, &settings1);
 
         delete fileInfo;
     }
 
-    void getFileInfo() {
+    void testGetFileInfo() {
         getFileInfo("void foo() { union { struct { }; }; }"); // don't crash
         getFileInfo("struct sometype { sometype(); }; sometype::sometype() = delete;"); // don't crash
     }

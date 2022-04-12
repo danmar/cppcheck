@@ -16,7 +16,7 @@
 
 ## ビルド
 
-C++11に対応したコンパイラが利用できます。部分的にC++11にサポートしたコンパイラも利用できるかもしれません。もし、あなたのコンパイラがVisual Studio 2013や GCC 4.6で利用できるC++11機能がサポートされているなら、そのコンパイラが利用できます。
+C++11に対応したコンパイラが利用できます。部分的にC++11にサポートしたコンパイラも利用できるかもしれません。もし、あなたのコンパイラがVisual Studio 2013や GCC 4.8で利用できるC++11機能がサポートされているなら、そのコンパイラが利用できます。
 
 GUIも利用する場合、Qtライブラリが必要です。
 
@@ -28,7 +28,7 @@ GUIも利用する場合、Qtライブラリが必要です。
 * Windows: Visual Studio (VS 2013 またはそれ以上)
 * Windows: Qt Creator + mingw
 * gnu make
-* g++ 4.6 (またはそれ以上)
+* g++ 4.8 (またはそれ以上)
 * clang++
 
 ### cmake
@@ -117,7 +117,7 @@ g++ -o cppcheck -std=c++11 -lpcre -DHAVE_RULES -Iexternals -Iexternals/simplecpp
 ### MinGW
 
 ```shell
-mingw32-make LDFLAGS=-lshlwapi
+mingw32-make
 ```
 
 ### その他のコンパイラ/IDE

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,14 +17,15 @@
  */
 
 
-#include "config.h"
+#include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
 #include "tokenize.h"
 
-struct InternalError;
+#include <iosfwd>
+#include <string>
 
 
 class TestSimplifyUsing : public TestFixture {
@@ -37,7 +38,7 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void run() OVERRIDE {
+    void run() override {
         settings0.severity.enable(Severity::style);
         settings2.severity.enable(Severity::style);
 
@@ -95,7 +96,8 @@ private:
         TEST_CASE(scopeInfo2);
     }
 
-    std::string tok(const char code[], Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
+#define tok(...) tok_(__FILE__, __LINE__, __VA_ARGS__)
+    std::string tok_(const char* file, int line, const char code[], Settings::PlatformType type = Settings::Native, bool debugwarnings = true) {
         errout.str("");
 
         settings0.certainty.enable(Certainty::inconclusive);
@@ -104,7 +106,7 @@ private:
         Tokenizer tokenizer(&settings0, this);
 
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
         return tokenizer.tokens()->stringifyList(nullptr);
     }

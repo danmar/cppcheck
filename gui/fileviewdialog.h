@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,12 @@
 
 #include <QDialog>
 #include <QString>
-#include "ui_file.h"
 
 class QWidget;
 class QTextEdit;
+namespace Ui {
+    class Fileview;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -43,6 +45,7 @@ public:
                    const QString &title,
                    QWidget *parent = nullptr);
 
+    ~FileViewDialog() override;
 
 protected:
 
@@ -54,7 +57,7 @@ protected:
      */
     void loadTextFile(const QString &filename, QTextEdit *edit);
 
-    Ui::Fileview mUI;
+    Ui::Fileview* mUI;
 };
 /// @}
 #endif // FILEVIEW_DIALOG_H

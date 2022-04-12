@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,16 +22,16 @@
 #ifndef CODEEDITORSTYLECONTROLS_H
 #define CODEEDITORSTYLECONTROLS_H
 
-#include <QPushButton>
-#include <QComboBox>
 #include <QColor>
+#include <QComboBox>
 #include <QFont>
+#include <QPushButton>
 
 class SelectColorButton : public QPushButton {
     Q_OBJECT
 public:
     explicit SelectColorButton(QWidget* parent);
-    virtual ~SelectColorButton() {}
+    ~SelectColorButton() override {}
 
     void setColor(const QColor& color);
     const QColor& getColor();
@@ -52,7 +52,7 @@ class SelectFontWeightCombo : public QComboBox {
     Q_OBJECT
 public:
     explicit SelectFontWeightCombo(QWidget* parent);
-    virtual ~SelectFontWeightCombo() {}
+    ~SelectFontWeightCombo() override {}
 
     void setWeight(const QFont::Weight& weight);
     const QFont::Weight& getWeight();

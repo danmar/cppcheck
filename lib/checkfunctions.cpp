@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,6 +31,8 @@
 #include "valueflow.h"
 
 #include <iomanip>
+#include <ostream>
+#include <unordered_map>
 #include <vector>
 
 //---------------------------------------------------------------------------
@@ -154,7 +156,7 @@ void CheckFunctions::invalidFunctionArgError(const Token *tok, const std::string
         errmsg << " The value is 0 or 1 (boolean) but the valid values are '" << validstr << "'.";
     if (invalidValue)
         reportError(getErrorPath(tok, invalidValue, "Invalid argument"),
-                    invalidValue->errorSeverity() ? Severity::error : Severity::warning,
+                    invalidValue->errorSeverity() && invalidValue->isKnown() ? Severity::error : Severity::warning,
                     "invalidFunctionArg",
                     errmsg.str(),
                     CWE628,
@@ -303,9 +305,13 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                 // find reachable break / !default
                 bool hasDefault = false;
                 bool reachable = false;
-                for (const Token *switchToken = tok->link(); switchToken != tok; switchToken = switchToken->next()) {
-                    if (reachable && Token::simpleMatch(switchToken, "break ;"))
-                        return switchToken;
+                for (const Token *switchToken = tok->link()->next(); switchToken != tok; switchToken = switchToken->next()) {
+                    if (reachable && Token::simpleMatch(switchToken, "break ;")) {
+                        if (Token::simpleMatch(switchToken->previous(), "}") && !checkMissingReturnScope(switchToken->previous(), library))
+                            reachable = false;
+                        else
+                            return switchToken;
+                    }
                     if (switchToken->isKeyword() && Token::Match(switchToken, "return|throw"))
                         reachable = false;
                     if (Token::Match(switchToken, "%name% (") && library.isnoreturn(switchToken))
@@ -314,7 +320,7 @@ static const Token *checkMissingReturnScope(const Token *tok, const Library &lib
                         reachable = true;
                     if (Token::simpleMatch(switchToken, "default :"))
                         hasDefault = true;
-                    else if (switchToken->str() == "{" && switchToken->scope()->isLoopScope())
+                    else if (switchToken->str() == "{" && (switchToken->scope()->isLoopScope() || switchToken->scope()->type == Scope::ScopeType::eSwitch))
                         switchToken = switchToken->link();
                 }
                 if (!hasDefault)

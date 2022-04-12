@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,7 @@
 
 
 #include "astutils.h"
+#include "library.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
@@ -25,6 +26,7 @@
 #include "tokenlist.h"
 
 #include <cstring>
+#include <iosfwd>
 
 class TestAstUtils : public TestFixture {
 public:
@@ -32,30 +34,31 @@ public:
 
 private:
 
-    void run() OVERRIDE {
-        TEST_CASE(findLambdaEndToken);
-        TEST_CASE(findLambdaStartToken);
-        TEST_CASE(isNullOperand);
-        TEST_CASE(isReturnScope);
-        TEST_CASE(isSameExpression);
-        TEST_CASE(isVariableChanged);
-        TEST_CASE(isVariableChangedByFunctionCall);
-        TEST_CASE(nextAfterAstRightmostLeaf);
+    void run() override {
+        TEST_CASE(findLambdaEndTokenTest);
+        TEST_CASE(findLambdaStartTokenTest);
+        TEST_CASE(isNullOperandTest);
+        TEST_CASE(isReturnScopeTest);
+        TEST_CASE(isSameExpressionTest);
+        TEST_CASE(isVariableChangedTest);
+        TEST_CASE(isVariableChangedByFunctionCallTest);
+        TEST_CASE(nextAfterAstRightmostLeafTest);
         TEST_CASE(isUsedAsBool);
     }
 
-    bool findLambdaEndToken(const char code[]) {
+#define findLambdaEndToken(code) findLambdaEndToken_(code, __FILE__, __LINE__)
+    bool findLambdaEndToken_(const char code[], const char* file, int line) {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        const Token * const tokEnd = ::findLambdaEndToken(tokenizer.tokens());
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        const Token * const tokEnd = (::findLambdaEndToken)(tokenizer.tokens());
         return tokEnd && tokEnd->next() == nullptr;
     }
 
-    void findLambdaEndToken() {
+    void findLambdaEndTokenTest() {
         const Token* nullTok = nullptr;
-        ASSERT(nullptr == ::findLambdaEndToken(nullTok));
+        ASSERT(nullptr == (::findLambdaEndToken)(nullTok));
         ASSERT_EQUALS(false, findLambdaEndToken("void f() { }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[]{ }"));
         ASSERT_EQUALS(true, findLambdaEndToken("[]{ return 0; }"));
@@ -77,17 +80,18 @@ private:
         ASSERT_EQUALS(true, findLambdaEndToken("[](void) constexpr -> const * const* int { return x; }"));
     }
 
-    bool findLambdaStartToken(const char code[]) {
+#define findLambdaStartToken(code) findLambdaStartToken_(code, __FILE__, __LINE__)
+    bool findLambdaStartToken_(const char code[], const char* file, int line) {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        const Token * const tokStart = ::findLambdaStartToken(tokenizer.list.back());
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        const Token * const tokStart = (::findLambdaStartToken)(tokenizer.list.back());
         return tokStart && tokStart == tokenizer.list.front();
     }
 
-    void findLambdaStartToken() {
-        ASSERT(nullptr == ::findLambdaStartToken(nullptr));
+    void findLambdaStartTokenTest() {
+        ASSERT(nullptr == (::findLambdaStartToken)(nullptr));
         ASSERT_EQUALS(false, findLambdaStartToken("void f() { }"));
         ASSERT_EQUALS(true, findLambdaStartToken("[]{ }"));
         ASSERT_EQUALS(true, findLambdaStartToken("[]{ return 0; }"));
@@ -109,15 +113,16 @@ private:
         ASSERT_EQUALS(true, findLambdaStartToken("[](void) constexpr -> const * const* int { return x; }"));
     }
 
-    bool isNullOperand(const char code[]) {
+#define isNullOperand(code) isNullOperand_(code, __FILE__, __LINE__)
+    bool isNullOperand_(const char code[], const char* file, int line) {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
-        return ::isNullOperand(tokenizer.tokens());
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
+        return (::isNullOperand)(tokenizer.tokens());
     }
 
-    void isNullOperand() {
+    void isNullOperandTest() {
         ASSERT_EQUALS(true, isNullOperand("(void*)0;"));
         ASSERT_EQUALS(true, isNullOperand("(void*)0U;"));
         ASSERT_EQUALS(true, isNullOperand("(void*)0x0LL;"));
@@ -130,18 +135,19 @@ private:
         ASSERT_EQUALS(false, isNullOperand("(void*)1;"));
     }
 
-    bool isReturnScope(const char code[], int offset) {
+#define isReturnScope(code, offset) isReturnScope_(code, offset, __FILE__, __LINE__)
+    bool isReturnScope_(const char code[], int offset, const char* file, int line) {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tok = (offset < 0)
                                   ? tokenizer.list.back()->tokAt(1+offset)
                                   : tokenizer.tokens()->tokAt(offset);
-        return ::isReturnScope(tok);
+        return (::isReturnScope)(tok);
     }
 
-    void isReturnScope() {
+    void isReturnScopeTest() {
         ASSERT_EQUALS(true, isReturnScope("void f() { if (a) { return; } }", -2));
         ASSERT_EQUALS(true, isReturnScope("int f() { if (a) { return {}; } }", -2));                        // #8891
         ASSERT_EQUALS(true, isReturnScope("std::string f() { if (a) { return std::string{}; } }", -2));     // #8891
@@ -160,19 +166,20 @@ private:
         ASSERT_EQUALS(true, isReturnScope("void positiveTokenOffset() { return; }", 7));
     }
 
-    bool isSameExpression(const char code[], const char tokStr1[], const char tokStr2[]) {
+#define isSameExpression(code, tokStr1, tokStr2) isSameExpression_(code, tokStr1, tokStr2, __FILE__, __LINE__)
+    bool isSameExpression_(const char code[], const char tokStr1[], const char tokStr2[], const char* file, int line) {
         Settings settings;
         Library library;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         tokenizer.simplifyTokens1("");
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
-        return ::isSameExpression(false, false, tok1, tok2, library, false, true, nullptr);
+        return (::isSameExpression)(false, false, tok1, tok2, library, false, true, nullptr);
     }
 
-    void isSameExpression() {
+    void isSameExpressionTest() {
         ASSERT_EQUALS(true,  isSameExpression("x = 1 + 1;", "1", "1"));
         ASSERT_EQUALS(false, isSameExpression("x = 1 + 1u;", "1", "1u"));
         ASSERT_EQUALS(true,  isSameExpression("x = 1.0 + 1.0;", "1.0", "1.0"));
@@ -199,17 +206,18 @@ private:
         ASSERT_EQUALS(true, true);
     }
 
-    bool isVariableChanged(const char code[], const char startPattern[], const char endPattern[]) {
+#define isVariableChanged(code, startPattern, endPattern) isVariableChanged_(code, startPattern, endPattern, __FILE__, __LINE__)
+    bool isVariableChanged_(const char code[], const char startPattern[], const char endPattern[], const char* file, int line) {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
-        return ::isVariableChanged(tok1,tok2,1,false,&settings,true);
+        return (::isVariableChanged)(tok1, tok2, 1, false, &settings, true);
     }
 
-    void isVariableChanged() {
+    void isVariableChangedTest() {
         // #8211 - no lhs for >> , do not crash
         isVariableChanged("void f() {\n"
                           "  int b;\n"
@@ -221,16 +229,17 @@ private:
                                               "}\n", "= a", "}"));
     }
 
-    bool isVariableChangedByFunctionCall(const char code[], const char pattern[], bool *inconclusive) {
+#define isVariableChangedByFunctionCall(code, pattern, inconclusive) isVariableChangedByFunctionCall_(code, pattern, inconclusive, __FILE__, __LINE__)
+    bool isVariableChangedByFunctionCall_(const char code[], const char pattern[], bool *inconclusive, const char* file, int line) {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
-        return ::isVariableChangedByFunctionCall(argtok, 0, &settings, inconclusive);
+        return (::isVariableChangedByFunctionCall)(argtok, 0, &settings, inconclusive);
     }
 
-    void isVariableChangedByFunctionCall() {
+    void isVariableChangedByFunctionCallTest() {
         const char *code;
         bool inconclusive;
 
@@ -241,18 +250,25 @@ private:
         inconclusive = false;
         ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
         ASSERT_EQUALS(true, inconclusive);
+
+        code = "int f(int x) {\n"
+               "return int(x);\n"
+               "}\n";
+        ASSERT_EQUALS(false, isVariableChangedByFunctionCall(code, "x ) ;", &inconclusive));
+        TODO_ASSERT_EQUALS(false, true, inconclusive);
     }
 
-    bool nextAfterAstRightmostLeaf(const char code[], const char parentPattern[], const char rightPattern[]) {
+#define nextAfterAstRightmostLeaf(code, parentPattern, rightPattern) nextAfterAstRightmostLeaf_(code, parentPattern, rightPattern, __FILE__, __LINE__)
+    bool nextAfterAstRightmostLeaf_(const char code[], const char parentPattern[], const char rightPattern[], const char* file, int line) {
         Settings settings;
         Tokenizer tokenizer(&settings, this);
         std::istringstream istr(code);
-        tokenizer.tokenize(istr, "test.cpp");
+        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * tok = Token::findsimplematch(tokenizer.tokens(), parentPattern, strlen(parentPattern));
-        return Token::simpleMatch(::nextAfterAstRightmostLeaf(tok), rightPattern, strlen(rightPattern));
+        return Token::simpleMatch((::nextAfterAstRightmostLeaf)(tok), rightPattern, strlen(rightPattern));
     }
 
-    void nextAfterAstRightmostLeaf() {
+    void nextAfterAstRightmostLeafTest() {
         ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("void f(int a, int b) { int x = a + b; }", "=", "; }"));
         ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(a); }", "=", "; }"));
         ASSERT_EQUALS(true, nextAfterAstRightmostLeaf("int * g(int); void f(int a, int b) { int x = g(a)[b]; }", "=", "; }"));

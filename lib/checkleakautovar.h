@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,11 +25,11 @@
 #include "check.h"
 #include "config.h"
 #include "library.h"
-#include "utils.h"
 
 #include <map>
 #include <set>
 #include <string>
+#include <utility>
 
 class ErrorLogger;
 class Settings;
@@ -114,7 +114,7 @@ public:
     CheckLeakAutoVar(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckLeakAutoVar checkLeakAutoVar(tokenizer, settings, errorLogger);
         checkLeakAutoVar.check();
     }
@@ -161,7 +161,7 @@ private:
     /** message: user configuration is needed to complete analysis */
     void configurationInfo(const Token* tok, const std::string &functionName);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckLeakAutoVar c(nullptr, settings, errorLogger);
         c.deallocReturnError(nullptr, nullptr, "p");
         c.configurationInfo(nullptr, "f");  // user configuration is needed to complete analysis
@@ -172,7 +172,7 @@ private:
         return "Leaks (auto variables)";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Detect when a auto variable is allocated but not deallocated or deallocated twice.\n";
     }
 };

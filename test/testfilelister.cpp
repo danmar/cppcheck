@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,12 @@
 #include "pathmatch.h"
 #include "testsuite.h"
 
+#include <cstddef>
 #include <fstream>
 #include <map>
 #include <string>
 #include <vector>
+#include <utility>
 
 class TestFileLister : public TestFixture {
 public:
@@ -31,7 +33,7 @@ public:
         : TestFixture("TestFileLister") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         // bail out if the tests are not executed from the base folder
         {
             std::ifstream fin("test/testfilelister.cpp");

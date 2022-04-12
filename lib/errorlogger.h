@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,10 @@
 #include "suppressions.h"
 #include "color.h"
 
+#include <cstddef>
 #include <fstream>
 #include <list>
 #include <string>
-#include <utility>
 #include <vector>
 
 /**
@@ -144,16 +144,14 @@ public:
                  const std::string& id,
                  const std::string& msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty,
-                 bool bugHunting);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage(const ErrorPath &errorPath,
                  const TokenList *tokenList,
                  Severity::SeverityType severity,
                  const char id[],
                  const std::string &msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty,
-                 bool bugHunting);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage();
     explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
@@ -282,8 +280,6 @@ public:
     virtual void reportInfo(const ErrorMessage &msg) {
         reportErr(msg);
     }
-
-    virtual void bughuntingReport(const std::string &str) = 0;
 
     /**
      * Report unmatched suppressions

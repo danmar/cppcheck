@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,9 @@
 #include "cmdlineparser.h"
 
 #include "check.h"
+#include "config.h"
 #include "cppcheckexecutor.h"
+#include "errortypes.h"
 #include "filelister.h"
 #include "importproject.h"
 #include "path.h"
@@ -27,11 +29,11 @@
 #include "settings.h"
 #include "standards.h"
 #include "suppressions.h"
-#include "threadexecutor.h" // Threading model
 #include "timer.h"
 #include "utils.h"
 
 #include <algorithm>
+#include <climits>
 #include <cstdio>
 #include <cstdlib> // EXIT_FAILURE
 #include <cstring>
@@ -42,6 +44,10 @@
 #ifdef HAVE_RULES
 // xml is used for rules
 #include <tinyxml2.h>
+#endif
+
+#ifdef __linux__
+#include <unistd.h>
 #endif
 
 static void addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
@@ -120,8 +126,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool maxconfigs = false;
 
     mSettings->exename = argv[0];
-
-    mSettings->loadCppcheckCfg(Path::getPathFromFilename(argv[0]) + "cppcheck.cfg");
+#ifdef __linux__
+    // Executing cppcheck in PATH. argv[0] does not contain the path.
+    if (mSettings->exename.find_first_of("/\\") == std::string::npos) {
+        char buf[PATH_MAX] = {0};
+        if (FileLister::fileExists("/proc/self/exe") && readlink("/proc/self/exe", buf, sizeof(buf)-1) > 0)
+            mSettings->exename = buf;
+    }
+#endif
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
@@ -217,13 +229,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i],"--addon-python=", 15) == 0)
                 mSettings->addonPython.assign(argv[i]+15);
 
-            else if (std::strcmp(argv[i], "--bug-hunting") == 0)
-                mSettings->bugHunting = true;
-
-            // TODO: Rename or move this parameter?
-            else if (std::strncmp(argv[i], "--bug-hunting-check-function-max-time=", 38) == 0)
-                mSettings->bugHuntingCheckFunctionMaxTime = std::atoi(argv[i] + 38);
-
             // Check configuration
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings->checkConfiguration = true;
@@ -265,10 +270,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--debug") == 0 ||
                      std::strcmp(argv[i], "--debug-normal") == 0)
                 mSettings->debugnormal = true;
-
-            // show bug hunting debug output
-            else if (std::strcmp(argv[i], "--debug-bug-hunting") == 0)
-                mSettings->debugBugHunting = true;
 
             // Flag used for various purposes during debugging
             else if (std::strcmp(argv[i], "--debug-simplified") == 0)
@@ -364,7 +365,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // use a file filter
             else if (std::strncmp(argv[i], "--file-filter=", 14) == 0)
-                mSettings->fileFilter = argv[i] + 14;
+                mSettings->fileFilters.push_back(argv[i] + 14);
 
             // file list specified
             else if (std::strncmp(argv[i], "--file-list=", 12) == 0)
@@ -470,6 +471,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+#ifdef THREADING_MODEL_FORK
             else if (std::strncmp(argv[i], "-l", 2) == 0) {
                 std::string numberString;
 
@@ -494,6 +496,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     return false;
                 }
             }
+#endif
 
             // Enforce language (--language=, -x)
             else if (std::strncmp(argv[i], "--language=", 11) == 0 || std::strcmp(argv[i], "-x") == 0) {
@@ -623,7 +626,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Unix64);
                     else if (platform == "native")
                         mSettings->platform(Settings::Native);
-                    else if (platform == "unspecified" || platform == "Unspecified" || platform == "")
+                    else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
                         ;
                     else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) && !mSettings->loadPlatformFile(argv[0], platform)) {
                         std::string message("unrecognized platform: \"");
@@ -646,11 +649,15 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     }
                 }
                 if (projType == ImportProject::Type::MISSING) {
-                    printError("failed to open project '" + projectFile + "'.");
+                    printError("failed to open project '" + projectFile + "'. The file does not exist.");
                     return false;
                 }
                 if (projType == ImportProject::Type::UNKNOWN) {
                     printError("failed to load project '" + projectFile + "'. The format is unknown.");
+                    return false;
+                }
+                if (projType == ImportProject::Type::FAILURE) {
+                    printError("failed to load project '" + projectFile + "'. An error occurred.");
                     return false;
                 }
             }
@@ -878,6 +885,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--version") == 0) {
                 mShowVersion = true;
                 mExitAfterPrint = true;
+                mSettings->loadCppcheckCfg();
                 return true;
             }
 
@@ -918,6 +926,8 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             mPathNames.emplace_back(Path::fromNativeSeparators(Path::removeQuotationMarks(argv[i])));
         }
     }
+
+    mSettings->loadCppcheckCfg();
 
     // Default template format..
     if (mSettings->templateFormat.empty()) {
@@ -1037,7 +1047,7 @@ void CmdLineParser::printHelp()
         "                          * information\n"
         "                                  Enable information messages\n"
         "                          * unusedFunction\n"
-        "                                  Check for unused functions. It is recommend\n"
+        "                                  Check for unused functions. It is recommended\n"
         "                                  to only enable this when the whole program is\n"
         "                                  scanned.\n"
         "                          * missingInclude\n"
@@ -1055,6 +1065,7 @@ void CmdLineParser::printHelp()
         "                         Used when certain messages should be displayed but\n"
         "                         should not cause a non-zero exitcode.\n"
         "    --file-filter=<str>  Analyze only those files matching the given filter str\n"
+        "                         Can be used multiple times\n"
         "                         Example: --file-filter=*bar.cpp analyzes only files\n"
         "                                  that end with bar.cpp.\n"
         "    --file-list=<file>   Specify the files to check in a text file. Add one\n"
@@ -1267,6 +1278,5 @@ void CmdLineParser::printHelp()
     " * tinyxml2 -- loading project/library/ctu files.\n"
     " * picojson -- loading compile database.\n"
     " * pcre -- rules.\n"
-    " * qt -- used in GUI\n"
-    " * z3 -- theorem prover from Microsoft Research used in bug hunting.\n";
+    " * qt -- used in GUI\n";
 }
