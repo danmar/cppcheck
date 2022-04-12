@@ -485,7 +485,9 @@ int main(int argc, char **argv)
     fout << ".PHONY: validatePlatforms\n";
     fout << "%.checked:%.xml\n";
     fout << "\txmllint --noout --relaxng platforms/cppcheck-platforms.rng $<\n";
-    fout << "validatePlatforms: ${PlatformFilesCHECKED}\n\n";
+    fout << "validatePlatforms: ${PlatformFilesCHECKED}\n";
+    fout << "\txmllint --noout platforms/cppcheck-platforms.rng\n";
+    fout << "\n";
     fout << "# Validate XML output (to detect regressions)\n";
     fout << "/tmp/errorlist.xml: cppcheck\n";
     fout << "\t./cppcheck --errorlist >$@\n";
