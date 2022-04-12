@@ -3441,13 +3441,11 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
     const Token* parent = nullptr;
     const ValueType* vt = tok->valueType();
     std::vector<ValueType> vtParents = getParentValueTypes(tok, settings, &parent);
-    if (vt) {
-        for (const ValueType& vtParent : vtParents) {
-            if (isLifetimeBorrowed(vt, &vtParent))
-                return true;
-            if (isLifetimeOwned(vt, &vtParent))
-                return false;
-        }
+    for (const ValueType& vtParent : vtParents) {
+        if (isLifetimeBorrowed(vt, &vtParent))
+            return true;
+        if (isLifetimeOwned(vt, &vtParent))
+            return false;
     }
     if (parent) {
         if (isDifferentType(tok, parent))
