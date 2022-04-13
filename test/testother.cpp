@@ -7939,6 +7939,15 @@ private:
               "    return y;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10228
+        check("std::tuple<int, int> g();\n"
+              "void h(int);\n"
+              "void f() {\n"
+              "    auto [a, b] = g();\n"
+              "    auto l = [a = a]() { h(i); };\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void redundantVarAssignment_loop() {

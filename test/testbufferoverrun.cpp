@@ -3163,6 +3163,22 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(int a[10]) {\n" // #10069
+              "    int i = 0;\n"
+              "    for (i = 0; i < 10; i++)\n"
+              "        a[i] = i * 2;\n"
+              "}\n"
+              "void g() {\n"
+              "    int b[5];\n"
+              "    f(b);\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:8:warning:Buffer 'b' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
+                      "test.cpp:8:note:Function 'f' is called\n"
+                      "test.cpp:1:note:Declaration of 1st function argument.\n"
+                      "test.cpp:7:note:Passing buffer 'b' to function that is declared here\n"
+                      "test.cpp:8:note:Buffer 'b' is too small, the function 'f' expects a bigger buffer in 1st argument\n",
+                      errout.str());
     }
 
     void possible_buffer_overrun_1() { // #3035
