@@ -19,6 +19,7 @@
 #ifndef XML_REPORTV2_H
 #define XML_REPORTV2_H
 
+#include "erroritem.h"
 #include "xmlreport.h"
 
 #include <QString>

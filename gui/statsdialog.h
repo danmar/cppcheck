@@ -23,6 +23,8 @@
 
 class ProjectFile;
 class CheckStatistics;
+class QObject;
+class QWidget;
 namespace Ui {
     class StatsDialog;
 }

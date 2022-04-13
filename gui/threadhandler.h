@@ -35,6 +35,7 @@ class CheckThread;
 class QSettings;
 class Settings;
 class ImportProject;
+class ErrorItem;
 
 /// @addtogroup GUI
 /// @{

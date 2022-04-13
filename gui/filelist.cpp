@@ -20,6 +20,10 @@
 
 #include "pathmatch.h"
 
+#include <algorithm>
+#include <string>
+#include <vector>
+
 #include <QDir>
 
 QStringList FileList::getDefaultFilters()

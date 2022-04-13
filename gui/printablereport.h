@@ -21,6 +21,8 @@
 
 #include "report.h"
 
+class ErrorItem;
+
 /// @addtogroup GUI
 /// @{
 

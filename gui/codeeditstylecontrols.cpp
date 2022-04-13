@@ -20,6 +20,8 @@
 
 #include <QColorDialog>
 
+class QWidget;
+
 SelectColorButton::SelectColorButton(QWidget* parent) :
     QPushButton(parent),
     mColor(QColor(255, 255, 255))

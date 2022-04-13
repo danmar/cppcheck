@@ -28,6 +28,7 @@ class ApplicationList;
 class TranslationHandler;
 class CodeEditorStyle;
 class QCheckBox;
+class QObject;
 namespace Ui {
     class Settings;
 }
