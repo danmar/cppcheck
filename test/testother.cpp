@@ -3030,6 +3030,11 @@ private:
               "        if (p == nullptr) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const int* const p) {\n"
+              "    if (p == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
