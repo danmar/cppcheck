@@ -175,7 +175,7 @@ void CheckSizeof::checkSizeofForPointerSize()
                                 parTok = parTok->astParent();
                             }
                             return false;
-                        };             
+                        };
                         if (hasMultiplication(tok2->astParent()))
                             continue;
 
