@@ -193,7 +193,7 @@ private:
         TEST_CASE(const74); // ticket #10671
         TEST_CASE(const75); // ticket #10065
         TEST_CASE(const76); // ticket #10825
-        TEST_CASE(const77); // ticket #10307
+        TEST_CASE(const77); // ticket #10307, #10311
         TEST_CASE(const78); // ticket #10315
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
@@ -6033,11 +6033,17 @@ private:
                       errout.str());
     }
 
-    void const77() { // #10307
-        checkConst("template <typename T>\n"
+    void const77() {
+        checkConst("template <typename T>\n" // #10307
                    "struct S {\n"
                    "    std::vector<T> const* f() const { return p; }\n"
                    "    std::vector<T> const* p;\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n" // #10311
+                   "    std::vector<const int*> v;\n"
+                   "    std::vector<const int*>& f() { return v; }\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
     }
