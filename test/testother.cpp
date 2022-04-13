@@ -2997,6 +2997,44 @@ private:
               "    if (i[0] == 0) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10466
+        check("void f(const std::vector<int*>& v) {\n"
+              "    for (const auto& p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "    for (const auto* p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int*>& v) {\n"
+              "    for (const auto& p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "    for (const auto* p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+
+        check("void f(std::vector<const int*>& v) {\n"
+              "    for (const auto& p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "    for (const auto* p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+
+        check("void f(const std::vector<const int*>& v) {\n"
+              "    for (const auto& p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "    for (const auto* p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const int* const p) {\n"
+              "    if (p == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -9112,7 +9150,7 @@ private:
               "    int local_argc = 0;\n"
               "    local_argv[local_argc++] = argv[0];\n"
               "}\n", "test.c");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (style) Parameter 'argv' can be declared with const\n", errout.str());
 
         check("void f() {\n"
               "  int x = 0;\n"
