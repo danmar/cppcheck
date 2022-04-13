@@ -35,7 +35,8 @@ template<class T, std::size_t N>
 struct TaggedAllocator : std::allocator<T>
 {
     template<class ... Ts>
-    explicit TaggedAllocator(Ts&&... ts)
+    // cppcheck-suppress noExplicitConstructor
+    TaggedAllocator(Ts&&... ts)
         : std::allocator<T>(std::forward<Ts>(ts)...)
     {}
 };
