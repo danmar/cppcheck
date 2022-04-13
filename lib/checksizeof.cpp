@@ -165,6 +165,19 @@ void CheckSizeof::checkSizeofForPointerSize()
                             if (vt && vt->type == ValueType::CHAR && vt->pointer == 0)
                                 continue;
                         }
+                        auto hasMultiplication = [](const Token* parTok) -> bool {
+                            while (parTok) { // Allow division if followed by multiplication
+                                if (parTok->isArithmeticalOp() && parTok->str() == "*") {
+                                    for (const Token* szTok : { parTok->astOperand1(), parTok->astOperand2() })
+                                        if (Token::simpleMatch(szTok, "(") && Token::simpleMatch(szTok->previous(), "sizeof"))
+                                            return true;
+                                }
+                                parTok = parTok->astParent();
+                            }
+                            return false;
+                        };
+                        if (hasMultiplication(tok2->astParent()))
+                            continue;
 
                         divideBySizeofError(tok2, tokFunc->str());
                     }

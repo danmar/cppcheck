@@ -785,6 +785,14 @@ private:
               "  strncpy(str, xyz, sizeof(str)/sizeof(str[0]));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #9648
+              "    int a[5] = { 0 };\n"
+              "    int b[5];\n"
+              "    memcpy(b, a, ((sizeof(a) / sizeof(a[0])) - 1) * sizeof(a[0]));\n"
+              "    memcpy(b, a, sizeof(a[0]) * ((sizeof(a) / sizeof(a[0])) - 1));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sizeofVoid() {
