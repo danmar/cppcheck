@@ -583,6 +583,20 @@ private:
               "    void f() { }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:5]: (style) Unused private function: 'Foo::f'\n", errout.str());
+
+        check("struct F;\n" // #10265
+              "struct S {\n"
+              "    int i{};\n"
+              "    friend struct F;\n"
+              "private:\n"
+              "    int f() const { return i; }\n"
+              "};\n"
+              "struct F {\n"
+              "    bool operator()(const S& lhs, const S& rhs) const {\n"
+              "        return lhs.f() < rhs.f();\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void borland1() {

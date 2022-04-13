@@ -581,7 +581,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             // friend class declaration?
-            else if (mTokenizer->isCPP() && tok->isKeyword() && Token::Match(tok, "friend class| ::| %any% ;|::")) {
+            else if (mTokenizer->isCPP() && tok->isKeyword() && Token::Match(tok, "friend class|struct| ::| %any% ;|::")) {
                 Type::FriendInfo friendInfo;
 
                 // save the name start
