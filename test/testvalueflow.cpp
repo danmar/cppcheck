@@ -1075,6 +1075,13 @@ private:
             ASSERT_EQUALS(22, values.back().intvalue);
         }
 
+        // #10251 starship operator
+        code  = "struct X {};\n"
+                "auto operator<=>(const X & a, const X & b) -> decltype(1 <=> 2) {\n"
+                "    return std::strong_ordering::less;\n"
+                "}\n";
+        tokenValues(code, "<=>"); // don't throw
+
         // Comparison of string
         values = removeImpossible(tokenValues("f(\"xyz\" == \"xyz\");", "==")); // implementation defined
         ASSERT_EQUALS(0U, values.size()); // <- no value
