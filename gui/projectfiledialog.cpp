@@ -347,9 +347,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     if (!mUI->mAddonMisra->isEnabled()) {
         mUI->mEditMisraFile->setEnabled(false);
         mUI->mBtnBrowseMisraFile->setEnabled(false);
-    } else if (misraFile.isEmpty()) {
-        mUI->mAddonMisra->setEnabled(false);
-        mUI->mAddonMisra->setText(mUI->mAddonMisra->text() + ' ' + tr("(no rule texts file)"));
     }
 
     mUI->mToolClangAnalyzer->setChecked(projectFile->getClangAnalyzer());
