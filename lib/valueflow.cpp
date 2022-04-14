@@ -2287,6 +2287,7 @@ struct ValueFlowAnalyzer : Analyzer {
             return v.isSymbolicValue() && currValue->equalValue(v);
         }))
             return false;
+        const bool isPoint = currValue->bound == ValueFlow::Value::Bound::Point && currValue->isIntValue();
         const bool exact = !currValue->isIntValue() || currValue->isImpossible();
         for (const ValueFlow::Value& v : tok->values()) {
             if (!v.isSymbolicValue())
@@ -2296,7 +2297,7 @@ struct ValueFlowAnalyzer : Analyzer {
             const bool toImpossible = v.isImpossible() && currValue->isKnown();
             if (!v.isKnown() && !toImpossible)
                 continue;
-            if (exact && v.intvalue != 0)
+            if (exact && v.intvalue != 0 && !isPoint)
                 continue;
             std::vector<MathLib::bigint> r;
             ValueFlow::Value::Bound bound = currValue->bound;
