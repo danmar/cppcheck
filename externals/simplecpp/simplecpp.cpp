@@ -3400,7 +3400,7 @@ std::string simplecpp::getCStdString(const std::string &std)
     if (std == "c17" || std == "c18" || std == "iso9899:2017" || std == "iso9899:2018" || std == "gnu17"|| std == "gnu18")
         return "201710L";
     if (std == "c2x" || std == "gnu2x") {
-        // Clang 11 returns "201710L"
+        // Clang 11, 12, 13 return "201710L" - correct in 14
         return "202000L";
     }
     return "";
@@ -3417,14 +3417,14 @@ std::string simplecpp::getCppStdString(const std::string &std)
     if (std == "c++17" || std == "c++1z" || std == "gnu++17" || std == "gnu++1z")
         return "201703L";
     if (std == "c++20" || std == "c++2a" || std == "gnu++20" || std == "gnu++2a") {
-        // GCC 10 returns "201703L"
+        // GCC 10 returns "201703L" - correct in 11+
         return "202002L";
     }
-    /*
     if (std == "c++23" || std == "c++2b" || std == "gnu++23" || std == "gnu++2b") {
-        // supported by GCC 11+
-        return "";
-    } */
+        // supported by GCC 11+ and Clang 12+
+        // Clang 12, 13, 14 do not support "c++23" and "gnu++23"
+        return "202100L";
+    }
     return "";
 }
 
