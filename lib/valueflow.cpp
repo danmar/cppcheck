@@ -373,7 +373,7 @@ static const Token *getCastTypeStartToken(const Token *parent)
 // does the operation cause a loss of information?
 static bool isNonInvertibleOperation(const Token* tok)
 {
-    return tok->isComparisonOp() || Token::Match(tok, "%|/|&|%or%|<<|>>|%oror%|&&");
+    return !Token::Match(tok, "+|-");
 }
 
 static bool isComputableValue(const Token* parent, const ValueFlow::Value& value)
