@@ -786,20 +786,6 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
         return v;
     if (pm.hasValue(expr->exprId()))
         return pm.at(expr->exprId());
-    // Find symbolic values
-    for (const ValueFlow::Value& value : expr->values()) {
-        if (!value.isSymbolicValue())
-            continue;
-        // TODO: Handle possible symbolic values
-        if (!value.isKnown())
-            continue;
-        if (!pm.hasValue(value.tokvalue->exprId()))
-            continue;
-        ValueFlow::Value v2 = pm.at(value.tokvalue->exprId());
-        v2.intvalue += value.intvalue;
-        v2.valueKind = value.valueKind;
-        return v2;
-    }
     return v;
 }
 
