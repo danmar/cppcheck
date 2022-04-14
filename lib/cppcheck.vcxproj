@@ -1,4 +1,4 @@
-﻿<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug-PCRE|Win32">
       <Configuration>Debug-PCRE</Configuration>
@@ -317,7 +317,8 @@
       <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -348,7 +349,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -377,7 +379,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -407,7 +410,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -446,7 +450,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -486,7 +491,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -524,7 +530,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -563,7 +570,8 @@ xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
       <StackCommitSize>8000000</StackCommitSize>
     </Link>
     <PostBuildEvent>
-      <Command>xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
+      <Command>xcopy "$(SolutionDir)addons" "$(OutDir)addons" /E /I /D /Y
+xcopy "$(SolutionDir)cfg" "$(OutDir)cfg" /E /I /D /Y
 xcopy "$(SolutionDir)platforms" "$(OutDir)platforms" /E /I /D /Y</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
