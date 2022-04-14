@@ -3237,7 +3237,9 @@ private:
               "    std::vector<std::string> files;\n"
               "    return A(files);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:7] -> [test.cpp:8]: (error) Returning object that points to local variable 'files' that will be invalid when returning.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:8] -> [test.cpp:7] -> [test.cpp:8]: (error) Returning object that points to local variable 'files' that will be invalid when returning.\n",
+            errout.str());
     }
 
     void danglingLifetimeAggegrateConstructor() {
