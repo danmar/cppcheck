@@ -1091,14 +1091,14 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         } else if (Token::Match(tok, "sizeof ( %var% ) / sizeof (") && tok->next()->astParent() == tok->tokAt(4)) {
             // Get number of elements in array
             const Token *sz1 = tok->tokAt(2);
-            const Token *sz2 = tok->tokAt(7);
+            const Token *sz2 = tok->tokAt(6); // left parenthesis
             const nonneg int varid1 = sz1->varId();
             if (varid1 &&
                 sz1->variable() &&
                 sz1->variable()->isArray() &&
                 !sz1->variable()->dimensions().empty() &&
                 sz1->variable()->dimensionKnown(0) &&
-                (Token::Match(sz2, "* %varid% )", varid1) || Token::Match(sz2, "%varid% [ 0 ] )", varid1))) {
+                Token::Match(sz2->astOperand2(), "*|[") && Token::Match(sz2->astOperand2()->astOperand1(), "%var%", varid1)) {
                 ValueFlow::Value value(sz1->variable()->dimension(0));
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
