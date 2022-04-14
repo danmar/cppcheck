@@ -187,6 +187,7 @@ private:
         TEST_CASE(array_index_60); // #10617, #9824
         TEST_CASE(array_index_61); // #10621
         TEST_CASE(array_index_62); // #7684
+        TEST_CASE(array_index_63); // #10979
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1780,6 +1781,18 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'buf[10]' accessed at index 10, which is out of bounds.\n",
                       errout.str());
+    }
+
+    void array_index_63()
+    {
+        check("int b[4];\n" // #10979
+              "void f(int i) {\n"
+              "    if (i >= 0 && i < sizeof(b) / sizeof(*(b)))\n"
+              "        b[i] = 0;\n"
+              "    if (i >= 0 && i < sizeof(b) / sizeof((b)[0]))\n"
+              "        b[i] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {
