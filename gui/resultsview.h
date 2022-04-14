@@ -34,7 +34,8 @@ class QModelIndex;
 class QPrinter;
 class QSettings;
 class CheckStatistics;
-class QListWidgetItem;
+class QObject;
+class QPoint;
 namespace Ui {
     class ResultsView;
 }

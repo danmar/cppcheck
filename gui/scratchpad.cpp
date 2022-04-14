@@ -18,6 +18,7 @@
 
 #include "scratchpad.h"
 
+#include "codeeditor.h"
 #include "mainwindow.h"
 
 #include "ui_scratchpad.h"

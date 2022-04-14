@@ -36,7 +36,6 @@
 #include <vector>
 
 class Token;
-class TokenList;
 class Settings;
 
 namespace tinyxml2 {

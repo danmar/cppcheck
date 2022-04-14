@@ -303,8 +303,6 @@ dmake:	tools/dmake.o cli/filelister.o $(libcppdir)/pathmatch.o $(libcppdir)/path
 run-dmake: dmake
 	./dmake
 
-generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)
-	g++ -isystem externals/tinyxml2 -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)
 clean:
 	rm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1
 
@@ -775,7 +773,4 @@ externals/tinyxml2/tinyxml2.o: externals/tinyxml2/tinyxml2.cpp externals/tinyxml
 
 tools/dmake.o: tools/dmake.cpp cli/filelister.h lib/config.h lib/pathmatch.h
 	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/dmake.o tools/dmake.cpp
-
-tools/generate_cfg_tests.o: tools/generate_cfg_tests.cpp externals/tinyxml2/tinyxml2.h
-	$(CXX) ${INCLUDE_FOR_LIB} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o tools/generate_cfg_tests.o tools/generate_cfg_tests.cpp
 

@@ -23,6 +23,8 @@
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 
+class QWidget;
+
 LibraryAddFunctionDialog::LibraryAddFunctionDialog(QWidget *parent) :
     QDialog(parent),
     mUi(new Ui::LibraryAddFunctionDialog)

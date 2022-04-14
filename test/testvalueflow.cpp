@@ -1075,6 +1075,13 @@ private:
             ASSERT_EQUALS(22, values.back().intvalue);
         }
 
+        // #10251 starship operator
+        code  = "struct X {};\n"
+                "auto operator<=>(const X & a, const X & b) -> decltype(1 <=> 2) {\n"
+                "    return std::strong_ordering::less;\n"
+                "}\n";
+        tokenValues(code, "<=>"); // don't throw
+
         // Comparison of string
         values = removeImpossible(tokenValues("f(\"xyz\" == \"xyz\");", "==")); // implementation defined
         ASSERT_EQUALS(0U, values.size()); // <- no value
@@ -7136,6 +7143,17 @@ private:
                "  return 1 / x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 4U, 0));
+
+        code = "void f(int k) {\n"
+               "  int x = k;\n"
+               "  int j = k;\n"
+               "  x--;\n"
+               "  if (k != 0) {\n"
+               "    x;\n"
+               "  }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 6U, -1));
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, -1));
     }
 
     void valueFlowSymbolicIdentity()

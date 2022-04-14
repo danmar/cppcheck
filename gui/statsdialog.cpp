@@ -21,6 +21,7 @@
 #include "checkstatistics.h"
 #include "common.h"
 #include "projectfile.h"
+#include "showtypes.h"
 
 #include "ui_statsdialog.h"
 

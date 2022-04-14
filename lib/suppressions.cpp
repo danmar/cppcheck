@@ -22,7 +22,9 @@
 #include "mathlib.h"
 #include "path.h"
 #include "utils.h"
+#include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc

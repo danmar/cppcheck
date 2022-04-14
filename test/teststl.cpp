@@ -3981,6 +3981,21 @@ private:
               "    std::string m;\n"
               "};\n", /*inconclusive*/ true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
+
+        check("struct S {\n" // #10493
+              "    void f(const char** pp);\n"
+              "    std::string s;\n"
+              "};\n"
+              "void S::f(const char** pp) {\n"
+              "    try {\n"
+              "        *pp = member.c_str();\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        s = \"xyz\";\n"
+              "        *pp = member.c_str();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {

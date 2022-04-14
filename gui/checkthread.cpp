@@ -18,10 +18,24 @@
 
 #include "checkthread.h"
 
+#include "analyzerinfo.h"
 #include "common.h"
 #include "cppcheck.h"
 #include "erroritem.h"
+#include "errorlogger.h"
+#include "errortypes.h"
+#include "settings.h"
+#include "standards.h"
 #include "threadresult.h"
+
+#include <cstddef>
+#include <functional>
+#include <list>
+#include <map>
+#include <ostream>
+#include <set>
+#include <string>
+#include <vector>
 
 #include <QDebug>
 #include <QDir>

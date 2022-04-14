@@ -19,8 +19,12 @@
 #include "projectfile.h"
 
 #include "common.h"
+#include "config.h"
 #include "importproject.h"
 #include "settings.h"
+
+#include <string>
+#include <utility>
 
 #include <QFile>
 #include <QDir>

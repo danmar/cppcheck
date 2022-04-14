@@ -23,6 +23,10 @@
 #include "resultsview.h"
 #include "settings.h"
 
+#include <list>
+#include <string>
+#include <utility>
+
 #include <QDebug>
 #include <QFileInfo>
 #include <QSettings>

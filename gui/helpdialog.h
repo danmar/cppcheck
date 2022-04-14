@@ -22,11 +22,13 @@
 #include <QDialog>
 #include <QTextBrowser>
 
+class QHelpEngine;
+class QObject;
+class QUrl;
+class QWidget;
 namespace Ui {
     class HelpDialog;
 }
-
-class QHelpEngine;
 
 class HelpBrowser : public QTextBrowser {
 public:

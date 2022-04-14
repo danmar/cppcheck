@@ -256,6 +256,7 @@ private:
         TEST_CASE(expandSpecialized2);
         TEST_CASE(expandSpecialized3); // #8671
         TEST_CASE(expandSpecialized4);
+        TEST_CASE(expandSpecialized5); // #10494
 
         TEST_CASE(templateAlias1);
         TEST_CASE(templateAlias2);
@@ -5589,6 +5590,27 @@ private:
                                     "}";
             ASSERT_EQUALS(expected, tok(code));
         }
+    }
+
+    void expandSpecialized5() {
+        const char code[] = "template<typename T> class hash;\n" // #10494
+                            "template<> class hash<int> {};\n"
+                            "int f(int i) {\n"
+                            "    int hash = i;\n"
+                            "    const int a[2]{};\n"
+                            "    return a[hash];\n"
+                            "}\n";
+
+        const char expected[] = "class hash<int> ; "
+                                "template < typename T > class hash ; "
+                                "class hash<int> { } ; "
+                                "int f ( int i ) { "
+                                "int hash ; hash = i ; "
+                                "const int a [ 2 ] { } ; "
+                                "return a [ hash ] ; "
+                                "}";
+
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void templateAlias1() {

@@ -20,24 +20,38 @@
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
+#include "analyzerinfo.h"
 #include "common.h"
 #include "cppcheck.h"
+#include "errortypes.h"
 #include "filelist.h"
 #include "fileviewdialog.h"
 #include "helpdialog.h"
+#include "importproject.h"
 #include "librarydialog.h"
+#include "platform.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
+#include "resultsview.h"
 #include "scratchpad.h"
 #include "showtypes.h"
 #include "statsdialog.h"
 #include "settingsdialog.h"
+#include "standards.h"
+#include "suppressions.h"
 #include "threadhandler.h"
 #include "threadresult.h"
 #include "translationhandler.h"
 
 #include "ui_mainwindow.h"
+
+#include <algorithm>
+#include <functional>
+#include <list>
+#include <set>
+#include <string>
+#include <vector>
 
 #include <QApplication>
 #include <QAction>

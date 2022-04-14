@@ -25,6 +25,8 @@
 #include <QString>
 #include <QStringList>
 
+class QModelIndex;
+class QObject;
 class QWidget;
 namespace Ui {
     class ProjectFile;
