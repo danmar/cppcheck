@@ -6,7 +6,32 @@ if (BUILD_GUI)
     if (BUILD_TESTS)
         list(APPEND qt_components Test)
     endif()
-    find_package(Qt5 COMPONENTS ${qt_components} REQUIRED)
+    if (USE_QT6)
+        find_package(Qt6 COMPONENTS ${qt_components} QUIET)
+    endif()
+    if (NOT Qt6Core_FOUND)
+        find_package(Qt5 COMPONENTS ${qt_components} REQUIRED)
+        set(QT_VERSION "${Qt5Core_VERSION_STRING}")
+    else()
+        # detect faulty Qt6 installation by jurplel/install-qt-action@v2
+        if (WITH_QCHART AND NOT Qt6Charts_FOUND)
+            message(FATAL_ERROR "QtCharts not found")
+        endif()
+        set(QT_VERSION "${Qt6Core_VERSION_STRING}")
+        if (NOT QT_VERSION)
+            message(WARNING "'Qt6Core_VERSION_STRING' is not set - using 6.0.0 as fallback")
+            set(QT_VERSION "6.0.0")
+        endif()
+        if (MSVC)
+            # disable Visual Studio C++ memory leak detection since it causes compiler errors with Qt 6
+            # D:\a\cppcheck\Qt\6.2.4\msvc2019_64\include\QtCore/qhash.h(179,15): warning C4003: not enough arguments for function-like macro invocation 'free' [D:\a\cppcheck\cppcheck\build\gui\cppcheck-gui.vcxproj]
+            # D:\a\cppcheck\Qt\6.2.4\msvc2019_64\include\QtCore/qhash.h(179,15): error C2059: syntax error: ',' [D:\a\cppcheck\cppcheck\build\gui\cppcheck-gui.vcxproj]
+            # this is supposed to be fixed according to the following tickets but it still happens
+            # https://bugreports.qt.io/browse/QTBUG-40575
+            # https://bugreports.qt.io/browse/QTBUG-86395
+            set(DISABLE_CRTDBG_MAP_ALLOC ON)
+        endif()
+    endif()
 endif()
 
 if (HAVE_RULES)

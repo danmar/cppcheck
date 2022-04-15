@@ -17,7 +17,7 @@ jobs:
       matrix:
         os: [windows-2019, windows-2022]
         arch: [x64, x86]
-        qt_ver: ['', 5.15.2]
+        qt_ver: ['', 5.15.2, 6.2.4, 6.3.0]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -81,8 +81,9 @@ jobs:
       # no 32-bit Qt available
       - name: Install Qt ${{ matrix.qt_ver }}
         if: matrix.qt_ver != '' && matrix.arch == 'x64'
-        uses: jurplel/install-qt-action@v2
+        uses: jurplel/install-qt-action@v3
         with:
+          aqtversion: '==2.0.6'
           version: ${{ matrix.qt_ver }}
           modules: 'qtcharts'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
@@ -94,8 +95,8 @@ jobs:
           python -m pip install pytest || exit /b !errorlevel!
           python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
 
-      - name: Build GUI release
-        if: matrix.qt_ver != '' && matrix.arch == 'x64'
+      - name: Build GUI release (qmake)
+        if: startsWith(matrix.qt_ver, '5') && matrix.arch == 'x64'
         run: |
           cd gui || exit /b !errorlevel!
           qmake HAVE_QCHART=yes || exit /b !errorlevel!
@@ -104,11 +105,21 @@ jobs:
           CL: /MP
       
       - name: Deploy GUI
-        if: matrix.qt_ver != '' && matrix.arch == 'x64'
+        if: startsWith(matrix.qt_ver, '5') && matrix.arch == 'x64'
         run: |
           windeployqt Build\gui || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
           del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
+
+      - name: Build GUI release (CMake)
+        if: startsWith(matrix.qt_ver, '6') && matrix.arch == 'x64'
+        run: |
+          md build || exit /b !errorlevel!
+          cd build || exit /b !errorlevel!
+          cmake -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_QT6=On .. || exit /b !errorlevel!
+          cmake --build . --target cppcheck-gui || exit /b !errorlevel!
+
+      # TODO: deploy with Qt6
 
       - name: Run CMake
         if: false && matrix.qt_ver == ''
@@ -117,9 +128,8 @@ jobs:
           if "${{ matrix.arch }}" == "x86" (
             set ARCH=Win32
           )
-          rm -rf build
-          mkdir build
-          cd build
+          md build || exit /b !errorlevel!
+          cd build || exit /b !errorlevel!
           cmake -DBUILD_TESTS=On .. || exit /b !errorlevel!
 
       - name: Build CLI debug configuration using MSBuild

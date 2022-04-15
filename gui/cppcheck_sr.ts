@@ -409,13 +409,6 @@ Parameters: -l(line) (file)</source>
     </message>
 </context>
 <context>
-    <name>LogView</name>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="26"/>
@@ -459,10 +452,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="93"/>
         <source>&amp;Toolbars</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Check</source>
-        <translation type="obsolete">&amp;Check</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="135"/>
@@ -528,10 +517,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="278"/>
         <source>Ctrl+D</source>
         <translation type="unfinished">Ctrl+D</translation>
-    </message>
-    <message>
-        <source>&amp;Recheck files</source>
-        <translation type="obsolete">&amp;Recheck files</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="290"/>
@@ -670,14 +655,6 @@ Parameters: -l(line) (file)</source>
         <translation>Windows 64-bit</translation>
     </message>
     <message>
-        <source>C++11</source>
-        <translation type="obsolete">C++11</translation>
-    </message>
-    <message>
-        <source>C99</source>
-        <translation type="obsolete">C99</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="752"/>
         <source>&amp;Print...</source>
         <translation type="unfinished"></translation>
@@ -701,26 +678,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="771"/>
         <source>Open library editor</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Gtk</source>
-        <translation type="obsolete">Gtk</translation>
-    </message>
-    <message>
-        <source>Posix</source>
-        <translation type="obsolete">Posix</translation>
-    </message>
-    <message>
-        <source>C11</source>
-        <translation type="obsolete">C11</translation>
-    </message>
-    <message>
-        <source>C89</source>
-        <translation type="obsolete">C89</translation>
-    </message>
-    <message>
-        <source>C++03</source>
-        <translation type="obsolete">C++03</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="396"/>
@@ -985,14 +942,6 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished">&amp;Help</translation>
     </message>
     <message>
-        <source>Select directory to check</source>
-        <translation type="obsolete">Select directory to check</translation>
-    </message>
-    <message>
-        <source>No suitable files found to check!</source>
-        <translation type="obsolete">No suitable files found to check!</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="106"/>
         <location filename="mainwindow.cpp" line="1460"/>
         <source>Quick Filter:</source>
@@ -1047,10 +996,6 @@ Do you want to load this project file instead?</source>
         <translation type="unfinished">Authors</translation>
     </message>
     <message>
-        <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation type="obsolete">XML files (*.xml);;Text files (*.txt);;CSV files (*.csv)</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1378"/>
         <source>Save the report file</source>
         <translation type="unfinished">Save the report file</translation>
@@ -1072,10 +1017,6 @@ This is probably because the settings were changed between the Cppcheck versions
         <location filename="mainwindow.cpp" line="580"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">Select files to check</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="794"/>
@@ -1132,10 +1073,6 @@ This is probably because the settings were changed between the Cppcheck versions
         <location filename="mainwindow.cpp" line="1393"/>
         <source>CSV files (*.csv)</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cppcheck - %1</source>
-        <translation type="vanished">Cppcheck - %1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1498"/>
@@ -1368,13 +1305,6 @@ Options:
         <location filename="platforms.cpp" line="43"/>
         <source>Windows 64-bit</source>
         <translation>Windows 64-bit</translation>
-    </message>
-</context>
-<context>
-    <name>Project</name>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
     </message>
 </context>
 <context>
@@ -2015,14 +1945,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Copy filename</source>
-        <translation type="obsolete">Copy filename</translation>
-    </message>
-    <message>
-        <source>Copy full path</source>
-        <translation type="obsolete">Copy full path</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="655"/>
         <source>Hide</source>
         <translation type="unfinished"></translation>
@@ -2213,10 +2135,6 @@ To toggle what kind of errors are shown, open view menu.</translation>
         <location filename="resultsview.cpp" line="486"/>
         <source>Copy complete Log</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>No errors found, nothing to save.</source>
-        <translation type="obsolete">No errors found, nothing to save.</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="183"/>
@@ -2512,14 +2430,14 @@ To toggle what kind of errors are shown, open view menu.</translation>
     <message>
         <location filename="statsdialog.ui" line="14"/>
         <location filename="statsdialog.ui" line="248"/>
-        <location filename="statsdialog.cpp" line="160"/>
-        <location filename="statsdialog.cpp" line="207"/>
+        <location filename="statsdialog.cpp" line="162"/>
+        <location filename="statsdialog.cpp" line="209"/>
         <source>Statistics</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="27"/>
-        <location filename="statsdialog.cpp" line="198"/>
+        <location filename="statsdialog.cpp" line="200"/>
         <source>Project</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2550,7 +2468,7 @@ To toggle what kind of errors are shown, open view menu.</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="165"/>
-        <location filename="statsdialog.cpp" line="203"/>
+        <location filename="statsdialog.cpp" line="205"/>
         <source>Previous Scan</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2620,143 +2538,143 @@ To toggle what kind of errors are shown, open view menu.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="136"/>
+        <location filename="statsdialog.cpp" line="138"/>
         <source>1 day</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="136"/>
+        <location filename="statsdialog.cpp" line="138"/>
         <source>%1 days</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="140"/>
         <source>1 hour</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="140"/>
         <source>%1 hours</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="142"/>
         <source>1 minute</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="142"/>
         <source>%1 minutes</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="144"/>
         <source>1 second</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="144"/>
         <source>%1 seconds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="146"/>
+        <location filename="statsdialog.cpp" line="148"/>
         <source>0.%1 seconds</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="148"/>
+        <location filename="statsdialog.cpp" line="150"/>
         <source> and </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="175"/>
+        <location filename="statsdialog.cpp" line="177"/>
         <source>Export PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="197"/>
+        <location filename="statsdialog.cpp" line="199"/>
         <source>Project Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="199"/>
+        <location filename="statsdialog.cpp" line="201"/>
         <source>Paths</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="200"/>
+        <location filename="statsdialog.cpp" line="202"/>
         <source>Include paths</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="201"/>
+        <location filename="statsdialog.cpp" line="203"/>
         <source>Defines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="202"/>
+        <location filename="statsdialog.cpp" line="204"/>
         <source>Undefines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="204"/>
+        <location filename="statsdialog.cpp" line="206"/>
         <source>Path selected</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="205"/>
+        <location filename="statsdialog.cpp" line="207"/>
         <source>Number of files scanned</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="206"/>
+        <location filename="statsdialog.cpp" line="208"/>
         <source>Scan duration</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="162"/>
-        <location filename="statsdialog.cpp" line="208"/>
+        <location filename="statsdialog.cpp" line="164"/>
+        <location filename="statsdialog.cpp" line="210"/>
         <source>Errors</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="88"/>
+        <location filename="statsdialog.cpp" line="90"/>
         <source>File: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="88"/>
+        <location filename="statsdialog.cpp" line="90"/>
         <source>No cppcheck build dir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="164"/>
-        <location filename="statsdialog.cpp" line="209"/>
+        <location filename="statsdialog.cpp" line="166"/>
+        <location filename="statsdialog.cpp" line="211"/>
         <source>Warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="166"/>
-        <location filename="statsdialog.cpp" line="210"/>
+        <location filename="statsdialog.cpp" line="168"/>
+        <location filename="statsdialog.cpp" line="212"/>
         <source>Style warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="168"/>
-        <location filename="statsdialog.cpp" line="211"/>
+        <location filename="statsdialog.cpp" line="170"/>
+        <location filename="statsdialog.cpp" line="213"/>
         <source>Portability warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="170"/>
-        <location filename="statsdialog.cpp" line="212"/>
+        <location filename="statsdialog.cpp" line="172"/>
+        <location filename="statsdialog.cpp" line="214"/>
         <source>Performance warnings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="172"/>
-        <location filename="statsdialog.cpp" line="213"/>
+        <location filename="statsdialog.cpp" line="174"/>
+        <location filename="statsdialog.cpp" line="215"/>
         <source>Information messages</source>
         <translation type="unfinished"></translation>
     </message>

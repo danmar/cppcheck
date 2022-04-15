@@ -41,27 +41,6 @@ der GNU General Public License Version 3 lizenziert</translation>
         <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul style=&quot;margin-top: 0px; margin-bottom: 0px; margin-left: 0px; margin-right: 0px; -qt-list-indent: 1;&quot;&gt;&lt;li style=&quot; margin-top:12px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;pcre&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;picojson&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;qt&lt;/li&gt;&lt;li style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;tinyxml2&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
-&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul&gt;
-&lt;li&gt;pcre&lt;/li&gt;
-&lt;li&gt;picojson&lt;/li&gt;
-&lt;li&gt;qt&lt;/li&gt;
-&lt;li&gt;tinyxml2&lt;/li&gt;
-&lt;li&gt;z3&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</source>
-        <oldsource>&lt;html&gt;&lt;head/&gt;&lt;body&gt;
-&lt;p&gt;Many thanks to these libraries that we use:&lt;/p&gt;&lt;ul&gt;
-&lt;li&gt;tinyxml2&lt;/li&gt;
-&lt;li&gt;picojson&lt;/li&gt;
-&lt;li&gt;pcre&lt;/li&gt;
-&lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</oldsource>
-        <translation type="obsolete">&lt;html&gt;&lt;head/&gt;&lt;body&gt;
-&lt;p&gt;Vielen Dank für die von uns genutzten Bibliotheken:&lt;/p&gt;&lt;ul&gt;
-&lt;li&gt;tinyxml2&lt;/li&gt;
-&lt;li&gt;picojson&lt;/li&gt;
-&lt;li&gt;pcre&lt;/li&gt;
-&lt;li&gt;qt&lt;/li&gt;&lt;/ul&gt;&lt;/body&gt;&lt;/html&gt;</translation>
-    </message>
 </context>
 <context>
     <name>ApplicationDialog</name>
@@ -1101,14 +1080,6 @@ Dies wurde vermutlich durch einen Wechsel der Cppcheck-Version hervorgerufen. Bi
         <translation>Laden von %1 fehlgeschlagen. Ihre Cppcheck-Installation ist defekt. Sie können --data-dir=&lt;Verzeichnis&gt; als Kommandozeilenparameter verwenden, um anzugeben, wo die Datei sich befindet. Bitte beachten Sie, dass --data-dir in Installationsroutinen genutzt werden soll, und die GUI bei dessen Nutzung nicht startet, sondern die Einstellungen konfiguriert.</translation>
     </message>
     <message>
-        <source>Current results will be cleared.
-
-Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation type="vanished">Aktuelle Ergebnisse werden gelöscht.
-
-          Das Einlesen einer XML-Datei löscht die aktuellen Ergebnisse. Fortfahren?</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1197"/>
         <source>Open the report file</source>
         <translation>Berichtdatei öffnen</translation>
@@ -1122,10 +1093,6 @@ Opening a new XML file will clear current results.Do you want to proceed?</sourc
         <location filename="mainwindow.cpp" line="1393"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV-Dateien (*.csv)</translation>
-    </message>
-    <message>
-        <source>Cppcheck - %1</source>
-        <translation type="vanished">Cppcheck - %1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1498"/>
@@ -1402,10 +1369,6 @@ Options:
         <translation>Hinweis: Legen Sie eigene .cfg-Dateien in den Ordner der Projektdatei. Dann sollten sie oben sichtbar werden.</translation>
     </message>
     <message>
-        <source>Addons and tools</source>
-        <translation type="vanished">Addons und Werkzeuge</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="786"/>
         <source>MISRA C 2012</source>
         <translation>MISRA C 2012</translation>
@@ -1498,10 +1461,6 @@ Options:
         <translation>Ab</translation>
     </message>
     <message>
-        <source>Checking</source>
-        <translation type="vanished">Prüfung</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="368"/>
         <source>Platform</source>
         <translation>Plattform</translation>
@@ -1526,10 +1485,6 @@ Options:
         <location filename="projectfile.ui" line="464"/>
         <source>If you want to design your classes to be as flexible and robust as possible then the public interface must be very robust. Cppcheck will asumme that arguments can take *any* value.</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Check code in headers  (slower analysis, more results)</source>
-        <translation type="vanished">Prüfe Code in Headern (langsamere Analyse, mehr Ergebnisse)</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="499"/>
@@ -1568,14 +1523,6 @@ Options:
         <translation>Warnungs-Tags (Semikolon-getrennt)</translation>
     </message>
     <message>
-        <source>Exclude source files in paths</source>
-        <translation type="vanished">Quelldateien in Pfaden ausschließen</translation>
-    </message>
-    <message>
-        <source>Note: Addons require &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; beeing installed.</source>
-        <translation type="vanished">Hinweis: Addons setzen voraus, dass &lt;a href=&quot;https://www.python.org/&quot;&gt;Python&lt;/a&gt; installiert ist.</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="821"/>
         <source>External tools</source>
         <translation>Externe Werkzeuge</translation>
@@ -1604,10 +1551,6 @@ Options:
         <location filename="projectfile.ui" line="438"/>
         <source>Cppcheck (built in)</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Clang</source>
-        <translation type="obsolete">Clang</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="467"/>
@@ -1681,10 +1624,6 @@ Options:
         <translation>Programmierstandards</translation>
     </message>
     <message>
-        <source>CERT</source>
-        <translation type="vanished">CERT</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="834"/>
         <source>Clang analyzer</source>
         <translation>Clang-Analyzer</translation>
@@ -1721,10 +1660,6 @@ Options:
         <location filename="projectfiledialog.cpp" line="735"/>
         <source>Select a directory to check</source>
         <translation>Wähle zu prüfendes Verzeichnis</translation>
-    </message>
-    <message>
-        <source>(no rule texts file)</source>
-        <translation type="vanished">(keine Regeltexte)</translation>
     </message>
     <message>
         <location filename="projectfiledialog.cpp" line="355"/>
@@ -1780,25 +1715,6 @@ Options:
         <location filename="projectfiledialog.cpp" line="871"/>
         <source>MISRA rule texts file (%1)</source>
         <translation>MISRA-Regeltext-Datei</translation>
-    </message>
-</context>
-<context>
-    <name>QDialogButtonBox</name>
-    <message>
-        <source>OK</source>
-        <translation type="vanished">OK</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Abbrechen</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">Schließen</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="vanished">Speichern</translation>
     </message>
 </context>
 <context>
@@ -2256,10 +2172,6 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
         <translation>Gesamtes Protokoll kopieren</translation>
     </message>
     <message>
-        <source>No errors found, nothing to save.</source>
-        <translation type="vanished">Keine Fehler gefunden, nichts zu speichern.</translation>
-    </message>
-    <message>
         <location filename="resultsview.cpp" line="183"/>
         <location filename="resultsview.cpp" line="191"/>
         <source>Failed to save the report.</source>
@@ -2279,14 +2191,6 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
         <location filename="resultsview.ui" line="104"/>
         <source>Warning Details</source>
         <translation>Warnungs-Details</translation>
-    </message>
-    <message>
-        <source>Functions</source>
-        <translation type="obsolete">Funktionen</translation>
-    </message>
-    <message>
-        <source>Variables</source>
-        <translation type="vanished">Variablen</translation>
     </message>
 </context>
 <context>
@@ -2561,14 +2465,14 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     <message>
         <location filename="statsdialog.ui" line="14"/>
         <location filename="statsdialog.ui" line="248"/>
-        <location filename="statsdialog.cpp" line="160"/>
-        <location filename="statsdialog.cpp" line="207"/>
+        <location filename="statsdialog.cpp" line="162"/>
+        <location filename="statsdialog.cpp" line="209"/>
         <source>Statistics</source>
         <translation>Statistik</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="27"/>
-        <location filename="statsdialog.cpp" line="198"/>
+        <location filename="statsdialog.cpp" line="200"/>
         <source>Project</source>
         <translation>Projekt</translation>
     </message>
@@ -2599,7 +2503,7 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
     </message>
     <message>
         <location filename="statsdialog.ui" line="165"/>
-        <location filename="statsdialog.cpp" line="203"/>
+        <location filename="statsdialog.cpp" line="205"/>
         <source>Previous Scan</source>
         <translation>Vorherige Prüfung</translation>
     </message>
@@ -2669,143 +2573,143 @@ Legen Sie unter dem Menü Ansicht fest, welche Arten von Fehlern angezeigt werde
         <translation>PDF-Export</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="136"/>
+        <location filename="statsdialog.cpp" line="138"/>
         <source>1 day</source>
         <translation>1 Tag</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="136"/>
+        <location filename="statsdialog.cpp" line="138"/>
         <source>%1 days</source>
         <translation>%1 Tage</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="140"/>
         <source>1 hour</source>
         <translation>1 Stunde</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="140"/>
         <source>%1 hours</source>
         <translation>%1 Stunden</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="142"/>
         <source>1 minute</source>
         <translation>1 Minute</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="142"/>
         <source>%1 minutes</source>
         <translation>%1 Minuten</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="144"/>
         <source>1 second</source>
         <translation>1 Sekunde</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="144"/>
         <source>%1 seconds</source>
         <translation>%1 Sekunden</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="146"/>
+        <location filename="statsdialog.cpp" line="148"/>
         <source>0.%1 seconds</source>
         <translation>0,%1 Sekunden</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="148"/>
+        <location filename="statsdialog.cpp" line="150"/>
         <source> and </source>
         <translation> und </translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="175"/>
+        <location filename="statsdialog.cpp" line="177"/>
         <source>Export PDF</source>
         <translation>Exportiere PDF</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="197"/>
+        <location filename="statsdialog.cpp" line="199"/>
         <source>Project Settings</source>
         <translation>Projekteinstellungen</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="199"/>
+        <location filename="statsdialog.cpp" line="201"/>
         <source>Paths</source>
         <translation>Pfade</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="200"/>
+        <location filename="statsdialog.cpp" line="202"/>
         <source>Include paths</source>
         <translation>Include-Pfade</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="201"/>
+        <location filename="statsdialog.cpp" line="203"/>
         <source>Defines</source>
         <translation>Definitionen</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="202"/>
+        <location filename="statsdialog.cpp" line="204"/>
         <source>Undefines</source>
         <translation>Un-Definitionen</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="204"/>
+        <location filename="statsdialog.cpp" line="206"/>
         <source>Path selected</source>
         <translation>Gewählte Pfade</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="205"/>
+        <location filename="statsdialog.cpp" line="207"/>
         <source>Number of files scanned</source>
         <translation>Anzahl geprüfter Dateien</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="206"/>
+        <location filename="statsdialog.cpp" line="208"/>
         <source>Scan duration</source>
         <translation>Prüfungsdauer</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="162"/>
-        <location filename="statsdialog.cpp" line="208"/>
+        <location filename="statsdialog.cpp" line="164"/>
+        <location filename="statsdialog.cpp" line="210"/>
         <source>Errors</source>
         <translation>Fehler</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="88"/>
+        <location filename="statsdialog.cpp" line="90"/>
         <source>File: </source>
         <translation>Datei: </translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="88"/>
+        <location filename="statsdialog.cpp" line="90"/>
         <source>No cppcheck build dir</source>
         <translation>Kein Cppcheck-Analyseverzeichnis</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="164"/>
-        <location filename="statsdialog.cpp" line="209"/>
+        <location filename="statsdialog.cpp" line="166"/>
+        <location filename="statsdialog.cpp" line="211"/>
         <source>Warnings</source>
         <translation>Warnungen</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="166"/>
-        <location filename="statsdialog.cpp" line="210"/>
+        <location filename="statsdialog.cpp" line="168"/>
+        <location filename="statsdialog.cpp" line="212"/>
         <source>Style warnings</source>
         <translation>Stilwarnungen</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="168"/>
-        <location filename="statsdialog.cpp" line="211"/>
+        <location filename="statsdialog.cpp" line="170"/>
+        <location filename="statsdialog.cpp" line="213"/>
         <source>Portability warnings</source>
         <translation>Portabilitätswarnungen</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="170"/>
-        <location filename="statsdialog.cpp" line="212"/>
+        <location filename="statsdialog.cpp" line="172"/>
+        <location filename="statsdialog.cpp" line="214"/>
         <source>Performance warnings</source>
         <translation>Performance-Warnungen</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="172"/>
-        <location filename="statsdialog.cpp" line="213"/>
+        <location filename="statsdialog.cpp" line="174"/>
+        <location filename="statsdialog.cpp" line="215"/>
         <source>Information messages</source>
         <translation>Informationsmeldungen</translation>
     </message>

@@ -408,33 +408,6 @@ Parameters: -l(line) (file)</source>
     </message>
 </context>
 <context>
-    <name>LogView</name>
-    <message>
-        <source>Checking Log</source>
-        <translation type="obsolete">Comprobando el log</translation>
-    </message>
-    <message>
-        <source>Clear</source>
-        <translation type="obsolete">Limpiar</translation>
-    </message>
-    <message>
-        <source>Save Log</source>
-        <translation type="obsolete">Guardar el log</translation>
-    </message>
-    <message>
-        <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="obsolete">Archivos de texto (*.txt *.log);;Todos los archivos(*.*)</translation>
-    </message>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
-    </message>
-    <message>
-        <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="obsolete">No se pudo abrir el fichero para escritura: &quot;%1&quot;</translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="26"/>
@@ -473,10 +446,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="121"/>
         <source>&amp;Help</source>
         <translation>&amp;Ayuda</translation>
-    </message>
-    <message>
-        <source>&amp;Check</source>
-        <translation type="obsolete">&amp;Comprobar</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="135"/>
@@ -554,10 +523,6 @@ Parameters: -l(line) (file)</source>
         <translation>Ctrl+D</translation>
     </message>
     <message>
-        <source>&amp;Recheck files</source>
-        <translation type="obsolete">&amp;Volver a revisar ficheros</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="290"/>
         <source>Ctrl+R</source>
         <translation>Ctrl+R</translation>
@@ -605,28 +570,16 @@ Parameters: -l(line) (file)</source>
         <translation>&amp;Preferencias</translation>
     </message>
     <message>
-        <source>Style warnings</source>
-        <translation type="obsolete">Advertencias de estilo</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="370"/>
         <location filename="mainwindow.ui" line="373"/>
         <source>Show style warnings</source>
         <translation>Mostrar advertencias de estilo</translation>
     </message>
     <message>
-        <source>Errors</source>
-        <translation type="obsolete">Errores</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="388"/>
         <location filename="mainwindow.ui" line="391"/>
         <source>Show errors</source>
         <translation>Mostrar errores</translation>
-    </message>
-    <message>
-        <source>Show S&amp;cratchpad...</source>
-        <translation type="obsolete">Mostrar S&amp;cratchpad...</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="794"/>
@@ -638,10 +591,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="578"/>
         <source>Show information messages</source>
         <translation>Mostrar mensajes de información</translation>
-    </message>
-    <message>
-        <source>Portability</source>
-        <translation type="obsolete">Portabilidad</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="593"/>
@@ -699,34 +648,6 @@ Parameters: -l(line) (file)</source>
         <translation>Windows 64-bit</translation>
     </message>
     <message>
-        <source>Platforms</source>
-        <translation type="obsolete">Plataformas</translation>
-    </message>
-    <message>
-        <source>C++11</source>
-        <translation type="obsolete">C++11</translation>
-    </message>
-    <message>
-        <source>C99</source>
-        <translation type="obsolete">C99</translation>
-    </message>
-    <message>
-        <source>Posix</source>
-        <translation type="obsolete">Posix</translation>
-    </message>
-    <message>
-        <source>C11</source>
-        <translation type="obsolete">C11</translation>
-    </message>
-    <message>
-        <source>C89</source>
-        <translation type="obsolete">C89</translation>
-    </message>
-    <message>
-        <source>C++03</source>
-        <translation type="obsolete">C++03</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="752"/>
         <source>&amp;Print...</source>
         <translation>Im&amp;primir...</translation>
@@ -745,10 +666,6 @@ Parameters: -l(line) (file)</source>
         <location filename="mainwindow.ui" line="763"/>
         <source>Open a Print Preview Dialog for the Current Results</source>
         <translation>Abre el diálogo de previsualización de impresión para el informe actual</translation>
-    </message>
-    <message>
-        <source>Library Editor...</source>
-        <translation type="obsolete">Editor de bibliotecas...</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="771"/>
@@ -1007,18 +924,10 @@ Parameters: -l(line) (file)</source>
         <translation type="unfinished">C++20</translation>
     </message>
     <message>
-        <source>Warnings</source>
-        <translation type="obsolete">Advertencias</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="534"/>
         <location filename="mainwindow.ui" line="537"/>
         <source>Show warnings</source>
         <translation>Mostrar advertencias</translation>
-    </message>
-    <message>
-        <source>Performance warnings</source>
-        <translation type="obsolete">Advertencias de rendimiento</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="552"/>
@@ -1039,17 +948,9 @@ This is probably because the settings were changed between the Cppcheck versions
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>No suitable files found to check!</source>
-        <translation type="obsolete">¡No se han encontrado ficheros para comprobar!</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="580"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>¡Tienes que cerrar el proyecto antes de seleccionar nuevos ficheros o carpetas!</translation>
-    </message>
-    <message>
-        <source>Select directory to check</source>
-        <translation type="obsolete">Selecciona una carpeta para comprobar</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="655"/>
@@ -1099,14 +1000,6 @@ This is probably because the settings were changed between the Cppcheck versions
         <translation>Abrir informe</translation>
     </message>
     <message>
-        <source>Checking is running.
-
-Do you want to stop the checking and exit Cppcheck?</source>
-        <translation type="obsolete">El proceso de comprobación está en curso.
-
-¿Quieres parar la comprobación y salir del Cppcheck?</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1356"/>
         <source>License</source>
         <translation>Licencia</translation>
@@ -1115,10 +1008,6 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <location filename="mainwindow.cpp" line="1363"/>
         <source>Authors</source>
         <translation>Autores</translation>
-    </message>
-    <message>
-        <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation type="obsolete">Archivos XML versión 2 (*.xml);;Archivos XML versión 1 (*.xml);;Archivos de texto (*.txt);;Archivos CSV (*.csv)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1378"/>
@@ -1132,10 +1021,6 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation>Filtro rápido:</translation>
     </message>
     <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">Selecciona los archivos a comprobar</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="685"/>
         <source>Found project file: %1
 
@@ -1143,14 +1028,6 @@ Do you want to load this project file instead?</source>
         <translation>Se encontró el fichero de proyecto: %1
 
 ¿Quiere cargar este fichero de proyecto en su lugar?</translation>
-    </message>
-    <message>
-        <source>Found project files from the directory.
-
-Do you want to proceed checking without using any of these project files?</source>
-        <translation type="obsolete">Se encontraron ficheros de proyecto en el directorio.
-
-¿Quiere proceder a comprobar sin utilizar ninguno de estos ficheros de proyecto?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="794"/>
@@ -1190,22 +1067,6 @@ Do you want to proceed checking without using any of these project files?</sourc
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Current results will be cleared.
-
-Opening a new XML file will clear current results.Do you want to proceed?</source>
-        <translation type="vanished">Los resultados actuales serán eliminados.
-
-Abrir un nuevo fichero XML eliminará los resultados actuales. ¿Desea continuar?</translation>
-    </message>
-    <message>
-        <source>XML files version 1 (*.xml)</source>
-        <translation type="obsolete">Archivos XML versión 1 (*.xml)</translation>
-    </message>
-    <message>
-        <source>XML files version 2 (*.xml)</source>
-        <translation type="obsolete">Archivos XML versión 2 (*.xml)</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1389"/>
         <source>Text files (*.txt)</source>
         <translation>Ficheros de texto (*.txt)</translation>
@@ -1214,10 +1075,6 @@ Abrir un nuevo fichero XML eliminará los resultados actuales. ¿Desea continuar
         <location filename="mainwindow.cpp" line="1393"/>
         <source>CSV files (*.csv)</source>
         <translation>Ficheros CVS (*.cvs)</translation>
-    </message>
-    <message>
-        <source>Cppcheck - %1</source>
-        <translation type="vanished">Cppcheck - %1</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1498"/>
@@ -1428,10 +1285,6 @@ Options:
 <context>
     <name>Platforms</name>
     <message>
-        <source>Built-in</source>
-        <translation type="obsolete">Built-in</translation>
-    </message>
-    <message>
         <location filename="platforms.cpp" line="38"/>
         <source>Native</source>
         <translation type="unfinished"></translation>
@@ -1463,30 +1316,11 @@ Options:
     </message>
 </context>
 <context>
-    <name>Project</name>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
-    </message>
-    <message>
-        <source>Could not read the project file.</source>
-        <translation type="obsolete">No se ha podido leer el fichero.</translation>
-    </message>
-    <message>
-        <source>Could not write the project file.</source>
-        <translation type="obsolete">No se ha podido escribir el fichero de proyecto.</translation>
-    </message>
-</context>
-<context>
     <name>ProjectFile</name>
     <message>
         <location filename="projectfile.ui" line="14"/>
         <source>Project File</source>
         <translation>Archivo de proyecto</translation>
-    </message>
-    <message>
-        <source>Project</source>
-        <translation type="obsolete">Proyecto</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="24"/>
@@ -1504,15 +1338,6 @@ Options:
         <source>Defines must be separated by a semicolon. Example: DEF1;DEF2=5;DEF3=int</source>
         <oldsource>Defines must be separated by a semicolon &apos;;&apos;</oldsource>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>&amp;Root:</source>
-        <oldsource>Root:</oldsource>
-        <translation type="obsolete">Raíz:</translation>
-    </message>
-    <message>
-        <source>Libraries:</source>
-        <translation type="obsolete">Bibliotecas:</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="389"/>
@@ -1674,14 +1499,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Includes</source>
-        <translation type="obsolete">Incluir</translation>
-    </message>
-    <message>
-        <source>Include directories:</source>
-        <translation type="obsolete">Incluir los directorios:</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="330"/>
         <source>Up</source>
         <translation>Subir</translation>
@@ -1747,17 +1564,9 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Exclude</source>
-        <translation type="obsolete">Excluir</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="686"/>
         <source>Suppressions</source>
         <translation type="unfinished">Supresiones</translation>
-    </message>
-    <message>
-        <source>Suppression list:</source>
-        <translation type="obsolete">Lista de supresiones:</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="697"/>
@@ -1874,10 +1683,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Add Suppression</source>
-        <translation type="obsolete">Añadir supresión</translation>
-    </message>
-    <message>
         <location filename="projectfiledialog.cpp" line="869"/>
         <source>Select MISRA rule texts file</source>
         <translation type="unfinished"></translation>
@@ -1886,25 +1691,6 @@ Options:
         <location filename="projectfiledialog.cpp" line="871"/>
         <source>MISRA rule texts file (%1)</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>QDialogButtonBox</name>
-    <message>
-        <source>OK</source>
-        <translation type="vanished">Aceptar</translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="vanished">Cancelar</translation>
-    </message>
-    <message>
-        <source>Close</source>
-        <translation type="vanished">Cerrar</translation>
-    </message>
-    <message>
-        <source>Save</source>
-        <translation type="vanished">Guardar</translation>
     </message>
 </context>
 <context>
@@ -2152,10 +1938,6 @@ Options:
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>[Inconclusive]</source>
-        <translation type="obsolete">[No concluyente]</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="345"/>
         <source>portability</source>
         <translation>portabilidad</translation>
@@ -2179,22 +1961,6 @@ Options:
         <location filename="resultstree.cpp" line="653"/>
         <source>Recheck</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copy filename</source>
-        <translation type="obsolete">Copiar nombre del archivo</translation>
-    </message>
-    <message>
-        <source>Copy full path</source>
-        <translation type="obsolete">Copiar ruta completa</translation>
-    </message>
-    <message>
-        <source>Copy message</source>
-        <translation type="obsolete">Copiar mensaje</translation>
-    </message>
-    <message>
-        <source>Copy message id</source>
-        <translation type="obsolete">Copiar id del mensaje</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="655"/>
@@ -2267,14 +2033,6 @@ Please check the application path and parameters are correct.</source>
 Por favor comprueba que la ruta a la aplicación y los parámetros son correctos.</translation>
     </message>
     <message>
-        <source>Could not find file:
-%1
-Please select the directory where file is located.</source>
-        <translation type="obsolete">No se ha encontrado el fichero:
-%1
-Por favor selecciona la carpeta donde se encuentra.</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="844"/>
         <source>Select Directory</source>
         <translation>Selecciona carpeta</translation>
@@ -2333,14 +2091,6 @@ Por favor selecciona la carpeta donde se encuentra.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Functions</source>
-        <translation type="obsolete">Funciones</translation>
-    </message>
-    <message>
-        <source>No errors found, nothing to save.</source>
-        <translation type="vanished">No se han encontrado errores, nada que guardar.</translation>
-    </message>
-    <message>
         <location filename="resultsview.cpp" line="183"/>
         <location filename="resultsview.cpp" line="191"/>
         <source>Failed to save the report.</source>
@@ -2389,14 +2139,6 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
         <location filename="resultsview.cpp" line="343"/>
         <source>XML format version 1 is no longer supported.</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Summary</source>
-        <translation type="obsolete">Resumen</translation>
-    </message>
-    <message>
-        <source>Message</source>
-        <translation type="obsolete">Mensaje</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="403"/>
@@ -2587,14 +2329,6 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Paths</source>
-        <translation type="obsolete">Rutas</translation>
-    </message>
-    <message>
-        <source>Include paths:</source>
-        <translation type="obsolete">Rutas incluidas:</translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="195"/>
         <source>Add...</source>
         <translation>Añadir...</translation>
@@ -2616,18 +2350,6 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
         <translation>Idioma</translation>
     </message>
     <message>
-        <source>Advanced</source>
-        <translation type="obsolete">Avanzado</translation>
-    </message>
-    <message>
-        <source>&amp;Show inconclusive errors</source>
-        <translation type="obsolete">&amp;Mostrar errores no concluyentes</translation>
-    </message>
-    <message>
-        <source>S&amp;how internal warnings in log</source>
-        <translation type="obsolete">M&amp;ostrar advertencias internas en el log</translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="41"/>
         <source>Number of threads: </source>
         <translation>Número de hilos:</translation>
@@ -2641,10 +2363,6 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
         <location filename="settings.ui" line="128"/>
         <source>Show &quot;No errors found&quot; message when no errors found</source>
         <translation>Mostrar el mensaje &quot;No se han encontrado errores&quot;</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="obsolete">Editar</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
@@ -2719,24 +2437,20 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
         <source>Select clang path</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Select include directory</source>
-        <translation type="obsolete">Seleccionar carpeta a incluir</translation>
-    </message>
 </context>
 <context>
     <name>StatsDialog</name>
     <message>
         <location filename="statsdialog.ui" line="14"/>
         <location filename="statsdialog.ui" line="248"/>
-        <location filename="statsdialog.cpp" line="160"/>
-        <location filename="statsdialog.cpp" line="207"/>
+        <location filename="statsdialog.cpp" line="162"/>
+        <location filename="statsdialog.cpp" line="209"/>
         <source>Statistics</source>
         <translation>Estadísticas</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="27"/>
-        <location filename="statsdialog.cpp" line="198"/>
+        <location filename="statsdialog.cpp" line="200"/>
         <source>Project</source>
         <translation>Proyecto</translation>
     </message>
@@ -2767,7 +2481,7 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="165"/>
-        <location filename="statsdialog.cpp" line="203"/>
+        <location filename="statsdialog.cpp" line="205"/>
         <source>Previous Scan</source>
         <translation type="unfinished">Análisis anterior</translation>
     </message>
@@ -2837,143 +2551,143 @@ Para cambiar el tipo de comportamiento, abra el menú Ver.</translation>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="136"/>
+        <location filename="statsdialog.cpp" line="138"/>
         <source>1 day</source>
         <translation>1 día</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="136"/>
+        <location filename="statsdialog.cpp" line="138"/>
         <source>%1 days</source>
         <translation>%1 días</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="140"/>
         <source>1 hour</source>
         <translation>1 hora</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="140"/>
         <source>%1 hours</source>
         <translation>%1 horas</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="142"/>
         <source>1 minute</source>
         <translation>1 minuto</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="142"/>
         <source>%1 minutes</source>
         <translation>%1 minutos</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="144"/>
         <source>1 second</source>
         <translation>1 segundo</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="144"/>
         <source>%1 seconds</source>
         <translation>%1 segundos</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="146"/>
+        <location filename="statsdialog.cpp" line="148"/>
         <source>0.%1 seconds</source>
         <translation>0.%1 segundos</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="148"/>
+        <location filename="statsdialog.cpp" line="150"/>
         <source> and </source>
         <translation> y </translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="175"/>
+        <location filename="statsdialog.cpp" line="177"/>
         <source>Export PDF</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="197"/>
+        <location filename="statsdialog.cpp" line="199"/>
         <source>Project Settings</source>
         <translation>Preferencias del proyecto</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="199"/>
+        <location filename="statsdialog.cpp" line="201"/>
         <source>Paths</source>
         <translation>Rutas</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="200"/>
+        <location filename="statsdialog.cpp" line="202"/>
         <source>Include paths</source>
         <translation type="unfinished">Incluye las rutas</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="201"/>
+        <location filename="statsdialog.cpp" line="203"/>
         <source>Defines</source>
         <translation type="unfinished">Definiciones</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="202"/>
+        <location filename="statsdialog.cpp" line="204"/>
         <source>Undefines</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="204"/>
+        <location filename="statsdialog.cpp" line="206"/>
         <source>Path selected</source>
         <translation>Ruta seleccionada</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="205"/>
+        <location filename="statsdialog.cpp" line="207"/>
         <source>Number of files scanned</source>
         <translation type="unfinished">Número de archivos analizados</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="206"/>
+        <location filename="statsdialog.cpp" line="208"/>
         <source>Scan duration</source>
         <translation type="unfinished">Duración del análisis</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="162"/>
-        <location filename="statsdialog.cpp" line="208"/>
+        <location filename="statsdialog.cpp" line="164"/>
+        <location filename="statsdialog.cpp" line="210"/>
         <source>Errors</source>
         <translation>Errores</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="88"/>
+        <location filename="statsdialog.cpp" line="90"/>
         <source>File: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="88"/>
+        <location filename="statsdialog.cpp" line="90"/>
         <source>No cppcheck build dir</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="164"/>
-        <location filename="statsdialog.cpp" line="209"/>
+        <location filename="statsdialog.cpp" line="166"/>
+        <location filename="statsdialog.cpp" line="211"/>
         <source>Warnings</source>
         <translation>Advertencias</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="166"/>
-        <location filename="statsdialog.cpp" line="210"/>
+        <location filename="statsdialog.cpp" line="168"/>
+        <location filename="statsdialog.cpp" line="212"/>
         <source>Style warnings</source>
         <translation>Advertencias de estilo</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="168"/>
-        <location filename="statsdialog.cpp" line="211"/>
+        <location filename="statsdialog.cpp" line="170"/>
+        <location filename="statsdialog.cpp" line="213"/>
         <source>Portability warnings</source>
         <translation>Advertencias de portabilidad</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="170"/>
-        <location filename="statsdialog.cpp" line="212"/>
+        <location filename="statsdialog.cpp" line="172"/>
+        <location filename="statsdialog.cpp" line="214"/>
         <source>Performance warnings</source>
         <translation>Advertencias de rendimiento</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="172"/>
-        <location filename="statsdialog.cpp" line="213"/>
+        <location filename="statsdialog.cpp" line="174"/>
+        <location filename="statsdialog.cpp" line="215"/>
         <source>Information messages</source>
         <translation>Mensajes de información</translation>
     </message>

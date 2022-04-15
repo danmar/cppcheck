@@ -110,10 +110,6 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <source>You must specify a name, a path and parameters for the application!</source>
-        <translation type="obsolete">응용 프로그램의 이름, 경로 및 인자를 명시해야 합니다!</translation>
-    </message>
-    <message>
         <location filename="applicationdialog.cpp" line="82"/>
         <source>You must specify a name, a path and optionally parameters for the application!</source>
         <translation type="unfinished"></translation>
@@ -421,33 +417,6 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
     </message>
 </context>
 <context>
-    <name>LogView</name>
-    <message>
-        <source>Checking Log</source>
-        <translation type="obsolete">로그 확인</translation>
-    </message>
-    <message>
-        <source>Clear</source>
-        <translation type="obsolete">지우기</translation>
-    </message>
-    <message>
-        <source>Save Log</source>
-        <translation type="obsolete">로그 저장</translation>
-    </message>
-    <message>
-        <source>Text files (*.txt *.log);;All files (*.*)</source>
-        <translation type="obsolete">텍스트 파일 (*.txt *.log);;모든 파일 (*.*)</translation>
-    </message>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
-    </message>
-    <message>
-        <source>Could not open file for writing: &quot;%1&quot;</source>
-        <translation type="obsolete">기록할 파일 열기 실패: &quot;%1&quot;</translation>
-    </message>
-</context>
-<context>
     <name>MainWindow</name>
     <message>
         <location filename="mainwindow.ui" line="26"/>
@@ -486,10 +455,6 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <location filename="mainwindow.ui" line="121"/>
         <source>&amp;Help</source>
         <translation>도움말(&amp;H)</translation>
-    </message>
-    <message>
-        <source>&amp;Check</source>
-        <translation type="obsolete">검사(&amp;C)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="171"/>
@@ -532,10 +497,6 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation>파일(&amp;F)...</translation>
     </message>
     <message>
-        <source>Check files</source>
-        <translation type="obsolete">파일 검사</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="260"/>
         <source>Ctrl+F</source>
         <translation>Ctrl+F</translation>
@@ -546,17 +507,9 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation>디렉토리(&amp;D)...</translation>
     </message>
     <message>
-        <source>Check directory</source>
-        <translation type="obsolete">디렉토리 검사</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="278"/>
         <source>Ctrl+D</source>
         <translation>Ctrl+D</translation>
-    </message>
-    <message>
-        <source>&amp;Recheck files</source>
-        <translation type="obsolete">파일 재검사(&amp;R)</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="290"/>
@@ -567,10 +520,6 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <location filename="mainwindow.ui" line="308"/>
         <source>&amp;Stop</source>
         <translation>중지(&amp;S)</translation>
-    </message>
-    <message>
-        <source>Stop checking</source>
-        <translation type="obsolete">검사 중지</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="317"/>
@@ -603,18 +552,10 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation>설정(&amp;P)</translation>
     </message>
     <message>
-        <source>Style warnings</source>
-        <translation type="obsolete">스타일 경고</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="370"/>
         <location filename="mainwindow.ui" line="373"/>
         <source>Show style warnings</source>
         <translation>스타일 경고 표시</translation>
-    </message>
-    <message>
-        <source>Errors</source>
-        <translation type="obsolete">에러</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="388"/>
@@ -723,18 +664,10 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation>통계 보기(&amp;S)</translation>
     </message>
     <message>
-        <source>Warnings</source>
-        <translation type="obsolete">경고</translation>
-    </message>
-    <message>
         <location filename="mainwindow.ui" line="534"/>
         <location filename="mainwindow.ui" line="537"/>
         <source>Show warnings</source>
         <translation>경고 표시</translation>
-    </message>
-    <message>
-        <source>Performance warnings</source>
-        <translation type="obsolete">성능 경고</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="552"/>
@@ -757,10 +690,6 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <location filename="mainwindow.ui" line="578"/>
         <source>Show information messages</source>
         <translation>정보 표시</translation>
-    </message>
-    <message>
-        <source>Portability</source>
-        <translation type="obsolete">이식성 경고</translation>
     </message>
     <message>
         <location filename="mainwindow.ui" line="593"/>
@@ -803,22 +732,6 @@ Kate로 파일을 열고, 해당 행으로 이동하는 예제:
         <translation>Windows 64-bit</translation>
     </message>
     <message>
-        <source>Platforms</source>
-        <translation type="obsolete">플랫폼</translation>
-    </message>
-    <message>
-        <source>C++11</source>
-        <translation type="obsolete">C++11</translation>
-    </message>
-    <message>
-        <source>C99</source>
-        <translation type="obsolete">C99</translation>
-    </message>
-    <message>
-        <source>Posix</source>
-        <translation type="obsolete">Posix</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="106"/>
         <location filename="mainwindow.cpp" line="1460"/>
         <source>Quick Filter:</source>
@@ -834,17 +747,9 @@ This is probably because the settings were changed between the Cppcheck versions
 Cppcheck 버전간 설정 방법 차이때문인 것으로 보입니다. 편집기 설정을 검사(및 수정)해주세요, 그렇지 않으면 편집기가 제대로 시작하지 않습니다.</translation>
     </message>
     <message>
-        <source>No suitable files found to check!</source>
-        <translation type="obsolete">검사할 수 있는 파일이 없습니다!</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="580"/>
         <source>You must close the project file before selecting new files or directories!</source>
         <translation>새로운 파일이나 디렉토리를 선택하기 전에 프로젝트 파일을 닫으세요!</translation>
-    </message>
-    <message>
-        <source>Select directory to check</source>
-        <translation type="obsolete">검사할 디렉토리 선택</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="685"/>
@@ -854,14 +759,6 @@ Do you want to load this project file instead?</source>
         <translation>프로젝트 파일 존재: %1
 
 이 프로젝트 파일을 불러오겠습니까?</translation>
-    </message>
-    <message>
-        <source>Found project files from the directory.
-
-Do you want to proceed checking without using any of these project files?</source>
-        <translation type="obsolete">디렉토리에 프로젝트 파일 존재.
-
-이 프로젝트 파일을 사용하지 않고 검사를 계속하시겠습니까?</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1195"/>
@@ -875,14 +772,6 @@ Do you want to proceed checking without using any of these project files?</sourc
         <translation>보고서 파일 열기</translation>
     </message>
     <message>
-        <source>Checking is running.
-
-Do you want to stop the checking and exit Cppcheck?</source>
-        <translation type="obsolete">검사 중.
-
-검사를 중지하고 Cppcheck을 종료하시겠습니까?</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1356"/>
         <source>License</source>
         <translation>저작권</translation>
@@ -893,21 +782,9 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <translation>제작자</translation>
     </message>
     <message>
-        <source>XML files version 2 (*.xml);;XML files version 1 (*.xml);;Text files (*.txt);;CSV files (*.csv)</source>
-        <translation type="obsolete">XML 파일 버전 2 (*.xml);;XML 파일 버전 1 (*.xml);;텍스트 파일 (*.txt);;CSV 파일 (*.csv)</translation>
-    </message>
-    <message>
         <location filename="mainwindow.cpp" line="1378"/>
         <source>Save the report file</source>
         <translation>보고서 파일 저장</translation>
-    </message>
-    <message>
-        <source>XML files version 1 (*.xml)</source>
-        <translation type="obsolete">XML 파일 버전 1 (*.xml)</translation>
-    </message>
-    <message>
-        <source>XML files version 2 (*.xml)</source>
-        <translation type="obsolete">XML 파일 버전 2 (*.xml)</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1389"/>
@@ -918,22 +795,6 @@ Do you want to stop the checking and exit Cppcheck?</source>
         <location filename="mainwindow.cpp" line="1393"/>
         <source>CSV files (*.csv)</source>
         <translation>CSV 파일 (*.csv)</translation>
-    </message>
-    <message>
-        <source>Cppcheck - %1</source>
-        <translation type="vanished">Cppcheck - %1</translation>
-    </message>
-    <message>
-        <source>Failed to change the user interface language:
-
-%1
-
-The user interface language has been reset to English. Open the Preferences-dialog to select any of the available languages.</source>
-        <translation type="obsolete">언어 변경 실패:
-
-%1
-
-언어가 영어로 초기화 됐습니다. 설정창을 열어서 설정 가능한 언어를 선택하세요.</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="1498"/>
@@ -991,10 +852,6 @@ Do you want to remove the file from the recently used projects -list?</source>
 최근 프로젝트 목록에서 파일을 제거하시겠습니까?</translation>
     </message>
     <message>
-        <source>Select files to check</source>
-        <translation type="obsolete">검사할 파일 선택</translation>
-    </message>
-    <message>
         <location filename="main.cpp" line="115"/>
         <source>Cppcheck GUI - Command line parameters</source>
         <translation type="unfinished"></translation>
@@ -1003,18 +860,6 @@ Do you want to remove the file from the recently used projects -list?</source>
         <location filename="mainwindow.ui" line="135"/>
         <source>C++ standard</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>C11</source>
-        <translation type="obsolete">C11</translation>
-    </message>
-    <message>
-        <source>C89</source>
-        <translation type="obsolete">C89</translation>
-    </message>
-    <message>
-        <source>C++03</source>
-        <translation type="obsolete">C++03</translation>
     </message>
     <message>
         <location filename="mainwindow.cpp" line="848"/>
@@ -1458,28 +1303,9 @@ Do you want to proceed?</source>
         <translation>Windows 64-bit</translation>
     </message>
     <message>
-        <source>Built-in</source>
-        <translation type="obsolete">내장 방식</translation>
-    </message>
-    <message>
         <location filename="platforms.cpp" line="38"/>
         <source>Native</source>
         <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Project</name>
-    <message>
-        <source>Cppcheck</source>
-        <translation type="obsolete">Cppcheck</translation>
-    </message>
-    <message>
-        <source>Could not read the project file.</source>
-        <translation type="obsolete">프로젝트 파일을 읽을 수 없습니다.</translation>
-    </message>
-    <message>
-        <source>Could not write the project file.</source>
-        <translation type="obsolete">프로젝트 파일에 쓸 수 없습니다.</translation>
     </message>
 </context>
 <context>
@@ -1490,17 +1316,9 @@ Do you want to proceed?</source>
         <translation>프로젝트 파일</translation>
     </message>
     <message>
-        <source>Project</source>
-        <translation type="obsolete">프로젝트</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="221"/>
         <source>Defines:</source>
         <translation>Defines:</translation>
-    </message>
-    <message>
-        <source>Root:</source>
-        <translation type="obsolete">Root:</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="147"/>
@@ -1529,14 +1347,6 @@ Do you want to proceed?</source>
         <translation>제거</translation>
     </message>
     <message>
-        <source>Includes</source>
-        <translation type="obsolete">Includes</translation>
-    </message>
-    <message>
-        <source>Include directories:</source>
-        <translation type="obsolete">Include 디렉토리:</translation>
-    </message>
-    <message>
         <location filename="projectfile.ui" line="330"/>
         <source>Up</source>
         <translation>위로</translation>
@@ -1545,10 +1355,6 @@ Do you want to proceed?</source>
         <location filename="projectfile.ui" line="337"/>
         <source>Down</source>
         <translation>아래로</translation>
-    </message>
-    <message>
-        <source>Exclude</source>
-        <translation type="obsolete">Exclude</translation>
     </message>
     <message>
         <location filename="projectfile.ui" line="686"/>
@@ -1879,13 +1685,6 @@ Do you want to proceed?</source>
     </message>
 </context>
 <context>
-    <name>QDialogButtonBox</name>
-    <message>
-        <source>Close</source>
-        <translation type="obsolete">닫기</translation>
-    </message>
-</context>
-<context>
     <name>QObject</name>
     <message>
         <location filename="translationhandler.cpp" line="86"/>
@@ -2104,10 +1903,6 @@ Do you want to proceed?</source>
         <translation>미정의된 파일</translation>
     </message>
     <message>
-        <source>[Inconclusive]</source>
-        <translation type="obsolete">[불확실]</translation>
-    </message>
-    <message>
         <location filename="resultstree.cpp" line="333"/>
         <source>style</source>
         <translation>스타일</translation>
@@ -2141,18 +1936,6 @@ Do you want to proceed?</source>
         <location filename="resultstree.cpp" line="351"/>
         <source>debug</source>
         <translation>디버그</translation>
-    </message>
-    <message>
-        <source>Copy filename</source>
-        <translation type="obsolete">파일이름 복사</translation>
-    </message>
-    <message>
-        <source>Copy full path</source>
-        <translation type="obsolete">전체 경로 복사</translation>
-    </message>
-    <message>
-        <source>Copy message</source>
-        <translation type="obsolete">메시지 복사</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="655"/>
@@ -2196,14 +1979,6 @@ Please check the application path and parameters are correct.</source>
         <translation>%1을 시잘할 수 없습니다
 
 경로와 인자가 정확한지 확인하세요.</translation>
-    </message>
-    <message>
-        <source>Could not find file:
-%1
-Please select the directory where file is located.</source>
-        <translation type="obsolete">파일 찾기 실패:
-%1
-파일이 위치한 디렉토리를 선택하세요.</translation>
     </message>
     <message>
         <location filename="resultstree.cpp" line="844"/>
@@ -2295,10 +2070,6 @@ Please select the directory where file is located.</source>
         <translation>결과</translation>
     </message>
     <message>
-        <source>No errors found, nothing to save.</source>
-        <translation type="vanished">에러가 발견되지 않았고, 저장할 내용이 없습니다.</translation>
-    </message>
-    <message>
         <location filename="resultsview.cpp" line="183"/>
         <location filename="resultsview.cpp" line="191"/>
         <source>Failed to save the report.</source>
@@ -2337,14 +2108,6 @@ To toggle what kind of errors are shown, open view menu.</source>
         <location filename="resultsview.cpp" line="410"/>
         <source>Bug hunting analysis is incomplete</source>
         <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Summary</source>
-        <translation type="obsolete">요약</translation>
-    </message>
-    <message>
-        <source>Message</source>
-        <translation type="obsolete">내용</translation>
     </message>
     <message>
         <location filename="resultsview.cpp" line="408"/>
@@ -2468,21 +2231,9 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation>Inline suppression 사용</translation>
     </message>
     <message>
-        <source>Paths</source>
-        <translation type="obsolete">경로</translation>
-    </message>
-    <message>
-        <source>Include paths:</source>
-        <translation type="obsolete">Include 경로:</translation>
-    </message>
-    <message>
         <location filename="settings.ui" line="195"/>
         <source>Add...</source>
         <translation>추가...</translation>
-    </message>
-    <message>
-        <source>Edit</source>
-        <translation type="obsolete">편집</translation>
     </message>
     <message>
         <location filename="settings.ui" line="209"/>
@@ -2524,18 +2275,6 @@ To toggle what kind of errors are shown, open view menu.</source>
         <location filename="settings.ui" line="273"/>
         <source>Language</source>
         <translation>언어</translation>
-    </message>
-    <message>
-        <source>Advanced</source>
-        <translation type="obsolete">고급</translation>
-    </message>
-    <message>
-        <source>&amp;Show inconclusive errors</source>
-        <translation type="obsolete">불확실한 에러 표시(&amp;S)</translation>
-    </message>
-    <message>
-        <source>S&amp;how internal warnings in log</source>
-        <translation type="obsolete">로그에 내부 경고 표시(&amp;H)</translation>
     </message>
     <message>
         <location filename="settings.ui" line="135"/>
@@ -2668,10 +2407,6 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation>[기본]</translation>
     </message>
     <message>
-        <source>Select include directory</source>
-        <translation type="obsolete">Include 디렉토리 선택</translation>
-    </message>
-    <message>
         <location filename="settingsdialog.cpp" line="266"/>
         <source> [Default]</source>
         <translation type="unfinished"></translation>
@@ -2697,14 +2432,14 @@ To toggle what kind of errors are shown, open view menu.</source>
     <message>
         <location filename="statsdialog.ui" line="14"/>
         <location filename="statsdialog.ui" line="248"/>
-        <location filename="statsdialog.cpp" line="160"/>
-        <location filename="statsdialog.cpp" line="207"/>
+        <location filename="statsdialog.cpp" line="162"/>
+        <location filename="statsdialog.cpp" line="209"/>
         <source>Statistics</source>
         <translation>통계</translation>
     </message>
     <message>
         <location filename="statsdialog.ui" line="27"/>
-        <location filename="statsdialog.cpp" line="198"/>
+        <location filename="statsdialog.cpp" line="200"/>
         <source>Project</source>
         <translation>프로젝트</translation>
     </message>
@@ -2730,7 +2465,7 @@ To toggle what kind of errors are shown, open view menu.</source>
     </message>
     <message>
         <location filename="statsdialog.ui" line="165"/>
-        <location filename="statsdialog.cpp" line="203"/>
+        <location filename="statsdialog.cpp" line="205"/>
         <source>Previous Scan</source>
         <translation>직전 검사</translation>
     </message>
@@ -2785,123 +2520,123 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation>클립보드에 복사</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="136"/>
+        <location filename="statsdialog.cpp" line="138"/>
         <source>1 day</source>
         <translation>1일</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="136"/>
+        <location filename="statsdialog.cpp" line="138"/>
         <source>%1 days</source>
         <translation>%1일</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="140"/>
         <source>1 hour</source>
         <translation>1시간</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="138"/>
+        <location filename="statsdialog.cpp" line="140"/>
         <source>%1 hours</source>
         <translation>%1시간</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="142"/>
         <source>1 minute</source>
         <translation>1분</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="140"/>
+        <location filename="statsdialog.cpp" line="142"/>
         <source>%1 minutes</source>
         <translation>%1분</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="144"/>
         <source>1 second</source>
         <translation>1초</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="142"/>
+        <location filename="statsdialog.cpp" line="144"/>
         <source>%1 seconds</source>
         <translation>%1초</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="146"/>
+        <location filename="statsdialog.cpp" line="148"/>
         <source>0.%1 seconds</source>
         <translation>0.%1초</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="148"/>
+        <location filename="statsdialog.cpp" line="150"/>
         <source> and </source>
         <translation> 및 </translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="197"/>
+        <location filename="statsdialog.cpp" line="199"/>
         <source>Project Settings</source>
         <translation>프로젝트 설정</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="199"/>
+        <location filename="statsdialog.cpp" line="201"/>
         <source>Paths</source>
         <translation>경로</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="200"/>
+        <location filename="statsdialog.cpp" line="202"/>
         <source>Include paths</source>
         <translation>Include 경로</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="201"/>
+        <location filename="statsdialog.cpp" line="203"/>
         <source>Defines</source>
         <translation>Defines</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="204"/>
+        <location filename="statsdialog.cpp" line="206"/>
         <source>Path selected</source>
         <translation>선택된 경로</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="205"/>
+        <location filename="statsdialog.cpp" line="207"/>
         <source>Number of files scanned</source>
         <translation>검사된 파일 수</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="206"/>
+        <location filename="statsdialog.cpp" line="208"/>
         <source>Scan duration</source>
         <translation>검사 시간</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="162"/>
-        <location filename="statsdialog.cpp" line="208"/>
+        <location filename="statsdialog.cpp" line="164"/>
+        <location filename="statsdialog.cpp" line="210"/>
         <source>Errors</source>
         <translation>에러</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="164"/>
-        <location filename="statsdialog.cpp" line="209"/>
+        <location filename="statsdialog.cpp" line="166"/>
+        <location filename="statsdialog.cpp" line="211"/>
         <source>Warnings</source>
         <translation>경고</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="166"/>
-        <location filename="statsdialog.cpp" line="210"/>
+        <location filename="statsdialog.cpp" line="168"/>
+        <location filename="statsdialog.cpp" line="212"/>
         <source>Style warnings</source>
         <translation>스타일 경고</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="168"/>
-        <location filename="statsdialog.cpp" line="211"/>
+        <location filename="statsdialog.cpp" line="170"/>
+        <location filename="statsdialog.cpp" line="213"/>
         <source>Portability warnings</source>
         <translation>이식성 경고</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="170"/>
-        <location filename="statsdialog.cpp" line="212"/>
+        <location filename="statsdialog.cpp" line="172"/>
+        <location filename="statsdialog.cpp" line="214"/>
         <source>Performance warnings</source>
         <translation>성능 경고</translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="172"/>
-        <location filename="statsdialog.cpp" line="213"/>
+        <location filename="statsdialog.cpp" line="174"/>
+        <location filename="statsdialog.cpp" line="215"/>
         <source>Information messages</source>
         <translation>정보 메시지</translation>
     </message>
@@ -2911,7 +2646,7 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="175"/>
+        <location filename="statsdialog.cpp" line="177"/>
         <source>Export PDF</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2926,12 +2661,12 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="88"/>
+        <location filename="statsdialog.cpp" line="90"/>
         <source>File: </source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="88"/>
+        <location filename="statsdialog.cpp" line="90"/>
         <source>No cppcheck build dir</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2941,7 +2676,7 @@ To toggle what kind of errors are shown, open view menu.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="statsdialog.cpp" line="202"/>
+        <location filename="statsdialog.cpp" line="204"/>
         <source>Undefines</source>
         <translation type="unfinished"></translation>
     </message>

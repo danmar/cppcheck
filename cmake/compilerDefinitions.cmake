@@ -31,5 +31,9 @@ if (USE_THREADS)
     add_definitions(-DUSE_THREADS)
 endif()
 
+if (MSVC AND DISABLE_CRTDBG_MAP_ALLOC)
+    add_definitions(-DDISABLE_CRTDBG_MAP_ALLOC)
+endif()
+
 file(TO_CMAKE_PATH ${FILESDIR} _filesdir)
 add_definitions(-DFILESDIR="${_filesdir}")
