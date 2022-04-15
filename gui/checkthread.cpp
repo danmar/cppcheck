@@ -201,22 +201,10 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             if (!fileSettings->standard.empty())
                 args << ("-std=" + QString::fromStdString(fileSettings->standard));
             else {
-                switch (mCppcheck.settings().standards.cpp) {
-                case Standards::CPP03:
-                    args << "-std=c++03";
-                    break;
-                case Standards::CPP11:
-                    args << "-std=c++11";
-                    break;
-                case Standards::CPP14:
-                    args << "-std=c++14";
-                    break;
-                case Standards::CPP17:
-                    args << "-std=c++17";
-                    break;
-                case Standards::CPP20:
-                    args << "-std=c++20";
-                    break;
+                // TODO: pass C or C++ standard based on file type
+                const std::string std = mCppcheck.settings().standards.getCPP();
+                if (!std.empty()) {
+                    args << ("-std=" + QString::fromStdString(std));
                 }
             }
 

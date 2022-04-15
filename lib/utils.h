@@ -154,4 +154,6 @@ CPPCHECKLIB bool matchglob(const std::string& pattern, const std::string& name);
 
 CPPCHECKLIB bool matchglobs(const std::vector<std::string> &patterns, const std::string &name);
 
+CPPCHECKLIB void strTolower(std::string& str);
+
 #endif

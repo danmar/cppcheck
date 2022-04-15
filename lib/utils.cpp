@@ -18,6 +18,7 @@
 
 #include "utils.h"
 
+#include <algorithm>
 #include <cctype>
 #include <iterator>
 #include <memory>
@@ -119,4 +120,14 @@ bool matchglobs(const std::vector<std::string> &patterns, const std::string &nam
     return std::any_of(begin(patterns), end(patterns), [&name](const std::string &pattern) {
         return matchglob(pattern, name);
     });
+}
+
+void strTolower(std::string& str)
+{
+    // This wrapper exists because Sun's CC does not allow a static_cast
+    // from extern "C" int(*)(int) to int(*)(int).
+    static auto tolowerWrapper = [](int c) {
+        return std::tolower(c);
+    };
+    std::transform(str.begin(), str.end(), str.begin(), tolowerWrapper);
 }
