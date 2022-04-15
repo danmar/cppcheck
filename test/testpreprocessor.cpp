@@ -200,8 +200,9 @@ private:
         TEST_CASE(invalid_define_1); // #2605 - hang for: '#define ='
         TEST_CASE(invalid_define_2); // #4036 - hang for: '#define () {(int f(x) }'
 
-        // inline suppression, missingInclude
+        // inline suppression, missingInclude/missingIncludeSystem
         TEST_CASE(inline_suppression_for_missing_include);
+        TEST_CASE(inline_suppression_for_missing_include_check_config);
 
         // Using -D to predefine symbols
         TEST_CASE(predefine1);
@@ -1931,25 +1932,55 @@ private:
         preprocess("#define () {(int f(x) }\n", actual); // don't hang
     }
 
-    void inline_suppression_for_missing_include() {
+    void inline_suppression_for_missing_include_internal(bool checkConfig) {
         Preprocessor::missingIncludeFlag = false;
+        Preprocessor::missingSystemIncludeFlag = false;
         Settings settings;
+        settings.checkConfiguration = checkConfig;
         settings.inlineSuppressions = true;
-        settings.severity.fill();
+        settings.severity.clear();
+        // --check-config needs to report this regardless of the emanled checks
+        if (!checkConfig)
+            settings.checks.enable(Checks::missingInclude);
         Preprocessor preprocessor(settings, this);
 
-        std::istringstream src("// cppcheck-suppress missingInclude\n"
+        const std::string code("// cppcheck-suppress missingInclude\n"
                                "#include \"missing.h\"\n"
-                               "int x;");
-        std::string processedFile;
-        std::list<std::string> cfg;
-        std::list<std::string> paths;
-
+                               "// cppcheck-suppress missingIncludeSystem\n"
+                               "#include <missing2.h>\n");
         // Don't report that the include is missing
         errout.str("");
-        preprocessor.preprocess(src, processedFile, cfg, "test.c", paths);
+        preprocessor.getcode(code, "", "test.c");
         ASSERT_EQUALS("", errout.str());
         ASSERT_EQUALS(false, Preprocessor::missingIncludeFlag);
+        ASSERT_EQUALS(false, Preprocessor::missingSystemIncludeFlag);
+
+        auto suppressions = settings.nomsg.getSuppressions();
+        ASSERT_EQUALS(2, suppressions.size());
+
+        auto suppr = suppressions.front();
+        suppressions.pop_front();
+        ASSERT_EQUALS("missingInclude", suppr.errorId);
+        ASSERT_EQUALS("test.c", suppr.fileName);
+        ASSERT_EQUALS(2, suppr.lineNumber);
+        ASSERT_EQUALS(true, suppr.checked);
+        ASSERT_EQUALS(true, suppr.matched);
+
+        suppr = suppressions.front();
+        suppressions.pop_front();
+        ASSERT_EQUALS("missingIncludeSystem", suppr.errorId);
+        ASSERT_EQUALS("test.c", suppr.fileName);
+        ASSERT_EQUALS(4, suppr.lineNumber);
+        ASSERT_EQUALS(true, suppr.checked);
+        ASSERT_EQUALS(true, suppr.matched);
+    }
+
+    void inline_suppression_for_missing_include() {
+        inline_suppression_for_missing_include_internal(false);
+    }
+
+    void inline_suppression_for_missing_include_check_config() {
+        inline_suppression_for_missing_include_internal(true);
     }
 
     void predefine1() {
