@@ -25,6 +25,7 @@
 #include "preprocessor.h"
 #include "settings.h"
 #include "testsuite.h"
+#include "testutils.h"
 
 #include <atomic>
 #include <cstring>
@@ -255,6 +256,9 @@ private:
         TEST_CASE(testDirectiveIncludeTypes);
         TEST_CASE(testDirectiveIncludeLocations);
         TEST_CASE(testDirectiveIncludeComments);
+
+        TEST_CASE(testMissingInclude);
+        TEST_CASE(testMissingIncludeCheckConfig);
     }
 
     void preprocess(const char* code, std::map<std::string, std::string>& actual, const char filename[] = "file.c") {
@@ -2425,6 +2429,63 @@ private:
         preprocessor.getcode(filedata, "", "test.c");
         preprocessor.dump(ostr);
         ASSERT_EQUALS(dumpdata, ostr.str());
+    }
+
+    void testMissingInclude() {
+        Preprocessor::missingIncludeFlag = false;
+        Preprocessor::missingSystemIncludeFlag = false;
+
+        Settings settings;
+        settings.severity.clear();
+        settings.checks.enable(Checks::missingInclude);
+        Preprocessor preprocessor(settings, this);
+
+        ScopedFile header("header.h", "");
+        ScopedFile header2("header2.h", "");
+
+        std::string code("#include \"missing.h\"\n"
+                         "#include <header.h>\n"
+                         "#include <missing2.h>\n"
+                         "#include \"header2.h\"");
+        errout.str("");
+        preprocessor.getcode(code, "", "test.c");
+        ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
+        ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
+
+        // the expected messages are emited outside of the Preprocessor
+        ASSERT_EQUALS("", errout.str());
+
+        Preprocessor::missingIncludeFlag = false;
+        Preprocessor::missingSystemIncludeFlag = false;
+    }
+
+    void testMissingIncludeCheckConfig() {
+        Preprocessor::missingIncludeFlag = false;
+        Preprocessor::missingSystemIncludeFlag = false;
+
+        Settings settings;
+        settings.checkConfiguration = true;
+        settings.severity.clear();
+        // needs to be reported regardless of enabled checks
+        Preprocessor preprocessor(settings, this);
+
+        ScopedFile header("header.h", "");
+        ScopedFile header2("header2.h", "");
+
+        std::string code("#include \"missing.h\"\n"
+                         "#include <header.h>\n"
+                         "#include <missing2.h>\n"
+                         "#include \"header2.h\"");
+        errout.str("");
+        preprocessor.getcode(code, "", "test.c");
+        ASSERT_EQUALS(true, Preprocessor::missingIncludeFlag);
+        ASSERT_EQUALS(true, Preprocessor::missingSystemIncludeFlag);
+
+        ASSERT_EQUALS("[test.c:1]: (information) Include file: \"missing.h\" not found.\n"
+                      "[test.c:3]: (information) Include file: <missing2.h> not found. Please note: Cppcheck does not need standard library headers to get proper results.\n", errout.str());
+
+        Preprocessor::missingIncludeFlag = false;
+        Preprocessor::missingSystemIncludeFlag = false;
     }
 };
 
