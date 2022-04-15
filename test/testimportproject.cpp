@@ -61,6 +61,7 @@ private:
         TEST_CASE(importCompileCommands9);
         TEST_CASE(importCompileCommands10); // #10887: include path with space
         TEST_CASE(importCompileCommands11); // include path order
+        TEST_CASE(importCompileCommands12); // defines
         TEST_CASE(importCompileCommandsArgumentsSection); // Handle arguments section
         TEST_CASE(importCompileCommandsNoCommandSection); // gracefully handles malformed json
         TEST_CASE(importCppcheckGuiProject);
@@ -305,6 +306,27 @@ private:
         const ImportProject::FileSettings &fs = importer.fileSettings.front();
         ASSERT_EQUALS("/x/def/", fs.includePaths.front());
         ASSERT_EQUALS("/x/abc/", fs.includePaths.back());
+    }
+
+    void importCompileCommands12() const { // define
+        const char json[] =
+            R"([{
+               "file": "1.c" ,
+               "directory": "/x",
+               "arguments": [
+                   "cc",
+                   "-D",
+                   "X=1",
+                   "-D",
+                   "__VERSION__=\"IAR C/C++ Compiler V6.40.2.748 for Atmel AVR\""
+               ]
+            }])";
+        std::istringstream istr(json);
+        TestImporter importer;
+        ASSERT_EQUALS(true, importer.importCompileCommands(istr));
+        ASSERT_EQUALS(1, importer.fileSettings.size());
+        const ImportProject::FileSettings &fs = importer.fileSettings.front();
+        ASSERT_EQUALS("X=1;__VERSION__=IAR C/C++ Compiler V6.40.2.748 for Atmel AVR", fs.defines);
     }
 
     void importCompileCommandsArgumentsSection() const {
