@@ -42,6 +42,16 @@ bool duplicateBreak_wxLogApiError(const wxString &msg, const HRESULT &hr, wxStri
 }
 #endif
 
+void argDirection_wxTextCtrl_GetSelection(const wxTextCtrl *const textCtrl)
+{
+	// No warning is expected. Ensure both arguments are treated
+	// as output by library configuration
+	long start;
+	long end;
+	textCtrl->GetSelection(&start, &end);
+	if(start > 0 && end > 0){}
+}
+
 void useRetval_wxString_MakeCapitalized(wxString &str)
 {
     // No warning is expected for
