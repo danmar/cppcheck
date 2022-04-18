@@ -43,8 +43,7 @@ if (BUILD_TESTS)
         # TODO: get rid of the copy
         add_custom_target(checkcfg ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cppcheck> ${CMAKE_SOURCE_DIR}
                 COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cfg/runtests.sh
-                DEPENDS cppcheck validateCFG
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cfg)
+                DEPENDS cppcheck validateCFG)
     endif()
 
     if (REGISTER_TESTS)

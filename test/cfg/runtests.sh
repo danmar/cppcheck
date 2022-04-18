@@ -11,16 +11,9 @@ else
   echo "pkg-config is not available, skipping all syntax checks."
 fi
 
-
-if [[ $(pwd) == */test/cfg ]] ; then # we are in test/cfg
-	CPPCHECK="../../cppcheck"
-	DIR=""
-	CFG="../../cfg/"
-else # assume we are in repo root
-	CPPCHECK="./cppcheck"
-	DIR=test/cfg/
-	CFG="cfg/"
-fi
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/
+CPPCHECK="$DIR"../../cppcheck
+CFG="$DIR"../../cfg
 
 # Cppcheck options
 CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
