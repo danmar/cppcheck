@@ -24,6 +24,22 @@ CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security -Wno-deprecat
 CC=gcc
 CC_OPT='-Wno-format -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
 
+function get_pkg_config_cflags {
+    set +e
+    PKGCONFIG=$(pkg-config --cflags $1)
+    PKGCONFIG_RETURNCODE=$?
+    set -e
+    if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
+        PKGCONFIG=
+    else
+        # make sure the config is not empty when no flags were found - happens with e.g. libssl and sqlite3
+        if [ -z "$PKGCONFIG" ]; then
+            PKGCONFIG=" "
+        fi
+    fi
+    echo "$PKGCONFIG"
+}
+
 # posix.c
 function posix_fn {
     ${CC} ${CC_OPT} ${DIR}posix.c
@@ -37,11 +53,8 @@ function gnu_fn {
 # qt.cpp
 function qt_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        QTCONFIG=$(pkg-config --cflags Qt5Core)
-        QTCONFIG_RETURNCODE=$?
-        set -e
-        if [ $QTCONFIG_RETURNCODE -eq 0 ]; then
+        QTCONFIG=$(get_pkg_config_cflags Qt5Core)
+        if [ -n "$QTCONFIG" ]; then
             QTBUILDCONFIG=$(pkg-config --variable=qt_config Qt5Core)
             [[ $QTBUILDCONFIG =~ (^|[[:space:]])reduce_relocations($|[[:space:]]) ]] && QTCONFIG="${QTCONFIG} -fPIC"
             set +e
@@ -107,17 +120,11 @@ function wxwidgets_fn {
 # gtk.c
 function gtk_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        GTKCONFIG=$(pkg-config --cflags gtk+-3.0)
-        GTKCONFIG_RETURNCODE=$?
-        set -e
-        if [ $GTKCONFIG_RETURNCODE -ne 0 ]; then
-            set +e
-            GTKCONFIG=$(pkg-config --cflags gtk+-2.0)
-            GTKCONFIG_RETURNCODE=$?
-            set -e
+        GTKCONFIG=$(get_pkg_config_cflags gtk+-3.0)
+        if [ -z "$GTKCONFIG" ]; then
+            GTKCONFIG=$(get_pkg_config_cflags gtk+-2.0)
         fi
-        if [ $GTKCONFIG_RETURNCODE -eq 0 ]; then
+        if [ -n "$GTKCONFIG" ]; then
             set +e
             echo -e "#include <gtk/gtk.h>" | ${CC} ${CC_OPT} ${GTKCONFIG} -x c -
             GTKCHECK_RETURNCODE=$?
@@ -151,11 +158,8 @@ function boost_fn {
 # sqlite3.c
 function sqlite3_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        SQLITE3CONFIG=$(pkg-config --cflags sqlite3)
-        SQLITE3CONFIG_RETURNCODE=$?
-        set -e
-        if [ $SQLITE3CONFIG_RETURNCODE -eq 0 ]; then
+        SQLITE3CONFIG=$(get_pkg_config_cflags sqlite3)
+        if [ -n "$SQLITE3CONFIG" ]; then
             set +e
             echo -e "#include <sqlite3.h>" | ${CC} ${CC_OPT} ${SQLITE3CONFIG} -x c -
             SQLITE3CHECK_RETURNCODE=$?
@@ -180,11 +184,8 @@ function openmp_fn {
 # python.c
 function python_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        PYTHON3CONFIG=$(pkg-config --cflags python3)
-        PYTHON3CONFIG_RETURNCODE=$?
-        set -e
-        if [ $PYTHON3CONFIG_RETURNCODE -eq 0 ]; then
+        PYTHON3CONFIG=$(get_pkg_config_cflags python3)
+        if [ -n "$PYTHON3CONFIG" ]; then
             set +e
             echo -e "#include <Python.h>" | ${CC} ${CC_OPT} ${PYTHON3CONFIG} -x c -
             PYTHON3CONFIG_RETURNCODE=$?
@@ -204,11 +205,8 @@ function python_fn {
 # lua.c
 function lua_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        LUACONFIG=$(pkg-config --cflags lua-5.3)
-        LUACONFIG_RETURNCODE=$?
-        set -e
-        if [ $LUACONFIG_RETURNCODE -eq 0 ]; then
+        LUACONFIG=$(get_pkg_config_cflags lua-5.3)
+        if [ -n "$LUACONFIG" ]; then
             set +e
             echo -e "#include <lua.h>" | ${CC} ${CC_OPT} ${LUACONFIG} -x c -
             LUACONFIG_RETURNCODE=$?
@@ -228,11 +226,8 @@ function lua_fn {
 # libcurl.c
 function libcurl_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        LIBCURLCONFIG=$(pkg-config --cflags libcurl)
-        LIBCURLCONFIG_RETURNCODE=$?
-        set -e
-        if [ $LIBCURLCONFIG_RETURNCODE -eq 0 ]; then
+        LIBCURLCONFIG=$(get_pkg_config_cflags libcurl)
+        if [ -n "$LIBCURLCONFIG" ]; then
             set +e
             echo -e "#include <curl/curl.h>" | ${CC} ${CC_OPT} ${LIBCURLCONFIG} -x c -
             LIBCURLCONFIG_RETURNCODE=$?
@@ -252,11 +247,8 @@ function libcurl_fn {
 # cairo.c
 function cairo_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        CAIROCONFIG=$(pkg-config --cflags cairo)
-        CAIROCONFIG_RETURNCODE=$?
-        set -e
-        if [ $CAIROCONFIG_RETURNCODE -eq 0 ]; then
+        CAIROCONFIG=$(get_pkg_config_cflags cairo)
+        if [ -n "$CAIROCONFIG" ]; then
             set +e
             echo -e "#include <cairo.h>" | ${CC} ${CC_OPT} ${CAIROCONFIG} -x c -
             CAIROCONFIG_RETURNCODE=$?
@@ -287,11 +279,8 @@ function kde_fn {
     if [ $KDECONFIG_RETURNCODE -ne 0 ]; then
         echo "kde4-config does not work, skipping syntax check."
     else
-        set +e
-        KDEQTCONFIG=$(pkg-config --cflags QtCore)
-        KDEQTCONFIG_RETURNCODE=$?
-        set -e
-        if [ $KDEQTCONFIG_RETURNCODE -ne 0 ]; then
+        KDEQTCONFIG=$(get_pkg_config_cflags QtCore)
+        if [ -n "$KDEQTCONFIG" ]; then
             echo "Suitable Qt not present, Qt is necessary for KDE. Skipping syntax check."
         else
             set +e
@@ -311,11 +300,8 @@ function kde_fn {
 # libsigc++.cpp
 function libsigcpp_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        LIBSIGCPPCONFIG=$(pkg-config --cflags sigc++-2.0)
-        LIBSIGCPPCONFIG_RETURNCODE=$?
-        set -e
-        if [ $LIBSIGCPPCONFIG_RETURNCODE -eq 0 ]; then
+        LIBSIGCPPCONFIG=$(get_pkg_config_cflags sigc++-2.0)
+        if [ -n "$LIBSIGCPPCONFIG" ]; then
             set +e
             echo -e "#include <sigc++/sigc++.h>\n" | ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} -x c++ -
             LIBSIGCPPCONFIG_RETURNCODE=$?
@@ -335,11 +321,8 @@ function libsigcpp_fn {
 # openssl.c
 function openssl_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        OPENSSLCONFIG=$(pkg-config --cflags libssl)
-        OPENSSLCONFIG_RETURNCODE=$?
-        set -e
-        if [ $OPENSSLCONFIG_RETURNCODE -eq 0 ]; then
+        OPENSSLCONFIG=$(get_pkg_config_cflags libssl)
+        if [ -n "$OPENSSLCONFIG" ]; then
             set +e
             echo -e "#include <openssl/ssl.h>" | ${CC} ${CC_OPT} ${OPENSSLCONFIG} -x c -
             OPENSSLCONFIG_RETURNCODE=$?
@@ -359,11 +342,8 @@ function openssl_fn {
 # opencv2.cpp
 function opencv2_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
-        set +e
-        OPENCVCONFIG=$(pkg-config --cflags opencv)
-        OPENCVCONFIG_RETURNCODE=$?
-        set -e
-        if [ $OPENCVCONFIG_RETURNCODE -eq 0 ]; then
+        OPENCVCONFIG=$(get_pkg_config_cflags opencv)
+        if [ -n "$OPENCVCONFIG" ]; then
             set +e
             echo -e "#include <opencv2/opencv.hpp>\n" | ${CXX} ${CXX_OPT} ${OPENCVCONFIG} -x c++ -
             OPENCVCONFIG_RETURNCODE=$?
