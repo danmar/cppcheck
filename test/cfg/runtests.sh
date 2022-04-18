@@ -58,6 +58,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; the
             echo "Qt found and working, checking syntax with ${CXX} now."
             ${CXX} ${CXX_OPT} ${QTCONFIG} ${DIR}qt.cpp
         fi
+    else
+        echo "Qt not present, skipping syntax check with ${CXX}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=qt ${DIR}qt.cpp
@@ -122,6 +124,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; then
             echo "GTK+ found and working, checking syntax with ${CXX} now."
             ${CC} ${CC_OPT} ${GTKCONFIG} ${DIR}gtk.c
         fi
+    else
+        echo "GTK+ not present, skipping syntax check with ${CXX}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=gtk -f ${DIR}gtk.c
@@ -156,6 +160,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; then
             echo "SQLite3 found and working, checking syntax with ${CC} now."
             ${CC} ${CC_OPT} ${SQLITE3CONFIG} ${DIR}sqlite3.c
         fi
+    else
+        echo "SQLite3 not present, skipping syntax check with ${CC}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=sqlite3 ${DIR}sqlite3.c
@@ -181,6 +187,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; then
             echo "Python 3 found and working, checking syntax with ${CC} now."
             ${CC} ${CC_OPT} ${PYTHON3CONFIG} ${DIR}python.c
         fi
+    else
+        echo "Python 3 not present, skipping syntax check with ${CC}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=python ${DIR}python.c
@@ -202,6 +210,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; then
             echo "Lua found and working, checking syntax with ${CC} now."
             ${CC} ${CC_OPT} ${LUACONFIG} ${DIR}lua.c
         fi
+    else
+        echo "Lua not present, skipping syntax check with ${CC}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=lua ${DIR}lua.c
@@ -223,6 +233,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; then
             echo "libcurl found and working, checking syntax with ${CC} now."
             ${CC} ${CC_OPT} ${LIBCURLCONFIG} ${DIR}libcurl.c
         fi
+    else
+        echo "libcurl not present, skipping syntax check with ${CC}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=libcurl ${DIR}libcurl.c
@@ -244,6 +256,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; then
             echo "cairo found and working, checking syntax with ${CC} now."
             ${CC} ${CC_OPT} ${CAIROCONFIG} ${DIR}cairo.c
         fi
+    else
+        echo "cairo not present, skipping syntax check with ${CC}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=cairo ${DIR}cairo.c
@@ -296,6 +310,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; then
             echo "libsigc++ found and working, checking syntax with ${CXX} now."
             ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} ${DIR}libsigc++.cpp
         fi
+    else
+        echo "libsigc++ not present, skipping syntax check with ${CXX}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=libsigc++ ${DIR}libsigc++.cpp
@@ -317,6 +333,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; then
             echo "OpenSSL found and working, checking syntax with ${CC} now."
             ${CC} ${CC_OPT} ${OPENSSLCONFIG} ${DIR}openssl.c
         fi
+    else
+        echo "OpenSSL not present, skipping syntax check with ${CC}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=openssl ${DIR}openssl.c
@@ -338,6 +356,8 @@ if [ $HAS_PKG_CONFIG -eq 1 ]; then
             echo "OpenCV found and working, checking syntax with ${CXX} now."
             ${CXX} ${CXX_OPT} ${OPENCVCONFIG} ${DIR}opencv2.cpp
         fi
+    else
+        echo "OpenCV not present, skipping syntax check with ${CXX}."
     fi
 fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=opencv2 ${DIR}opencv2.cpp
