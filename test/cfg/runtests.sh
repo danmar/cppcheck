@@ -2,6 +2,16 @@
 set -e # abort on error
 #set -x # be verbose
 
+echo "Checking for pkg-config..."
+if pkg-config --version; then
+  HAS_PKG_CONFIG=1
+  echo "pkg-config found."
+else
+  HAS_PKG_CONFIG=0
+  echo "pkg-config is not available, skipping all syntax checks."
+fi
+
+
 if [[ $(pwd) == */test/cfg ]] ; then # we are in test/cfg
 	CPPCHECK="../../cppcheck"
 	DIR=""
@@ -30,13 +40,7 @@ ${CC} ${CC_OPT} -D_GNU_SOURCE ${DIR}gnu.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=posix,gnu ${DIR}gnu.c
 
 # qt.cpp
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve Qt configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; the
     set +e
     QTCONFIG=$(pkg-config --cflags Qt5Core)
     QTCONFIG_RETURNCODE=$?
@@ -96,13 +100,7 @@ fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=wxwidgets,windows -f ${DIR}wxwidgets.cpp
 
 # gtk.c
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve GTK+ configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     set +e
     GTKCONFIG=$(pkg-config --cflags gtk+-3.0)
     GTKCONFIG_RETURNCODE=$?
@@ -142,13 +140,7 @@ fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=boost ${DIR}boost.cpp
 
 # sqlite3.c
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve SQLite3 configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     set +e
     SQLITE3CONFIG=$(pkg-config --cflags sqlite3)
     SQLITE3CONFIG_RETURNCODE=$?
@@ -173,13 +165,7 @@ ${CC} ${CC_OPT} -fopenmp ${DIR}openmp.c
 ${CPPCHECK} ${CPPCHECK_OPT} --library=openmp ${DIR}openmp.c
 
 # python.c
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve Python 3 configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     set +e
     PYTHON3CONFIG=$(pkg-config --cflags python3)
     PYTHON3CONFIG_RETURNCODE=$?
@@ -200,13 +186,7 @@ fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=python ${DIR}python.c
 
 # lua.c
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve Lua configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     set +e
     LUACONFIG=$(pkg-config --cflags lua-5.3)
     LUACONFIG_RETURNCODE=$?
@@ -227,13 +207,7 @@ fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=lua ${DIR}lua.c
 
 # libcurl.c
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve libcurl configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     set +e
     LIBCURLCONFIG=$(pkg-config --cflags libcurl)
     LIBCURLCONFIG_RETURNCODE=$?
@@ -254,13 +228,7 @@ fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=libcurl ${DIR}libcurl.c
 
 # cairo.c
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve cairo configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     set +e
     CAIROCONFIG=$(pkg-config --cflags cairo)
     CAIROCONFIG_RETURNCODE=$?
@@ -312,13 +280,7 @@ fi
 ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=kde ${DIR}kde.cpp
 
 # libsigc++.cpp
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve libsigc++ configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     set +e
     LIBSIGCPPCONFIG=$(pkg-config --cflags sigc++-2.0)
     LIBSIGCPPCONFIG_RETURNCODE=$?
@@ -339,13 +301,7 @@ fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=libsigc++ ${DIR}libsigc++.cpp
 
 # openssl.c
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve OpenSSL configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     set +e
     OPENSSLCONFIG=$(pkg-config --cflags libssl)
     OPENSSLCONFIG_RETURNCODE=$?
@@ -366,13 +322,7 @@ fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=openssl ${DIR}openssl.c
 
 # opencv2.cpp
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve OpenCV configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     set +e
     OPENCVCONFIG=$(pkg-config --cflags opencv)
     OPENCVCONFIG_RETURNCODE=$?
@@ -393,14 +343,7 @@ fi
 ${CPPCHECK} ${CPPCHECK_OPT} --library=opencv2 ${DIR}opencv2.cpp
 
 # cppunit.cpp
-set +e
-pkg-config --version
-PKGCONFIG_RETURNCODE=$?
-set -e
-
-if [ $PKGCONFIG_RETURNCODE -ne 0 ]; then
-    echo "pkg-config needed to retrieve cppunit configuration is not available, skipping syntax check."
-else
+if [ $HAS_PKG_CONFIG -eq 1 ]; then
     if ! pkg-config cppunit; then
         echo "cppunit not found, skipping syntax check for cppunit"
     else
