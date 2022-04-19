@@ -44,30 +44,30 @@ bool duplicateBreak_wxLogApiError(const wxString &msg, const HRESULT &hr, wxStri
 
 void argDirection_wxString_ToDouble(const wxString &str)
 {
-	// No warning is expected. Ensure both arguments are treated
-	// as output by library configuration
-	double value;
-	const bool convOk = str.ToDouble(&value);
-	if(convOk && value <= 42.0){}
+    // No warning is expected. Ensure both arguments are treated
+    // as output by library configuration
+    double value;
+    const bool convOk = str.ToDouble(&value);
+    if (convOk && value <= 42.0) {}
 }
 
 void argDirection_wxString_ToCDouble(const wxString &str)
 {
-	// No warning is expected. Ensure both arguments are treated
-	// as output by library configuration
-	double value;
-	const bool convOk = str.ToCDouble(&value);
-	if(convOk && value <= 42.0){}
+    // No warning is expected. Ensure both arguments are treated
+    // as output by library configuration
+    double value;
+    const bool convOk = str.ToCDouble(&value);
+    if (convOk && value <= 42.0) {}
 }
 
 void argDirection_wxTextCtrl_GetSelection(const wxTextCtrl *const textCtrl)
 {
-	// No warning is expected. Ensure both arguments are treated
-	// as output by library configuration
-	long start;
-	long end;
-	textCtrl->GetSelection(&start, &end);
-	if(start > 0 && end > 0){}
+    // No warning is expected. Ensure both arguments are treated
+    // as output by library configuration
+    long start;
+    long end;
+    textCtrl->GetSelection(&start, &end);
+    if (start > 0 && end > 0) {}
 }
 
 void useRetval_wxString_MakeCapitalized(wxString &str)
