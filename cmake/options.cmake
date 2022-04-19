@@ -38,7 +38,7 @@ option(ENABLE_OSS_FUZZ      "Enable the OSS-Fuzz related targets"               
 
 option(BUILD_GUI            "Build the qt application"                                      OFF)
 option(WITH_QCHART          "Enable QtCharts usage in the GUI"                              OFF)
-option(USE_QT6              "Prefer Qt6 when available"                                     ON)
+option(USE_QT6              "Prefer Qt6 when available"                                     OFF)
 
 option(HAVE_RULES           "Usage of rules (needs PCRE library and headers)"               OFF)
 option(USE_BUNDLED_TINYXML2 "Usage of bundled tinyxml2 library"                             ON)
