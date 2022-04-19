@@ -2854,6 +2854,16 @@ void uninitvar_vwprintf(wchar_t *Format, va_list Arg)
     (void)vwprintf(Format,arg);
 }
 
+void nullPointer_bsearch(void* key, void* base, size_t num, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void)bsearch(NULL,base,num,size,(int (*)(const void*,const void*))strcmp);
+    // cppcheck-suppress nullPointer
+    (void)bsearch(key,NULL,num,size,(int (*)(const void*,const void*))strcmp);
+    // No warning is expected
+    (void)bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
+}
+
 void uninitvar_bsearch(void)
 {
     void* key;
