@@ -73,7 +73,7 @@ private:
         const Scope *assertionScope;
     };
 
-    static bool isVariableAssignment(const Token *token);
+    static bool isVariableValueChangingOperator(const Token *token);
     static bool checkVariableAssignmentSideEffect(const Variable *var, const Scope *assertionScope);
     static bool isFunctionWithSideEffect(const Function *function, ArgumentCheck argsChecking = {});
 

@@ -54,7 +54,7 @@ void CheckAssert::assertWithSideEffects()
             if (Token::simpleMatch(tmp, "sizeof ("))
                 tmp = tmp->linkAt(1);
 
-            if (isVariableAssignment(tmp)) {
+            if (isVariableValueChangingOperator(tmp)) {
                 const auto *var = tmp->astOperand1()->variable();
                 if (checkVariableAssignmentSideEffect(var, tok->scope())) {
                     assignmentInAssertError(tmp, var->name());
@@ -103,14 +103,14 @@ void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& v
 //---------------------------------------------------------------------------
 
 /**
- * \brief checks if a variable is assigned
- * \retval true   - is variable assignment
- * \retval false  - no variable assignment
+ * \brief checks if a variable's value may be changed with the given operator
+ * \retval true   - is variable's value may change
+ * \retval false  - no possible value altering
  */
-bool CheckAssert::isVariableAssignment(const Token *token) {
+bool CheckAssert::isVariableValueChangingOperator(const Token *token) {
     if (token->isAssignmentOp())
         return true;
-    if (token->tokType() == Token::eIncDecOp)
+    if (token->isIncDecOp())
         return true;
 
     return false;
