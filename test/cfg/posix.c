@@ -7,6 +7,7 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#include <aio.h>
 #include <stdlib.h>
 #include <stdio.h> // <- FILE
 #include <dirent.h>
@@ -28,6 +29,14 @@
 #include <stdbool.h>
 #include <wchar.h>
 #include <string.h>
+
+int nullPointer_aio_suspend(const struct aiocb *const aiocb_list[], int nitems, const struct timespec *restrict timeout)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_suspend(NULL, nitems, timeout);
+    // No warning is expected
+    return aio_suspend(aiocb_list, nitems, timeout);
+}
 
 // Note: Since glibc 2.28, this function symbol is no longer available to newly linked applications.
 void invalidFunctionArg_llseek(int fd, loff_t offset, int origin)
