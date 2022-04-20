@@ -27,8 +27,17 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#define _XOPEN_SOURCE
 #include <wchar.h>
 #include <string.h>
+
+int nullPointer_wcswidth(const wchar_t *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcswidth(NULL, n);
+    // No warning is expected
+    return wcswidth(s, n);
+}
 
 int nullPointer_aio_cancel(int fd, struct aiocb *aiocbp)
 {
