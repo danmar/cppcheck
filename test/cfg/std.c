@@ -85,6 +85,26 @@ void bufferAccessOutOfBounds(void)
     free(pAlloc1);
 }
 
+wchar_t* nullPointer_fgetws(wchar_t* buffer, int n, FILE* stream)
+{
+    // cppcheck-suppress nullPointer
+    (void)fgetws(NULL,n,stream);
+    // cppcheck-suppress nullPointer
+    (void)fgetws(buffer,n,NULL);
+    // No warning is expected
+    return fgetws(buffer, n, stream);
+}
+
+char* nullPointer_fgets(char *buffer, int n, FILE *stream)
+{
+    // cppcheck-suppress nullPointer
+    (void)fgets(NULL,n,stream);
+    // cppcheck-suppress nullPointer
+    (void)fgets(buffer,n,NULL);
+    // No warning is expected
+    return fgets(buffer, n, stream);
+}
+
 void memleak_aligned_alloc(void)
 {
     // cppcheck-suppress unusedAllocatedMemory

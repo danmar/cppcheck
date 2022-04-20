@@ -1264,6 +1264,26 @@ void uninitvar_fsetpos(void)
     (void)std::fsetpos(stream,ptr);
 }
 
+wchar_t* nullPointer_fgetws(wchar_t* buffer, int n, FILE* stream)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::fgetws(NULL,n,stream);
+    // cppcheck-suppress nullPointer
+    (void)std::fgetws(buffer,n,NULL);
+    // No warning is expected
+    return std::fgetws(buffer, n, stream);
+}
+
+char* nullPointer_fgets(char *buffer, int n, FILE *stream)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::fgets(NULL,n,stream);
+    // cppcheck-suppress nullPointer
+    (void)std::fgets(buffer,n,NULL);
+    // No warning is expected
+    return std::fgets(buffer, n, stream);
+}
+
 void uninitvar_fgets(void)
 {
     char *buffer;
