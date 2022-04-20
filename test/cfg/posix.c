@@ -236,6 +236,19 @@ int nullPointer_strncasecmp(char *a, char *b, size_t n)
     return strncasecmp(NULL, b, n);
 }
 
+int nullPointer_bcmp(const void *a, const void *b, size_t n)
+{
+    // No nullPointer warning shall be shown:
+    // cppcheck-suppress bcmpCalled
+    (void) bcmp(a, b, n);
+    // cppcheck-suppress nullPointer
+        // cppcheck-suppress bcmpCalled
+    (void) bcmp(a, NULL, n);
+    // cppcheck-suppress nullPointer
+        // cppcheck-suppress bcmpCalled
+    return bcmp(NULL, b, n);
+}
+
 char * nullPointer_stpcpy(char *src, char *dest)
 {
     // No warning shall be shown:
