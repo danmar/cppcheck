@@ -249,6 +249,29 @@ int nullPointer_bcmp(const void *a, const void *b, size_t n)
     return bcmp(NULL, b, n);
 }
 
+void nullPointer_bzero(void *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress bzeroCalled
+    bzero(NULL,n);
+    // No nullPointer-warning shall be shown:
+    // cppcheck-suppress bzeroCalled
+    bzero(s,n);
+}
+
+void bufferAccessOutOfBounds_bzero(void *s, size_t n)
+{
+    char buf[42];
+    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress bzeroCalled
+    bzero(buf,43);
+    // cppcheck-suppress bzeroCalled
+    bzero(buf,42);
+    // No nullPointer-warning shall be shown:
+    // cppcheck-suppress bzeroCalled
+    bzero(s,n);
+}
+
 char * nullPointer_stpcpy(char *src, char *dest)
 {
     // No warning shall be shown:
