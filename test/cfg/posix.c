@@ -216,6 +216,16 @@ char * overlappingWriteFunction_stpcpy(char *src, char *dest)
     return stpcpy(src, src);
 }
 
+int nullPointer_strcasecmp(char *a, char *b)
+{
+    // No warning shall be shown:
+    (void) strcasecmp(a, b);
+    // cppcheck-suppress nullPointer
+    (void) strcasecmp(a, NULL);
+    // cppcheck-suppress nullPointer
+    return strcasecmp(NULL, b);
+}
+
 int nullPointer_strncasecmp(char *a, char *b, size_t n)
 {
     // No warning shall be shown:
