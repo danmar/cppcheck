@@ -31,6 +31,14 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_wcsnlen(const wchar_t *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcsnlen(NULL, n);
+    // No warning is expected
+    return wcsnlen(s, n);
+}
+
 int nullPointer_wcswidth(const wchar_t *s, size_t n)
 {
     // cppcheck-suppress nullPointer
