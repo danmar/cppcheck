@@ -30,12 +30,52 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_aio_cancel(int fd, struct aiocb *aiocbp)
+{
+    // No warning is expected
+    (void)aio_cancel(fd, NULL);
+    // No warning is expected
+    return aio_cancel(fd, aiocbp);
+}
+
+int nullPointer_aio_fsync(int op, struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_fsync(op, NULL);
+    // No warning is expected
+    return aio_fsync(op, aiocbp);
+}
+
+ssize_t nullPointer_aio_return(struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_return(NULL);
+    // No warning is expected
+    return aio_return(aiocbp);
+}
+
+int nullPointer_aio_error(const struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_error(NULL);
+    // No warning is expected
+    return aio_error(aiocbp);
+}
+
 int nullPointer_aio_read(struct aiocb *aiocbp)
 {
     // cppcheck-suppress nullPointer
     (void)aio_read(NULL);
     // No warning is expected
     return aio_read(aiocbp);
+}
+
+int nullPointer_aio_write(struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_write(NULL);
+    // No warning is expected
+    return aio_write(aiocbp);
 }
 
 int nullPointer_aio_suspend(const struct aiocb *const aiocb_list[], int nitems, const struct timespec *restrict timeout)
