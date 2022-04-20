@@ -48,6 +48,14 @@ int nullPointer_wcsnlen(const wchar_t *s, size_t n)
     return wcsnlen(s, n);
 }
 
+int nullPointer_gethostname(char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)gethostname(NULL, n);
+    // No warning is expected
+    return gethostname(s, n);
+}
+
 int nullPointer_wcswidth(const wchar_t *s, size_t n)
 {
     // cppcheck-suppress nullPointer
