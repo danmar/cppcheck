@@ -216,6 +216,16 @@ char * overlappingWriteFunction_stpcpy(char *src, char *dest)
     return stpcpy(src, src);
 }
 
+char * nullPointer_stpcpy(char *src, char *dest)
+{
+    // No warning shall be shown:
+    (void) stpcpy(dest, src);
+    // cppcheck-suppress nullPointer
+    (void) stpcpy(dest, NULL);
+    // cppcheck-suppress nullPointer
+    return stpcpy(NULL, src);
+}
+
 void overlappingWriteFunction_bcopy(char *buf, const size_t count)
 {
     // No warning shall be shown:
