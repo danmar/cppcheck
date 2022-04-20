@@ -216,6 +216,16 @@ char * overlappingWriteFunction_stpcpy(char *src, char *dest)
     return stpcpy(src, src);
 }
 
+int nullPointer_strncasecmp(char *a, char *b, size_t n)
+{
+    // No warning shall be shown:
+    (void) strncasecmp(a, b, n);
+    // cppcheck-suppress nullPointer
+    (void) strncasecmp(a, NULL, n);
+    // cppcheck-suppress nullPointer
+    return strncasecmp(NULL, b, n);
+}
+
 char * nullPointer_stpcpy(char *src, char *dest)
 {
     // No warning shall be shown:
