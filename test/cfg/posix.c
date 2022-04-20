@@ -242,10 +242,10 @@ int nullPointer_bcmp(const void *a, const void *b, size_t n)
     // cppcheck-suppress bcmpCalled
     (void) bcmp(a, b, n);
     // cppcheck-suppress nullPointer
-        // cppcheck-suppress bcmpCalled
+    // cppcheck-suppress bcmpCalled
     (void) bcmp(a, NULL, n);
     // cppcheck-suppress nullPointer
-        // cppcheck-suppress bcmpCalled
+    // cppcheck-suppress bcmpCalled
     return bcmp(NULL, b, n);
 }
 
