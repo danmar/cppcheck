@@ -30,6 +30,14 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_aio_read(struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_read(NULL);
+    // No warning is expected
+    return aio_read(aiocbp);
+}
+
 int nullPointer_aio_suspend(const struct aiocb *const aiocb_list[], int nitems, const struct timespec *restrict timeout)
 {
     // cppcheck-suppress nullPointer
