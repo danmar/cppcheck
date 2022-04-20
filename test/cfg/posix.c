@@ -31,6 +31,15 @@
 #include <wchar.h>
 #include <string.h>
 
+int uninitvar_wcwidth(const wchar_t c)
+{
+    wchar_t wc;
+    // cppcheck-suppress uninitvar
+    (void)wcwidth(wc);
+    // No warning is expected
+    return wcwidth(c);
+}
+
 int nullPointer_wcsnlen(const wchar_t *s, size_t n)
 {
     // cppcheck-suppress nullPointer
