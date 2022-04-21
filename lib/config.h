@@ -39,7 +39,7 @@
 
 // C++11 noexcept
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__clang__) \
     || defined(__CPPCHECK__)
 #  define NOEXCEPT noexcept
 #else
@@ -48,7 +48,7 @@
 
 // C++11 noreturn
 #if (defined(__GNUC__) && (__GNUC__ >= 5)) \
-    || (defined(__clang__) && (defined (__cplusplus)) && (__cplusplus >= 201103L)) \
+    || defined(__clang__) \
     || defined(__CPPCHECK__)
 #  define NORETURN [[noreturn]]
 #else
