@@ -48,7 +48,7 @@ int nullPointer_wcsnlen(const wchar_t *s, size_t n)
     return wcsnlen(s, n);
 }
 
-size_t bufferAccessOutOfBounds_wcsnlen(const wchar_t *s, size_t maxlen)
+size_t bufferAccessOutOfBounds_wcsnlen(void) // #10997
 {
     wchar_t buf[2]={L'4',L'2'};
     size_t len = wcsnlen(buf,2);
