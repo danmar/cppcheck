@@ -414,12 +414,6 @@ void nullPointer_memcmp(char *p)
     (void)memcmp(p, 0, 123);
 }
 
-void nullPointer_wmemcmp(wchar_t *p)
-{
-    // cppcheck-suppress nullPointer
-    (void)wmemcmp(p, 0, 123);
-}
-
 void nullPointer_vsnprintf(const char * format, ...)
 {
     va_list args;
@@ -3614,6 +3608,24 @@ void bufferAccessOutOfBounds_strncmp(void)
     (void)strncmp(dest,src,2);
     // cppcheck-suppress bufferAccessOutOfBounds
     (void)strncmp(dest,src,3);
+}
+
+void nullPointer_wmemcmp(const wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wmemcmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)wmemcmp(s1,NULL,n);
+    (void)wmemcmp(s1,s2,n);
+}
+
+void nullPointer_strncmp(const char *s1, const char *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)strncmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)strncmp(s1,NULL,n);
+    (void)strncmp(s1,s2,n);
 }
 
 void uninitvar_wcsxfrm(void)
