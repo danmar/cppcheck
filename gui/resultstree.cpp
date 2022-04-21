@@ -812,7 +812,8 @@ void ResultsTree::startApplication(QStandardItem *target, int application)
 
         const QString cmdLine = QString("%1 %2").arg(program).arg(params);
 
-        bool success = QProcess::startDetached(cmdLine);
+        // this is reported as deprecated in Qt 5.15.2 but no longer in Qt 6
+        bool success = SUPPRESS_DEPRECATED_WARNING(QProcess::startDetached(cmdLine));
         if (!success) {
             QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(program);
 
