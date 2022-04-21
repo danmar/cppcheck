@@ -3252,6 +3252,15 @@ void uninitvar_wcschr(void)
     (void)wcschr(cs,c);
 }
 
+void nullPointer_strcmp(char *s1, char *s2)
+{
+    // cppcheck-suppress nullPointer
+    (void)strcmp(NULL,s2);
+    // cppcheck-suppress nullPointer
+    (void)strcmp(s1,NULL);
+    (void)strcmp(s1,s2);
+}
+
 void uninitvar_strcmp(char *s1, char *s2)
 {
     char *str1;
