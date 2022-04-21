@@ -300,8 +300,20 @@ void overlappingWriteFunction_bcopy(char *buf, const size_t count)
     // cppcheck-suppress bcopyCalled
     bcopy(&buf[0], &buf[3], 3U);    // no-overlap
     // cppcheck-suppress bcopyCalled
-    // cppcheck-suppress overlappingWriteFunction
-    bcopy(&buf[0], &buf[3], 4U);
+    bcopy(&buf[0], &buf[3], 4U);    // The result is correct, even when both areas overlap.
+}
+
+void nullPointer_bcopy(const void *src, void *dest, size_t n)
+{
+    // No warning shall be shown:
+    // cppcheck-suppress bcopyCalled
+    bcopy(src, dest, n);
+    // cppcheck-suppress bcopyCalled
+    // cppcheck-suppress nullPointer
+    bcopy(NULL, dest, n);
+    // cppcheck-suppress bcopyCalled
+    // cppcheck-suppress nullPointer
+    bcopy(src, NULL, n);
 }
 
 void overlappingWriteFunction_memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
