@@ -3459,6 +3459,16 @@ void nullPointer_strncat(char *d, char *s, size_t n)
     (void)strncat(d,s,n);
 }
 
+void nullPointer_strncpy(char *d, const char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)strncpy(NULL,s,n);
+    // cppcheck-suppress nullPointer
+    (void)strncpy(d,NULL,n);
+    // no warning is expected for
+    (void)strncpy(d,s,n);
+}
+
 // errno_t strcat_s(char *restrict dest, rsize_t destsz, const char *restrict src); // since C11
 void uninitvar_strcat_s(char *Ct, size_t N, char *S)
 {

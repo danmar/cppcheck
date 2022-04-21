@@ -1293,6 +1293,16 @@ void nullPointer_strncat(char *d, char *s, size_t n)
     (void)std::strncat(d,s,n);
 }
 
+void nullPointer_strncpy(char *d, const char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::strncpy(NULL,s,n);
+    // cppcheck-suppress nullPointer
+    (void)std::strncpy(d,NULL,n);
+    // no warning is expected for
+    (void)std::strncpy(d,s,n);
+}
+
 void nullPointer_strncmp(const char *s1, const char *s2, size_t n)
 {
     // cppcheck-suppress nullPointer
