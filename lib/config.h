@@ -123,6 +123,7 @@ static const std::string emptyString;
 #define SUPPRESS_DEPRECATED_WARNING(...) SUPPRESS_WARNING("-Wdeprecated", __VA_ARGS__)
 #define SUPPRESS_FLOAT_EQUAL_WARNING(...) SUPPRESS_WARNING("-Wfloat-equal", __VA_ARGS__)
 #else
+#define SUPPRESS_WARNING(warning, ...) __VA_ARGS__
 #define SUPPRESS_DEPRECATED_WARNING(...) __VA_ARGS__
 #define SUPPRESS_FLOAT_EQUAL_WARNING(...) __VA_ARGS__
 #endif
