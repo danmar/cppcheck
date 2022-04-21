@@ -21,7 +21,7 @@ jobs:
       - name: Install missing software
         run: |
           apt-get update
-          apt-get install -y cmake g++ make
+          apt-get install -y cmake clang-13 make
           apt-get install -y libpcre3-dev
           apt-get install -y libffi7 # work around missing dependency for Qt install step
           apt-get install -y clang-tidy-13
@@ -47,12 +47,15 @@ jobs:
           cd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off ..
           cd ..
+        env:
+          CC: clang-13
+          CXX: clang++-13
 
       - name: Prepare CMake dependencies
         run: |
           # make sure the precompiled headers exist
-          make -C cmake.output lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
-          make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
+          make -C cmake.output/lib cmake_pch.hxx.pch
+          make -C cmake.output/test cmake_pch.hxx.pch
           # make sure the auto-generated GUI sources exist
           make -C cmake.output autogen
 
