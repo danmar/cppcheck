@@ -381,6 +381,13 @@ void nullpointer(int value)
     wscanf(L"%i", NULL);
 }
 
+size_t nullPointer_strlen(const char *s)
+{
+    // cppcheck-suppress nullPointer
+    (void) strlen(NULL);
+    return strlen(s);
+}
+
 void nullpointerMemchr1(char *p, char *s)
 {
     p = memchr(s, 'p', strlen(s));
