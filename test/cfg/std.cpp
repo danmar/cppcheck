@@ -1283,6 +1283,16 @@ void nullPointer_wmemcmp(const wchar_t* s1, const wchar_t* s2, size_t n)
     (void)std::wmemcmp(s1,s2,n);
 }
 
+void nullPointer_strncat(char *d, char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::strncat(NULL,s,n);
+    // cppcheck-suppress nullPointer
+    (void)std::strncat(d,NULL,n);
+    // no warning is expected for
+    (void)std::strncat(d,s,n);
+}
+
 void nullPointer_strncmp(const char *s1, const char *s2, size_t n)
 {
     // cppcheck-suppress nullPointer
