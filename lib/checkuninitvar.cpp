@@ -1574,6 +1574,8 @@ static ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* se
     if (indirect > 0 && tok->astParent()) {
         if (Token::Match(tok->astParent(), "%assign%") && astIsRhs(tok))
             return ExprUsage::NotUsed;
+        if (tok->astParent()->isConstOp())
+            return ExprUsage::NotUsed;
         if (tok->astParent()->isCast())
             return ExprUsage::NotUsed;
     }

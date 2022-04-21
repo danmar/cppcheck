@@ -5247,6 +5247,44 @@ private:
                         "  std::memcpy(&dest, &src, 1);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: &src\n", errout.str());
+
+        // #10988
+        valueFlowUninit("void f(const void* ptr, bool* result) {\n"
+                        "  int dummy;\n"
+                        "  *result = (&dummy < ptr);\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct A {\n"
+                        "    int x;\n"
+                        "};\n"
+                        "void f() {\n"
+                        "    A a;\n"
+                        "    A* p = &a;\n"
+                        "    p->x = 1;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct A {\n"
+                        "    int x;\n"
+                        "};\n"
+                        "void g(const int&);\n"
+                        "void f() {\n"
+                        "    A a;\n"
+                        "    g(a.x);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (error) Uninitialized variable: a.x\n", errout.str());
+
+        valueFlowUninit("struct A {\n"
+                        "    int x;\n"
+                        "};\n"
+                        "void g(const int&);\n"
+                        "void f() {\n"
+                        "    A a;\n"
+                        "    A* p = &a;\n"
+                        "    g(p->x);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:8]: (error) Uninitialized variable: p->x\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
