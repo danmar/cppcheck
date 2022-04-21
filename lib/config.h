@@ -64,6 +64,15 @@
 #  define FALLTHROUGH
 #endif
 
+// unused
+#if defined(__GNUC__) \
+    || defined(__clang__) \
+    || defined(__CPPCHECK__)
+#  define UNUSED __attribute__((unused))
+#else
+#  define UNUSED
+#endif
+
 #define REQUIRES(msg, ...) class=typename std::enable_if<__VA_ARGS__::value>::type
 
 #include <string>
