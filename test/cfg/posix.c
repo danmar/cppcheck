@@ -48,6 +48,15 @@ int nullPointer_wcsnlen(const wchar_t *s, size_t n)
     return wcsnlen(s, n);
 }
 
+size_t bufferAccessOutOfBounds_wcsnlen(const wchar_t *s, size_t maxlen)
+{
+    wchar_t buf[2]={L'4',L'2'};
+    size_t len = wcsnlen(buf,2);
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    len+=wcsnlen(buf,3);
+    return len;
+}
+
 int nullPointer_gethostname(char *s, size_t n)
 {
     // cppcheck-suppress nullPointer
@@ -270,6 +279,23 @@ void bufferAccessOutOfBounds_bzero(void *s, size_t n)
     // No nullPointer-warning shall be shown:
     // cppcheck-suppress bzeroCalled
     bzero(s,n);
+}
+
+size_t bufferAccessOutOfBounds_strnlen(const char *s, size_t maxlen)
+{
+    char buf[2]={'4','2'};
+    size_t len = strnlen(buf,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    len+=strnlen(buf,3);
+    return len;
+}
+
+size_t nullPointer_strnlen(const char *s, size_t maxlen)
+{
+    // No warning shall be shown:
+    (void) strnlen(s, maxlen);
+    // cppcheck-suppress nullPointer
+    return strnlen(NULL, maxlen);
 }
 
 char * nullPointer_stpcpy(char *src, char *dest)
