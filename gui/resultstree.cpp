@@ -74,11 +74,6 @@ static const char TAGS[] = "tags";
 static const int COLUMN_SINCE_DATE = 6;
 static const int COLUMN_TAGS       = 7;
 
-static QString getFunction(QStandardItem *item)
-{
-    return item->data().toMap().value("function").toString();
-}
-
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
     mSettings(nullptr),
