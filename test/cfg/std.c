@@ -408,12 +408,6 @@ void nullPointer_memchr(char *p)
     (void)p;
 }
 
-void nullPointer_memcmp(char *p)
-{
-    // cppcheck-suppress nullPointer
-    (void)memcmp(p, 0, 123);
-}
-
 void nullPointer_vsnprintf(const char * format, ...)
 {
     va_list args;
@@ -3668,6 +3662,33 @@ void nullPointer_wmemcmp(const wchar_t* s1, const wchar_t* s2, size_t n)
     // cppcheck-suppress nullPointer
     (void)wmemcmp(s1,NULL,n);
     (void)wmemcmp(s1,s2,n);
+}
+
+void nullPointer_memmove(void *s1, void *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)memmove(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)memmove(s1,NULL,n);
+    (void)memmove(s1,s2,n);
+}
+
+void nullPointer_memcmp(const void *s1, const void *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)memcmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)memcmp(s1,NULL,n);
+    (void)memcmp(s1,s2,n);
+}
+
+void nullPointer_memcpy(void *s1, const void *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)memcpy(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)memcpy(s1,NULL,n);
+    (void)memcpy(s1,s2,n);
 }
 
 void nullPointer_strncmp(const char *s1, const char *s2, size_t n)

@@ -1283,6 +1283,16 @@ void nullPointer_wmemcmp(const wchar_t* s1, const wchar_t* s2, size_t n)
     (void)std::wmemcmp(s1,s2,n);
 }
 
+
+void nullPointer_memcmp(const void *s1, const void *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::memcmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)std::memcmp(s1,NULL,n);
+    (void)std::memcmp(s1,s2,n);
+}
+
 void nullPointer_strncat(char *d, char *s, size_t n)
 {
     // cppcheck-suppress nullPointer
@@ -3591,10 +3601,22 @@ void nullPointer_atof(void)
     (void)std::atof(0);
 }
 
-void nullPointer_memcmp(char *p)
+void nullPointer_memcpy(void *s1, const void *s2, size_t n)
 {
     // cppcheck-suppress nullPointer
-    (void)std::memcmp(p, 0, 123);
+    (void)std::memcpy(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)std::memcpy(s1,NULL,n);
+    (void)std::memcpy(s1,s2,n);
+}
+
+void nullPointer_memmove(void *s1, void *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::memmove(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)std::memmove(s1,NULL,n);
+    (void)std::memmove(s1,s2,n);
 }
 
 ///////////////////////////////////////////////////////////////////////
