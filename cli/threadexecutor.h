@@ -75,8 +75,8 @@ private:
 
 #elif defined(THREADING_MODEL_THREAD)
 
-    class LogWriter;
-    static unsigned int STDCALL threadProc(LogWriter *threadExecutor);
+    class SyncLogForwarder;
+    static unsigned int STDCALL threadProc(SyncLogForwarder *logforwarder);
 
 #endif
 

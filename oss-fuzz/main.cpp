@@ -16,53 +16,30 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "color.h"
 #include "cppcheck.h"
 #include "type2.h"
 
+enum class Color;
 
-class CppcheckExecutor : public ErrorLogger {
-private:
-    CppCheck cppcheck;
-
+class DummyErrorLogger : public ErrorLogger {
 public:
-    CppcheckExecutor()
-        : ErrorLogger()
-        , cppcheck(*this, false, nullptr) {
-        cppcheck.settings().addEnabled("all");
-        cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
-    }
-
-    void run(const std::string &code) {
-        cppcheck.check("test.cpp", code);
-    }
-
-    void reportOut(const std::string &outmsg, Color) override {
-        (void)outmsg;
-    }
-    void reportErr(const ErrorMessage &msg) override {
-        (void)msg;
-    }
-    void reportProgress(const std::string& filename,
-                        const char stage[],
-                        const std::size_t value) override {
-        (void)filename;
-        (void)stage;
-        (void)value;
-    }
+    void reportOut(const std::string&, Color) override {}
+    void reportErr(const ErrorMessage&) override {}
+    void reportProgress(const std::string&,
+                        const char[],
+                        const std::size_t) override {}
 };
-
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
 {
     if (dataSize < 10000) {
         const std::string code = generateCode2(data, dataSize);
-        //std::ofstream fout("code.cpp");
-        //fout << code;
-        //fout.close();
 
-        CppcheckExecutor cppcheckExecutor;
-        cppcheckExecutor.run(code);
+        DummyErrorLogger errorLogger;
+        CppCheck cppcheck(errorLogger, false, nullptr);
+        cppcheck.settings().addEnabled("all");
+        cppcheck.settings().certainty.setEnabled(Certainty::inconclusive, true);
+        cppcheck.check("test.cpp", code);
     }
     return 0;
 }
