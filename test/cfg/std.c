@@ -3113,6 +3113,28 @@ void uninitvar_strcat(char *dest, const char * const source)
     (void)strcat(dest,source);
 }
 
+void nullPointer_strcpy(char *dest, const char * const source)
+{
+    // cppcheck-suppress nullPointer
+    (void)strcpy(NULL,source);
+    // cppcheck-suppress nullPointer
+    (void)strcpy(dest,NULL);
+
+    // no warning shall be shown for
+    (void)strcpy(dest,source);
+}
+
+void nullPointer_strcat(char *dest, const char * const source)
+{
+    // cppcheck-suppress nullPointer
+    (void)strcat(NULL,source);
+    // cppcheck-suppress nullPointer
+    (void)strcat(dest,NULL);
+
+    // no warning shall be shown for
+    (void)strcat(dest,source);
+}
+
 void bufferAccessOutOfBounds_strcat(char *dest, const char * const source)
 {
     char buf4[4] = {0};
