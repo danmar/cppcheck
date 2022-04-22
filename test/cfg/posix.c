@@ -226,6 +226,15 @@ void invalidFunctionArg_fseeko(FILE* stream, off_t offset, int origin)
     (void)fseeko(stream, offset, SEEK_END);
 }
 
+wchar_t *nullPointer_wcpncpy(wchar_t *dest, const wchar_t *src, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcpncpy(NULL, src, n);
+    // cppcheck-suppress nullPointer
+    (void)wcpncpy(dest, NULL, n);
+    return wcpncpy(dest, src, n);
+}
+
 int nullPointer_utimes(const char *path, const struct timeval times[2])
 {
     // cppcheck-suppress nullPointer
