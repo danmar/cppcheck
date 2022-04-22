@@ -226,6 +226,15 @@ void invalidFunctionArg_fseeko(FILE* stream, off_t offset, int origin)
     (void)fseeko(stream, offset, SEEK_END);
 }
 
+int nullPointer_utimes(const char *path, const struct timeval times[2])
+{
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress utimesCalled
+    (void)utimes(NULL, times);
+    // cppcheck-suppress utimesCalled
+    return utimes(path, times);
+}
+
 char * overlappingWriteFunction_stpcpy(char *src, char *dest)
 {
     // No warning shall be shown:
