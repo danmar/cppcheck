@@ -110,12 +110,36 @@ void overlappingWriteFunction_wcscat(wchar_t *src, wchar_t *dest)
     (void)wcscat(src, src);
 }
 
+void overlappingWriteFunction_wcsxfrm(wchar_t *s1, wchar_t *s2, size_t n)
+{
+    // No warning shall be shown:
+    (void)wcsxfrm(s1, s2, n);
+}
+
 char * overlappingWriteFunction_strcat(char *src, char *dest)
 {
     // No warning shall be shown:
     (void)strcat(dest, src);
     // cppcheck-suppress overlappingWriteFunction
     return strcat(src, src);
+}
+
+int nullPointer_wcsncmp(const wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::wcsncmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void) std::wcsncmp(s1,NULL,n);
+    return std::wcsncmp(s1,s2,n);
+}
+
+wchar_t* nullPointer_wcsncpy(wchar_t *s, const wchar_t *cs, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::wcsncpy(NULL,cs,n);
+    // cppcheck-suppress nullPointer
+    (void) std::wcsncpy(s,NULL,n);
+    return std::wcsncpy(s,cs,n);
 }
 
 char * overlappingWriteFunction_strncat(char *src, char *dest, const std::size_t count)

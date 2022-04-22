@@ -381,6 +381,24 @@ void nullpointer(int value)
     wscanf(L"%i", NULL);
 }
 
+int nullPointer_wcsncmp(const wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) wcsncmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void) wcsncmp(s1,NULL,n);
+    return wcsncmp(s1,s2,n);
+}
+
+wchar_t* nullPointer_wcsncpy(wchar_t *s, const wchar_t *cs, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) wcsncpy(NULL,cs,n);
+    // cppcheck-suppress nullPointer
+    (void) wcsncpy(s,NULL,n);
+    return wcsncpy(s,cs,n);
+}
+
 size_t nullPointer_strlen(const char *s)
 {
     // cppcheck-suppress nullPointer
