@@ -768,22 +768,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // --std
-            else if (std::strcmp(argv[i], "--std=c89") == 0) {
-                mSettings->standards.c = Standards::C89;
-            } else if (std::strcmp(argv[i], "--std=c99") == 0) {
-                mSettings->standards.c = Standards::C99;
-            } else if (std::strcmp(argv[i], "--std=c11") == 0) {
-                mSettings->standards.c = Standards::C11;
-            } else if (std::strcmp(argv[i], "--std=c++03") == 0) {
-                mSettings->standards.cpp = Standards::CPP03;
-            } else if (std::strcmp(argv[i], "--std=c++11") == 0) {
-                mSettings->standards.cpp = Standards::CPP11;
-            } else if (std::strcmp(argv[i], "--std=c++14") == 0) {
-                mSettings->standards.cpp = Standards::CPP14;
-            } else if (std::strcmp(argv[i], "--std=c++17") == 0) {
-                mSettings->standards.cpp = Standards::CPP17;
-            } else if (std::strcmp(argv[i], "--std=c++20") == 0) {
-                mSettings->standards.cpp = Standards::CPP20;
+            else if (std::strncmp(argv[i], "--std=", 6) == 0) {
+                const std::string std = argv[i] + 6;
+                // TODO: print error when standard is unknown
+                if (std::strncmp(std.c_str(), "c++", 3) == 0) {
+                    mSettings->standards.cpp = Standards::getCPP(std);
+                }
+                else if (std::strncmp(std.c_str(), "c", 1) == 0) {
+                    mSettings->standards.c = Standards::getC(std);
+                }
+                else {
+                    printError("unknown --std value '" + std + "'");
+                    return false;
+                }
             }
 
             else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
@@ -1256,6 +1253,9 @@ void CmdLineParser::printHelp()
     "    -v, --verbose        Output more detailed error information.\n"
     "    --version            Print out version number.\n"
     "    --xml                Write results in xml format to error stream (stderr).\n"
+    "    --xml-version=<version>\n"
+    "                         Select the XML file version. Also implies --xml.\n"
+    "                         Currently only version 2 is available. The default version is 2.\n"
     "\n"
     "Example usage:\n"
     "  # Recursively check the current folder. Print the progress on the screen and\n"

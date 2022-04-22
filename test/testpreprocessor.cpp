@@ -209,6 +209,7 @@ private:
         TEST_CASE(predefine3);
         TEST_CASE(predefine4);
         TEST_CASE(predefine5);  // automatically define __cplusplus
+        TEST_CASE(predefine6);  // automatically define __STDC_VERSION__
 
         TEST_CASE(invalidElIf); // #2942 segfault
 
@@ -1996,8 +1997,14 @@ private:
     void predefine5() {  // #3737, #5119 - automatically define __cplusplus
         // #3737...
         const char code[] = "#ifdef __cplusplus\n123\n#endif";
-        ASSERT_EQUALS("",      preprocessor0.getcode(code, "X=123", "test.c"));
-        ASSERT_EQUALS("\n123", preprocessor0.getcode(code, "X=123", "test.cpp"));
+        ASSERT_EQUALS("",      preprocessor0.getcode(code, "", "test.c"));
+        ASSERT_EQUALS("\n123", preprocessor0.getcode(code, "", "test.cpp"));
+    }
+
+    void predefine6() { // automatically define __STDC_VERSION__
+        const char code[] = "#ifdef __STDC_VERSION__\n123\n#endif";
+        ASSERT_EQUALS("\n123", preprocessor0.getcode(code, "", "test.c"));
+        ASSERT_EQUALS("",      preprocessor0.getcode(code, "", "test.cpp"));
     }
 
     void invalidElIf() {

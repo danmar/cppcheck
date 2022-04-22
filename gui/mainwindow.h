@@ -19,6 +19,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "library.h"
 #include "settings.h"
 #include "platforms.h"
 
@@ -36,6 +37,9 @@ class QActionGroup;
 class QSettings;
 class QTimer;
 class QLineEdit;
+class ImportProject;
+class QCloseEvent;
+class QObject;
 namespace Ui {
     class MainWindow;
 }

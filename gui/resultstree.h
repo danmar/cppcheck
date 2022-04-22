@@ -35,6 +35,8 @@ class QWidget;
 class QItemSelectionModel;
 class ThreadHandler;
 class QContextMenuEvent;
+class QKeyEvent;
+class QObject;
 class QSettings;
 
 /// @addtogroup GUI

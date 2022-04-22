@@ -22,6 +22,7 @@
 #include <QDialog>
 #include <QString>
 
+class QObject;
 class QWidget;
 namespace Ui {
     class About;

@@ -32,11 +32,9 @@
 #include "errortypes.h"
 #include "symboldatabase.h"
 
-class Function;
 class Library;
 class Settings;
 class Token;
-class Variable;
 
 enum class ChildrenToVisit {
     none,

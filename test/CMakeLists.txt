@@ -15,9 +15,6 @@ if (BUILD_TESTS)
     if (HAVE_RULES)
         target_link_libraries(testrunner ${PCRE_LIBRARY})
     endif()
-    if (USE_Z3)
-        target_link_libraries(testrunner ${Z3_LIBRARIES})
-    endif()
     if (WIN32 AND NOT BORLAND)
         if(NOT MINGW)
             target_link_libraries(testrunner Shlwapi.lib)
@@ -43,8 +40,7 @@ if (BUILD_TESTS)
         # TODO: get rid of the copy
         add_custom_target(checkcfg ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cppcheck> ${CMAKE_SOURCE_DIR}
                 COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cfg/runtests.sh
-                DEPENDS cppcheck validateCFG
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cfg)
+                DEPENDS cppcheck validateCFG)
     endif()
 
     if (REGISTER_TESTS)

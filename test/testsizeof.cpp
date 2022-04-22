@@ -440,11 +440,10 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("int f(const S& s) {\n"
-              "    int** p;\n"
+        check("int f(int** p) {\n"
               "    return sizeof(p[0]) / 4;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
 
         check("struct S {\n"
               "    unsigned char* s;\n"
@@ -464,6 +463,17 @@ private:
               "};\n"
               "void f(S* s) {\n"
               "    for (int i = 0; i != sizeof(s->t[0].c) / sizeof(char*); i++) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int32_t* buf, size_t len) {\n"
+              "    for (int i = 0; i < len / sizeof(buf[0]); i++) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int32_t*** buf, size_t len) {\n"
+              "    for (int i = 0; i < len / sizeof(**buf[0]); i++) {}\n"
+              "    for (int i = 0; i < len / sizeof(*buf[0][0]); i++) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -774,6 +784,14 @@ private:
               "  char str[100];\n"
               "  strncpy(str, xyz, sizeof(str)/sizeof(str[0]));\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #9648
+              "    int a[5] = { 0 };\n"
+              "    int b[5];\n"
+              "    memcpy(b, a, ((sizeof(a) / sizeof(a[0])) - 1) * sizeof(a[0]));\n"
+              "    memcpy(b, a, sizeof(a[0]) * ((sizeof(a) / sizeof(a[0])) - 1));\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

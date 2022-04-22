@@ -581,7 +581,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
             }
 
             // friend class declaration?
-            else if (mTokenizer->isCPP() && tok->isKeyword() && Token::Match(tok, "friend class| ::| %any% ;|::")) {
+            else if (mTokenizer->isCPP() && tok->isKeyword() && Token::Match(tok, "friend class|struct| ::| %any% ;|::")) {
                 Type::FriendInfo friendInfo;
 
                 // save the name start
@@ -6150,7 +6150,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
                 setAutoTokenProperties(autoToken);
                 ValueType varvt(autovt);
                 if (isconst)
-                    varvt.constness |= 1;
+                    varvt.constness |= (1 << varvt.pointer);
                 setValueType(parent->previous(), varvt);
                 Variable * var = const_cast<Variable *>(parent->previous()->variable());
                 if (var) {

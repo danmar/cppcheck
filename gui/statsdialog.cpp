@@ -21,6 +21,7 @@
 #include "checkstatistics.h"
 #include "common.h"
 #include "projectfile.h"
+#include "showtypes.h"
 
 #include "ui_statsdialog.h"
 
@@ -42,7 +43,9 @@
 #include <QTextStream>
 #include <QValueAxis>
 
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
 using namespace QtCharts;
+#endif
 #endif
 
 static const QString CPPCHECK("cppcheck");

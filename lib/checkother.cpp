@@ -40,7 +40,6 @@
 #include <memory>
 #include <ostream>
 #include <set>
-#include <type_traits>
 #include <utility>
 #include <numeric>
 
@@ -1550,11 +1549,13 @@ void CheckOther::checkConstPointer()
             continue;
         const Token* const nameTok = tok->variable()->nameToken();
         // declarations of (static) pointers are (not) split up, array declarations are never split up
-        if (tok == nameTok && (!Token::simpleMatch(tok->variable()->typeStartToken()->previous(), "static") || Token::simpleMatch(nameTok->next(), "[")))
+        if (tok == nameTok && (!tok->variable()->isStatic() || Token::simpleMatch(nameTok->next(), "[")) &&
+            // range-based for loop
+            !(Token::simpleMatch(nameTok->astParent(), ":") && Token::simpleMatch(nameTok->astParent()->astParent(), "(")))
             continue;
         if (!tok->valueType())
             continue;
-        if (tok->valueType()->pointer == 0 || tok->valueType()->constness > 0)
+        if (tok->valueType()->pointer == 0 || (tok->valueType()->constness & 1))
             continue;
         if (nonConstPointers.find(tok->variable()) != nonConstPointers.end())
             continue;
@@ -3487,9 +3488,7 @@ void CheckOther::checkKnownArgument()
                 continue;
             // ensure that function name does not contain "assert"
             std::string funcname = tok->astParent()->previous()->str();
-            std::transform(funcname.begin(), funcname.end(), funcname.begin(), [](int c) {
-                return std::tolower(c);
-            });
+            strTolower(funcname);
             if (funcname.find("assert") != std::string::npos)
                 continue;
             knownArgumentError(tok, tok->astParent()->previous(), &tok->values().front(), varexpr, isVariableExprHidden);

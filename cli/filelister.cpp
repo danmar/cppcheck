@@ -18,6 +18,7 @@
 
 #include "filelister.h"
 
+#include "config.h"
 #include "path.h"
 #include "pathmatch.h"
 #include "utils.h"

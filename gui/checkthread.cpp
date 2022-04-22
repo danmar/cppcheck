@@ -18,10 +18,24 @@
 
 #include "checkthread.h"
 
+#include "analyzerinfo.h"
 #include "common.h"
 #include "cppcheck.h"
 #include "erroritem.h"
+#include "errorlogger.h"
+#include "errortypes.h"
+#include "settings.h"
+#include "standards.h"
 #include "threadresult.h"
+
+#include <cstddef>
+#include <functional>
+#include <list>
+#include <map>
+#include <ostream>
+#include <set>
+#include <string>
+#include <vector>
 
 #include <QDebug>
 #include <QDir>
@@ -187,22 +201,10 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
             if (!fileSettings->standard.empty())
                 args << ("-std=" + QString::fromStdString(fileSettings->standard));
             else {
-                switch (mCppcheck.settings().standards.cpp) {
-                case Standards::CPP03:
-                    args << "-std=c++03";
-                    break;
-                case Standards::CPP11:
-                    args << "-std=c++11";
-                    break;
-                case Standards::CPP14:
-                    args << "-std=c++14";
-                    break;
-                case Standards::CPP17:
-                    args << "-std=c++17";
-                    break;
-                case Standards::CPP20:
-                    args << "-std=c++20";
-                    break;
+                // TODO: pass C or C++ standard based on file type
+                const std::string std = mCppcheck.settings().standards.getCPP();
+                if (!std.empty()) {
+                    args << ("-std=" + QString::fromStdString(std));
                 }
             }
 
@@ -219,7 +221,11 @@ void CheckThread::runAddonsAndTools(const ImportProject::FileSettings *fileSetti
                 process.start(clangCmd(),args2);
                 process.waitForFinished();
                 const QByteArray &ba = process.readAllStandardOutput();
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+                const quint16 chksum = qChecksum(QByteArrayView(ba));
+#else
                 const quint16 chksum = qChecksum(ba.data(), ba.length());
+#endif
 
                 QFile f1(analyzerInfoFile + '.' + addon + "-E");
                 if (f1.open(QIODevice::ReadOnly | QIODevice::Text)) {

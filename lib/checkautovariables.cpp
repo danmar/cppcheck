@@ -30,7 +30,6 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <algorithm>
 #include <list>
 #include <unordered_set>
 #include <utility>

@@ -187,6 +187,7 @@ private:
         TEST_CASE(array_index_60); // #10617, #9824
         TEST_CASE(array_index_61); // #10621
         TEST_CASE(array_index_62); // #7684
+        TEST_CASE(array_index_63); // #10979
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1782,6 +1783,18 @@ private:
                       errout.str());
     }
 
+    void array_index_63()
+    {
+        check("int b[4];\n" // #10979
+              "void f(int i) {\n"
+              "    if (i >= 0 && i < sizeof(b) / sizeof(*(b)))\n"
+              "        b[i] = 0;\n"
+              "    if (i >= 0 && i < sizeof(b) / sizeof((b)[0]))\n"
+              "        b[i] = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void array_index_multidim() {
         check("void f()\n"
               "{\n"
@@ -3163,6 +3176,22 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(int a[10]) {\n" // #10069
+              "    int i = 0;\n"
+              "    for (i = 0; i < 10; i++)\n"
+              "        a[i] = i * 2;\n"
+              "}\n"
+              "void g() {\n"
+              "    int b[5];\n"
+              "    f(b);\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:8:warning:Buffer 'b' is too small, the function 'f' expects a bigger buffer in 1st argument\n"
+                      "test.cpp:8:note:Function 'f' is called\n"
+                      "test.cpp:1:note:Declaration of 1st function argument.\n"
+                      "test.cpp:7:note:Passing buffer 'b' to function that is declared here\n"
+                      "test.cpp:8:note:Buffer 'b' is too small, the function 'f' expects a bigger buffer in 1st argument\n",
+                      errout.str());
     }
 
     void possible_buffer_overrun_1() { // #3035

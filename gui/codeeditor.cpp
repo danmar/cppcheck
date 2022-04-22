@@ -23,6 +23,8 @@
 #include <QPainter>
 #include <QShortcut>
 
+class QTextDocument;
+
 
 Highlighter::Highlighter(QTextDocument *parent,
                          CodeEditorStyle *widgetStyle) :
@@ -259,8 +261,13 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setObjectName("CodeEditor");
     setStyleSheet(generateStyleString());
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
+    QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
+#else
     QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
     QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
+#endif
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));

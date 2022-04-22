@@ -25,11 +25,15 @@
 
 #include "ui_librarydialog.h"
 
+#include <string>
+
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QRegularExpression>
 #include <QTextStream>
+
+class QWidget;
 
 // TODO: get/compare functions from header
 

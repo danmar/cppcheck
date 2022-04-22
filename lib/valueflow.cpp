@@ -115,7 +115,6 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <stack>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -374,7 +373,7 @@ static const Token *getCastTypeStartToken(const Token *parent)
 // does the operation cause a loss of information?
 static bool isNonInvertibleOperation(const Token* tok)
 {
-    return tok->isComparisonOp() || Token::Match(tok, "%|/|&|%or%|<<|>>|%oror%|&&");
+    return !Token::Match(tok, "+|-");
 }
 
 static bool isComputableValue(const Token* parent, const ValueFlow::Value& value)
@@ -1092,14 +1091,14 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         } else if (Token::Match(tok, "sizeof ( %var% ) / sizeof (") && tok->next()->astParent() == tok->tokAt(4)) {
             // Get number of elements in array
             const Token *sz1 = tok->tokAt(2);
-            const Token *sz2 = tok->tokAt(7);
+            const Token *sz2 = tok->tokAt(6); // left parenthesis
             const nonneg int varid1 = sz1->varId();
             if (varid1 &&
                 sz1->variable() &&
                 sz1->variable()->isArray() &&
                 !sz1->variable()->dimensions().empty() &&
                 sz1->variable()->dimensionKnown(0) &&
-                (Token::Match(sz2, "* %varid% )", varid1) || Token::Match(sz2, "%varid% [ 0 ] )", varid1))) {
+                Token::Match(sz2->astOperand2(), "*|[") && Token::Match(sz2->astOperand2()->astOperand1(), "%varid%", varid1)) {
                 ValueFlow::Value value(sz1->variable()->dimension(0));
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
                     value.setKnown();
@@ -2287,6 +2286,7 @@ struct ValueFlowAnalyzer : Analyzer {
             return v.isSymbolicValue() && currValue->equalValue(v);
         }))
             return false;
+        const bool isPoint = currValue->bound == ValueFlow::Value::Bound::Point && currValue->isIntValue();
         const bool exact = !currValue->isIntValue() || currValue->isImpossible();
         for (const ValueFlow::Value& v : tok->values()) {
             if (!v.isSymbolicValue())
@@ -2296,7 +2296,7 @@ struct ValueFlowAnalyzer : Analyzer {
             const bool toImpossible = v.isImpossible() && currValue->isKnown();
             if (!v.isKnown() && !toImpossible)
                 continue;
-            if (exact && v.intvalue != 0)
+            if (exact && v.intvalue != 0 && !isPoint)
                 continue;
             std::vector<MathLib::bigint> r;
             ValueFlow::Value::Bound bound = currValue->bound;
@@ -3441,13 +3441,11 @@ bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
     const Token* parent = nullptr;
     const ValueType* vt = tok->valueType();
     std::vector<ValueType> vtParents = getParentValueTypes(tok, settings, &parent);
-    if (vt) {
-        for (const ValueType& vtParent : vtParents) {
-            if (isLifetimeBorrowed(vt, &vtParent))
-                return true;
-            if (isLifetimeOwned(vt, &vtParent))
-                return false;
-        }
+    for (const ValueType& vtParent : vtParents) {
+        if (isLifetimeBorrowed(vt, &vtParent))
+            return true;
+        if (isLifetimeOwned(vt, &vtParent))
+            return false;
     }
     if (parent) {
         if (isDifferentType(tok, parent))
@@ -3840,6 +3838,92 @@ private:
     }
 };
 
+static void valueFlowLifetimeConstructor(Token* tok,
+                                         const Function* constructor,
+                                         const std::string& name,
+                                         std::vector<const Token*> args,
+                                         TokenList* tokenlist,
+                                         ErrorLogger* errorLogger,
+                                         const Settings* settings)
+{
+    if (!constructor)
+        return;
+    std::unordered_map<const Token*, const Variable*> argToParam;
+    for (std::size_t i = 0; i < args.size(); i++)
+        argToParam[args[i]] = constructor->getArgumentVar(i);
+    if (const Token* initList = constructor->constructorMemberInitialization()) {
+        std::unordered_map<const Variable*, LifetimeCapture> paramCapture;
+        for (const Token* tok2 : astFlatten(initList->astOperand2(), ",")) {
+            if (!Token::simpleMatch(tok2, "("))
+                continue;
+            if (!tok2->astOperand1())
+                continue;
+            if (!tok2->astOperand2())
+                continue;
+            const Variable* var = tok2->astOperand1()->variable();
+            const Token* expr = tok2->astOperand2();
+            if (!var)
+                continue;
+            const Variable* argvar = getLifetimeVariable(expr);
+            if (var->isReference() || var->isRValueReference()) {
+                if (argvar && argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
+                    paramCapture[argvar] = LifetimeCapture::ByReference;
+                }
+            } else {
+                bool found = false;
+                for (const ValueFlow::Value& v : expr->values()) {
+                    if (!v.isLifetimeValue())
+                        continue;
+                    if (v.path > 0)
+                        continue;
+                    if (!v.tokvalue)
+                        continue;
+                    const Variable* lifeVar = v.tokvalue->variable();
+                    if (!lifeVar)
+                        continue;
+                    LifetimeCapture c = LifetimeCapture::Undefined;
+                    if (!v.isArgumentLifetimeValue() && (lifeVar->isReference() || lifeVar->isRValueReference()))
+                        c = LifetimeCapture::ByReference;
+                    else if (v.isArgumentLifetimeValue())
+                        c = LifetimeCapture::ByValue;
+                    if (c != LifetimeCapture::Undefined) {
+                        paramCapture[lifeVar] = c;
+                        found = true;
+                    }
+                }
+                if (!found && argvar && argvar->isArgument())
+                    paramCapture[argvar] = LifetimeCapture::ByValue;
+            }
+        }
+        // TODO: Use SubExpressionAnalyzer for members
+        LifetimeStore::forEach(args,
+                               "Passed to constructor of '" + name + "'.",
+                               ValueFlow::Value::LifetimeKind::SubObject,
+                               [&](const LifetimeStore& ls) {
+            const Variable* paramVar = argToParam.at(ls.argtok);
+            if (paramCapture.count(paramVar) == 0)
+                return;
+            LifetimeCapture c = paramCapture.at(paramVar);
+            if (c == LifetimeCapture::ByReference)
+                ls.byRef(tok, tokenlist, errorLogger, settings);
+            else
+                ls.byVal(tok, tokenlist, errorLogger, settings);
+        });
+    } else {
+        LifetimeStore::forEach(args,
+                               "Passed to constructor of '" + name + "'.",
+                               ValueFlow::Value::LifetimeKind::SubObject,
+                               [&](LifetimeStore& ls) {
+            ls.inconclusive = true;
+            const Variable* var = argToParam.at(ls.argtok);
+            if (var && !var->isConst() && var->isReference())
+                ls.byRef(tok, tokenlist, errorLogger, settings);
+            else
+                ls.byVal(tok, tokenlist, errorLogger, settings);
+        });
+    }
+}
+
 static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLogger *errorLogger, const Settings *settings)
 {
     if (!Token::Match(tok, "%name% ("))
@@ -3898,6 +3982,10 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
         }
     } else if (tok->function()) {
         const Function *f = tok->function();
+        if (f->isConstructor()) {
+            valueFlowLifetimeConstructor(tok->next(), f, tok->str(), getArguments(tok), tokenlist, errorLogger, settings);
+            return;
+        }
         if (Function::returnsReference(f))
             return;
         std::vector<const Token*> returns = Function::findReturns(f);
@@ -4054,82 +4142,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
             });
         } else {
             const Function* constructor = findConstructor(scope, tok, args);
-            if (!constructor)
-                return;
-            std::unordered_map<const Token*, const Variable*> argToParam;
-            for (std::size_t i = 0; i < args.size(); i++)
-                argToParam[args[i]] = constructor->getArgumentVar(i);
-            if (const Token* initList = constructor->constructorMemberInitialization()) {
-                std::unordered_map<const Variable*, LifetimeCapture> paramCapture;
-                for (const Token* tok2 : astFlatten(initList->astOperand2(), ",")) {
-                    if (!Token::simpleMatch(tok2, "("))
-                        continue;
-                    if (!tok2->astOperand1())
-                        continue;
-                    if (!tok2->astOperand2())
-                        continue;
-                    const Variable* var = tok2->astOperand1()->variable();
-                    const Token* expr = tok2->astOperand2();
-                    if (!var)
-                        continue;
-                    const Variable* argvar = getLifetimeVariable(expr);
-                    if (var->isReference() || var->isRValueReference()) {
-                        if (argvar && argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
-                            paramCapture[argvar] = LifetimeCapture::ByReference;
-                        }
-                    } else {
-                        bool found = false;
-                        for (const ValueFlow::Value& v : expr->values()) {
-                            if (!v.isLifetimeValue())
-                                continue;
-                            if (v.path > 0)
-                                continue;
-                            if (!v.tokvalue)
-                                continue;
-                            const Variable* lifeVar = v.tokvalue->variable();
-                            if (!lifeVar)
-                                continue;
-                            LifetimeCapture c = LifetimeCapture::Undefined;
-                            if (!v.isArgumentLifetimeValue() && (lifeVar->isReference() || lifeVar->isRValueReference()))
-                                c = LifetimeCapture::ByReference;
-                            else if (v.isArgumentLifetimeValue())
-                                c = LifetimeCapture::ByValue;
-                            if (c != LifetimeCapture::Undefined) {
-                                paramCapture[lifeVar] = c;
-                                found = true;
-                            }
-                        }
-                        if (!found && argvar && argvar->isArgument())
-                            paramCapture[argvar] = LifetimeCapture::ByValue;
-                    }
-                }
-                // TODO: Use SubExpressionAnalyzer for members
-                LifetimeStore::forEach(args,
-                                       "Passed to constructor of '" + t->name() + "'.",
-                                       ValueFlow::Value::LifetimeKind::SubObject,
-                                       [&](const LifetimeStore& ls) {
-                    const Variable* paramVar = argToParam.at(ls.argtok);
-                    if (paramCapture.count(paramVar) == 0)
-                        return;
-                    LifetimeCapture c = paramCapture.at(paramVar);
-                    if (c == LifetimeCapture::ByReference)
-                        ls.byRef(tok, tokenlist, errorLogger, settings);
-                    else
-                        ls.byVal(tok, tokenlist, errorLogger, settings);
-                });
-            } else {
-                LifetimeStore::forEach(args,
-                                       "Passed to constructor of '" + t->name() + "'.",
-                                       ValueFlow::Value::LifetimeKind::SubObject,
-                                       [&](LifetimeStore& ls) {
-                    ls.inconclusive = true;
-                    const Variable* var = argToParam.at(ls.argtok);
-                    if (var && !var->isConst() && var->isReference())
-                        ls.byRef(tok, tokenlist, errorLogger, settings);
-                    else
-                        ls.byVal(tok, tokenlist, errorLogger, settings);
-                });
-            }
+            valueFlowLifetimeConstructor(tok, constructor, t->name(), args, tokenlist, errorLogger, settings);
         }
     }
 }
@@ -7733,7 +7746,7 @@ static void valueFlowContainerSize(TokenList* tokenlist,
             if (size < 0)
                 continue;
         }
-        if (!staticSize && !var->isConst() && nonLocal)
+        if (!staticSize && nonLocal)
             continue;
         if (var->nameToken()->hasKnownValue(ValueFlow::Value::ValueType::CONTAINER_SIZE))
             continue;

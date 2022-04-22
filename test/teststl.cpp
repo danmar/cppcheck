@@ -824,6 +824,26 @@ private:
               "}\n");
         ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
                       errout.str());
+
+        checkNormal("struct A {\n"
+                    "    const std::vector<int>& v;\n"
+                    "    A(const std::vector<int>& x) : v(x)\n"
+                    "    {}\n"
+                    "    int f() const {\n"
+                    "        return v[0];\n"
+                    "    }\n"
+                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("struct A {\n"
+                    "    static const std::vector<int> v;\n"
+                    "    int f() const {\n"
+                    "        return v[0];\n"
+                    "    }\n"
+                    "};\n"
+                    "const std::vector<int> A::v = {1, 2};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void outOfBoundsSymbolic()
@@ -3961,6 +3981,21 @@ private:
               "    std::string m;\n"
               "};\n", /*inconclusive*/ true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
+
+        check("struct S {\n" // #10493
+              "    void f(const char** pp);\n"
+              "    std::string s;\n"
+              "};\n"
+              "void S::f(const char** pp) {\n"
+              "    try {\n"
+              "        *pp = member.c_str();\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        s = \"xyz\";\n"
+              "        *pp = member.c_str();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {

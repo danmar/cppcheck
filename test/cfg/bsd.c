@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 #include <sys/time.h>
+#include <sys/uio.h>
 
 // #9323, #9331
 void verify_timercmp(struct timeval t)
@@ -20,6 +21,34 @@ void verify_timercmp(struct timeval t)
     (void)timercmp(&t, &t, !=);
     (void)timercmp(&t, &t, >=);
     (void)timercmp(&t, &t, >);
+}
+
+ssize_t nullPointer_readv(int fd, const struct iovec *iov, int iovcnt)
+{
+    // cppcheck-suppress nullPointer
+    (void)readv(fd,NULL,iovcnt);
+    return readv(fd,iov,iovcnt);
+}
+
+ssize_t nullPointer_writev(int fd, const struct iovec *iov, int iovcnt)
+{
+    // cppcheck-suppress nullPointer
+    (void)writev(fd,NULL,iovcnt);
+    return writev(fd,iov,iovcnt);
+}
+
+ssize_t nullPointer_preadv(int fd, const struct iovec *iov, int iovcnt, off_t offset)
+{
+    // cppcheck-suppress nullPointer
+    (void)preadv(fd,NULL,iovcnt,offset);
+    return preadv(fd,iov,iovcnt,offset);
+}
+
+ssize_t nullPointer_pwritev(int fd, const struct iovec *iov, int iovcnt, off_t offset)
+{
+    // cppcheck-suppress nullPointer
+    (void)pwritev(fd,NULL,iovcnt,offset);
+    return pwritev(fd,iov,iovcnt,offset);
 }
 
 // False negative: #9346

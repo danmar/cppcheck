@@ -23,10 +23,15 @@
 #include "importproject.h"
 #include "library.h"
 #include "newsuppressiondialog.h"
+#include "platform.h"
 #include "platforms.h"
 #include "projectfile.h"
+#include "settings.h"
 
 #include "ui_projectfile.h"
+
+#include <list>
+#include <string>
 
 #include <QDir>
 #include <QFileDialog>
@@ -34,6 +39,8 @@
 #include <QRegularExpression>
 #include <QRegularExpressionValidator>
 #include <QSettings>
+
+class QModelIndex;
 
 /** Return paths from QListWidget */
 static QStringList getPaths(const QListWidget *list)
@@ -340,9 +347,6 @@ void ProjectFileDialog::loadFromProjectFile(const ProjectFile *projectFile)
     if (!mUI->mAddonMisra->isEnabled()) {
         mUI->mEditMisraFile->setEnabled(false);
         mUI->mBtnBrowseMisraFile->setEnabled(false);
-    } else if (misraFile.isEmpty()) {
-        mUI->mAddonMisra->setEnabled(false);
-        mUI->mAddonMisra->setText(mUI->mAddonMisra->text() + ' ' + tr("(no rule texts file)"));
     }
 
     mUI->mToolClangAnalyzer->setChecked(projectFile->getClangAnalyzer());

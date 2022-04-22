@@ -24,6 +24,9 @@
 #include "errorlogger.h"
 #include "importproject.h"
 
+#include <list>
+#include <string>
+
 #include <QMutex>
 #include <QObject>
 #include <QStringList>

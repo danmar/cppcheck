@@ -2573,6 +2573,12 @@ private:
               "    h = 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::string s) {\n"
+              "    std::string ss = (\":\" + s).c_str();\n"
+              "    return ss;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeContainerView()
@@ -3227,6 +3233,19 @@ private:
               "    return m;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    A(std::vector<std::string> &filenames)\n"
+              "    : files(filenames) {}\n"
+              "    std::vector<std::string> &files;\n"
+              "};\n"
+              "A f() {\n"
+              "    std::vector<std::string> files;\n"
+              "    return A(files);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:8] -> [test.cpp:7] -> [test.cpp:8]: (error) Returning object that points to local variable 'files' that will be invalid when returning.\n",
+            errout.str());
     }
 
     void danglingLifetimeAggegrateConstructor() {
