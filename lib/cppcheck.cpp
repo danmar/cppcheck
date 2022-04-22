@@ -23,7 +23,6 @@
 #include "color.h"
 #include "ctu.h"
 #include "errortypes.h"
-#include "exprengine.h"
 #include "library.h"
 #include "mathlib.h"
 #include "path.h"
@@ -861,6 +860,9 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     fdump << "</dump>" << std::endl;
                 }
 
+                // Need to call this even if the checksum will skip this configuration
+                mSettings.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
+
                 // Skip if we already met the same simplified token list
                 if (mSettings.force || mSettings.maxConfigs > 1) {
                     const unsigned long long checksum = tokenizer.list.calculateChecksum();
@@ -1013,44 +1015,39 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
-    mSettings.library.bugHunting = mSettings.bugHunting;
-    if (mSettings.bugHunting)
-        ExprEngine::runChecks(this, &tokenizer, &mSettings);
-    else {
-        // call all "runChecks" in all registered Check classes
-        for (Check *check : Check::instances()) {
-            if (Settings::terminated())
-                return;
-
-            if (Tokenizer::isMaxTime())
-                return;
-
-            Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
-            check->runChecks(&tokenizer, &mSettings, this);
-        }
-
-        if (mSettings.clang)
-            // TODO: Use CTU for Clang analysis
+    // call all "runChecks" in all registered Check classes
+    for (Check *check : Check::instances()) {
+        if (Settings::terminated())
             return;
 
-        // Analyse the tokens..
+        if (Tokenizer::isMaxTime())
+            return;
 
-        CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
-        if (fi1) {
-            mFileInfo.push_back(fi1);
-            mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
-        }
-
-        for (const Check *check : Check::instances()) {
-            Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
-            if (fi != nullptr) {
-                mFileInfo.push_back(fi);
-                mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
-            }
-        }
-
-        executeRules("normal", tokenizer);
+        Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
+        check->runChecks(&tokenizer, &mSettings, this);
     }
+
+    if (mSettings.clang)
+        // TODO: Use CTU for Clang analysis
+        return;
+
+    // Analyse the tokens..
+
+    CTU::FileInfo *fi1 = CTU::getFileInfo(&tokenizer);
+    if (fi1) {
+        mFileInfo.push_back(fi1);
+        mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
+    }
+
+    for (const Check *check : Check::instances()) {
+        Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
+        if (fi != nullptr) {
+            mFileInfo.push_back(fi);
+            mAnalyzerInformation.setFileInfo(check->name(), fi->toString());
+        }
+    }
+
+    executeRules("normal", tokenizer);
 }
 
 //---------------------------------------------------------------------------
@@ -1569,11 +1566,6 @@ void CppCheck::reportInfo(const ErrorMessage &msg)
 
 void CppCheck::reportStatus(unsigned int /*fileindex*/, unsigned int /*filecount*/, std::size_t /*sizedone*/, std::size_t /*sizetotal*/)
 {}
-
-void CppCheck::bughuntingReport(const std::string &str)
-{
-    mErrorLogger.bughuntingReport(str);
-}
 
 void CppCheck::getErrorMessages()
 {

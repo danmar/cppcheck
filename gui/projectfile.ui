@@ -459,23 +459,6 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_19">
           <item>
-           <widget class="QRadioButton" name="mBtnNormalAnalysis">
-            <property name="text">
-             <string>Normal analysis -- Avoid false positives.</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="mBtnBugHunting">
-            <property name="text">
-             <string>Bug hunting -- Generates mostly noise. The goal is to be &quot;soundy&quot; and detect most bugs.</string>
-            </property>
-           </widget>
-          </item>
-          <item>
            <widget class="QCheckBox" name="mBtnSafeClasses">
             <property name="toolTip">
              <string>If you want to design your classes to be as flexible and robust as possible then the public interface must be very robust. Cppcheck will asumme that arguments can take *any* value.</string>
@@ -794,13 +777,6 @@
            <widget class="QLabel" name="label">
             <property name="text">
              <string>Coding standards</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QCheckBox" name="mAddonCert">
-            <property name="text">
-             <string>CERT</string>
             </property>
            </widget>
           </item>

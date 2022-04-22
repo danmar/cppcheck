@@ -21,6 +21,8 @@
 
 #include "report.h"
 
+class ErrorItem;
+
 /// @addtogroup GUI
 /// @{
 
@@ -32,7 +34,7 @@
 class PrintableReport : public Report {
 public:
     PrintableReport();
-    virtual ~PrintableReport();
+    ~PrintableReport() override;
 
     /**
      * @brief Create the report (file).

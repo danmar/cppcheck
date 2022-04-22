@@ -3,6 +3,7 @@
 # Run this script from your branch with proposed Cppcheck patch to verify your
 # patch against current main. It will compare output of testing a bunch of
 # opensource packages
+# If running on Windows, make sure that git.exe, wget.exe, and MSBuild.exe are available in PATH
 
 import donate_cpu_lib as lib
 import argparse

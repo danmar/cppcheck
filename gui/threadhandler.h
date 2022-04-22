@@ -35,6 +35,7 @@ class CheckThread;
 class QSettings;
 class Settings;
 class ImportProject;
+class ErrorItem;
 
 /// @addtogroup GUI
 /// @{
@@ -48,7 +49,7 @@ class ThreadHandler : public QObject {
     Q_OBJECT
 public:
     explicit ThreadHandler(QObject *parent = nullptr);
-    virtual ~ThreadHandler();
+    ~ThreadHandler() override;
 
     /**
      * @brief Set the number of threads to use
@@ -186,8 +187,6 @@ signals:
     void log(const QString &msg);
 
     void debugError(const ErrorItem &item);
-
-    void bughuntingReportLine(QString line);
 
 public slots:
 

@@ -1025,6 +1025,11 @@ static std::string conditionString(const Token * tok)
     return tok->expressionString();
 }
 
+static bool isIfConstexpr(const Token* tok) {
+    const Token* const top = tok->astTop();
+    return top && Token::simpleMatch(top->astOperand1(), "if") && top->astOperand1()->isConstexpr();
+}
+
 void CheckCondition::checkIncorrectLogicOperator()
 {
     const bool printStyle = mSettings->severity.isEnabled(Severity::style);
@@ -1134,15 +1139,22 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (inconclusive && !printInconclusive)
                 continue;
 
+            const bool isUnknown = (expr1 && expr1->valueType() && expr1->valueType()->type == ValueType::UNKNOWN_TYPE) ||
+                                   (expr2 && expr2->valueType() && expr2->valueType()->type == ValueType::UNKNOWN_TYPE);
+            if (isUnknown)
+                continue;
+
             const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
 
             ErrorPath errorPath;
 
             // Opposite comparisons around || or && => always true or always false
-            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath)) {
-
-                const bool alwaysTrue(tok->str() == "||");
-                incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive, errorPath);
+            const bool isLogicalOr(tok->str() == "||");
+            if (!isfloat && isOppositeCond(isLogicalOr, mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath)) {
+                if (!isIfConstexpr(tok)) {
+                    const bool alwaysTrue(isLogicalOr);
+                    incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive, errorPath);
+                }
                 continue;
             }
 
@@ -1442,6 +1454,12 @@ void CheckCondition::alwaysTrueFalse()
             if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression || returnExpression))
                 continue;
 
+            const Token* expr1 = tok->astOperand1(), *expr2 = tok->astOperand2();
+            const bool isUnknown = (expr1 && expr1->valueType() && expr1->valueType()->type == ValueType::UNKNOWN_TYPE) ||
+                                   (expr2 && expr2->valueType() && expr2->valueType()->type == ValueType::UNKNOWN_TYPE);
+            if (isUnknown)
+                continue;
+
             // Don't warn when there are expanded macros..
             bool isExpandedMacro = false;
             visitAstNodes(tok, [&](const Token * tok2) {
@@ -1481,6 +1499,9 @@ void CheckCondition::alwaysTrueFalse()
                 return ChildrenToVisit::none;
             });
             if (hasSizeof)
+                continue;
+
+            if (isIfConstexpr(tok))
                 continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());

@@ -13,10 +13,41 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include <sys/mman.h>
+#include <wchar.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
+
+void *nullPointer_mempcpy(void *dest, const void *src, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) mempcpy(NULL,src,n);
+    // cppcheck-suppress nullPointer
+    (void) mempcpy(dest,NULL,n);
+    return mempcpy(dest,src,n);
+}
+
+wchar_t *nullPointer_wmempcpy(wchar_t *dest, const wchar_t *src, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) wmempcpy(NULL,src,n);
+    // cppcheck-suppress nullPointer
+    (void) wmempcpy(dest,NULL,n);
+    return wmempcpy(dest,src,n);
+}
+
+int uninitvar_getpw(uid_t uid, char *buf)
+{
+    uid_t someUid;
+    // cppcheck-suppress getpwCalled
+    (void)getpw(uid, buf);
+    // cppcheck-suppress getpwCalled
+    // cppcheck-suppress uninitvar
+    return getpw(someUid, buf);
+}
 
 // #9323, #9331
 void syntaxError_timercmp(struct timeval t)

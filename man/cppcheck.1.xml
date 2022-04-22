@@ -610,7 +610,7 @@ There are false positives with this option. Each result must be carefully invest
           <option>--xml-version=&lt;version&gt;</option>
         </term>
         <listitem>
-          <para>Select the XML file version. Currently versions 1 and 2 are available. The default version is 1.</para>
+          <para>Select the XML file version. Also implies --xml. Currently only version 2 is available. The default version is 2.</para>
         </listitem>
       </varlistentry>
     </variablelist>

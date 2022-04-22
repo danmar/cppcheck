@@ -26,14 +26,16 @@
 class CodeEditor;
 class SelectColorButton;
 class SelectFontWeightCombo;
+class QObject;
 class QPushButton;
+class QWidget;
 
 class StyleEditDialog : public QDialog {
     Q_OBJECT
 public:
     explicit StyleEditDialog(const CodeEditorStyle& newStyle,
                              QWidget *parent = nullptr);
-    virtual ~StyleEditDialog() {}
+    ~StyleEditDialog() override {}
 
     CodeEditorStyle getStyle();
 

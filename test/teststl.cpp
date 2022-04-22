@@ -719,6 +719,131 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int> &v) {\n"
+              "    return !v.empty() ? 42 : v.back();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "test.cpp:2:warning:Either the condition 'v.empty()' is redundant or expression 'v.back()' cause access out of bounds.\n"
+            "test.cpp:2:note:condition 'v.empty()'\n"
+            "test.cpp:2:note:Access out of bounds\n",
+            errout.str());
+
+        check("std::vector<int> g() {\n" // #10779
+              "    std::vector<int> v(10);\n"
+              "    for(int i = 0; i <= 10; ++i)\n"
+              "        v[i] = 42;\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[i]', if 'v' size is 10 and 'i' is 10\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    int s = 2;\n"
+              "    std::vector <int> v(s);\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 2 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    std::vector <int> v({ 1, 2, 3 });\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    char c[] = { 1, 2, 3 };\n"
+              "    std::vector<char> v(c, sizeof(c) + c);\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    char c[] = { 1, 2, 3 };\n"
+              "    std::vector<char> v{ c, c + sizeof(c) };\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    int i[] = { 1, 2, 3 };\n"
+              "    std::vector<int> v(i, i + sizeof(i) / 4);\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                      errout.str());
+
+        check("void f() {\n" // #6615
+              "    int i[] = { 1, 2, 3 };\n"
+              "    std::vector<int> v(i, i + sizeof(i) / sizeof(int));\n"
+              "    v[100] = 1;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("test.cpp:4:error:Out of bounds access in 'v[100]', if 'v' size is 3 and '100' is 100\n",
+                           "",
+                           errout.str());
+
+        check("void f() {\n"
+              "    std::array<int, 10> a = {};\n"
+              "    a[10];\n"
+              "    constexpr std::array<int, 10> b = {};\n"
+              "    b[10];\n"
+              "    const std::array<int, 10> c = {};\n"
+              "    c[10];\n"
+              "    static constexpr std::array<int, 10> d = {};\n"
+              "    d[10];\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'a[10]', if 'a' size is 10 and '10' is 10\n"
+                      "test.cpp:5:error:Out of bounds access in 'b[10]', if 'b' size is 10 and '10' is 10\n"
+                      "test.cpp:7:error:Out of bounds access in 'c[10]', if 'c' size is 10 and '10' is 10\n"
+                      "test.cpp:9:error:Out of bounds access in 'd[10]', if 'd' size is 10 and '10' is 10\n",
+                      errout.str());
+
+        check("struct test_fixed {\n"
+              "    std::array<int, 10> array = {};\n"
+              "    void index(int i) { array[i]; }\n"
+              "};\n"
+              "void f() {\n"
+              "    test_fixed x = test_fixed();\n"
+              "    x.index(10);\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
+                      errout.str());
+
+        check("struct test_constexpr {\n"
+              "    static constexpr std::array<int, 10> array = {};\n"
+              "    void index(int i) { array[i]; }\n"
+              "};\n"
+              "void f() {\n"
+              "    test_constexpr x = test_constexpr();\n"
+              "    x.index(10);\n"
+              "}\n");
+        ASSERT_EQUALS("test.cpp:3:error:Out of bounds access in 'array[i]', if 'array' size is 10 and 'i' is 10\n",
+                      errout.str());
+
+        checkNormal("struct A {\n"
+                    "    const std::vector<int>& v;\n"
+                    "    A(const std::vector<int>& x) : v(x)\n"
+                    "    {}\n"
+                    "    int f() const {\n"
+                    "        return v[0];\n"
+                    "    }\n"
+                    "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkNormal("struct A {\n"
+                    "    static const std::vector<int> v;\n"
+                    "    int f() const {\n"
+                    "        return v[0];\n"
+                    "    }\n"
+                    "};\n"
+                    "const std::vector<int> A::v = {1, 2};\n");
+        ASSERT_EQUALS("", errout.str());
+
     }
 
     void outOfBoundsSymbolic()
@@ -799,6 +924,22 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> vec;\n"
+              "    std::vector<int>::iterator it = vec.begin();\n"
+              "    *it = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Out of bounds access in expression 'it' because 'vec' is empty.\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    std::vector<int> vec;\n"
+              "    auto it = vec.begin();\n"
+              "    *it = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Out of bounds access in expression 'it' because 'vec' is empty.\n",
+                      errout.str());
     }
 
     void iterator1() {
@@ -879,7 +1020,9 @@ private:
               "    std::list<int>::iterator it = l1.begin();\n"
               "    l2.insert(it, 0);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Same iterator is used with different containers 'l1' and 'l2'.\n"
+                      "[test.cpp:6]: (error) Iterator 'it' from different container 'l2' are used together.\n",
+                      errout.str());
 
         check("void foo() {\n" // #5803
               "    std::list<int> l1;\n"
@@ -1311,10 +1454,8 @@ private:
     }
 
     void iterator18() {
-        check("void foo()\n"
+        check("void foo(std::list<int> l1, std::list<int> l2)\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2;\n"
               "    std::list<int>::iterator it1 = l1.begin();\n"
               "    std::list<int>::iterator it2 = l1.end();\n"
               "    while (++it1 != --it2)\n"
@@ -1323,10 +1464,8 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo()\n"
+        check("void foo(std::list<int> l1, std::list<int> l2)\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2;\n"
               "    std::list<int>::iterator it1 = l1.begin();\n"
               "    std::list<int>::iterator it2 = l1.end();\n"
               "    while (it1++ != --it2)\n"
@@ -1335,17 +1474,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        check("void foo()\n"
+        check("void foo(std::list<int> l1, std::list<int> l2)\n"
               "{\n"
-              "    std::list<int> l1;\n"
-              "    std::list<int> l2;\n"
               "    std::list<int>::iterator it1 = l1.begin();\n"
               "    std::list<int>::iterator it2 = l1.end();\n"
               "    if (--it2 > it1++)\n"
               "    {\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:7]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
+        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (error) Dangerous comparison using operator< on iterator.\n", errout.str());
     }
 
     void iterator19() {
@@ -3836,6 +3973,29 @@ private:
               "    f(p.c_str());\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" //#9161
+              "    const char* f() const noexcept {\n"
+              "        return (\"\" + m).c_str();\n"
+              "    }\n"
+              "    std::string m;\n"
+              "};\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Dangerous usage of c_str(). The value returned by c_str() is invalid after this call.\n", errout.str());
+
+        check("struct S {\n" // #10493
+              "    void f(const char** pp);\n"
+              "    std::string s;\n"
+              "};\n"
+              "void S::f(const char** pp) {\n"
+              "    try {\n"
+              "        *pp = member.c_str();\n"
+              "    }\n"
+              "    catch (...) {\n"
+              "        s = \"xyz\";\n"
+              "        *pp = member.c_str();\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {
@@ -5083,6 +5243,37 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:5]: (error) Using pointer to local variable 'v' that may be invalid.\n",
             errout.str());
+
+        check("struct A {\n"
+              "    const std::vector<int>* i;\n"
+              "    A(const std::vector<int>& v)\n"
+              "    : i(&v)\n"
+              "    {}\n"
+              "};\n"
+              "int f() {\n"
+              "    std::vector<int> v;\n"
+              "    A a{v};\n"
+              "    v.push_back(1);\n"
+              "    return a.i->front();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    const std::vector<int>* i;\n"
+              "    A(const std::vector<int>& v)\n"
+              "    : i(&v)\n"
+              "    {}\n"
+              "};\n"
+              "void g(const std::vector<int>& v);\n"
+              "void f() {\n"
+              "    std::vector<int> v;\n"
+              "    A a{v};\n"
+              "    v.push_back(1);\n"
+              "    g(a);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {

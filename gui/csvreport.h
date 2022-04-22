@@ -24,6 +24,8 @@
 #include <QString>
 #include <QTextStream>
 
+class ErrorItem;
+
 /// @addtogroup GUI
 /// @{
 
@@ -37,7 +39,7 @@
 class CsvReport : public Report {
 public:
     explicit CsvReport(const QString &filename);
-    virtual ~CsvReport();
+    ~CsvReport() override;
 
     /**
      * @brief Create the report (file).

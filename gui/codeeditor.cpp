@@ -23,6 +23,8 @@
 #include <QPainter>
 #include <QShortcut>
 
+class QTextDocument;
+
 
 Highlighter::Highlighter(QTextDocument *parent,
                          CodeEditorStyle *widgetStyle) :
@@ -112,7 +114,7 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "volatile"
                     << "wchar_­t"
                     << "while";
-    foreach (const QString &pattern, keywordPatterns) {
+    for (const QString &pattern : keywordPatterns) {
         rule.pattern = QRegularExpression("\\b" + pattern + "\\b");
         rule.format = mKeywordFormat;
         rule.ruleRole = RuleRole::Keyword;
@@ -156,7 +158,7 @@ Highlighter::Highlighter(QTextDocument *parent,
 void Highlighter::setSymbols(const QStringList &symbols)
 {
     mHighlightingRulesWithSymbols = mHighlightingRules;
-    foreach (const QString &sym, symbols) {
+    for (const QString &sym : symbols) {
         HighlightingRule rule;
         rule.pattern = QRegularExpression("\\b" + sym + "\\b");
         rule.format = mSymbolFormat;
@@ -191,7 +193,7 @@ void Highlighter::setStyle(const CodeEditorStyle &newStyle)
 
 void Highlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, mHighlightingRulesWithSymbols) {
+    for (const HighlightingRule &rule : mHighlightingRulesWithSymbols) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
@@ -259,8 +261,13 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setObjectName("CodeEditor");
     setStyleSheet(generateStyleString());
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
+    QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
+#else
     QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
     QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
+#endif
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));

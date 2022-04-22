@@ -23,6 +23,8 @@
 
 #include <QDialog>
 
+class QObject;
+class QWidget;
 namespace Ui {
     class LibraryEditArgDialog;
 }
@@ -33,7 +35,7 @@ class LibraryEditArgDialog : public QDialog {
 public:
     LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &arg);
     LibraryEditArgDialog(const LibraryEditArgDialog &) = delete;
-    ~LibraryEditArgDialog();
+    ~LibraryEditArgDialog() override;
     LibraryEditArgDialog &operator=(const LibraryEditArgDialog &) = delete;
 
     CppcheckLibraryData::Function::Arg getArg() const;

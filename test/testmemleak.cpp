@@ -2442,6 +2442,77 @@ private:
               "  unary_right_comma (a);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    new int[10];\n"
+              "    new int[10][5];\n"
+              "    new int[10]();\n"
+              "    new int[10]{};\n"
+              "    new int[] { 1, 2, 3 };\n"
+              "    new std::string;\n"
+              "    new int;\n"
+              "    new int();\n"
+              "    new int(1);\n"
+              "    new int{};\n"
+              "    new int{ 1 };\n"
+              "    new uint8_t[4];\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:3]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:4]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:5]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:6]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:7]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:8]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:9]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:10]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:11]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:12]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:13]: (error) Return value of allocation function 'new' is not stored.\n",
+                      errout.str());
+
+        check("void f(int* p) {\n"
+              "    new auto('c');\n"
+              "    new(p) int;\n"
+              "}");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n"
+                           "[test.cpp:3]: (error) Return value of allocation function 'new' is not stored.\n",
+                           "",
+                           errout.str());
+
+        check("void g(int* p) {\n"
+              "    new QWidget;\n"
+              "    new QWidget();\n"
+              "    new QWidget{ this };\n"
+              "    h(new int[10], 1);\n"
+              "    h(new int[10][5], 1);\n"
+              "    h(new int[10](), 1);\n"
+              "    h(new int[10]{}, 1);\n"
+              "    h(new int[] { 1, 2, 3 }, 1);\n"
+              "    h(new auto('c'), 1);\n"
+              "    h(new std::string, 1);\n"
+              "    h(new int, 1);\n"
+              "    h(new int{}, 1);\n"
+              "    h(new int(), 1);\n"
+              "    h(new int{ 1 }, 1);\n"
+              "    h(new int(1), 1);\n"
+              "    h(new(p) int, 1);\n"
+              "    h(new QWidget, 1);\n"
+              "    C{ new int[10], 1 };\n"
+              "    C{ new int[10](), 1 };\n"
+              "    C{ new int[10]{}, 1 };\n"
+              "    C{ new int[] { 1, 2, 3 }, 1 };\n"
+              "    C{ new auto('c'), 1 };\n"
+              "    C{ new std::string, 1 };\n"
+              "    C{ new int, 1 };\n"
+              "    C{ new int{}, 1 };\n"
+              "    C{ new int(), 1 };\n"
+              "    C{ new int{ 1 }, 1 };\n"
+              "    C{ new int(1), 1 };\n"
+              "    C{ new(p) int, 1 };\n"
+              "    C{ new QWidget, 1 };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerFunctionParam() {

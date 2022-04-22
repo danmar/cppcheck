@@ -63,7 +63,7 @@ public:
     void parseTokens(const Tokenizer &tokenizer, const char FileName[], const Settings *settings);
 
     // Return true if an error is reported.
-    bool check(ErrorLogger * const errorLogger, const Settings& settings);
+    bool check(ErrorLogger * const errorLogger, const Settings& settings) const;
 
     /** @brief Parse current TU and extract file info */
     Check::FileInfo *getFileInfo(const Tokenizer *tokenizer, const Settings *settings) const override;

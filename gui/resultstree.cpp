@@ -26,8 +26,12 @@
 #include "projectfile.h"
 #include "report.h"
 #include "showtypes.h"
+#include "suppressions.h"
 #include "threadhandler.h"
 #include "xmlreportv2.h"
+
+#include <string>
+#include <utility>
 
 #include <QAction>
 #include <QApplication>
@@ -645,15 +649,6 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 menu.addSeparator();
             }
 
-            const bool bughunting = !multipleSelection && mContextItem->data().toMap().value("id").toString().startsWith("bughunting");
-
-            if (bughunting && !getFunction(mContextItem).isEmpty()) {
-                QAction *editContract = new QAction(tr("Edit contract.."), &menu);
-                connect(editContract, &QAction::triggered, this, &ResultsTree::editContract);
-                menu.addAction(editContract);
-                menu.addSeparator();
-            }
-
             //Create an action for the application
             QAction *recheckSelectedFiles   = new QAction(tr("Recheck"), &menu);
             QAction *copy                   = new QAction(tr("Copy"), &menu);
@@ -677,15 +672,10 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(hide);
             menu.addAction(hideallid);
 
-            if (!bughunting) {
-                QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
-                menu.addAction(suppress);
-                connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
-            } else {
-                QAction *suppress = new QAction(tr("Suppress"), &menu);
-                menu.addAction(suppress);
-                connect(suppress, &QAction::triggered, this, &ResultsTree::suppressHash);
-            }
+            QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
+            menu.addAction(suppress);
+            connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
+
             menu.addSeparator();
             menu.addAction(opencontainingfolder);
 
@@ -707,7 +697,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                     });
                 }
 
-                foreach (const QString tagstr, currentProject->getTags()) {
+                for (const QString& tagstr : currentProject->getTags()) {
                     QAction *action = new QAction(tagstr, tagMenu);
                     tagMenu->addAction(action);
                     connect(action, &QAction::triggered, [=]() {
@@ -894,9 +884,8 @@ void ResultsTree::copy()
     if (!mSelectionModel)
         return;
 
-    QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QString text;
-    foreach (QModelIndex index, selectedRows) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent()) {
             text += item->text() + '\n';
@@ -927,8 +916,7 @@ void ResultsTree::hideResult()
     if (!mSelectionModel)
         return;
 
-    QModelIndexList selectedRows = mSelectionModel->selectedRows();
-    foreach (QModelIndex index, selectedRows) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         //Set the "hide" flag for this item
         QVariantMap data = item->data().toMap();
@@ -945,9 +933,8 @@ void ResultsTree::recheckSelectedFiles()
     if (!mSelectionModel)
         return;
 
-    QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QStringList selectedItems;
-    foreach (QModelIndex index, selectedRows) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         while (item->parent())
             item = item->parent();
@@ -1030,7 +1017,7 @@ void ResultsTree::suppressSelectedIds()
 
     QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QSet<QString> selectedIds;
-    foreach (QModelIndex index, selectedRows) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent())
             continue;
@@ -1069,7 +1056,7 @@ void ResultsTree::suppressHash()
 
     // Extract selected warnings
     QSet<QStandardItem *> selectedWarnings;
-    foreach (QModelIndex index, mSelectionModel->selectedRows()) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent())
             continue;
@@ -1110,18 +1097,13 @@ void ResultsTree::openContainingFolder()
     }
 }
 
-void ResultsTree::editContract()
-{
-    emit editFunctionContract(getFunction(mContextItem));
-}
-
 void ResultsTree::tagSelectedItems(const QString &tag)
 {
     if (!mSelectionModel)
         return;
     bool isTagged = false;
     ProjectFile *currentProject = ProjectFile::getActiveProject();
-    foreach (QModelIndex index, mSelectionModel->selectedRows()) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         QVariantMap data = item->data().toMap();
         if (data.contains("tags")) {
@@ -1263,7 +1245,7 @@ void ResultsTree::updateFromOldReport(const QString &filename)
                 error->setData(data);
                 fileItem->child(j, COLUMN_SINCE_DATE)->setText(oldErrors[oldErrorIndex].sinceDate);
             } else if (oldErrorIndex < 0 || data[SINCEDATE].toString().isEmpty()) {
-                const QString sinceDate = QDate::currentDate().toString(Qt::SystemLocaleShortDate);
+                const QString sinceDate = QLocale::system().dateFormat(QLocale::ShortFormat);
                 data[SINCEDATE] = sinceDate;
                 error->setData(data);
                 fileItem->child(j, COLUMN_SINCE_DATE)->setText(sinceDate);

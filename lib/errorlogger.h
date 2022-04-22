@@ -144,16 +144,14 @@ public:
                  const std::string& id,
                  const std::string& msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty,
-                 bool bugHunting);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage(const ErrorPath &errorPath,
                  const TokenList *tokenList,
                  Severity::SeverityType severity,
                  const char id[],
                  const std::string &msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty,
-                 bool bugHunting);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage();
     explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
@@ -282,8 +280,6 @@ public:
     virtual void reportInfo(const ErrorMessage &msg) {
         reportErr(msg);
     }
-
-    virtual void bughuntingReport(const std::string &str) = 0;
 
     /**
      * Report unmatched suppressions

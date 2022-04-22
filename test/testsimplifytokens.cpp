@@ -329,6 +329,7 @@ private:
         TEST_CASE(simplifyKnownVariables60);    // #6829
         TEST_CASE(simplifyKnownVariables61);    // #7805
         TEST_CASE(simplifyKnownVariables62);    // #5666 - p=&str[0]
+        TEST_CASE(simplifyKnownVariables63);    // #10798
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
@@ -344,6 +345,7 @@ private:
         TEST_CASE(simplifyKnownVariablesGlobalVars);
         TEST_CASE(simplifyKnownVariablesReturn);   // 3500 - return
         TEST_CASE(simplifyKnownVariablesPointerAliasFunctionCall); // #7440
+        TEST_CASE(simplifyKnownVariablesNamespace); // #10059
 
         TEST_CASE(simplifyCasts1);
         TEST_CASE(simplifyCasts2);
@@ -4140,7 +4142,7 @@ private:
     void simplifyOperator2() {
         // #6576
         ASSERT_EQUALS("template < class T > class SharedPtr { "
-                      "SharedPtr & operator= ( SharedPtr < Y > const & r ) ; "
+                      "SharedPtr & operator= ( const SharedPtr < Y > & r ) ; "
                       "} ; "
                       "class TClass { "
                       "public: TClass & operator= ( const TClass & rhs ) ; "
@@ -6645,6 +6647,12 @@ private:
                                            "}", /*simplify=*/ true));
     }
 
+    void simplifyKnownVariables63() { // #10798
+        tokenizeAndStringify("typedef void (*a)();\n"
+                             "enum class E { a };\n");
+        ASSERT_EQUALS("", errout.str()); // don't throw
+    }
+
     void simplifyKnownVariablesBailOutAssign1() {
         const char code[] = "int foo() {\n"
                             "    int i; i = 0;\n"
@@ -6872,6 +6880,69 @@ private:
                             "delete [ ] data ;\n"
                             "}";
         ASSERT_EQUALS(exp, tokenizeAndStringify(code, /*simplify=*/ true));
+    }
+
+    void simplifyKnownVariablesNamespace() {
+        { // #10059
+            const char code[] = "namespace N {\n"
+                                "    const int n = 0;\n"
+                                "    namespace M { const int m = 0; }\n"
+                                "}\n"
+                                "using namespace N;\n"
+                                "int i(n);\n"
+                                "int j(M::m);\n"
+                                "using namespace N::M;\n"
+                                "int k(m);\n"
+                                "int l(N::M::m);\n";
+            const char exp[]  = "\n\n##file 0\n"
+                                "1: namespace N {\n"
+                                "2: const int n@1 = 0 ;\n"
+                                "3: namespace M { const int m@2 = 0 ; }\n"
+                                "4: }\n"
+                                "5: using namespace N ;\n"
+                                "6: int i ; i = n@1 ;\n"
+                                "7: int j ( M :: m@2 ) ;\n"
+                                "8: using namespace N :: M ;\n"
+                                "9: int k ; k = m@2 ;\n"
+                                "10: int l ( N :: M :: m@2 ) ;\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
+        }
+        { // #10835
+            const char code[] = "using namespace X;\n"
+                                "namespace N {\n"
+                                "    struct A {\n"
+                                "        static int i;\n"
+                                "        struct B {\n"
+                                "            double x;\n"
+                                "            void f();\n"
+                                "        };\n"
+                                "    };\n"
+                                "}\n"
+                                "namespace N {\n"
+                                "    int A::i = 0;\n"
+                                "    void A::B::f() {\n"
+                                "        x = 0;\n"
+                                "    }\n"
+                                "}\n";
+            const char exp[]  = "\n\n##file 0\n"
+                                "1: using namespace X ;\n"
+                                "2: namespace N {\n"
+                                "3: struct A {\n"
+                                "4: static int i@1 ;\n"
+                                "5: struct B {\n"
+                                "6: double x@2 ;\n"
+                                "7: void f ( ) ;\n"
+                                "8: } ;\n"
+                                "9: } ;\n"
+                                "10: }\n"
+                                "11: namespace N {\n"
+                                "12: int A :: i@1 = 0 ;\n"
+                                "13: void A :: B :: f ( ) {\n"
+                                "14: x@2 = 0 ;\n"
+                                "15: }\n"
+                                "16: }\n";
+            ASSERT_EQUALS(exp, tokenizeDebugListing(code));
+        }
     }
 
     void simplifyKnownVariablesClassMember() {

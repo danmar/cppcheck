@@ -18,6 +18,7 @@
 
 #include "filelister.h"
 
+#include "config.h"
 #include "path.h"
 #include "pathmatch.h"
 #include "utils.h"
@@ -222,8 +223,8 @@ static std::string addFiles2(std::map<std::string, std::size_t> &files,
             std::string new_path;
             new_path.reserve(path.length() + 100);// prealloc some memory to avoid constant new/deletes in loop
 
-            while ((readdir_r(dir, &dir_result_buffer.entry, &dir_result) == 0) && (dir_result != nullptr)) {
 
+            while ((SUPPRESS_DEPRECATED_WARNING(readdir_r(dir, &dir_result_buffer.entry, &dir_result)) == 0) && (dir_result != nullptr)) {
                 if ((std::strcmp(dir_result->d_name, ".") == 0) ||
                     (std::strcmp(dir_result->d_name, "..") == 0))
                     continue;

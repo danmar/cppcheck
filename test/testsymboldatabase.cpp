@@ -26,6 +26,7 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <limits>
@@ -185,6 +186,7 @@ private:
         TEST_CASE(arrayMemberVar1);
         TEST_CASE(arrayMemberVar2);
         TEST_CASE(arrayMemberVar3);
+        TEST_CASE(arrayMemberVar4);
         TEST_CASE(staticMemberVar);
         TEST_CASE(getVariableFromVarIdBoundsCheck);
 
@@ -356,6 +358,9 @@ private:
         TEST_CASE(symboldatabase95); // #10295
         TEST_CASE(symboldatabase96); // #10126
         TEST_CASE(symboldatabase97); // #10598 - final class
+        TEST_CASE(symboldatabase98); // #10451
+        TEST_CASE(symboldatabase99); // #10864
+        TEST_CASE(symboldatabase100); // #10174
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -1430,6 +1435,19 @@ private:
         ASSERT(tok && tok->varId() == 3U); // It's possible to set a varId
     }
 
+    void arrayMemberVar4() {
+        GET_SYMBOL_DB("struct S { unsigned char* s; };\n"
+                      "struct T { S s[38]; };\n"
+                      "void f(T* t) {\n"
+                      "    t->s;\n"
+                      "}\n");
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), ". s");
+        tok = tok ? tok->next() : nullptr;
+        ASSERT(db != nullptr);
+        ASSERT(tok && tok->variable() && Token::simpleMatch(tok->variable()->typeStartToken(), "S s [ 38 ] ;"));
+        ASSERT(tok && tok->varId() == 4U);
+    }
+
     void staticMemberVar() {
         GET_SYMBOL_DB("class Foo {\n"
                       "    static const double d;\n"
@@ -2203,7 +2221,7 @@ private:
             const Scope* f = db->findScopeByName("f");
             ASSERT(f && f->type == Scope::eFunction && f->function);
 
-            ASSERT(f->function->argumentList.size() == 2 && f->function->argumentList.front().index() == 0 && f->function->argumentList.front().name() == "" && f->function->argumentList.back().index() == 1);
+            ASSERT(f->function->argumentList.size() == 2 && f->function->argumentList.front().index() == 0 && f->function->argumentList.front().name().empty() && f->function->argumentList.back().index() == 1);
             ASSERT_EQUALS("", errout.str());
         }
         {
@@ -4831,7 +4849,7 @@ private:
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "foo1");
-        functok = Token::findsimplematch(tokenizer.tokens(), "foo2 ( void ) { }");
+        functok = Token::findsimplematch(tokenizer.tokens(), "foo2 ( ) { }");
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT(functok->function()->name() == "foo2");
@@ -4856,6 +4874,95 @@ private:
         ASSERT(functok);
         ASSERT(functok->function());
         ASSERT_EQUALS(functok->function()->type, Function::Type::eConstructor);
+    }
+
+    void symboldatabase98() { // #10451
+        {
+            GET_SYMBOL_DB("struct A { typedef struct {} B; };\n"
+                          "void f() {\n"
+                          "    auto g = [](A::B b) -> void { A::B b2 = b; };\n"
+                          "};\n");
+            ASSERT(db);
+            ASSERT_EQUALS(5, db->scopeList.size());
+        }
+        {
+            GET_SYMBOL_DB("typedef union {\n"
+                          "    int i;\n"
+                          "} U;\n"
+                          "template <auto U::*>\n"
+                          "void f();\n");
+            ASSERT(db);
+            ASSERT_EQUALS(2, db->scopeList.size());
+        }
+    }
+
+    void symboldatabase99() { // #10864
+        check("void f() { std::map<std::string, int> m; }");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void symboldatabase100() {
+        {
+            GET_SYMBOL_DB("namespace N {\n" // #10174
+                          "    struct S {};\n"
+                          "    struct T { void f(S s); };\n"
+                          "    void T::f(N::S s) {}\n"
+                          "}\n");
+            ASSERT(db);
+            ASSERT_EQUALS(1, db->functionScopes.size());
+            auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+                return s.className == "T";
+            });
+            ASSERT(it != db->scopeList.end());
+            const Function* function = findFunctionByName("f", &*it);
+            ASSERT(function && function->token->str() == "f");
+            ASSERT(function->hasBody());
+        }
+        {
+            GET_SYMBOL_DB("namespace N {\n" // #10198
+                          "    class I {};\n"
+                          "    class A {\n"
+                          "    public:\n"
+                          "        A(I*);\n"
+                          "    };\n"
+                          "}\n"
+                          "using N::I;\n"
+                          "namespace N {\n"
+                          "    A::A(I*) {}\n"
+                          "}\n");
+            ASSERT(db);
+            ASSERT_EQUALS(1, db->functionScopes.size());
+            auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+                return s.className == "A";
+            });
+            ASSERT(it != db->scopeList.end());
+            const Function* function = findFunctionByName("A", &*it);
+            ASSERT(function && function->token->str() == "A");
+            ASSERT(function->hasBody());
+        }
+        {
+            GET_SYMBOL_DB("namespace N {\n" // #10260
+                          "    namespace O {\n"
+                          "        struct B;\n"
+                          "    }\n"
+                          "}\n"
+                          "struct I {\n"
+                          "    using B = N::O::B;\n"
+                          "};\n"
+                          "struct A : I {\n"
+                          "    void f(B*);\n"
+                          "};\n"
+                          "void A::f(N::O::B*) {}\n");
+            ASSERT(db);
+            ASSERT_EQUALS(1, db->functionScopes.size());
+            auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+                return s.className == "A";
+            });
+            ASSERT(it != db->scopeList.end());
+            const Function* function = findFunctionByName("f", &*it);
+            ASSERT(function && function->token->str() == "f");
+            ASSERT(function->hasBody());
+        }
     }
 
     void createSymbolDatabaseFindAllScopes1() {

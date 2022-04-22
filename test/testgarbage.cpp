@@ -658,7 +658,7 @@ private:
     }
 
     void garbageCode43() { // #6703
-        ASSERT_THROW(checkCode("int { }; struct A<void> a = { }"), InternalError);
+        checkCode("int { }; struct A<void> a = { }");
     }
 
     void garbageCode44() { // #6704

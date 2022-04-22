@@ -42,13 +42,12 @@ inline bool isEqual(float x, float y)
 template<class T>
 bool isZero(T x)
 {
-    return isEqual<T>(x, T(0));
+    return isEqual(x, T(0));
 }
 
 template<class R, class T>
 R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
 {
-    // cppcheck-suppress varid0
     auto wrap = [](T z) {
         return R{z};
     };
@@ -112,6 +111,8 @@ R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
         return wrap(x >= y);
     case '<=':
         return wrap(x <= y);
+    case '<=>':
+        return wrap(x - y);
     }
     throw InternalError(nullptr, "Unknown operator: " + s);
 }

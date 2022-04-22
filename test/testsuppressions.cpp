@@ -22,10 +22,12 @@
 #include "settings.h"
 #include "suppressions.h"
 #include "testsuite.h"
+#include "testutils.h"
 #include "threadexecutor.h"
 
 #include <algorithm>
 #include <cstddef>
+#include <cstring>
 #include <functional>
 #include <iosfwd>
 #include <list>
@@ -84,7 +86,7 @@ private:
         ASSERT_EQUALS("", suppressions.parseFile(s2));
     }
 
-    Suppressions::ErrorMessage errorMessage(const std::string &errorId) const {
+    static Suppressions::ErrorMessage errorMessage(const std::string &errorId) {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
         ret.hash = 0;
@@ -93,7 +95,7 @@ private:
         return ret;
     }
 
-    Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &file, int line) const {
+    static Suppressions::ErrorMessage errorMessage(const std::string &errorId, const std::string &file, int line) {
         Suppressions::ErrorMessage ret;
         ret.errorId = errorId;
         ret.setFileName(file);
@@ -216,7 +218,7 @@ private:
         output.str("");
 
         std::map<std::string, std::size_t> files;
-        files["test.cpp"] = 1;
+        files["test.cpp"] = strlen(code);
 
         Settings settings;
         settings.jobs = 1;
@@ -226,8 +228,10 @@ private:
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
         ThreadExecutor executor(files, settings, *this);
+        std::vector<ScopedFile> scopedfiles;
+        scopedfiles.reserve(files.size());
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
-            executor.addFileContent(i->first, code);
+            scopedfiles.emplace_back(i->first, code);
 
         const unsigned int exitCode = executor.check();
 
@@ -484,13 +488,13 @@ private:
         ASSERT_EQUALS(true, s2.isSuppressed(errorMessage("abc", "include/1.h", 142)));
     }
 
-    void suppressionsLine0() {
+    void suppressionsLine0() const {
         Suppressions suppressions;
         suppressions.addSuppressionLine("syntaxError:*:0");
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("syntaxError", "test.cpp", 0)));
     }
 
-    void suppressionsFileComment() {
+    void suppressionsFileComment() const {
         std::istringstream file1("# comment\nabc");
         Suppressions suppressions1;
         suppressions1.parseFile(file1);
@@ -665,7 +669,9 @@ private:
 
     void inlinesuppress_unusedFunction() const { // #4210, #4946 - wrong report of "unmatchedSuppression" for "unusedFunction"
         Suppressions suppressions;
-        suppressions.addSuppression(Suppressions::Suppression("unusedFunction", "test.c", 3));
+        auto suppression = Suppressions::Suppression("unusedFunction", "test.c", 3);
+        suppression.checked = true; // have to do this because fixes for #5704
+        suppressions.addSuppression(suppression);
         ASSERT_EQUALS(true, !suppressions.getUnmatchedLocalSuppressions("test.c", true).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedGlobalSuppressions(true).empty());
         ASSERT_EQUALS(false, !suppressions.getUnmatchedLocalSuppressions("test.c", false).empty());
@@ -746,7 +752,7 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void symbol() {
+    void symbol() const {
         Suppressions::Suppression s;
         s.errorId = "foo";
         s.symbolName = "array*";

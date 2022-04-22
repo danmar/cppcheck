@@ -1209,6 +1209,14 @@ private:
               "  if (x && x != ZERO) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int N) {\n" // #9789
+              "    T a[20] = { 0 };\n"
+              "    for (int i = 0; i < N; ++i) {\n"
+              "        if (0 < a[i] && a[i] < 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incorrectLogicOperator5() { // complex expressions
@@ -2491,6 +2499,14 @@ private:
               "  if (!b && f()) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n"
+              "    if (d != 0) {\n"
+              "        int i = d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void identicalInnerCondition() {
@@ -3422,6 +3438,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #9954
+        check("void f() {\n"
+              "    const size_t a(8 * sizeof(short));\n"
+              "    const size_t b(8 * sizeof(int));\n"
+              "    if constexpr (a == 16 && b == 16) {}\n"
+              "    else if constexpr (a == 16 && b == 32) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #9319
         check("struct S {\n"
               "  int a;\n"
@@ -3935,7 +3960,7 @@ private:
               "    if (logger == nullptr)\n"
               "        logger = Fun;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (style) Condition 'logger==nullptr' is always true\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void Fun();\n"
               "typedef void (*Fn)();\n"
@@ -3961,6 +3986,113 @@ private:
               "    b = true;\n"
               "    return b;\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10702
+        check("struct Object {\n"
+              "  int _count=0;\n"
+              "   void increment() { ++_count;}\n"
+              "   auto get() const { return _count; }\n"
+              "};\n"
+              "struct Modifier {\n"
+              "Object & _object;\n"
+              "  explicit Modifier(Object & object) : _object(object) {}\n"
+              "  void do_something() { _object.increment(); }\n"
+              "};\n"
+              "struct Foo {\n"
+              "  Object _object;\n"
+              "  void foo() {\n"
+              "    Modifier mod(_object);\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "    mod.do_something();\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct Object {\n"
+              "  int _count=0;\n"
+              "   auto get() const;\n"
+              "};\n"
+              "struct Modifier {\n"
+              "Object & _object;\n"
+              "  explicit Modifier(Object & object);\n"
+              "  void do_something();\n"
+              "};\n"
+              "struct Foo {\n"
+              "  Object _object;\n"
+              "  void foo() {\n"
+              "    Modifier mod(_object);\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "    mod.do_something();\n"
+              "    if (_object.get()>0)\n"
+              "      return;\n"
+              "  }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const uint32_t u) {\n"
+              "	const uint32_t v = u < 4;\n"
+              "	if (v) {\n"
+              "		const uint32_t w = v < 2;\n"
+              "		if (w) {}\n"
+              "	}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
+
+        check("void f(double d) {\n" // #10792
+              "    if (d != 0) {\n"
+              "        int i = (int)d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n"
+              "    if (0 != d) {\n"
+              "        int i = (int)d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { double d; }\n"
+              "void f(A a) {\n"
+              "    if (a.d != 0) {\n"
+              "        int i = a.d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if(strlen(\"abc\") == 3) {;}\n"
+              "    if(strlen(\"abc\") == 1) {;}\n"
+              "    if(wcslen(L\"abc\") == 3) {;}\n"
+              "    if(wcslen(L\"abc\") == 1) {;}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'strlen(\"abc\")==3' is always true\n"
+                      "[test.cpp:3]: (style) Condition 'strlen(\"abc\")==1' is always false\n"
+                      "[test.cpp:4]: (style) Condition 'wcslen(L\"abc\")==3' is always true\n"
+                      "[test.cpp:5]: (style) Condition 'wcslen(L\"abc\")==1' is always false\n",
+                      errout.str());
+
+        check("int foo(bool a, bool b) {\n"
+              "  if(!a && b && (!a == !b))\n"
+              "   return 1;\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a==!b' is always false\n", errout.str());
+
+        // #10454
+        check("struct S {\n"
+              "    int f() const { return g() ? 0 : 1; }\n"
+              "    bool g() const { return u == 18446744073709551615ULL; }\n"
+              "    unsigned long long u{};\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -4100,6 +4232,13 @@ private:
               "        return CMD_OK;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int foo(bool a, bool b) {\n"
+              "  if((!a == !b) && !a && b)\n"
+              "   return 1;\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'b' is always false\n", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -4385,6 +4524,22 @@ private:
               "   }\n"
               "   while (0);\n"
               "   if (pool) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10863
+        check("void f(const int A[], int Len) {\n"
+              "  if (Len <= 0)\n"
+              "    return;\n"
+              "  int I = 0;\n"
+              "  while (I < Len) {\n"
+              "    int K = I + 1;\n"
+              "    for (; K < Len; K++) {\n"
+              "      if (A[I] != A[K])\n"
+              "        break;\n"
+              "    } \n"
+              "    I = K;   \n"
+              "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -8,6 +8,8 @@ License: No restrictions, use this as you need.
 
 import argparse
 import json
+import os
+import pathlib
 import sys
 
 from xml.etree import ElementTree
@@ -141,21 +143,11 @@ class ValueType:
     def __init__(self, element):
         self.type = element.get('valueType-type')
         self.sign = element.get('valueType-sign')
-        bits = element.get('valueType-bits')
-        if bits:
-            self.bits = int(bits)
+        self.bits = int(element.get('valueType-bits', 0))
         self.typeScopeId = element.get('valueType-typeScope')
         self.originalTypeName = element.get('valueType-originalTypeName')
-        constness = element.get('valueType-constness')
-        if constness:
-            self.constness = int(constness)
-        else:
-            self.constness = 0
-        pointer = element.get('valueType-pointer')
-        if pointer:
-            self.pointer = int(pointer)
-        else:
-            self.pointer = 0
+        self.constness = int(element.get('valueType-constness', 0))
+        self.pointer = int(element.get('valueType-pointer', 0))
 
     def __repr__(self):
         attrs = ["type", "sign", "bits", "typeScopeId", "originalTypeName",
@@ -210,6 +202,7 @@ class Token:
         isUnsigned         Is this token a unsigned type
         isSigned           Is this token a signed type
         isExpandedMacro    Is this token a expanded macro token
+        isRemovedVoidParameter  Has void parameter been removed?
         isSplittedVarDeclComma  Is this a comma changed to semicolon in a splitted variable declaration ('int a,b;' => 'int a; int b;')
         isSplittedVarDeclEq     Is this a '=' changed to semicolon in a splitted variable declaration ('int a=5;' => 'int a; a=5;')
         isImplicitInt      Is this token an implicit "int"?
@@ -262,6 +255,7 @@ class Token:
     isUnsigned = False
     isSigned = False
     isExpandedMacro = False
+    isRemovedVoidParameter = False
     isSplittedVarDeclComma = False
     isSplittedVarDeclEq = False
     isImplicitInt = False
@@ -326,6 +320,8 @@ class Token:
                 self.isLogicalOp = True
         if element.get('isExpandedMacro'):
             self.isExpandedMacro = True
+        if element.get('isRemovedVoidParameter'):
+            self.isRemovedVoidParameter = True
         if element.get('isSplittedVarDeclComma'):
             self.isSplittedVarDeclComma = True
         if element.get('isSplittedVarDeclEq'):
@@ -618,9 +614,7 @@ class Variable:
         self.isPointer = element.get('isPointer') == 'true'
         self.isReference = element.get('isReference') == 'true'
         self.isStatic = element.get('isStatic') == 'true'
-        self.constness = element.get('constness')
-        if self.constness:
-            self.constness = int(self.constness)
+        self.constness = int(element.get('constness',0))
 
     def __repr__(self):
         attrs = ["Id", "nameTokenId", "typeStartTokenId", "typeEndTokenId",
@@ -1364,3 +1358,14 @@ def reportSummary(dumpfile, summary_type, summary_data):
     with open(ctu_info_file, 'at') as f:
         msg = {'summary': summary_type, 'data': summary_data}
         f.write(json.dumps(msg) + '\n')
+
+
+def get_path_premium_addon():
+    p = pathlib.Path(sys.argv[0]).parent.parent
+
+    for ext in ('.exe', ''):
+        p1 = os.path.join(p, 'premiumaddon' + ext)
+        p2 = os.path.join(p, 'cppcheck' + ext)
+        if os.path.isfile(p1) and os.path.isfile(p2):
+            return p1
+    return None

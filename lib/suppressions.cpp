@@ -22,6 +22,9 @@
 #include "mathlib.h"
 #include "path.h"
 #include "utils.h"
+#include "token.h"
+#include "tokenize.h"
+#include "tokenlist.h"
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
@@ -257,7 +260,7 @@ std::string Suppressions::addSuppressions(const std::list<Suppression> &suppress
 {
     for (const auto &newSuppression : suppressions) {
         auto errmsg = addSuppression(newSuppression);
-        if (errmsg != "")
+        if (!errmsg.empty())
             return errmsg;
     }
     return "";
@@ -340,6 +343,7 @@ bool Suppressions::Suppression::isMatch(const Suppressions::ErrorMessage &errmsg
     if (!isSuppressed(errmsg))
         return false;
     matched = true;
+    checked = true;
     return true;
 }
 
@@ -411,7 +415,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedLocalSuppressions
     std::string tmpFile = Path::simplifyPath(file);
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
-        if (s.matched)
+        if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.hash > 0)
             continue;
@@ -428,7 +432,7 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
 {
     std::list<Suppression> result;
     for (const Suppression &s : mSuppressions) {
-        if (s.matched)
+        if (s.matched || ((s.lineNumber != Suppression::NO_LINE) && !s.checked))
             continue;
         if (s.hash > 0)
             continue;
@@ -444,4 +448,20 @@ std::list<Suppressions::Suppression> Suppressions::getUnmatchedGlobalSuppression
 const std::list<Suppressions::Suppression> &Suppressions::getSuppressions() const
 {
     return mSuppressions;
+}
+
+void Suppressions::markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer) {
+    int currLineNr = -1;
+    int currFileIdx = -1;
+    for (const Token *tok = tokenizer.tokens(); tok; tok = tok->next()) {
+        if (currFileIdx != tok->fileIndex() || currLineNr != tok->linenr()) {
+            currLineNr = tok->linenr();
+            currFileIdx = tok->fileIndex();
+            for (auto &suppression : mSuppressions) {
+                if (!suppression.checked && (suppression.lineNumber == currLineNr) && (suppression.fileName == tokenizer.list.file(tok))) {
+                    suppression.checked = true;
+                }
+            }
+        }
+    }
 }

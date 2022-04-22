@@ -30,12 +30,11 @@
 
 #include "config.h"
 #include "errortypes.h"
+#include "symboldatabase.h"
 
-class Function;
 class Library;
 class Settings;
 class Token;
-class Variable;
 
 enum class ChildrenToVisit {
     none,
@@ -135,6 +134,8 @@ std::string astCanonicalType(const Token *expr);
 /** Is given syntax tree a variable comparison against value */
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
+bool isVariableDecl(const Token* tok);
+
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown = false);
 
 const Token* previousBeforeAstLeftmostLeaf(const Token* tok);
@@ -149,6 +150,7 @@ const Token* astParentSkipParens(const Token* tok);
 const Token* getParentMember(const Token * tok);
 
 const Token* getParentLifetime(const Token* tok);
+const Token* getParentLifetime(bool cpp, const Token* tok, const Library* library);
 
 bool astIsLHS(const Token* tok);
 bool astIsRHS(const Token* tok);
@@ -223,7 +225,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library);
 
 bool isConstExpression(const Token *tok, const Library& library, bool pure, bool cpp);
 
-bool isWithoutSideEffects(bool cpp, const Token* tok);
+bool isWithoutSideEffects(bool cpp, const Token* tok, bool checkArrayAccess = false, bool checkReference = true);
 
 bool isUniqueExpression(const Token* tok);
 
@@ -234,6 +236,11 @@ bool isReturnScope(const Token* const endToken,
                    const Library* library = nullptr,
                    const Token** unknownFunc = nullptr,
                    bool functionScope = false);
+
+/** Is tok within a scope of the given type, nested within var's scope? */
+bool isWithinScope(const Token* tok,
+                   const Variable* var,
+                   Scope::ScopeType type);
 
 /// Return the token to the function and the argument number
 const Token * getTokenArgumentFunction(const Token * tok, int& argn);

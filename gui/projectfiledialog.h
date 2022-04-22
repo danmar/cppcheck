@@ -19,15 +19,18 @@
 #ifndef PROJECTFILE_DIALOG_H
 #define PROJECTFILE_DIALOG_H
 
-#include "ui_projectfiledialog.h"
-
 #include "suppressions.h"
 
 #include <QDialog>
 #include <QString>
 #include <QStringList>
 
+class QModelIndex;
+class QObject;
 class QWidget;
+namespace Ui {
+    class ProjectFile;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -42,7 +45,7 @@ class ProjectFileDialog : public QDialog {
     Q_OBJECT
 public:
     explicit ProjectFileDialog(ProjectFile *projectFile, QWidget *parent = nullptr);
-    virtual ~ProjectFileDialog();
+    ~ProjectFileDialog() override;
 
 private:
     void loadFromProjectFile(const ProjectFile *projectFile);
@@ -315,7 +318,7 @@ protected:
 private:
     QStringList getProjectConfigs(const QString &fileName);
 
-    Ui::ProjectFile mUI;
+    Ui::ProjectFile *mUI;
 
     /**
      * @brief Projectfile path.

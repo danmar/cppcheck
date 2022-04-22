@@ -66,6 +66,8 @@ private:
         TEST_CASE(structmember16); // #10485
         TEST_CASE(structmember17); // #10591
         TEST_CASE(structmember18); // #10684
+        TEST_CASE(structmember19); // #10826, #10848, #10852
+        TEST_CASE(structmember20); // #10737
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -127,6 +129,8 @@ private:
         TEST_CASE(localvar59); // #9737
         TEST_CASE(localvar60);
         TEST_CASE(localvar61); // #9407
+        TEST_CASE(localvar62); // #10824
+        TEST_CASE(localvar63); // #6928
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -213,6 +217,7 @@ private:
         TEST_CASE(localvarAddr); // #7477
         TEST_CASE(localvarDelete);
         TEST_CASE(localvarLambda); // #8941, #8948
+        TEST_CASE(localvarStructuredBinding); // #10368
 
         TEST_CASE(localvarCppInitialization);
         TEST_CASE(localvarCpp11Initialization);
@@ -1405,7 +1410,7 @@ private:
                                "{\n"
                                "    ab->a = 0;\n"
                                "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) struct member 'AB::b' is never used.\n", errout.str());
 
         checkStructMemberUsage("struct AB\n"
                                "{\n"
@@ -1417,7 +1422,7 @@ private:
                                "{\n"
                                "    ab->a = 0;\n"
                                "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) struct member 'AB::b' is never used.\n", errout.str());
     }
 
     void structmember8() {
@@ -1623,6 +1628,135 @@ private:
                                "    auto p = reinterpret_cast<const uint8_t*>(&s);\n"
                                "    return p[10];\n"
                                "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void structmember19() {
+        checkStructMemberUsage("class C {};\n" // #10826
+                               "struct S {\n"
+                               "    char* p;\n"
+                               "    std::string str;\n"
+                               "    C c;\n"
+                               "};\n"
+                               "void f(S* s) {}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::p' is never used.\n"
+                      "[test.cpp:4]: (style) struct member 'S::str' is never used.\n"
+                      "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
+                      errout.str());
+
+        checkStructMemberUsage("class C {};\n"
+                               "struct S {\n"
+                               "    char* p;\n"
+                               "    std::string str;\n"
+                               "    C c;\n"
+                               "};\n"
+                               "void f(S& s) {}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) struct member 'S::p' is never used.\n"
+                      "[test.cpp:4]: (style) struct member 'S::str' is never used.\n"
+                      "[test.cpp:5]: (style) struct member 'S::c' is never used.\n",
+                      errout.str());
+
+        checkStructMemberUsage("struct S {\n" // #10848
+                               "    struct T {\n"
+                               "        int i;\n"
+                               "    } t[2];\n"
+                               "};\n"
+                               "S s[1];\n"
+                               "int f() {\n"
+                               "    return s[0].t[1].i;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "struct T { S s; };\n"
+                               "int f(const T** tp) {\n"
+                               "    return tp[0]->s.a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S* sp) {\n"
+                               "    return (*sp).a; \n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S** spp) {\n"
+                               "    return spp[0]->a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S** spp) {\n"
+                               "    return spp[0][0].a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S* sp) {\n"
+                               "    return sp[0].a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("struct S { int a; };\n"
+                               "int f(const S* sp) {\n"
+                               "    return sp->a;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("typedef struct { int i; } A;\n"
+                               "typedef struct { std::vector<A> v; } B;\n"
+                               "const A& f(const std::vector<const B*>& b, int idx) {\n"
+                               "    const A& a = b[0]->v[idx];\n"
+                               "    return a;\n"
+                               "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n",
+                      errout.str());
+
+        settings.enforcedLang = Settings::C;
+        checkStructMemberUsage("struct A {\n" // #10852
+                               "    struct B {\n"
+                               "        int x;\n"
+                               "    } b;\n"
+                               "} a;\n"
+                               "void f() {\n"
+                               "    struct B* pb = &a.b;\n"
+                               "    pb->x = 1;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkStructMemberUsage("union U {\n"
+                               "    struct A {\n"
+                               "        struct B {\n"
+                               "            int x;\n"
+                               "        } b;\n"
+                               "    } a;\n"
+                               "    struct C {\n"
+                               "        short s[2];\n"
+                               "    } c;\n"
+                               "} u;\n"
+                               "void f() {\n"
+                               "    struct B* pb = &u.a.b;\n"
+                               "    pb->x = 1;\n"
+                               "    struct C* pc = &u.c;\n"
+                               "    pc->s[0] = 1;\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
+        settings.enforcedLang = Settings::None;
+    }
+
+    void structmember20() { // #10737
+        checkStructMemberUsage("void f() {\n"
+                               "    {\n"
+                               "    }\n"
+                               "    {\n"
+                               "        struct S { int a; };\n"
+                               "        S s{};\n"
+                               "        {\n"
+                               "            if (s.a) {}\n"
+                               "        }\n"
+                               "    }\n"
+                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2357,7 +2491,9 @@ private:
                               "    int i = 0;\n"
                               "    int &j = i;\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'j' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'j' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Variable 'i' is assigned a value that is never used.\n",
+                      errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -2459,7 +2595,10 @@ private:
                               "    int a, b, c;\n"
                               "    a = b = c = f();\n"
                               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'a' is assigned a value that is never used.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Variable 'a' is assigned a value that is never used.\n"
+                      "[test.cpp:4]: (style) Variable 'b' is assigned a value that is never used.\n"
+                      "[test.cpp:4]: (style) Variable 'c' is assigned a value that is never used.\n",
+                      errout.str());
 
         functionVariableUsage("int * foo()\n"
                               "{\n"
@@ -2767,9 +2906,7 @@ private:
                               "    a = b[c] = 0;\n"
                               "    return a;\n"
                               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used.\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b[c]' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar24() { // ticket #1803
@@ -2808,7 +2945,7 @@ private:
                               "    int param = 1;\n"
                               "    ptr->param = param++;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'param' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvar28() { // ticket #2205
@@ -3105,6 +3242,12 @@ private:
                               "    auto&& g = std::lock_guard<std::mutex> { mutex };\n"
                               "}\n");
         TODO_ASSERT_EQUALS("", "[test.cpp:2]: (style) Variable 'g' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    auto a = RAII();\n"
+                              "    auto b { RAII() };\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar47() { // #6603
@@ -3301,6 +3444,44 @@ private:
                               "    var = 2;\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'var' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvar62() {
+        functionVariableUsage("void f() {\n" // #10824
+                              "    S* s = nullptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f() {\n"
+                              "    S* s{};\n"
+                              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", "", errout.str());
+
+        functionVariableUsage("int f() {\n"
+                              "    int i = 0, j = 1;\n"
+                              "    return i;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'j' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("int f() {\n"
+                              "    int i = 0, j = 1;\n"
+                              "    return j;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void f() {\n" // #10846
+                              "    int i = 1; while (i) { i = g(); }\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar63() { // #6928
+        functionVariableUsage("void f(void) {\n"
+                              "  int x=3;\n"             // <- set but not used
+                              "  goto y;\n"
+                              "  y:return;\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
     }
 
     void localvarloops() {
@@ -5055,8 +5236,15 @@ private:
         functionVariableUsage("void foo()\n"
                               "{\n"
                               "    static int i;\n"
+                              "    static const int ci;\n"
+                              "    static std::string s;\n"
+                              "    static const std::string cs;\n"
                               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: i\n"
+                      "[test.cpp:4]: (style) Unused variable: ci\n"
+                      "[test.cpp:5]: (style) Unused variable: s\n"
+                      "[test.cpp:6]: (style) Unused variable: cs\n",
+                      errout.str());
 
         functionVariableUsage("void foo()\n"
                               "{\n"
@@ -5627,10 +5815,13 @@ private:
                               "    auto r = std::pair<std::string, std::string>(\"a\", \"b\");\n"
                               "    auto s = std::pair<std::string, std::string>{ \"a\", \"b\" };\n"
                               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' is assigned a value that is never used.\n"
-                      "[test.cpp:3]: (style) Variable 'q' is assigned a value that is never used.\n"
-                      "[test.cpp:4]: (style) Variable 'r' is assigned a value that is never used.\n"
-                      "[test.cpp:5]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' is assigned a value that is never used.\n"
+                           "[test.cpp:3]: (style) Variable 'q' is assigned a value that is never used.\n"
+                           "[test.cpp:4]: (style) Variable 'r' is assigned a value that is never used.\n"
+                           "[test.cpp:5]: (style) Variable 's' is assigned a value that is never used.\n",
+                           "[test.cpp:2]: (style) Variable 'p' is assigned a value that is never used.\n"
+                           "[test.cpp:3]: (style) Variable 'q' is assigned a value that is never used.\n",
+                           errout.str());
     }
 
     void localVarClass() {
@@ -5802,6 +5993,16 @@ private:
                               "        return r;\n"
                               "    });\n"
                               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+
+    void localvarStructuredBinding() {
+        functionVariableUsage("void f() {\n" // #10368
+                              "    std::map<int, double> m;\n"
+                              "    m[2] = 2.0;\n"
+                              "    for (auto& [k, v] : m) {}\n"
+                              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

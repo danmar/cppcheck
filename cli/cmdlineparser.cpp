@@ -46,6 +46,10 @@
 #include <tinyxml2.h>
 #endif
 
+#ifdef __linux__
+#include <unistd.h>
+#endif
+
 static void addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
 {
     // To keep things initially simple, if the file can't be opened, just be silent and move on.
@@ -122,6 +126,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
     bool maxconfigs = false;
 
     mSettings->exename = argv[0];
+#ifdef __linux__
+    // Executing cppcheck in PATH. argv[0] does not contain the path.
+    if (mSettings->exename.find_first_of("/\\") == std::string::npos) {
+        char buf[PATH_MAX] = {0};
+        if (FileLister::fileExists("/proc/self/exe") && readlink("/proc/self/exe", buf, sizeof(buf)-1) > 0)
+            mSettings->exename = buf;
+    }
+#endif
 
     for (int i = 1; i < argc; i++) {
         if (argv[i][0] == '-') {
@@ -217,13 +229,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i],"--addon-python=", 15) == 0)
                 mSettings->addonPython.assign(argv[i]+15);
 
-            else if (std::strcmp(argv[i], "--bug-hunting") == 0)
-                mSettings->bugHunting = true;
-
-            // TODO: Rename or move this parameter?
-            else if (std::strncmp(argv[i], "--bug-hunting-check-function-max-time=", 38) == 0)
-                mSettings->bugHuntingCheckFunctionMaxTime = std::atoi(argv[i] + 38);
-
             // Check configuration
             else if (std::strcmp(argv[i], "--check-config") == 0)
                 mSettings->checkConfiguration = true;
@@ -265,10 +270,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--debug") == 0 ||
                      std::strcmp(argv[i], "--debug-normal") == 0)
                 mSettings->debugnormal = true;
-
-            // show bug hunting debug output
-            else if (std::strcmp(argv[i], "--debug-bug-hunting") == 0)
-                mSettings->debugBugHunting = true;
 
             // Flag used for various purposes during debugging
             else if (std::strcmp(argv[i], "--debug-simplified") == 0)
@@ -625,7 +626,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Unix64);
                     else if (platform == "native")
                         mSettings->platform(Settings::Native);
-                    else if (platform == "unspecified" || platform == "Unspecified" || platform == "")
+                    else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
                         ;
                     else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) && !mSettings->loadPlatformFile(argv[0], platform)) {
                         std::string message("unrecognized platform: \"");
@@ -767,22 +768,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // --std
-            else if (std::strcmp(argv[i], "--std=c89") == 0) {
-                mSettings->standards.c = Standards::C89;
-            } else if (std::strcmp(argv[i], "--std=c99") == 0) {
-                mSettings->standards.c = Standards::C99;
-            } else if (std::strcmp(argv[i], "--std=c11") == 0) {
-                mSettings->standards.c = Standards::C11;
-            } else if (std::strcmp(argv[i], "--std=c++03") == 0) {
-                mSettings->standards.cpp = Standards::CPP03;
-            } else if (std::strcmp(argv[i], "--std=c++11") == 0) {
-                mSettings->standards.cpp = Standards::CPP11;
-            } else if (std::strcmp(argv[i], "--std=c++14") == 0) {
-                mSettings->standards.cpp = Standards::CPP14;
-            } else if (std::strcmp(argv[i], "--std=c++17") == 0) {
-                mSettings->standards.cpp = Standards::CPP17;
-            } else if (std::strcmp(argv[i], "--std=c++20") == 0) {
-                mSettings->standards.cpp = Standards::CPP20;
+            else if (std::strncmp(argv[i], "--std=", 6) == 0) {
+                const std::string std = argv[i] + 6;
+                // TODO: print error when standard is unknown
+                if (std::strncmp(std.c_str(), "c++", 3) == 0) {
+                    mSettings->standards.cpp = Standards::getCPP(std);
+                }
+                else if (std::strncmp(std.c_str(), "c", 1) == 0) {
+                    mSettings->standards.c = Standards::getC(std);
+                }
+                else {
+                    printError("unknown --std value '" + std + "'");
+                    return false;
+                }
             }
 
             else if (std::strncmp(argv[i], "--suppress=", 11) == 0) {
@@ -884,6 +882,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--version") == 0) {
                 mShowVersion = true;
                 mExitAfterPrint = true;
+                mSettings->loadCppcheckCfg();
                 return true;
             }
 
@@ -925,7 +924,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
         }
     }
 
-    mSettings->loadCppcheckCfg(argv[0]);
+    mSettings->loadCppcheckCfg();
 
     // Default template format..
     if (mSettings->templateFormat.empty()) {
@@ -1254,6 +1253,9 @@ void CmdLineParser::printHelp()
     "    -v, --verbose        Output more detailed error information.\n"
     "    --version            Print out version number.\n"
     "    --xml                Write results in xml format to error stream (stderr).\n"
+    "    --xml-version=<version>\n"
+    "                         Select the XML file version. Also implies --xml.\n"
+    "                         Currently only version 2 is available. The default version is 2.\n"
     "\n"
     "Example usage:\n"
     "  # Recursively check the current folder. Print the progress on the screen and\n"
@@ -1276,6 +1278,5 @@ void CmdLineParser::printHelp()
     " * tinyxml2 -- loading project/library/ctu files.\n"
     " * picojson -- loading compile database.\n"
     " * pcre -- rules.\n"
-    " * qt -- used in GUI\n"
-    " * z3 -- theorem prover from Microsoft Research used in bug hunting.\n";
+    " * qt -- used in GUI\n";
 }

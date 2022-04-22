@@ -9,3 +9,8 @@ add_executable(test-translationhandler
         )
 target_include_directories(test-translationhandler PRIVATE ${CMAKE_SOURCE_DIR}/gui)
 target_link_libraries(test-translationhandler ${QT_CORE_LIB} ${QT_WIDGETS_LIB} ${QT_TEST_LIB})
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Q_UNUSED() in generated code
+    target_compile_options_safe(test-projectfile -Wno-extra-semi-stmt)
+endif()

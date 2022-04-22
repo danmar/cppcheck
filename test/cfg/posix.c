@@ -7,6 +7,7 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#include <aio.h>
 #include <stdlib.h>
 #include <stdio.h> // <- FILE
 #include <dirent.h>
@@ -26,8 +27,116 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#define _XOPEN_SOURCE
 #include <wchar.h>
 #include <string.h>
+
+int nullPointer_wcsncasecmp(const wchar_t *s1, const wchar_t *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcsncasecmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)wcsncasecmp(s1,NULL,n);
+    return wcsncasecmp(s1,s2,n);
+}
+
+int uninitvar_wcwidth(const wchar_t c)
+{
+    wchar_t wc;
+    // cppcheck-suppress uninitvar
+    (void)wcwidth(wc);
+    // No warning is expected
+    return wcwidth(c);
+}
+
+int nullPointer_wcsnlen(const wchar_t *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcsnlen(NULL, n);
+    // No warning is expected
+    return wcsnlen(s, n);
+}
+
+size_t bufferAccessOutOfBounds_wcsnlen(void) // #10997
+{
+    wchar_t buf[2]={L'4',L'2'};
+    size_t len = wcsnlen(buf,2);
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    len+=wcsnlen(buf,3);
+    return len;
+}
+
+int nullPointer_gethostname(char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)gethostname(NULL, n);
+    // No warning is expected
+    return gethostname(s, n);
+}
+
+int nullPointer_wcswidth(const wchar_t *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcswidth(NULL, n);
+    // No warning is expected
+    return wcswidth(s, n);
+}
+
+int nullPointer_aio_cancel(int fd, struct aiocb *aiocbp)
+{
+    // No warning is expected
+    (void)aio_cancel(fd, NULL);
+    // No warning is expected
+    return aio_cancel(fd, aiocbp);
+}
+
+int nullPointer_aio_fsync(int op, struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_fsync(op, NULL);
+    // No warning is expected
+    return aio_fsync(op, aiocbp);
+}
+
+ssize_t nullPointer_aio_return(struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_return(NULL);
+    // No warning is expected
+    return aio_return(aiocbp);
+}
+
+int nullPointer_aio_error(const struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_error(NULL);
+    // No warning is expected
+    return aio_error(aiocbp);
+}
+
+int nullPointer_aio_read(struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_read(NULL);
+    // No warning is expected
+    return aio_read(aiocbp);
+}
+
+int nullPointer_aio_write(struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_write(NULL);
+    // No warning is expected
+    return aio_write(aiocbp);
+}
+
+int nullPointer_aio_suspend(const struct aiocb *const aiocb_list[], int nitems, const struct timespec *restrict timeout)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_suspend(NULL, nitems, timeout);
+    // No warning is expected
+    return aio_suspend(aiocb_list, nitems, timeout);
+}
 
 // Note: Since glibc 2.28, this function symbol is no longer available to newly linked applications.
 void invalidFunctionArg_llseek(int fd, loff_t offset, int origin)
@@ -117,12 +226,123 @@ void invalidFunctionArg_fseeko(FILE* stream, off_t offset, int origin)
     (void)fseeko(stream, offset, SEEK_END);
 }
 
+wchar_t *nullPointer_wcpncpy(wchar_t *dest, const wchar_t *src, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcpncpy(NULL, src, n);
+    // cppcheck-suppress nullPointer
+    (void)wcpncpy(dest, NULL, n);
+    return wcpncpy(dest, src, n);
+}
+
+int nullPointer_utimes(const char *path, const struct timeval times[2])
+{
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress utimesCalled
+    (void)utimes(NULL, times);
+    // cppcheck-suppress utimesCalled
+    return utimes(path, times);
+}
+
 char * overlappingWriteFunction_stpcpy(char *src, char *dest)
 {
     // No warning shall be shown:
     (void) stpcpy(dest, src);
     // cppcheck-suppress overlappingWriteFunction
     return stpcpy(src, src);
+}
+
+int nullPointer_strcasecmp(char *a, char *b)
+{
+    // No warning shall be shown:
+    (void) strcasecmp(a, b);
+    // cppcheck-suppress nullPointer
+    (void) strcasecmp(a, NULL);
+    // cppcheck-suppress nullPointer
+    return strcasecmp(NULL, b);
+}
+
+int nullPointer_strncasecmp(char *a, char *b, size_t n)
+{
+    // No warning shall be shown:
+    (void) strncasecmp(a, b, n);
+    // cppcheck-suppress nullPointer
+    (void) strncasecmp(a, NULL, n);
+    // cppcheck-suppress nullPointer
+    return strncasecmp(NULL, b, n);
+}
+
+int nullPointer_bcmp(const void *a, const void *b, size_t n)
+{
+    // No nullPointer warning shall be shown:
+    // cppcheck-suppress bcmpCalled
+    (void) bcmp(a, b, n);
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress bcmpCalled
+    (void) bcmp(a, NULL, n);
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress bcmpCalled
+    return bcmp(NULL, b, n);
+}
+
+void nullPointer_bzero(void *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress bzeroCalled
+    bzero(NULL,n);
+    // No nullPointer-warning shall be shown:
+    // cppcheck-suppress bzeroCalled
+    bzero(s,n);
+}
+
+void bufferAccessOutOfBounds_bzero(void *s, size_t n)
+{
+    char buf[42];
+    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress bzeroCalled
+    bzero(buf,43);
+    // cppcheck-suppress bzeroCalled
+    bzero(buf,42);
+    // No nullPointer-warning shall be shown:
+    // cppcheck-suppress bzeroCalled
+    bzero(s,n);
+}
+
+size_t bufferAccessOutOfBounds_strnlen(const char *s, size_t maxlen)
+{
+    char buf[2]={'4','2'};
+    size_t len = strnlen(buf,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    len+=strnlen(buf,3);
+    return len;
+}
+
+size_t nullPointer_strnlen(const char *s, size_t maxlen)
+{
+    // No warning shall be shown:
+    (void) strnlen(s, maxlen);
+    // cppcheck-suppress nullPointer
+    return strnlen(NULL, maxlen);
+}
+
+char * nullPointer_stpcpy(char *src, char *dest)
+{
+    // No warning shall be shown:
+    (void) stpcpy(dest, src);
+    // cppcheck-suppress nullPointer
+    (void) stpcpy(dest, NULL);
+    // cppcheck-suppress nullPointer
+    return stpcpy(NULL, src);
+}
+
+char * nullPointer_strsep(char **stringptr, char *delim)
+{
+    // No warning shall be shown:
+    (void) strsep(stringptr, delim);
+    // cppcheck-suppress nullPointer
+    (void) strsep(stringptr, NULL);
+    // cppcheck-suppress nullPointer
+    return strsep(NULL, delim);
 }
 
 void overlappingWriteFunction_bcopy(char *buf, const size_t count)
@@ -133,8 +353,20 @@ void overlappingWriteFunction_bcopy(char *buf, const size_t count)
     // cppcheck-suppress bcopyCalled
     bcopy(&buf[0], &buf[3], 3U);    // no-overlap
     // cppcheck-suppress bcopyCalled
-    // cppcheck-suppress overlappingWriteFunction
-    bcopy(&buf[0], &buf[3], 4U);
+    bcopy(&buf[0], &buf[3], 4U);    // The result is correct, even when both areas overlap.
+}
+
+void nullPointer_bcopy(const void *src, void *dest, size_t n)
+{
+    // No warning shall be shown:
+    // cppcheck-suppress bcopyCalled
+    bcopy(src, dest, n);
+    // cppcheck-suppress bcopyCalled
+    // cppcheck-suppress nullPointer
+    bcopy(NULL, dest, n);
+    // cppcheck-suppress bcopyCalled
+    // cppcheck-suppress nullPointer
+    bcopy(src, NULL, n);
 }
 
 void overlappingWriteFunction_memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
@@ -593,7 +825,7 @@ void timet_h(struct timespec* ptp1)
     clock_settime(clk_id2, ptp1);
 
     struct timespec tp;
-    // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, &tp); // #6577 - false negative
     // cppcheck-suppress uninitvar
     clock_settime(clk_id3, &tp);

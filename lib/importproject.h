@@ -115,7 +115,7 @@ private:
     bool importVcxproj(const std::string &filename, std::map<std::string, std::string, cppcheck::stricmp> &variables, const std::string &additionalIncludeDirectories, const std::vector<std::string> &fileFilters);
     bool importBcb6Prj(const std::string &projectFilename);
 
-    void printError(const std::string &message);
+    static void printError(const std::string &message);
 
     void setRelativePaths(const std::string &filename);
 
@@ -153,14 +153,7 @@ namespace CppcheckXml {
     const char ExcludePathName[] = "path";
     const char ExcludePathNameAttrib[] = "name";
     const char FunctionContracts[] = "function-contracts";
-    const char FunctionContract[] = "contract";
-    const char ContractFunction[] = "function";
-    const char ContractExpects[] = "expects";
     const char VariableContractsElementName[] = "variable-contracts";
-    const char VariableContractItemElementName[] = "var";
-    const char VariableContractVarName[] = "name";
-    const char VariableContractMin[] = "min";
-    const char VariableContractMax[] = "max";
     const char LibrariesElementName[] = "libraries";
     const char LibraryElementName[] = "library";
     const char PlatformElementName[] = "platform";

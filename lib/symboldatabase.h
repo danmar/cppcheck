@@ -33,6 +33,7 @@
 #include <memory>
 #include <set>
 #include <string>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -1129,7 +1130,7 @@ public:
      */
     const Function *findFunction(const Token *tok, bool requireConst=false) const;
 
-    const Scope *findRecordInNestedList(const std::string & name) const;
+    const Scope *findRecordInNestedList(const std::string & name, bool isC = false) const;
     Scope *findRecordInNestedList(const std::string & name) {
         return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));
     }
@@ -1216,6 +1217,7 @@ public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type {
         UNKNOWN_TYPE,
+        POD,
         NONSTD,
         RECORD,
         SMART_POINTER,
@@ -1450,10 +1452,12 @@ private:
     void createSymbolDatabaseSetScopePointers();
     void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
+    // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseEscapeFunctions();
+    // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);

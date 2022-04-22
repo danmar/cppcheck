@@ -26,6 +26,7 @@
 #include <cstddef>
 #include <functional>
 #include <map>
+#include <string>
 #include <unordered_map>
 
 class Token;
@@ -147,14 +148,14 @@ void execute(const Token* expr,
 /**
  * Is condition always false when variable has given value?
  * \param condition   top ast token in condition
- * \param programMemory   program memory
+ * \param pm   program memory
  */
 bool conditionIsFalse(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 
 /**
  * Is condition always true when variable has given value?
  * \param condition   top ast token in condition
- * \param programMemory   program memory
+ * \param pm   program memory
  */
 bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* settings = nullptr);
 
@@ -164,6 +165,10 @@ bool conditionIsTrue(const Token* condition, ProgramMemory pm, const Settings* s
 ProgramMemory getProgramMemory(const Token* tok, const Token* expr, const ValueFlow::Value& value, const Settings* settings);
 
 ProgramMemory getProgramMemory(const Token *tok, const ProgramMemory::Map& vars);
+
+ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
+                                         const std::string& returnValue,
+                                         const Settings* settings);
 
 #endif
 
