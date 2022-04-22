@@ -137,7 +137,6 @@ if (BUILD_TESTS)
                         --error-exitcode=1
                         --suppress=missingIncludeSystem
                         --inline-suppr
-                        --template="{file}:{line}:{severity}:{id}:{message}"
                         ${INCONCLUSIVE}
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
