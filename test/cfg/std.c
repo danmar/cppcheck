@@ -3664,6 +3664,22 @@ void nullPointer_wmemcmp(const wchar_t* s1, const wchar_t* s2, size_t n)
     (void)wmemcmp(s1,s2,n);
 }
 
+void nullPointer_wmemmove(wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wmemmove(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)wmemmove(s1,NULL,n);
+    (void)wmemmove(s1,s2,n);
+}
+
+void nullPointer_wmemset(wchar_t* s, wchar_t c, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wmemset(NULL,c,n);
+    (void)wmemset(s,c,n);
+}
+
 void nullPointer_memmove(void *s1, void *s2, size_t n)
 {
     // cppcheck-suppress nullPointer
