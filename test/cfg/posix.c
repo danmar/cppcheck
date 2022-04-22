@@ -31,6 +31,15 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_wcsncasecmp(const wchar_t *s1, const wchar_t *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcsncasecmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)wcsncasecmp(s1,NULL,n);
+    return wcsncasecmp(s1,s2,n);
+}
+
 int uninitvar_wcwidth(const wchar_t c)
 {
     wchar_t wc;
