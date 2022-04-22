@@ -3545,15 +3545,15 @@ void nullPointer_asctime(void)
     (void)std::asctime(0);
 }
 
-void nullPointer_wcsftime(size_t maxsize)
+void nullPointer_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
 {
-    wchar_t* ptr = 0;
-    wchar_t* format = 0;
-    struct tm* timeptr = 0;
     // cppcheck-suppress nullPointer
-    (void)std::wcsftime(ptr,maxsize,format,timeptr);
+    (void)std::wcsftime(NULL, maxsize, format, timeptr);
     // cppcheck-suppress nullPointer
-    (void)std::wcsftime(0,maxsize,0,0);
+    (void)std::wcsftime(ptr, maxsize, NULL, timeptr);
+    // cppcheck-suppress nullPointer
+    (void)std::wcsftime(ptr, maxsize, format, NULL);
+    (void)std::wcsftime(ptr, maxsize, format, timeptr);
 }
 
 void nullPointer_fegetenv(void)

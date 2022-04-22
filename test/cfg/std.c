@@ -381,6 +381,17 @@ void nullpointer(int value)
     wscanf(L"%i", NULL);
 }
 
+void nullPointer_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcsftime(NULL, maxsize, format, timeptr);
+    // cppcheck-suppress nullPointer
+    (void)wcsftime(ptr, maxsize, NULL, timeptr);
+    // cppcheck-suppress nullPointer
+    (void)wcsftime(ptr, maxsize, format, NULL);
+    (void)wcsftime(ptr, maxsize, format, timeptr);
+}
+
 int nullPointer_wcsncmp(const wchar_t* s1, const wchar_t* s2, size_t n)
 {
     // cppcheck-suppress nullPointer
@@ -4573,17 +4584,6 @@ void nullPointer_asctime_s(void)
     // cppcheck-suppress asctime_sCalled
     // cppcheck-suppress nullPointer
     asctime_s(1, 26, tm);
-}
-
-void nullPointer_wcsftime(size_t maxsize)
-{
-    wchar_t* ptr = 0;
-    wchar_t* format = 0;
-    struct tm* timeptr = 0;
-    // cppcheck-suppress nullPointer
-    (void)wcsftime(ptr,maxsize,format,timeptr);
-    // cppcheck-suppress nullPointer
-    (void)wcsftime(0,maxsize,0,0);
 }
 
 void nullPointer_fegetenv(void)
