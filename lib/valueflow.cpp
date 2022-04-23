@@ -275,6 +275,77 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
     });
 }
 
+static bool isInConstructorList(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!astIsRHS(tok))
+        return false;
+    const Token* parent = tok->astParent();
+    if (!Token::Match(parent, "{|("))
+        return false;
+    if (!Token::Match(parent->previous(), "%var% {|("))
+        return false;
+    if (!parent->astOperand1() || !parent->astOperand2())
+        return false;
+    do {
+        parent = parent->astParent();
+    } while (Token::simpleMatch(parent, ","));
+    return Token::simpleMatch(parent, ":") && !Token::simpleMatch(parent->astParent(), "?");
+}
+
+static std::vector<ValueType> getParentValueTypes(const Token* tok,
+                                                  const Settings* settings = nullptr,
+                                                  const Token** parent = nullptr)
+{
+    if (!tok)
+        return {};
+    if (!tok->astParent())
+        return {};
+    if (isInConstructorList(tok)) {
+        if (parent)
+            *parent = tok->astParent()->astOperand1();
+        if (tok->astParent()->astOperand1()->valueType())
+            return {*tok->astParent()->astOperand1()->valueType()};
+        return {};
+    } else if (Token::Match(tok->astParent(), "(|{|,")) {
+        int argn = -1;
+        const Token* ftok = getTokenArgumentFunction(tok, argn);
+        if (ftok && ftok->function()) {
+            std::vector<ValueType> result;
+            std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
+            const Token* nameTok = nullptr;
+            for (const Variable* var : getArgumentVars(ftok, argn)) {
+                if (!var)
+                    continue;
+                if (!var->valueType())
+                    continue;
+                nameTok = var->nameToken();
+                result.push_back(*var->valueType());
+            }
+            if (result.size() == 1 && nameTok && parent) {
+                *parent = nameTok;
+            }
+            return result;
+        }
+    }
+    if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
+        astIsContainer(tok->astParent()->tokAt(-2)->astOperand1())) {
+        const Token* contTok = tok->astParent()->tokAt(-2)->astOperand1();
+        const ValueType* vtCont = contTok->valueType();
+        if (!vtCont->containerTypeToken)
+            return {};
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
+        return {std::move(vtParent)};
+    }
+    if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
+        *parent = tok->astParent();
+    }
+    if (tok->astParent()->valueType())
+        return {*tok->astParent()->valueType()};
+    return {};
+}
+
 static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown = false)
 {
     if (!Token::simpleMatch(tok, "{"))
@@ -1547,6 +1618,17 @@ static std::vector<MathLib::bigint> minUnsignedValue(const Token* tok, int depth
     return result;
 }
 
+static bool isConvertedToIntegral(const Token* tok, const Settings* settings)
+{
+    if (!tok)
+        return false;
+    std::vector<ValueType> parentTypes = getParentValueTypes(tok, settings);
+    if (parentTypes.empty())
+        return false;
+    const ValueType& vt = parentTypes.front();
+    return vt.type != ValueType::UNKNOWN_INT && vt.isIntegral();
+}
+
 static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* settings)
 {
     for (Token* tok = tokenList->front(); tok; tok = tok->next()) {
@@ -1599,6 +1681,11 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             value.setImpossible();
             setTokenValue(tok->linkAt(1)->next(), value, settings);
         } else if (tokenList->isCPP() && Token::simpleMatch(tok, "this")) {
+            ValueFlow::Value value{0};
+            value.setImpossible();
+            setTokenValue(tok, value, settings);
+        } else if (tok->isIncompleteVar() && tok->astParent() && tok->astParent()->isUnaryOp("-") &&
+                   isConvertedToIntegral(tok->astParent(), settings)) {
             ValueFlow::Value value{0};
             value.setImpossible();
             setTokenValue(tok, value, settings);
@@ -3357,77 +3444,6 @@ static bool isDifferentType(const Token* src, const Token* dst)
             return true;
     }
     return false;
-}
-
-static bool isInConstructorList(const Token* tok)
-{
-    if (!tok)
-        return false;
-    if (!astIsRHS(tok))
-        return false;
-    const Token* parent = tok->astParent();
-    if (!Token::Match(parent, "{|("))
-        return false;
-    if (!Token::Match(parent->previous(), "%var% {|("))
-        return false;
-    if (!parent->astOperand1() || !parent->astOperand2())
-        return false;
-    do {
-        parent = parent->astParent();
-    } while (Token::simpleMatch(parent, ","));
-    return Token::simpleMatch(parent, ":") && !Token::simpleMatch(parent->astParent(), "?");
-}
-
-static std::vector<ValueType> getParentValueTypes(const Token* tok,
-                                                  const Settings* settings = nullptr,
-                                                  const Token** parent = nullptr)
-{
-    if (!tok)
-        return {};
-    if (!tok->astParent())
-        return {};
-    if (isInConstructorList(tok)) {
-        if (parent)
-            *parent = tok->astParent()->astOperand1();
-        if (tok->astParent()->astOperand1()->valueType())
-            return {*tok->astParent()->astOperand1()->valueType()};
-        return {};
-    } else if (Token::Match(tok->astParent(), "(|{|,")) {
-        int argn = -1;
-        const Token* ftok = getTokenArgumentFunction(tok, argn);
-        if (ftok && ftok->function()) {
-            std::vector<ValueType> result;
-            std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
-            const Token* nameTok = nullptr;
-            for (const Variable* var : getArgumentVars(ftok, argn)) {
-                if (!var)
-                    continue;
-                if (!var->valueType())
-                    continue;
-                nameTok = var->nameToken();
-                result.push_back(*var->valueType());
-            }
-            if (result.size() == 1 && nameTok && parent) {
-                *parent = nameTok;
-            }
-            return result;
-        }
-    }
-    if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
-        astIsContainer(tok->astParent()->tokAt(-2)->astOperand1())) {
-        const Token* contTok = tok->astParent()->tokAt(-2)->astOperand1();
-        const ValueType* vtCont = contTok->valueType();
-        if (!vtCont->containerTypeToken)
-            return {};
-        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
-        return {std::move(vtParent)};
-    }
-    if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
-        *parent = tok->astParent();
-    }
-    if (tok->astParent()->valueType())
-        return {*tok->astParent()->valueType()};
-    return {};
 }
 
 bool isLifetimeBorrowed(const Token *tok, const Settings *settings)
