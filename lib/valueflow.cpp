@@ -1684,7 +1684,8 @@ static void valueFlowImpossibleValues(TokenList* tokenList, const Settings* sett
             ValueFlow::Value value{0};
             value.setImpossible();
             setTokenValue(tok, value, settings);
-        } else if (tok->isIncompleteVar() && tok->astParent() && tok->astParent()->isUnaryOp("-") && isConvertedToIntegral(tok->astParent(), settings)) {
+        } else if (tok->isIncompleteVar() && tok->astParent() && tok->astParent()->isUnaryOp("-") &&
+                   isConvertedToIntegral(tok->astParent(), settings)) {
             ValueFlow::Value value{0};
             value.setImpossible();
             setTokenValue(tok, value, settings);

@@ -5063,7 +5063,7 @@ private:
         code = "void f() {\n"
                "    int i;\n"
                "    if (x) {\n"
-               "        int y = -ENOMEM;\n"  // assume constant ENOMEM is nonzero since it's negated
+               "        int y = -ENOMEM;\n" // assume constant ENOMEM is nonzero since it's negated
                "        if (y != 0) return;\n"
                "        i++;\n"
                "    }\n"
