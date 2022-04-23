@@ -3486,6 +3486,12 @@ private:
                "    exit(x);\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 1));
+
+        code = "void f(jmp_buf env) {\n"
+               "    int x = 1;\n"
+               "    longjmp(env, x);\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 3U, 1));
     }
 
     void valueFlowForwardTernary() {
@@ -5058,6 +5064,17 @@ private:
                "    return x;\n"
                "}\n";
         values = tokenValues(code, "x ; }", ValueFlow::Value::ValueType::UNINIT);
+        ASSERT_EQUALS(0, values.size());
+
+        code = "void f() {\n"
+               "    int i;\n"
+               "    if (x) {\n"
+               "        int y = -ENOMEM;\n" // assume constant ENOMEM is nonzero since it's negated
+               "        if (y != 0) return;\n"
+               "        i++;\n"
+               "    }\n"
+               "}\n";
+        values = tokenValues(code, "i ++", ValueFlow::Value::ValueType::UNINIT);
         ASSERT_EQUALS(0, values.size());
     }
 
