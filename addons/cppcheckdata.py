@@ -9,8 +9,25 @@ License: No restrictions, use this as you need.
 import argparse
 import json
 import os
-import pathlib
 import sys
+try:
+    import pathlib
+except ImportError:
+    message = "Failed to load pathlib. Upgrade python to 3.x or install pathlib with 'pip install pathlib'."
+    error_id = 'pythonError'
+    if '--cli' in sys.argv:
+        msg = { 'file': '',
+                'linenr': 0,
+                'column': 0,
+                'severity': 'error',
+                'message': message,
+                'addon': 'cppcheckdata',
+                'errorId': error_id,
+                'extra': ''}
+        sys.stdout.write(json.dumps(msg) + '\n')
+    else:
+        sys.stderr.write('%s [%s]\n' % (message, error_id))
+    sys.exit(1)
 
 from xml.etree import ElementTree
 from fnmatch import fnmatch
