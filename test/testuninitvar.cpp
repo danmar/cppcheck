@@ -5285,6 +5285,12 @@ private:
                         "    g(p->x);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:8]: (error) Uninitialized variable: p->x\n", errout.str());
+
+        valueFlowUninit("void f() {\n"
+                        "    int a;\n"
+                        "    a++;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

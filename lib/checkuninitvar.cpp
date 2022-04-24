@@ -1592,7 +1592,7 @@ static ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* se
         if (tok->astParent()->isCast())
             return ExprUsage::NotUsed;
     }
-    if (indirect == 0 && Token::Match(tok->astParent(), "%cop%|%assign%") && tok->astParent()->str() != "=")
+    if (indirect == 0 && Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && tok->astParent()->str() != "=")
         return ExprUsage::Used;
     return getFunctionUsage(tok, indirect, settings);
 }
