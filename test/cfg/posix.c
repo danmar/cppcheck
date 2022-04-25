@@ -38,6 +38,15 @@ int nullPointer_ttyname_r(int fd, char *buf, size_t buflen)
     return ttyname_r(fd,buf,buflen);
 }
 
+size_t bufferAccessOutOfBounds_wcsnrtombs(char *restrict dest, const wchar_t **restrict src, size_t nwc, size_t len, mbstate_t *restrict ps)
+{
+    char buf[42];
+    (void)wcsnrtombs(buf,src,nwc,42,ps);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)wcsnrtombs(buf,src,nwc,43,ps);
+    return wcsnrtombs(dest,src,nwc,len,ps);
+}
+
 size_t nullPointer_wcsnrtombs(char *restrict dest, const wchar_t **restrict src, size_t nwc, size_t len, mbstate_t *restrict ps)
 {
     // It is allowed to set the first arg to NULL
