@@ -431,6 +431,30 @@ void overlappingWriteFunction_swab(char *src, char *dest, ssize_t n)
     swab(src, src+3, 4);
 }
 
+void bufferAccessOutOfBounds_swab(char *src, char *dest, ssize_t n)
+{
+    // No warning shall be shown:
+    swab(dest, src, n);
+    char srcBuf[42] = {0};
+    char destBuf[42] = {0};
+    swab(srcBuf, dest, 42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    swab(srcBuf, dest, 43);
+    swab(src, destBuf, 42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    swab(src, destBuf, 43);
+}
+
+void nullPointer_swab(char *src, char *dest, ssize_t n)
+{
+    // No warning shall be shown:
+    swab(dest, src, n);
+    // cppcheck-suppress nullPointer
+    swab(NULL, dest, n);
+    // cppcheck-suppress nullPointer
+    swab(src, NULL, n);
+}
+
 bool invalidFunctionArgBool_isascii(bool b, int c)
 {
     // cppcheck-suppress invalidFunctionArgBool
