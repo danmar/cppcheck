@@ -53,7 +53,7 @@ size_t nullPointer_wcsnrtombs(char *restrict dest, const wchar_t **restrict src,
     (void)wcsnrtombs(NULL,src,nwc,len,ps);
     // cppcheck-suppress nullPointer
     (void)wcsnrtombs(dest,NULL,nwc,len,ps);
-    // cppcheck-suppress nullPointer
+    // It is allowed to set the last arg to NULL
     (void)wcsnrtombs(dest,src,nwc,len,NULL);
     return wcsnrtombs(dest,src,nwc,len,ps);
 }
