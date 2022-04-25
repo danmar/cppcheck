@@ -31,6 +31,17 @@
 #include <wchar.h>
 #include <string.h>
 
+size_t nullPointer_wcsnrtombs(char *restrict dest, const wchar_t **restrict src, size_t nwc, size_t len, mbstate_t *restrict ps)
+{
+    // It is allowed to set the first arg to NULL
+    (void)wcsnrtombs(NULL,src,nwc,len,ps);
+    // cppcheck-suppress nullPointer
+    (void)wcsnrtombs(dest,NULL,nwc,len,ps);
+    // cppcheck-suppress nullPointer
+    (void)wcsnrtombs(dest,src,nwc,len,NULL);
+    return wcsnrtombs(dest,src,nwc,len,ps);
+}
+
 int nullPointer_wcsncasecmp(const wchar_t *s1, const wchar_t *s2, size_t n)
 {
     // cppcheck-suppress nullPointer
