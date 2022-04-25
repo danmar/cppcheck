@@ -3042,6 +3042,13 @@ private:
               "    g(p);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T>\n"
+              "struct S {\n"
+              "    static bool f(const T& t) { return t != nullptr; }\n"
+              "};\n"
+              "S<int*> s;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
