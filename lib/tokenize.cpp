@@ -7516,7 +7516,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             }
 
             while (Token::Match(varName, "%type% %type%")) {
-                if (varName->str() != "const") {
+                if (varName->str() != "const" && varName->str() != "volatile") {
                     ++typelen;
                 }
                 varName = varName->next();
