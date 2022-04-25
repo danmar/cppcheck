@@ -31,6 +31,13 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_ttyname_r(int fd, char *buf, size_t buflen)
+{
+    // cppcheck-suppress nullPointer
+    (void)ttyname_r(fd,NULL,buflen);
+    return ttyname_r(fd,buf,buflen);
+}
+
 size_t nullPointer_wcsnrtombs(char *restrict dest, const wchar_t **restrict src, size_t nwc, size_t len, mbstate_t *restrict ps)
 {
     // It is allowed to set the first arg to NULL
