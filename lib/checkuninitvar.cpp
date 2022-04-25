@@ -1461,7 +1461,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
         if (parent && parent->isUnaryOp("&"))
             return false;
         return true;
-    } else if (!isPointer && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
+    } else if (!isPointer && !Token::simpleMatch(tok->astParent(), ".") && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
         return true;
 
     else if (!isPointer && Token::Match(tok->previous(), "= %name% ;"))
