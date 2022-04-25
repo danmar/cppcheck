@@ -31,6 +31,15 @@
 #include <iterator>
 #include <vector>
 
+size_t bufferAccessOutOfBounds_wcsrtombs(char * dest, const wchar_t ** src, size_t len, mbstate_t * ps)
+{
+    char buf[42];
+    (void)std::wcsrtombs(buf,src,42,ps);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)std::wcsrtombs(buf,src,43,ps);
+    return std::wcsrtombs(dest,src,len,ps);
+}
+
 void invalidFunctionArg_std_string_substr(const std::string &str, std::size_t pos, std::size_t len) {
     // cppcheck-suppress invalidFunctionArg
     (void)str.substr(-1,len);
