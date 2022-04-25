@@ -2526,13 +2526,22 @@ private:
     }
 
     void volatile_variables() {
-        const char code[] = "volatile int a=0;\n"
-                            "volatile int b=0;\n"
-                            "volatile int c=0;\n";
+        {
+            const char code[] = "volatile int a=0;\n"
+                                "volatile int b=0;\n"
+                                "volatile int c=0;\n";
 
-        const std::string actual(tokenizeAndStringify(code));
+            const std::string actual(tokenizeAndStringify(code));
 
-        ASSERT_EQUALS("volatile int a ; a = 0 ;\nvolatile int b ; b = 0 ;\nvolatile int c ; c = 0 ;", actual);
+            ASSERT_EQUALS("volatile int a ; a = 0 ;\nvolatile int b ; b = 0 ;\nvolatile int c ; c = 0 ;", actual);
+        }
+        {
+            const char code[] = "char *volatile s1, *volatile s2;\n"; // #11004
+
+            const std::string actual(tokenizeAndStringify(code));
+
+            ASSERT_EQUALS("char * volatile s1 ; char * volatile s2 ;", actual);
+        }
     }
 
 

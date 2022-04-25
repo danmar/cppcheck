@@ -25,6 +25,15 @@
 #include <inttypes.h>
 #include <float.h>
 
+size_t bufferAccessOutOfBounds_wcsrtombs(char * dest, const wchar_t ** src, size_t len, mbstate_t * ps)
+{
+    char buf[42];
+    (void)wcsrtombs(buf,src,42,ps);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)wcsrtombs(buf,src,43,ps);
+    return wcsrtombs(dest,src,len,ps);
+}
+
 void bufferAccessOutOfBounds(void)
 {
     char a[5];

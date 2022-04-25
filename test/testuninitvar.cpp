@@ -4132,6 +4132,15 @@ private:
                        "    x = a.m;\n"
                        "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #11002
+        checkUninitVar("struct S { char *p; int len; };\n"
+                       "void f() {\n"
+                       "    S s;\n"
+                       "    s.p = nullptr;\n"
+                       "    char* q = (s).p;\n"
+                       "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitvar2_while() {
