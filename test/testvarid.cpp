@@ -2339,13 +2339,21 @@ private:
                       tokenize("VertexArrayIterator<float[2]> attrPos = m_AttributePos.GetIterator<float[2]>();"));
     }
 
-    void varid_templateParameter() { // #7046 set varid for "X":  std::array<int,X> Y;
-        const char code[] = "const int X = 0;\n"
-                            "std::array<int,X> Y;\n";
+    void varid_templateParameter() {
+        {
+            const char code[] = "const int X = 0;\n" // #7046 set varid for "X":  std::array<int,X> Y;
+                                "std::array<int,X> Y;\n";
 
-        ASSERT_EQUALS("1: const int X@1 = 0 ;\n"
-                      "2: std :: array < int , X@1 > Y@2 ;\n",
-                      tokenize(code));
+            ASSERT_EQUALS("1: const int X@1 = 0 ;\n"
+                          "2: std :: array < int , X@1 > Y@2 ;\n",
+                          tokenize(code));
+        }
+        {
+            const char code[] = "std::optional<N::Foo<A>> Foo;\n"; // #11003
+
+            ASSERT_EQUALS("1: std :: optional < N :: Foo < A > > Foo@1 ;\n",
+                          tokenize(code));
+        }
     }
 
     void varid_templateUsing() { // #5781 #7273
