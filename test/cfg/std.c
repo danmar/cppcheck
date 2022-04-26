@@ -4097,6 +4097,15 @@ void valid_vsprintf()
     valid_vsprintf_helper("%1.0f", 2.0f);
 }
 
+int nullPointer_vswprintf(wchar_t* restrict ws, size_t s, const wchar_t* restrict format, va_list ap)
+{
+    // cppcheck-suppress nullPointer
+    vswprintf(NULL, s,format, ap);
+    // cppcheck-suppress nullPointer
+    vswprintf(ws, s,NULL, ap);
+    return vswprintf(ws, s,format, ap);
+}
+
 void uninitvar_vswprintf(void)
 {
     wchar_t *s;
