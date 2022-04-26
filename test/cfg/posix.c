@@ -31,6 +31,13 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_socketpair(int domain, int t, int protocol, int sv[2])
+{
+    // cppcheck-suppress nullPointer
+    (void) socketpair(domain, t, protocol, NULL);
+    return socketpair(domain, t, protocol, sv);
+}
+
 void nullPointer_lcong48(unsigned short param[7])
 {
     // cppcheck-suppress nullPointer
