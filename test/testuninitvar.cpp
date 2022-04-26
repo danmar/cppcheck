@@ -3588,6 +3588,12 @@ private:
                         "    }\n"
                         "}");
         TODO_ASSERT_EQUALS("error", "", errout.str());
+
+        valueFlowUninit("void f ( void ){\n" // #9313 - FN
+                        " int *p;\n"
+                        " int a[ 2 ] = { [ 0 ] = *p++, [ 1 ] = 1 };\n"
+                        "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
     }
 
     void uninitStructMember() { // struct members
