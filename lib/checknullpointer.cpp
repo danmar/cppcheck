@@ -182,8 +182,13 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // Dereferencing pointer..
-    if (parent->isUnaryOp("*") && !addressOf)
-        return true;
+    if (parent->isUnaryOp("*")) {
+        // declaration of function pointer
+        if (tok->variable() && tok->variable()->nameToken() == tok)
+            return false;
+        if (!addressOf)
+            return true;
+    }
 
     // array access
     if (firstOperand && parent->str() == "[" && !addressOf)
