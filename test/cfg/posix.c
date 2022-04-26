@@ -31,6 +31,20 @@
 #include <wchar.h>
 #include <string.h>
 
+ssize_t uninitvar_pread(int fd, void *buf, size_t nbyte, off_t offset)
+{
+    int Fd;
+    // cppcheck-suppress uninitvar
+    (void)pread(Fd,buf,nbyte,offset);
+    size_t Nbyte;
+    // cppcheck-suppress uninitvar
+    (void)pread(fd,buf,Nbyte,offset);
+    off_t Offset;
+    // cppcheck-suppress uninitvar
+    (void)pread(fd,buf,nbyte,Offset);
+    return pread(fd,buf,nbyte,offset);
+}
+
 ssize_t nullPointer_pwrite(int fd, const void *buf, size_t nbyte, off_t offset)
 {
     // cppcheck-suppress nullPointer
