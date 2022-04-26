@@ -1542,7 +1542,9 @@ void CppCheck::reportErr(const ErrorMessage &msg)
     mErrorList.push_back(errmsg);
 
     mErrorLogger.reportErr(msg);
-    if (!mSettings.plistOutput.empty() && plistFile.is_open()) {
+    // check if plistOutput should be populated and the current output file is open and the error is not suppressed
+    if (!mSettings.plistOutput.empty() && plistFile.is_open() && !mSettings.nomsg.isSuppressed(errorMessage)) {
+        // add error to plist output file
         plistFile << ErrorLogger::plistData(msg);
     }
 }
