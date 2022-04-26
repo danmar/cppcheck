@@ -3400,6 +3400,26 @@ void uninitvar_wcscpy(wchar_t *d, wchar_t*s)
     (void)wcscpy(d,s);
 }
 
+size_t bufferAccessOutOfBounds_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+	char buf[42] = {0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) strftime(buf,43,fmt,p);
+    (void) strftime(buf,max,fmt,p);
+    return strftime(buf,42,fmt,p);
+}
+
+size_t nullPointer_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+    // cppcheck-suppress nullPointer
+    (void) strftime(NULL,max,fmt,p);
+    // cppcheck-suppress nullPointer
+    (void) strftime(s,max,NULL,p);
+    // cppcheck-suppress nullPointer
+    (void) strftime(s,max,fmt,NULL);
+    return strftime(s,max,fmt,p);
+}
+
 void uninitvar_strftime(void)
 {
     char *s;

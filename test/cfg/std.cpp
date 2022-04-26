@@ -31,6 +31,17 @@
 #include <iterator>
 #include <vector>
 
+size_t nullPointer_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::strftime(NULL,max,fmt,p);
+    // cppcheck-suppress nullPointer
+    (void) std::strftime(s,max,NULL,p);
+    // cppcheck-suppress nullPointer
+    (void) std::strftime(s,max,fmt,NULL);
+    return std::strftime(s,max,fmt,p);
+}
+
 size_t bufferAccessOutOfBounds_wcsrtombs(char * dest, const wchar_t ** src, size_t len, mbstate_t * ps)
 {
     char buf[42];
