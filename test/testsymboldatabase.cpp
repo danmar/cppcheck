@@ -376,6 +376,7 @@ private:
         TEST_CASE(enum7);
         TEST_CASE(enum8);
         TEST_CASE(enum9);
+        TEST_CASE(enum10); // #11001
 
         TEST_CASE(sizeOfType);
 
@@ -5305,6 +5306,19 @@ private:
         ASSERT(X1);
         ASSERT(X1->value_known);
         ASSERT_EQUALS(X1->value, 8);
+    }
+
+    void enum10() { // #11001
+        GET_SYMBOL_DB_C("int b = sizeof(enum etag {X, Y});\n");
+        ASSERT(db != nullptr);
+        const Enumerator *X = db->scopeList.back().findEnumerator("X");
+        ASSERT(X);
+        ASSERT(X->value_known);
+        ASSERT_EQUALS(X->value, 0);
+        const Enumerator *Y = db->scopeList.back().findEnumerator("Y");
+        ASSERT(Y);
+        ASSERT(Y->value_known);
+        ASSERT_EQUALS(Y->value, 1);
     }
 
     void sizeOfType() {

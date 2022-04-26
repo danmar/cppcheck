@@ -4648,7 +4648,7 @@ const Token * Scope::addEnum(const Token * tok, bool isCpp)
         if (tok2 == end) {
             tok2 = tok2->next();
 
-            if (tok2 && tok2->str() != ";")
+            if (tok2 && tok2->str() != ";" && (isCpp || tok2->str() != ")"))
                 tok2 = nullptr;
         } else
             tok2 = nullptr;
