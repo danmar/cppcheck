@@ -1466,6 +1466,8 @@ void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 
 static bool isExpression(const Token* tok)
 {
+    if (!tok)
+        return false;
     if (Token::simpleMatch(tok, "{") && tok->scope() && tok->scope()->bodyStart != tok &&
         (tok->astOperand1() || tok->astOperand2()))
         return true;
@@ -1497,6 +1499,17 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
     for (const Scope * scope : functionScopes) {
         nonneg int thisId = 0;
         std::unordered_map<std::string, std::vector<Token*>> exprs;
+
+        std::unordered_map<std::string, nonneg int> unknownIds;
+        // Assign IDs to incomplete vars which are part of an expression
+        // Such variables should be assumed global
+        for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->isIncompleteVar() && isExpression(tok->astParent())) {
+                if (unknownIds.count(tok->str()) == 0)
+                    unknownIds[tok->str()] = id++;
+                tok->exprId(unknownIds[tok->str()]);
+            }
+        }
 
         // Assign IDs
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {

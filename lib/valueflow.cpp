@@ -2796,11 +2796,19 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
                     setupExprVarIds(v.tokvalue, depth + 1);
                 }
             }
-            if (depth == 0 && tok->varId() == 0 && !tok->function() && tok->isName() && tok->previous()->str() != ".") {
-                // unknown variable
-                unknown = true;
-                return ChildrenToVisit::none;
+            if (depth == 0 && tok->isIncompleteVar()) {
+                if (tok->exprId() > 0) {
+                    local &= false;
+                } else {
+                    unknown = true;
+                    return ChildrenToVisit::none;
+                }
             }
+            // if (depth == 0 && tok->exprId() == 0 && !tok->function() && tok->isName() && tok->previous()->str() != ".") {
+            //     // unknown variable
+            //     unknown = true;
+            //     return ChildrenToVisit::none;
+            // }
             if (tok->varId() > 0) {
                 varids[tok->varId()] = tok->variable();
                 if (!Token::simpleMatch(tok->previous(), ".")) {
