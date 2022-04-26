@@ -1688,7 +1688,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             const Library::ArgumentChecks& ac = p.second;
             if (ac.direction != Library::ArgumentChecks::Direction::DIR_IN)
                 return false;
-        }
+        }        
         if (Token::simpleMatch(ftok->previous(), ".")) {
             if (!lf->isconst)
                 return false;
@@ -2553,6 +2553,8 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
             if (tok->variable()->isConst())
                 return false;
             global = !tok->variable()->isLocal() && !tok->variable()->isArgument();
+        } else if (tok->isIncompleteVar()) {
+            global = true;
         }
 
         if (tok->exprId() > 0) {

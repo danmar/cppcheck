@@ -2797,18 +2797,10 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
                 }
             }
             if (depth == 0 && tok->isIncompleteVar()) {
-                if (tok->exprId() > 0) {
-                    local &= false;
-                } else {
-                    unknown = true;
-                    return ChildrenToVisit::none;
-                }
+                // TODO: Treat incomplete var as global, but we need to update the alias variables to just expr ids
+                unknown = true;
+                return ChildrenToVisit::none;
             }
-            // if (depth == 0 && tok->exprId() == 0 && !tok->function() && tok->isName() && tok->previous()->str() != ".") {
-            //     // unknown variable
-            //     unknown = true;
-            //     return ChildrenToVisit::none;
-            // }
             if (tok->varId() > 0) {
                 varids[tok->varId()] = tok->variable();
                 if (!Token::simpleMatch(tok->previous(), ".")) {
@@ -4904,6 +4896,11 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
             }))
                 continue;
 
+            if (findAstNode(tok, [](const Token* child) {
+                return child->isIncompleteVar();
+            }))
+                continue;
+
             Token* start = nextAfterAstRightmostLeaf(tok);
             const Token* end = scope->bodyEnd;
 
@@ -6174,7 +6171,7 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
         return tok->astOperand1();
     }
 
-    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const override
+    virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const override
     {
         if (!Token::Match(tok, "%comp%"))
             return {};
@@ -6183,6 +6180,8 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
         if (!tok->astOperand1() || tok->astOperand1()->hasKnownIntValue() || tok->astOperand1()->isLiteral())
             return {};
         if (!tok->astOperand2() || tok->astOperand2()->hasKnownIntValue() || tok->astOperand2()->isLiteral())
+            return {};
+        if (!isConstExpression(tok, settings->library, true, true))
             return {};
 
         std::vector<Condition> result;
