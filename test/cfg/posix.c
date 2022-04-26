@@ -31,6 +31,13 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_getlogin_r(char *buf, size_t bufsize)
+{
+    // cppcheck-suppress nullPointer
+    (void)getlogin_r(NULL,bufsize);
+    return getlogin_r(buf,bufsize);
+}
+
 ssize_t uninitvar_pread(int fd, void *buf, size_t nbyte, off_t offset)
 {
     int Fd;
