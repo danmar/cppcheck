@@ -31,6 +31,33 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_ttyname_r(int fd, char *buf, size_t buflen)
+{
+    // cppcheck-suppress nullPointer
+    (void)ttyname_r(fd,NULL,buflen);
+    return ttyname_r(fd,buf,buflen);
+}
+
+size_t bufferAccessOutOfBounds_wcsnrtombs(char *restrict dest, const wchar_t **restrict src, size_t nwc, size_t len, mbstate_t *restrict ps)
+{
+    char buf[42];
+    (void)wcsnrtombs(buf,src,nwc,42,ps);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)wcsnrtombs(buf,src,nwc,43,ps);
+    return wcsnrtombs(dest,src,nwc,len,ps);
+}
+
+size_t nullPointer_wcsnrtombs(char *restrict dest, const wchar_t **restrict src, size_t nwc, size_t len, mbstate_t *restrict ps)
+{
+    // It is allowed to set the first arg to NULL
+    (void)wcsnrtombs(NULL,src,nwc,len,ps);
+    // cppcheck-suppress nullPointer
+    (void)wcsnrtombs(dest,NULL,nwc,len,ps);
+    // It is allowed to set the last arg to NULL
+    (void)wcsnrtombs(dest,src,nwc,len,NULL);
+    return wcsnrtombs(dest,src,nwc,len,ps);
+}
+
 int nullPointer_wcsncasecmp(const wchar_t *s1, const wchar_t *s2, size_t n)
 {
     // cppcheck-suppress nullPointer
@@ -402,6 +429,30 @@ void overlappingWriteFunction_swab(char *src, char *dest, ssize_t n)
     swab(dest, src, n);
     // cppcheck-suppress overlappingWriteFunction
     swab(src, src+3, 4);
+}
+
+void bufferAccessOutOfBounds_swab(char *src, char *dest, ssize_t n)
+{
+    // No warning shall be shown:
+    swab(dest, src, n);
+    char srcBuf[42] = {0};
+    char destBuf[42] = {0};
+    swab(srcBuf, dest, 42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    swab(srcBuf, dest, 43);
+    swab(src, destBuf, 42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    swab(src, destBuf, 43);
+}
+
+void nullPointer_swab(char *src, char *dest, ssize_t n)
+{
+    // No warning shall be shown:
+    swab(dest, src, n);
+    // cppcheck-suppress nullPointer
+    swab(NULL, dest, n);
+    // cppcheck-suppress nullPointer
+    swab(src, NULL, n);
 }
 
 bool invalidFunctionArgBool_isascii(bool b, int c)
