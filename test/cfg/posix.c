@@ -31,6 +31,41 @@
 #include <wchar.h>
 #include <string.h>
 
+void nullPointer_lcong48(unsigned short param[7])
+{
+    // cppcheck-suppress nullPointer
+    (void) lcong48(NULL);
+    return lcong48(param);
+}
+
+long int nullPointer_jrand48(unsigned short xsubi[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) jrand48(NULL);
+    return jrand48(xsubi);
+}
+
+long int nullPointer_nrand48(unsigned short xsubi[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) nrand48(NULL);
+    return nrand48(xsubi);
+}
+
+double nullPointer_erand48(unsigned short xsubi[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) erand48(NULL);
+    return erand48(xsubi);
+}
+
+unsigned short *nullPointer_seed48(unsigned short seed16v[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) seed48(NULL);
+    return seed48(seed16v);
+}
+
 int nullPointer_getlogin_r(char *buf, size_t bufsize)
 {
     // cppcheck-suppress nullPointer
