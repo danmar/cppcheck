@@ -31,6 +31,13 @@
 #include <wchar.h>
 #include <string.h>
 
+ssize_t nullPointer_pwrite(int fd, const void *buf, size_t nbyte, off_t offset)
+{
+    // cppcheck-suppress nullPointer
+    (void)pwrite(fd,NULL,nbyte,offset);
+    return pwrite(fd,buf,nbyte,offset);
+}
+
 int nullPointer_ttyname_r(int fd, char *buf, size_t buflen)
 {
     // cppcheck-suppress nullPointer
