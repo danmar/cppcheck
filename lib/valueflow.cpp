@@ -2797,7 +2797,9 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
                 }
             }
             if (depth == 0 && tok->isIncompleteVar()) {
-                // TODO: Treat incomplete var as global, but we need to update the alias variables to just expr ids
+                // TODO: Treat incomplete var as global, but we need to update
+                // the alias variables to just expr ids instead of requiring
+                // Variable
                 unknown = true;
                 return ChildrenToVisit::none;
             }
