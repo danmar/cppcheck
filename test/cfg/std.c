@@ -3112,12 +3112,20 @@ void uninitvar_vwscanf(void)
     (void)vwscanf(format,arg);
 }
 
+void nullPointer_setbuf(FILE *stream, char *buf)
+{
+    // cppcheck-suppress nullPointer
+    setbuf(NULL,buf);
+    setbuf(stream,NULL);
+    setbuf(stream,buf);
+}
+
 void uninitvar_setbuf(void)
 {
     FILE *stream;
     char *buf;
     // cppcheck-suppress uninitvar
-    (void)setbuf(stream,buf);
+    setbuf(stream,buf);
 }
 
 void uninitvar_setvbuf(void)
@@ -3402,7 +3410,7 @@ void uninitvar_wcscpy(wchar_t *d, wchar_t*s)
 
 size_t bufferAccessOutOfBounds_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
 {
-	char buf[42] = {0};
+    char buf[42] = {0};
     // cppcheck-suppress bufferAccessOutOfBounds
     (void) strftime(buf,43,fmt,p);
     (void) strftime(buf,max,fmt,p);
