@@ -6340,6 +6340,7 @@ static const Token * parsedecl(const Token *type, ValueType * const valuetype, V
                 valuetype->type = vt2->type;
             valuetype->constness += vt2->constness;
             valuetype->pointer += vt2->pointer;
+            valuetype->reference = vt2->reference;
             type = type->linkAt(1)->next();
             continue;
         } else if (type->isSigned())

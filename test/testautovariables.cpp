@@ -124,6 +124,7 @@ private:
         TEST_CASE(returnReference22);
         TEST_CASE(returnReference23);
         TEST_CASE(returnReference24); // #10098
+        TEST_CASE(returnReference25); // #10983
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1550,6 +1551,18 @@ private:
               "    return A();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Reference to temporary returned.\n", errout.str());
+    }
+
+    void returnReference25()
+    {
+        check("int& f();\n" // #10983
+              "    auto g() -> decltype(f()) {\n"
+              "    return f();\n"
+              "}\n"
+              "int& h() {\n"
+              "    return g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void returnReferenceFunction() {
