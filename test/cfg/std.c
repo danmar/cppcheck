@@ -3120,6 +3120,22 @@ void nullPointer_setbuf(FILE *stream, char *buf)
     setbuf(stream,buf);
 }
 
+int bufferAccessOutOfBounds_setvbuf(FILE* stream, int mode, size_t size)
+{
+    char buf[42]={0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) setvbuf(stream, buf, mode, 43);
+    return setvbuf(stream, buf, mode, 42);
+}
+
+int nullPointer_setvbuf(FILE* stream, char *buf, int mode, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void) setvbuf(NULL, buf, mode, size);
+    (void) setvbuf(stream, NULL, mode, size);
+    return setvbuf(stream, buf, mode, size);
+}
+
 void uninitvar_setbuf(void)
 {
     FILE *stream;
