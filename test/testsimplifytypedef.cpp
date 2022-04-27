@@ -2437,8 +2437,7 @@ private:
                                 "std :: vector < CharacterConversion > ( ) . swap ( c2c ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout.str());
     }
 
     void simplifyTypedef117() { // #6507

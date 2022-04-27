@@ -1688,7 +1688,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
             const Library::ArgumentChecks& ac = p.second;
             if (ac.direction != Library::ArgumentChecks::Direction::DIR_IN)
                 return false;
-        }        
+        }
         if (Token::simpleMatch(ftok->previous(), ".")) {
             if (!lf->isconst)
                 return false;

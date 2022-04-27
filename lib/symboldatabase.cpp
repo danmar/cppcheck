@@ -1489,7 +1489,7 @@ static bool isExpression(const Token* tok)
 static std::string getIncompleteNameID(const Token* tok)
 {
     std::string result = tok->str() + "@";
-    while(Token::Match(tok->astParent(), ".|::"))
+    while (Token::Match(tok->astParent(), ".|::"))
         tok = tok->astParent();
     return result + tok->expressionString();
 }
