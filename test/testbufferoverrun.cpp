@@ -197,6 +197,7 @@ private:
         TEST_CASE(array_index_negative2);    // ticket #3063
         TEST_CASE(array_index_negative3);
         TEST_CASE(array_index_negative4);
+        TEST_CASE(array_index_negative5);    // #10526
         TEST_CASE(array_index_for_decr);
         TEST_CASE(array_index_varnames);     // FP: struct member #1576, FN: #1586
         TEST_CASE(array_index_for_continue); // for,continue
@@ -2089,6 +2090,24 @@ private:
               "    int i;\n"
               "    for(i=0; i <16; ++i){}\n"
               "    for(; i < 24; ++i){ buf[i] = buf[i-16];}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_negative5() // #10526
+    {
+        check("int i;\n"
+              "std::vector<int> v;\n"
+              "bool f() {\n"
+              "    if (i != 0) {\n"
+              "        if (v.begin() != v.end()) {\n"
+              "            if (i < 0)\n"
+              "                return false;\n"
+              "            const int a[4] = { 0, 1, 2, 3 };\n"
+              "            return a[i - 1] > 0;\n"
+              "        }\n"
+              "    }\n"
+              "    return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

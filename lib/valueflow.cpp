@@ -2253,10 +2253,13 @@ struct ValueFlowAnalyzer : Analyzer {
         } else if (getSettings()->library.getFunction(tok)) {
             // Assume library function doesn't modify user-global variables
             return Action::None;
-            // Function cast does not modify global variables
-        } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
+        } else if (Token::simpleMatch(tok->astParent(), ".") && astIsContainer(tok->astParent()->astOperand1())) {
+            // Assume container member function doesn't modify user-global variables
             return Action::None;
-        } else if (Token::Match(tok, "%name% (")) {
+        } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
+            // Function cast does not modify global variables
+            return Action::None;
+        } else if (!tok->isKeyword() && Token::Match(tok, "%name% (")) {
             return Action::Invalid;
         }
         return Action::None;
