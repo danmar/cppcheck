@@ -130,7 +130,9 @@ Highlighter::Highlighter(QTextDocument *parent,
 
     mQuotationFormat.setForeground(mWidgetStyle->quoteColor);
     mQuotationFormat.setFontWeight(mWidgetStyle->quoteWeight);
-    rule.pattern = QRegularExpression("\".*\"");
+    // We use lazy `*?` instead greed `*` quantifier to find the real end of the c-string.
+    // We use negative lookbehind assertion `(?<!\)` to ignore `\"` sequience in the c-string.
+    rule.pattern = QRegularExpression("\".*?(?<!\\\\)\"");
     rule.format = mQuotationFormat;
     rule.ruleRole = RuleRole::Quote;
     mHighlightingRules.append(rule);
