@@ -2107,7 +2107,7 @@ private:
               "            return a[i - 1] > 0;\n"
               "        }\n"
               "    }\n"
-              "  return false;\n"
+              "    return false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
