@@ -1486,6 +1486,14 @@ static bool isExpression(const Token* tok)
     return true;
 }
 
+static std::string getIncompleteNameID(const Token* tok)
+{
+    std::string result = tok->str() + "@";
+    while(Token::Match(tok->astParent(), ".|::"))
+        tok = tok->astParent();
+    return result + tok->expressionString();
+}
+
 void SymbolDatabase::createSymbolDatabaseExprIds()
 {
     nonneg int base = 0;
@@ -1496,6 +1504,29 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         base = std::max<MathLib::bigint>(base, var->declarationId());
     }
     nonneg int id = base + 1;
+    // Find incomplete vars that are used in constant context
+    std::unordered_map<std::string, nonneg int> unknownConstantIds;
+    const Token* inConstExpr = nullptr;
+    for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
+        if (Token::Match(tok, "decltype|sizeof|typeof (") && tok->next()->link()) {
+            tok = tok->next()->link()->previous();
+        } else if (tok == inConstExpr) {
+            inConstExpr = nullptr;
+        } else if (inConstExpr) {
+            if (!tok->isIncompleteVar())
+                continue;
+            if (!isExpression(tok->astParent()))
+                continue;
+            const std::string& name = getIncompleteNameID(tok);
+            if (unknownConstantIds.count(name) > 0)
+                continue;
+            unknownConstantIds[name] = id++;
+        } else if (tok->link() && tok->str() == "<") {
+            inConstExpr = tok->link();
+        } else if (Token::Match(tok, "%var% [") && tok->variable() && tok->variable()->nameToken() == tok) {
+            inConstExpr = tok->next()->link();
+        }
+    }
     for (const Scope * scope : functionScopes) {
         nonneg int thisId = 0;
         std::unordered_map<std::string, std::vector<Token*>> exprs;
@@ -1504,11 +1535,23 @@ void SymbolDatabase::createSymbolDatabaseExprIds()
         // Assign IDs to incomplete vars which are part of an expression
         // Such variables should be assumed global
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->isIncompleteVar() && isExpression(tok->astParent())) {
-                if (unknownIds.count(tok->str()) == 0)
-                    unknownIds[tok->str()] = id++;
-                tok->exprId(unknownIds[tok->str()]);
+            if (!tok->isIncompleteVar())
+                continue;
+            if (!isExpression(tok->astParent()))
+                continue;
+            const std::string& name = getIncompleteNameID(tok);
+            nonneg int sid = 0;
+            if (unknownConstantIds.count(name) > 0) {
+                sid = unknownConstantIds.at(name);
+                tok->isIncompleteConstant(true);
+            } else if (unknownIds.count(name) == 0) {
+                sid = id++;
+                unknownIds[name] = sid;
+            } else {
+                sid = unknownIds.at(name);
             }
+            assert(sid > 0);
+            tok->exprId(sid);
         }
 
         // Assign IDs

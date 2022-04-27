@@ -2438,7 +2438,7 @@ private:
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false));
         ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:4]: (debug) valueflow.cpp:4635:(valueFlow) bailout: variable 'it' used in loop\n", errout.str());
+            "", errout.str());
     }
 
     void simplifyTypedef117() { // #6507
