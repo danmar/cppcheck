@@ -4341,8 +4341,51 @@ private:
                "        x = 10 - f1(2);\n"
                "    }\n"
                "};";
-        ASSERT_EQUALS(7, valueOfTok(code, "-").intvalue);
+        TODO_ASSERT_EQUALS(7, 0, valueOfTok(code, "-").intvalue);
         ASSERT_EQUALS(false, valueOfTok(code, "-").isKnown());
+
+        code = "struct base {\n"
+               "    virtual int f() { return 0; }\n"
+               "};\n"
+               "void g(base* b) {\n"
+               "    int x = b->f();\n"
+               "    return x;\n"
+               "}\n";
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 6U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
+
+        code = "struct base {\n"
+               "    virtual int f() { return 0; }\n"
+               "};\n"
+               "void g(base& b) {\n"
+               "    int x = b.f();\n"
+               "    return x;\n"
+               "}\n";
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 6U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
+
+        code = "struct base {\n"
+               "    virtual int f() { return 0; }\n"
+               "};\n"
+               "struct derived {\n"
+               "    virtual int f() { return 1; }\n"
+               "};\n"
+               "void g(derived* d) {\n"
+               "    base* b = d;\n"
+               "    int x = b->f();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 10U, 0));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 10U, 1));
+
+        code = "struct base {\n"
+               "    virtual int f() final { return 0; }\n"
+               "};\n"
+               "void g(base* b) {\n"
+               "    int x = b->f();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 6U, 0));
     }
 
     void valueFlowFunctionDefaultParameter() {

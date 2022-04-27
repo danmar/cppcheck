@@ -3400,6 +3400,26 @@ void uninitvar_wcscpy(wchar_t *d, wchar_t*s)
     (void)wcscpy(d,s);
 }
 
+size_t bufferAccessOutOfBounds_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+	char buf[42] = {0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) strftime(buf,43,fmt,p);
+    (void) strftime(buf,max,fmt,p);
+    return strftime(buf,42,fmt,p);
+}
+
+size_t nullPointer_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+    // cppcheck-suppress nullPointer
+    (void) strftime(NULL,max,fmt,p);
+    // cppcheck-suppress nullPointer
+    (void) strftime(s,max,NULL,p);
+    // cppcheck-suppress nullPointer
+    (void) strftime(s,max,fmt,NULL);
+    return strftime(s,max,fmt,p);
+}
+
 void uninitvar_strftime(void)
 {
     char *s;
@@ -4095,6 +4115,15 @@ void valid_vsprintf()
     // buffer will contain "2\0" => no bufferAccessOutOfBounds
     // cppcheck-suppress checkLibraryNoReturn
     valid_vsprintf_helper("%1.0f", 2.0f);
+}
+
+int nullPointer_vswprintf(wchar_t* restrict ws, size_t s, const wchar_t* restrict format, va_list ap)
+{
+    // cppcheck-suppress nullPointer
+    vswprintf(NULL, s,format, ap);
+    // cppcheck-suppress nullPointer
+    vswprintf(ws, s,NULL, ap);
+    return vswprintf(ws, s,format, ap);
 }
 
 void uninitvar_vswprintf(void)

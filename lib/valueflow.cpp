@@ -7008,6 +7008,9 @@ static void valueFlowFunctionReturn(TokenList *tokenlist, ErrorLogger *errorLogg
             function = tok->astOperand1()->function();
         if (!function)
             continue;
+        // TODO: Check if member variable is a pointer or reference
+        if (function->isImplicitlyVirtual() && !function->hasFinalSpecifier())
+            continue;
 
         if (tok->hasKnownValue())
             continue;
