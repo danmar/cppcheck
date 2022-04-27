@@ -2941,7 +2941,12 @@ void CheckOther::checkRedundantPointerOp()
         if (tok->isExpandedMacro() && tok->str() == "(")
             tok = tok->link();
 
-        if (!tok->isUnaryOp("&") || !tok->astOperand1()->isUnaryOp("*"))
+        bool addressOfDeref{};
+        if (tok->isUnaryOp("&") && tok->astOperand1()->isUnaryOp("*"))
+            addressOfDeref = true;
+        else if (tok->isUnaryOp("*") && tok->astOperand1()->isUnaryOp("&"))
+            addressOfDeref = false;
+        else
             continue;
 
         // variable
@@ -2950,18 +2955,18 @@ void CheckOther::checkRedundantPointerOp()
             continue;
 
         const Variable *var = varTok->variable();
-        if (!var || !var->isPointer())
+        if (!var || (addressOfDeref && !var->isPointer()))
             continue;
 
-        redundantPointerOpError(tok, var->name(), false);
+        redundantPointerOpError(tok, var->name(), false, addressOfDeref);
     }
 }
 
-void CheckOther::redundantPointerOpError(const Token* tok, const std::string &varname, bool inconclusive)
+void CheckOther::redundantPointerOpError(const Token* tok, const std::string &varname, bool inconclusive, bool addressOfDeref)
 {
-    reportError(tok, Severity::style, "redundantPointerOp",
-                "$symbol:" + varname + "\n"
-                "Redundant pointer operation on '$symbol' - it's already a pointer.", CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
+    std::string msg = "$symbol:" + varname + "\nRedundant pointer operation on '$symbol' - it's already a ";
+    msg += addressOfDeref ? "pointer." : "variable.";
+    reportError(tok, Severity::style, "redundantPointerOp", msg, CWE398, inconclusive ? Certainty::inconclusive : Certainty::normal);
 }
 
 void CheckOther::checkInterlockedDecrement()

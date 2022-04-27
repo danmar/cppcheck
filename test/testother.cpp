@@ -8764,6 +8764,16 @@ private:
               "}\n", nullptr, false, true);
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant pointer operation on 'y' - it's already a pointer.\n", errout.str());
 
+        check("int f() {\n" // #10991
+              "    int value = 4;\n"
+              "    int result1 = *(&value);\n"
+              "    int result2 = *&value;\n"
+              "    return result1 + result2;\n"
+              "}\n", nullptr, false, true);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Redundant pointer operation on 'value' - it's already a variable.\n"
+                      "[test.cpp:4]: (style) Redundant pointer operation on 'value' - it's already a variable.\n",
+                      errout.str());
+
         // no warning for bitwise AND
         check("void f(const int *b) {\n"
               "    int x = 0x20 & *b;\n"
