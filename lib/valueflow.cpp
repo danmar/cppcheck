@@ -2253,8 +2253,7 @@ struct ValueFlowAnalyzer : Analyzer {
         } else if (getSettings()->library.getFunction(tok)) {
             // Assume library function doesn't modify user-global variables
             return Action::None;
-        } else if (Token::simpleMatch(tok->astParent(), ".") && tok->astParent()->astOperand1() && tok->astParent()->astOperand1()->variable() &&
-            getSettings()->library.detectContainer(tok->astParent()->astOperand1()->variable()->typeStartToken())) {
+        } else if (Token::simpleMatch(tok->astParent(), ".") && astIsContainer(tok->astParent()->astOperand1())) {
             // Assume container member function doesn't modify user-global variables
             return Action::None;
         } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
