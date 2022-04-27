@@ -12,6 +12,21 @@
 #include <sys/time.h>
 #include <sys/uio.h>
 
+void nullPointer_setbuffer(FILE *stream, char *buf, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void) setbuffer(NULL, buf, size);
+    (void) setbuffer(stream, NULL, size);
+    (void) setbuffer(stream, buf, size);
+}
+
+void nullPointer_setlinebuf(FILE *stream)
+{
+    // cppcheck-suppress nullPointer
+    (void)setlinebuf(NULL);
+    (void)setlinebuf(stream);
+}
+
 // #9323, #9331
 void verify_timercmp(struct timeval t)
 {
