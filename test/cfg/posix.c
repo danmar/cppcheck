@@ -31,6 +31,76 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_socketpair(int domain, int t, int protocol, int sv[2])
+{
+    // cppcheck-suppress nullPointer
+    (void) socketpair(domain, t, protocol, NULL);
+    return socketpair(domain, t, protocol, sv);
+}
+
+void nullPointer_lcong48(unsigned short param[7])
+{
+    // cppcheck-suppress nullPointer
+    (void) lcong48(NULL);
+    return lcong48(param);
+}
+
+long int nullPointer_jrand48(unsigned short xsubi[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) jrand48(NULL);
+    return jrand48(xsubi);
+}
+
+long int nullPointer_nrand48(unsigned short xsubi[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) nrand48(NULL);
+    return nrand48(xsubi);
+}
+
+double nullPointer_erand48(unsigned short xsubi[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) erand48(NULL);
+    return erand48(xsubi);
+}
+
+unsigned short *nullPointer_seed48(unsigned short seed16v[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) seed48(NULL);
+    return seed48(seed16v);
+}
+
+int nullPointer_getlogin_r(char *buf, size_t bufsize)
+{
+    // cppcheck-suppress nullPointer
+    (void)getlogin_r(NULL,bufsize);
+    return getlogin_r(buf,bufsize);
+}
+
+ssize_t uninitvar_pread(int fd, void *buf, size_t nbyte, off_t offset)
+{
+    int Fd;
+    // cppcheck-suppress uninitvar
+    (void)pread(Fd,buf,nbyte,offset);
+    size_t Nbyte;
+    // cppcheck-suppress uninitvar
+    (void)pread(fd,buf,Nbyte,offset);
+    off_t Offset;
+    // cppcheck-suppress uninitvar
+    (void)pread(fd,buf,nbyte,Offset);
+    return pread(fd,buf,nbyte,offset);
+}
+
+ssize_t nullPointer_pwrite(int fd, const void *buf, size_t nbyte, off_t offset)
+{
+    // cppcheck-suppress nullPointer
+    (void)pwrite(fd,NULL,nbyte,offset);
+    return pwrite(fd,buf,nbyte,offset);
+}
+
 int nullPointer_ttyname_r(int fd, char *buf, size_t buflen)
 {
     // cppcheck-suppress nullPointer
@@ -529,6 +599,23 @@ void validCode(va_list valist_arg1, va_list valist_arg2)
     if (handle) {
         dlclose(handle);
     }
+}
+
+ssize_t nullPointer_send(int socket, const void *buf, size_t len, int flags)
+{
+    // cppcheck-suppress nullPointer
+    (void) send(socket, NULL, len, flags);
+    return send(socket, buf, len, flags);
+}
+
+ssize_t nullPointer_sendto(int socket, const void *message, size_t length,
+                           int flags, const struct sockaddr *dest_addr,
+                           socklen_t dest_len)
+{
+    // cppcheck-suppress nullPointer
+    (void) sendto(socket, NULL, length, flags, dest_addr, dest_len);
+    (void) sendto(socket, message, length, flags, NULL, dest_len);
+    return sendto(socket, message, length, flags, dest_addr, dest_len);
 }
 
 void bufferAccessOutOfBounds(int fd)

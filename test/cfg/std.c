@@ -3112,12 +3112,36 @@ void uninitvar_vwscanf(void)
     (void)vwscanf(format,arg);
 }
 
+void nullPointer_setbuf(FILE *stream, char *buf)
+{
+    // cppcheck-suppress nullPointer
+    setbuf(NULL,buf);
+    setbuf(stream,NULL);
+    setbuf(stream,buf);
+}
+
+int bufferAccessOutOfBounds_setvbuf(FILE* stream, int mode, size_t size)
+{
+    char buf[42]={0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) setvbuf(stream, buf, mode, 43);
+    return setvbuf(stream, buf, mode, 42);
+}
+
+int nullPointer_setvbuf(FILE* stream, char *buf, int mode, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void) setvbuf(NULL, buf, mode, size);
+    (void) setvbuf(stream, NULL, mode, size);
+    return setvbuf(stream, buf, mode, size);
+}
+
 void uninitvar_setbuf(void)
 {
     FILE *stream;
     char *buf;
     // cppcheck-suppress uninitvar
-    (void)setbuf(stream,buf);
+    setbuf(stream,buf);
 }
 
 void uninitvar_setvbuf(void)
@@ -3398,6 +3422,26 @@ void uninitvar_wcscpy(wchar_t *d, wchar_t*s)
 
     // No warning is expected
     (void)wcscpy(d,s);
+}
+
+size_t bufferAccessOutOfBounds_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+    char buf[42] = {0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) strftime(buf,43,fmt,p);
+    (void) strftime(buf,max,fmt,p);
+    return strftime(buf,42,fmt,p);
+}
+
+size_t nullPointer_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+    // cppcheck-suppress nullPointer
+    (void) strftime(NULL,max,fmt,p);
+    // cppcheck-suppress nullPointer
+    (void) strftime(s,max,NULL,p);
+    // cppcheck-suppress nullPointer
+    (void) strftime(s,max,fmt,NULL);
+    return strftime(s,max,fmt,p);
 }
 
 void uninitvar_strftime(void)
@@ -4095,6 +4139,15 @@ void valid_vsprintf()
     // buffer will contain "2\0" => no bufferAccessOutOfBounds
     // cppcheck-suppress checkLibraryNoReturn
     valid_vsprintf_helper("%1.0f", 2.0f);
+}
+
+int nullPointer_vswprintf(wchar_t* restrict ws, size_t s, const wchar_t* restrict format, va_list ap)
+{
+    // cppcheck-suppress nullPointer
+    vswprintf(NULL, s,format, ap);
+    // cppcheck-suppress nullPointer
+    vswprintf(ws, s,NULL, ap);
+    return vswprintf(ws, s,format, ap);
 }
 
 void uninitvar_vswprintf(void)

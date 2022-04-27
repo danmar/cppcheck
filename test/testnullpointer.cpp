@@ -1137,6 +1137,15 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Null pointer dereference: f\n", errout.str());
 
+        check("int* g();\n" // #11007
+              "int* f() {\n"
+              "    static int* (*fun)() = 0;\n"
+              "    if (!fun)\n"
+              "        fun = g;\n"
+              "    return fun();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // loops..
         check("void f() {\n"
               "    int *p = 0;\n"

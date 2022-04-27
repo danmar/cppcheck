@@ -31,6 +31,17 @@
 #include <iterator>
 #include <vector>
 
+size_t nullPointer_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::strftime(NULL,max,fmt,p);
+    // cppcheck-suppress nullPointer
+    (void) std::strftime(s,max,NULL,p);
+    // cppcheck-suppress nullPointer
+    (void) std::strftime(s,max,fmt,NULL);
+    return std::strftime(s,max,fmt,p);
+}
+
 size_t bufferAccessOutOfBounds_wcsrtombs(char * dest, const wchar_t ** src, size_t len, mbstate_t * ps)
 {
     char buf[42];
@@ -2602,6 +2613,30 @@ void uninivar_setbuf(void)
     char *buf;
     // cppcheck-suppress uninitvar
     (void)std::setbuf(stream,buf);
+}
+
+void nullPointer_setbuf(FILE *stream, char *buf)
+{
+    // cppcheck-suppress nullPointer
+    std::setbuf(NULL,buf);
+    std::setbuf(stream,NULL);
+    std::setbuf(stream,buf);
+}
+
+int bufferAccessOutOfBounds_setvbuf(FILE* stream, int mode, size_t size)
+{
+    char buf[42]={0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) std::setvbuf(stream, buf, mode, 43);
+    return std::setvbuf(stream, buf, mode, 42);
+}
+
+int nullPointer_setvbuf(FILE* stream, char *buf, int mode, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::setvbuf(NULL, buf, mode, size);
+    (void) std::setvbuf(stream, NULL, mode, size);
+    return std::setvbuf(stream, buf, mode, size);
 }
 
 void uninivar_setvbuf(void)

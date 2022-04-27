@@ -3035,6 +3035,20 @@ private:
               "    if (p == nullptr) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void g(int*);\n"
+              "void f(int* const* pp) {\n"
+              "    int* p = pp[0];\n"
+              "    g(p);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("template <typename T>\n"
+              "struct S {\n"
+              "    static bool f(const T& t) { return t != nullptr; }\n"
+              "};\n"
+              "S<int*> s;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -9150,7 +9164,7 @@ private:
               "    int local_argc = 0;\n"
               "    local_argv[local_argc++] = argv[0];\n"
               "}\n", "test.c");
-        ASSERT_EQUALS("[test.c:1]: (style) Parameter 'argv' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  int x = 0;\n"

@@ -4050,7 +4050,7 @@ void Tokenizer::setVarIdPass1()
                         const Token *end = tok->findClosingBracket();
                         while (tok != end) {
                             if (tok->isName() && !(Token::simpleMatch(tok->next(), "<") &&
-                                                   Token::Match(tok->tokAt(-2), "std :: %name%"))) {
+                                                   Token::Match(tok->tokAt(-1), ":: %name%"))) {
                                 const std::map<std::string, int>::const_iterator it = variableMap.find(tok->str());
                                 if (it != variableMap.end())
                                     tok->varId(it->second);
@@ -7516,7 +7516,7 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             }
 
             while (Token::Match(varName, "%type% %type%")) {
-                if (varName->str() != "const") {
+                if (varName->str() != "const" && varName->str() != "volatile") {
                     ++typelen;
                 }
                 varName = varName->next();
