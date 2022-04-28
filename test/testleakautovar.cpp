@@ -728,6 +728,15 @@ private:
               "    }\n"
               "};\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
+
+        check("int g(int *p) {\n" // #9838
+              "    std::unique_ptr<int> temp(p);\n"
+              "    return DoSomething(p);\n"
+              "}\n"
+              "int f() {\n"
+              "    return g(new int(3));\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void doublefree1() {  // #3895
