@@ -48,8 +48,6 @@ if (BUILD_TESTS)
         cmake_policy(SET CMP0064 NEW)
         cmake_policy(SET CMP0057 NEW)
 
-        include(CTest)
-
         find_package(Threads REQUIRED)
         include(ProcessorCount)
         ProcessorCount(N)
