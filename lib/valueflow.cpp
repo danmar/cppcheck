@@ -4904,7 +4904,7 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
                 continue;
 
             Token* start = nextAfterAstRightmostLeaf(tok);
-            const Token* end = scope->bodyEnd;
+            const Token* end = getEndOfExprScope(tok->astOperand1(), scope);
 
             ValueFlow::Value rhs = makeSymbolic(tok->astOperand2());
             rhs.errorPath.emplace_back(tok,
