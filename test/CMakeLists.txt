@@ -44,7 +44,9 @@ if (BUILD_TESTS)
     endif()
 
     if (REGISTER_TESTS)
-        cmake_minimum_required(VERSION 3.4) # cmake_policy(SET CMP0064 NEW)
+        # CMP0064 requires 3.4
+        # CMAKE_MATCH_<n> usage for if (MATCHES) requires 3.9
+        cmake_minimum_required(VERSION 3.9)
         cmake_policy(SET CMP0064 NEW)
         cmake_policy(SET CMP0057 NEW)
 
