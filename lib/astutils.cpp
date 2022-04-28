@@ -1717,7 +1717,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         }
         // TODO: Only check const on lvalues
         std::vector<const Token*> args = getArguments(ftok);
-        if (memberFunction && args.empty())
+        if (args.empty())
             return false;
         return constMember && std::all_of(args.begin(), args.end(), [](const Token* tok) {
             const Variable* var = tok->variable();
@@ -2553,6 +2553,8 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
             if (tok->variable()->isConst())
                 return false;
             global = !tok->variable()->isLocal() && !tok->variable()->isArgument();
+        } else if (tok->isIncompleteVar() && !tok->isIncompleteConstant()) {
+            global = true;
         }
 
         if (tok->exprId() > 0) {
