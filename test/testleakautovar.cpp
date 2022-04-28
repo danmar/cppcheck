@@ -214,6 +214,7 @@ private:
         TEST_CASE(smartPtrInContainer); // #8262
 
         TEST_CASE(functionCallCastConfig); // #9652
+        TEST_CASE(functionCallLeakIgnoreConfig); // #7923
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -2359,6 +2360,27 @@ private:
               "    free_func((void *)(1), buf);\n"
               "}", settingsFunctionCall);
         ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: Function free_func() should have <use>/<leak-ignore> configuration\n", errout.str());
+    }
+
+    void functionCallLeakIgnoreConfig() { // #7923
+        Settings settingsLeakIgnore = settings;
+
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def format=\"2\">\n"
+                               "  <function name=\"SomeClass::someMethod\">\n"
+                               "    <leak-ignore/>\n"
+                               "    <noreturn>false</noreturn>\n"
+                               "    <arg nr=\"1\" direction=\"in\"/>\n"
+                               "  </function>\n"
+                               "</def>\n";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settingsLeakIgnore.library.load(doc);
+        check("void f() {\n"
+              "    double* a = new double[1024];\n"
+              "    SomeClass::someMethod(a);\n"
+              "}\n", settingsLeakIgnore);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
     }
 };
 
