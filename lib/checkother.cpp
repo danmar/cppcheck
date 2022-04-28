@@ -2951,7 +2951,7 @@ void CheckOther::checkRedundantPointerOp()
 
         // variable
         const Token *varTok = tok->astOperand1()->astOperand1();
-        if (!varTok || varTok->isExpandedMacro())
+        if (!varTok || varTok->isExpandedMacro() || (!addressOfDeref && varTok->valueType() && varTok->valueType()->pointer && varTok->valueType()->reference == Reference::LValue))
             continue;
 
         const Variable *var = varTok->variable();

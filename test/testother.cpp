@@ -8774,6 +8774,9 @@ private:
                       "[test.cpp:4]: (style) Redundant pointer operation on 'value' - it's already a variable.\n",
                       errout.str());
 
+        check("void f(int**& p) {}\n", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
         // no warning for bitwise AND
         check("void f(const int *b) {\n"
               "    int x = 0x20 & *b;\n"
