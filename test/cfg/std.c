@@ -2891,6 +2891,14 @@ void uninitvar_vprintf(char *Format, va_list Arg)
     (void)vprintf(Format,arg2);
 }
 
+void memleak_strdup (char *s) // #9328
+{
+    char *s1 = strdup(s);
+    printf("%s",s1);
+    free(s);     // s1 is not freed
+    // cppcheck-suppress memleak
+}
+
 void uninitvar_vwprintf(wchar_t *Format, va_list Arg)
 {
     wchar_t * format1, * format2;

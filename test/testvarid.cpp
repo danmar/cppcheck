@@ -206,6 +206,7 @@ private:
         TEST_CASE(varidenum3);
         TEST_CASE(varidenum4);
         TEST_CASE(varidenum5);
+        TEST_CASE(varidenum6); // #9180
 
         TEST_CASE(varidnamespace1);
         TEST_CASE(varidnamespace2);
@@ -3342,6 +3343,14 @@ private:
                                "3: A = f ( x , eStart , y ) ;\n"
                                "4: } ;\n";
         TODO_ASSERT_EQUALS(expected, current, tokenize(code));
+    }
+
+    void varidenum6() { // #9180
+        const char code[] = "const int IDL1 = 13;\n"
+                            "enum class E { IDL1 = 16, };\n";
+        const char expected[] = "1: const int IDL1@1 = 13 ;\n"
+                                "2: enum class E { IDL1 = 16 , } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
     }
 
     void varid_classnameshaddowsvariablename() {
