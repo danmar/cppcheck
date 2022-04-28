@@ -37,6 +37,7 @@ if (BUILD_TESTS)
     add_dependencies(testrunner copy_addons)
 
     if (LIBXML2_XMLLINT_EXECUTABLE)
+        # TODO: run the CMake implementation of the tests
         # TODO: get rid of the copy
         add_custom_target(checkcfg ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cppcheck> ${CMAKE_SOURCE_DIR}
                 COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cfg/runtests.sh
