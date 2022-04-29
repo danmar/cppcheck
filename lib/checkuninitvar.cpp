@@ -80,6 +80,15 @@ static const Token *getAstParentSkipPossibleCastAndAddressOf(const Token *vartok
     return parent;
 }
 
+bool CheckUninitVar::diag(const Token* tok)
+{
+    if (!tok)
+        return true;
+    while (Token::Match(tok->astParent(), "*|&|."))
+        tok = tok->astParent();
+    return !mUninitDiags.insert(tok).second;
+}
+
 void CheckUninitVar::check()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1496,12 +1505,21 @@ void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varnam
 
 void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath)
 {
+    if (diag(tok))
+        return;
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
+    reportError(errorPath,
+                Severity::error,
+                "legacyUninitvar",
+                "$symbol:" + varname + "\nUninitialized variable: $symbol",
+                CWE_USE_OF_UNINITIALIZED_VARIABLE,
+                Certainty::normal);
 }
 
 void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
 {
+    if (diag(tok))
+        return;
     const Token* ltok = tok;
     if (tok && Token::simpleMatch(tok->astParent(), ".") && astIsRHS(tok))
         ltok = tok->astParent();
@@ -1666,10 +1684,6 @@ void CheckUninitVar::valueFlowUninit()
                 ids.insert(tok->exprId());
                 if (v->tokvalue)
                     ids.insert(v->tokvalue->exprId());
-                const Token* nextTok = nextAfterAstRightmostLeaf(parent);
-                if (nextTok == scope->bodyEnd)
-                    break;
-                tok = nextTok ? nextTok : tok;
             }
         }
     }

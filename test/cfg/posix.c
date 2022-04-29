@@ -601,6 +601,23 @@ void validCode(va_list valist_arg1, va_list valist_arg2)
     }
 }
 
+ssize_t nullPointer_send(int socket, const void *buf, size_t len, int flags)
+{
+    // cppcheck-suppress nullPointer
+    (void) send(socket, NULL, len, flags);
+    return send(socket, buf, len, flags);
+}
+
+ssize_t nullPointer_sendto(int socket, const void *message, size_t length,
+                           int flags, const struct sockaddr *dest_addr,
+                           socklen_t dest_len)
+{
+    // cppcheck-suppress nullPointer
+    (void) sendto(socket, NULL, length, flags, dest_addr, dest_len);
+    (void) sendto(socket, message, length, flags, NULL, dest_len);
+    return sendto(socket, message, length, flags, dest_addr, dest_len);
+}
+
 void bufferAccessOutOfBounds(int fd)
 {
     char a[5];

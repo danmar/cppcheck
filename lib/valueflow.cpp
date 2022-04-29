@@ -2253,10 +2253,13 @@ struct ValueFlowAnalyzer : Analyzer {
         } else if (getSettings()->library.getFunction(tok)) {
             // Assume library function doesn't modify user-global variables
             return Action::None;
-            // Function cast does not modify global variables
-        } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
+        } else if (Token::simpleMatch(tok->astParent(), ".") && astIsContainer(tok->astParent()->astOperand1())) {
+            // Assume container member function doesn't modify user-global variables
             return Action::None;
-        } else if (Token::Match(tok, "%name% (")) {
+        } else if (tok->tokType() == Token::eType && astIsPrimitive(tok->next())) {
+            // Function cast does not modify global variables
+            return Action::None;
+        } else if (!tok->isKeyword() && Token::Match(tok, "%name% (")) {
             return Action::Invalid;
         }
         return Action::None;
@@ -2796,8 +2799,10 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
                     setupExprVarIds(v.tokvalue, depth + 1);
                 }
             }
-            if (depth == 0 && tok->varId() == 0 && !tok->function() && tok->isName() && tok->previous()->str() != ".") {
-                // unknown variable
+            if (depth == 0 && tok->isIncompleteVar()) {
+                // TODO: Treat incomplete var as global, but we need to update
+                // the alias variables to just expr ids instead of requiring
+                // Variable
                 unknown = true;
                 return ChildrenToVisit::none;
             }
@@ -4896,8 +4901,13 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
             }))
                 continue;
 
+            if (findAstNode(tok, [](const Token* child) {
+                return child->isIncompleteVar();
+            }))
+                continue;
+
             Token* start = nextAfterAstRightmostLeaf(tok);
-            const Token* end = scope->bodyEnd;
+            const Token* end = getEndOfExprScope(tok->astOperand1(), scope);
 
             ValueFlow::Value rhs = makeSymbolic(tok->astOperand2());
             rhs.errorPath.emplace_back(tok,
@@ -6166,7 +6176,7 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
         return tok->astOperand1();
     }
 
-    virtual std::vector<Condition> parse(const Token* tok, const Settings*) const override
+    virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const override
     {
         if (!Token::Match(tok, "%comp%"))
             return {};
@@ -6175,6 +6185,8 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
         if (!tok->astOperand1() || tok->astOperand1()->hasKnownIntValue() || tok->astOperand1()->isLiteral())
             return {};
         if (!tok->astOperand2() || tok->astOperand2()->hasKnownIntValue() || tok->astOperand2()->isLiteral())
+            return {};
+        if (!isConstExpression(tok, settings->library, true, true))
             return {};
 
         std::vector<Condition> result;

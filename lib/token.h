@@ -602,6 +602,13 @@ public:
         setFlag(fIncompleteVar, b);
     }
 
+    bool isIncompleteConstant() const {
+        return getFlag(fIsIncompleteConstant);
+    }
+    void isIncompleteConstant(bool b) {
+        setFlag(fIsIncompleteConstant, b);
+    }
+
     bool isConstexpr() const {
         return getFlag(fConstexpr);
     }
@@ -1269,6 +1276,7 @@ private:
         fIsTemplate             = (1ULL << 33),
         fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ...; ...)
         fIsRemovedVoidParameter = (1ULL << 35), // A void function parameter has been removed
+        fIsIncompleteConstant   = (1ULL << 36),
     };
 
     Token::Type mTokType;

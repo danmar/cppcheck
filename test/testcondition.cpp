@@ -2687,7 +2687,7 @@ private:
               "    }\n"
               "    int FileIndex;\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'this->FileIndex<0' is always false\n", errout.str());
 
         // #8858 - #if
         check("short Do() {\n"

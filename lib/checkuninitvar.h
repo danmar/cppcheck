@@ -71,10 +71,11 @@ public:
     /** @brief Run checks against the normal token list */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckUninitVar checkUninitVar(tokenizer, settings, errorLogger);
-        checkUninitVar.check();
         checkUninitVar.valueFlowUninit();
+        checkUninitVar.check();
     }
 
+    bool diag(const Token* tok);
     /** Check for uninitialized variables */
     void check();
     void checkScope(const Scope* scope, const std::set<std::string> &arrayTypeDefs);
@@ -131,10 +132,12 @@ public:
     void uninitStructMemberError(const Token *tok, const std::string &membername);
 
 private:
-    Check::FileInfo *getFileInfo() const;
-    bool isUnsafeFunction(const Scope *scope, int argnr, const Token **tok) const;
+    std::set<const Token*> mUninitDiags;
+    Check::FileInfo* getFileInfo() const;
+    bool isUnsafeFunction(const Scope* scope, int argnr, const Token** tok) const;
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override
+    {
         CheckUninitVar c(nullptr, settings, errorLogger);
 
         ValueFlow::Value v{};

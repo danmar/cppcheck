@@ -2615,6 +2615,30 @@ void uninivar_setbuf(void)
     (void)std::setbuf(stream,buf);
 }
 
+void nullPointer_setbuf(FILE *stream, char *buf)
+{
+    // cppcheck-suppress nullPointer
+    std::setbuf(NULL,buf);
+    std::setbuf(stream,NULL);
+    std::setbuf(stream,buf);
+}
+
+int bufferAccessOutOfBounds_setvbuf(FILE* stream, int mode, size_t size)
+{
+    char buf[42]={0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) std::setvbuf(stream, buf, mode, 43);
+    return std::setvbuf(stream, buf, mode, 42);
+}
+
+int nullPointer_setvbuf(FILE* stream, char *buf, int mode, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::setvbuf(NULL, buf, mode, size);
+    (void) std::setvbuf(stream, NULL, mode, size);
+    return std::setvbuf(stream, buf, mode, size);
+}
+
 void uninivar_setvbuf(void)
 {
     FILE *stream;

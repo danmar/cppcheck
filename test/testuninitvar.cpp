@@ -1220,6 +1220,24 @@ private:
                        "  memset(var, 0, sizeof(var));\n"
                        "}", "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        checkUninitVar("int f() {\n" // #8692
+                       "    bool b = e();\n"
+                       "    int v;\n"
+                       "    if (b)\n"
+                       "        doStuff(&v);\n"
+                       "    int v2 = (b) ? v / 5 : 0;\n"
+                       "    int v3;\n"
+                       "    if (b)\n"
+                       "        v3 = 50;\n"
+                       "    int v4 = (b) ? v3 + 5 : 0;\n"
+                       "    int v5;\n"
+                       "    int v6 = v5;\n"
+                       "    doStuff(&v5);\n"
+                       "    int v7 = v5;\n"
+                       "    return v2 + v4 + v6 + v7;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:12]: (error) Uninitialized variable: v5\n", errout.str());
     }
 
 
@@ -4343,6 +4361,19 @@ private:
                        "    a=i;\n"
                        "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Uninitialized variable: i\n", errout.str());
+
+        checkUninitVar("namespace N {\n" // #7377
+                       "    template<typename T>\n"
+                       "    class C {};\n"
+                       "    using V = class C<void>;\n"
+                       "}\n"
+                       "int f() {\n"
+                       "    int r = 0;\n"
+                       "    for (int x; x < 4; x++)\n"
+                       "        r += x;\n"
+                       "    return r;\n"
+                       "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (error) Uninitialized variable: x\n", errout.str());
     }
 
     void uninitvar2_4494() {
@@ -5306,6 +5337,17 @@ private:
                         "    a++;\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        // #11006
+        valueFlowUninit("int g(int);\n"
+                        "void f() {\n"
+                        "    int received[NSIG];\n"
+                        "    for (int sig = 0; sig < NSIG; sig++)\n"
+                        "        received[sig] = g(sig);\n"
+                        "    for (int sig = 0; sig < NSIG; sig++)\n"
+                        "        if (received[sig]) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value

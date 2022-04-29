@@ -632,7 +632,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
             // Handle scopes that might be noreturn
             if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(tok, ") ; }")) {
-                const std::string &functionName(tok->link()->previous()->str());
+                const std::string functionName(mSettings->library.getFunctionName(tok->link()->previous()));
                 bool unknown = false;
                 if (mTokenizer->isScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (!unknown)
@@ -847,7 +847,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
 void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af)
 {
     // Ignore function call?
-    if (mSettings->library.isLeakIgnore(tokName->str()))
+    if (mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName)))
         return;
     if (mSettings->library.getReallocFuncInfo(tokName))
         return;

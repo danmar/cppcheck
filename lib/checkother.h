@@ -275,7 +275,7 @@ private:
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
     void commaSeparatedReturnError(const Token *tok);
-    void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
+    void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive, bool addressOfDeref);
     void raceAfterInterlockedDecrementError(const Token* tok);
     void unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef);
     void unknownEvaluationOrder(const Token* tok);
@@ -343,7 +343,7 @@ private:
         c.varFuncNullUBError(nullptr);
         c.nanInArithmeticExpressionError(nullptr);
         c.commaSeparatedReturnError(nullptr);
-        c.redundantPointerOpError(nullptr,  "varname", false);
+        c.redundantPointerOpError(nullptr,  "varname", false, /*addressOfDeref*/ true);
         c.unusedLabelError(nullptr, false, false);
         c.unusedLabelError(nullptr, false, true);
         c.unusedLabelError(nullptr, true, false);

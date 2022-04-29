@@ -2891,6 +2891,14 @@ void uninitvar_vprintf(char *Format, va_list Arg)
     (void)vprintf(Format,arg2);
 }
 
+void memleak_strdup (char *s) // #9328
+{
+    char *s1 = strdup(s);
+    printf("%s",s1);
+    free(s);     // s1 is not freed
+    // cppcheck-suppress memleak
+}
+
 void uninitvar_vwprintf(wchar_t *Format, va_list Arg)
 {
     wchar_t * format1, * format2;
@@ -3112,12 +3120,36 @@ void uninitvar_vwscanf(void)
     (void)vwscanf(format,arg);
 }
 
+void nullPointer_setbuf(FILE *stream, char *buf)
+{
+    // cppcheck-suppress nullPointer
+    setbuf(NULL,buf);
+    setbuf(stream,NULL);
+    setbuf(stream,buf);
+}
+
+int bufferAccessOutOfBounds_setvbuf(FILE* stream, int mode, size_t size)
+{
+    char buf[42]={0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) setvbuf(stream, buf, mode, 43);
+    return setvbuf(stream, buf, mode, 42);
+}
+
+int nullPointer_setvbuf(FILE* stream, char *buf, int mode, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void) setvbuf(NULL, buf, mode, size);
+    (void) setvbuf(stream, NULL, mode, size);
+    return setvbuf(stream, buf, mode, size);
+}
+
 void uninitvar_setbuf(void)
 {
     FILE *stream;
     char *buf;
     // cppcheck-suppress uninitvar
-    (void)setbuf(stream,buf);
+    setbuf(stream,buf);
 }
 
 void uninitvar_setvbuf(void)
@@ -3402,7 +3434,7 @@ void uninitvar_wcscpy(wchar_t *d, wchar_t*s)
 
 size_t bufferAccessOutOfBounds_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
 {
-	char buf[42] = {0};
+    char buf[42] = {0};
     // cppcheck-suppress bufferAccessOutOfBounds
     (void) strftime(buf,43,fmt,p);
     (void) strftime(buf,max,fmt,p);
