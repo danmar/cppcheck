@@ -203,12 +203,6 @@ public:
     static void eraseDeadCode(Token *begin, const Token *end);
 
     /**
-     * Simplify '* & ( %name% ) =' or any combination of '* &' and '()'
-     * parentheses around '%name%' to '%name% ='
-     */
-    void simplifyMulAndParens();
-
-    /**
      * Calculates sizeof value for given type.
      * @param type Token which will contain e.g. "int", "*", or string.
      * @return sizeof for given type, or 0 if it can't be calculated.
