@@ -8779,7 +8779,7 @@ private:
 
         checkP("#define	RESTORE(ORIG, COPY) { *ORIG = *COPY; }\n"
                "void f(int* p, int i) {\n"
-               "	  RESTORE(p, &i);\n"
+               "    RESTORE(p, &i);\n"
                "}\n");
         ASSERT_EQUALS("", errout.str());
 
