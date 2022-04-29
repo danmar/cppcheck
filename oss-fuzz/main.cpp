@@ -30,7 +30,9 @@ public:
                         const std::size_t) override {}
 };
 
-extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
+extern "C" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize);
+
+int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize)
 {
     if (dataSize < 10000) {
         const std::string code = generateCode2(data, dataSize);
