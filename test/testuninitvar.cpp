@@ -5337,6 +5337,17 @@ private:
                         "    a++;\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: a\n", errout.str());
+
+        // #11006
+        valueFlowUninit("int g(int);\n"
+                        "void f() {\n"
+                        "    int received[NSIG];\n"
+                        "    for (int sig = 0; sig < NSIG; sig++)\n"
+                        "        received[sig] = g(sig);\n"
+                        "    for (int sig = 0; sig < NSIG; sig++)\n"
+                        "        if (received[sig]) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
