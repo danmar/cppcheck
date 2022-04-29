@@ -188,6 +188,7 @@ private:
         TEST_CASE(array_index_61); // #10621
         TEST_CASE(array_index_62); // #7684
         TEST_CASE(array_index_63); // #10979
+        TEST_CASE(array_index_64); // #10878
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1794,6 +1795,30 @@ private:
               "        b[i] = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_64() // #10878
+    {
+        check("struct Array {\n"
+              "    int x[10];\n"
+              "    int& accessArrayRef(int a) { return x[a]; }\n"
+              "};\n"
+              "void f() {\n"
+              "    Array array = {};\n"
+              "    array.accessArrayRef(10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'x[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("int i = 10;\n"
+              "struct Array {\n"
+              "    int x[10];\n"
+              "    int& accessArrayRef(int a) { return x[a]; }\n"
+              "};\n"
+              "void f() {\n"
+              "    Array array = {};\n"
+              "    array.accessArrayRef(i);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Array 'x[10]' accessed at index 10, which is out of bounds.\n", "", errout.str());
     }
 
     void array_index_multidim() {
