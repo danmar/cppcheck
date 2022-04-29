@@ -8777,6 +8777,12 @@ private:
         check("void f(int**& p) {}\n", nullptr, false, true);
         ASSERT_EQUALS("", errout.str());
 
+        checkP("#define	RESTORE(ORIG, COPY) { *ORIG = *COPY; }\n"
+               "void f(int* p, int i) {\n"
+               "    RESTORE(p, &i);\n"
+               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // no warning for bitwise AND
         check("void f(const int *b) {\n"
               "    int x = 0x20 & *b;\n"
