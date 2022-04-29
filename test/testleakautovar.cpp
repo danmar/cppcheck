@@ -92,6 +92,7 @@ private:
         TEST_CASE(assign20); // #9187
         TEST_CASE(assign21); // #10186
         TEST_CASE(assign22); // #9139
+        TEST_CASE(assign23);
 
         TEST_CASE(isAutoDealloc);
 
@@ -461,6 +462,44 @@ private:
               "    const void * const p = malloc(10);\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void assign23() {
+        Settings s = settings;
+        LOAD_LIB_2(settings.library, "posix.cfg");
+        check("void f() {\n"
+              "    int n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14;\n"
+              "    *&n1 = open(\"xx.log\", O_RDONLY);\n"
+              "    *&(n2) = open(\"xx.log\", O_RDONLY);\n"
+              "    *(&n3) = open(\"xx.log\", O_RDONLY);\n"
+              "    *&*&n4 = open(\"xx.log\", O_RDONLY);\n"
+              "    *&*&*&(n5) = open(\"xx.log\", O_RDONLY);\n"
+              "    *&*&(*&n6) = open(\"xx.log\", O_RDONLY);\n"
+              "    *&*(&*&n7) = open(\"xx.log\", O_RDONLY);\n"
+              "    *(&*&n8) = open(\"xx.log\", O_RDONLY);\n"
+              "    *&(*&*&(*&n9)) = open(\"xx.log\", O_RDONLY);\n"
+              "    (n10) = open(\"xx.log\", O_RDONLY);\n"
+              "    ((n11)) = open(\"xx.log\", O_RDONLY);\n"
+              "    ((*&n12)) = open(\"xx.log\", O_RDONLY);\n"
+              "    *(&(*&n13)) = open(\"xx.log\", O_RDONLY);\n"
+              "    ((*&(*&n14))) = open(\"xx.log\", O_RDONLY);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:17]: (error) Resource leak: n1\n"
+                      "[test.cpp:17]: (error) Resource leak: n2\n"
+                      "[test.cpp:17]: (error) Resource leak: n3\n"
+                      "[test.cpp:17]: (error) Resource leak: n4\n"
+                      "[test.cpp:17]: (error) Resource leak: n5\n"
+                      "[test.cpp:17]: (error) Resource leak: n6\n"
+                      "[test.cpp:17]: (error) Resource leak: n7\n"
+                      "[test.cpp:17]: (error) Resource leak: n8\n"
+                      "[test.cpp:17]: (error) Resource leak: n9\n"
+                      "[test.cpp:17]: (error) Resource leak: n10\n"
+                      "[test.cpp:17]: (error) Resource leak: n11\n"
+                      "[test.cpp:17]: (error) Resource leak: n12\n"
+                      "[test.cpp:17]: (error) Resource leak: n13\n"
+                      "[test.cpp:17]: (error) Resource leak: n14\n",
+                      errout.str());
+        settings = s;
     }
 
     void isAutoDealloc() {
