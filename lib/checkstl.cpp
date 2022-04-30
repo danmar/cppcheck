@@ -1035,7 +1035,10 @@ static const Token* getLoopContainer(const Token* tok)
     return sepTok->astOperand2();
 }
 
-static const ValueFlow::Value* getInnerLifetime(const Token* tok, nonneg int id, ErrorPath* errorPath = nullptr, int depth = 4)
+static const ValueFlow::Value* getInnerLifetime(const Token* tok,
+                                                nonneg int id,
+                                                ErrorPath* errorPath = nullptr,
+                                                int depth = 4)
 {
     if (depth < 0)
         return nullptr;
@@ -1044,7 +1047,10 @@ static const ValueFlow::Value* getInnerLifetime(const Token* tok, nonneg int id,
     for (const ValueFlow::Value& val : tok->values()) {
         if (!val.isLocalLifetimeValue())
             continue;
-        if (contains({ValueFlow::Value::LifetimeKind::Address, ValueFlow::Value::LifetimeKind::SubObject, ValueFlow::Value::LifetimeKind::Lambda}, val.lifetimeKind)) {
+        if (contains({ValueFlow::Value::LifetimeKind::Address,
+                      ValueFlow::Value::LifetimeKind::SubObject,
+                      ValueFlow::Value::LifetimeKind::Lambda},
+                     val.lifetimeKind)) {
             if (val.capturetok)
                 return getInnerLifetime(val.capturetok, id, errorPath, depth - 1);
             if (errorPath)
