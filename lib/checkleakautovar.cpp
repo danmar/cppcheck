@@ -362,7 +362,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         // assignment..
         if (const Token* const tokAssignOp = isAssignment(varTok)) {
-            
+
             // taking address of another variable..
             if (Token::Match(tokAssignOp, "= %var% [+;]")) {
                 if (varTok->tokAt(2)->varId() != varTok->varId()) {
