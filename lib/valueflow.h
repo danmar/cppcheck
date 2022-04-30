@@ -105,6 +105,7 @@ namespace ValueFlow {
             path(0),
             wideintvalue(val),
             subexpressions(),
+            capturetok(nullptr),
             lifetimeKind(LifetimeKind::Object),
             lifetimeScope(LifetimeScope::Local),
             valueKind(ValueKind::Possible)
@@ -363,6 +364,9 @@ namespace ValueFlow {
         long long wideintvalue;
 
         std::vector<std::string> subexpressions;
+
+        // Set to where a lifetime is captured by value
+        const Token* capturetok;
 
         enum class LifetimeKind {
             // Pointer points to a member of lifetime

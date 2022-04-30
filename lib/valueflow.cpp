@@ -3757,6 +3757,7 @@ struct LifetimeStore {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::LIFETIME;
                 value.tokvalue = lt.token;
+                value.capturetok = argtok;
                 value.errorPath = er;
                 value.lifetimeKind = type;
                 value.setInconclusive(inconclusive || lt.inconclusive);
@@ -3795,6 +3796,7 @@ struct LifetimeStore {
                 value.lifetimeScope = v.lifetimeScope;
                 value.path = v.path;
                 value.tokvalue = lt.token;
+                value.capturetok = argtok;
                 value.errorPath = std::move(er);
                 value.lifetimeKind = type;
                 value.setInconclusive(lt.inconclusive || v.isInconclusive() || inconclusive);
@@ -8271,6 +8273,7 @@ ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     path(0),
     wideintvalue(0),
     subexpressions(),
+    capturetok(nullptr),
     lifetimeKind(LifetimeKind::Object),
     lifetimeScope(LifetimeScope::Local),
     valueKind(ValueKind::Possible)
