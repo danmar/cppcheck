@@ -4094,6 +4094,10 @@ private:
               "    unsigned long long u{};\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #8358
+        check("void f(double d) { if ((d * 0) != 0) {} }");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()

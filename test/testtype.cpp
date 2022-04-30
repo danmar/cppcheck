@@ -227,6 +227,17 @@ private:
               "    outfile << vec_points[0](0) << static_cast<int>(d) << ' ';\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(unsigned b, int len, unsigned char rem) {\n" // #10773
+              "    int bits = 0;\n"
+              "    while (len > 8) {\n"
+              "        b = b >> rem;\n"
+              "        bits += 8 - rem;\n"
+              "        if (bits == 512)\n"
+              "            len -= 8;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkIntegerOverflow() {

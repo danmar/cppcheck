@@ -3259,6 +3259,16 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:8] -> [test.cpp:7] -> [test.cpp:8]: (error) Returning object that points to local variable 'files' that will be invalid when returning.\n",
             errout.str());
+
+        check("struct S {\n"
+              "    explicit S(std::string& s);\n"
+              "}\n"
+              "S f() {\n"
+              "    std::string m(\"abc\");\n"
+              "    return S(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeAggegrateConstructor() {

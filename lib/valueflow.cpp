@@ -756,7 +756,8 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
             return;
 
         // known result when a operand is 0.
-        if (Token::Match(parent, "[&*]") && value.isKnown() && value.isIntValue() && value.intvalue==0) {
+        if (Token::Match(parent, "[&*]") && astIsIntegral(parent, true) && value.isKnown() && value.isIntValue() &&
+            value.intvalue == 0) {
             setTokenValue(parent, value, settings);
             return;
         }
@@ -3757,6 +3758,7 @@ struct LifetimeStore {
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::LIFETIME;
                 value.tokvalue = lt.token;
+                value.capturetok = argtok;
                 value.errorPath = er;
                 value.lifetimeKind = type;
                 value.setInconclusive(inconclusive || lt.inconclusive);
@@ -3795,6 +3797,7 @@ struct LifetimeStore {
                 value.lifetimeScope = v.lifetimeScope;
                 value.path = v.path;
                 value.tokvalue = lt.token;
+                value.capturetok = argtok;
                 value.errorPath = std::move(er);
                 value.lifetimeKind = type;
                 value.setInconclusive(lt.inconclusive || v.isInconclusive() || inconclusive);
@@ -3930,7 +3933,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
             else
                 ls.byVal(tok, tokenlist, errorLogger, settings);
         });
-    } else {
+    } else if (!constructor->nestedIn->varlist.empty()) {
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + name + "'.",
                                ValueFlow::Value::LifetimeKind::SubObject,
@@ -8271,6 +8274,7 @@ ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     path(0),
     wideintvalue(0),
     subexpressions(),
+    capturetok(nullptr),
     lifetimeKind(LifetimeKind::Object),
     lifetimeScope(LifetimeScope::Local),
     valueKind(ValueKind::Possible)
