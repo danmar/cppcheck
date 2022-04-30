@@ -207,6 +207,7 @@ private:
         TEST_CASE(varidenum4);
         TEST_CASE(varidenum5);
         TEST_CASE(varidenum6); // #9180
+        TEST_CASE(varidenum7); // #8991
 
         TEST_CASE(varidnamespace1);
         TEST_CASE(varidnamespace2);
@@ -3350,6 +3351,20 @@ private:
                             "enum class E { IDL1 = 16, };\n";
         const char expected[] = "1: const int IDL1@1 = 13 ;\n"
                                 "2: enum class E { IDL1 = 16 , } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum7() { // #8991
+        const char code[] = "namespace N1 { const int c = 42; }\n"
+                            "namespace N2 { const int c = 24; }\n"
+                            "struct S {\n"
+                            "    enum { v1 = N1::c, v2 = N2::c };\n"
+                            "};\n";
+        const char expected[] = "1: namespace N1 { const int c@1 = 42 ; }\n"
+                                "2: namespace N2 { const int c@2 = 24 ; }\n"
+                                "3: struct S {\n"
+                                "4: enum Anonymous0 { v1 = N1 :: c@1 , v2 = N2 :: c@2 } ;\n"
+                                "5: } ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
