@@ -3266,7 +3266,8 @@ private:
               "S f() {\n"
               "    std::string m(\"abc\");\n"
               "    return S(m);\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
     }
 
