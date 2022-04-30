@@ -5274,6 +5274,68 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        // #10984
+        check("void f() {\n"
+              "    std::vector<int> v;\n"
+              "    auto g = [&v]{};\n"
+              "    v.push_back(1);\n"
+              "    g();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    auto it = v.begin();\n"
+              "    auto g = [&]{ std::cout << *it << std::endl;};\n"
+              "    v.push_back(1);\n"
+              "    g();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'v' that may be invalid.\n",
+            errout.str());
+
+        check("void f(std::vector<int> v) {\n"
+              "    auto it = v.begin();\n"
+              "    auto g = [=]{ std::cout << *it << std::endl;};\n"
+              "    v.push_back(1);\n"
+              "    g();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:4] -> [test.cpp:1] -> [test.cpp:5]: (error) Using iterator to local container 'v' that may be invalid.\n",
+            errout.str());
+
+        check("struct A {\n"
+              "    int* p;\n"
+              "    void g();\n"
+              "};\n"
+              "void f(std::vector<int> v) {\n"
+              "    auto it = v.begin();\n"
+              "    A a{v.data()};\n"
+              "    v.push_back(1);\n"
+              "    a.g();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:8] -> [test.cpp:5] -> [test.cpp:9]: (error) Using object that points to local variable 'v' that may be invalid.\n",
+            errout.str());
+
+        check("struct A {\n"
+              "    int*& p;\n"
+              "    void g();\n"
+              "};\n"
+              "void f(std::vector<int> v) {\n"
+              "    auto* p = v.data();\n"
+              "    A a{p};\n"
+              "    v.push_back(1);\n"
+              "    a.g();\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:5] -> [test.cpp:9]: (error) Using object that points to local variable 'v' that may be invalid.\n",
+            errout.str());
     }
 
     void invalidContainerLoop() {

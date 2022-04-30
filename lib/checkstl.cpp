@@ -1035,6 +1035,37 @@ static const Token* getLoopContainer(const Token* tok)
     return sepTok->astOperand2();
 }
 
+static const ValueFlow::Value* getInnerLifetime(const Token* tok,
+                                                nonneg int id,
+                                                ErrorPath* errorPath = nullptr,
+                                                int depth = 4)
+{
+    if (depth < 0)
+        return nullptr;
+    if (!tok)
+        return nullptr;
+    for (const ValueFlow::Value& val : tok->values()) {
+        if (!val.isLocalLifetimeValue())
+            continue;
+        if (contains({ValueFlow::Value::LifetimeKind::Address,
+                      ValueFlow::Value::LifetimeKind::SubObject,
+                      ValueFlow::Value::LifetimeKind::Lambda},
+                     val.lifetimeKind)) {
+            if (val.capturetok)
+                return getInnerLifetime(val.capturetok, id, errorPath, depth - 1);
+            if (errorPath)
+                errorPath->insert(errorPath->end(), val.errorPath.begin(), val.errorPath.end());
+            return getInnerLifetime(val.tokvalue, id, errorPath, depth - 1);
+        }
+        if (!val.tokvalue->variable())
+            continue;
+        if (val.tokvalue->varId() != id)
+            continue;
+        return &val;
+    }
+    return nullptr;
+}
+
 void CheckStl::invalidContainer()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1121,24 +1152,13 @@ void CheckStl::invalidContainer()
                                 }
                             }
                         }
-                        for (const ValueFlow::Value& val : info.tok->values()) {
-                            if (!val.isLocalLifetimeValue())
-                                continue;
-                            if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
-                                continue;
-                            if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::SubObject)
-                                continue;
-                            if (!val.tokvalue->variable())
-                                continue;
-                            if (val.tokvalue->varId() != r.tok->varId())
-                                continue;
-                            ErrorPath ep;
-                            // Check the iterator is created before the change
-                            if (val.tokvalue != tok && reaches(val.tokvalue, tok, library, &ep)) {
-                                v = &val;
-                                errorPath = ep;
-                                return true;
-                            }
+                        ErrorPath ep;
+                        const ValueFlow::Value* val = getInnerLifetime(info.tok, r.tok->varId(), &ep);
+                        // Check the iterator is created before the change
+                        if (val && val->tokvalue != tok && reaches(val->tokvalue, tok, library, &ep)) {
+                            v = val;
+                            errorPath = ep;
+                            return true;
                         }
                         return false;
                     });
