@@ -756,7 +756,8 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
             return;
 
         // known result when a operand is 0.
-        if (Token::Match(parent, "[&*]") && value.isKnown() && value.isIntValue() && value.intvalue==0) {
+        if (Token::Match(parent, "[&*]") && astIsIntegral(parent, true) && value.isKnown() && value.isIntValue() &&
+            value.intvalue == 0) {
             setTokenValue(parent, value, settings);
             return;
         }
