@@ -333,10 +333,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
 
         while (tok->str() == "(")
             tok = tok->next();
-        while (tok && tok->isUnaryOp("*") && tok->astOperand1() && tok->astOperand1()->isUnaryOp("&"))
+        while (tok->isUnaryOp("*") && tok->astOperand1()->isUnaryOp("&"))
             tok = tok->astOperand1()->astOperand1();
-        if (!tok)
-            break;
 
         // parse statement, skip to last member
         const Token *varTok = tok;
@@ -350,10 +348,13 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             ftok = ftok->tokAt(2);
 
         auto isAssignment = [](const Token* varTok) -> const Token* {
-            if (Token::Match(varTok, "%var% ="))
-                return varTok->next();
-            if (varTok->varId() && !Token::simpleMatch(varTok->astParent(), "[")) {
-                const Token* top = varTok->astTop();
+            if (varTok->varId()) {
+                const Token* top = varTok;
+                while (top->astParent()) {
+                    top = top->astParent();
+                    if (!Token::Match(top, "(|*|&|."))
+                        break;
+                }
                 if (top->str() == "=" && succeeds(top, varTok))
                     return top;
             }
