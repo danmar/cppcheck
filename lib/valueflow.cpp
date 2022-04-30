@@ -3930,7 +3930,7 @@ static void valueFlowLifetimeConstructor(Token* tok,
             else
                 ls.byVal(tok, tokenlist, errorLogger, settings);
         });
-    } else {
+    } else if (!constructor->nestedIn->varlist.empty()) {
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + name + "'.",
                                ValueFlow::Value::LifetimeKind::SubObject,
