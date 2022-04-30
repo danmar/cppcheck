@@ -349,10 +349,20 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         while (Token::Match(ftok, "%name% :: %name%"))
             ftok = ftok->tokAt(2);
 
-        // assignment..
-        if (Token::Match(varTok, "%var% =") || (varTok->varId() && !Token::simpleMatch(varTok->astParent(), "[") && varTok->astTop()->str() == "=")) {
-            const Token* const tokAssignOp = varTok->next()->str() == "=" ? varTok->next() : varTok->astTop();
+        auto isAssignment = [](const Token* varTok) -> const Token* {
+            if (Token::Match(varTok, "%var% ="))
+                return varTok->next();
+            if (varTok->varId() && !Token::simpleMatch(varTok->astParent(), "[")) {
+                const Token* top = varTok->astTop();
+                if (top->str() == "=" && succeeds(top, varTok))
+                    return top;
+            }
+            return nullptr;
+        };
 
+        // assignment..
+        if (const Token* const tokAssignOp = isAssignment(varTok)) {
+            
             // taking address of another variable..
             if (Token::Match(tokAssignOp, "= %var% [+;]")) {
                 if (varTok->tokAt(2)->varId() != varTok->varId()) {
