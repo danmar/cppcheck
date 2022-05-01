@@ -32,6 +32,13 @@
 #include <wchar.h>
 #include <string.h>
 
+ssize_t nullPointer_recv(int sockfd, void *buf, size_t len, int flags)
+{
+    // cppcheck-suppress nullPointer
+    (void) recv(sockfd, NULL, len, flags);
+    return recv(sockfd, buf, len, flags);
+}
+
 ssize_t nullPointer_recvfrom(int sockfd, void *buf, size_t len, int flags,
                              struct sockaddr *src_addr, socklen_t *addrlen)
 {
