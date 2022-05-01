@@ -38,7 +38,9 @@ void knownConditionTrueFalse_ffs(int i)
     // ffs() returns the position of the first bit set, or 0 if no bits are set in i.
     const int x = ffs(0);
     // cppcheck-suppress knownConditionTrueFalse
-    if (x == 0) {}
+    if (x == 0) {} // always true
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 1) {} // always false
     if (ffs(i) == 0) {}
 }
 
