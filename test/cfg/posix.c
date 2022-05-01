@@ -32,6 +32,17 @@
 #include <wchar.h>
 #include <string.h>
 
+ssize_t nullPointer_recvfrom(int sockfd, void *buf, size_t len, int flags,
+                             struct sockaddr *src_addr, socklen_t *addrlen)
+{
+    // If src_addr is not NULL, and the underlying protocol provides the source address, this source address is filled in.
+    (void) recvfrom(sockfd, buf, len, flags, NULL, addrlen);
+    (void) recvfrom(sockfd, buf, len, flags, src_addr, NULL);
+    (void) recvfrom(sockfd, buf, len, flags, NULL, NULL);
+    // cppcheck-suppress nullPointer
+    (void) recvfrom(sockfd, NULL, len, flags, src_addr, addrlen);
+    return recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
+}
 int nullPointer_semop(int semid, struct sembuf *sops, size_t nsops)
 {
     // cppcheck-suppress nullPointer
