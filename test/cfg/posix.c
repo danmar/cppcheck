@@ -32,6 +32,15 @@
 #include <wchar.h>
 #include <string.h>
 
+int nullPointer_readlinkat(int dirfd, const char *pathname, char *buf, size_t bufsiz)
+{
+    // cppcheck-suppress nullPointer
+    (void) readlinkat(dirfd, NULL, buf, bufsiz);
+    // cppcheck-suppress nullPointer
+    (void) readlinkat(dirfd, pathname, NULL, bufsiz);
+    return readlinkat(dirfd, pathname, buf, bufsiz);
+}
+
 ssize_t nullPointer_recv(int sockfd, void *buf, size_t len, int flags)
 {
     // cppcheck-suppress nullPointer
