@@ -22,6 +22,26 @@
 #include <sys/epoll.h>
 #endif
 
+#include <strings.h>
+
+void knownConditionTrueFalse_ffsl(long i)
+{
+    // ffs() returns the position of the first bit set, or 0 if no bits are set in i.
+    const int x = ffsl(0);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 0) {}
+    if (ffsl(i) == 0) {}
+}
+
+void knownConditionTrueFalse_ffsll(long long i)
+{
+    // ffs() returns the position of the first bit set, or 0 if no bits are set in i.
+    const int x = ffsll(0);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 0) {}
+    if (ffsll(i) == 0) {}
+}
+
 int nullPointer_semtimedop(int semid, struct sembuf *sops, size_t nsops, const struct timespec *timeout)
 {
     (void) semtimedop(semid, sops, nsops, NULL); // If the timeout argument is NULL, then semtimedop() behaves exactly like semop().

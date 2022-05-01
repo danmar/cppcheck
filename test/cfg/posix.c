@@ -31,8 +31,8 @@
 #define _XOPEN_SOURCE
 #include <wchar.h>
 #include <string.h>
-
 #include <strings.h>
+
 void knownConditionTrueFalse_ffs(int i)
 {
     // ffs() returns the position of the first bit set, or 0 if no bits are set in i.
