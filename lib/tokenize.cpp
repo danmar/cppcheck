@@ -2709,69 +2709,6 @@ bool Tokenizer::simplifyUsing()
 
     return substitute;
 }
-void Tokenizer::simplifyMulAndParens()
-{
-    if (!list.front())
-        return;
-    for (Token *tok = list.front()->tokAt(3); tok; tok = tok->next()) {
-        if (!tok->isName())
-            continue;
-        //fix ticket #2784 - improved by ticket #3184
-        int closedPars = 0;
-        Token *tokend = tok->next();
-        Token *tokbegin = tok->previous();
-        while (tokend && tokend->str() == ")") {
-            ++closedPars;
-            tokend = tokend->next();
-        }
-        if (!tokend || !(tokend->isAssignmentOp()))
-            continue;
-        while (Token::Match(tokbegin, "&|(")) {
-            if (tokbegin->str() == "&") {
-                if (Token::Match(tokbegin->tokAt(-2), "[;{}&(] *")) {
-                    //remove '* &'
-                    tokbegin = tokbegin->tokAt(-2);
-                    tokbegin->deleteNext(2);
-                } else if (Token::Match(tokbegin->tokAt(-3), "[;{}&(] * (")) {
-                    if (closedPars == 0)
-                        break;
-                    --closedPars;
-                    //remove ')'
-                    tok->deleteNext();
-                    //remove '* ( &'
-                    tokbegin = tokbegin->tokAt(-3);
-                    tokbegin->deleteNext(3);
-                } else
-                    break;
-            } else if (tokbegin->str() == "(") {
-                if (closedPars == 0)
-                    break;
-
-                //find consecutive opening parentheses
-                int openPars = 0;
-                while (tokbegin && tokbegin->str() == "(" && openPars <= closedPars) {
-                    ++openPars;
-                    tokbegin = tokbegin->previous();
-                }
-                if (!tokbegin || openPars > closedPars)
-                    break;
-
-                if ((openPars == closedPars && Token::Match(tokbegin, "[;{}]")) ||
-                    Token::Match(tokbegin->tokAt(-2), "[;{}&(] * &") ||
-                    Token::Match(tokbegin->tokAt(-3), "[;{}&(] * ( &")) {
-                    //remove the excessive parentheses around the variable
-                    while (openPars > 0) {
-                        tok->deleteNext();
-                        tokbegin->deleteNext();
-                        --closedPars;
-                        --openPars;
-                    }
-                } else
-                    break;
-            }
-        }
-    }
-}
 
 bool Tokenizer::createTokens(std::istream &code,
                              const std::string& FileName)
@@ -5038,9 +4975,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // simplify labels and 'case|default'-like syntaxes
     simplifyLabelsCaseDefault();
-
-    // simplify '[;{}] * & ( %any% ) =' to '%any% ='
-    simplifyMulAndParens();
 
     if (!isC() && !mSettings->library.markupFile(FileName)) {
         findComplicatedSyntaxErrorsInTemplates();
