@@ -21,6 +21,7 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#define __STDC_WANT_LIB_EXT1__ 1
 #include <ctime>
 #include <cwchar>
 #include <fstream>
@@ -30,6 +31,26 @@
 #include <istream>
 #include <iterator>
 #include <vector>
+
+// As with all bounds-checked functions, localtime_s is only guaranteed to be available if __STDC_LIB_EXT1__ is defined by the implementation and if the user defines __STDC_WANT_LIB_EXT1__ to the integer constant 1 before including time.h.
+#ifdef __STDC_LIB_EXT1__
+void uninitvar_localtime_s(const std::time_t *restrict time, struct tm *restrict result)
+{
+    const std::time_t *restrict Time;
+    // TODO cppcheck-suppress uninitvar
+    (void)std::localtime_s(Time, result);
+    (void)std::localtime_s(time, result);
+}
+
+void nullPointer_localtime_s(const std::time_t *restrict time, struct tm *restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::localtime_s(NULL, result);
+    // cppcheck-suppress nullPointer
+    (void)std::localtime_s(time, NULL);
+    (void)std::localtime_s(time, result);
+}
+#endif // __STDC_LIB_EXT1__
 
 size_t nullPointer_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
 {
