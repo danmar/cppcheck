@@ -2697,6 +2697,15 @@ void uninitvar_memchr(void)
     (void)memchr(cs,c,n);
 }
 
+void *bufferAccessOutOfBounds_memchr(const void *s, int c, size_t n)
+{
+    char buf[42]={0};
+    (void)memchr(buf,c,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)memchr(buf,c,43);
+    return memchr(s,c,n);
+}
+
 void uninitvar_wmemchr(void)
 {
     wchar_t *cs;
