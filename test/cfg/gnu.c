@@ -21,8 +21,16 @@
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
-
 #include <strings.h>
+
+void *bufferAccessOutOfBounds_memrchr(const void *s, int c, size_t n)
+{
+    char buf[42]={0};
+    (void)memrchr(buf,c,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)memrchr(buf,c,43);
+    return memrchr(s,c,n);
+}
 
 void knownConditionTrueFalse_ffsl(long i)
 {
