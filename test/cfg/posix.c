@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
+#include <sys/sem.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <dlfcn.h>
@@ -30,6 +31,13 @@
 #define _XOPEN_SOURCE
 #include <wchar.h>
 #include <string.h>
+
+int nullPointer_semop(int semid, struct sembuf *sops, size_t nsops)
+{
+    // cppcheck-suppress nullPointer
+    (void)semop(semid, NULL, nsops);
+    return semop(semid, sops, nsops);
+}
 
 int nullPointer_socketpair(int domain, int t, int protocol, int sv[2])
 {
