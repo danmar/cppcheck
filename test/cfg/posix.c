@@ -13,6 +13,7 @@
 #include <dirent.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
+#include <sys/sem.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <dlfcn.h>
@@ -30,6 +31,49 @@
 #define _XOPEN_SOURCE
 #include <wchar.h>
 #include <string.h>
+
+ssize_t nullPointer_readlink(const char *path, char *buf, size_t bufsiz)
+{
+    // cppcheck-suppress nullPointer
+    (void)readlink(NULL, buf, bufsiz);
+    // cppcheck-suppress nullPointer
+    (void)readlink(path, NULL, bufsiz);
+    return readlink(path, buf, bufsiz);
+}
+
+int nullPointer_readlinkat(int dirfd, const char *pathname, char *buf, size_t bufsiz)
+{
+    // cppcheck-suppress nullPointer
+    (void) readlinkat(dirfd, NULL, buf, bufsiz);
+    // cppcheck-suppress nullPointer
+    (void) readlinkat(dirfd, pathname, NULL, bufsiz);
+    return readlinkat(dirfd, pathname, buf, bufsiz);
+}
+
+ssize_t nullPointer_recv(int sockfd, void *buf, size_t len, int flags)
+{
+    // cppcheck-suppress nullPointer
+    (void) recv(sockfd, NULL, len, flags);
+    return recv(sockfd, buf, len, flags);
+}
+
+ssize_t nullPointer_recvfrom(int sockfd, void *buf, size_t len, int flags,
+                             struct sockaddr *src_addr, socklen_t *addrlen)
+{
+    // If src_addr is not NULL, and the underlying protocol provides the source address, this source address is filled in.
+    (void) recvfrom(sockfd, buf, len, flags, NULL, addrlen);
+    (void) recvfrom(sockfd, buf, len, flags, src_addr, NULL);
+    (void) recvfrom(sockfd, buf, len, flags, NULL, NULL);
+    // cppcheck-suppress nullPointer
+    (void) recvfrom(sockfd, NULL, len, flags, src_addr, addrlen);
+    return recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
+}
+int nullPointer_semop(int semid, struct sembuf *sops, size_t nsops)
+{
+    // cppcheck-suppress nullPointer
+    (void)semop(semid, NULL, nsops);
+    return semop(semid, sops, nsops);
+}
 
 int nullPointer_socketpair(int domain, int t, int protocol, int sv[2])
 {

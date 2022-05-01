@@ -16,10 +16,19 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <sys/mman.h>
+#include <sys/sem.h>
 #include <wchar.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
+
+int nullPointer_semtimedop(int semid, struct sembuf *sops, size_t nsops, const struct timespec *timeout)
+{
+    (void) semtimedop(semid, sops, nsops, NULL); // If the timeout argument is NULL, then semtimedop() behaves exactly like semop().
+    (void) semtimedop(semid, sops, nsops, timeout);
+    // cppcheck-suppress nullPointer
+    return semtimedop(semid, NULL, nsops, timeout);
+}
 
 void *nullPointer_mempcpy(void *dest, const void *src, size_t n)
 {
