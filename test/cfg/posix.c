@@ -32,6 +32,16 @@
 #include <wchar.h>
 #include <string.h>
 
+#include <strings.h>
+void knownConditionTrueFalse_ffs(int i)
+{
+    // ffs() returns the position of the first bit set, or 0 if no bits are set in i.
+    const int x = ffs(0);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 0) {}
+    if (ffs(i) == 0) {}
+}
+
 ssize_t nullPointer_readlink(const char *path, char *buf, size_t bufsiz)
 {
     // cppcheck-suppress nullPointer
