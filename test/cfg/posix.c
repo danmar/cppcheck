@@ -16,6 +16,7 @@
 #include <sys/sem.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <grp.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 // unavailable on some linux systems #include <ndbm.h>
@@ -32,6 +33,30 @@
 #include <wchar.h>
 #include <string.h>
 #include <strings.h>
+
+int nullPointer_getgrgid_r(gid_t gid, struct group *restrict grp, char *restrict buf, size_t buflen, struct group **restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getgrgid_r(gid, NULL, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrgid_r(gid, grp, NULL, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrgid_r(gid, grp, buf, buflen, NULL);
+    return getgrgid_r(gid, grp, buf, buflen, result);
+}
+
+int nullPointer_getgrnam_r(const char *restrict name, struct group *restrict grp, char *restrict buf, size_t buflen, struct group **restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(NULL, grp, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(name, NULL, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(name, grp, NULL, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(name, grp, buf, buflen, NULL);
+    return getgrnam_r(name, grp, buf, buflen, result);
+}
 
 void knownConditionTrueFalse_ffs(int i)
 {
