@@ -16,6 +16,8 @@
 #include <sys/sem.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <grp.h>
+#include <pwd.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 // unavailable on some linux systems #include <ndbm.h>
@@ -31,6 +33,66 @@
 #define _XOPEN_SOURCE
 #include <wchar.h>
 #include <string.h>
+#include <strings.h>
+
+int nullPointer_fgetpwent_r(FILE *restrict stream, struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
+{
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(NULL, pwbuf, buf, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(stream, NULL, buf, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(stream, pwbuf, NULL, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(stream, pwbuf, buf, buflen, NULL);
+    return fgetpwent_r(stream, pwbuf, buf, buflen, pwbufp);
+}
+
+int nullPointer_getpwent_r(struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
+{
+    // cppcheck-suppress nullPointer
+    (void) getpwent_r(NULL, buf, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) getpwent_r(pwbuf, NULL, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) getpwent_r(pwbuf, buf, buflen, NULL);
+    return getpwent_r(pwbuf, buf, buflen, pwbufp);
+}
+
+int nullPointer_getgrgid_r(gid_t gid, struct group *restrict grp, char *restrict buf, size_t buflen, struct group **restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getgrgid_r(gid, NULL, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrgid_r(gid, grp, NULL, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrgid_r(gid, grp, buf, buflen, NULL);
+    return getgrgid_r(gid, grp, buf, buflen, result);
+}
+
+int nullPointer_getgrnam_r(const char *restrict name, struct group *restrict grp, char *restrict buf, size_t buflen, struct group **restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(NULL, grp, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(name, NULL, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(name, grp, NULL, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(name, grp, buf, buflen, NULL);
+    return getgrnam_r(name, grp, buf, buflen, result);
+}
+
+void knownConditionTrueFalse_ffs(int i)
+{
+    // ffs() returns the position of the first bit set, or 0 if no bits are set in i.
+    const int x = ffs(0);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 0) {} // always true
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 1) {} // always false
+    if (ffs(i) == 0) {}
+}
 
 ssize_t nullPointer_readlink(const char *path, char *buf, size_t bufsiz)
 {

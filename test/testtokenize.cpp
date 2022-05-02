@@ -187,7 +187,6 @@ private:
 
         TEST_CASE(tokenize_double);
         TEST_CASE(tokenize_strings);
-        TEST_CASE(simplifyMulAndParens);    // Ticket #2784 + #3184
 
         TEST_CASE(simplifyStructDecl);
 
@@ -1947,45 +1946,6 @@ private:
                       "\n"
                       "} ;\n"
                       "}", tokenizeAndStringify(code));
-    }
-
-    void simplifyMulAndParens() {
-        // (error) Resource leak
-        const char code[] = "void f() {"
-                            "   *&n1=open();"
-                            "   *&(n2)=open();"
-                            "   *(&n3)=open();"
-                            "   *&*&n4=open();"
-                            "   *&*&*&(n5)=open();"
-                            "   *&*&(*&n6)=open();"
-                            "   *&*(&*&n7)=open();"
-                            "   *(&*&n8)=open();"
-                            "   *&(*&*&(*&n9))=open();"
-                            "   (n10) = open();"
-                            "   ((n11)) = open();"
-                            "   ((*&n12))=open();"
-                            "   *(&(*&n13))=open();"
-                            "   ((*&(*&n14)))=open();"
-                            "   ((*&(*&n15)))+=10;"
-                            "}";
-        const char expected[] = "void f ( ) {"
-                                " n1 = open ( ) ;"
-                                " n2 = open ( ) ;"
-                                " n3 = open ( ) ;"
-                                " n4 = open ( ) ;"
-                                " n5 = open ( ) ;"
-                                " n6 = open ( ) ;"
-                                " n7 = open ( ) ;"
-                                " n8 = open ( ) ;"
-                                " n9 = open ( ) ;"
-                                " n10 = open ( ) ;"
-                                " n11 = open ( ) ;"
-                                " n12 = open ( ) ;"
-                                " n13 = open ( ) ;"
-                                " n14 = open ( ) ;"
-                                " n15 += 10 ; "
-                                "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code));
     }
 
     void simplifyStructDecl() {

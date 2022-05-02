@@ -32,6 +32,27 @@
 #include <iterator>
 #include <vector>
 
+int qsort_cmpfunc (const void * a, const void * b) {
+    return (*static_cast<const int*>(a) - *static_cast<const int*>(b));
+}
+void nullPointer_qsort(void *base, std::size_t n, std::size_t size, int (*cmp)(const void *, const void *))
+{
+    // cppcheck-suppress nullPointer
+    std::qsort(nullptr, n, size, qsort_cmpfunc);
+    // cppcheck-suppress nullPointer
+    std::qsort(base, n, size, nullptr);
+    std::qsort(base, n, size, qsort_cmpfunc);
+}
+
+void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)
+{
+    char buf[42]={0};
+    (void)std::memchr(buf,c,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)std::memchr(buf,c,43);
+    return std::memchr(s,c,n);
+}
+
 // As with all bounds-checked functions, localtime_s is only guaranteed to be available if __STDC_LIB_EXT1__ is defined by the implementation and if the user defines __STDC_WANT_LIB_EXT1__ to the integer constant 1 before including time.h.
 #ifdef __STDC_LIB_EXT1__
 void uninitvar_localtime_s(const std::time_t *restrict time, struct tm *restrict result)
