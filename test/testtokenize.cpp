@@ -263,6 +263,7 @@ private:
         TEST_CASE(removeattribute);
         TEST_CASE(functionAttributeBefore1);
         TEST_CASE(functionAttributeBefore2);
+        TEST_CASE(functionAttributeBefore3);
         TEST_CASE(functionAttributeAfter);
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
@@ -3651,6 +3652,22 @@ private:
 
         const Token * VAS_Fail = Token::findsimplematch(tokenizer.tokens(), "VAS_Fail");
         ASSERT(VAS_Fail && VAS_Fail->isAttributeNoreturn());
+    }
+
+    void functionAttributeBefore3() { // #10978
+        const char code[] = "void __attribute__((__noreturn__)) (*func_notret)(void);";
+        const char expected[] = "void ( * func_notret ) ( ) ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token* func_notret = Token::findsimplematch(tokenizer.tokens(), "func_notret");
+        ASSERT(func_notret && func_notret->isAttributeNoreturn());
     }
 
     void functionAttributeAfter() {

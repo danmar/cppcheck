@@ -10978,7 +10978,7 @@ void Tokenizer::simplifyAttribute()
                 syntaxError(tok);
 
             Token *functok = nullptr;
-            if (Token::Match(after, "%name%|*")) {
+            if (Token::Match(after, "%name%|*|(")) {
                 Token *ftok = after;
                 while (Token::Match(ftok, "%name%|::|<|* !!(")) {
                     if (ftok->str() == "<") {
@@ -10988,7 +10988,9 @@ void Tokenizer::simplifyAttribute()
                     }
                     ftok = ftok->next();
                 }
-                if (Token::Match(ftok, "%name% ("))
+                if (Token::simpleMatch(ftok, "( *"))
+                    ftok = ftok->tokAt(2);
+                if (Token::Match(ftok, "%name% (|)"))
                     functok = ftok;
             } else if (Token::Match(after, "[;{=:]")) {
                 Token *prev = tok->previous();
