@@ -35,6 +35,19 @@
 #include <string.h>
 #include <strings.h>
 
+int nullPointer_getpwnam_r(const char *name, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getpwnam_r(NULL, pwd, buffer, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwnam_r(name, NULL, buffer, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwnam_r(name, pwd, NULL, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwnam_r(name, pwd, buffer, bufsize, NULL);
+    return getpwnam_r(name, pwd, buffer, bufsize, result);
+}
+
 int nullPointer_fgetpwent_r(FILE *restrict stream, struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
 {
     // cppcheck-suppress nullPointer
