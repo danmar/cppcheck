@@ -35,6 +35,19 @@
 #include <string.h>
 #include <strings.h>
 
+int nullPointer_fgetpwent_r(FILE *restrict stream, struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
+{
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(NULL, pwbuf, buf, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(stream, NULL, buf, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(stream, pwbuf, NULL, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(stream, pwbuf, buf, buflen, NULL);
+    return fgetpwent_r(stream, pwbuf, buf, buflen, pwbufp);
+}
+
 int nullPointer_getpwent_r(struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
 {
     // cppcheck-suppress nullPointer
