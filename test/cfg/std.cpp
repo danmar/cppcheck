@@ -32,6 +32,18 @@
 #include <iterator>
 #include <vector>
 
+int qsort_cmpfunc (const void * a, const void * b) {
+    return (*static_cast<const int*>(a) - *static_cast<const int*>(b));
+}
+void nullPointer_qsort(void *base, std::size_t n, std::size_t size, int (*cmp)(const void *, const void *))
+{
+    // cppcheck-suppress nullPointer
+    std::qsort(nullptr, n, size, qsort_cmpfunc);
+    // cppcheck-suppress nullPointer
+    std::qsort(base, n, size, nullptr);
+    std::qsort(base, n, size, qsort_cmpfunc);
+}
+
 void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)
 {
     char buf[42]={0};

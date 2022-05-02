@@ -26,6 +26,19 @@
 #include <inttypes.h>
 #include <float.h>
 
+
+int qsort_cmpfunc (const void * a, const void * b) {
+    return (*(int*)a - *(int*)b);
+}
+void nullPointer_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *))
+{
+    // cppcheck-suppress nullPointer
+    qsort(NULL, n, size, qsort_cmpfunc);
+    // cppcheck-suppress nullPointer
+    qsort(base, n, size, NULL);
+    qsort(base, n, size, qsort_cmpfunc);
+}
+
 // As with all bounds-checked functions, localtime_s is only guaranteed to be available if __STDC_LIB_EXT1__ is defined by the implementation and if the user defines __STDC_WANT_LIB_EXT1__ to the integer constant 1 before including time.h.
 #ifdef __STDC_LIB_EXT1__
 void uninitvar_localtime_s(const time_t *restrict time, struct tm *restrict result)
