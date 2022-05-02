@@ -35,6 +35,17 @@
 #include <string.h>
 #include <strings.h>
 
+int nullPointer_getpwuid_r(uid_t uid, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getpwuid_r(uid, NULL, buffer, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwuid_r(uid, pwd, NULL, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwuid_r(uid, pwd, buffer, bufsize, NULL);
+    return getpwuid_r(uid, pwd, buffer, bufsize, result);
+}
+
 int nullPointer_getpwnam_r(const char *name, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
 {
     // cppcheck-suppress nullPointer
