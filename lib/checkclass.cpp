@@ -2504,8 +2504,16 @@ void CheckClass::checkSelfInitialization()
             continue;
 
         for (; tok != scope->bodyStart; tok = tok->next()) {
-            if (Token::Match(tok, "[:,] %var% (|{ %var% )|}") && tok->next()->varId() == tok->tokAt(3)->varId()) {
-                selfInitializationError(tok, tok->strAt(1));
+            if (Token::Match(tok, "[:,] %var% (|{")) {
+                const Token* varTok = tok->next();
+                if (Token::Match(varTok->astParent(), "(|{")) {
+                    if (const Token* initTok = varTok->astParent()->astOperand2()) {
+                        if (initTok->varId() == varTok->varId())
+                            selfInitializationError(tok, varTok->str());
+                        else if (initTok->isCast() && ((initTok->astOperand1() && initTok->astOperand1()->varId() == varTok->varId()) || (initTok->astOperand2() && initTok->astOperand2()->varId() == varTok->varId())))
+                            selfInitializationError(tok, varTok->str());
+                    }
+                }
             }
         }
     }
