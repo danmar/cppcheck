@@ -17,6 +17,7 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <grp.h>
+#include <pwd.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 // unavailable on some linux systems #include <ndbm.h>
@@ -33,6 +34,17 @@
 #include <wchar.h>
 #include <string.h>
 #include <strings.h>
+
+int nullPointer_getpwent_r(struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
+{
+    // cppcheck-suppress nullPointer
+    (void) getpwent_r(NULL, buf, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) getpwent_r(pwbuf, NULL, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) getpwent_r(pwbuf, buf, buflen, NULL);
+    return getpwent_r(pwbuf, buf, buflen, pwbufp);
+}
 
 int nullPointer_getgrgid_r(gid_t gid, struct group *restrict grp, char *restrict buf, size_t buflen, struct group **restrict result)
 {
