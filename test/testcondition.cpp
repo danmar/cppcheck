@@ -4803,7 +4803,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("struct S { int i; };\n"
-              "int f(const S & s) {\n"
+              "int f(const S& s) {\n"
               "    int a = 0, b = 0;\n"
               "    if (s.i == 0)\n"
               "        a = 1;\n"
