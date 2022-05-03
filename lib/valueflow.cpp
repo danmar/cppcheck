@@ -3888,6 +3888,8 @@ static void valueFlowLifetimeConstructor(Token* tok,
             const Token* expr = tok2->astOperand2();
             if (!var)
                 continue;
+            if (!isLifetimeBorrowed(expr, settings))
+                continue;
             const Variable* argvar = getLifetimeVariable(expr);
             if (var->isReference() || var->isRValueReference()) {
                 if (argvar && argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {

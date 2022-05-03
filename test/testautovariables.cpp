@@ -3269,6 +3269,17 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    std::string msg;\n"
+              "    explicit S(const char* m) : msg(m) {}\n"
+              "};\n"
+              "S f() {\n"
+              "    std::string s(\"abc\");\n"
+              "    return S(s.c_str());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeAggegrateConstructor() {
