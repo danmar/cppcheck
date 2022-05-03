@@ -10196,10 +10196,12 @@ void Tokenizer::reportUnknownMacros() const
                     unknownMacroError(tok);
             }
         } else if (Token::Match(tok, "%name% (") && tok->isUpperCaseName() && Token::Match(tok->linkAt(1), ") %name% (") && Token::Match(tok->linkAt(1)->linkAt(2), ") [;{]")) {
-            if (possible.count(tok->str()) == 0)
-                possible.insert(tok->str());
-            else
-                unknownMacroError(tok);
+            if (!(tok->linkAt(1)->next() && tok->linkAt(1)->next()->isKeyword())) { // e.g. noexcept(true)
+                if (possible.count(tok->str()) == 0)
+                    possible.insert(tok->str());
+                else
+                    unknownMacroError(tok);
+            }
         }
     }
 

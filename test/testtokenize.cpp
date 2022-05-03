@@ -6551,6 +6551,9 @@ private:
 
         const char code10[] = "void f(std::exception c) { b(M() M() + N(c.what())); }";
         ASSERT_THROW(tokenizeAndStringify(code10), InternalError);
+
+        const char code11[] = "struct B { B(B&&) noexcept {} ~B() noexcept {} };";
+        ASSERT_NO_THROW(tokenizeAndStringify(code11));
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()
