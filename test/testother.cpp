@@ -1567,6 +1567,15 @@ private:
                                  "    auto h = reinterpret_cast<void (STDAPICALLTYPE*)(int)>(p);\n"
                                  "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #5210
+        checkOldStylePointerCast("void f(void* v1, void* v2) {\n"
+                                 "    T** p1 = (T**)v1;\n"
+                                 "    T*** p2 = (T***)v2;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) C-style pointer casting\n"
+                      "[test.cpp:3]: (style) C-style pointer casting\n",
+                      errout.str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
