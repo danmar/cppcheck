@@ -1837,7 +1837,7 @@ class MisraChecker:
                         usedParameter = parametersUsed[i]
                         parameterDefinition = functionDeclaration.argument.get(i+1)
 
-                        if usedParameter.isString and parameterDefinition.nameToken:
+                        if usedParameter.isString and parameterDefinition and parameterDefinition.nameToken:
                             reportErrorIfVariableIsNotConst(parameterDefinition.nameToken, usedParameter)
 
     def misra_8_1(self, cfg):
