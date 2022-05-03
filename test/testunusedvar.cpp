@@ -5836,6 +5836,29 @@ private:
                               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Unused variable: c\n", errout.str());
 
+        functionVariableUsage("class ExampleClass\n" // #10000
+                              "{\n"
+                              "public:\n"
+                              "   ExampleClass(int xScale, int yScale, int x, int y)\n"
+                              "      : XScale(xScale)\n"
+                              "      , YScale(yScale)\n"
+                              "      , X(x)\n"
+                              "      , Y(y)\n"
+                              "   {\n"
+                              "   }\n"
+                              " \n"
+                              "   int XScale;\n"
+                              "   int YScale;\n"
+                              "   int X;\n"
+                              "   int Y;\n"
+                              "};\n"
+                              " \n"
+                              "void foo()\n"
+                              "{\n"
+                              "   ExampleClass ex(1, 2, 3, 4);\n"
+                              "}");
+        ASSERT_EQUALS("[test.cpp:20]: (style) Variable 'ex' is assigned a value that is never used.\n", errout.str());
+
         functionVariableUsage("class C { public: C(int); ~C(); };\n"
                               "void f() {\n"
                               "    C c(12);\n"
