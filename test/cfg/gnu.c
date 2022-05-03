@@ -23,6 +23,18 @@
 #endif
 #include <strings.h>
 
+
+int nullPointer_getservent_r(struct servent *restrict result_buf, char *restrict buf, size_t buflen, struct servent **restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getservent_r(NULL, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getservent_r(result_buf, NULL, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getservent_r(result_buf, buf, buflen, NULL);
+    return getservent_r(result_buf, buf, buflen, result);
+}
+
 void *bufferAccessOutOfBounds_memrchr(const void *s, int c, size_t n)
 {
     char buf[42]={0};
