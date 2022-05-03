@@ -4060,13 +4060,11 @@ class MisraChecker:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
+                errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
                 if self.path_premium_addon:
-                    errmsg = ''
-                    for line in subprocess.check_output([self.path_premium_addon, '--cli', '--get-rule-text=' + errorId]).strip().decode('ascii').split('\n'):
+                    for line in cppcheckdata.cmd_output([self.path_premium_addon, '--cli', '--get-rule-text=' + errorId]).split('\n'):
                         if not line.startswith('{'):
                             errmsg = line
-                else:
-                    errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
             else:
                 errmsg = 'misra violation %s with no text in the supplied rule-texts-file' % (ruleNum)
 
@@ -4402,7 +4400,7 @@ class MisraChecker:
 
             # Premium MISRA checking, deep analysis
             if cfgNumber == 0 and self.path_premium_addon:
-                subprocess.check_output([self.path_premium_addon, '--cli', '--misra', dumpfile])
+                subprocess.cmd_output([self.path_premium_addon, '--cli', '--misra', dumpfile])
 
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []
@@ -4667,7 +4665,7 @@ def main():
         premium_command = [checker.path_premium_addon, '--misra', '--file-list', args.file_list]
         if args.cli:
             premium_command.append('--cli')
-        for line in subprocess.check_output(premium_command).decode('ascii').split('\n'):
+        for line in subprocess.cmd_output(premium_command).split('\n'):
             if re.search(r'"errorId".*:.*"misra-', line) is not None:
                 print(line.strip())
 
