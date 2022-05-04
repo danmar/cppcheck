@@ -503,6 +503,10 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
 
 CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
 
+const Token* solveExprValue(const Token* expr,
+                            const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                            ValueFlow::Value& value);
+
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                                              bool escape = false,
                                              ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{});

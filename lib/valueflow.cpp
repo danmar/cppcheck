@@ -2936,38 +2936,43 @@ static Analyzer::Result valueFlowForwardExpression(Token* startToken,
     return result;
 }
 
-static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
+static const Token* parseBinaryIntOp(const Token* expr,
+                                     const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                                     MathLib::bigint& known)
 {
     if (!expr)
         return nullptr;
     if (!expr->astOperand1() || !expr->astOperand2())
         return nullptr;
-    if (expr->astOperand1()->exprId() == 0 && !expr->astOperand1()->hasKnownIntValue())
+    if (expr->astOperand1()->exprId() == 0 && expr->astOperand2()->exprId() == 0)
         return nullptr;
-    if (expr->astOperand2()->exprId() == 0 && !expr->astOperand2()->hasKnownIntValue())
+    std::vector<MathLib::bigint> x1 = eval(expr->astOperand1());
+    std::vector<MathLib::bigint> x2 = eval(expr->astOperand2());
+    if (expr->astOperand1()->exprId() == 0 && x1.empty())
         return nullptr;
-    const Token* knownTok = nullptr;
+    if (expr->astOperand2()->exprId() == 0 && x2.empty())
+        return nullptr;
     const Token* varTok = nullptr;
-    if (expr->astOperand1()->hasKnownIntValue() && !expr->astOperand2()->hasKnownIntValue()) {
+    if (!x1.empty() && x2.empty()) {
         varTok = expr->astOperand2();
-        knownTok = expr->astOperand1();
-    } else if (expr->astOperand2()->hasKnownIntValue() && !expr->astOperand1()->hasKnownIntValue()) {
+        known = x1.front();
+    } else if (x1.empty() && !x2.empty()) {
         varTok = expr->astOperand1();
-        knownTok = expr->astOperand2();
+        known = x2.front();
     }
-    if (knownTok)
-        known = knownTok->values().front().intvalue;
     return varTok;
 }
 
-static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
+const Token* solveExprValue(const Token* expr,
+                            const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                            ValueFlow::Value& value)
 {
     if (!value.isIntValue() && !value.isIteratorValue() && !value.isSymbolicValue())
         return expr;
     if (value.isSymbolicValue() && !Token::Match(expr, "+|-"))
         return expr;
     MathLib::bigint intval;
-    const Token* binaryTok = parseBinaryIntOp(expr, intval);
+    const Token* binaryTok = parseBinaryIntOp(expr, eval, intval);
     bool rhs = astIsRHS(binaryTok);
     // If its on the rhs, then -1 multiplication is needed, which is not possible with simple delta analysis used currently for symbolic values
     if (value.isSymbolicValue() && rhs && Token::simpleMatch(expr, "-"))
@@ -2976,28 +2981,40 @@ static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
         switch (expr->str()[0]) {
         case '+': {
             value.intvalue -= intval;
-            return solveExprValue(binaryTok, value);
+            return solveExprValue(binaryTok, eval, value);
         }
         case '-': {
             if (rhs)
                 value.intvalue = intval - value.intvalue;
             else
                 value.intvalue += intval;
-            return solveExprValue(binaryTok, value);
+            return solveExprValue(binaryTok, eval, value);
         }
         case '*': {
             if (intval == 0)
                 break;
             value.intvalue /= intval;
-            return solveExprValue(binaryTok, value);
+            return solveExprValue(binaryTok, eval, value);
         }
         case '^': {
             value.intvalue ^= intval;
-            return solveExprValue(binaryTok, value);
+            return solveExprValue(binaryTok, eval, value);
         }
         }
     }
     return expr;
+}
+
+static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
+{
+    return solveExprValue(
+        expr,
+        [](const Token* tok) -> std::vector<MathLib::bigint> {
+        if (tok->hasKnownIntValue())
+            return {tok->values().front().intvalue};
+        return {};
+    },
+        value);
 }
 
 ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist)
