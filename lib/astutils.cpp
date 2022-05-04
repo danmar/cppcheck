@@ -2229,7 +2229,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
 
     while (Token::simpleMatch(tok2->astParent(), "?") || (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
         tok2 = tok2->astParent();
-   
+
     if (Token::Match(tok2->astParent(), "++|--"))
         return true;
 
