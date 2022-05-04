@@ -854,7 +854,6 @@ private:
                     "    return d;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
-
     }
 
     void outOfBoundsSymbolic()
