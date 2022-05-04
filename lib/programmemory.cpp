@@ -193,6 +193,8 @@ void ProgramMemory::insert(const ProgramMemory &pm)
         mValues.insert(p);
 }
 
+static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
+
 static bool evaluateCondition(const std::string& op,
                               MathLib::bigint r,
                               const Token* condition,
@@ -331,13 +333,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             }
             if (!setvar) {
                 if (!pm.hasValue(vartok->exprId())) {
-                    MathLib::bigint result = 0;
-                    bool error = false;
-                    execute(valuetok, &pm, &result, &error);
-                    if (!error)
-                        pm.setIntValue(vartok, result);
-                    else
-                        pm.setUnknown(vartok);
+                    pm.setValue(vartok, execute(valuetok, pm));
                 }
             }
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
@@ -574,8 +570,6 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     }
     return result;
 }
-
-static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
 
 static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const Settings* settings)
 {
