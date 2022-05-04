@@ -51,14 +51,17 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     mValues[expr] = value;
     ValueFlow::Value subvalue = value;
-    const Token* subexpr = solveExprValue(expr, [&](const Token* tok) -> std::vector<MathLib::bigint> {
+    const Token* subexpr = solveExprValue(
+        expr,
+        [&](const Token* tok) -> std::vector<MathLib::bigint> {
         if (tok->hasKnownIntValue())
             return {tok->values().front().intvalue};
         MathLib::bigint result = 0;
         if (getIntValue(tok->exprId(), &result))
             return {result};
         return {};
-    }, subvalue);
+    },
+        subvalue);
     if (subexpr)
         mValues[subexpr] = subvalue;
 }

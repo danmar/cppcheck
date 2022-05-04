@@ -2936,7 +2936,9 @@ static Analyzer::Result valueFlowForwardExpression(Token* startToken,
     return result;
 }
 
-static const Token* parseBinaryIntOp(const Token* expr, const std::function<std::vector<MathLib::bigint>(const Token*)>& eval, MathLib::bigint& known)
+static const Token* parseBinaryIntOp(const Token* expr,
+                                     const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                                     MathLib::bigint& known)
 {
     if (!expr)
         return nullptr;
@@ -2961,7 +2963,9 @@ static const Token* parseBinaryIntOp(const Token* expr, const std::function<std:
     return varTok;
 }
 
-const Token* solveExprValue(const Token* expr, const std::function<std::vector<MathLib::bigint>(const Token*)>& eval, ValueFlow::Value& value)
+const Token* solveExprValue(const Token* expr,
+                            const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                            ValueFlow::Value& value)
 {
     if (!value.isIntValue() && !value.isIteratorValue() && !value.isSymbolicValue())
         return expr;
@@ -3003,11 +3007,14 @@ const Token* solveExprValue(const Token* expr, const std::function<std::vector<M
 
 static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
 {
-    return solveExprValue(expr, [](const Token* tok) -> std::vector<MathLib::bigint> {
+    return solveExprValue(
+        expr,
+        [](const Token* tok) -> std::vector<MathLib::bigint> {
         if (tok->hasKnownIntValue())
             return {tok->values().front().intvalue};
         return {};
-    }, value);
+    },
+        value);
 }
 
 ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist)
