@@ -1148,10 +1148,18 @@ static inline bool isDifferentKnownValues(const Token * const tok1, const Token 
     });
 }
 
-static inline bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
+static inline bool isSameConstantValue(bool macro, const Token* tok1, const Token* tok2)
 {
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
+
+    auto adjustForCast = [](const Token* tok) {
+        if (Token::Match(tok->previous(), "%type% (|{") && tok->previous()->isStandardType() && tok->astOperand2())
+            return tok->astOperand2();
+        return tok;
+    };
+    tok1 = adjustForCast(tok1);
+    tok2 = adjustForCast(tok2);
 
     if (!tok1->isNumber() || !tok2->isNumber())
         return false;
