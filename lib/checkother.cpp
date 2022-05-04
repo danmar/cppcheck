@@ -1543,23 +1543,24 @@ void CheckOther::checkConstPointer()
     std::set<const Variable *> pointers;
     std::set<const Variable *> nonConstPointers;
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
-        if (!tok->variable())
+        const Variable* const var = tok->variable();
+        if (!var)
             continue;
-        if (!tok->variable()->isLocal() && !tok->variable()->isArgument())
+        if (!var->isLocal() && !var->isArgument())
             continue;
-        const Token* const nameTok = tok->variable()->nameToken();
+        const Token* const nameTok = var->nameToken();
         // declarations of (static) pointers are (not) split up, array declarations are never split up
-        if (tok == nameTok && (!tok->variable()->isStatic() || Token::simpleMatch(nameTok->next(), "[")) &&
+        if (tok == nameTok && (!var->isStatic() || Token::simpleMatch(nameTok->next(), "[")) &&
             // range-based for loop
             !(Token::simpleMatch(nameTok->astParent(), ":") && Token::simpleMatch(nameTok->astParent()->astParent(), "(")))
             continue;
         if (!tok->valueType())
             continue;
-        if (tok->valueType()->pointer != 1 || (tok->valueType()->constness & 1) || tok->valueType()->reference != Reference::None)
+        if (tok->valueType()->pointer != 1 && !(tok->valueType()->pointer == 2 && var->isArray()) || (tok->valueType()->constness & 1) || tok->valueType()->reference != Reference::None)
             continue;
-        if (nonConstPointers.find(tok->variable()) != nonConstPointers.end())
+        if (nonConstPointers.find(var) != nonConstPointers.end())
             continue;
-        pointers.insert(tok->variable());
+        pointers.insert(var);
         const Token *parent = tok->astParent();
         bool deref = false;
         if (parent && parent->isUnaryOp("*"))
@@ -1586,7 +1587,7 @@ void CheckOther::checkConstPointer()
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
         }
-        nonConstPointers.insert(tok->variable());
+        nonConstPointers.insert(var);
     }
     for (const Variable *p: pointers) {
         if (p->isArgument()) {
