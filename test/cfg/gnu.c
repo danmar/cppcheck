@@ -12,6 +12,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <netdb.h>
 #include <sys/time.h>
 #include <sys/types.h>
 #include <pwd.h>
