@@ -2229,9 +2229,19 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
 
     while (Token::simpleMatch(tok2->astParent(), "?") || (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
         tok2 = tok2->astParent();
+    {
+        const Token* parent = tok2->astParent();
+        if (Token::Match(parent, "++|--"))
+            return true;
 
-    if (Token::Match(tok2->astParent(), "++|--"))
-        return true;
+        const Token* gparent = parent ? parent->astParent() : nullptr;
+        while (parent && gparent && ((parent->isUnaryOp("*") && gparent->isUnaryOp("&")) || ((parent->isUnaryOp("&") && gparent->isUnaryOp("*"))))) {
+            tok2 = gparent;
+            parent = gparent->astParent();
+            if (parent)
+                gparent = parent->astParent();
+        }
+    }
 
     if (tok2->astParent() && tok2->astParent()->isAssignmentOp()) {
         if (tok2 == tok2->astParent()->astOperand1())
