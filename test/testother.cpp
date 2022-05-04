@@ -159,6 +159,7 @@ private:
         TEST_CASE(duplicateExpression12); // #10026
         TEST_CASE(duplicateExpression13); // #7899
         TEST_CASE(duplicateExpression14); // #9871
+        TEST_CASE(duplicateExpression15); // #10650
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -5755,6 +5756,20 @@ private:
               "    return (f + 4 != g + 4);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:5]: (style) The comparison 'f+4 != g+4' is always false because 'f+4' and 'g+4' represent the same value.\n", errout.str());
+    }
+
+    void duplicateExpression15() { //#10650
+        check("bool f() {\n"
+              "    const int i = int(0);\n"
+              "    return i == 0;\n"
+              "}\n"
+              "bool g() {\n"
+              "    const int i = int{ 0 };\n"
+              "    return i == 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'i == 0' is always true.\n"
+                      "[test.cpp:6] -> [test.cpp:7]: (style) The comparison 'i == 0' is always true.\n",
+                      errout.str());
     }
 
     void duplicateExpressionLoop() {
