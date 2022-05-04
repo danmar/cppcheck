@@ -2545,7 +2545,7 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
             std::list<const Token *> callstack(1, callToken);
             getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, callToken, callstack);
             if (callstack.empty())
-      continue;
+                continue;
             if (!(callstack.back()->function()->hasVirtualSpecifier() || callstack.back()->function()->hasOverrideSpecifier()))
                 continue;
             if (callstack.back()->function()->isPure())
