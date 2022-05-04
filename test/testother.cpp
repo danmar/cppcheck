@@ -9712,6 +9712,14 @@ private:
               "    for (const F& f : fl) {}\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:7]: (style) Local variable 'f' shadows outer variable\n", errout.str());
+
+        check("extern int a;\n"
+              "int a;\n"
+              "static int f(void) {\n"
+              "    int a;\n"
+              "    return 0;\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:1] -> [test.c:4]: (style) Local variable 'a' shadows outer variable\n", errout.str());
     }
 
     void knownArgument() {
