@@ -1051,6 +1051,8 @@ static const ValueFlow::Value* getInnerLifetime(const Token* tok,
                       ValueFlow::Value::LifetimeKind::SubObject,
                       ValueFlow::Value::LifetimeKind::Lambda},
                      val.lifetimeKind)) {
+            if (val.isInconclusive())
+                return nullptr;
             if (val.capturetok)
                 return getInnerLifetime(val.capturetok, id, errorPath, depth - 1);
             if (errorPath)
