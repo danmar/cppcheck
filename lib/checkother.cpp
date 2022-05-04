@@ -1540,8 +1540,7 @@ void CheckOther::checkConstPointer()
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
-    std::set<const Variable *> pointers;
-    std::set<const Variable *> nonConstPointers;
+    std::vector<const Variable*> pointers, nonConstPointers;
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
         const Variable* const var = tok->variable();
         if (!var)
@@ -1554,32 +1553,34 @@ void CheckOther::checkConstPointer()
             // range-based for loop
             !(Token::simpleMatch(nameTok->astParent(), ":") && Token::simpleMatch(nameTok->astParent()->astParent(), "(")))
             continue;
-        if (!tok->valueType())
+        const ValueType* const vt = tok->valueType();
+        if (!vt)
             continue;
-        if (tok->valueType()->pointer != 1 && !(tok->valueType()->pointer == 2 && var->isArray()) || (tok->valueType()->constness & 1) || tok->valueType()->reference != Reference::None)
+        if (vt->pointer != 1 && !(vt->pointer == 2 && var->isArray()) || (vt->constness & 1) || vt->reference != Reference::None)
             continue;
-        if (nonConstPointers.find(var) != nonConstPointers.end())
+        if (std::find(nonConstPointers.begin(), nonConstPointers.end(), var) != nonConstPointers.end())
             continue;
-        pointers.insert(var);
-        const Token *parent = tok->astParent();
+        pointers.emplace_back(var);
+        const Token* const parent = tok->astParent();
         bool deref = false;
         if (parent && parent->isUnaryOp("*"))
             deref = true;
-        else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && parent->astOperand1() != nameTok)
+        else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
             deref = true;
         if (deref) {
-            if (Token::Match(parent->astParent(), "%cop%") && !parent->astParent()->isUnaryOp("&") && !parent->astParent()->isUnaryOp("*"))
+            const Token* const gparent = parent->astParent();
+            if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
                 continue;
-            if (Token::simpleMatch(parent->astParent(), "return"))
+            if (Token::simpleMatch(gparent, "return"))
                 continue;
-            else if (Token::Match(parent->astParent(), "%assign%") && parent == parent->astParent()->astOperand2()) {
+            else if (Token::Match(gparent, "%assign%") && parent == gparent->astOperand2()) {
                 bool takingRef = false;
-                const Token *lhs = parent->astParent()->astOperand1();
+                const Token *lhs = gparent->astOperand1();
                 if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs->variable()->nameToken() == lhs)
                     takingRef = true;
                 if (!takingRef)
                     continue;
-            } else if (Token::simpleMatch(parent->astParent(), "[") && parent->astParent()->astOperand2() == parent)
+            } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
         } else {
             if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
@@ -1587,14 +1588,14 @@ void CheckOther::checkConstPointer()
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
         }
-        nonConstPointers.insert(var);
+        nonConstPointers.emplace_back(var);
     }
     for (const Variable *p: pointers) {
         if (p->isArgument()) {
             if (!p->scope() || !p->scope()->function || p->scope()->function->isImplicitlyVirtual(true) || p->scope()->function->hasVirtualSpecifier())
                 continue;
         }
-        if (nonConstPointers.find(p) == nonConstPointers.end()) {
+        if (std::find(nonConstPointers.begin(), nonConstPointers.end(), p) == nonConstPointers.end()) {
             const Token *start = (p->isArgument()) ? p->scope()->bodyStart : p->nameToken()->next();
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
             if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
