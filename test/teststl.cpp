@@ -5339,10 +5339,10 @@ private:
 
         // #11028
         check("void f(std::vector<int> c) {\n"
-            "    std::vector<int> d(c.begin(), c.end());\n"
-            "    c.erase(c.begin());\n"
-            "    d.push_back(0);\n"
-            "}\n",
+              "    std::vector<int> d(c.begin(), c.end());\n"
+              "    c.erase(c.begin());\n"
+              "    d.push_back(0);\n"
+              "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
     }

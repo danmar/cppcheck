@@ -3880,12 +3880,12 @@ private:
 };
 
 static void valueFlowLifetimeUserConstructor(Token* tok,
-                                         const Function* constructor,
-                                         const std::string& name,
-                                         std::vector<const Token*> args,
-                                         TokenList* tokenlist,
-                                         ErrorLogger* errorLogger,
-                                         const Settings* settings)
+                                             const Function* constructor,
+                                             const std::string& name,
+                                             std::vector<const Token*> args,
+                                             TokenList* tokenlist,
+                                             ErrorLogger* errorLogger,
+                                             const Settings* settings)
 {
     if (!constructor)
         return;
@@ -4135,10 +4135,10 @@ static const Function* findConstructor(const Scope* scope, const Token* tok, con
 }
 
 static void valueFlowLifetimeClassConstructor(Token* tok,
-                                         const Type* t,
-                                         TokenList* tokenlist,
-                                         ErrorLogger* errorLogger,
-                                         const Settings* settings)
+                                              const Type* t,
+                                              TokenList* tokenlist,
+                                              ErrorLogger* errorLogger,
+                                              const Settings* settings)
 {
     if (!Token::Match(tok, "(|{"))
         return;
@@ -4190,8 +4190,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
     }
 }
 
-static void valueFlowLifetimeConstructor(Token* tok, 
-    TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings)
+static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings)
 {
     if (!Token::Match(tok, "(|{"))
         return;
@@ -4200,22 +4199,25 @@ static void valueFlowLifetimeConstructor(Token* tok,
     std::vector<ValueType> vts;
     if (tok->valueType()) {
         vts = {*tok->valueType()};
-    } else if (Token::Match(tok->previous(), "%var% {|(") && isVariableDecl(tok->previous()) && tok->previous()->valueType()) {
+    } else if (Token::Match(tok->previous(), "%var% {|(") && isVariableDecl(tok->previous()) &&
+               tok->previous()->valueType()) {
         vts = {*tok->previous()->valueType()};
     } else if (Token::simpleMatch(tok, "{") && !Token::Match(tok->previous(), "%name%")) {
         vts = getParentValueTypes(tok, settings);
     }
 
-
-    for(const ValueType& vt:vts) {
+    for (const ValueType& vt : vts) {
         if (vt.container && vt.type == ValueType::CONTAINER) {
             std::vector<const Token*> args = getArguments(tok);
             if (args.size() == 1 && vt.container->view && astIsContainerOwned(args.front())) {
-                LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}.byRef(
-                    tok, tokenlist, errorLogger, settings);
+                LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}
+                .byRef(tok, tokenlist, errorLogger, settings);
             } else if (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
                 LifetimeStore::forEach(
-                    args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::SubObject, [&](const LifetimeStore& ls) {
+                    args,
+                    "Passed to initializer list.",
+                    ValueFlow::Value::LifetimeKind::SubObject,
+                    [&](const LifetimeStore& ls) {
                     ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
                 });
             } else if (vt.container->hasInitializerListConstructor) {
