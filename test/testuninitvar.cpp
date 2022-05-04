@@ -3612,6 +3612,17 @@ private:
                         " int a[ 2 ] = { [ 0 ] = *p++, [ 1 ] = 1 };\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
+
+        valueFlowUninit("void f(int height) {\n"
+                        "    int a[11];\n"
+                        "    int *p = a;\n"
+                        "    int step = 2;\n"
+                        "    for (int i = 0; i < (height * step); i += step)\n"
+                        "        *p++ = 0;\n"
+                        "    for (int i = 0; i < height; i++)\n"
+                        "        if (a[i]) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitStructMember() { // struct members
