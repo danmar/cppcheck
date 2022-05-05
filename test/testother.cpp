@@ -3059,6 +3059,19 @@ private:
               "};\n"
               "S<int*> s;\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n"
+              "    const char *tmp;\n"
+              "    char* a[] = { \"a\", \"aa\" };\n"
+              "    static char* b[] = { \"b\", \"bb\" };\n"
+              "    tmp = a[i];\n"
+              "    printf(\"%s\", tmp);\n"
+              "    tmp = b[i];\n"
+              "    printf(\"%s\", tmp);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' can be declared with const\n"
+                      "[test.cpp:4]: (style) Variable 'b' can be declared with const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -9213,7 +9226,7 @@ private:
               "    int local_argc = 0;\n"
               "    local_argv[local_argc++] = argv[0];\n"
               "}\n", "test.c");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (style) Parameter 'argv' can be declared with const\n", errout.str());
 
         check("void f() {\n"
               "  int x = 0;\n"
