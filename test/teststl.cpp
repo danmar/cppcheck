@@ -844,6 +844,16 @@ private:
                     "const std::vector<int> A::v = {1, 2};\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNormal("struct a {\n"
+                    "    std::vector<int> g() const;\n"
+                    "};\n"
+                    "int f(const a& b) {\n"
+                    "    auto c = b.g();\n"
+                    "    assert(not c.empty());\n"
+                    "    int d = c.front();\n"
+                    "    return d;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsSymbolic()
