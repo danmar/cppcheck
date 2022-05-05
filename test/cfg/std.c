@@ -4744,6 +4744,36 @@ void nullPointer_fesetexceptflag(int excepts)
     (void)fesetexceptflag(0,excepts);
 }
 
+void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
+{
+    (void)fesetexceptflag(flagp, excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fesetexceptflag(flagp, 0);
+    (void)fesetexceptflag(flagp, FE_DIVBYZERO);
+    (void)fesetexceptflag(flagp, FE_INEXACT);
+    (void)fesetexceptflag(flagp, FE_INVALID);
+    (void)fesetexceptflag(flagp, FE_OVERFLOW);
+    (void)fesetexceptflag(flagp, FE_UNDERFLOW);
+    (void)fesetexceptflag(flagp, FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fesetexceptflag(flagp, FE_ALL_EXCEPT+1);
+}
+
+void invalidFunctionArg_fetestexcept(int excepts)
+{
+    (void)fetestexcept(excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fetestexcept(0);
+    (void)fetestexcept(FE_DIVBYZERO);
+    (void)fetestexcept(FE_INEXACT);
+    (void)fetestexcept(FE_INVALID);
+    (void)fetestexcept(FE_OVERFLOW);
+    (void)fetestexcept(FE_UNDERFLOW);
+    (void)fetestexcept(FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fetestexcept(FE_ALL_EXCEPT+1);
+}
+
 void nullPointer_feupdateenv(void)
 {
     fenv_t* envp = 0;

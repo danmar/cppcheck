@@ -32,6 +32,37 @@
 #include <iterator>
 #include <vector>
 
+
+void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
+{
+    (void)std::fesetexceptflag(flagp, excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fesetexceptflag(flagp, 0);
+    (void)std::fesetexceptflag(flagp, FE_DIVBYZERO);
+    (void)std::fesetexceptflag(flagp, FE_INEXACT);
+    (void)std::fesetexceptflag(flagp, FE_INVALID);
+    (void)std::fesetexceptflag(flagp, FE_OVERFLOW);
+    (void)std::fesetexceptflag(flagp, FE_UNDERFLOW);
+    (void)std::fesetexceptflag(flagp, FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fesetexceptflag(flagp, FE_ALL_EXCEPT+1);
+}
+
+void invalidFunctionArg_fetestexcept(int excepts)
+{
+    (void)std::fetestexcept(excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fetestexcept(0);
+    (void)std::fetestexcept(FE_DIVBYZERO);
+    (void)std::fetestexcept(FE_INEXACT);
+    (void)std::fetestexcept(FE_INVALID);
+    (void)std::fetestexcept(FE_OVERFLOW);
+    (void)std::fetestexcept(FE_UNDERFLOW);
+    (void)std::fetestexcept(FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fetestexcept(FE_ALL_EXCEPT+1);
+}
+
 int qsort_cmpfunc (const void * a, const void * b) {
     return (*static_cast<const int*>(a) - *static_cast<const int*>(b));
 }
