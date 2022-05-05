@@ -3879,13 +3879,13 @@ private:
     }
 };
 
-static void valueFlowLifetimeConstructor(Token* tok,
-                                         const Function* constructor,
-                                         const std::string& name,
-                                         std::vector<const Token*> args,
-                                         TokenList* tokenlist,
-                                         ErrorLogger* errorLogger,
-                                         const Settings* settings)
+static void valueFlowLifetimeUserConstructor(Token* tok,
+                                             const Function* constructor,
+                                             const std::string& name,
+                                             std::vector<const Token*> args,
+                                             TokenList* tokenlist,
+                                             ErrorLogger* errorLogger,
+                                             const Settings* settings)
 {
     if (!constructor)
         return;
@@ -4026,7 +4026,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
     } else if (tok->function()) {
         const Function *f = tok->function();
         if (f->isConstructor()) {
-            valueFlowLifetimeConstructor(tok->next(), f, tok->str(), getArguments(tok), tokenlist, errorLogger, settings);
+            valueFlowLifetimeUserConstructor(tok->next(), f, tok->str(), getArguments(tok), tokenlist, errorLogger, settings);
             return;
         }
         if (Function::returnsReference(f))
@@ -4134,11 +4134,11 @@ static const Function* findConstructor(const Scope* scope, const Token* tok, con
     return f;
 }
 
-static void valueFlowLifetimeConstructor(Token* tok,
-                                         const Type* t,
-                                         TokenList* tokenlist,
-                                         ErrorLogger* errorLogger,
-                                         const Settings* settings)
+static void valueFlowLifetimeClassConstructor(Token* tok,
+                                              const Type* t,
+                                              TokenList* tokenlist,
+                                              ErrorLogger* errorLogger,
+                                              const Settings* settings)
 {
     if (!Token::Match(tok, "(|{"))
         return;
@@ -4185,22 +4185,9 @@ static void valueFlowLifetimeConstructor(Token* tok,
             });
         } else {
             const Function* constructor = findConstructor(scope, tok, args);
-            valueFlowLifetimeConstructor(tok, constructor, t->name(), args, tokenlist, errorLogger, settings);
+            valueFlowLifetimeUserConstructor(tok, constructor, t->name(), args, tokenlist, errorLogger, settings);
         }
     }
-}
-
-static bool hasInitList(const Token* tok)
-{
-    if (astIsPointer(tok))
-        return true;
-    if (astIsContainer(tok)) {
-        const Library::Container * library = getLibraryContainer(tok);
-        if (!library)
-            return false;
-        return library->hasInitializerListConstructor;
-    }
-    return false;
 }
 
 static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings)
@@ -4209,35 +4196,41 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
         return;
     if (isScope(tok))
         return;
-    Token* parent = tok->astParent();
-    while (Token::simpleMatch(parent, ","))
-        parent = parent->astParent();
-    if (Token::Match(tok, "{|(") && astIsContainerView(tok) && !tok->function()) {
-        std::vector<const Token*> args = getArguments(tok);
-        if (args.size() == 1 && astIsContainerOwned(args.front())) {
-            LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}.byRef(
-                tok, tokenlist, errorLogger, settings);
-        }
-    } else if (Token::simpleMatch(parent, "{") && hasInitList(parent->astParent())) {
-        valueFlowLifetimeConstructor(tok, Token::typeOf(parent->previous()), tokenlist, errorLogger, settings);
-    } else if (Token::simpleMatch(tok, "{") && hasInitList(parent)) {
-        std::vector<const Token *> args = getArguments(tok);
-        // Assume range constructor if passed a pair of iterators
-        if (astIsContainer(parent) && args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
-            LifetimeStore::forEach(
-                args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::SubObject, [&](const LifetimeStore& ls) {
-                ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
-            });
+    std::vector<ValueType> vts;
+    if (tok->valueType()) {
+        vts = {*tok->valueType()};
+    } else if (Token::Match(tok->previous(), "%var% {|(") && isVariableDecl(tok->previous()) &&
+               tok->previous()->valueType()) {
+        vts = {*tok->previous()->valueType()};
+    } else if (Token::simpleMatch(tok, "{") && !Token::Match(tok->previous(), "%name%")) {
+        vts = getParentValueTypes(tok, settings);
+    }
+
+    for (const ValueType& vt : vts) {
+        if (vt.container && vt.type == ValueType::CONTAINER) {
+            std::vector<const Token*> args = getArguments(tok);
+            if (args.size() == 1 && vt.container->view && astIsContainerOwned(args.front())) {
+                LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}
+                .byRef(tok, tokenlist, errorLogger, settings);
+            } else if (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
+                LifetimeStore::forEach(
+                    args,
+                    "Passed to initializer list.",
+                    ValueFlow::Value::LifetimeKind::SubObject,
+                    [&](const LifetimeStore& ls) {
+                    ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
+                });
+            } else if (vt.container->hasInitializerListConstructor) {
+                LifetimeStore::forEach(args,
+                                       "Passed to initializer list.",
+                                       ValueFlow::Value::LifetimeKind::SubObject,
+                                       [&](const LifetimeStore& ls) {
+                    ls.byVal(tok, tokenlist, errorLogger, settings);
+                });
+            }
         } else {
-            LifetimeStore::forEach(args,
-                                   "Passed to initializer list.",
-                                   ValueFlow::Value::LifetimeKind::SubObject,
-                                   [&](const LifetimeStore& ls) {
-                ls.byVal(tok, tokenlist, errorLogger, settings);
-            });
+            valueFlowLifetimeClassConstructor(tok, Token::typeOf(tok->previous()), tokenlist, errorLogger, settings);
         }
-    } else {
-        valueFlowLifetimeConstructor(tok, Token::typeOf(tok->previous()), tokenlist, errorLogger, settings);
     }
 }
 
