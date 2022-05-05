@@ -3581,11 +3581,20 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         if (!expr)
             return;
 
+        if (expr->exprId() == 0)
+            return;
+
         const Token* endOfVarScope = getEndOfExprScope(expr);
 
         // Only forward lifetime values
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
         values.remove_if(&isNotLifetimeValue);
+        // Dont forward lifetimes that overlap
+        values.remove_if([&](const ValueFlow::Value& value) {
+            return findAstNode(value.tokvalue, [&](const Token* child) {
+                return child->exprId() == expr->exprId();
+            });
+        });
 
         // Skip RHS
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);

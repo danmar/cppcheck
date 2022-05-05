@@ -137,6 +137,7 @@ private:
         TEST_CASE(nullpointer91); // #10678
         TEST_CASE(nullpointer92);
         TEST_CASE(nullpointer93); // #3929
+        TEST_CASE(nullpointer94); // #11040
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2730,6 +2731,19 @@ private:
               "        return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Null pointer dereference: myNull\n", errout.str());
+    }
+
+    void nullpointer94() // #11040
+    {
+        check("struct entry { struct entry* next; size_t len; };\n"
+              "void f(struct entry **kep, size_t slen) {\n"
+              "    while (*kep)\n"
+              "        kep = &(*kep)->next;\n"
+              "    *kep = (struct entry*)malloc(sizeof(**kep));\n"
+              "    (*kep)->next = 0;\n"
+              "    (*kep)->len = slen;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nullpointer_addressOf() { // address of
