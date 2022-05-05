@@ -4528,6 +4528,8 @@ private:
         // Handle garbage enum code "well"
         ASSERT_EQUALS("enum E : int ; void foo ( ) { std :: string s ; }",
                       tokenizeAndStringify("using namespace std; enum E : int ; void foo ( ) { string s ; }"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("NS_BEGIN(IMAGEIO_2D_DICOM) using namespace std; NS_END")); // #11045
     }
 
     void microsoftMemory() {
