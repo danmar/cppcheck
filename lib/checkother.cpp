@@ -2417,13 +2417,18 @@ void CheckOther::checkDuplicateExpression()
                         isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand2()))
                         duplicateExpressionError(tok->astOperand2(), tok->astOperand1()->astOperand2(), tok, errorPath);
                     else if (tok->astOperand2() && isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP())) {
-                        const Token *ast1 = tok->astOperand1();
-                        while (ast1 && tok->str() == ast1->str()) {
-                            if (isSameExpression(mTokenizer->isCPP(), true, ast1->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath) &&
-                                isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand1()) &&
+                        auto checkDuplicate = [&](const Token* exp1, const Token* exp2, const Token* ast1) {
+                            if (isSameExpression(mTokenizer->isCPP(), true, exp1, exp2, mSettings->library, true, true, &errorPath) &&
+                                isWithoutSideEffects(mTokenizer->isCPP(), exp1) &&
                                 isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand2()))
                                 // Probably the message should be changed to 'duplicate expressions X in condition or something like that'.
-                                duplicateExpressionError(ast1->astOperand1(), tok->astOperand2(), tok, errorPath);
+                                duplicateExpressionError(exp1, exp2, tok, errorPath);
+                        };
+                        const Token *ast1 = tok->astOperand1();
+                        while (ast1 && tok->str() == ast1->str()) { // chain of identical operators
+                            checkDuplicate(ast1->astOperand2(), tok->astOperand2(), ast1);
+                            if (ast1->astOperand1() && ast1->astOperand1()->str() != tok->str()) // check first condition in the chain
+                                checkDuplicate(ast1->astOperand1(), tok->astOperand2(), ast1);
                             ast1 = ast1->astOperand1();
                         }
                     }

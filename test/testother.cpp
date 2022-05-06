@@ -160,6 +160,7 @@ private:
         TEST_CASE(duplicateExpression13); // #7899
         TEST_CASE(duplicateExpression14); // #9871
         TEST_CASE(duplicateExpression15); // #10650
+        TEST_CASE(duplicateExpression16); // #10569
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -5782,6 +5783,31 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'i == 0' is always true.\n"
                       "[test.cpp:6] -> [test.cpp:7]: (style) The comparison 'i == 0' is always true.\n",
+                      errout.str());
+    }
+
+    void duplicateExpression16() { //#10569
+        check("void f(const std::string& a) {\n"
+              "    if ((a == \"x\") ||\n"
+              "        (a == \"42\") ||\n"
+              "        (a == \"y\") ||\n"
+              "        (a == \"42\")) {}\n"
+              "}\n"
+              "void g(const std::string& a) {\n"
+              "    if ((a == \"42\") ||\n"
+              "        (a == \"x\") ||\n"
+              "        (a == \"42\") ||\n"
+              "        (a == \"y\")) {}\n"
+              "}\n"
+              "void h(const std::string& a) {\n"
+              "    if ((a == \"42\") ||\n"
+              "        (a == \"x\") ||\n"
+              "        (a == \"y\") ||\n"
+              "        (a == \"42\")) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Same expression on both sides of '||'.\n"
+                      "[test.cpp:7] -> [test.cpp:9]: (style) Same expression on both sides of '||'.\n"
+                      "[test.cpp:13] -> [test.cpp:16]: (style) Same expression on both sides of '||'.\n",
                       errout.str());
     }
 
