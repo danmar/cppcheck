@@ -1148,10 +1148,18 @@ static inline bool isDifferentKnownValues(const Token * const tok1, const Token 
     });
 }
 
-static inline bool isSameConstantValue(bool macro, const Token * const tok1, const Token * const tok2)
+static inline bool isSameConstantValue(bool macro, const Token* tok1, const Token* tok2)
 {
     if (tok1 == nullptr || tok2 == nullptr)
         return false;
+
+    auto adjustForCast = [](const Token* tok) {
+        if (Token::Match(tok->previous(), "%type% (|{") && tok->previous()->isStandardType() && tok->astOperand2())
+            return tok->astOperand2();
+        return tok;
+    };
+    tok1 = adjustForCast(tok1);
+    tok2 = adjustForCast(tok2);
 
     if (!tok1->isNumber() || !tok2->isNumber())
         return false;
@@ -2233,6 +2241,18 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (Token::Match(tok2->astParent(), "++|--"))
         return true;
 
+    auto skipRedundantPtrOp = [](const Token* tok, const Token* parent) {
+        const Token* gparent = parent ? parent->astParent() : nullptr;
+        while (parent && gparent && ((parent->isUnaryOp("*") && gparent->isUnaryOp("&")) || ((parent->isUnaryOp("&") && gparent->isUnaryOp("*"))))) {
+            tok = gparent;
+            parent = gparent->astParent();
+            if (parent)
+                gparent = parent->astParent();
+        }
+        return tok;
+    };
+    tok2 = skipRedundantPtrOp(tok2, tok2->astParent());
+
     if (tok2->astParent() && tok2->astParent()->isAssignmentOp()) {
         if (tok2 == tok2->astParent()->astOperand1())
             return true;
@@ -2399,7 +2419,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
     if (depth < 0)
         return true;
     if (tok->exprId() != exprid) {
-        if (globalvar && Token::Match(tok, "%name% ("))
+        if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% ("))
             // TODO: Is global variable really changed by function call?
             return true;
         const bool pointer = astIsPointer(tok);

@@ -2936,38 +2936,43 @@ static Analyzer::Result valueFlowForwardExpression(Token* startToken,
     return result;
 }
 
-static const Token* parseBinaryIntOp(const Token* expr, MathLib::bigint& known)
+static const Token* parseBinaryIntOp(const Token* expr,
+                                     const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                                     MathLib::bigint& known)
 {
     if (!expr)
         return nullptr;
     if (!expr->astOperand1() || !expr->astOperand2())
         return nullptr;
-    if (expr->astOperand1()->exprId() == 0 && !expr->astOperand1()->hasKnownIntValue())
+    if (expr->astOperand1()->exprId() == 0 && expr->astOperand2()->exprId() == 0)
         return nullptr;
-    if (expr->astOperand2()->exprId() == 0 && !expr->astOperand2()->hasKnownIntValue())
+    std::vector<MathLib::bigint> x1 = eval(expr->astOperand1());
+    std::vector<MathLib::bigint> x2 = eval(expr->astOperand2());
+    if (expr->astOperand1()->exprId() == 0 && x1.empty())
         return nullptr;
-    const Token* knownTok = nullptr;
+    if (expr->astOperand2()->exprId() == 0 && x2.empty())
+        return nullptr;
     const Token* varTok = nullptr;
-    if (expr->astOperand1()->hasKnownIntValue() && !expr->astOperand2()->hasKnownIntValue()) {
+    if (!x1.empty() && x2.empty()) {
         varTok = expr->astOperand2();
-        knownTok = expr->astOperand1();
-    } else if (expr->astOperand2()->hasKnownIntValue() && !expr->astOperand1()->hasKnownIntValue()) {
+        known = x1.front();
+    } else if (x1.empty() && !x2.empty()) {
         varTok = expr->astOperand1();
-        knownTok = expr->astOperand2();
+        known = x2.front();
     }
-    if (knownTok)
-        known = knownTok->values().front().intvalue;
     return varTok;
 }
 
-static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
+const Token* solveExprValue(const Token* expr,
+                            const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                            ValueFlow::Value& value)
 {
     if (!value.isIntValue() && !value.isIteratorValue() && !value.isSymbolicValue())
         return expr;
     if (value.isSymbolicValue() && !Token::Match(expr, "+|-"))
         return expr;
     MathLib::bigint intval;
-    const Token* binaryTok = parseBinaryIntOp(expr, intval);
+    const Token* binaryTok = parseBinaryIntOp(expr, eval, intval);
     bool rhs = astIsRHS(binaryTok);
     // If its on the rhs, then -1 multiplication is needed, which is not possible with simple delta analysis used currently for symbolic values
     if (value.isSymbolicValue() && rhs && Token::simpleMatch(expr, "-"))
@@ -2976,28 +2981,40 @@ static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
         switch (expr->str()[0]) {
         case '+': {
             value.intvalue -= intval;
-            return solveExprValue(binaryTok, value);
+            return solveExprValue(binaryTok, eval, value);
         }
         case '-': {
             if (rhs)
                 value.intvalue = intval - value.intvalue;
             else
                 value.intvalue += intval;
-            return solveExprValue(binaryTok, value);
+            return solveExprValue(binaryTok, eval, value);
         }
         case '*': {
             if (intval == 0)
                 break;
             value.intvalue /= intval;
-            return solveExprValue(binaryTok, value);
+            return solveExprValue(binaryTok, eval, value);
         }
         case '^': {
             value.intvalue ^= intval;
-            return solveExprValue(binaryTok, value);
+            return solveExprValue(binaryTok, eval, value);
         }
         }
     }
     return expr;
+}
+
+static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
+{
+    return solveExprValue(
+        expr,
+        [](const Token* tok) -> std::vector<MathLib::bigint> {
+        if (tok->hasKnownIntValue())
+            return {tok->values().front().intvalue};
+        return {};
+    },
+        value);
 }
 
 ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist)
@@ -3564,11 +3581,20 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         if (!expr)
             return;
 
+        if (expr->exprId() == 0)
+            return;
+
         const Token* endOfVarScope = getEndOfExprScope(expr);
 
         // Only forward lifetime values
         std::list<ValueFlow::Value> values = parent->astOperand2()->values();
         values.remove_if(&isNotLifetimeValue);
+        // Dont forward lifetimes that overlap
+        values.remove_if([&](const ValueFlow::Value& value) {
+            return findAstNode(value.tokvalue, [&](const Token* child) {
+                return child->exprId() == expr->exprId();
+            });
+        });
 
         // Skip RHS
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
@@ -3862,13 +3888,13 @@ private:
     }
 };
 
-static void valueFlowLifetimeConstructor(Token* tok,
-                                         const Function* constructor,
-                                         const std::string& name,
-                                         std::vector<const Token*> args,
-                                         TokenList* tokenlist,
-                                         ErrorLogger* errorLogger,
-                                         const Settings* settings)
+static void valueFlowLifetimeUserConstructor(Token* tok,
+                                             const Function* constructor,
+                                             const std::string& name,
+                                             std::vector<const Token*> args,
+                                             TokenList* tokenlist,
+                                             ErrorLogger* errorLogger,
+                                             const Settings* settings)
 {
     if (!constructor)
         return;
@@ -3887,6 +3913,8 @@ static void valueFlowLifetimeConstructor(Token* tok,
             const Variable* var = tok2->astOperand1()->variable();
             const Token* expr = tok2->astOperand2();
             if (!var)
+                continue;
+            if (!isLifetimeBorrowed(expr, settings))
                 continue;
             const Variable* argvar = getLifetimeVariable(expr);
             if (var->isReference() || var->isRValueReference()) {
@@ -4007,7 +4035,7 @@ static void valueFlowLifetimeFunction(Token *tok, TokenList *tokenlist, ErrorLog
     } else if (tok->function()) {
         const Function *f = tok->function();
         if (f->isConstructor()) {
-            valueFlowLifetimeConstructor(tok->next(), f, tok->str(), getArguments(tok), tokenlist, errorLogger, settings);
+            valueFlowLifetimeUserConstructor(tok->next(), f, tok->str(), getArguments(tok), tokenlist, errorLogger, settings);
             return;
         }
         if (Function::returnsReference(f))
@@ -4115,11 +4143,11 @@ static const Function* findConstructor(const Scope* scope, const Token* tok, con
     return f;
 }
 
-static void valueFlowLifetimeConstructor(Token* tok,
-                                         const Type* t,
-                                         TokenList* tokenlist,
-                                         ErrorLogger* errorLogger,
-                                         const Settings* settings)
+static void valueFlowLifetimeClassConstructor(Token* tok,
+                                              const Type* t,
+                                              TokenList* tokenlist,
+                                              ErrorLogger* errorLogger,
+                                              const Settings* settings)
 {
     if (!Token::Match(tok, "(|{"))
         return;
@@ -4166,22 +4194,9 @@ static void valueFlowLifetimeConstructor(Token* tok,
             });
         } else {
             const Function* constructor = findConstructor(scope, tok, args);
-            valueFlowLifetimeConstructor(tok, constructor, t->name(), args, tokenlist, errorLogger, settings);
+            valueFlowLifetimeUserConstructor(tok, constructor, t->name(), args, tokenlist, errorLogger, settings);
         }
     }
-}
-
-static bool hasInitList(const Token* tok)
-{
-    if (astIsPointer(tok))
-        return true;
-    if (astIsContainer(tok)) {
-        const Library::Container * library = getLibraryContainer(tok);
-        if (!library)
-            return false;
-        return library->hasInitializerListConstructor;
-    }
-    return false;
 }
 
 static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, ErrorLogger* errorLogger, const Settings* settings)
@@ -4190,35 +4205,41 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
         return;
     if (isScope(tok))
         return;
-    Token* parent = tok->astParent();
-    while (Token::simpleMatch(parent, ","))
-        parent = parent->astParent();
-    if (Token::Match(tok, "{|(") && astIsContainerView(tok) && !tok->function()) {
-        std::vector<const Token*> args = getArguments(tok);
-        if (args.size() == 1 && astIsContainerOwned(args.front())) {
-            LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}.byRef(
-                tok, tokenlist, errorLogger, settings);
-        }
-    } else if (Token::simpleMatch(parent, "{") && hasInitList(parent->astParent())) {
-        valueFlowLifetimeConstructor(tok, Token::typeOf(parent->previous()), tokenlist, errorLogger, settings);
-    } else if (Token::simpleMatch(tok, "{") && hasInitList(parent)) {
-        std::vector<const Token *> args = getArguments(tok);
-        // Assume range constructor if passed a pair of iterators
-        if (astIsContainer(parent) && args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
-            LifetimeStore::forEach(
-                args, "Passed to initializer list.", ValueFlow::Value::LifetimeKind::SubObject, [&](const LifetimeStore& ls) {
-                ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
-            });
+    std::vector<ValueType> vts;
+    if (tok->valueType()) {
+        vts = {*tok->valueType()};
+    } else if (Token::Match(tok->previous(), "%var% {|(") && isVariableDecl(tok->previous()) &&
+               tok->previous()->valueType()) {
+        vts = {*tok->previous()->valueType()};
+    } else if (Token::simpleMatch(tok, "{") && !Token::Match(tok->previous(), "%name%")) {
+        vts = getParentValueTypes(tok, settings);
+    }
+
+    for (const ValueType& vt : vts) {
+        if (vt.container && vt.type == ValueType::CONTAINER) {
+            std::vector<const Token*> args = getArguments(tok);
+            if (args.size() == 1 && vt.container->view && astIsContainerOwned(args.front())) {
+                LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}
+                .byRef(tok, tokenlist, errorLogger, settings);
+            } else if (args.size() == 2 && astIsIterator(args[0]) && astIsIterator(args[1])) {
+                LifetimeStore::forEach(
+                    args,
+                    "Passed to initializer list.",
+                    ValueFlow::Value::LifetimeKind::SubObject,
+                    [&](const LifetimeStore& ls) {
+                    ls.byDerefCopy(tok, tokenlist, errorLogger, settings);
+                });
+            } else if (vt.container->hasInitializerListConstructor) {
+                LifetimeStore::forEach(args,
+                                       "Passed to initializer list.",
+                                       ValueFlow::Value::LifetimeKind::SubObject,
+                                       [&](const LifetimeStore& ls) {
+                    ls.byVal(tok, tokenlist, errorLogger, settings);
+                });
+            }
         } else {
-            LifetimeStore::forEach(args,
-                                   "Passed to initializer list.",
-                                   ValueFlow::Value::LifetimeKind::SubObject,
-                                   [&](const LifetimeStore& ls) {
-                ls.byVal(tok, tokenlist, errorLogger, settings);
-            });
+            valueFlowLifetimeClassConstructor(tok, Token::typeOf(tok->previous()), tokenlist, errorLogger, settings);
         }
-    } else {
-        valueFlowLifetimeConstructor(tok, Token::typeOf(tok->previous()), tokenlist, errorLogger, settings);
     }
 }
 

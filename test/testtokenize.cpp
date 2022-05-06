@@ -263,6 +263,7 @@ private:
         TEST_CASE(removeattribute);
         TEST_CASE(functionAttributeBefore1);
         TEST_CASE(functionAttributeBefore2);
+        TEST_CASE(functionAttributeBefore3);
         TEST_CASE(functionAttributeAfter);
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
@@ -3653,6 +3654,22 @@ private:
         ASSERT(VAS_Fail && VAS_Fail->isAttributeNoreturn());
     }
 
+    void functionAttributeBefore3() { // #10978
+        const char code[] = "void __attribute__((__noreturn__)) (*func_notret)(void);";
+        const char expected[] = "void ( * func_notret ) ( ) ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token* func_notret = Token::findsimplematch(tokenizer.tokens(), "func_notret");
+        ASSERT(func_notret && func_notret->isAttributeNoreturn());
+    }
+
     void functionAttributeAfter() {
         const char code[] = "void func1() __attribute__((pure)) __attribute__((nothrow)) __attribute__((const));\n"
                             "void func2() __attribute__((__pure__)) __attribute__((__nothrow__)) __attribute__((__const__));\n"
@@ -4511,6 +4528,8 @@ private:
         // Handle garbage enum code "well"
         ASSERT_EQUALS("enum E : int ; void foo ( ) { std :: string s ; }",
                       tokenizeAndStringify("using namespace std; enum E : int ; void foo ( ) { string s ; }"));
+
+        ASSERT_NO_THROW(tokenizeAndStringify("NS_BEGIN(IMAGEIO_2D_DICOM) using namespace std; NS_END")); // #11045
     }
 
     void microsoftMemory() {
@@ -6534,6 +6553,9 @@ private:
 
         const char code10[] = "void f(std::exception c) { b(M() M() + N(c.what())); }";
         ASSERT_THROW(tokenizeAndStringify(code10), InternalError);
+
+        const char code11[] = "struct B { B(B&&) noexcept {} ~B() noexcept {} };";
+        ASSERT_NO_THROW(tokenizeAndStringify(code11));
     }
 
     void findGarbageCode() { // Test Tokenizer::findGarbageCode()

@@ -50,6 +50,20 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     mValues[expr] = value;
+    ValueFlow::Value subvalue = value;
+    const Token* subexpr = solveExprValue(
+        expr,
+        [&](const Token* tok) -> std::vector<MathLib::bigint> {
+        if (tok->hasKnownIntValue())
+            return {tok->values().front().intvalue};
+        MathLib::bigint result = 0;
+        if (getIntValue(tok->exprId(), &result))
+            return {result};
+        return {};
+    },
+        subvalue);
+    if (subexpr)
+        mValues[subexpr] = subvalue;
 }
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
@@ -77,7 +91,7 @@ void ProgramMemory::setIntValue(const Token* expr, MathLib::bigint value, bool i
     ValueFlow::Value v(value);
     if (impossible)
         v.setImpossible();
-    mValues[expr] = v;
+    setValue(expr, v);
 }
 
 bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
@@ -122,7 +136,7 @@ void ProgramMemory::setContainerSizeValue(const Token* expr, MathLib::bigint val
     v.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
     if (!isEqual)
         v.valueKind = ValueFlow::Value::ValueKind::Impossible;
-    mValues[expr] = v;
+    setValue(expr, v);
 }
 
 void ProgramMemory::setUnknown(const Token* expr) {
@@ -178,6 +192,8 @@ void ProgramMemory::insert(const ProgramMemory &pm)
     for (auto&& p : pm)
         mValues.insert(p);
 }
+
+static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
 
 static bool evaluateCondition(const std::string& op,
                               MathLib::bigint r,
@@ -317,13 +333,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             }
             if (!setvar) {
                 if (!pm.hasValue(vartok->exprId())) {
-                    MathLib::bigint result = 0;
-                    bool error = false;
-                    execute(valuetok, &pm, &result, &error);
-                    if (!error)
-                        pm.setIntValue(vartok, result);
-                    else
-                        pm.setUnknown(vartok);
+                    pm.setValue(vartok, execute(valuetok, pm));
                 }
             }
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
@@ -560,8 +570,6 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     }
     return result;
 }
-
-static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
 
 static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const Settings* settings)
 {

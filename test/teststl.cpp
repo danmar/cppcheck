@@ -844,6 +844,16 @@ private:
                     "const std::vector<int> A::v = {1, 2};\n");
         ASSERT_EQUALS("", errout.str());
 
+        checkNormal("struct a {\n"
+                    "    std::vector<int> g() const;\n"
+                    "};\n"
+                    "int f(const a& b) {\n"
+                    "    auto c = b.g();\n"
+                    "    assert(not c.empty());\n"
+                    "    int d = c.front();\n"
+                    "    return d;\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsSymbolic()
@@ -5336,6 +5346,15 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:6] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:5] -> [test.cpp:9]: (error) Using object that points to local variable 'v' that may be invalid.\n",
             errout.str());
+
+        // #11028
+        check("void f(std::vector<int> c) {\n"
+              "    std::vector<int> d(c.begin(), c.end());\n"
+              "    c.erase(c.begin());\n"
+              "    d.push_back(0);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void invalidContainerLoop() {

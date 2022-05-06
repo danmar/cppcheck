@@ -4806,6 +4806,17 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct S { int i; };\n"
+              "int f(const S& s) {\n"
+              "    int a = 0, b = 0;\n"
+              "    if (s.i == 0)\n"
+              "        a = 1;\n"
+              "    if (s.i == 0)\n"
+              "        b = 1;\n"
+              "    return a + b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (style) The if condition is the same as the previous if condition\n", errout.str());
+
         // do not crash
         check("void assign(const MMA& other) {\n"
               "    if (mPA.cols != other.mPA.cols || mPA.rows != other.mPA.rows)\n"

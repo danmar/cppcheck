@@ -159,6 +159,7 @@ private:
         TEST_CASE(duplicateExpression12); // #10026
         TEST_CASE(duplicateExpression13); // #7899
         TEST_CASE(duplicateExpression14); // #9871
+        TEST_CASE(duplicateExpression15); // #10650
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -1567,6 +1568,15 @@ private:
                                  "    auto h = reinterpret_cast<void (STDAPICALLTYPE*)(int)>(p);\n"
                                  "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #5210
+        checkOldStylePointerCast("void f(void* v1, void* v2) {\n"
+                                 "    T** p1 = (T**)v1;\n"
+                                 "    T*** p2 = (T***)v2;\n"
+                                 "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) C-style pointer casting\n"
+                      "[test.cpp:3]: (style) C-style pointer casting\n",
+                      errout.str());
     }
 
 #define checkInvalidPointerCast(...) checkInvalidPointerCast_(__FILE__, __LINE__, __VA_ARGS__)
@@ -3049,6 +3059,19 @@ private:
               "};\n"
               "S<int*> s;\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n"
+              "    const char *tmp;\n"
+              "    char* a[] = { \"a\", \"aa\" };\n"
+              "    static char* b[] = { \"b\", \"bb\" };\n"
+              "    tmp = a[i];\n"
+              "    printf(\"%s\", tmp);\n"
+              "    tmp = b[i];\n"
+              "    printf(\"%s\", tmp);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' can be declared with const\n"
+                      "[test.cpp:4]: (style) Variable 'b' can be declared with const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -5746,6 +5769,20 @@ private:
               "    return (f + 4 != g + 4);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4] -> [test.cpp:5]: (style) The comparison 'f+4 != g+4' is always false because 'f+4' and 'g+4' represent the same value.\n", errout.str());
+    }
+
+    void duplicateExpression15() { //#10650
+        check("bool f() {\n"
+              "    const int i = int(0);\n"
+              "    return i == 0;\n"
+              "}\n"
+              "bool g() {\n"
+              "    const int i = int{ 0 };\n"
+              "    return i == 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'i == 0' is always true.\n"
+                      "[test.cpp:6] -> [test.cpp:7]: (style) The comparison 'i == 0' is always true.\n",
+                      errout.str());
     }
 
     void duplicateExpressionLoop() {
@@ -9189,7 +9226,7 @@ private:
               "    int local_argc = 0;\n"
               "    local_argv[local_argc++] = argv[0];\n"
               "}\n", "test.c");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (style) Parameter 'argv' can be declared with const\n", errout.str());
 
         check("void f() {\n"
               "  int x = 0;\n"
@@ -9688,6 +9725,14 @@ private:
               "    for (const F& f : fl) {}\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:7]: (style) Local variable 'f' shadows outer variable\n", errout.str());
+
+        check("extern int a;\n"
+              "int a;\n"
+              "static int f(void) {\n"
+              "    int a;\n"
+              "    return 0;\n"
+              "}\n", "test.c");
+        ASSERT_EQUALS("[test.c:1] -> [test.c:4]: (style) Local variable 'a' shadows outer variable\n", errout.str());
     }
 
     void knownArgument() {

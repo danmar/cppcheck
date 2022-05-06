@@ -3612,6 +3612,17 @@ private:
                         " int a[ 2 ] = { [ 0 ] = *p++, [ 1 ] = 1 };\n"
                         "}");
         ASSERT_EQUALS("[test.cpp:3]: (error) Uninitialized variable: p\n", errout.str());
+
+        valueFlowUninit("void f(int height) {\n"
+                        "    int a[11];\n"
+                        "    int *p = a;\n"
+                        "    int step = 2;\n"
+                        "    for (int i = 0; i < (height * step); i += step)\n"
+                        "        *p++ = 0;\n"
+                        "    for (int i = 0; i < height; i++)\n"
+                        "        if (a[i]) {}\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitStructMember() { // struct members
@@ -6362,6 +6373,17 @@ private:
                         "    x.push_back(a);\n"
                         "}\n");
         ASSERT_EQUALS("[test.cpp:9]: (error) Uninitialized variable: a\n", errout.str());
+
+        valueFlowUninit("struct S { struct T { int* p; } t[2]; };\n" // #11018
+                        "void f() {\n"
+                        "    S s;\n"
+                        "    *&s.t[0].p = 0;\n"
+                        "}\n"
+                        "void g() {\n"
+                        "    S s;\n"
+                        "    ((*&(*&s.t[0].p))) = 0;\n"
+                        "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ctu_(const char* file, int line, const char code[]) {

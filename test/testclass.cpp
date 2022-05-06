@@ -7186,6 +7186,22 @@ private:
                                 "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Member variable 'i' is initialized by itself.\n", errout.str());
 
+        checkSelfInitialization("class A {\n" // #10427
+                                "public:\n"
+                                "    explicit A(int x) : _x(static_cast<int>(_x)) {}\n"
+                                "private:\n"
+                                "    int _x;\n"
+                                "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Member variable '_x' is initialized by itself.\n", errout.str());
+
+        checkSelfInitialization("class A {\n"
+                                "public:\n"
+                                "    explicit A(int x) : _x((int)(_x)) {}\n"
+                                "private:\n"
+                                "    int _x;\n"
+                                "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Member variable '_x' is initialized by itself.\n", errout.str());
+
         checkSelfInitialization("class Fred {\n"
                                 "    std::string s;\n"
                                 "    Fred() : s(s) {\n"
