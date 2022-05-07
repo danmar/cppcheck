@@ -693,7 +693,7 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 
 void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
 {
-    if (!func.functionScope) 
+    if (!func.functionScope)
         return;
 
     bool initList = func.isConstructor();
