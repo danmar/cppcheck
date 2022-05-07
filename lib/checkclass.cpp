@@ -206,7 +206,7 @@ void CheckClass::constructors()
         std::vector<Usage> usageList = createUsageList(scope);
 
         for (const Function &func : scope->functionList) {
-            if (!func.hasBody() || !(func.isConstructor() || func.type == Function::eOperatorEqual))
+            if ((!func.hasBody() && !func.isDefault()) || !(func.isConstructor() || func.type == Function::eOperatorEqual))
                 continue;
 
             // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
@@ -693,8 +693,9 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
 
 void CheckClass::initializeVarList(const Function &func, std::list<const Function *> &callstack, const Scope *scope, std::vector<Usage> &usage)
 {
-    if (!func.functionScope)
-        throw InternalError(nullptr, "Internal Error: Invalid syntax"); // #5702
+    if (!func.functionScope) 
+        return;
+
     bool initList = func.isConstructor();
     const Token *ftok = func.arg->link()->next();
     int level = 0;
