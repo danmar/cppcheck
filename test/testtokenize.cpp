@@ -264,7 +264,8 @@ private:
         TEST_CASE(functionAttributeBefore1);
         TEST_CASE(functionAttributeBefore2);
         TEST_CASE(functionAttributeBefore3);
-        TEST_CASE(functionAttributeAfter);
+        TEST_CASE(functionAttributeAfter1);
+        TEST_CASE(functionAttributeAfter2);
         TEST_CASE(functionAttributeListBefore);
         TEST_CASE(functionAttributeListAfter);
 
@@ -3672,7 +3673,7 @@ private:
         ASSERT(func_notret && func_notret->isAttributeNoreturn());
     }
 
-    void functionAttributeAfter() {
+    void functionAttributeAfter1() {
         const char code[] = "void func1() __attribute__((pure)) __attribute__((nothrow)) __attribute__((const));\n"
                             "void func2() __attribute__((__pure__)) __attribute__((__nothrow__)) __attribute__((__const__));\n"
                             "void func3() __attribute__((nothrow)) __attribute__((pure)) __attribute__((const));\n"
@@ -3701,6 +3702,27 @@ private:
         ASSERT(func3 && func3->isAttributePure() && func3->isAttributeNothrow() && func3->isAttributeConst());
         ASSERT(func4 && func4->isAttributePure() && func4->isAttributeNothrow() && func4->isAttributeConst());
         ASSERT(func5 && func5->isAttributeNoreturn());
+    }
+
+    void functionAttributeAfter2() {
+        const char code[] = "class foo {\n"
+                            "public:\n"
+                            "    bool operator==(const foo &) __attribute__((__pure__));\n"
+                            "};";
+        const char expected[] = "class foo { public: bool operator== ( const foo & ) ; } ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+
+        // Expected result..
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token *tok = Token::findsimplematch(tokenizer.tokens(), "operator==");
+        ASSERT(tok && tok->isAttributePure());
     }
 
     void functionAttributeListBefore() {
