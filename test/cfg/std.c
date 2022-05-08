@@ -1613,6 +1613,13 @@ void uninitvar_fprintf(FILE *Stream, char *Format, int Argument)
     (void)fprintf(Stream, Format, Argument);
 }
 
+void nullPointer_vfprintf(FILE *Stream, const char *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)vfprintf(Stream, NULL, Arg);
+    (void)vfprintf(Stream, Format, Arg);
+}
+
 void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 {
     FILE *stream1, *stream2;
