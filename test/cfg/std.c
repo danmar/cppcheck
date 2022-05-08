@@ -1639,6 +1639,13 @@ void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
     (void)vfprintf(Stream, Format, arg);
 }
 
+void nullPointer_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)vfwprintf(Stream, NULL, Arg);
+    (void)vfwprintf(Stream, Format, Arg);
+}
+
 void uninitvar_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
 {
     FILE *stream1, *stream2;

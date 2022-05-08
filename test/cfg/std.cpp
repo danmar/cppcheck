@@ -95,8 +95,15 @@ void nullPointer_qsort(void *base, std::size_t n, std::size_t size, int (*cmp)(c
 void nullPointer_vfprintf(FILE *Stream, const char *Format, va_list Arg)
 {
     // cppcheck-suppress nullPointer
-    (void)std::vfprintf(Stream, NULL, Arg);
+    (void)std::vfprintf(Stream, nullptr, Arg);
     (void)std::vfprintf(Stream, Format, Arg);
+}
+
+void nullPointer_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::vfwprintf(Stream, nullptr, Arg);
+    (void)std::vfwprintf(Stream, Format, Arg);
 }
 
 void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)
