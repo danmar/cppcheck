@@ -2421,8 +2421,7 @@ void CheckOther::checkDuplicateExpression()
                             if (isSameExpression(mTokenizer->isCPP(), true, exp1, exp2, mSettings->library, true, true, &errorPath) &&
                                 isWithoutSideEffects(mTokenizer->isCPP(), exp1) &&
                                 isWithoutSideEffects(mTokenizer->isCPP(), ast1->astOperand2()))
-                                // Probably the message should be changed to 'duplicate expressions X in condition or something like that'.
-                                duplicateExpressionError(exp1, exp2, tok, errorPath);
+                                duplicateExpressionError(exp1, exp2, tok, errorPath, /*hasMultipleExpr*/ true);
                         };
                         const Token *ast1 = tok->astOperand1();
                         while (ast1 && tok->str() == ast1->str()) { // chain of identical operators
@@ -2457,7 +2456,7 @@ void CheckOther::oppositeExpressionError(const Token *opTok, ErrorPath errors)
                 "determine if it is correct.", CWE398, Certainty::normal);
 }
 
-void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors)
+void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors, bool hasMultipleExpr)
 {
     errors.emplace_back(opTok, "");
 
@@ -2465,7 +2464,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     const std::string& expr2 = tok2 ? tok2->expressionString() : "x";
 
     const std::string& op = opTok ? opTok->str() : "&&";
-    std::string msg = "Same expression on both sides of \'" + op + "\'";
+    std::string msg = "Same expression " + (hasMultipleExpr ? "found multiple times in chain of \'" + op + "\' operators" : "on both sides of \'" + op + "\'");
     const char *id = "duplicateExpression";
     if (expr1 != expr2 && (!opTok || !opTok->isArithmeticalOp())) {
         id = "knownConditionTrueFalse";
@@ -2478,9 +2477,9 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
             msg += " because '" + expr1 + "' and '" + expr2 + "' represent the same value";
     }
 
-    reportError(errors, Severity::style, id, msg + ".\n"
-                "Finding the same expression on both sides of an operator is suspicious and might "
-                "indicate a cut and paste or logic error. Please examine this code carefully to "
+    reportError(errors, Severity::style, id, msg +
+                (std::string(".\nFinding the same expression ") + (hasMultipleExpr ? "more than once in a condition" : "on both sides of an operator")) + 
+                " is suspicious and might indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, Certainty::normal);
 }
 
