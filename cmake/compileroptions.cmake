@@ -95,6 +95,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-tautological-type-limit-compare)
    add_compile_options_safe(-Wno-unused-member-function)
    add_compile_options(-Wno-disabled-macro-expansion)
+   add_compile_options_safe(-Wno-bitwise-instead-of-logical) # TODO: fix these
 
    # warnings we are not interested in
    add_compile_options(-Wno-four-char-constants)
