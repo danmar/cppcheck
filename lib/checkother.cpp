@@ -2478,7 +2478,7 @@ void CheckOther::duplicateExpressionError(const Token *tok1, const Token *tok2, 
     }
 
     reportError(errors, Severity::style, id, msg +
-                (std::string(".\nFinding the same expression ") + (hasMultipleExpr ? "more than once in a condition" : "on both sides of an operator")) + 
+                (std::string(".\nFinding the same expression ") + (hasMultipleExpr ? "more than once in a condition" : "on both sides of an operator")) +
                 " is suspicious and might indicate a cut and paste or logic error. Please examine this code carefully to "
                 "determine if it is correct.", CWE398, Certainty::normal);
 }
