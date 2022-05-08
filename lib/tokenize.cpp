@@ -11425,6 +11425,11 @@ void Tokenizer::simplifyAsm()
         else
             continue;
 
+        if (Token::Match(tok->previous(), ") %name% %name% (")) {
+            tok->deleteThis();
+            continue;
+        }
+
         // insert "asm ( "instruction" )"
         tok->str("asm");
         if (tok->strAt(1) != ";" && tok->strAt(1) != "{")
