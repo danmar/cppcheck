@@ -63,6 +63,23 @@ void invalidFunctionArg_fetestexcept(int excepts)
     (void)std::fetestexcept(FE_ALL_EXCEPT+1);
 }
 
+void nullPointer_fprintf(FILE *Stream, char *Format, int Argument)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::fprintf(Stream, nullptr, Argument);
+    // no warning is expected
+    (void)std::fprintf(Stream, Format, Argument);
+}
+
+void bufferAccessOutOfBounds_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
+{
+    wchar_t buf[42];
+    (void)std::wcsftime(buf, 42, format, timeptr);
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    (void)std::wcsftime(buf, 43, format, timeptr);
+    (void)std::wcsftime(ptr, maxsize, format, timeptr);
+}
+
 int qsort_cmpfunc (const void * a, const void * b) {
     return (*static_cast<const int*>(a) - *static_cast<const int*>(b));
 }
