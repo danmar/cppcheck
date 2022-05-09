@@ -4098,6 +4098,35 @@ private:
         // #8358
         check("void f(double d) { if ((d * 0) != 0) {} }");
         ASSERT_EQUALS("", errout.str());
+
+        // #6870
+        check("struct S {\n"
+              "    int* p;\n"
+              "    void f() const;\n"
+              "    int g();\n"
+              "};\n"
+              "void S::f() {\n"
+              "    if ((p == NULL) || ((p) && (g() >= *p))) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Condition 'p' is always true\n", errout.str());
+
+        // #10749
+        check("struct Interface {\n"
+              "    virtual int method() = 0;\n"
+              "};\n"
+              "struct Child : Interface {\n"
+              "   int method() override { return 0; }\n"
+              "   auto foo() {\n"
+              "       if (method() == 0)\n"
+              "           return true;\n"
+              "       else\n"
+              "           return false;\n"
+              "   }\n"
+              "};\n"
+              "struct GrandChild : Child {\n"
+              "   int method() override  { return 1; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
