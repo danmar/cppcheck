@@ -5126,7 +5126,7 @@ private:
         check("void foo() {\n"
               "    if (x!=2 || y!=3 || x!=2) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression found multiple times in chain of '||' operators.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression 'x!=2' found multiple times in chain of '||' operators.\n", errout.str());
 
         check("void foo() {\n"
               "    if (x!=2 && (x=y) && x!=2) {}\n"
@@ -5602,7 +5602,7 @@ private:
               "    const bool c = a;\n"
               "    return a && b && c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression found multiple times in chain of '&&' operators because 'a' and 'c' represent the same value.\n",
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression 'a' found multiple times in chain of '&&' operators because 'a' and 'c' represent the same value.\n",
                       errout.str());
 
         // 6906
@@ -5806,9 +5806,9 @@ private:
               "        (a == \"y\") ||\n"
               "        (a == \"42\")) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Same expression found multiple times in chain of '||' operators.\n"
-                      "[test.cpp:7] -> [test.cpp:9]: (style) Same expression found multiple times in chain of '||' operators.\n"
-                      "[test.cpp:13] -> [test.cpp:16]: (style) Same expression found multiple times in chain of '||' operators.\n",
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n"
+                      "[test.cpp:7] -> [test.cpp:9]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n"
+                      "[test.cpp:13] -> [test.cpp:16]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n",
                       errout.str());
     }
 
