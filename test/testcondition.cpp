@@ -5085,6 +5085,11 @@ private:
               "}", &settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
 
+        check("void f(unsigned char* b, int i) {\n" // #6372
+              "  if (b[i] == 256) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
+
         check("void f(unsigned char c) {\n"
               "  if (c == 255) {}\n"
               "}", &settingsUnix64);
