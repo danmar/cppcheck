@@ -439,7 +439,8 @@ do
             ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=gtk -f ${DIR}gtk.c
             ;;
         kde.cpp)
-            kde_fn
+            # TODO: "kde-4config" is no longer commonly available in recent distros
+            #kde_fn
             ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=kde ${DIR}kde.cpp
             ;;
         libcurl.c)
