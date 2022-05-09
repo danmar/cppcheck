@@ -456,7 +456,8 @@ do
             ${CPPCHECK} ${CPPCHECK_OPT} --library=lua ${DIR}lua.c
             ;;
         opencv2.cpp)
-            opencv2_fn
+            # TODO: "opencv.pc" is not commonly available in distros
+            #opencv2_fn
             ${CPPCHECK} ${CPPCHECK_OPT} --library=opencv2 ${DIR}opencv2.cpp
             ;;
         openmp.c)
