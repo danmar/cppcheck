@@ -28,9 +28,12 @@ CheckOptions:
     list(APPEND cppcheck-gui-deps ${hdrs} ${uis_hdrs} ${resources} ${qms})
     add_custom_target(gui-build-deps SOURCES ${cppcheck-gui-deps})
 
-    list(APPEND cppcheck-gui_SOURCES ${srcs} $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:simplecpp_objs>)
-    if(USE_BUNDLED_TINYXML2)
-        list(APPEND cppcheck-gui_SOURCES $<TARGET_OBJECTS:tinyxml2_objs>)
+    list(APPEND cppcheck-gui_SOURCES ${srcs})
+    if (NOT BUILD_CORE_DLL)
+        list(APPEND cppcheck-gui_SOURCES $<TARGET_OBJECTS:cppcheck-core> $<TARGET_OBJECTS:simplecpp_objs>)
+        if(USE_BUNDLED_TINYXML2)
+            list(APPEND cppcheck-gui_SOURCES $<TARGET_OBJECTS:tinyxml2_objs>)
+        endif()
     endif()
 
     add_executable(cppcheck-gui ${cppcheck-gui-deps} ${cppcheck-gui_SOURCES})
@@ -51,6 +54,10 @@ CheckOptions:
     if(WITH_QCHART)
         target_compile_definitions (cppcheck-gui PRIVATE HAVE_QCHART)
         target_link_libraries(cppcheck-gui ${QT_CHARTS_LIB})
+    endif()
+    if (BUILD_CORE_DLL)
+        target_compile_definitions(cppcheck-gui PRIVATE CPPCHECKLIB_IMPORT TINYXML2_IMPORT)
+        target_link_libraries(cppcheck-gui cppcheck-core)
     endif()
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
         # Q_UNUSED() in generated code

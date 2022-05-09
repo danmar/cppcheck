@@ -2,6 +2,9 @@ file(GLOB hdrs "*.h")
 file(GLOB srcs "*.cpp")
 
 add_library(tinyxml2_objs OBJECT ${srcs} ${hdrs})
+if (BUILD_CORE_DLL)
+    target_compile_definitions(tinyxml2_objs PRIVATE TINYXML2_EXPORT)
+endif()
 
 # TODO: needs to be fixed upstream
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
