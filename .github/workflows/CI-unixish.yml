@@ -181,10 +181,6 @@ jobs:
           ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
           ../../cppcheck --dump misc-test.cpp 
           python3 ../misc.py -verify misc-test.cpp.dump
-          ../../cppcheck --dump cert-test.c 
-          python3 ../cert.py -verify cert-test.c.dump
-          ../../cppcheck --dump cert-test.cpp 
-          python3 ../cert.py -verify cert-test.cpp.dump
           ../../cppcheck --dump naming_test.c 
           python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump
           ../../cppcheck --dump naming_test.cpp 
