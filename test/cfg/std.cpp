@@ -63,6 +63,23 @@ void invalidFunctionArg_fetestexcept(int excepts)
     (void)std::fetestexcept(FE_ALL_EXCEPT+1);
 }
 
+void nullPointer_fprintf(FILE *Stream, char *Format, int Argument)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::fprintf(Stream, nullptr, Argument);
+    // no warning is expected
+    (void)std::fprintf(Stream, Format, Argument);
+}
+
+void bufferAccessOutOfBounds_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
+{
+    wchar_t buf[42];
+    (void)std::wcsftime(buf, 42, format, timeptr);
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    (void)std::wcsftime(buf, 43, format, timeptr);
+    (void)std::wcsftime(ptr, maxsize, format, timeptr);
+}
+
 int qsort_cmpfunc (const void * a, const void * b) {
     return (*static_cast<const int*>(a) - *static_cast<const int*>(b));
 }
@@ -73,6 +90,20 @@ void nullPointer_qsort(void *base, std::size_t n, std::size_t size, int (*cmp)(c
     // cppcheck-suppress nullPointer
     std::qsort(base, n, size, nullptr);
     std::qsort(base, n, size, qsort_cmpfunc);
+}
+
+void nullPointer_vfprintf(FILE *Stream, const char *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::vfprintf(Stream, nullptr, Arg);
+    (void)std::vfprintf(Stream, Format, Arg);
+}
+
+void nullPointer_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::vfwprintf(Stream, nullptr, Arg);
+    (void)std::vfwprintf(Stream, Format, Arg);
 }
 
 void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)

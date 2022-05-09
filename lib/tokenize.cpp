@@ -11001,6 +11001,8 @@ void Tokenizer::simplifyAttribute()
                     prev = prev->previous();
                 if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->previous(), "%name% ("))
                     functok = prev->link()->previous();
+                else if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->tokAt(-2), "operator %op% (") && isCPP())
+                    functok = prev->link()->tokAt(-2);
                 else if ((!prev || Token::Match(prev, "[;{}*]")) && Token::Match(tok->previous(), "%name%"))
                     functok = tok->previous();
             }
@@ -11424,6 +11426,11 @@ void Tokenizer::simplifyAsm()
 
         else
             continue;
+
+        if (Token::Match(tok->previous(), ") %name% %name% (")) {
+            tok->deleteThis();
+            continue;
+        }
 
         // insert "asm ( "instruction" )"
         tok->str("asm");
