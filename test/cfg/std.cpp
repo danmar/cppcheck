@@ -33,7 +33,73 @@
 #include <iterator>
 #include <vector>
 
-void nullPointer_std_ifstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+void uninitvar_std_fstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    std::string s;
+    const char *ptr;
+    std::ios_base::openmode m;
+
+    fs.open(s, mode);
+    // cppcheck-suppress uninitvar
+    fs.open(ptr, mode);
+    // TODO cppcheck-suppress uninitvar
+    fs.open(filename, m);
+    // TODO cppcheck-suppress uninitvar
+    fs.open(strFileName, m);
+    fs.open(s);
+    // TODO cppcheck-suppress uninitvar
+    fs.open(ptr);
+}
+
+void uninitvar_std_ifstream_open(std::ifstream &ifs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    std::string s;
+    const char *ptr;
+    std::ios_base::openmode m;
+
+    ifs.open(s, mode);
+    // cppcheck-suppress uninitvar
+    ifs.open(ptr, mode);
+    // TODO cppcheck-suppress uninitvar
+    ifs.open(filename, m);
+    // TODO cppcheck-suppress uninitvar
+    ifs.open(strFileName, m);
+    ifs.open(s);
+    // TODO cppcheck-suppress uninitvar
+    ifs.open(ptr);
+}
+
+void uninitvar_std_ofstream_open(std::ofstream &os, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    std::string s;
+    const char *ptr;
+    std::ios_base::openmode m;
+
+    os.open(s, mode);
+    // cppcheck-suppress uninitvar
+    os.open(ptr, mode);
+    // TODO cppcheck-suppress uninitvar
+    os.open(filename, m);
+    // TODO cppcheck-suppress uninitvar
+    os.open(strFileName, m);
+    os.open(s);
+    // TODO cppcheck-suppress uninitvar
+    os.open(ptr);
+}
+
+void nullPointer_std_ofstream_open(std::ofstream &os, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    os.open(nullptr, mode);
+    os.open(filename, mode);
+    os.open(strFileName, mode);
+    // cppcheck-suppress nullPointer
+    os.open(nullptr);
+    os.open(filename);
+    os.open(strFileName);
+}
+
+void nullPointer_std_fstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
 {
     // cppcheck-suppress nullPointer
     fs.open(nullptr, mode);
