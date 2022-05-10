@@ -78,11 +78,9 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool experimental = false, const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        settings.certainty.setEnabled(Certainty::experimental, experimental);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -154,7 +152,7 @@ private:
               "  const int *rmat = n < 4 ? " /* OK */
               "                       ctx->q_intra_matrix :"
               "                       ctx->q_chroma_intra_matrix;\n"
-              "}", /*experimental=*/ false, "test.c");
+              "}", "test.c");
         ASSERT_EQUALS("[test.c:3]: (error) Boolean value assigned to pointer.\n", errout.str());
 
         // ticket #6588 (c++ mode)
@@ -173,7 +171,7 @@ private:
               "  char* m1 = compare(a, b) < 0\n"
               "      ? (compare(b, c) < 0 ? b : (compare(a, c) < 0 ? c : a))\n"
               "      : (compare(a, c) < 0 ? a : (compare(b, c) < 0 ? c : b));\n"
-              "}", /*experimental=*/ false, "test.c");
+              "}", "test.c");
         ASSERT_EQUALS("", errout.str());
 
         // #7381
@@ -747,10 +745,8 @@ private:
                             "    else\n"
                             "        return false;\n"
                             "}\n";
-        check(code, true);
+        check(code);
         ASSERT_EQUALS("[test.cpp:5]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
-        check(code, false);
-        ASSERT_EQUALS("", errout.str());
     }
 
     void bitwiseOnBoolean() { // 3062
