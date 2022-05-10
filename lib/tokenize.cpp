@@ -5487,6 +5487,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " isSplittedVarDeclEq=\"true\"";
         if (tok->isImplicitInt())
             out << " isImplicitInt=\"true\"";
+        if (tok->isComplex())
+            out << " isComplex=\"true\"";
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
