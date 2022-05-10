@@ -6672,10 +6672,12 @@ bool Tokenizer::simplifyConditions()
                     result = (op1 == op2);
                 else if (cmp == "!=")
                     result = (op1 != op2);
-                else if (cmp == ">=" || cmp == "<=")
-                    result = true;
+                else if (cmp == ">=")
+                    result = (op1 || !op2);
                 else if (cmp == ">")
                     result = (op1 && !op2);
+                else if (cmp == "<=")
+                    result = (!op1 || op2);
                 else if (cmp == "<")
                     result = (!op1 && op2);
                 else
