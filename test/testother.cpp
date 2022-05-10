@@ -160,6 +160,7 @@ private:
         TEST_CASE(duplicateExpression13); // #7899
         TEST_CASE(duplicateExpression14); // #9871
         TEST_CASE(duplicateExpression15); // #10650
+        TEST_CASE(duplicateExpression16); // #10569
         TEST_CASE(duplicateExpressionLoop);
         TEST_CASE(duplicateValueTernary);
         TEST_CASE(duplicateExpressionTernary); // #6391
@@ -5125,7 +5126,7 @@ private:
         check("void foo() {\n"
               "    if (x!=2 || y!=3 || x!=2) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression on both sides of '||'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Same expression 'x!=2' found multiple times in chain of '||' operators.\n", errout.str());
 
         check("void foo() {\n"
               "    if (x!=2 && (x=y) && x!=2) {}\n"
@@ -5601,7 +5602,8 @@ private:
               "    const bool c = a;\n"
               "    return a && b && c;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression on both sides of '&&' because 'a' and 'c' represent the same value.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Same expression 'a' found multiple times in chain of '&&' operators because 'a' and 'c' represent the same value.\n",
+                      errout.str());
 
         // 6906
         check("void f(const bool b) {\n"
@@ -5782,6 +5784,31 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) The comparison 'i == 0' is always true.\n"
                       "[test.cpp:6] -> [test.cpp:7]: (style) The comparison 'i == 0' is always true.\n",
+                      errout.str());
+    }
+
+    void duplicateExpression16() { //#10569
+        check("void f(const std::string& a) {\n"
+              "    if ((a == \"x\") ||\n"
+              "        (a == \"42\") ||\n"
+              "        (a == \"y\") ||\n"
+              "        (a == \"42\")) {}\n"
+              "}\n"
+              "void g(const std::string& a) {\n"
+              "    if ((a == \"42\") ||\n"
+              "        (a == \"x\") ||\n"
+              "        (a == \"42\") ||\n"
+              "        (a == \"y\")) {}\n"
+              "}\n"
+              "void h(const std::string& a) {\n"
+              "    if ((a == \"42\") ||\n"
+              "        (a == \"x\") ||\n"
+              "        (a == \"y\") ||\n"
+              "        (a == \"42\")) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1] -> [test.cpp:4]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n"
+                      "[test.cpp:7] -> [test.cpp:9]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n"
+                      "[test.cpp:13] -> [test.cpp:16]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n",
                       errout.str());
     }
 
