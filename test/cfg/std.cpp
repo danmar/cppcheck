@@ -87,6 +87,14 @@ void uninitvar_std_ofstream_open(std::ofstream &os, const std::string &strFileNa
     os.open(ptr);
 }
 
+void nullPointer_std_filebuf_open(std::filebuf &fb, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    (void)fb.open(nullptr, mode);
+    (void)fb.open(filename, mode);
+    (void)fb.open(strFileName, mode);
+}
+
 void nullPointer_std_ofstream_open(std::ofstream &os, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
 {
     // cppcheck-suppress nullPointer
