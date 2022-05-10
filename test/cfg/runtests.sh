@@ -2,6 +2,12 @@
 set -e # abort on error
 #set -x # be verbose
 
+function exit_if_strict {
+    if [ -n "${STRICT}" ] && [ "${STRICT}" -eq 1 ]; then
+      exit 1
+    fi
+}
+
 echo "Checking for pkg-config..."
 if pkg-config --version; then
   HAS_PKG_CONFIG=1
@@ -9,11 +15,12 @@ if pkg-config --version; then
 else
   HAS_PKG_CONFIG=0
   echo "pkg-config is not available, skipping all syntax checks."
+  exit_if_strict
 fi
 
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/
 CPPCHECK="$DIR"../../cppcheck
-CFG="$DIR"../../cfg
+CFG="$DIR"../../cfg/
 
 # Cppcheck options
 CPPCHECK_OPT='--check-library --enable=information --enable=style --error-exitcode=-1 --suppress=missingIncludeSystem --inline-suppr --template="{file}:{line}:{severity}:{id}:{message}"'
@@ -63,12 +70,14 @@ function qt_fn {
             set -e
             if [ $QTCHECK_RETURNCODE -ne 0 ]; then
                 echo "Qt not completely present or not working, skipping syntax check with ${CXX}."
+                exit_if_strict
             else
                 echo "Qt found and working, checking syntax with ${CXX} now."
                 ${CXX} ${CXX_OPT} ${QTCONFIG} ${DIR}qt.cpp
             fi
         else
             echo "Qt not present, skipping syntax check with ${CXX}."
+            exit_if_strict
         fi
     fi
 }
@@ -103,6 +112,7 @@ function wxwidgets_fn {
     set -e
     if [ $WXCONFIG_RETURNCODE -ne 0 ]; then
         echo "wx-config does not work, skipping syntax check for wxWidgets tests."
+        exit_if_strict
     else
         set +e
         echo -e "#include <wx/filefn.h>\n#include <wx/app.h>\n#include <wx/artprov.h>\n#include <wx/version.h>\n#if wxVERSION_NUMBER<2950\n#error \"Old version\"\n#endif" | ${CXX} ${CXX_OPT} ${WXCONFIG} -x c++ -
@@ -110,6 +120,7 @@ function wxwidgets_fn {
         set -e
         if [ $WXCHECK_RETURNCODE -ne 0 ]; then
             echo "wxWidgets not completely present (with GUI classes) or not working, skipping syntax check with ${CXX}."
+            exit_if_strict
         else
             echo "wxWidgets found, checking syntax with ${CXX} now."
             ${CXX} ${CXX_OPT} ${WXCONFIG} -Wno-deprecated-declarations ${DIR}wxwidgets.cpp
@@ -131,12 +142,14 @@ function gtk_fn {
             set -e
             if [ $GTKCHECK_RETURNCODE -ne 0 ]; then
                 echo "GTK+ not completely present or not working, skipping syntax check with ${CXX}."
+                exit_if_strict
             else
                 echo "GTK+ found and working, checking syntax with ${CXX} now."
                 ${CC} ${CC_OPT} ${GTKCONFIG} ${DIR}gtk.c
             fi
         else
             echo "GTK+ not present, skipping syntax check with ${CXX}."
+            exit_if_strict
         fi
     fi
 }
@@ -149,6 +162,7 @@ function boost_fn {
     set -e
     if [ ${BOOSTCHECK_RETURNCODE} -ne 0 ]; then
         echo "Boost not completely present or not working, skipping syntax check with ${CXX}."
+        exit_if_strict
     else
         echo "Boost found and working, checking syntax with ${CXX} now."
         ${CXX} ${CXX_OPT} ${DIR}boost.cpp
@@ -166,12 +180,14 @@ function sqlite3_fn {
             set -e
             if [ $SQLITE3CHECK_RETURNCODE -ne 0 ]; then
                 echo "SQLite3 not completely present or not working, skipping syntax check with ${CC}."
+                exit_if_strict
             else
                 echo "SQLite3 found and working, checking syntax with ${CC} now."
                 ${CC} ${CC_OPT} ${SQLITE3CONFIG} ${DIR}sqlite3.c
             fi
         else
             echo "SQLite3 not present, skipping syntax check with ${CC}."
+            exit_if_strict
         fi
     fi
 }
@@ -192,12 +208,14 @@ function python_fn {
             set -e
             if [ $PYTHON3CONFIG_RETURNCODE -ne 0 ]; then
                 echo "Python 3 not completely present or not working, skipping syntax check with ${CC}."
+                exit_if_strict
             else
                 echo "Python 3 found and working, checking syntax with ${CC} now."
                 ${CC} ${CC_OPT} ${PYTHON3CONFIG} ${DIR}python.c
             fi
         else
             echo "Python 3 not present, skipping syntax check with ${CC}."
+            exit_if_strict
         fi
     fi
 }
@@ -213,12 +231,14 @@ function lua_fn {
             set -e
             if [ $LUACONFIG_RETURNCODE -ne 0 ]; then
                 echo "Lua not completely present or not working, skipping syntax check with ${CC}."
+                exit_if_strict
             else
                 echo "Lua found and working, checking syntax with ${CC} now."
                 ${CC} ${CC_OPT} ${LUACONFIG} ${DIR}lua.c
             fi
         else
             echo "Lua not present, skipping syntax check with ${CC}."
+            exit_if_strict
         fi
     fi
 }
@@ -234,12 +254,14 @@ function libcurl_fn {
             set -e
             if [ $LIBCURLCONFIG_RETURNCODE -ne 0 ]; then
                 echo "libcurl not completely present or not working, skipping syntax check with ${CC}."
+                exit_if_strict
             else
                 echo "libcurl found and working, checking syntax with ${CC} now."
                 ${CC} ${CC_OPT} ${LIBCURLCONFIG} ${DIR}libcurl.c
             fi
         else
             echo "libcurl not present, skipping syntax check with ${CC}."
+            exit_if_strict
         fi
     fi
 }
@@ -255,12 +277,14 @@ function cairo_fn {
             set -e
             if [ $CAIROCONFIG_RETURNCODE -ne 0 ]; then
                 echo "cairo not completely present or not working, skipping syntax check with ${CC}."
+                exit_if_strict
             else
                 echo "cairo found and working, checking syntax with ${CC} now."
                 ${CC} ${CC_OPT} ${CAIROCONFIG} ${DIR}cairo.c
             fi
         else
             echo "cairo not present, skipping syntax check with ${CC}."
+            exit_if_strict
         fi
     fi
 }
@@ -278,10 +302,12 @@ function kde_fn {
     set -e
     if [ $KDECONFIG_RETURNCODE -ne 0 ]; then
         echo "kde4-config does not work, skipping syntax check."
+        exit_if_strict
     else
         KDEQTCONFIG=$(get_pkg_config_cflags QtCore)
         if [ -n "$KDEQTCONFIG" ]; then
             echo "Suitable Qt not present, Qt is necessary for KDE. Skipping syntax check."
+            exit_if_strict
         else
             set +e
             echo -e "#include <KDE/KGlobal>\n" | ${CXX} ${CXX_OPT} -I${KDECONFIG} ${KDEQTCONFIG} -x c++ -
@@ -289,6 +315,7 @@ function kde_fn {
             set -e
             if [ $KDECHECK_RETURNCODE -ne 0 ]; then
                 echo "KDE headers not completely present or not working, skipping syntax check with ${CXX}."
+                exit_if_strict
             else
                 echo "KDE found, checking syntax with ${CXX} now."
                 ${CXX} ${CXX_OPT} -I${KDECONFIG} ${KDEQTCONFIG} ${DIR}kde.cpp
@@ -308,12 +335,14 @@ function libsigcpp_fn {
             set -e
             if [ $LIBSIGCPPCONFIG_RETURNCODE -ne 0 ]; then
                 echo "libsigc++ not completely present or not working, skipping syntax check with ${CXX}."
+                exit_if_strict
             else
                 echo "libsigc++ found and working, checking syntax with ${CXX} now."
                 ${CXX} ${CXX_OPT} ${LIBSIGCPPCONFIG} ${DIR}libsigc++.cpp
             fi
         else
             echo "libsigc++ not present, skipping syntax check with ${CXX}."
+            exit_if_strict
         fi
     fi
 }
@@ -329,12 +358,14 @@ function openssl_fn {
             set -e
             if [ $OPENSSLCONFIG_RETURNCODE -ne 0 ]; then
                 echo "OpenSSL not completely present or not working, skipping syntax check with ${CC}."
+                exit_if_strict
             else
                 echo "OpenSSL found and working, checking syntax with ${CC} now."
                 ${CC} ${CC_OPT} ${OPENSSLCONFIG} ${DIR}openssl.c
             fi
         else
             echo "OpenSSL not present, skipping syntax check with ${CC}."
+            exit_if_strict
         fi
     fi
 }
@@ -350,12 +381,14 @@ function opencv2_fn {
             set -e
             if [ $OPENCVCONFIG_RETURNCODE -ne 0 ]; then
                 echo "OpenCV not completely present or not working, skipping syntax check with ${CXX}."
+                exit_if_strict
             else
                 echo "OpenCV found and working, checking syntax with ${CXX} now."
                 ${CXX} ${CXX_OPT} ${OPENCVCONFIG} ${DIR}opencv2.cpp
             fi
         else
             echo "OpenCV not present, skipping syntax check with ${CXX}."
+            exit_if_strict
         fi
     fi
 }
@@ -365,6 +398,7 @@ function cppunit_fn {
     if [ $HAS_PKG_CONFIG -eq 1 ]; then
         if ! pkg-config cppunit; then
             echo "cppunit not found, skipping syntax check for cppunit"
+            exit_if_strict
         else
             echo "cppunit found, checking syntax with ${CXX} now."
             ${CXX} ${CXX_OPT} -Wno-deprecated-declarations ${DIR}cppunit.cpp
@@ -405,7 +439,8 @@ do
             ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=gtk -f ${DIR}gtk.c
             ;;
         kde.cpp)
-            kde_fn
+            # TODO: "kde-4config" is no longer commonly available in recent distros
+            #kde_fn
             ${CPPCHECK} ${CPPCHECK_OPT} --inconclusive --library=kde ${DIR}kde.cpp
             ;;
         libcurl.c)
@@ -421,7 +456,8 @@ do
             ${CPPCHECK} ${CPPCHECK_OPT} --library=lua ${DIR}lua.c
             ;;
         opencv2.cpp)
-            opencv2_fn
+            # TODO: "opencv.pc" is not commonly available in distros
+            #opencv2_fn
             ${CPPCHECK} ${CPPCHECK_OPT} --library=opencv2 ${DIR}opencv2.cpp
             ;;
         openmp.c)
@@ -468,12 +504,14 @@ do
             ;;
         *)
           echo "Unhandled file $f"
+          exit_if_strict
     esac
 done
 
 # Check the syntax of the defines in the configuration files
 if ! xmlstarlet --version; then
     echo "xmlstarlet needed to extract defines, skipping defines check."
+    exit_if_strict
 else
     for configfile in ${CFG}*.cfg; do
         echo "Checking defines in $configfile"

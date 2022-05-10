@@ -25,6 +25,12 @@ jobs:
           sudo apt-get install libtinyxml2-dev
           sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qt5-default
 
+      # packages for strict cfg checks
+      - name: Install missing software on ubuntu 20.04
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          sudo apt-get install libcairo2-dev libcurl4-openssl-dev liblua5.3-dev libssl-dev libsqlite3-dev libcppunit-dev libsigc++-2.0-dev libgtk-3-dev libboost-all-dev libwxgtk3.0-gtk3-dev xmlstarlet
+
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
@@ -117,9 +123,16 @@ jobs:
 
       # fails on macos since some includes (e.g. sys/epoll.h) are not available
       - name: Run cfg tests
-        if: contains(matrix.os, 'ubuntu')
+        if: contains(matrix.os, 'ubuntu') && matrix.os != 'ubuntu-20.04'
         run: |
           make -j$(nproc) checkcfg
+
+      - name: Run cfg tests (strict)
+        if: matrix.os == 'ubuntu-20.04'
+        run: |
+          make -j$(nproc) checkcfg
+        env:
+          STRICT: 1
 
       # it seems macos has no "wc" command
       - name: Run showtimetop5 tests
