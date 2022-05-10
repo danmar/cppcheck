@@ -433,6 +433,11 @@ private:
 
         check("struct S {\n" // #9391
               "    S() = default;\n"
+              "    ~S() = default;\n"
+              "    S(const S&) = default;\n"
+              "    S(S&&) = default;\n"
+              "    S& operator=(const S&) = default;\n"
+              "    S& operator=(S&&) = default;\n"
               "    int i;\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:2]: (warning) Member variable 'S::i' is not initialized in the constructor.\n", errout.str());

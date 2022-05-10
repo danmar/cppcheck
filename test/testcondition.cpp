@@ -4127,6 +4127,32 @@ private:
               "   int method() override  { return 1; }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #6855
+        check("struct S { int i; };\n"
+              "void f(S& s) {\n"
+              "    if (!(s.i > 0) && (s.i != 0))\n"
+              "        s.i = 0;\n"
+              "    else if (s.i < 0)\n"
+              "        s.s = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 's.i<0' is always false\n", errout.str());
+
+        // #6857
+        check("int bar(int i) { return i; }\n"
+              "void foo() {\n"
+              "    if (bar(1) == 0 && bar(1) > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'bar(1)==0' is always false\n"
+                      "[test.cpp:3]: (style) Condition 'bar(1)>0' is always true\n",
+                      errout.str());
+
+        check("struct S { int bar(int i) const; };\n"
+              "void foo(const S& s) {\n"
+              "    if (s.bar(1) == 0 && s.bar(1) > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: s.bar(1) == 0 && s.bar(1) > 0.\n",
+                      errout.str());
     }
 
     void alwaysTrueSymbolic()
