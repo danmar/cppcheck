@@ -292,7 +292,7 @@ void nullpointer(int value)
     fclose(fp);
     fp = 0;
     // No FP
-    fflush(0);
+    fflush(0); // If stream is a null pointer, all streams are flushed.
     fp = freopen(0,"abc",stdin);
     fclose(fp);
     fp = NULL;
@@ -432,6 +432,15 @@ void nullPointer_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, c
     (void)wcsftime(ptr, maxsize, NULL, timeptr);
     // cppcheck-suppress nullPointer
     (void)wcsftime(ptr, maxsize, format, NULL);
+    (void)wcsftime(ptr, maxsize, format, timeptr);
+}
+
+void bufferAccessOutOfBounds_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
+{
+    wchar_t buf[42];
+    (void)wcsftime(buf, 42, format, timeptr);
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    (void)wcsftime(buf, 43, format, timeptr);
     (void)wcsftime(ptr, maxsize, format, timeptr);
 }
 
@@ -1578,6 +1587,14 @@ void uninitvar_fmod(void)
     (void)fmodl(ld1,ld2);
 }
 
+void nullPointer_fprintf(FILE *Stream, char *Format, int Argument)
+{
+    // cppcheck-suppress nullPointer
+    (void)fprintf(Stream, NULL, Argument);
+    // no warning is expected
+    (void)fprintf(Stream, Format, Argument);
+}
+
 void uninitvar_fprintf(FILE *Stream, char *Format, int Argument)
 {
     FILE *stream1, *stream2;
@@ -1594,6 +1611,13 @@ void uninitvar_fprintf(FILE *Stream, char *Format, int Argument)
 
     // no warning is expected
     (void)fprintf(Stream, Format, Argument);
+}
+
+void nullPointer_vfprintf(FILE *Stream, const char *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)vfprintf(Stream, NULL, Arg);
+    (void)vfprintf(Stream, Format, Arg);
 }
 
 void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
@@ -1613,6 +1637,13 @@ void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
     (void)vfprintf(Stream, Format, Arg);
     // cppcheck-suppress va_list_usedBeforeStarted
     (void)vfprintf(Stream, Format, arg);
+}
+
+void nullPointer_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)vfwprintf(Stream, NULL, Arg);
+    (void)vfwprintf(Stream, Format, Arg);
 }
 
 void uninitvar_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
@@ -4742,6 +4773,36 @@ void nullPointer_fesetexceptflag(int excepts)
     (void)fesetexceptflag(flagp,excepts);
     // cppcheck-suppress nullPointer
     (void)fesetexceptflag(0,excepts);
+}
+
+void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
+{
+    (void)fesetexceptflag(flagp, excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fesetexceptflag(flagp, 0);
+    (void)fesetexceptflag(flagp, FE_DIVBYZERO);
+    (void)fesetexceptflag(flagp, FE_INEXACT);
+    (void)fesetexceptflag(flagp, FE_INVALID);
+    (void)fesetexceptflag(flagp, FE_OVERFLOW);
+    (void)fesetexceptflag(flagp, FE_UNDERFLOW);
+    (void)fesetexceptflag(flagp, FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fesetexceptflag(flagp, FE_ALL_EXCEPT+1);
+}
+
+void invalidFunctionArg_fetestexcept(int excepts)
+{
+    (void)fetestexcept(excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fetestexcept(0);
+    (void)fetestexcept(FE_DIVBYZERO);
+    (void)fetestexcept(FE_INEXACT);
+    (void)fetestexcept(FE_INVALID);
+    (void)fetestexcept(FE_OVERFLOW);
+    (void)fetestexcept(FE_UNDERFLOW);
+    (void)fetestexcept(FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fetestexcept(FE_ALL_EXCEPT+1);
 }
 
 void nullPointer_feupdateenv(void)

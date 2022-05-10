@@ -211,7 +211,7 @@ void TokenList::deleteTokens(Token *tok)
 // add a token.
 //---------------------------------------------------------------------------
 
-void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split)
+void TokenList::addtoken(const std::string& str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split)
 {
     if (str.empty())
         return;
@@ -244,7 +244,7 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
     mTokensFrontBack.back->fileIndex(fileno);
 }
 
-void TokenList::addtoken(std::string str, const Token *locationTok)
+void TokenList::addtoken(const std::string& str, const Token *locationTok)
 {
     if (str.empty())
         return;

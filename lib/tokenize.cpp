@@ -4204,7 +4204,8 @@ void Tokenizer::setVarIdPass2()
             else if (Token::Match(tok->previous(), "!!:: %name% <") && Token::Match(tok->next()->findClosingBracket(),"> :: ~| %name%"))
                 tok = tok->next()->findClosingBracket()->next();
             else if (usingnamespaces.empty() || tok->varId() || !tok->isName() || tok->isStandardType() || tok->tokType() == Token::eKeyword || tok->tokType() == Token::eBoolean ||
-                     Token::Match(tok->previous(), ".|namespace|class|struct|&|&&|*|> %name%") || Token::Match(tok->previous(), "%type%| %name% ( %type%|)") || Token::Match(tok, "public:|private:|protected:"))
+                     Token::Match(tok->previous(), ".|namespace|class|struct|&|&&|*|> %name%") || Token::Match(tok->previous(), "%type%| %name% ( %type%|)") || Token::Match(tok, "public:|private:|protected:") ||
+                     (!tok->next() && Token::Match(tok->previous(), "}|; %name%")))
                 continue;
 
             while (Token::Match(tok, ":: ~| %name%")) {
@@ -11000,6 +11001,8 @@ void Tokenizer::simplifyAttribute()
                     prev = prev->previous();
                 if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->previous(), "%name% ("))
                     functok = prev->link()->previous();
+                else if (Token::simpleMatch(prev, ")") && Token::Match(prev->link()->tokAt(-2), "operator %op% (") && isCPP())
+                    functok = prev->link()->tokAt(-2);
                 else if ((!prev || Token::Match(prev, "[;{}*]")) && Token::Match(tok->previous(), "%name%"))
                     functok = tok->previous();
             }
@@ -11423,6 +11426,11 @@ void Tokenizer::simplifyAsm()
 
         else
             continue;
+
+        if (Token::Match(tok->previous(), ") %name% %name% (")) {
+            tok->deleteThis();
+            continue;
+        }
 
         // insert "asm ( "instruction" )"
         tok->str("asm");

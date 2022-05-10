@@ -27,10 +27,196 @@
 #include <fstream>
 #include <functional>
 #include <iomanip>
+#include <ios>
 #include <iostream>
 #include <istream>
 #include <iterator>
 #include <vector>
+
+void uninitvar_std_fstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    std::string s;
+    const char *ptr;
+    std::ios_base::openmode m;
+
+    fs.open(s, mode);
+    // cppcheck-suppress uninitvar
+    fs.open(ptr, mode);
+    // TODO cppcheck-suppress uninitvar
+    fs.open(filename, m);
+    // TODO cppcheck-suppress uninitvar
+    fs.open(strFileName, m);
+    fs.open(s);
+    // TODO cppcheck-suppress uninitvar
+    fs.open(ptr);
+}
+
+void uninitvar_std_ifstream_open(std::ifstream &ifs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    std::string s;
+    const char *ptr;
+    std::ios_base::openmode m;
+
+    ifs.open(s, mode);
+    // cppcheck-suppress uninitvar
+    ifs.open(ptr, mode);
+    // TODO cppcheck-suppress uninitvar
+    ifs.open(filename, m);
+    // TODO cppcheck-suppress uninitvar
+    ifs.open(strFileName, m);
+    ifs.open(s);
+    // TODO cppcheck-suppress uninitvar
+    ifs.open(ptr);
+}
+
+void uninitvar_std_ofstream_open(std::ofstream &os, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    std::string s;
+    const char *ptr;
+    std::ios_base::openmode m;
+
+    os.open(s, mode);
+    // cppcheck-suppress uninitvar
+    os.open(ptr, mode);
+    // TODO cppcheck-suppress uninitvar
+    os.open(filename, m);
+    // TODO cppcheck-suppress uninitvar
+    os.open(strFileName, m);
+    os.open(s);
+    // TODO cppcheck-suppress uninitvar
+    os.open(ptr);
+}
+
+void nullPointer_std_filebuf_open(std::filebuf &fb, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    (void)fb.open(nullptr, mode);
+    (void)fb.open(filename, mode);
+    (void)fb.open(strFileName, mode);
+}
+
+void nullPointer_std_ofstream_open(std::ofstream &os, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    os.open(nullptr, mode);
+    os.open(filename, mode);
+    os.open(strFileName, mode);
+    // cppcheck-suppress nullPointer
+    os.open(nullptr);
+    os.open(filename);
+    os.open(strFileName);
+}
+
+void nullPointer_std_fstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    fs.open(nullptr, mode);
+    fs.open(filename, mode);
+    fs.open(strFileName, mode);
+    // cppcheck-suppress nullPointer
+    fs.open(nullptr);
+    fs.open(filename);
+    fs.open(strFileName);
+}
+
+void nullPointer_std_ifstream_open(std::ifstream &is, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    is.open(nullptr, mode);
+    is.open(filename, mode);
+    is.open(strFileName, mode);
+    // cppcheck-suppress nullPointer
+    is.open(nullptr);
+    is.open(filename);
+    is.open(strFileName);
+}
+
+void bufferAccessOutOfBounds_std_fstream_write(std::fstream &fs, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)fs.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)fs.write(buf,43);
+    (void)fs.write(buf,n);
+    (void)fs.write(s,n);
+}
+
+void bufferAccessOutOfBounds_std_ostream_write(std::ostream &os, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)os.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)os.write(buf,43);
+    (void)os.write(buf,n);
+    (void)os.write(s,n);
+}
+
+void bufferAccessOutOfBounds_std_ostringstream_write(std::ostringstream &oss, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)oss.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)oss.write(buf,43);
+    (void)oss.write(buf,n);
+    (void)oss.write(s,n);
+}
+
+void bufferAccessOutOfBounds_std_ofstream_write(std::ofstream &os, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)os.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)os.write(buf,43);
+    (void)os.write(buf,n);
+    (void)os.write(s,n);
+}
+
+void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
+{
+    (void)std::fesetexceptflag(flagp, excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fesetexceptflag(flagp, 0);
+    (void)std::fesetexceptflag(flagp, FE_DIVBYZERO);
+    (void)std::fesetexceptflag(flagp, FE_INEXACT);
+    (void)std::fesetexceptflag(flagp, FE_INVALID);
+    (void)std::fesetexceptflag(flagp, FE_OVERFLOW);
+    (void)std::fesetexceptflag(flagp, FE_UNDERFLOW);
+    (void)std::fesetexceptflag(flagp, FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fesetexceptflag(flagp, FE_ALL_EXCEPT+1);
+}
+
+void invalidFunctionArg_fetestexcept(int excepts)
+{
+    (void)std::fetestexcept(excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fetestexcept(0);
+    (void)std::fetestexcept(FE_DIVBYZERO);
+    (void)std::fetestexcept(FE_INEXACT);
+    (void)std::fetestexcept(FE_INVALID);
+    (void)std::fetestexcept(FE_OVERFLOW);
+    (void)std::fetestexcept(FE_UNDERFLOW);
+    (void)std::fetestexcept(FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fetestexcept(FE_ALL_EXCEPT+1);
+}
+
+void nullPointer_fprintf(FILE *Stream, char *Format, int Argument)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::fprintf(Stream, nullptr, Argument);
+    // no warning is expected
+    (void)std::fprintf(Stream, Format, Argument);
+}
+
+void bufferAccessOutOfBounds_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
+{
+    wchar_t buf[42];
+    (void)std::wcsftime(buf, 42, format, timeptr);
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    (void)std::wcsftime(buf, 43, format, timeptr);
+    (void)std::wcsftime(ptr, maxsize, format, timeptr);
+}
 
 int qsort_cmpfunc (const void * a, const void * b) {
     return (*static_cast<const int*>(a) - *static_cast<const int*>(b));
@@ -42,6 +228,20 @@ void nullPointer_qsort(void *base, std::size_t n, std::size_t size, int (*cmp)(c
     // cppcheck-suppress nullPointer
     std::qsort(base, n, size, nullptr);
     std::qsort(base, n, size, qsort_cmpfunc);
+}
+
+void nullPointer_vfprintf(FILE *Stream, const char *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::vfprintf(Stream, nullptr, Arg);
+    (void)std::vfprintf(Stream, Format, Arg);
+}
+
+void nullPointer_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::vfwprintf(Stream, nullptr, Arg);
+    (void)std::vfwprintf(Stream, Format, Arg);
 }
 
 void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)

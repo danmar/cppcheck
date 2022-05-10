@@ -25,7 +25,6 @@ import argparse
 import codecs
 import string
 import copy
-import subprocess
 
 try:
     from itertools import izip as zip
@@ -4400,7 +4399,7 @@ class MisraChecker:
 
             # Premium MISRA checking, deep analysis
             if cfgNumber == 0 and self.path_premium_addon:
-                subprocess.cmd_output([self.path_premium_addon, '--cli', '--misra', dumpfile])
+                cppcheckdata.cmd_output([self.path_premium_addon, '--cli', '--misra', dumpfile])
 
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []
@@ -4665,7 +4664,7 @@ def main():
         premium_command = [checker.path_premium_addon, '--misra', '--file-list', args.file_list]
         if args.cli:
             premium_command.append('--cli')
-        for line in subprocess.cmd_output(premium_command).split('\n'):
+        for line in cppcheckdata.cmd_output(premium_command).split('\n'):
             if re.search(r'"errorId".*:.*"misra-', line) is not None:
                 print(line.strip())
 

@@ -34,7 +34,7 @@ static std::string unhandledElement(const QXmlStreamReader &xmlReader)
     throw std::runtime_error(QObject::tr("line %1: Unhandled element %2").arg(xmlReader.lineNumber()).arg(xmlReader.name().toString()).toStdString());
 }
 
-static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, QString attributeName)
+static std::string mandatoryAttibuteMissing(const QXmlStreamReader &xmlReader, const QString& attributeName)
 {
     throw std::runtime_error(QObject::tr("line %1: Mandatory attribute '%2' missing in '%3'")
                              .arg(xmlReader.lineNumber())

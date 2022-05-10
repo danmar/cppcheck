@@ -1807,7 +1807,7 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
 static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
-                                         std::list<ValueFlow::Value> values,
+                                         const std::list<ValueFlow::Value>& values,
                                          TokenList* const tokenlist,
                                          const Settings* settings);
 
@@ -1815,7 +1815,7 @@ static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
-                             ValueFlow::Value val2,
+                             const ValueFlow::Value& val2,
                              ErrorLogger* errorLogger,
                              const Settings* settings);
 
@@ -3026,7 +3026,7 @@ ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, co
 static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
-                                         std::list<ValueFlow::Value> values,
+                                         const std::list<ValueFlow::Value>& values,
                                          TokenList* const tokenlist,
                                          const Settings* settings)
 {
@@ -3067,7 +3067,7 @@ static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
-                             ValueFlow::Value val2,
+                             const ValueFlow::Value& val2,
                              ErrorLogger* /*errorLogger*/,
                              const Settings* settings)
 {

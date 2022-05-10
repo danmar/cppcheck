@@ -6519,6 +6519,20 @@ private:
 
         code = "void f(const char * const x) { !!system(x); }\n";
         valueOfTok(code, "x");
+
+        code = "void setDeltas(int life, int age, int multiplier) {\n"
+               "    int dx = 0;\n"
+               "    int dy = 0;\n"
+               "    if (age <= 2 || life < 4) {\n"
+               "        dy = 0;\n"
+               "        dx = (rand() % 3) - 1;\n"
+               "    }\n"
+               "    else if (age < (multiplier * 3)) {\n"
+               "        if (age % (int) (multiplier * 0.5) == 0) dy = -1;\n"
+               "        else dy = 0;\n"
+               "    }\n"
+               "}\n";
+        valueOfTok(code, "age");
     }
 
     void valueFlowHang() {
@@ -7215,6 +7229,12 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, -1));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, -1));
+
+        code = "char* f() {\n"
+               "    char *x = malloc(10);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, "malloc(10)", 0));
     }
 
     void valueFlowSymbolicIdentity()

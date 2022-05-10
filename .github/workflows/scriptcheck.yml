@@ -29,7 +29,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        python-version: [3.5]
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, '3.10']
       fail-fast: false
 
     steps:
@@ -69,7 +69,8 @@ jobs:
           python -m pip install pylint
           python -m pip install unittest2
           python -m pip install pytest
-          python -m pip install pygments
+          # TODO: remove version limitation when cppcheck-htmlreport is adjusted
+          python -m pip install pygments==2.11.2
           python -m pip install requests
           python -m pip install psutil
 

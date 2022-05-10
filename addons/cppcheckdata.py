@@ -10,6 +10,8 @@ import argparse
 import json
 import os
 import sys
+import subprocess
+
 try:
     import pathlib
 except ImportError:
@@ -1390,6 +1392,6 @@ def get_path_premium_addon():
 
 def cmd_output(cmd):
     try:
-        return subprocess.check_output([self.path_premium_addon, '--cli', '--get-rule-text=' + errorId]).strip().decode('ascii')
+        return subprocess.check_output(cmd).strip().decode('ascii')
     except subprocess.CalledProcessError as e:
         return e.output

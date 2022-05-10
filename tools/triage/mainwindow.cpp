@@ -147,7 +147,7 @@ void MainWindow::refreshResults()
     filter(ui->version->currentText());
 }
 
-void MainWindow::filter(QString filter)
+void MainWindow::filter(const QString& filter)
 {
     QStringList allErrors;
 

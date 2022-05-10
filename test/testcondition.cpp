@@ -4098,6 +4098,35 @@ private:
         // #8358
         check("void f(double d) { if ((d * 0) != 0) {} }");
         ASSERT_EQUALS("", errout.str());
+
+        // #6870
+        check("struct S {\n"
+              "    int* p;\n"
+              "    void f() const;\n"
+              "    int g();\n"
+              "};\n"
+              "void S::f() {\n"
+              "    if ((p == NULL) || ((p) && (g() >= *p))) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Condition 'p' is always true\n", errout.str());
+
+        // #10749
+        check("struct Interface {\n"
+              "    virtual int method() = 0;\n"
+              "};\n"
+              "struct Child : Interface {\n"
+              "   int method() override { return 0; }\n"
+              "   auto foo() {\n"
+              "       if (method() == 0)\n"
+              "           return true;\n"
+              "       else\n"
+              "           return false;\n"
+              "   }\n"
+              "};\n"
+              "struct GrandChild : Child {\n"
+              "   int method() override  { return 1; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -5053,6 +5082,11 @@ private:
 
         check("void f(unsigned char c) {\n"
               "  if (c == 256) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
+
+        check("void f(unsigned char* b, int i) {\n" // #6372
+              "  if (b[i] == 256) {}\n"
               "}", &settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
 

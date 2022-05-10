@@ -42,7 +42,7 @@ public:
 public slots:
     void loadFile();
     void loadFromClipboard();
-    void filter(QString filter);
+    void filter(const QString& filter);
     void showResult(QListWidgetItem *item);
     void refreshResults();
     void fileTreeFilter(const QString &str);

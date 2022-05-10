@@ -69,7 +69,7 @@ R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
         }
         return wrap(x / y);
     case '%':
-        if (isZero(y)) {
+        if (isZero(MathLib::bigint(y))) {
             if (error)
                 *error = true;
             return R{};
