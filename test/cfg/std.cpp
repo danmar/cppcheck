@@ -26,6 +26,7 @@
 #include <cwchar>
 #include <fstream>
 #include <functional>
+#include <threads.h>
 #include <iomanip>
 #include <ios>
 #include <iostream>
@@ -3658,6 +3659,36 @@ void uninitvar_system(void)
     char *c;
     // cppcheck-suppress uninitvar
     (void)std::system(c);
+}
+
+void nullPointer_mtx_destroy( mtx_t *mutex )
+{
+    // cppcheck-suppress nullPointer
+    mtx_destroy(nullptr);
+    mtx_destroy(mutex);
+}
+
+void nullPointer_mtx_lock( mtx_t *mutex )
+{
+    // cppcheck-suppress nullPointer
+    mtx_lock(nullptr);
+    mtx_lock(mutex);
+}
+
+void nullPointer_mtx_trylock( mtx_t *mutex )
+{
+    // cppcheck-suppress nullPointer
+    mtx_trylock(nullptr);
+    mtx_trylock(mutex);
+}
+
+int nullPointer_mtx_timedlock( mtx_t *mutex, const struct timespec *time_point )
+{
+    // cppcheck-suppress nullPointer
+    (void) mtx_timedlock(nullptr, time_point);
+    // cppcheck-suppress nullPointer
+    (void) mtx_timedlock(mutex, nullptr);
+    return mtx_timedlock(mutex, time_point);
 }
 
 void nullPointer_system(char *c)

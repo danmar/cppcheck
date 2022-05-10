@@ -23,6 +23,7 @@
 #include <time.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <threads.h>
 #include <inttypes.h>
 #include <float.h>
 
@@ -4361,6 +4362,15 @@ void nullPointer_system(char *c)
     // If a null pointer is given, command processor is checked for existence
     (void)system(NULL);
     (void)system(c);
+}
+
+int nullPointer_mtx_timedlock( mtx_t *restrict mutex, const struct timespec *restrict time_point )
+{
+    // cppcheck-suppress nullPointer
+    (void) mtx_timedlock(NULL, time_point);
+    // cppcheck-suppress nullPointer
+    (void) mtx_timedlock(mutex, NULL);
+    return mtx_timedlock(mutex, time_point);
 }
 
 void uninitvar_zonetime(void)
