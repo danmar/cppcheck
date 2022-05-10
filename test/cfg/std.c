@@ -4356,6 +4356,13 @@ void uninitvar_system(void)
     (void)system(c);
 }
 
+void nullPointer_system(char *c)
+{
+    // If a null pointer is given, command processor is checked for existence
+    (void)system(NULL);
+    (void)system(c);
+}
+
 void uninitvar_zonetime(void)
 {
     time_t *tp;

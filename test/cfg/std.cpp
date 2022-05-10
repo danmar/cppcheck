@@ -3660,6 +3660,13 @@ void uninitvar_system(void)
     (void)std::system(c);
 }
 
+void nullPointer_system(char *c)
+{
+    // If a null pointer is given, command processor is checked for existence
+    (void)std::system(NULL);
+    (void)std::system(c);
+}
+
 void uninitvar_setw(void)
 {
     int i;
