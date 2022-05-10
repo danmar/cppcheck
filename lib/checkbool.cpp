@@ -240,11 +240,6 @@ void CheckBool::comparisonOfTwoFuncsReturningBoolError(const Token *tok, const s
 
 void CheckBool::checkComparisonOfBoolWithBool()
 {
-    // FIXME: This checking is "experimental" because of the false positives
-    //        when self checking lib/tokenize.cpp (#2617)
-    if (!mSettings->certainty.isEnabled(Certainty::experimental))
-        return;
-
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
