@@ -27,11 +27,52 @@
 #include <fstream>
 #include <functional>
 #include <iomanip>
+#include <ios>
 #include <iostream>
 #include <istream>
 #include <iterator>
 #include <vector>
 
+
+void bufferAccessOutOfBounds_std_fstream_write(std::fstream &fs, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)fs.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)fs.write(buf,43);
+    (void)fs.write(buf,n);
+    (void)fs.write(s,n);
+}
+
+void bufferAccessOutOfBounds_std_ostream_write(std::ostream &os, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)os.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)os.write(buf,43);
+    (void)os.write(buf,n);
+    (void)os.write(s,n);
+}
+
+void bufferAccessOutOfBounds_std_ostringstream_write(std::ostringstream &oss, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)oss.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)oss.write(buf,43);
+    (void)oss.write(buf,n);
+    (void)oss.write(s,n);
+}
+
+void bufferAccessOutOfBounds_std_ofstream_write(std::ofstream &os, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)os.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)os.write(buf,43);
+    (void)os.write(buf,n);
+    (void)os.write(s,n);
+}
 
 void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
 {
