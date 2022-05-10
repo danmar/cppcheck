@@ -10983,9 +10983,9 @@ void Tokenizer::simplifyAttribute()
                 syntaxError(tok);
 
             Token *functok = nullptr;
-            if (Token::Match(after, "%name%|*|(")) {
+            if (Token::Match(after, "%name%|*|&|(")) {
                 Token *ftok = after;
-                while (Token::Match(ftok, "%name%|::|<|* !!(")) {
+                while (Token::Match(ftok, "%name%|::|<|*|& !!(")) {
                     if (ftok->str() == "<") {
                         ftok = ftok->findClosingBracket();
                         if (!ftok)

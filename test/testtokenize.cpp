@@ -264,6 +264,7 @@ private:
         TEST_CASE(functionAttributeBefore1);
         TEST_CASE(functionAttributeBefore2);
         TEST_CASE(functionAttributeBefore3);
+        TEST_CASE(functionAttributeBefore4);
         TEST_CASE(functionAttributeAfter1);
         TEST_CASE(functionAttributeAfter2);
         TEST_CASE(functionAttributeListBefore);
@@ -3676,6 +3677,22 @@ private:
 
         const Token* func_notret = Token::findsimplematch(tokenizer.tokens(), "func_notret");
         ASSERT(func_notret && func_notret->isAttributeNoreturn());
+    }
+
+    void functionAttributeBefore4() {
+        const char code[] = "__attribute__((const)) int& foo();";
+        const char expected[] = "int & foo ( ) ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token* foo = Token::findsimplematch(tokenizer.tokens(), "foo");
+        ASSERT(foo && foo->isAttributeConst());
     }
 
     void functionAttributeAfter1() {
