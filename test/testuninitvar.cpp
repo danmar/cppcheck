@@ -6385,7 +6385,7 @@ private:
                         "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        valueFlowUninit("struct S { int i; };\n"
+        valueFlowUninit("struct S { int i; };\n" // #6323
                         "void f() {\n"
                         "    struct S s;\n"
                         "    int x = -3;\n"
