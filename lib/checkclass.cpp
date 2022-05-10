@@ -206,8 +206,9 @@ void CheckClass::constructors()
         std::vector<Usage> usageList = createUsageList(scope);
 
         for (const Function &func : scope->functionList) {
-            if (!(func.isConstructor() && (func.hasBody() || func.isDefault())) && !(func.type == Function::eOperatorEqual && func.hasBody()))
-                continue; // defaulted constructor does nothing, defaulted operator= copies all members
+            if (!(func.isConstructor() && (func.hasBody() || (func.isDefault() && func.type == Function::eConstructor))) &&
+                !(func.type == Function::eOperatorEqual && func.hasBody()))
+                continue; // a defaulted constructor does not initialize primitive members
 
             // Bail: If initializer list is not recognized as a variable or type then skip since parsing is incomplete
             if (unusedTemplate && func.type == Function::eConstructor) {
