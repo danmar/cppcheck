@@ -23,7 +23,9 @@
 #include <time.h>
 #include <stdbool.h>
 #include <stdint.h>
+#ifndef __STDC_NO_THREADS__
 #include <threads.h>
+#endif
 #include <inttypes.h>
 #include <float.h>
 
@@ -4364,6 +4366,7 @@ void nullPointer_system(char *c)
     (void)system(c);
 }
 
+#ifndef __STDC_NO_THREADS__
 int nullPointer_mtx_timedlock( mtx_t *restrict mutex, const struct timespec *restrict time_point )
 {
     // cppcheck-suppress nullPointer
@@ -4372,6 +4375,7 @@ int nullPointer_mtx_timedlock( mtx_t *restrict mutex, const struct timespec *res
     (void) mtx_timedlock(mutex, NULL);
     return mtx_timedlock(mutex, time_point);
 }
+#endif
 
 void uninitvar_zonetime(void)
 {

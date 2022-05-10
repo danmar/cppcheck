@@ -26,7 +26,9 @@
 #include <cwchar>
 #include <fstream>
 #include <functional>
-#include <threads.h>
+#ifndef __STDC_NO_THREADS__
+    #include <threads.h>
+#endif
 #include <iomanip>
 #include <ios>
 #include <iostream>
@@ -3661,6 +3663,8 @@ void uninitvar_system(void)
     (void)std::system(c);
 }
 
+#ifndef __STDC_NO_THREADS__
+
 void nullPointer_mtx_destroy( mtx_t *mutex )
 {
     // cppcheck-suppress nullPointer
@@ -3690,6 +3694,7 @@ int nullPointer_mtx_timedlock( mtx_t *mutex, const struct timespec *time_point )
     (void) mtx_timedlock(mutex, nullptr);
     return mtx_timedlock(mutex, time_point);
 }
+#endif
 
 void nullPointer_system(char *c)
 {
