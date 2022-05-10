@@ -1960,6 +1960,11 @@ private:
         const char code2[] = "enum A {} (a);";
         const char expected2[] = "enum A { } ; enum A a ;";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
+
+        // #11052
+        const char code3[] = "struct a { int b; } static e[1];";
+        const char expected3[] = "struct a { int b ; } ; struct a static e [ 1 ] ;";
+        ASSERT_EQUALS(expected3, tokenizeAndStringify(code3));
     }
 
     void vardecl1() {
