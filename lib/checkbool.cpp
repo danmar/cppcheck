@@ -197,7 +197,7 @@ void CheckBool::checkComparisonOfFuncReturningBool()
             tok = tok->astOperand2();
         if (tok)
             return tok->previous();
-        return tok;
+        return nullptr;
     };
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
