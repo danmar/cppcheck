@@ -33,6 +33,29 @@
 #include <iterator>
 #include <vector>
 
+void nullPointer_std_ifstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    fs.open(nullptr, mode);
+    fs.open(filename, mode);
+    fs.open(strFileName, mode);
+    // cppcheck-suppress nullPointer
+    fs.open(nullptr);
+    fs.open(filename);
+    fs.open(strFileName);
+}
+
+void nullPointer_std_ifstream_open(std::ifstream &is, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    is.open(nullptr, mode);
+    is.open(filename, mode);
+    is.open(strFileName, mode);
+    // cppcheck-suppress nullPointer
+    is.open(nullptr);
+    is.open(filename);
+    is.open(strFileName);
+}
 
 void bufferAccessOutOfBounds_std_fstream_write(std::fstream &fs, const char* s, std::streamsize n)
 {
