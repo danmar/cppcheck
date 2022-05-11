@@ -3121,17 +3121,18 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'z[16]' accessed at index 19, which is out of bounds.\n", errout.str());
     }
 
-    void buffer_overrun_34() { // #11035
+    void buffer_overrun_34()
+    { // #11035
         check("struct S {\n"
-                "    std::vector<int> v;\n"
-                "    int a[15] = {};\n"
-                "    int g() const { return v.size(); }\n"
-                "    int f(int i) const {\n"
-                "        if (i < 0 || i >= g())\n"
-                "            return 0;\n"
-                "        return a[i];\n"
-                "    }\n"
-                "};\n");
+              "    std::vector<int> v;\n"
+              "    int a[15] = {};\n"
+              "    int g() const { return v.size(); }\n"
+              "    int f(int i) const {\n"
+              "        if (i < 0 || i >= g())\n"
+              "            return 0;\n"
+              "        return a[i];\n"
+              "    }\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
