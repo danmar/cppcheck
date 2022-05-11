@@ -7172,6 +7172,14 @@ MathLib::bigint ValueType::typeSize(const cppcheck::Platform &platform, bool p) 
     return 0;
 }
 
+bool ValueType::isTypeEqual(const ValueType* that) const
+{
+    auto tie = [](const ValueType* vt) {
+        return std::tie(vt->type, vt->container, vt->pointer, vt->typeScope, vt->smartPointer);
+    };
+    return tie(this) == tie(that);
+}
+
 std::string ValueType::str() const
 {
     std::string ret;

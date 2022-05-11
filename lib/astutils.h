@@ -310,6 +310,8 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr)
 
 bool isAliased(const Variable *var);
 
+const Token* getArgumentStart(const Token* tok);
+
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.
  * \return Number of arguments
