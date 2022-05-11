@@ -2613,12 +2613,12 @@ const Token* getArgumentStart(const Token* ftok)
     return startTok;
 }
 
-// int numberOfArguments(const Token *ftok)
-// {
-//     return astCount(getArgumentStart(ftok), ",");
-// }
+int numberOfArguments(const Token *ftok)
+{
+    return astCount(getArgumentStart(ftok), ",");
+}
 
-int numberOfArguments(const Token *start)
+int numberOfArgumentsWithoutAst(const Token *start)
 {
     int arguments=0;
     const Token* const openBracket = start->next();

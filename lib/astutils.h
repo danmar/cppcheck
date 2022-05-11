@@ -320,6 +320,9 @@ const Token* getArgumentStart(const Token* ftok);
  */
 int numberOfArguments(const Token *ftok);
 
+/// Get number of arguments without using AST
+int numberOfArgumentsWithoutAst(const Token *start);
+
 /**
  * Get arguments (AST)
  */
