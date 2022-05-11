@@ -195,6 +195,7 @@ private:
         TEST_CASE(const76); // ticket #10825
         TEST_CASE(const77); // ticket #10307, #10311
         TEST_CASE(const78); // ticket #10315
+        TEST_CASE(const79); // ticket #9861
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -6066,6 +6067,17 @@ private:
                    "    (this->*f)();\n"
                    "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void const79() { // #9861
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    char* f() {\n"
+                   "        return nullptr;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'A::f' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
     }
 
     void const_handleDefaultParameters() {
