@@ -1383,6 +1383,22 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                     tok = createAstAtToken(tok, cpp);
             }
         }
+        else if (Token::simpleMatch(tok, "( * ) [")) {
+            bool hasAst = false;
+            for (const Token* tok2 = tok->linkAt(3); tok2 != tok; tok2 = tok2->previous()) {
+                if (tok2->astParent() || tok2->astOperand1() || tok2->astOperand2()) {
+                    hasAst = true;
+                    break;
+                }
+            }
+            if (!hasAst) {
+                Token *const startTok = tok = tok->tokAt(4);
+                const Token* const endtok = startTok->linkAt(-1);
+                AST_state state(cpp);
+                compileExpression(tok, state);
+                createAstAtTokenInner(startTok, endtok, cpp);
+            }
+        }
     }
 }
 

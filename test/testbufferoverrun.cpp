@@ -2769,6 +2769,10 @@ private:
               "        a[i] = 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:7]: (error) Array 'a[10]' accessed at index 10, which is out of bounds.\n", errout.str());
+
+        check("struct S { int b; } static e[1];\n" // #11052
+              "int f() { return e[1].b; }\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Array 'e[1]' accessed at index 1, which is out of bounds.\n", errout.str());
     }
 
 
