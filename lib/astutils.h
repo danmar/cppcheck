@@ -318,10 +318,10 @@ const Token* getArgumentStart(const Token* ftok);
  * @param start token which is supposed to be the function/macro name.
  * \return Number of arguments
  */
-int numberOfArguments(const Token *ftok);
+int numberOfArguments(const Token* ftok);
 
 /// Get number of arguments without using AST
-int numberOfArgumentsWithoutAst(const Token *start);
+int numberOfArgumentsWithoutAst(const Token* start);
 
 /**
  * Get arguments (AST)

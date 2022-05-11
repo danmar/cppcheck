@@ -153,7 +153,7 @@ nonneg int astCount(const Token* tok, const char* op, int depth)
     if (!tok || depth < 0)
         return 0;
     if (tok->str() == op)
-        return  astCount(tok->astOperand1(), op, depth) + astCount(tok->astOperand2(), op, depth);
+        return astCount(tok->astOperand1(), op, depth) + astCount(tok->astOperand2(), op, depth);
     else
         return 1;
 }
@@ -2613,12 +2613,11 @@ const Token* getArgumentStart(const Token* ftok)
     return startTok;
 }
 
-int numberOfArguments(const Token *ftok)
-{
+int numberOfArguments(const Token* ftok) {
     return astCount(getArgumentStart(ftok), ",");
 }
 
-int numberOfArgumentsWithoutAst(const Token *start)
+int numberOfArgumentsWithoutAst(const Token* start)
 {
     int arguments=0;
     const Token* const openBracket = start->next();
@@ -2632,8 +2631,7 @@ int numberOfArgumentsWithoutAst(const Token *start)
     return arguments;
 }
 
-std::vector<const Token *> getArguments(const Token *ftok)
-{
+std::vector<const Token*> getArguments(const Token* ftok) {
     return astFlatten(getArgumentStart(ftok), ",");
 }
 
