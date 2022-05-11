@@ -147,6 +147,17 @@ std::vector<Token*> astFlatten(Token* tok, const char* op)
     return result;
 }
 
+nonneg int astCount(const Token* tok, const char* op, int depth)
+{
+    --depth;
+    if (!tok || depth < 0)
+        return 0;
+    if (tok->str() == op)
+        return  astCount(tok->astOperand1(), op, depth) + astCount(tok->astOperand2(), op, depth);
+    else
+        return 1;
+}
+
 bool astHasToken(const Token* root, const Token * tok)
 {
     if (!root)
@@ -2589,6 +2600,24 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
     return result;
 }
 
+const Token* getArgumentStart(const Token* ftok)
+{
+    const Token* tok = ftok;
+    if (Token::Match(tok, "%name% (|{"))
+        tok = ftok->next();
+    if (!Token::Match(tok, "(|{|["))
+        return nullptr;
+    const Token* startTok = tok->astOperand2();
+    if (!startTok && tok->next() != tok->link())
+        startTok = tok->astOperand1();
+    return startTok;
+}
+
+// int numberOfArguments(const Token *ftok)
+// {
+//     return astCount(getArgumentStart(ftok), ",");
+// }
+
 int numberOfArguments(const Token *start)
 {
     int arguments=0;
@@ -2603,23 +2632,9 @@ int numberOfArguments(const Token *start)
     return arguments;
 }
 
-const Token* getArgumentStart(const Token* tok)
-{
-    const Token* startTok = tok->astOperand2();
-    if (!startTok && tok->next() != tok->link())
-        startTok = tok->astOperand1();
-    return startTok;
-}
-
 std::vector<const Token *> getArguments(const Token *ftok)
 {
-    const Token* tok = ftok;
-    if (Token::Match(tok, "%name% (|{"))
-        tok = ftok->next();
-    if (!Token::Match(tok, "(|{|["))
-        return std::vector<const Token *> {};
-    const Token* startTok = getArgumentStart(tok);
-    return astFlatten(startTok, ",");
+    return astFlatten(getArgumentStart(ftok), ",");
 }
 
 int getArgumentPos(const Variable* var, const Function* f)
