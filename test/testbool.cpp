@@ -64,6 +64,7 @@ private:
         TEST_CASE(checkComparisonOfFuncReturningBool5);
         TEST_CASE(checkComparisonOfFuncReturningBool6);
         TEST_CASE(checkComparisonOfFuncReturningBool7); // #7197
+        TEST_CASE(checkComparisonOfFuncReturningBool8); // #4103
         // Integration tests..
         TEST_CASE(checkComparisonOfFuncReturningBoolIntegrationTest1); // #7798 overloaded functions
 
@@ -727,6 +728,45 @@ private:
                       "[test.cpp:8]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
                       "[test.cpp:9]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n",
                       errout.str());
+    }
+
+    void checkComparisonOfFuncReturningBool8() { // #4103
+        // op: >
+        check("int main(void){\n"
+              "    bool a = true;\n"
+              "    bool b = false;\n"
+              "    if(b > a){ \n"                             // here warning should be displayed
+              "        ;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        // op: <
+        check("int main(void){\n"
+              "    bool a = true;\n"
+              "    bool b = false;\n"
+              "    if(b < a){ \n"                             // here warning should be displayed
+              "        ;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        // op: >=
+        check("int main(void){\n"
+              "    bool a = true;\n"
+              "    bool b = false;\n"
+              "    if(b >= a){ \n"                             // here warning should be displayed
+              "        ;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        // op: <=
+        check("int main(void){\n"
+              "    bool a = true;\n"
+              "    bool b = false;\n"
+              "    if(b <= a){ \n"                             // here warning should be displayed
+              "        ;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
     }
 
     void checkComparisonOfFuncReturningBoolIntegrationTest1() { // #7798
