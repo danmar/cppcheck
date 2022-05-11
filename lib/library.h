@@ -478,7 +478,7 @@ public:
     std::vector<std::string> defines; // to provide some library defines
 
     struct SmartPointer {
-        std::string name = "";
+        std::string name;
         bool unique = false;
     };
 
