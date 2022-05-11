@@ -2605,7 +2605,7 @@ int numberOfArguments(const Token *start)
 
 const Token* getArgumentStart(const Token* tok)
 {
-    const Token *startTok = tok->astOperand2();
+    const Token* startTok = tok->astOperand2();
     if (!startTok && tok->next() != tok->link())
         startTok = tok->astOperand1();
     return startTok;
@@ -2618,7 +2618,7 @@ std::vector<const Token *> getArguments(const Token *ftok)
         tok = ftok->next();
     if (!Token::Match(tok, "(|{|["))
         return std::vector<const Token *> {};
-    const Token *startTok = getArgumentStart(tok);
+    const Token* startTok = getArgumentStart(tok);
     return astFlatten(startTok, ",");
 }
 

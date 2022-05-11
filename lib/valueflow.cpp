@@ -329,12 +329,13 @@ static std::vector<ValueType> getParentValueTypes(const Token* tok,
                     *parent = nameTok;
                 }
                 return result;
-            } else if(const Type* t = Token::typeOf(ftok, &typeTok)) {
+            } else if (const Type* t = Token::typeOf(ftok, &typeTok)) {
                 if (astIsPointer(typeTok))
                     return {*typeTok->valueType()};
                 const Scope* scope = t->classScope;
                 // Check for aggregate constructors
-                if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
+                if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
+                    (t->isClassType() || t->isStructType())) {
                     assert(argn < scope->varlist.size());
                     auto it = std::next(scope->varlist.begin(), argn);
                     if (it->valueType())
@@ -3307,10 +3308,11 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
             return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1),
                                                !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
         }
-    } else if (Token::simpleMatch(tok, "{") && getArgumentStart(tok) && !Token::simpleMatch(getArgumentStart(tok), ",") && getArgumentStart(tok)->valueType()) {
+    } else if (Token::simpleMatch(tok, "{") && getArgumentStart(tok) &&
+               !Token::simpleMatch(getArgumentStart(tok), ",") && getArgumentStart(tok)->valueType()) {
         const Token* vartok = getArgumentStart(tok);
         auto vts = getParentValueTypes(tok);
-        for(const ValueType& vt:vts) {
+        for (const ValueType& vt : vts) {
             if (vt.isTypeEqual(vartok->valueType()))
                 return getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1);
         }
