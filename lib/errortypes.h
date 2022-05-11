@@ -122,8 +122,8 @@ struct CWE {
     unsigned short id;
 };
 
-typedef std::pair<const Token *, std::string> ErrorPathItem;
-typedef std::list<ErrorPathItem> ErrorPath;
+using ErrorPathItem = std::pair<const Token *, std::string>;
+using ErrorPath = std::list<ErrorPathItem>;
 
 /// @}
 //---------------------------------------------------------------------------
