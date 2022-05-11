@@ -172,7 +172,7 @@ void CheckBool::comparisonOfBoolWithInvalidComparator(const Token *tok, const st
 
 static bool tokenIsFunctionReturningBool(const Token* tok)
 {
-    const Function* func = tok->function();
+    const Function* func = tok ? tok->function() : nullptr;
     if (func && Token::Match(tok, "%name% (")) {
         if (func->tokenDef && Token::Match(func->tokenDef->previous(), "bool|_Bool")) {
             return true;
@@ -190,19 +190,26 @@ void CheckBool::checkComparisonOfFuncReturningBool()
         return;
 
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
+    auto getFunctionTok = [](const Token* tok) -> const Token* {
+        while (Token::simpleMatch(tok, "!") || (tok && tok->isCast() && !isCPPCast(tok)))
+            tok = tok->astOperand1();
+        if (isCPPCast(tok))
+            tok = tok->astOperand2();
+        if (tok)
+            return tok->previous();
+        return nullptr;
+    };
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (!tok->isComparisonOp() || tok->str() == "==" || tok->str() == "!=")
                 continue;
-            const Token *firstToken = tok->previous();
-            if (tok->strAt(-1) == ")") {
-                firstToken = firstToken->link()->previous();
-            }
-            const Token *secondToken = tok->next();
-            while (secondToken->str() == "!") {
-                secondToken = secondToken->next();
-            }
+
+            const Token* firstToken = getFunctionTok(tok->astOperand1());
+            const Token* secondToken = getFunctionTok(tok->astOperand2());
+            if (!firstToken || !secondToken)
+                continue;
+
             const bool firstIsFunctionReturningBool = tokenIsFunctionReturningBool(firstToken);
             const bool secondIsFunctionReturningBool = tokenIsFunctionReturningBool(secondToken);
             if (firstIsFunctionReturningBool && secondIsFunctionReturningBool) {

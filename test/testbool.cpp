@@ -63,6 +63,7 @@ private:
         TEST_CASE(checkComparisonOfFuncReturningBool4);
         TEST_CASE(checkComparisonOfFuncReturningBool5);
         TEST_CASE(checkComparisonOfFuncReturningBool6);
+        TEST_CASE(checkComparisonOfFuncReturningBool7); // #7197
         // Integration tests..
         TEST_CASE(checkComparisonOfFuncReturningBoolIntegrationTest1); // #7798 overloaded functions
 
@@ -708,6 +709,24 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkComparisonOfFuncReturningBool7() { // #7197
+        check("struct C {\n"
+              "    bool isEmpty();\n"
+              "};\n"
+              "void f() {\n"
+              "    C c1, c2;\n"
+              "    if ((c1.isEmpty()) < (c2.isEmpty())) {}\n"
+              "    if (!c1.isEmpty() < !!c2.isEmpty()) {}\n"
+              "    if ((int)c1.isEmpty() < (int)c2.isEmpty()) {}\n"
+              "    if (static_cast<int>(c1.isEmpty()) < static_cast<int>(c2.isEmpty())) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
+                      "[test.cpp:7]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
+                      "[test.cpp:8]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
+                      "[test.cpp:9]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n",
+                      errout.str());
     }
 
     void checkComparisonOfFuncReturningBoolIntegrationTest1() { // #7798
