@@ -1988,7 +1988,7 @@ void CheckClass::checkConst()
             if (func.isFriend() || func.isStatic() || func.hasVirtualSpecifier())
                 continue;
 
-            // don't suggest const when returning non-const pointer/reference, but still suggest static            
+            // don't suggest const when returning non-const pointer/reference, but still suggest static
             auto isPointerOrReference = [this](const Token* start, const Token* end) -> bool {
                 bool inTemplArgList = false, isConstTemplArg = false;
                 for (const Token* tok = start; tok != end; tok = tok->next()) {
