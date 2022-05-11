@@ -1666,7 +1666,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         if (Function::returnsVoid(f))
             return false;
         // Member function call
-        if (Token::simpleMatch(ftok->previous(), ".")) {
+        if (Token::simpleMatch(ftok->previous(), ".") || exprDependsOnThis(ftok->next())) {
             if (f->isConst())
                 return true;
             // Check for const overloaded function that just return the const version
