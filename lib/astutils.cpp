@@ -2413,7 +2413,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
     if (depth < 0)
         return true;
     if (tok->exprId() != exprid) {
-        if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% ("))
+        if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
             // TODO: Is global variable really changed by function call?
             return true;
         const bool pointer = astIsPointer(tok);
