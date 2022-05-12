@@ -117,6 +117,7 @@ private:
 
         TEST_CASE(suspiciousCase);
         TEST_CASE(suspiciousEqualityComparison);
+        TEST_CASE(suspiciousUnaryPlusMinus); // #8004
 
         TEST_CASE(selfAssignment);
         TEST_CASE(trac1132);
@@ -4372,6 +4373,17 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void suspiciousUnaryPlusMinus() { // #8004
+        check("int g() { return 1; }\n"
+              "void f() {\n"
+              "    +g();\n"
+              "    -g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious operator '+'\n"
+                      "[test.cpp:4]: (warning, inconclusive) Found suspicious operator '-'\n",
+                      errout.str());
     }
 
     void selfAssignment() {
