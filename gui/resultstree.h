@@ -188,6 +188,7 @@ signals:
      *
      * @param hidden true if there are some hidden results, or false if there are not
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void resultsHidden(bool hidden);
 
     /**
@@ -195,6 +196,7 @@ signals:
      *
      * @param selectedItems list of selected files
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void checkSelected(QStringList selectedItems);
 
     /**
@@ -202,9 +204,11 @@ signals:
      *
      * @param current Model index to specify new selected item.
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void treeSelectionChanged(const QModelIndex &current);
 
     /** Suppress Ids */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void suppressIds(QStringList ids);
 
 public slots:
