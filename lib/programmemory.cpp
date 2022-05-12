@@ -232,6 +232,25 @@ static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
     return !i;
 }
 
+// If the scope is a non-range for loop
+static bool isBasicForLoop(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (Token::simpleMatch(tok, "}"))
+        return isBasicForLoop(tok->link());
+    if (!Token::simpleMatch(tok->previous(), ") {"))
+        return false;
+    const Token* start = tok->linkAt(-1);
+    if (!start)
+        return false;
+    if (!Token::simpleMatch(start->previous(), "for ("))
+        return false;
+    if (!Token::simpleMatch(start->astOperand2(), ";"))
+        return false;
+    return true;
+}
+
 void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
     auto eval = [&](const Token* t) -> std::vector<MathLib::bigint> {
@@ -343,8 +362,10 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
 
         if (tok2->str() == "{") {
             if (indentlevel <= 0) {
-                // Keep progressing with anonymous/do scopes
-                if (!Token::Match(tok2->previous(), "do|; {"))
+                const Token* cond = getCondTokFromEnd(tok2->link());
+                // Keep progressing with anonymous/do scopes and always true branches
+                if (!Token::Match(tok2->previous(), "do|; {") && !conditionIsTrue(cond, state) &&
+                    (cond || !isBasicForLoop(tok2)))
                     break;
             } else
                 --indentlevel;

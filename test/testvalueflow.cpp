@@ -104,6 +104,7 @@ private:
         TEST_CASE(valueFlowForwardTryCatch);
         TEST_CASE(valueFlowForwardInconclusiveImpossible);
         TEST_CASE(valueFlowForwardConst);
+        TEST_CASE(valueFlowForwardAfterCondition);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -3683,6 +3684,56 @@ private:
                "    return 0;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 8U, 3));
+    }
+
+    void valueFlowForwardAfterCondition()
+    {
+        const char* code;
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = 3;\n"
+               "    int kk = 11;\n"
+               "    for (;;) {\n"
+               "        if (kk > 10) {\n"
+               "            kk = 0;\n"
+               "            x = g();\n"
+               "        }\n"
+               "        kk++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 3));
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = 3;\n"
+               "    int kk = 11;\n"
+               "    while (true) {\n"
+               "        if (kk > 10) {\n"
+               "            kk = 0;\n"
+               "            x = g();\n"
+               "        }\n"
+               "        kk++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 3));
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = 3;\n"
+               "    int kk = 11;\n"
+               "    if (true) {\n"
+               "        if (kk > 10) {\n"
+               "            kk = 0;\n"
+               "            x = g();\n"
+               "        }\n"
+               "        kk++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 3));
     }
 
     void valueFlowRightShift() {
