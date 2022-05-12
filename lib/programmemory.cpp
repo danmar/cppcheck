@@ -244,7 +244,7 @@ static bool isBasicForLoop(const Token* tok)
     const Token* start = tok->linkAt(-1);
     if (!start)
         return false;
-    if (!Token::simpleMatch(start->previous(), "for ("))    
+    if (!Token::simpleMatch(start->previous(), "for ("))
         return false;
     if (!Token::simpleMatch(start->astOperand2(), ";"))
         return false;
@@ -362,9 +362,10 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
 
         if (tok2->str() == "{") {
             if (indentlevel <= 0) {
-                const Token *cond = getCondTokFromEnd(tok2->link());
+                const Token* cond = getCondTokFromEnd(tok2->link());
                 // Keep progressing with anonymous/do scopes and always true branches
-                if (!Token::Match(tok2->previous(), "do|; {") && !conditionIsTrue(cond, state) && (cond || !isBasicForLoop(tok2)))
+                if (!Token::Match(tok2->previous(), "do|; {") && !conditionIsTrue(cond, state) &&
+                    (cond || !isBasicForLoop(tok2)))
                     break;
             } else
                 --indentlevel;
