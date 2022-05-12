@@ -4560,7 +4560,7 @@ static const Token* skipPointers(const Token* tok)
 static const Token* skipPointersAndQualifiers(const Token* tok)
 {
     tok = skipPointers(tok);
-    while (Token::Match(tok, "const|volatile")) {
+    while (Token::Match(tok, "const|static|volatile")) {
         tok = tok->next();
         tok = skipPointers(tok);
     }

@@ -1677,7 +1677,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         if (Function::returnsVoid(f))
             return false;
         // Member function call
-        if (Token::simpleMatch(ftok->previous(), ".")) {
+        if (Token::simpleMatch(ftok->previous(), ".") || exprDependsOnThis(ftok->next())) {
             if (f->isConst())
                 return true;
             // Check for const overloaded function that just return the const version
@@ -1700,20 +1700,6 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         } else if (f->argumentList.empty()) {
             return f->isConstexpr();
         }
-    } else if (const Library::Function* lf = library.getFunction(ftok)) {
-        if (lf->ispure)
-            return true;
-        for (auto&& p : lf->argumentChecks) {
-            const Library::ArgumentChecks& ac = p.second;
-            if (ac.direction != Library::ArgumentChecks::Direction::DIR_IN)
-                return false;
-        }
-        if (Token::simpleMatch(ftok->previous(), ".")) {
-            if (!lf->isconst)
-                return false;
-        } else if (lf->argumentChecks.empty()) {
-            return false;
-        }
     } else if (Token::Match(ftok->previous(), ". %name% (") && ftok->previous()->originalName() != "->" &&
                astIsSmartPointer(ftok->previous()->astOperand1())) {
         return Token::Match(ftok, "get|get_deleter ( )");
@@ -1724,6 +1710,14 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         if (container->getYield(ftok->str()) != Library::Container::Yield::NO_YIELD)
             return true;
         if (container->getAction(ftok->str()) == Library::Container::Action::FIND)
+            return true;
+        return false;
+    } else if (const Library::Function* lf = library.getFunction(ftok)) {
+        if (lf->ispure)
+            return true;
+        if (lf->containerYield != Library::Container::Yield::NO_YIELD)
+            return true;
+        if (lf->containerAction == Library::Container::Action::FIND)
             return true;
         return false;
     } else {
@@ -2430,7 +2424,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
     if (depth < 0)
         return true;
     if (tok->exprId() != exprid) {
-        if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% ("))
+        if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
             // TODO: Is global variable really changed by function call?
             return true;
         const bool pointer = astIsPointer(tok);

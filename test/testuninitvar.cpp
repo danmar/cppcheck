@@ -6384,6 +6384,14 @@ private:
                         "    ((*&(*&s.t[0].p))) = 0;\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("struct S { int i; };\n" // #6323
+                        "void f() {\n"
+                        "    struct S s;\n"
+                        "    int x = -3;\n"
+                        "    int y = x < (1, s.i);\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Uninitialized variable: s.i\n", errout.str());
     }
 
     void ctu_(const char* file, int line, const char code[]) {

@@ -65,7 +65,7 @@ struct ReverseTraversal {
         return true;
     }
 
-    Token* getParentFunction(Token* tok)
+    static Token* getParentFunction(Token* tok)
     {
         if (!tok)
             return nullptr;
@@ -90,7 +90,7 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    Token* getTopFunction(Token* tok)
+    static Token* getTopFunction(Token* tok)
     {
         if (!tok)
             return nullptr;

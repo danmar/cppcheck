@@ -104,6 +104,7 @@ private:
         TEST_CASE(valueFlowForwardTryCatch);
         TEST_CASE(valueFlowForwardInconclusiveImpossible);
         TEST_CASE(valueFlowForwardConst);
+        TEST_CASE(valueFlowForwardAfterCondition);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -3685,6 +3686,56 @@ private:
         ASSERT_EQUALS(true, testValueOfXKnown(code, 8U, 3));
     }
 
+    void valueFlowForwardAfterCondition()
+    {
+        const char* code;
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = 3;\n"
+               "    int kk = 11;\n"
+               "    for (;;) {\n"
+               "        if (kk > 10) {\n"
+               "            kk = 0;\n"
+               "            x = g();\n"
+               "        }\n"
+               "        kk++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 3));
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = 3;\n"
+               "    int kk = 11;\n"
+               "    while (true) {\n"
+               "        if (kk > 10) {\n"
+               "            kk = 0;\n"
+               "            x = g();\n"
+               "        }\n"
+               "        kk++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 3));
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = 3;\n"
+               "    int kk = 11;\n"
+               "    if (true) {\n"
+               "        if (kk > 10) {\n"
+               "            kk = 0;\n"
+               "            x = g();\n"
+               "        }\n"
+               "        kk++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 3));
+    }
+
     void valueFlowRightShift() {
         const char *code;
         /* Set some temporary fixed values to simplify testing */
@@ -6533,6 +6584,20 @@ private:
                "    struct2 a = { 1, 2, 3, {4,5,6,7} }; \n"
                "}\n";
         valueOfTok(code, "a");
+
+        code = "void setDeltas(int life, int age, int multiplier) {\n"
+               "    int dx = 0;\n"
+               "    int dy = 0;\n"
+               "    if (age <= 2 || life < 4) {\n"
+               "        dy = 0;\n"
+               "        dx = (rand() % 3) - 1;\n"
+               "    }\n"
+               "    else if (age < (multiplier * 3)) {\n"
+               "        if (age % (int) (multiplier * 0.5) == 0) dy = -1;\n"
+               "        else dy = 0;\n"
+               "    }\n"
+               "}\n";
+        valueOfTok(code, "age");
     }
 
     void valueFlowHang() {
@@ -7229,6 +7294,12 @@ private:
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 6U, -1));
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 6U, -1));
+
+        code = "char* f() {\n"
+               "    char *x = malloc(10);\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 3U, "malloc(10)", 0));
     }
 
     void valueFlowSymbolicIdentity()

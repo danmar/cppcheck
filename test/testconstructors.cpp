@@ -422,14 +422,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void simple10() { // ticket #4388
-        check("class Fred {\n"
+    void simple10() {
+        check("class Fred {\n" // ticket #4388
               "public:\n"
               "    Fred() = default;\n"
               "private:\n"
               "    int x;\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Member variable 'Fred::x' is not initialized in the constructor.\n", errout.str());
+
+        check("struct S {\n" // #9391
+              "    S() = default;\n"
+              "    ~S() = default;\n"
+              "    S(const S&) = default;\n"
+              "    S(S&&) = default;\n"
+              "    S& operator=(const S&) = default;\n"
+              "    S& operator=(S&&) = default;\n"
+              "    int i;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Member variable 'S::i' is not initialized in the constructor.\n", errout.str());
     }
 
     void simple11() { // ticket #4536, #6214

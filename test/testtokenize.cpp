@@ -264,6 +264,7 @@ private:
         TEST_CASE(functionAttributeBefore1);
         TEST_CASE(functionAttributeBefore2);
         TEST_CASE(functionAttributeBefore3);
+        TEST_CASE(functionAttributeBefore4);
         TEST_CASE(functionAttributeAfter1);
         TEST_CASE(functionAttributeAfter2);
         TEST_CASE(functionAttributeListBefore);
@@ -1960,6 +1961,11 @@ private:
         const char code2[] = "enum A {} (a);";
         const char expected2[] = "enum A { } ; enum A a ;";
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2));
+
+        // #11052
+        const char code3[] = "struct a { int b; } static e[1];";
+        const char expected3[] = "struct a { int b ; } ; struct a static e [ 1 ] ;";
+        ASSERT_EQUALS(expected3, tokenizeAndStringify(code3));
     }
 
     void vardecl1() {
@@ -3671,6 +3677,22 @@ private:
 
         const Token* func_notret = Token::findsimplematch(tokenizer.tokens(), "func_notret");
         ASSERT(func_notret && func_notret->isAttributeNoreturn());
+    }
+
+    void functionAttributeBefore4() {
+        const char code[] = "__attribute__((const)) int& foo();";
+        const char expected[] = "int & foo ( ) ;";
+
+        errout.str("");
+
+        // tokenize..
+        Tokenizer tokenizer(&settings0, this);
+        std::istringstream istr(code);
+        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
+        ASSERT_EQUALS(expected, tokenizer.tokens()->stringifyList(nullptr, false));
+
+        const Token* foo = Token::findsimplematch(tokenizer.tokens(), "foo");
+        ASSERT(foo && foo->isAttributeConst());
     }
 
     void functionAttributeAfter1() {
@@ -6338,6 +6360,8 @@ private:
         ASSERT_EQUALS("fon!(restoring01:?,(", testAst("f((long) !on, restoring ? 0 : 1);"));
 
         ASSERT_EQUALS("esi.!(=", testAst("E e = (E)!s->i;")); // #10882
+
+        ASSERT_EQUALS("xp(= 12>34:?", testAst("x = ( const char ( * ) [ 1 > 2 ? 3 : 4 ] ) p ;"));
 
         // not cast
         ASSERT_EQUALS("AB||", testAst("(A)||(B)"));
