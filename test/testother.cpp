@@ -4384,6 +4384,14 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
                       "[test.cpp:4]: (warning, inconclusive) Found suspicious operator '-', result is not used.\n",
                       errout.str());
+
+        check("void f(int i) {\n"
+              "    +i;\n"
+              "    -i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
+                      "[test.cpp:3]: (warning, inconclusive) Found suspicious operator '-', result is not used.\n",
+                      errout.str());
     }
 
     void selfAssignment() {
