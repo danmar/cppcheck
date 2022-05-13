@@ -117,6 +117,7 @@ private:
 
         TEST_CASE(suspiciousCase);
         TEST_CASE(suspiciousEqualityComparison);
+        TEST_CASE(suspiciousUnaryPlusMinus); // #8004
 
         TEST_CASE(selfAssignment);
         TEST_CASE(trac1132);
@@ -4374,6 +4375,25 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void suspiciousUnaryPlusMinus() { // #8004
+        check("int g() { return 1; }\n"
+              "void f() {\n"
+              "    +g();\n"
+              "    -g();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
+                      "[test.cpp:4]: (warning, inconclusive) Found suspicious operator '-', result is not used.\n",
+                      errout.str());
+
+        check("void f(int i) {\n"
+              "    +i;\n"
+              "    -i;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
+                      "[test.cpp:3]: (warning, inconclusive) Found suspicious operator '-', result is not used.\n",
+                      errout.str());
+    }
+
     void selfAssignment() {
         check("void foo()\n"
               "{\n"
@@ -4839,7 +4859,7 @@ private:
               "    return c;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n"
             "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
             errout.str());
 
@@ -4848,7 +4868,7 @@ private:
               "    return *c;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n"
             "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
             errout.str());
 
@@ -4856,7 +4876,7 @@ private:
               "    *f.a++;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n"
             "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
             errout.str());
 
@@ -4864,7 +4884,7 @@ private:
               "    *f.a[5].v[3]++;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n"
             "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
             errout.str());
 
@@ -4872,7 +4892,7 @@ private:
               "    *f.a(1, 5).v[x + y]++;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n"
             "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
             errout.str());
 
@@ -4892,7 +4912,7 @@ private:
               "    return c;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n"
             "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
             errout.str());
 
@@ -4901,7 +4921,7 @@ private:
               "    return **c;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*'\n"
+            "[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n"
             "[test.cpp:2]: (warning) In expression like '*A++' the result of '*' is unused. Did you intend to write '(*A)++;'?\n",
             errout.str());
 
@@ -7147,7 +7167,7 @@ private:
         checkP("void f(int a, int b) {\n"
                "  a > b;\n"
                "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '>'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '>', result is not used.\n", errout.str());
 
         checkP("void f() {\n" // #10607
                "  for (auto p : m)\n"

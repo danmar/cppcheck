@@ -363,7 +363,7 @@ private:
               "void f(int value) {\n"
               "    foo(42,\"test\",42),(value&42);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ','\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ',', result is not used.\n", errout.str());
     }
 
     void commaoperator2() {
@@ -430,10 +430,11 @@ private:
                       "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:4]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
-                      "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!'\n"
-                      "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!'\n"
+                      "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!', result is not used.\n"
+                      "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!', result is not used.\n"
                       "[test.cpp:8]: (warning) Redundant code: Found unused cast of expression '!x'.\n"
-                      "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n", errout.str());
+                      "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~', result is not used.\n",
+                      errout.str());
 
         check("void f1(int x) { x; }", true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unused variable value 'x'\n", errout.str());
@@ -686,7 +687,7 @@ private:
         check("void f(int ar) {\n"
               "  ar & x;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&', result is not used.\n", errout.str());
     }
 
     void ast() {
