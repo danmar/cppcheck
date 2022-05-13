@@ -538,6 +538,25 @@ private:
               "    else if (!!a) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        // #11059
+        check("int f();\n"
+              "void g() {\n"
+              "    int i = f();\n"
+              "    if (i == 3) {}\n"
+              "    else if ((i = f()) == 5) {}\n"
+              "    else if (i == 3) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f();\n"
+              "void g() {\n"
+              "    int i = f();\n"
+              "    if (i == 3) {}\n"
+              "    else if ((i = f()) == 5) {}\n"
+              "    else if (i != 3) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPureFunction_(const char code[], const char* file, int line) {

@@ -303,7 +303,7 @@ public:
      * '; int *p(0);' => '; int *p = 0;'
      */
     void simplifyInitVar();
-    Token * initVar(Token * tok);
+    static Token* initVar(Token* tok);
 
     /**
      * Simplify easy constant '?:' operation

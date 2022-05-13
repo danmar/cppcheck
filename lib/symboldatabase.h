@@ -1334,6 +1334,9 @@ public:
 
     MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 
+    /// Check if type is the same ignoring const and references
+    bool isTypeEqual(const ValueType* that) const;
+
     std::string str() const;
     std::string dump() const;
 };

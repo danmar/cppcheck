@@ -243,6 +243,7 @@ private:
         TEST_CASE(buffer_overrun_31);
         TEST_CASE(buffer_overrun_32); //#10244
         TEST_CASE(buffer_overrun_33); //#2019
+        TEST_CASE(buffer_overrun_34); //#11035
         TEST_CASE(buffer_overrun_errorpath);
         TEST_CASE(buffer_overrun_bailoutIfSwitch);  // ticket #2378 : bailoutIfSwitch
         TEST_CASE(buffer_overrun_function_array_argument);
@@ -3118,6 +3119,22 @@ private:
               "   return z[0];\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Array 'z[16]' accessed at index 19, which is out of bounds.\n", errout.str());
+    }
+
+    // #11035
+    void buffer_overrun_34()
+    {
+        check("struct S {\n"
+              "    std::vector<int> v;\n"
+              "    int a[15] = {};\n"
+              "    int g() const { return v.size(); }\n"
+              "    int f(int i) const {\n"
+              "        if (i < 0 || i >= g())\n"
+              "            return 0;\n"
+              "        return a[i];\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_errorpath() {

@@ -104,6 +104,7 @@ private:
         TEST_CASE(valueFlowForwardTryCatch);
         TEST_CASE(valueFlowForwardInconclusiveImpossible);
         TEST_CASE(valueFlowForwardConst);
+        TEST_CASE(valueFlowForwardAfterCondition);
 
         TEST_CASE(valueFlowFwdAnalysis);
 
@@ -3685,6 +3686,56 @@ private:
         ASSERT_EQUALS(true, testValueOfXKnown(code, 8U, 3));
     }
 
+    void valueFlowForwardAfterCondition()
+    {
+        const char* code;
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = 3;\n"
+               "    int kk = 11;\n"
+               "    for (;;) {\n"
+               "        if (kk > 10) {\n"
+               "            kk = 0;\n"
+               "            x = g();\n"
+               "        }\n"
+               "        kk++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 3));
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = 3;\n"
+               "    int kk = 11;\n"
+               "    while (true) {\n"
+               "        if (kk > 10) {\n"
+               "            kk = 0;\n"
+               "            x = g();\n"
+               "        }\n"
+               "        kk++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 3));
+
+        code = "int g();\n"
+               "void f() {\n"
+               "    int x = 3;\n"
+               "    int kk = 11;\n"
+               "    if (true) {\n"
+               "        if (kk > 10) {\n"
+               "            kk = 0;\n"
+               "            x = g();\n"
+               "        }\n"
+               "        kk++;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 11U, 3));
+    }
+
     void valueFlowRightShift() {
         const char *code;
         /* Set some temporary fixed values to simplify testing */
@@ -6519,6 +6570,20 @@ private:
 
         code = "void f(const char * const x) { !!system(x); }\n";
         valueOfTok(code, "x");
+
+        code = "struct struct1 {\n"
+               "    int i1;\n"
+               "    int i2;\n"
+               "};\n"
+               "struct struct2 {\n"
+               "    char c1;\n"
+               "    struct1 is1;\n"
+               "    char c2[4];\n"
+               "};\n"
+               "void f() {\n"
+               "    struct2 a = { 1, 2, 3, {4,5,6,7} }; \n"
+               "}\n";
+        valueOfTok(code, "a");
 
         code = "void setDeltas(int life, int age, int multiplier) {\n"
                "    int dx = 0;\n"

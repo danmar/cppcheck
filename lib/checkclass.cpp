@@ -1988,37 +1988,33 @@ void CheckClass::checkConst()
             if (func.isFriend() || func.isStatic() || func.hasVirtualSpecifier())
                 continue;
 
-            // don't warn when returning non-const pointer/reference
-            {
-                auto isPointerOrReference = [this](const Token* start, const Token* end) -> bool {
-                    bool inTemplArgList = false, isConstTemplArg = false;
-                    for (const Token* tok = start; tok != end; tok = tok->next()) {
-                        if (tok->str() == "{") // end of trailing return type
-                            return false;
-                        if (tok->str() == "<") {
-                            if (!tok->link())
-                                mSymbolDatabase->debugMessage(tok, "debug", "CheckClass::checkConst found unlinked template argument list '" + tok->expressionString() + "'.");
-                            inTemplArgList = true;
-                        }
-                        else if (tok->str() == ">") {
-                            inTemplArgList = false;
-                            isConstTemplArg = false;
-                        }
-                        else if (tok->str() == "const") {
-                            if (!inTemplArgList)
-                                return false;
-                            isConstTemplArg = true;
-                        }
-                        else if (!isConstTemplArg && Token::Match(tok, "*|&"))
-                            return true;
+            // don't suggest const when returning non-const pointer/reference, but still suggest static
+            auto isPointerOrReference = [this](const Token* start, const Token* end) -> bool {
+                bool inTemplArgList = false, isConstTemplArg = false;
+                for (const Token* tok = start; tok != end; tok = tok->next()) {
+                    if (tok->str() == "{") // end of trailing return type
+                        return false;
+                    if (tok->str() == "<") {
+                        if (!tok->link())
+                            mSymbolDatabase->debugMessage(tok, "debug", "CheckClass::checkConst found unlinked template argument list '" + tok->expressionString() + "'.");
+                        inTemplArgList = true;
                     }
-                    return false;
-                };
+                    else if (tok->str() == ">") {
+                        inTemplArgList = false;
+                        isConstTemplArg = false;
+                    }
+                    else if (tok->str() == "const") {
+                        if (!inTemplArgList)
+                            return false;
+                        isConstTemplArg = true;
+                    }
+                    else if (!isConstTemplArg && Token::Match(tok, "*|&"))
+                        return true;
+                }
+                return false;
+            };
 
-                if (isPointerOrReference(func.retDef, func.tokenDef))
-                    continue;
-            }
-
+            const bool returnsPtrOrRef = isPointerOrReference(func.retDef, func.tokenDef);
 
             if (func.isOperator()) { // Operator without return type: conversion operator
                 const std::string& opName = func.tokenDef->str();
@@ -2043,7 +2039,8 @@ void CheckClass::checkConst()
             if (!checkConstFunc(scope, &func, memberAccessed))
                 continue;
 
-            if (func.isConst() && (memberAccessed || func.isOperator()))
+            const bool suggestStatic = !memberAccessed && !func.isOperator();
+            if ((returnsPtrOrRef || func.isConst()) && !suggestStatic)
                 continue;
 
             std::string classname = scope->className;
@@ -2062,9 +2059,9 @@ void CheckClass::checkConst()
                 functionName += "]";
 
             if (func.isInline())
-                checkConstError(func.token, classname, functionName, !memberAccessed && !func.isOperator());
+                checkConstError(func.token, classname, functionName, suggestStatic);
             else // not inline
-                checkConstError2(func.token, func.tokenDef, classname, functionName, !memberAccessed && !func.isOperator());
+                checkConstError2(func.token, func.tokenDef, classname, functionName, suggestStatic);
         }
     }
 }

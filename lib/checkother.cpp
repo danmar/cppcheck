@@ -1920,7 +1920,7 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
     if (Token::simpleMatch(tok, "=="))
         msg = "Found suspicious equality comparison. Did you intend to assign a value instead?";
     else if (Token::Match(tok, ",|!|~|%cop%"))
-        msg = "Found suspicious operator '" + tok->str() + "'";
+        msg = "Found suspicious operator '" + tok->str() + "', result is not used.";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
     else if (Token::Match(valueTok, "%str%|%num%|%bool%|%char%")) {

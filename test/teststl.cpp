@@ -5780,6 +5780,15 @@ private:
               "}\n",
               true);
         ASSERT_EQUALS("", errout.str());
+
+        check("extern void f(std::string&&);\n"
+              "static void func() {\n"
+              "    std::string s;\n"
+              "    const std::string& s_ref = s;\n"
+              "    f(std::move(s));\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkMutexes() {

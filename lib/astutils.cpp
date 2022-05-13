@@ -147,6 +147,17 @@ std::vector<Token*> astFlatten(Token* tok, const char* op)
     return result;
 }
 
+nonneg int astCount(const Token* tok, const char* op, int depth)
+{
+    --depth;
+    if (!tok || depth < 0)
+        return 0;
+    if (tok->str() == op)
+        return astCount(tok->astOperand1(), op, depth) + astCount(tok->astOperand2(), op, depth);
+    else
+        return 1;
+}
+
 bool astHasToken(const Token* root, const Token * tok)
 {
     if (!root)
@@ -1666,7 +1677,7 @@ bool isConstFunctionCall(const Token* ftok, const Library& library)
         if (Function::returnsVoid(f))
             return false;
         // Member function call
-        if (Token::simpleMatch(ftok->previous(), ".")) {
+        if (Token::simpleMatch(ftok->previous(), ".") || exprDependsOnThis(ftok->next())) {
             if (f->isConst())
                 return true;
             // Check for const overloaded function that just return the const version
@@ -2413,7 +2424,7 @@ static bool isExpressionChangedAt(const F& getExprTok,
     if (depth < 0)
         return true;
     if (tok->exprId() != exprid) {
-        if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% ("))
+        if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
             // TODO: Is global variable really changed by function call?
             return true;
         const bool pointer = astIsPointer(tok);
@@ -2583,7 +2594,24 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
     return result;
 }
 
-int numberOfArguments(const Token *start)
+const Token* getArgumentStart(const Token* ftok)
+{
+    const Token* tok = ftok;
+    if (Token::Match(tok, "%name% (|{"))
+        tok = ftok->next();
+    if (!Token::Match(tok, "(|{|["))
+        return nullptr;
+    const Token* startTok = tok->astOperand2();
+    if (!startTok && tok->next() != tok->link())
+        startTok = tok->astOperand1();
+    return startTok;
+}
+
+int numberOfArguments(const Token* ftok) {
+    return astCount(getArgumentStart(ftok), ",");
+}
+
+int numberOfArgumentsWithoutAst(const Token* start)
 {
     int arguments=0;
     const Token* const openBracket = start->next();
@@ -2597,17 +2625,8 @@ int numberOfArguments(const Token *start)
     return arguments;
 }
 
-std::vector<const Token *> getArguments(const Token *ftok)
-{
-    const Token* tok = ftok;
-    if (Token::Match(tok, "%name% (|{"))
-        tok = ftok->next();
-    if (!Token::Match(tok, "(|{|["))
-        return std::vector<const Token *> {};
-    const Token *startTok = tok->astOperand2();
-    if (!startTok && tok->next() != tok->link())
-        startTok = tok->astOperand1();
-    return astFlatten(startTok, ",");
+std::vector<const Token*> getArguments(const Token* ftok) {
+    return astFlatten(getArgumentStart(ftok), ",");
 }
 
 int getArgumentPos(const Variable* var, const Function* f)
