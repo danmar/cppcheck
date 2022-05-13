@@ -89,6 +89,8 @@ const Token* findExpression(const Token* start, const nonneg int exprid);
 std::vector<const Token*> astFlatten(const Token* tok, const char* op);
 std::vector<Token*> astFlatten(Token* tok, const char* op);
 
+nonneg int astCount(const Token* tok, const char* op, int depth = 100);
+
 bool astHasToken(const Token* root, const Token * tok);
 
 bool astHasVar(const Token * tok, nonneg int varid);
@@ -310,11 +312,16 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr)
 
 bool isAliased(const Variable *var);
 
+const Token* getArgumentStart(const Token* ftok);
+
 /** Determines the number of arguments - if token is a function call or macro
  * @param start token which is supposed to be the function/macro name.
  * \return Number of arguments
  */
-int numberOfArguments(const Token *start);
+int numberOfArguments(const Token* ftok);
+
+/// Get number of arguments without using AST
+int numberOfArgumentsWithoutAst(const Token* start);
 
 /**
  * Get arguments (AST)

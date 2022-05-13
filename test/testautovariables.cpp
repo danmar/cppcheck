@@ -3561,6 +3561,16 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11057
+        check("struct S {\n"
+              "    int& r;\n"
+              "};\n"
+              "void f(int i) {\n"
+              "    const S a[] = { { i } };\n"
+              "    for (const auto& s : a) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()

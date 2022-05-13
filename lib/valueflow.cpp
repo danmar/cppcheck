@@ -311,22 +311,37 @@ static std::vector<ValueType> getParentValueTypes(const Token* tok,
     } else if (Token::Match(tok->astParent(), "(|{|,")) {
         int argn = -1;
         const Token* ftok = getTokenArgumentFunction(tok, argn);
-        if (ftok && ftok->function()) {
-            std::vector<ValueType> result;
-            std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
-            const Token* nameTok = nullptr;
-            for (const Variable* var : getArgumentVars(ftok, argn)) {
-                if (!var)
-                    continue;
-                if (!var->valueType())
-                    continue;
-                nameTok = var->nameToken();
-                result.push_back(*var->valueType());
+        const Token* typeTok = nullptr;
+        if (ftok && argn >= 0) {
+            if (ftok->function()) {
+                std::vector<ValueType> result;
+                std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
+                const Token* nameTok = nullptr;
+                for (const Variable* var : getArgumentVars(ftok, argn)) {
+                    if (!var)
+                        continue;
+                    if (!var->valueType())
+                        continue;
+                    nameTok = var->nameToken();
+                    result.push_back(*var->valueType());
+                }
+                if (result.size() == 1 && nameTok && parent) {
+                    *parent = nameTok;
+                }
+                return result;
+            } else if (const Type* t = Token::typeOf(ftok, &typeTok)) {
+                if (astIsPointer(typeTok))
+                    return {*typeTok->valueType()};
+                const Scope* scope = t->classScope;
+                // Check for aggregate constructors
+                if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
+                    (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) < scope->varlist.size()) {
+                    assert(argn < scope->varlist.size());
+                    auto it = std::next(scope->varlist.begin(), argn);
+                    if (it->valueType())
+                        return {*it->valueType()};
+                }
             }
-            if (result.size() == 1 && nameTok && parent) {
-                *parent = nameTok;
-            }
-            return result;
         }
     }
     if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
@@ -3293,6 +3308,14 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
             return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1),
                                                !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
         }
+    } else if (Token::simpleMatch(tok, "{") && getArgumentStart(tok) &&
+               !Token::simpleMatch(getArgumentStart(tok), ",") && getArgumentStart(tok)->valueType()) {
+        const Token* vartok = getArgumentStart(tok);
+        auto vts = getParentValueTypes(tok);
+        for (const ValueType& vt : vts) {
+            if (vt.isTypeEqual(vartok->valueType()))
+                return getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1);
+        }
     }
     return {{tok, std::move(errorPath)}};
 }
@@ -4216,7 +4239,15 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
     }
 
     for (const ValueType& vt : vts) {
-        if (vt.container && vt.type == ValueType::CONTAINER) {
+        if (vt.pointer > 0) {
+            std::vector<const Token*> args = getArguments(tok);
+            LifetimeStore::forEach(args,
+                                   "Passed to initializer list.",
+                                   ValueFlow::Value::LifetimeKind::SubObject,
+                                   [&](const LifetimeStore& ls) {
+                ls.byVal(tok, tokenlist, errorLogger, settings);
+            });
+        } else if (vt.container && vt.type == ValueType::CONTAINER) {
             std::vector<const Token*> args = getArguments(tok);
             if (args.size() == 1 && vt.container->view && astIsContainerOwned(args.front())) {
                 LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}
@@ -4238,7 +4269,12 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
                 });
             }
         } else {
-            valueFlowLifetimeClassConstructor(tok, Token::typeOf(tok->previous()), tokenlist, errorLogger, settings);
+            const Type* t = nullptr;
+            if (vt.typeScope && vt.typeScope->definedType)
+                t = vt.typeScope->definedType;
+            else
+                t = Token::typeOf(tok->previous());
+            valueFlowLifetimeClassConstructor(tok, t, tokenlist, errorLogger, settings);
         }
     }
 }
@@ -4544,7 +4580,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowForwardLifetime(parent->tokAt(2), tokenlist, errorLogger, settings);
         }
         // Check constructors
-        else if (Token::Match(tok, "=|return|%type%|%var% {") && !isScope(tok->next())) {
+        else if (Token::Match(tok, "=|return|%name%|{|,|> {") && !isScope(tok->next())) {
             valueFlowLifetimeConstructor(tok->next(), tokenlist, errorLogger, settings);
         }
         // Check function calls

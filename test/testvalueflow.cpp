@@ -6571,6 +6571,20 @@ private:
         code = "void f(const char * const x) { !!system(x); }\n";
         valueOfTok(code, "x");
 
+        code = "struct struct1 {\n"
+               "    int i1;\n"
+               "    int i2;\n"
+               "};\n"
+               "struct struct2 {\n"
+               "    char c1;\n"
+               "    struct1 is1;\n"
+               "    char c2[4];\n"
+               "};\n"
+               "void f() {\n"
+               "    struct2 a = { 1, 2, 3, {4,5,6,7} }; \n"
+               "}\n";
+        valueOfTok(code, "a");
+
         code = "void setDeltas(int life, int age, int multiplier) {\n"
                "    int dx = 0;\n"
                "    int dy = 0;\n"

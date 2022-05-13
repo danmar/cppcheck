@@ -1197,7 +1197,7 @@ bool Library::isNotLibraryFunction(const Token *ftok) const
 
 bool Library::matchArguments(const Token *ftok, const std::string &functionName) const
 {
-    const int callargs = numberOfArguments(ftok);
+    const int callargs = numberOfArgumentsWithoutAst(ftok);
     const std::unordered_map<std::string, Function>::const_iterator it = functions.find(functionName);
     if (it == functions.cend())
         return (callargs == 0);
