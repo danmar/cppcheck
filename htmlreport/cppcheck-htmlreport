@@ -518,9 +518,9 @@ def to_css_selector(tag):
 class AnnotateCodeFormatter(HtmlFormatter):
     errors = []
 
-    def wrap(self, source, outfile):
+    def wrap(self, *args, **kwargs):
         line_no = 1
-        for i, t in HtmlFormatter.wrap(self, source, outfile):
+        for i, t in HtmlFormatter.wrap(self, *args, **kwargs):
             # If this is a source code line we want to add a span tag at the
             # end.
             if i == 1:
