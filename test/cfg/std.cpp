@@ -36,6 +36,35 @@
 #include <iterator>
 #include <vector>
 
+float invalidFunctionArg_remquo (float x, float y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquof(x,0.0f,quo);
+    return std::remquo(x,y,quo);
+}
+
+double invalidFunctionArg_remquo (double x, double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0L,quo);
+    return std::remquo(x,y,quo);
+}
+
+double invalidFunctionArg_remquo (long double x, long double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0L,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquol(x,0.0L,quo);
+    return std::remquo(x,y,quo);
+}
+
 void invalidFunctionArg_remainderl(long double f1, long double f2)
 {
     // cppcheck-suppress invalidFunctionArg

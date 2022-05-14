@@ -30,6 +30,35 @@
 #include <float.h>
 
 
+float invalidFunctionArg_float_remquo (float x, float y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquof(x,0.0f,quo);
+    return remquo(x,y,quo);
+}
+
+double invalidFunctionArg_double_remquo (double x, double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0L,quo);
+    return remquo(x,y,quo);
+}
+
+double invalidFunctionArg_long_double_remquo (long double x, long double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0L,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquol(x,0.0L,quo);
+    return remquo(x,y,quo);
+}
+
 void invalidFunctionArg_remainderl(long double f1, long double f2)
 {
     // cppcheck-suppress invalidFunctionArg
