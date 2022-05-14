@@ -89,10 +89,13 @@ private:
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression("1.175494e-38:"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression(":1.175494e-38"));
         ASSERT_EQUALS(true, Library::isCompliantValidationExpression(":42.0"));
+        ASSERT_EQUALS(true, Library::isCompliantValidationExpression("!42.0"));
 
         // Robustness tests
         ASSERT_EQUALS(false, Library::isCompliantValidationExpression(nullptr));
         ASSERT_EQUALS(false, Library::isCompliantValidationExpression("x"));
+        ASSERT_EQUALS(false, Library::isCompliantValidationExpression("!"));
+        ASSERT_EQUALS(false, Library::isCompliantValidationExpression(""));
     }
 
     void empty() const {
@@ -336,6 +339,7 @@ private:
                                "    <arg nr=\"8\"><valid>0.0:</valid></arg>\n"
                                "    <arg nr=\"9\"><valid>:2.0</valid></arg>\n"
                                "    <arg nr=\"10\"><valid>0.0</valid></arg>\n"
+                               "    <arg nr=\"11\"><valid>!0.0</valid></arg>\n"
                                "  </function>\n"
                                "</def>";
 
@@ -343,7 +347,7 @@ private:
         ASSERT_EQUALS(true, Library::ErrorCode::OK == (readLibrary(library, xmldata)).errorcode);
 
         TokenList tokenList(nullptr);
-        std::istringstream istr("foo(a,b,c,d,e,f,g,h,i,j);");
+        std::istringstream istr("foo(a,b,c,d,e,f,g,h,i,j,k);");
         tokenList.createTokens(istr);
         tokenList.front()->next()->astOperand1(tokenList.front());
 
@@ -460,8 +464,13 @@ private:
         ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 9, 200.0));
 
         // 0.0
-        ASSERT_EQUALS(false, library.isIntArgValid(tokenList.front(), 10, 0));
-        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 10, 0.0));
+        ASSERT_EQUALS(true, library.isIntArgValid(tokenList.front(), 10, 0));
+        ASSERT_EQUALS(true, library.isFloatArgValid(tokenList.front(), 10, 0.0));
+
+        // ! 0.0
+        ASSERT_EQUALS(true, library.isFloatArgValid(tokenList.front(), 11, -0.42));
+        ASSERT_EQUALS(false, library.isFloatArgValid(tokenList.front(), 11, 0.0));
+        ASSERT_EQUALS(true, library.isFloatArgValid(tokenList.front(), 11, 0.42));
     }
 
     void function_arg_minsize() const {
