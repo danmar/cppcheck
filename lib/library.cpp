@@ -930,9 +930,9 @@ bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) con
             return true;
         if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
             return true;
-        if (Token::Match(tok, " %num% ") && MathLib::isFloat(tok->str()) && MathLib::isEqual(tok->str(), MathLib::toString(argvalue)))
+        if (Token::Match(tok, "%num%") && MathLib::isFloat(tok->str()) && MathLib::isEqual(tok->str(), MathLib::toString(argvalue)))
             return true;
-        if (Token::Match(tok, "!  %num%") && MathLib::isFloat(tok->next()->str()))
+        if (Token::Match(tok, "! %num%") && MathLib::isFloat(tok->next()->str()))
             return MathLib::isNotEqual(tok->next()->str(), MathLib::toString(argvalue));
     }
     return false;
