@@ -748,7 +748,8 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, (!p ? "\"\"" : argnode->GetText()));
                     // Set validation expression
                     ac.valid = argnode->GetText();
-                } else if (argnodename == "minsize") {
+                }
+                else if (argnodename == "minsize") {
                     const char *typeattr = argnode->Attribute("type");
                     if (!typeattr)
                         return Error(ErrorCode::MISSING_ATTRIBUTE, "type");
@@ -929,6 +930,10 @@ bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) con
             return true;
         if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
             return true;
+        if (Token::Match(tok, "%num%") && MathLib::isFloat(tok->str()) && MathLib::isEqual(tok->str(), MathLib::toString(argvalue)))
+            return true;
+        if (Token::Match(tok, "! %num%") && MathLib::isFloat(tok->next()->str()))
+            return MathLib::isNotEqual(tok->next()->str(), MathLib::toString(argvalue));
     }
     return false;
 }
@@ -1227,7 +1232,7 @@ const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
 
 bool Library::isCompliantValidationExpression(const char* p)
 {
-    if (!p)
+    if (!p || !*p)
         return false;
 
     bool error = false;
@@ -1237,15 +1242,18 @@ bool Library::isCompliantValidationExpression(const char* p)
 
     error = *p == '.';
     for (; *p; p++) {
-        if (std::isdigit(*p))
+        if (std::isdigit(*p)) {
             error |= (*(p + 1) == '-');
+        }
         else if (*p == ':') {
             error |= range | (*(p + 1) == '.');
             range = true;
             has_dot = false;
             has_E = false;
-        } else if ((*p == '-') || (*p == '+'))
+        }
+        else if ((*p == '-') || (*p == '+')) {
             error |= (!std::isdigit(*(p + 1)));
+        }
         else if (*p == ',') {
             range = false;
             error |= *(p + 1) == '.';
@@ -1257,6 +1265,8 @@ bool Library::isCompliantValidationExpression(const char* p)
         } else if (*p == 'E' || *p == 'e') {
             error |= has_E;
             has_E = true;
+        } else if (*p == '!') {
+            error |= !((*(p+1) == '-') || (*(p+1) == '+') || (std::isdigit(*(p + 1))));
         } else
             return false;
     }

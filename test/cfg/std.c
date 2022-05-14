@@ -30,6 +30,60 @@
 #include <float.h>
 
 
+float invalidFunctionArg_float_remquo (float x, float y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquof(x,0.0f,quo);
+    return remquo(x,y,quo);
+}
+
+double invalidFunctionArg_double_remquo (double x, double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0L,quo);
+    return remquo(x,y,quo);
+}
+
+double invalidFunctionArg_long_double_remquo (long double x, long double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0L,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquol(x,0.0L,quo);
+    return remquo(x,y,quo);
+}
+
+void invalidFunctionArg_remainderl(long double f1, long double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderl(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderl(f1,0.0L);
+    (void)remainderl(f1,f2);
+}
+
+void invalidFunctionArg_remainder(double f1, double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainder(f1,0.0);
+    (void)remainder(f1,f2);
+}
+
+void invalidFunctionArg_remainderf(float f1, float f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderf(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderf(f1,0.0f);
+    (void)remainderf(f1,f2);
+}
+
 int qsort_cmpfunc (const void * a, const void * b) {
     return (*(int*)a - *(int*)b);
 }
