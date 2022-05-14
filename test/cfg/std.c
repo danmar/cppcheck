@@ -30,6 +30,31 @@
 #include <float.h>
 
 
+void invalidFunctionArg_remainderl(long double f1, long double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderl(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderl(f1,0.0L);
+    (void)remainderl(f1,f2);
+}
+
+void invalidFunctionArg_remainder(double f1, double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainder(f1,0.0);
+    (void)remainder(f1,f2);
+}
+
+void invalidFunctionArg_remainderf(float f1, float f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderf(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderf(f1,0.0f);
+    (void)remainderf(f1,f2);
+}
+
 int qsort_cmpfunc (const void * a, const void * b) {
     return (*(int*)a - *(int*)b);
 }

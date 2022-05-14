@@ -36,6 +36,31 @@
 #include <iterator>
 #include <vector>
 
+void invalidFunctionArg_remainderl(long double f1, long double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderl(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderl(f1,0.0L);
+    (void)std::remainderl(f1,f2);
+}
+
+void invalidFunctionArg_remainder(double f1, double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainder(f1,0.0);
+    (void)std::remainder(f1,f2);
+}
+
+void invalidFunctionArg_remainderf(float f1, float f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderf(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderf(f1,0.0f);
+    (void)std::remainderf(f1,f2);
+}
+
 void uninitvar_std_fstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
 {
     std::string s;

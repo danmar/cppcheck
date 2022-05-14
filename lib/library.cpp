@@ -748,7 +748,7 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                         return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, (!p ? "\"\"" : argnode->GetText()));
                     // Set validation expression
                     ac.valid = argnode->GetText();
-                }   
+                }
                 else if (argnodename == "minsize") {
                     const char *typeattr = argnode->Attribute("type");
                     if (!typeattr)
@@ -931,8 +931,8 @@ bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) con
         if ((!tok->previous() || tok->previous()->str() == ",") && Token::Match(tok,": %num%") && argvalue <= MathLib::toDoubleNumber(tok->strAt(1)))
             return true;
         if (Token::Match(tok, " %num% ") && MathLib::isFloat(tok->str()) && MathLib::isEqual(tok->str(), MathLib::toString(argvalue)))
-            return true;     
-        if (Token::Match(tok, " !  %num% ") && MathLib::isFloat(tok->next()->str()))       
+            return true;
+        if (Token::Match(tok, " !  %num% ") && MathLib::isFloat(tok->next()->str()))
             return MathLib::isNotEqual(tok->next()->str(), MathLib::toString(argvalue));
     }
     return false;
@@ -1233,7 +1233,7 @@ const Library::WarnInfo* Library::getWarnInfo(const Token* ftok) const
 bool Library::isCompliantValidationExpression(const char* p)
 {
     if (!p || !*p)
-        return false; 
+        return false;
 
     bool error = false;
     bool range = false;
@@ -1264,7 +1264,7 @@ bool Library::isCompliantValidationExpression(const char* p)
             has_dot = true;
         } else if (*p == 'E' || *p == 'e') {
             error |= has_E;
-            has_E = true;     
+            has_E = true;
         } else if (*p == '!') {
             error |= !((*(p+1) == '-') || (*(p+1) == '+') || (std::isdigit(*(p + 1))));
         } else
