@@ -932,7 +932,7 @@ bool Library::isFloatArgValid(const Token *ftok, int argnr, double argvalue) con
             return true;
         if (Token::Match(tok, " %num% ") && MathLib::isFloat(tok->str()) && MathLib::isEqual(tok->str(), MathLib::toString(argvalue)))
             return true;
-        if (Token::Match(tok, " !  %num% ") && MathLib::isFloat(tok->next()->str()))
+        if (Token::Match(tok, "!  %num%") && MathLib::isFloat(tok->next()->str()))
             return MathLib::isNotEqual(tok->next()->str(), MathLib::toString(argvalue));
     }
     return false;
