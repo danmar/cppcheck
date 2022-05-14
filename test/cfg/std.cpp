@@ -36,6 +36,60 @@
 #include <iterator>
 #include <vector>
 
+float invalidFunctionArg_remquo (float x, float y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquof(x,0.0f,quo);
+    return std::remquo(x,y,quo);
+}
+
+double invalidFunctionArg_remquo (double x, double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0L,quo);
+    return std::remquo(x,y,quo);
+}
+
+double invalidFunctionArg_remquo (long double x, long double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0L,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquol(x,0.0L,quo);
+    return std::remquo(x,y,quo);
+}
+
+void invalidFunctionArg_remainderl(long double f1, long double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderl(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderl(f1,0.0L);
+    (void)std::remainderl(f1,f2);
+}
+
+void invalidFunctionArg_remainder(double f1, double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainder(f1,0.0);
+    (void)std::remainder(f1,f2);
+}
+
+void invalidFunctionArg_remainderf(float f1, float f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderf(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderf(f1,0.0f);
+    (void)std::remainderf(f1,f2);
+}
+
 void uninitvar_std_fstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
 {
     std::string s;
