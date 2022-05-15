@@ -131,13 +131,7 @@ static void bailoutInternal(const std::string& type, TokenList *tokenlist, Error
     errorLogger->reportErr(errmsg);
 }
 
-#if (defined __cplusplus) && __cplusplus >= 201103L
 #define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __func__)
-#elif (defined __GNUC__) || (defined __clang__) || (defined _MSC_VER)
-#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __FUNCTION__)
-#else
-#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, "(valueFlow)")
-#endif
 
 #define bailout(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailout", tokenlist, errorLogger, tok, what)
 

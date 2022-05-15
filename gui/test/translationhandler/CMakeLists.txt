@@ -7,7 +7,7 @@ add_executable(test-translationhandler
         ${CMAKE_SOURCE_DIR}/gui/common.cpp
         ${CMAKE_SOURCE_DIR}/gui/translationhandler.cpp
         )
-target_include_directories(test-translationhandler PRIVATE ${CMAKE_SOURCE_DIR}/gui)
+target_include_directories(test-translationhandler PRIVATE ${CMAKE_SOURCE_DIR}/gui ${CMAKE_SOURCE_DIR}/lib)
 target_link_libraries(test-translationhandler ${QT_CORE_LIB} ${QT_WIDGETS_LIB} ${QT_TEST_LIB})
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
