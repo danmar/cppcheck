@@ -12,13 +12,13 @@ ifeq ($(SRCDIR),build)
 endif
 ifeq ($(MATCHCOMPILER),yes)
     # Find available Python interpreter
-    ifndef PYTHON_INTERPRETER
+    ifeq ($(PYTHON_INTERPRETER),)
         PYTHON_INTERPRETER := $(shell which python3)
     endif
-    ifndef PYTHON_INTERPRETER
+    ifeq ($(PYTHON_INTERPRETER),)
         PYTHON_INTERPRETER := $(shell which python)
     endif
-    ifndef PYTHON_INTERPRETER
+    ifeq ($(PYTHON_INTERPRETER),)
         $(error Did not find a Python interpreter)
     endif
     ifdef VERIFY

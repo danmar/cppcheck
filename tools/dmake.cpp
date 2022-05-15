@@ -243,15 +243,16 @@ int main(int argc, char **argv)
          << "    MATCHCOMPILER:=yes\n"
          << "endif\n";
     // TODO: bail out when matchcompiler.py fails (i.e. invalid PYTHON_INTERPRETER specified)
+    // TODO: handle "PYTHON_INTERPRETER="
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
          << "    # Find available Python interpreter\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        PYTHON_INTERPRETER := $(shell which python3)\n"
          << "    endif\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        PYTHON_INTERPRETER := $(shell which python)\n"
          << "    endif\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        $(error Did not find a Python interpreter)\n"
          << "    endif\n"
          << "    ifdef VERIFY\n"
@@ -495,6 +496,7 @@ int main(int argc, char **argv)
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
     fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";
+    // TODO: handle "PYTHON_INTERPRETER="
     fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python3)))\n";
     fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python)))\n";
     fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(error Did not find a Python interpreter)))\n";
