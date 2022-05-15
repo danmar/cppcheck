@@ -304,7 +304,7 @@ run-dmake: dmake
 	./dmake
 
 clean:
-	rm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1
+	rm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1
 
 man:	man/cppcheck.1
 
