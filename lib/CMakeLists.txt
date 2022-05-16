@@ -33,7 +33,7 @@ else()
 endif()
 
 if (BUILD_CORE_DLL)
-    add_library(cppcheck-core SHARED ${srcs_lib} ${hdrs} $<TARGET_OBJECTS:tinyxml2_objs> $<TARGET_OBJECTS:simplecpp_objs>)
+    add_library(cppcheck-core SHARED ${srcs_lib} ${hdrs} $<TARGET_OBJECTS:tinyxml2_objs> $<TARGET_OBJECTS:simplecpp_objs> version.rc)
     target_compile_definitions(cppcheck-core PRIVATE CPPCHECKLIB_EXPORT TINYXML2_EXPORT SIMPLECPP_EXPORT)
 else()
     add_library(cppcheck-core OBJECT ${srcs_lib} ${hdrs})
