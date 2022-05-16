@@ -210,7 +210,6 @@ public:
 
     /**
      * @brief Marks Inline Suppressions as checked if source line is in the token stream
-     * @return No return.
      */
     void markUnmatchedInlineSuppressionsAsChecked(const Tokenizer &tokenizer);
 

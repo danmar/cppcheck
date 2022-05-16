@@ -1099,7 +1099,10 @@ private:
               "    std::cout <<  fmodf(1.0,0) << std::endl;\n"
               "    std::cout <<  fmodl(1.0,0) << std::endl;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Passing values 1.0 and 0 to fmod() leads to implementation-defined result.\n"
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid fmod() argument nr 2. The value is 0 but the valid values are '!0.0'.\n"
+                      "[test.cpp:4]: (error) Invalid fmodf() argument nr 2. The value is 0 but the valid values are '!0.0'.\n"
+                      "[test.cpp:5]: (error) Invalid fmodl() argument nr 2. The value is 0 but the valid values are '!0.0'.\n"
+                      "[test.cpp:3]: (warning) Passing values 1.0 and 0 to fmod() leads to implementation-defined result.\n"
                       "[test.cpp:4]: (warning) Passing values 1.0 and 0 to fmodf() leads to implementation-defined result.\n"
                       "[test.cpp:5]: (warning) Passing values 1.0 and 0 to fmodl() leads to implementation-defined result.\n", errout.str());
 

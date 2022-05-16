@@ -150,6 +150,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
 void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
     std::set<std::string> found;
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
     const std::list<std::string> copyIn(in);
     includePaths.clear();
     for (const std::string &ipath : copyIn) {

@@ -69,8 +69,7 @@ jobs:
           python -m pip install pylint
           python -m pip install unittest2
           python -m pip install pytest
-          # TODO: remove version limitation when cppcheck-htmlreport is adjusted
-          python -m pip install pygments==2.11.2
+          python -m pip install pygments
           python -m pip install requests
           python -m pip install psutil
 
