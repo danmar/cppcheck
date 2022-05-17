@@ -3590,9 +3590,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n" // #11078
-               "    const char* p = nullptr;\n"
-               "    std::string s1{ p };\n"
-               "    std::string s2{ nullptr };\n"
+              "    const char* p = nullptr;\n"
+              "    std::string s1{ p };\n"
+              "    std::string s2{ nullptr };\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Null pointer dereference: p\n"
                       "[test.cpp:4]: (error) Null pointer dereference\n",
