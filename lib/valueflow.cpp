@@ -555,6 +555,9 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     if (!value.isImpossible() && value.isIntValue())
         value = truncateImplicitConversion(tok->astParent(), value, settings);
 
+    if (value.isIntValue() && value.intvalue == 9998)
+        std::printf("here\n");
+
     if (!tok->addValue(value))
         return;
 
@@ -6343,6 +6346,8 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                                      ErrorLogger* errorLogger,
                                      const Settings* settings)
 {
+    // TODO: Refactor this to use arbitary expressions
+    assert(expr->varId() > 0);
     const Token * const bodyEnd = bodyStart->link();
 
     // Is variable modified inside for loop
@@ -6512,24 +6517,29 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
         } else {
             ProgramMemory mem1, mem2, memAfter;
             if (valueFlowForLoop2(tok, &mem1, &mem2, &memAfter)) {
-                ProgramMemory::Map::const_iterator it;
-                for (it = mem1.begin(); it != mem1.end(); ++it) {
-                    if (!it->second.isIntValue())
+                for(const auto& p:mem1) {
+                    if (!p.second.isIntValue())
+                        continue;
+                    if (p.first.tok->varId() == 0)
                         continue;
                     valueFlowForLoopSimplify(
-                        bodyStart, it->first.tok, false, it->second.intvalue, tokenlist, errorLogger, settings);
+                        bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
                 }
-                for (it = mem2.begin(); it != mem2.end(); ++it) {
-                    if (!it->second.isIntValue())
+                for(const auto& p:mem2) {
+                    if (!p.second.isIntValue())
+                        continue;
+                    if (p.first.tok->varId() == 0)
                         continue;
                     valueFlowForLoopSimplify(
-                        bodyStart, it->first.tok, false, it->second.intvalue, tokenlist, errorLogger, settings);
+                        bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
                 }
-                for (it = memAfter.begin(); it != memAfter.end(); ++it) {
-                    if (!it->second.isIntValue())
+                for(const auto& p:memAfter) {
+                    if (!p.second.isIntValue())
+                        continue;
+                    if (p.first.tok->varId() == 0)
                         continue;
                     valueFlowForLoopSimplifyAfter(
-                        tok, it->first.getExpressionId(), it->second.intvalue, tokenlist, settings);
+                        tok, p.first.getExpressionId(), p.second.intvalue, tokenlist, settings);
                 }
             }
         }
