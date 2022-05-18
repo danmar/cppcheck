@@ -1198,6 +1198,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (tok->str() == "=" && isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
                 continue;
 
+            const bool isPointer = tok->valueType() && tok->valueType()->pointer;
+
             if (tok->isName()) {
                 if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
                     continue;
@@ -1213,7 +1215,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
             }
             // Do not warn about assignment with NULL
-            if (isNullOperand(tok->astOperand2()))
+            if (isPointer && isNullOperand(tok->astOperand2()))
                 continue;
 
             if (!tok->astOperand1())
