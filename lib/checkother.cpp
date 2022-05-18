@@ -1226,7 +1226,7 @@ static bool canBeConst(const Variable *var, const Settings* settings)
             continue;
         if (Token::simpleMatch(tok2->next(), ";") && tok2->next()->isSplittedVarDeclEq()) {
             tok2 = tok2->tokAt(2);
-            tok2 = tok2->findsimplematch(tok2, ";");
+            tok2 = Token::findsimplematch(tok2, ";");
             continue;
         }
         if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
