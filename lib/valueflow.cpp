@@ -6517,29 +6517,26 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
         } else {
             ProgramMemory mem1, mem2, memAfter;
             if (valueFlowForLoop2(tok, &mem1, &mem2, &memAfter)) {
-                for(const auto& p:mem1) {
+                for (const auto& p : mem1) {
                     if (!p.second.isIntValue())
                         continue;
                     if (p.first.tok->varId() == 0)
                         continue;
-                    valueFlowForLoopSimplify(
-                        bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
+                    valueFlowForLoopSimplify(bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
                 }
-                for(const auto& p:mem2) {
+                for (const auto& p : mem2) {
                     if (!p.second.isIntValue())
                         continue;
                     if (p.first.tok->varId() == 0)
                         continue;
-                    valueFlowForLoopSimplify(
-                        bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
+                    valueFlowForLoopSimplify(bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
                 }
-                for(const auto& p:memAfter) {
+                for (const auto& p : memAfter) {
                     if (!p.second.isIntValue())
                         continue;
                     if (p.first.tok->varId() == 0)
                         continue;
-                    valueFlowForLoopSimplifyAfter(
-                        tok, p.first.getExpressionId(), p.second.intvalue, tokenlist, settings);
+                    valueFlowForLoopSimplifyAfter(tok, p.first.getExpressionId(), p.second.intvalue, tokenlist, settings);
                 }
             }
         }
