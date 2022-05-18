@@ -555,9 +555,6 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     if (!value.isImpossible() && value.isIntValue())
         value = truncateImplicitConversion(tok->astParent(), value, settings);
 
-    if (value.isIntValue() && value.intvalue == 9998)
-        std::printf("here\n");
-
     if (!tok->addValue(value))
         return;
 
