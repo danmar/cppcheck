@@ -170,7 +170,6 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
-        // TODO: these are not detected!
         check("struct SquarePack {\n"
               "   static bool isRank1Or8( Square *sq ) {\n"
               "      auto lsq = sq;\n"
@@ -181,8 +180,7 @@ private:
               "void foo() {\n"
               "   assert( !SquarePack::isRank1Or8(push2) );\n"
               "}");
-        CHECK_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
-
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", "", errout.str());
         check("struct SquarePack {\n"
               "   static bool isRank1Or8( Square &sq ) {\n"
               "      Square& ref= sq;\n"
@@ -193,7 +191,7 @@ private:
               "void foo() {\n"
               "   assert( !SquarePack::isRank1Or8(push2) );\n"
               "}");
-        CHECK_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", "", errout.str());
     }
 
     void memberFunctionCallInAssert() {
@@ -278,7 +276,6 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'SquarePack'.\n", errout.str());
 
-        // TODO: these are not detected!
         check("static int i = 0;\n"
               "class SquarePack {\n"
               "  SquarePack(){\n"
@@ -289,7 +286,7 @@ private:
               "void foo() {\n"
               "   assert( SquarePack{}.foo() );\n"
               "}");
-        CHECK_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'SquarePack'.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'SquarePack'.\n", "", errout.str());
 
         check("class SquarePack {\n"
               "  SquarePack(int& i){\n"
@@ -301,7 +298,7 @@ private:
               "  int a = 0;"
               "  assert( SquarePack{a}.foo() );\n"
               "}");
-        CHECK_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'SquarePack'.\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'SquarePack'.\n", "", errout.str());
     }
 
     void safeConstructorCallInAssert() {
