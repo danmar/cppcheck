@@ -1199,10 +1199,12 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
 
 static bool canBeConst(const Variable *var, const Settings* settings)
 {
+    if (!var->scope())
+        return false;
     {
         // check initializer list. If variable is moved from it can't be const.
         const Function* func_scope = var->scope()->function;
-        if (func_scope->type == Function::Type::eConstructor) {
+        if (func_scope && func_scope->type == Function::Type::eConstructor) {
             //could be initialized in initializer list
             if (func_scope->arg->link()->next()->str() == ":") {
                 for (const Token* tok2 = func_scope->arg->link()->next()->next(); tok2 != var->scope()->bodyStart; tok2 = tok2->next()) {
@@ -1222,6 +1224,11 @@ static bool canBeConst(const Variable *var, const Settings* settings)
         const Token* parent = tok2->astParent();
         if (!parent)
             continue;
+        if (Token::simpleMatch(tok2->next(), ";") && tok2->next()->isSplittedVarDeclEq()) {
+            tok2 = tok2->tokAt(2);
+            tok2 = tok2->findsimplematch(tok2, ";");
+            continue;
+        }
         if (parent->str() == "<<" || isLikelyStreamRead(true, parent)) {
             if (parent->str() == "<<" && parent->astOperand1() == tok2)
                 return false;
@@ -2701,7 +2708,7 @@ void CheckOther::checkRedundantCopy()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || var->isReference() || !var->isConst() || var->isPointer() || (!var->type() && !var->isStlType())) // bailout if var is of standard type, if it is a pointer or non-const
+        if (!var || var->isReference() || (!var->isConst() && !canBeConst(var, mSettings)) || var->isPointer() || (!var->type() && !var->isStlType())) // bailout if var is of standard type, if it is a pointer or non-const
             continue;
 
         const Token* startTok = var->nameToken();
@@ -2711,6 +2718,8 @@ void CheckOther::checkRedundantCopy()
             // Object is instantiated. Warn if constructor takes arguments by value.
             if (constructorTakesReference(var->typeScope()))
                 continue;
+        } else if (Token::simpleMatch(startTok->next(), ";") && startTok->next()->isSplittedVarDeclEq()) {
+            startTok = startTok->tokAt(2);
         } else
             continue;
 

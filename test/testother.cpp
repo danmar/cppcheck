@@ -7373,6 +7373,20 @@ private:
               "  const CD cd(CD::getOne());\n"
               "}", nullptr, false, true);
         ASSERT_EQUALS("", errout.str());
+
+        // #10704
+        check("struct C {\n"
+              "    std::string str;\n"
+              "    const std::string& get() const { return str; }\n"
+              "};\n"
+              "struct D {\n"
+              "    C c;\n"
+              "    bool f() const {\n"
+              "        std::string s = c.get();\n"
+              "        return s.empty();\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:8]: (performance, inconclusive) Use const reference for 's' to avoid unnecessary data copying.\n", errout.str());
     }
 
     void checkNegativeShift() {
