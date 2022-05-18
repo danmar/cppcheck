@@ -1830,29 +1830,30 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                 else
                     typeMaxValue = unsignedTypeMaxValue / 2;
 
-                bool result;
+                bool result{};
+                const auto kiv = valueTok->getKnownIntValue();
                 if (tok->str() == "==")
                     result = false;
                 else if (tok->str() == "!=")
                     result = true;
                 else if (tok->str()[0] == '>' && i == 0)
                     // num > var
-                    result = (valueTok->getKnownIntValue() > 0);
+                    result = (kiv > 0);
                 else if (tok->str()[0] == '>' && i == 1)
                     // var > num
-                    result = (valueTok->getKnownIntValue() < 0);
+                    result = (kiv < 0);
                 else if (tok->str()[0] == '<' && i == 0)
                     // num < var
-                    result = (valueTok->getKnownIntValue() < 0);
+                    result = (kiv < 0);
                 else if (tok->str()[0] == '<' && i == 1)
                     // var < num
-                    result = (valueTok->getKnownIntValue() > 0);
+                    result = (kiv > 0);
 
-                if (valueTok->getKnownIntValue() < typeMinValue) {
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+                if (kiv < typeMinValue || (tok->str() == ">=" && kiv == typeMinValue)) {
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
                 }
-                else if (valueTok->getKnownIntValue() > typeMaxValue)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+                else if (kiv > typeMaxValue || (tok->str() == "<=" && kiv == typeMaxValue))
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
             }
         }
     }
