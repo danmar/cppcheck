@@ -6151,7 +6151,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             setValueType(autoToken, autovt);
             setAutoTokenProperties(autoToken);
             ValueType varvt(*vt2);
-            varvt.pointer--;            
+            varvt.pointer--;
             if (Token::simpleMatch(autoToken->next(), "&"))
                 varvt.reference = Reference::LValue;
             if (isconst) {
