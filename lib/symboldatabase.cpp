@@ -6139,7 +6139,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     // range for loop, auto
     if (vt2 &&
         parent->str() == ":" &&
-        Token::Match(parent->astParent(), "( const| auto *|&| %var% :") &&
+        Token::Match(parent->astParent(), "( const| auto *|&| %var% :") && // TODO: east-const, multiple const, ref to ptr, rvalue ref
         !parent->previous()->valueType() &&
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
         const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
@@ -6151,9 +6151,15 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             setValueType(autoToken, autovt);
             setAutoTokenProperties(autoToken);
             ValueType varvt(*vt2);
-            varvt.pointer--;
-            if (isconst)
-                varvt.constness |= 1;
+            varvt.pointer--;            
+            if (Token::simpleMatch(autoToken->next(), "&"))
+                varvt.reference = Reference::LValue;
+            if (isconst) {
+                if (varvt.pointer && varvt.reference != Reference::None)
+                    varvt.constness |= 2;
+                else
+                    varvt.constness |= 1;
+            }
             setValueType(parent->previous(), varvt);
             Variable *var = const_cast<Variable *>(parent->previous()->variable());
             if (var) {
