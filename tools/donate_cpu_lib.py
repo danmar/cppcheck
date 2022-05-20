@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.23"
+CLIENT_VERSION = "1.3.24"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -234,7 +234,7 @@ def download_package(work_path, package, bandwidth_limit):
     return destfile
 
 
-def unpack_package(work_path, tgz, cpp_only=False):
+def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
     print('Unpacking..')
     temp_path = os.path.join(work_path, 'temp')
     __remove_tree(temp_path)
@@ -252,6 +252,14 @@ def unpack_package(work_path, tgz, cpp_only=False):
                     # Skip dangerous file names
                     continue
                 elif member.name.lower().endswith(header_endings + source_endings):
+                    if skip_files is not None:
+                        skip = False
+                        for skip_file in skip_files:
+                            if member.name.endswith('/' + skip_file):
+                                skip = True
+                                break
+                        if skip:
+                            continue
                     try:
                         tf.extract(member.name, temp_path)
                         if member.name.lower().endswith(source_endings):
