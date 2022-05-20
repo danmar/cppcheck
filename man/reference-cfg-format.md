@@ -1,6 +1,6 @@
 ---
 title: Cppcheck .cfg format
-subtitle: Version 2.7
+subtitle: Version 2.8
 author: Cppcheck team
 lang: en
 documentclass: report
@@ -317,6 +317,7 @@ Some example expressions you can use in the valid element:
 0:  =>  all values that are greater or equal to 0 are valid
 0,2:32  =>  the value 0 and all values between 2 and 32 are valid
 -1.5:5.6  =>  all values between -1.5 and 5.6 are valid
+!0.0  =>  all values are accepted, except 0.0
 
 ### `<minsize>`
 
