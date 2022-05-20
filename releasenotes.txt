@@ -15,3 +15,4 @@ release notes for cppcheck-2.8
 - Detect more instances of C style casts
 - Warn if the return value of new is discarded
 - The pre-ValueFlow uninitialized checker now uses a different ID as legacyUninitvar
+- Extended library format to exclude specific function argument values 

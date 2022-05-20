@@ -5961,6 +5961,29 @@ private:
                               "    p = (Foo *)NULL;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n" // #11079
+                              "    std::string s1{ nullptr };\n"
+                              "    std::string s2{ NULL };\n"
+                              "    std::string s4(nullptr);\n"
+                              "    std::string s5(NULL);\n"
+                              "}\n"
+                              "struct A { A(void*) {} };\n"
+                              "static void g() {\n"
+                              "    A a1{ nullptr };\n"
+                              "    A a2{ NULL };\n"
+                              "    A a4(nullptr);\n"
+                              "    A a5(NULL);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's1' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Variable 's2' is assigned a value that is never used.\n"
+                      "[test.cpp:4]: (style) Variable 's4' is assigned a value that is never used.\n"
+                      "[test.cpp:5]: (style) Variable 's5' is assigned a value that is never used.\n"
+                      "[test.cpp:9]: (style) Variable 'a1' is assigned a value that is never used.\n"
+                      "[test.cpp:10]: (style) Variable 'a2' is assigned a value that is never used.\n"
+                      "[test.cpp:11]: (style) Variable 'a4' is assigned a value that is never used.\n"
+                      "[test.cpp:12]: (style) Variable 'a5' is assigned a value that is never used.\n",
+                      errout.str());
     }
 
     void localvarUnusedGoto() {
