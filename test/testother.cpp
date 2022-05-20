@@ -3011,6 +3011,15 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #10466
+        check("typedef void* HWND;\n"
+              "void f(const std::vector<HWND>&v) {\n"
+              "    for (const auto* h : v)\n"
+              "        if (h) {}\n"
+              "    for (const auto& h : v)\n"
+              "        if (h) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'h' can be declared with const\n", errout.str());
+
         check("void f(const std::vector<int*>& v) {\n"
               "    for (const auto& p : v)\n"
               "        if (p == nullptr) {}\n"
