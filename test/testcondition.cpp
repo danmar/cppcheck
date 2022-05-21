@@ -5181,6 +5181,48 @@ private:
               "  if (x < 3000000000) {}\n"
               "}", &settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed int' against value 3000000000. Condition is always true.\n", errout.str());
+
+        check("void f(const signed char i) {\n" // #8545
+              "    if (i >  -129) {}\n" // warn
+              "    if (i >= -128) {}\n" // warn
+              "    if (i >= -127) {}\n"
+              "    if (i <  +128) {}\n" // warn
+              "    if (i <= +127) {}\n" // warn
+              "    if (i <= +126) {}\n"
+              "}\n", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'const signed char' against value -129. Condition is always true.\n"
+                      "[test.cpp:3]: (style) Comparing expression of type 'const signed char' against value -128. Condition is always true.\n"
+                      "[test.cpp:5]: (style) Comparing expression of type 'const signed char' against value 128. Condition is always true.\n"
+                      "[test.cpp:6]: (style) Comparing expression of type 'const signed char' against value 127. Condition is always true.\n",
+                      errout.str());
+
+        check("void f(const unsigned char u) {\n"
+              "    if (u >  0) {}\n"
+              "    if (u <  0) {}\n" // warn
+              "    if (u >= 0) {}\n" // warn
+              "    if (u <= 0) {}\n"
+              "    if (u >  255) {}\n" // warn
+              "    if (u <  255) {}\n"
+              "    if (u >= 255) {}\n"
+              "    if (u <= 255) {}\n" // warn
+              "    if (0   <  u) {}\n"
+              "    if (0   >  u) {}\n" // warn
+              "    if (0   <= u) {}\n" // warn
+              "    if (0   >= u) {}\n"
+              "    if (255 <  u) {}\n" // warn
+              "    if (255 >  u) {}\n"
+              "    if (255 <= u) {}\n"
+              "    if (255 >= u) {}\n" // warn
+              "}\n", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always false.\n"
+                      "[test.cpp:4]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always true.\n"
+                      "[test.cpp:6]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false.\n"
+                      "[test.cpp:9]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always true.\n"
+                      "[test.cpp:11]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always false.\n"
+                      "[test.cpp:12]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always true.\n"
+                      "[test.cpp:14]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false.\n"
+                      "[test.cpp:17]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always true.\n",
+                      errout.str());
     }
 
     void knownConditionCast() { // #9976
