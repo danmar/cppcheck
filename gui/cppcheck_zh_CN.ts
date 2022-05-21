@@ -1738,17 +1738,17 @@ Options:
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="86"/>
+        <location filename="translationhandler.cpp" line="87"/>
         <source>Unknown language specified!</source>
         <translation>指定了未知语言！</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="111"/>
+        <location filename="translationhandler.cpp" line="112"/>
         <source>Language file %1 not found!</source>
         <translation>语言文件 %1 不存在！</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="117"/>
+        <location filename="translationhandler.cpp" line="118"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>无法从文件 %2 中为语言 %1 加载翻译文件</translation>
     </message>
@@ -1907,22 +1907,22 @@ Options:
 <context>
     <name>QPlatformTheme</name>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>OK</source>
         <translation>确定</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>Cancel</source>
         <translation>取消</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>Close</source>
         <translation>关闭</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Save</source>
         <translation>保存</translation>
     </message>
@@ -1930,109 +1930,109 @@ Options:
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>File</source>
         <translation>文件</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Severity</source>
         <translation>严重性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Line</source>
         <translation>行</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Summary</source>
         <translation>概要</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="162"/>
+        <location filename="resultstree.cpp" line="157"/>
         <source>Undefined file</source>
         <translation>未定义文件</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="654"/>
+        <location filename="resultstree.cpp" line="649"/>
         <source>Copy</source>
         <translation>复制</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="836"/>
+        <location filename="resultstree.cpp" line="832"/>
         <source>Could not find file:</source>
         <translation>找不到文件：</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="840"/>
+        <location filename="resultstree.cpp" line="836"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>请选择文件夹 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="841"/>
+        <location filename="resultstree.cpp" line="837"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>选择目录 &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="843"/>
+        <location filename="resultstree.cpp" line="839"/>
         <source>Please select the directory where file is located.</source>
         <translation>请选择文件所在的目录。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="351"/>
+        <location filename="resultstree.cpp" line="346"/>
         <source>debug</source>
         <translation>调试</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="288"/>
+        <location filename="resultstree.cpp" line="283"/>
         <source>note</source>
         <translation>注意</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="653"/>
+        <location filename="resultstree.cpp" line="648"/>
         <source>Recheck</source>
         <translation>重新检查</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="655"/>
+        <location filename="resultstree.cpp" line="650"/>
         <source>Hide</source>
         <translation>隐藏</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="656"/>
+        <location filename="resultstree.cpp" line="651"/>
         <source>Hide all with id</source>
         <translation>隐藏全部 ID</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="675"/>
+        <location filename="resultstree.cpp" line="670"/>
         <source>Suppress selected id(s)</source>
         <translation>抑制选择的 ID</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="657"/>
+        <location filename="resultstree.cpp" line="652"/>
         <source>Open containing folder</source>
         <translation>打开包含的文件夹</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="691"/>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="686"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Tag</source>
         <translation>标记</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="693"/>
+        <location filename="resultstree.cpp" line="688"/>
         <source>No tag</source>
         <translation>取消标记</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="735"/>
-        <location filename="resultstree.cpp" line="749"/>
+        <location filename="resultstree.cpp" line="730"/>
+        <location filename="resultstree.cpp" line="744"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="736"/>
+        <location filename="resultstree.cpp" line="731"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2042,7 +2042,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 在“首先项 / 应用程序”中为 Cppcheck 配置编辑应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="750"/>
+        <location filename="resultstree.cpp" line="745"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2051,12 +2051,12 @@ Please select the default editor application in preferences/Applications.</sourc
 请在“首先项 / 应用程序”中选择默认应用程序。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="776"/>
+        <location filename="resultstree.cpp" line="771"/>
         <source>Could not find the file!</source>
         <translation>找不到文件！</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="822"/>
+        <location filename="resultstree.cpp" line="818"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2065,52 +2065,52 @@ Please check the application path and parameters are correct.</source>
 请检查此应用程序的路径与参数是否正确。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="844"/>
+        <location filename="resultstree.cpp" line="840"/>
         <source>Select Directory</source>
         <translation>选择目录</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Inconclusive</source>
         <translation>不确定的</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Since date</source>
         <translation>日期</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="333"/>
+        <location filename="resultstree.cpp" line="328"/>
         <source>style</source>
         <translation>风格</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="336"/>
+        <location filename="resultstree.cpp" line="331"/>
         <source>error</source>
         <translation>错误</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="339"/>
+        <location filename="resultstree.cpp" line="334"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="342"/>
+        <location filename="resultstree.cpp" line="337"/>
         <source>performance</source>
         <translation>性能</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="345"/>
+        <location filename="resultstree.cpp" line="340"/>
         <source>portability</source>
         <translation>移植可能性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="348"/>
+        <location filename="resultstree.cpp" line="343"/>
         <source>information</source>
         <translation>信息</translation>
     </message>
@@ -2746,7 +2746,7 @@ To toggle what kind of errors are shown, open view menu.</source>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="124"/>
+        <location filename="translationhandler.cpp" line="125"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -2759,7 +2759,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 用户界面语言已被重置为英语。打开“首选项”对话框，选择任何可用的语言。</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="130"/>
+        <location filename="translationhandler.cpp" line="131"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>

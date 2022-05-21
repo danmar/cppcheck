@@ -1816,6 +1816,13 @@ private:
               "void f(S s) {}\n");
         ASSERT_EQUALS("[test.cpp:2]: (performance) Function parameter 's' should be passed by const reference.\n", errout.str());
 
+        check("union U {\n" // don't crash
+              "    int a;\n"
+              "    decltype(nullptr) b;\n"
+              "};\n"
+              "int* f(U u) { return u.b; }\n");
+        ASSERT_EQUALS("", errout.str());
+
         Settings settings1;
         settings1.platform(Settings::Win64);
         check("using ui64 = unsigned __int64;\n"

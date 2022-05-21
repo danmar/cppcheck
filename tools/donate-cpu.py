@@ -191,7 +191,11 @@ while True:
     if tgz is None:
         print("No package downloaded")
         continue
-    if not unpack_package(work_path, tgz):
+    skip_files = None
+    if package.find('/qtcreator/') > 0:
+        # macro_pounder_fn.c is a preprocessor torture test that takes time to finish
+        skip_files = ('macro_pounder_fn.c',)
+    if not unpack_package(work_path, tgz, skip_files=skip_files):
         print("No files to process")
         continue
     crash = False
