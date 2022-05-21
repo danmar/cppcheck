@@ -2050,6 +2050,9 @@ T* getTokenArgumentFunctionImpl(T* tok, int& argn)
         tok = tok->link()->previous();
     if (!Token::Match(tok, "%name%|(|{"))
         return nullptr;
+    // Skip labels
+    if (Token::Match(tok, "%name% :"))
+        return nullptr;
     return tok;
 }
 
