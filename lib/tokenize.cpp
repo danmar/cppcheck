@@ -3748,6 +3748,13 @@ void Tokenizer::setVarIdPass1()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->isOp())
             continue;
+        if (isCPP() && Token::Match(tok, "template <")) {
+            Token* closingBracket = tok->next()->findClosingBracket();
+            if (closingBracket)
+                tok = closingBracket;
+            continue;
+        }
+
         if (tok == functionDeclEndToken) {
             functionDeclEndStack.pop();
             functionDeclEndToken = functionDeclEndStack.empty() ? nullptr : functionDeclEndStack.top();
