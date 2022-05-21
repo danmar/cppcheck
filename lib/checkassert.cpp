@@ -166,8 +166,7 @@ bool CheckAssert::isFunctionWithSideEffect(const Function *function, ArgumentChe
     if (!scope) return false;
 
     if (function->isConstructor()) {
-        const auto *initializationList =
-                function->constructorMemberInitialization();
+        const auto *initializationList = function->constructorMemberInitialization();
         if (initializationList) {
             for (const Token *tok = initializationList; tok != scope->bodyStart; tok = tok->next()) {
                 if (tok->tokType() == Token::eIncDecOp) {
@@ -262,7 +261,7 @@ bool CheckAssert::checkArgument(const Token *modifyOperator, const Function *fun
  */
 const Variable *CheckAssert::findPassedVariable(const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking) {
     const Variable *variable = nullptr;
-    for( int paramCtr = 0; paramCtr < argsChecking.arguments->size(); paramCtr++) {
+    for (int paramCtr = 0; paramCtr < argsChecking.arguments->size(); paramCtr++) {
         const Variable *arg = function->getArgumentVar(paramCtr);
         if (arg == parameter) {
             variable = argsChecking.arguments->at(paramCtr)->variable();
