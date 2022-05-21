@@ -6616,11 +6616,11 @@ private:
         valueOfTok(code, "age");
 
         code = "void a() {\n"
-                "  struct b {\n"
-                "    int d;\n"
-                "  };\n"
-                "  for (b c : {b{}, {}}) {}\n"
-                "}\n";
+               "  struct b {\n"
+               "    int d;\n"
+               "  };\n"
+               "  for (b c : {b{}, {}}) {}\n"
+               "}\n";
         valueOfTok(code, "c");
     }
 
