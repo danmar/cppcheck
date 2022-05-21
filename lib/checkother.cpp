@@ -1178,7 +1178,7 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             size = settings->sizeof_pointer;
         else if (var.type() && var.type()->classScope)
             size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth+1);
-        else if (var.valueType()->type == ValueType::Type::CONTAINER)
+        else if (var.valueType() && var.valueType()->type == ValueType::Type::CONTAINER)
             size = 3 * settings->sizeof_pointer; // Just guess
         else
             size = symbolDatabase->sizeOfType(var.typeStartToken());
