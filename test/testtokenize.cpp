@@ -6901,6 +6901,14 @@ private:
                                              "  ~a();\n"
                                              "};\n"
                                              "void d() { a::b<int>(); }\n"));
+
+        // #11090
+        ASSERT_NO_THROW(tokenizeAndStringify("using a = char;\n"
+                                             "using c = int;\n"
+                                             "template <typename = void> struct d {};\n"
+                                             "using b = c;\n"
+                                             "template <> struct d<b> : d<a> {};\n"
+                                             "template <> struct d<> : d<a> {};\n"));
     }
 
     void checkNamespaces() {
