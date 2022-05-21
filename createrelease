@@ -30,7 +30,7 @@
 # git checkout -b 2.6.x ; git push -u origin 2.6.x
 #
 # Update version numbers in:
-# sed -i -r "s/version 2[.][0-9]+([.]99)*/2.7/" cli/main.cpp
+# sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.7/" cli/main.cpp
 # sed -i -r "s|2[.][0-9]+([.]99)*|2.7|" cmake/versions.cmake
 # sed -i -r "s/MINOR [0-9]+/MINOR 7/" lib/version.h
 # sed -i -r "s/2[.][0-9]+([.]99)*/2.7/" win_installer/productInfo.wxi
