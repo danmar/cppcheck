@@ -1884,6 +1884,8 @@ namespace {
         }
 
         bool findTypeInBase(const std::string &scope) const {
+            if (scope.empty())
+                return false;
             // check in base types first
             if (baseTypes.find(scope) != baseTypes.end())
                 return true;
