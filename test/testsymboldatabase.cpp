@@ -7740,6 +7740,7 @@ private:
         ASSERT_EQUALS("const signed int", typeOf("; const auto x = 3;", "x"));
         ASSERT_EQUALS("const signed int", typeOf("; constexpr auto x = 3;", "x"));
         ASSERT_EQUALS("const signed int", typeOf("; const constexpr auto x = 3;", "x"));
+        ASSERT_EQUALS("void * const", typeOf("typedef void* HWND; const HWND x = 0;", "x"));
 
         // Variable declaration
         ASSERT_EQUALS("char *", typeOf("; char abc[] = \"abc\";", "["));

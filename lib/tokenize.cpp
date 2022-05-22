@@ -1425,12 +1425,18 @@ void Tokenizer::simplifyTypedef()
                             removed1.resize(idx);
                         }
                     }
+                    Token* constTok = Token::simpleMatch(tok2->previous(), "const") ? tok2->previous() : nullptr;
                     // add remainder of type
                     tok2 = TokenList::copyTokens(tok2, typeStart->next(), typeEnd);
 
                     if (!pointers.empty()) {
                         for (const std::string &p : pointers) {
                             tok2->insertToken(p);
+                            tok2 = tok2->next();
+                        }
+                        if (constTok) {
+                            constTok->deleteThis();
+                            tok2->insertToken("const");
                             tok2 = tok2->next();
                         }
                     }
