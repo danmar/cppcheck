@@ -4686,7 +4686,7 @@ private:
                               "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used.\n"
                            "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
-                           "",
+                           "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
                            errout.str());
     }
 
