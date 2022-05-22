@@ -328,8 +328,14 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     args += fileArg;
 
     std::string result;
-    if (!executeCommand(pythonExe, split(args), redirect, &result))
-        throw InternalError(nullptr, "Failed to execute addon (command: '" + pythonExe + " " + args + "')");
+    if (!executeCommand(pythonExe, split(args), redirect, &result)) {
+        std::string message("Failed to execute addon (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
+        if (result.size() > 2) {
+            message = message + "\n" + message + "\nOutput:\n" + result;
+            message = message.substr(0,message.find_last_not_of("\n\r"));
+        }
+        throw InternalError(nullptr, message);
+    }
 
     // Validate output..
     std::istringstream istr(result);

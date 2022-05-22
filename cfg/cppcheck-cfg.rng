@@ -273,7 +273,7 @@
                 <optional>
                   <element name="valid">
                     <data type="string"> <!-- regex test: https://regex101.com/r/LoRGVj/2/ -->
-                      <param name="pattern">(-?[0-9]*(\.[0-9]+)?([eE][-+]?[0-9]+)?[,:])*([-]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?)?</param>
+                      <param name="pattern">([-!]?[0-9]*(\.[0-9]+)?([eE][-+]?[0-9]+)?[,:])*([-!]?[0-9]+(\.[0-9]+)?([eE][-+]?[0-9]+)?)?</param>
                     </data>
                   </element>
                 </optional>

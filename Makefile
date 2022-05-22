@@ -12,13 +12,13 @@ ifeq ($(SRCDIR),build)
 endif
 ifeq ($(MATCHCOMPILER),yes)
     # Find available Python interpreter
-    ifndef PYTHON_INTERPRETER
+    ifeq ($(PYTHON_INTERPRETER),)
         PYTHON_INTERPRETER := $(shell which python3)
     endif
-    ifndef PYTHON_INTERPRETER
+    ifeq ($(PYTHON_INTERPRETER),)
         PYTHON_INTERPRETER := $(shell which python)
     endif
-    ifndef PYTHON_INTERPRETER
+    ifeq ($(PYTHON_INTERPRETER),)
         $(error Did not find a Python interpreter)
     endif
     ifdef VERIFY
@@ -304,7 +304,7 @@ run-dmake: dmake
 	./dmake
 
 clean:
-	rm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1
+	rm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1
 
 man:	man/cppcheck.1
 
@@ -383,7 +383,10 @@ validateXML: createXMLExamples
 	xmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml
 
 checkCWEEntries: /tmp/errorlist.xml
-	./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml
+	$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python3)))
+	$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python)))
+	$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(error Did not find a Python interpreter)))
+	$(PYTHON_INTERPRETER) tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml
 .PHONY: validateRules
 validateRules:
 	xmllint --noout rules/*.xml

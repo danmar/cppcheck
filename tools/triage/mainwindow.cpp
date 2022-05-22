@@ -263,7 +263,7 @@ void MainWindow::showResult(QListWidgetItem *item)
     const QStringList lines = item->text().split("\n");
     if (lines.size() < 2)
         return;
-    const QString url = lines[0];
+    const QString &url = lines[0];
     QString msg = lines[1];
     const QRegularExpressionMatch matchRes = mVersionRe.match(msg);
     if (matchRes.hasMatch())

@@ -131,13 +131,7 @@ static void bailoutInternal(const std::string& type, TokenList *tokenlist, Error
     errorLogger->reportErr(errmsg);
 }
 
-#if (defined __cplusplus) && __cplusplus >= 201103L
 #define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __func__)
-#elif (defined __GNUC__) || (defined __clang__) || (defined _MSC_VER)
-#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, __FUNCTION__)
-#else
-#define bailout2(type, tokenlist, errorLogger, tok, what) bailoutInternal(type, tokenlist, errorLogger, tok, what, __FILE__, __LINE__, "(valueFlow)")
-#endif
 
 #define bailout(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailout", tokenlist, errorLogger, tok, what)
 
@@ -311,22 +305,37 @@ static std::vector<ValueType> getParentValueTypes(const Token* tok,
     } else if (Token::Match(tok->astParent(), "(|{|,")) {
         int argn = -1;
         const Token* ftok = getTokenArgumentFunction(tok, argn);
-        if (ftok && ftok->function()) {
-            std::vector<ValueType> result;
-            std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
-            const Token* nameTok = nullptr;
-            for (const Variable* var : getArgumentVars(ftok, argn)) {
-                if (!var)
-                    continue;
-                if (!var->valueType())
-                    continue;
-                nameTok = var->nameToken();
-                result.push_back(*var->valueType());
+        const Token* typeTok = nullptr;
+        if (ftok && argn >= 0) {
+            if (ftok->function()) {
+                std::vector<ValueType> result;
+                std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
+                const Token* nameTok = nullptr;
+                for (const Variable* var : getArgumentVars(ftok, argn)) {
+                    if (!var)
+                        continue;
+                    if (!var->valueType())
+                        continue;
+                    nameTok = var->nameToken();
+                    result.push_back(*var->valueType());
+                }
+                if (result.size() == 1 && nameTok && parent) {
+                    *parent = nameTok;
+                }
+                return result;
+            } else if (const Type* t = Token::typeOf(ftok, &typeTok)) {
+                if (astIsPointer(typeTok))
+                    return {*typeTok->valueType()};
+                const Scope* scope = t->classScope;
+                // Check for aggregate constructors
+                if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
+                    (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) < scope->varlist.size()) {
+                    assert(argn < scope->varlist.size());
+                    auto it = std::next(scope->varlist.begin(), argn);
+                    if (it->valueType())
+                        return {*it->valueType()};
+                }
             }
-            if (result.size() == 1 && nameTok && parent) {
-                *parent = nameTok;
-            }
-            return result;
         }
     }
     if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
@@ -3293,6 +3302,14 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
             return LifetimeToken::setAddressOf(getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1),
                                                !(astIsContainer(vartok) && Token::simpleMatch(vartok->astParent(), "[")));
         }
+    } else if (Token::simpleMatch(tok, "{") && getArgumentStart(tok) &&
+               !Token::simpleMatch(getArgumentStart(tok), ",") && getArgumentStart(tok)->valueType()) {
+        const Token* vartok = getArgumentStart(tok);
+        auto vts = getParentValueTypes(tok);
+        for (const ValueType& vt : vts) {
+            if (vt.isTypeEqual(vartok->valueType()))
+                return getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1);
+        }
     }
     return {{tok, std::move(errorPath)}};
 }
@@ -4216,7 +4233,15 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
     }
 
     for (const ValueType& vt : vts) {
-        if (vt.container && vt.type == ValueType::CONTAINER) {
+        if (vt.pointer > 0) {
+            std::vector<const Token*> args = getArguments(tok);
+            LifetimeStore::forEach(args,
+                                   "Passed to initializer list.",
+                                   ValueFlow::Value::LifetimeKind::SubObject,
+                                   [&](const LifetimeStore& ls) {
+                ls.byVal(tok, tokenlist, errorLogger, settings);
+            });
+        } else if (vt.container && vt.type == ValueType::CONTAINER) {
             std::vector<const Token*> args = getArguments(tok);
             if (args.size() == 1 && vt.container->view && astIsContainerOwned(args.front())) {
                 LifetimeStore{args.front(), "Passed to container view.", ValueFlow::Value::LifetimeKind::SubObject}
@@ -4238,7 +4263,12 @@ static void valueFlowLifetimeConstructor(Token* tok, TokenList* tokenlist, Error
                 });
             }
         } else {
-            valueFlowLifetimeClassConstructor(tok, Token::typeOf(tok->previous()), tokenlist, errorLogger, settings);
+            const Type* t = nullptr;
+            if (vt.typeScope && vt.typeScope->definedType)
+                t = vt.typeScope->definedType;
+            else
+                t = Token::typeOf(tok->previous());
+            valueFlowLifetimeClassConstructor(tok, t, tokenlist, errorLogger, settings);
         }
     }
 }
@@ -4544,7 +4574,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             valueFlowForwardLifetime(parent->tokAt(2), tokenlist, errorLogger, settings);
         }
         // Check constructors
-        else if (Token::Match(tok, "=|return|%type%|%var% {") && !isScope(tok->next())) {
+        else if (Token::Match(tok, "=|return|%name%|{|,|> {") && !isScope(tok->next())) {
             valueFlowLifetimeConstructor(tok->next(), tokenlist, errorLogger, settings);
         }
         // Check function calls
@@ -6313,6 +6343,8 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                                      ErrorLogger* errorLogger,
                                      const Settings* settings)
 {
+    // TODO: Refactor this to use arbitary expressions
+    assert(expr->varId() > 0);
     const Token * const bodyEnd = bodyStart->link();
 
     // Is variable modified inside for loop
@@ -6482,24 +6514,26 @@ static void valueFlowForLoop(TokenList *tokenlist, SymbolDatabase* symboldatabas
         } else {
             ProgramMemory mem1, mem2, memAfter;
             if (valueFlowForLoop2(tok, &mem1, &mem2, &memAfter)) {
-                ProgramMemory::Map::const_iterator it;
-                for (it = mem1.begin(); it != mem1.end(); ++it) {
-                    if (!it->second.isIntValue())
+                for (const auto& p : mem1) {
+                    if (!p.second.isIntValue())
                         continue;
-                    valueFlowForLoopSimplify(
-                        bodyStart, it->first.tok, false, it->second.intvalue, tokenlist, errorLogger, settings);
+                    if (p.first.tok->varId() == 0)
+                        continue;
+                    valueFlowForLoopSimplify(bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
                 }
-                for (it = mem2.begin(); it != mem2.end(); ++it) {
-                    if (!it->second.isIntValue())
+                for (const auto& p : mem2) {
+                    if (!p.second.isIntValue())
                         continue;
-                    valueFlowForLoopSimplify(
-                        bodyStart, it->first.tok, false, it->second.intvalue, tokenlist, errorLogger, settings);
+                    if (p.first.tok->varId() == 0)
+                        continue;
+                    valueFlowForLoopSimplify(bodyStart, p.first.tok, false, p.second.intvalue, tokenlist, errorLogger, settings);
                 }
-                for (it = memAfter.begin(); it != memAfter.end(); ++it) {
-                    if (!it->second.isIntValue())
+                for (const auto& p : memAfter) {
+                    if (!p.second.isIntValue())
                         continue;
-                    valueFlowForLoopSimplifyAfter(
-                        tok, it->first.getExpressionId(), it->second.intvalue, tokenlist, settings);
+                    if (p.first.tok->varId() == 0)
+                        continue;
+                    valueFlowForLoopSimplifyAfter(tok, p.first.getExpressionId(), p.second.intvalue, tokenlist, settings);
                 }
             }
         }
