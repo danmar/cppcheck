@@ -3073,6 +3073,12 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' can be declared with const\n"
                       "[test.cpp:4]: (style) Variable 'b' can be declared with const\n",
                       errout.str());
+
+        check("typedef void* HWND;\n"
+              "void f(const HWND h) {\n"
+              "    if (h == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'h' can be declared with const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
