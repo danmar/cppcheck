@@ -5498,6 +5498,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " isImplicitInt=\"true\"";
         if (tok->isComplex())
             out << " isComplex=\"true\"";
+        if (tok->isRestrict())
+            out << " isRestrict=\"true\"";
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
@@ -11249,11 +11251,14 @@ void Tokenizer::simplifyKeyword()
         if (keywords.find(tok->str()) != keywords.end()) {
             // Don't remove struct members
             if (!Token::simpleMatch(tok->previous(), ".")) {
-                if (tok->str().find("inline") != std::string::npos) {
-                    Token *temp = tok->next();
-                    while (temp != nullptr && Token::Match(temp, "%name%")) {
-                        temp->isInline(true);
-                        temp = temp->next();
+                const bool isinline = (tok->str().find("inline") != std::string::npos);
+                const bool isrestrict = (tok->str().find("restrict") != std::string::npos);
+                if (isinline || isrestrict) {
+                    for (Token *temp = tok->next(); Token::Match(temp, "%name%"); temp = temp->next()) {
+                        if (isinline)
+                            temp->isInline(true);
+                        if (isrestrict)
+                            temp->isRestrict(true);
                     }
                 }
                 tok->deleteThis(); // Simplify..
@@ -11271,8 +11276,12 @@ void Tokenizer::simplifyKeyword()
             tok->deleteNext();
 
         if (c99) {
-            while (tok->str() == "restrict")
+            if (tok->str() == "restrict") {
+                for (Token *temp = tok->next(); Token::Match(temp, "%name%"); temp = temp->next()) {
+                    temp->isRestrict(true);
+                }
                 tok->deleteThis();
+            }
 
             if (mSettings->standards.c >= Standards::C11) {
                 while (tok->str() == "_Atomic")

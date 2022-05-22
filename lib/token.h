@@ -651,6 +651,13 @@ public:
         setFlag(fIsInline, b);
     }
 
+    bool isRestrict() const {
+        return getFlag(fIsRestrict);
+    }
+    void isRestrict(bool b) {
+        setFlag(fIsRestrict, b);
+    }
+
     bool isRemovedVoidParameter() const {
         return getFlag(fIsRemovedVoidParameter);
     }
@@ -1277,6 +1284,7 @@ private:
         fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ...; ...)
         fIsRemovedVoidParameter = (1ULL << 35), // A void function parameter has been removed
         fIsIncompleteConstant   = (1ULL << 36),
+        fIsRestrict             = (1ULL << 37), // Is this a restrict pointer type
     };
 
     Token::Type mTokType;
