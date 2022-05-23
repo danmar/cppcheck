@@ -1813,20 +1813,84 @@ static void valueFlowGlobalStaticVar(TokenList *tokenList, const Settings *setti
     }
 }
 
+ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist);
+ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist);
+
+static Analyzer::Result valueFlowForward(Token* startToken,
+                                         const Token* endToken,
+                                         const Token* exprTok,
+                                         const ValueFlow::Value& value,
+                                         TokenList* const tokenlist,
+                                         const Settings* = nullptr)
+{
+    return valueFlowGenericForward(startToken, endToken, makeAnalyzer(exprTok, value, tokenlist), tokenlist->getSettings());
+}
+
 static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
                                          const std::list<ValueFlow::Value>& values,
                                          TokenList* const tokenlist,
-                                         const Settings* settings);
+                                         const Settings* = nullptr)
+{
+    Analyzer::Result result{};
+    for (const ValueFlow::Value& v : values) {
+        result.update(valueFlowForward(startToken, endToken, exprTok, v, tokenlist));
+    }
+    return result;
+}
+
+
+static Analyzer::Result valueFlowForward(Token* startToken,
+                                                  const Token* exprTok,
+                                                  const ValueFlow::Value& value,
+                                                  TokenList* tokenlist)
+{
+    const Token* endToken = nullptr;
+    const Function* f = Scope::nestedInFunction(startToken->scope());
+    if (f && f->functionScope)
+        endToken = f->functionScope->bodyEnd;
+    return valueFlowForward(startToken, endToken, exprTok, value, tokenlist);
+}
+
+static Analyzer::Result valueFlowForwardRecursive(Token* top,
+                                         const Token* exprTok,
+                                         const std::list<ValueFlow::Value>& values,
+                                         TokenList* const tokenlist,
+                                         const Settings* = nullptr)
+{
+    Analyzer::Result result{};
+    for (const ValueFlow::Value& v : values) {
+        result.update(valueFlowGenericForward(top, makeAnalyzer(exprTok, v, tokenlist), tokenlist->getSettings()));
+    }
+    return result;
+}
+
+static void valueFlowReverse(Token* tok,
+                             const Token* const endToken,
+                             const Token* const varToken,
+                             const std::list<ValueFlow::Value>& values,
+                             TokenList* tokenlist,
+                             const Settings* = nullptr)
+{
+    for (const ValueFlow::Value& v : values) {
+        valueFlowGenericReverse(tok, endToken, makeReverseAnalyzer(varToken, v, tokenlist), tokenlist->getSettings());
+    }
+}
 
 static void valueFlowReverse(TokenList* tokenlist,
                              Token* tok,
                              const Token* const varToken,
                              ValueFlow::Value val,
                              const ValueFlow::Value& val2,
-                             ErrorLogger* errorLogger,
-                             const Settings* settings);
+                             ErrorLogger* /*errorLogger*/,
+                             const Settings* = nullptr)
+{
+    std::list<ValueFlow::Value> values = {val};
+    if (val2.varId != 0)
+        values.push_back(val2);
+    valueFlowReverse(tok, nullptr, varToken, values, tokenlist);
+}
 
 static bool isConditionKnown(const Token* tok, bool then)
 {
@@ -2633,8 +2697,6 @@ struct ValueFlowAnalyzer : Analyzer {
     }
 };
 
-ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist);
-
 struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
     std::unordered_map<nonneg int, const Variable*> varids;
     std::unordered_map<nonneg int, const Variable*> aliases;
@@ -2943,147 +3005,6 @@ static Analyzer::Result valueFlowForwardExpression(Token* startToken,
         result.update(valueFlowGenericForward(startToken, endToken, a, settings));
     }
     return result;
-}
-
-static const Token* parseBinaryIntOp(const Token* expr,
-                                     const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
-                                     MathLib::bigint& known)
-{
-    if (!expr)
-        return nullptr;
-    if (!expr->astOperand1() || !expr->astOperand2())
-        return nullptr;
-    if (expr->astOperand1()->exprId() == 0 && expr->astOperand2()->exprId() == 0)
-        return nullptr;
-    std::vector<MathLib::bigint> x1 = eval(expr->astOperand1());
-    std::vector<MathLib::bigint> x2 = eval(expr->astOperand2());
-    if (expr->astOperand1()->exprId() == 0 && x1.empty())
-        return nullptr;
-    if (expr->astOperand2()->exprId() == 0 && x2.empty())
-        return nullptr;
-    const Token* varTok = nullptr;
-    if (!x1.empty() && x2.empty()) {
-        varTok = expr->astOperand2();
-        known = x1.front();
-    } else if (x1.empty() && !x2.empty()) {
-        varTok = expr->astOperand1();
-        known = x2.front();
-    }
-    return varTok;
-}
-
-const Token* solveExprValue(const Token* expr,
-                            const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
-                            ValueFlow::Value& value)
-{
-    if (!value.isIntValue() && !value.isIteratorValue() && !value.isSymbolicValue())
-        return expr;
-    if (value.isSymbolicValue() && !Token::Match(expr, "+|-"))
-        return expr;
-    MathLib::bigint intval;
-    const Token* binaryTok = parseBinaryIntOp(expr, eval, intval);
-    bool rhs = astIsRHS(binaryTok);
-    // If its on the rhs, then -1 multiplication is needed, which is not possible with simple delta analysis used currently for symbolic values
-    if (value.isSymbolicValue() && rhs && Token::simpleMatch(expr, "-"))
-        return expr;
-    if (binaryTok && expr->str().size() == 1) {
-        switch (expr->str()[0]) {
-        case '+': {
-            value.intvalue -= intval;
-            return solveExprValue(binaryTok, eval, value);
-        }
-        case '-': {
-            if (rhs)
-                value.intvalue = intval - value.intvalue;
-            else
-                value.intvalue += intval;
-            return solveExprValue(binaryTok, eval, value);
-        }
-        case '*': {
-            if (intval == 0)
-                break;
-            value.intvalue /= intval;
-            return solveExprValue(binaryTok, eval, value);
-        }
-        case '^': {
-            value.intvalue ^= intval;
-            return solveExprValue(binaryTok, eval, value);
-        }
-        }
-    }
-    return expr;
-}
-
-static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
-{
-    return solveExprValue(
-        expr,
-        [](const Token* tok) -> std::vector<MathLib::bigint> {
-        if (tok->hasKnownIntValue())
-            return {tok->values().front().intvalue};
-        return {};
-    },
-        value);
-}
-
-ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist)
-{
-    const Token* expr = solveExprValue(exprTok, value);
-    return ExpressionAnalyzer(expr, value, tokenlist);
-}
-
-static Analyzer::Result valueFlowForward(Token* startToken,
-                                         const Token* endToken,
-                                         const Token* exprTok,
-                                         const std::list<ValueFlow::Value>& values,
-                                         TokenList* const tokenlist,
-                                         const Settings* settings)
-{
-    Analyzer::Result result{};
-    for (const ValueFlow::Value& v : values) {
-        result.update(valueFlowGenericForward(startToken, endToken, makeAnalyzer(exprTok, v, tokenlist), settings));
-    }
-    return result;
-}
-
-static Analyzer::Result valueFlowForward(Token* top,
-                                         const Token* exprTok,
-                                         const std::list<ValueFlow::Value>& values,
-                                         TokenList* const tokenlist,
-                                         const Settings* settings)
-{
-    Analyzer::Result result{};
-    for (const ValueFlow::Value& v : values) {
-        result.update(valueFlowGenericForward(top, makeAnalyzer(exprTok, v, tokenlist), settings));
-    }
-    return result;
-}
-
-static void valueFlowReverse(Token* tok,
-                             const Token* const endToken,
-                             const Token* const varToken,
-                             const std::list<ValueFlow::Value>& values,
-                             TokenList* tokenlist,
-                             const Settings* settings)
-{
-    for (const ValueFlow::Value& v : values) {
-        ExpressionAnalyzer a(varToken, v, tokenlist);
-        valueFlowGenericReverse(tok, endToken, a, settings);
-    }
-}
-
-static void valueFlowReverse(TokenList* tokenlist,
-                             Token* tok,
-                             const Token* const varToken,
-                             ValueFlow::Value val,
-                             const ValueFlow::Value& val2,
-                             ErrorLogger* /*errorLogger*/,
-                             const Settings* settings)
-{
-    std::list<ValueFlow::Value> values = {val};
-    if (val2.varId != 0)
-        values.push_back(val2);
-    valueFlowReverse(tok, nullptr, varToken, values, tokenlist, settings);
 }
 
 enum class LifetimeCapture { Undefined, ByValue, ByReference };
@@ -6058,7 +5979,7 @@ struct SimpleConditionHandler : ConditionHandler {
                                      const std::list<ValueFlow::Value>& values,
                                      TokenList* tokenlist,
                                      const Settings* settings) const override {
-        return valueFlowForward(top, exprTok, values, tokenlist, settings);
+        return valueFlowForwardRecursive(top, exprTok, values, tokenlist, settings);
     }
 
     virtual void reverse(Token* start,
@@ -7407,6 +7328,102 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
         return read;
     }
 };
+
+static const Token* parseBinaryIntOp(const Token* expr,
+                                     const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                                     MathLib::bigint& known)
+{
+    if (!expr)
+        return nullptr;
+    if (!expr->astOperand1() || !expr->astOperand2())
+        return nullptr;
+    if (expr->astOperand1()->exprId() == 0 && expr->astOperand2()->exprId() == 0)
+        return nullptr;
+    std::vector<MathLib::bigint> x1 = eval(expr->astOperand1());
+    std::vector<MathLib::bigint> x2 = eval(expr->astOperand2());
+    if (expr->astOperand1()->exprId() == 0 && x1.empty())
+        return nullptr;
+    if (expr->astOperand2()->exprId() == 0 && x2.empty())
+        return nullptr;
+    const Token* varTok = nullptr;
+    if (!x1.empty() && x2.empty()) {
+        varTok = expr->astOperand2();
+        known = x1.front();
+    } else if (x1.empty() && !x2.empty()) {
+        varTok = expr->astOperand1();
+        known = x2.front();
+    }
+    return varTok;
+}
+
+const Token* solveExprValue(const Token* expr,
+                            const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                            ValueFlow::Value& value)
+{
+    if (!value.isIntValue() && !value.isIteratorValue() && !value.isSymbolicValue())
+        return expr;
+    if (value.isSymbolicValue() && !Token::Match(expr, "+|-"))
+        return expr;
+    MathLib::bigint intval;
+    const Token* binaryTok = parseBinaryIntOp(expr, eval, intval);
+    bool rhs = astIsRHS(binaryTok);
+    // If its on the rhs, then -1 multiplication is needed, which is not possible with simple delta analysis used currently for symbolic values
+    if (value.isSymbolicValue() && rhs && Token::simpleMatch(expr, "-"))
+        return expr;
+    if (binaryTok && expr->str().size() == 1) {
+        switch (expr->str()[0]) {
+        case '+': {
+            value.intvalue -= intval;
+            return solveExprValue(binaryTok, eval, value);
+        }
+        case '-': {
+            if (rhs)
+                value.intvalue = intval - value.intvalue;
+            else
+                value.intvalue += intval;
+            return solveExprValue(binaryTok, eval, value);
+        }
+        case '*': {
+            if (intval == 0)
+                break;
+            value.intvalue /= intval;
+            return solveExprValue(binaryTok, eval, value);
+        }
+        case '^': {
+            value.intvalue ^= intval;
+            return solveExprValue(binaryTok, eval, value);
+        }
+        }
+    }
+    return expr;
+}
+
+static const Token* solveExprValue(const Token* expr, ValueFlow::Value& value)
+{
+    return solveExprValue(
+        expr,
+        [](const Token* tok) -> std::vector<MathLib::bigint> {
+        if (tok->hasKnownIntValue())
+            return {tok->values().front().intvalue};
+        return {};
+    },
+        value);
+}
+
+ValuePtr<Analyzer> makeAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist)
+{
+    if (value.isContainerSizeValue())
+        return ContainerExpressionAnalyzer(exprTok, value, tokenlist);
+    const Token* expr = solveExprValue(exprTok, value);
+    return ExpressionAnalyzer(expr, value, tokenlist);
+}
+
+ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, ValueFlow::Value value, const TokenList* tokenlist)
+{
+    if (value.isContainerSizeValue())
+        return ContainerExpressionAnalyzer(exprTok, value, tokenlist);
+    return ExpressionAnalyzer(exprTok, value, tokenlist);
+}
 
 static Analyzer::Result valueFlowContainerForward(Token* startToken,
                                                   const Token* endToken,
