@@ -1404,7 +1404,7 @@ static void valueFlowArrayElement(TokenList *tokenlist, const Settings* settings
                     }
                 } else if (Token::simpleMatch(arrayValue.tokvalue, "{")) {
                     std::vector<const Token*> args = getArguments(arrayValue.tokvalue);
-                    if (index < 0 && index >= args.size())
+                    if (index < 0 || index >= args.size())
                         continue;
                     const Token* arg = args[index];
                     if (!arg->hasKnownIntValue())
