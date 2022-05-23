@@ -1840,17 +1840,17 @@ static Analyzer::Result valueFlowForward(Token* startToken,
     return result;
 }
 
-
+template<class ValueOrValues>
 static Analyzer::Result valueFlowForward(Token* startToken,
                                                   const Token* exprTok,
-                                                  const ValueFlow::Value& value,
+                                                  const ValueOrValues& v,
                                                   TokenList* tokenlist)
 {
     const Token* endToken = nullptr;
     const Function* f = Scope::nestedInFunction(startToken->scope());
     if (f && f->functionScope)
         endToken = f->functionScope->bodyEnd;
-    return valueFlowForward(startToken, endToken, exprTok, value, tokenlist);
+    return valueFlowForward(startToken, endToken, exprTok, v, tokenlist);
 }
 
 static Analyzer::Result valueFlowForwardRecursive(Token* top,
