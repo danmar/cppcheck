@@ -292,17 +292,22 @@ static void parseCompareEachInt(
     });
 }
 
-const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, 
-    const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
+const Token* parseCompareInt(const Token* tok,
+                             ValueFlow::Value& true_value,
+                             ValueFlow::Value& false_value,
+                             const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
 {
     const Token* result = nullptr;
-    parseCompareEachInt(tok, [&](const Token* vartok, ValueFlow::Value true_value2, ValueFlow::Value false_value2) {
+    parseCompareEachInt(
+        tok,
+        [&](const Token* vartok, ValueFlow::Value true_value2, ValueFlow::Value false_value2) {
         if (result)
             return;
         result = vartok;
         true_value = std::move(true_value2);
         false_value = std::move(false_value2);
-    }, evaluate);
+    },
+        evaluate);
     return result;
 }
 
