@@ -5451,7 +5451,7 @@ struct ConditionHandler {
 
         Condition() : vartok(nullptr), true_values(), false_values(), inverted(false), impossible(true) {}
     };
-    
+
     virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const = 0;
 
     virtual Analyzer::Result forward(Token* start,
@@ -7406,50 +7406,6 @@ ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, ValueFlow::Value va
     return ExpressionAnalyzer(exprTok, value, tokenlist);
 }
 
-static Analyzer::Result valueFlowContainerForward(Token* startToken,
-                                                  const Token* endToken,
-                                                  const Token* exprTok,
-                                                  const ValueFlow::Value& value,
-                                                  TokenList* tokenlist)
-{
-    ContainerExpressionAnalyzer a(exprTok, value, tokenlist);
-    return valueFlowGenericForward(startToken, endToken, a, tokenlist->getSettings());
-}
-
-static Analyzer::Result valueFlowContainerForwardRecursive(Token* top,
-                                                           const Token* exprTok,
-                                                           const ValueFlow::Value& value,
-                                                           TokenList* tokenlist)
-{
-    ContainerExpressionAnalyzer a(exprTok, value, tokenlist);
-    return valueFlowGenericForward(top, a, tokenlist->getSettings());
-}
-
-static Analyzer::Result valueFlowContainerForward(Token* startToken,
-                                                  const Token* exprTok,
-                                                  const ValueFlow::Value& value,
-                                                  TokenList* tokenlist)
-{
-    const Token* endToken = nullptr;
-    const Function* f = Scope::nestedInFunction(startToken->scope());
-    if (f && f->functionScope)
-        endToken = f->functionScope->bodyEnd;
-    return valueFlowContainerForward(startToken, endToken, exprTok, value, tokenlist);
-}
-
-static void valueFlowContainerReverse(Token* tok,
-                                      const Token* const endToken,
-                                      const Token* const varToken,
-                                      const std::list<ValueFlow::Value>& values,
-                                      TokenList* tokenlist,
-                                      const Settings* settings)
-{
-    for (const ValueFlow::Value& value : values) {
-        ContainerExpressionAnalyzer a(varToken, value, tokenlist);
-        valueFlowGenericReverse(tok, endToken, a, settings);
-    }
-}
-
 bool isContainerSizeChanged(const Token* tok, const Settings* settings, int depth)
 {
     if (!tok)
@@ -7863,7 +7819,7 @@ static void valueFlowContainerSize(TokenList* tokenlist,
             if (constSize)
                 valueFlowForwardConst(var->nameToken()->next(), var->scope()->bodyEnd, var, values, settings);
             else
-                valueFlowContainerForward(var->nameToken()->next(), var->nameToken(), value, tokenlist);
+                valueFlowForward(var->nameToken()->next(), var->nameToken(), value, tokenlist);
         }
     }
 
@@ -7878,7 +7834,7 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowContainerForward(containerTok->next(), containerTok, value, tokenlist);
+                    valueFlowForward(containerTok->next(), containerTok, value, tokenlist);
                 }
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
                 const Token* containerTok = tok->next();
@@ -7888,7 +7844,7 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                     std::vector<ValueFlow::Value> values =
                         getInitListSize(tok->tokAt(3), containerTok->valueType(), settings);
                     for (const ValueFlow::Value& value : values)
-                        valueFlowContainerForward(containerTok->next(), containerTok, value, tokenlist);
+                        valueFlowForward(containerTok->next(), containerTok, value, tokenlist);
                 }
             } else if (Token::Match(tok, ". %name% (") && tok->astOperand1() && tok->astOperand1()->valueType() &&
                        tok->astOperand1()->valueType()->container) {
@@ -7900,13 +7856,13 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                     ValueFlow::Value value(0);
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowContainerForward(tok->next(), containerTok, value, tokenlist);
+                    valueFlowForward(tok->next(), containerTok, value, tokenlist);
                 } else if (action == Library::Container::Action::RESIZE && tok->tokAt(2)->astOperand2() &&
                            tok->tokAt(2)->astOperand2()->hasKnownIntValue()) {
                     ValueFlow::Value value(tok->tokAt(2)->astOperand2()->values().front());
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
-                    valueFlowContainerForward(tok->next(), containerTok, value, tokenlist);
+                    valueFlowForward(tok->next(), containerTok, value, tokenlist);
                 }
             }
         }
@@ -8180,7 +8136,7 @@ static void valueFlowSafeFunctions(TokenList* tokenlist, SymbolDatabase* symbold
                 argValues.back().errorPath.emplace_back(arg.nameToken(), "Assuming " + arg.name() + " size is 1000000");
                 argValues.back().safe = true;
                 for (const ValueFlow::Value &value : argValues)
-                    valueFlowContainerForward(
+                    valueFlowForward(
                         const_cast<Token*>(functionScope->bodyStart), arg.nameToken(), value, tokenlist);
                 continue;
             }
