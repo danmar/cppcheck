@@ -8007,7 +8007,7 @@ struct ContainerConditionHandler : ConditionHandler {
             return conds;
 
         Condition cond;
-        const Token *vartok = nullptr;
+        const Token* vartok = nullptr;
 
         // Empty check
         if (tok->str() == "(") {
