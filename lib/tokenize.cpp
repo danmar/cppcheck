@@ -1379,6 +1379,8 @@ void Tokenizer::simplifyTypedef()
 
                     // start substituting at the typedef name by replacing it with the type
                     Token* replStart = tok2; // track first replaced token
+                    for (Token* tok3 = typeStart; tok3->str() != ";"; tok3 = tok3->next())
+                        tok3->isSimplifiedTypedef(true);
                     tok2->str(typeStart->str());
 
                     // restore qualification if it was removed
@@ -1434,11 +1436,13 @@ void Tokenizer::simplifyTypedef()
                     if (!pointers.empty()) {
                         for (const std::string &p : pointers) {
                             tok2->insertToken(p);
+                            tok2->isSimplifiedTypedef(true);
                             tok2 = tok2->next();
                         }
                         if (constTok) {
                             constTok->deleteThis();
                             tok2->insertToken("const");
+                            tok2->isSimplifiedTypedef(true);
                             tok2 = tok2->next();
                         }
                     }

@@ -3087,6 +3087,12 @@ private:
               "    if (h == nullptr) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("typedef int A;\n"
+              "void f(A* x) {\n"
+              "    if (x == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
     }
 
     void switchRedundantAssignmentTest() {

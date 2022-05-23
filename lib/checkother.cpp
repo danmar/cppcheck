@@ -1600,7 +1600,7 @@ void CheckOther::checkConstPointer()
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
             if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
                 continue;
-            if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef())
+            if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
                 continue;
             constVariableError(p, nullptr);
         }
