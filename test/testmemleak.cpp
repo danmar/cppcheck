@@ -1708,6 +1708,7 @@ private:
         TEST_CASE(assign1);
         TEST_CASE(assign2);
         TEST_CASE(assign3);
+        TEST_CASE(assign4); // #11019
 
         // Failed allocation
         TEST_CASE(failedAllocation);
@@ -1885,6 +1886,29 @@ private:
               "    *f1 = f2;\n"
               "}", false);
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign4() {
+        check("struct S { int a, b, c; };\n" // #11019
+              "void f() {\n"
+              "    struct S s;\n"
+              "    *&s.a = open(\"xx.log\", O_RDONLY);\n"
+              "    ((s).b) = open(\"xx.log\", O_RDONLY);\n"
+              "    (&s)->c = open(\"xx.log\", O_RDONLY);\n"
+              "}\n", false);
+        ASSERT_EQUALS("[test.c:7]: (error) Memory leak: s.a\n"
+                      "[test.c:7]: (error) Memory leak: s.b\n"
+                      "[test.c:7]: (error) Memory leak: s.c\n",
+                      errout.str());
+
+        check("struct S { int *p, *q; };\n" // #7705
+              "void f(S s) {\n"
+              "    s.p = new int[10];\n"
+              "    s.q = malloc(40);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: s.p\n"
+                      "[test.cpp:5]: (error) Memory leak: s.q\n",
+                      errout.str());
     }
 
     void failedAllocation() {
@@ -2137,7 +2161,7 @@ private:
               "  ((f)->realm) = strdup(realm);\n"
               "  if(f->realm == NULL) {}\n"
               "}", false);
-        TODO_ASSERT_EQUALS("[test.c:6]: (error) Memory leak: f.realm\n", "", errout.str());
+        ASSERT_EQUALS("[test.c:6]: (error) Memory leak: f.realm\n", errout.str());
     }
 
     void customAllocation() { // #4770
