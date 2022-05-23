@@ -5451,28 +5451,35 @@ struct ConditionHandler {
 
         Condition() : vartok(nullptr), true_values(), false_values(), inverted(false), impossible(true) {}
     };
+    
+    virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const = 0;
 
     virtual Analyzer::Result forward(Token* start,
                                      const Token* stop,
                                      const Token* exprTok,
                                      const std::list<ValueFlow::Value>& values,
                                      TokenList* tokenlist,
-                                     const Settings* settings) const = 0;
+                                     const Settings* settings) const {
+        return valueFlowForward(start->next(), stop, exprTok, values, tokenlist, settings);
+    }
 
     virtual Analyzer::Result forward(Token* top,
                                      const Token* exprTok,
                                      const std::list<ValueFlow::Value>& values,
                                      TokenList* tokenlist,
-                                     const Settings* settings) const = 0;
+                                     const Settings* settings) const {
+        return valueFlowForwardRecursive(top, exprTok, values, tokenlist, settings);
+    }
 
     virtual void reverse(Token* start,
                          const Token* endToken,
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
                          TokenList* tokenlist,
-                         const Settings* settings) const = 0;
+                         const Settings* settings) const {
+        return valueFlowReverse(start, endToken, exprTok, values, tokenlist, settings);
+    }
 
-    virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const = 0;
 
     void traverseCondition(TokenList* tokenlist,
                            SymbolDatabase* symboldatabase,
@@ -5965,32 +5972,6 @@ static void valueFlowCondition(const ValuePtr<ConditionHandler>& handler,
 }
 
 struct SimpleConditionHandler : ConditionHandler {
-    virtual Analyzer::Result forward(Token* start,
-                                     const Token* stop,
-                                     const Token* exprTok,
-                                     const std::list<ValueFlow::Value>& values,
-                                     TokenList* tokenlist,
-                                     const Settings* settings) const override {
-        return valueFlowForward(start->next(), stop, exprTok, values, tokenlist, settings);
-    }
-
-    virtual Analyzer::Result forward(Token* top,
-                                     const Token* exprTok,
-                                     const std::list<ValueFlow::Value>& values,
-                                     TokenList* tokenlist,
-                                     const Settings* settings) const override {
-        return valueFlowForwardRecursive(top, exprTok, values, tokenlist, settings);
-    }
-
-    virtual void reverse(Token* start,
-                         const Token* endToken,
-                         const Token* exprTok,
-                         const std::list<ValueFlow::Value>& values,
-                         TokenList* tokenlist,
-                         const Settings* settings) const override {
-        return valueFlowReverse(start, endToken, exprTok, values, tokenlist, settings);
-    }
-
     virtual std::vector<Condition> parse(const Token* tok, const Settings*) const override {
         Condition cond;
         ValueFlow::Value true_value;
@@ -7933,38 +7914,6 @@ static void valueFlowContainerSize(TokenList* tokenlist,
 }
 
 struct ContainerConditionHandler : ConditionHandler {
-    virtual Analyzer::Result forward(Token* start,
-                                     const Token* stop,
-                                     const Token* exprTok,
-                                     const std::list<ValueFlow::Value>& values,
-                                     TokenList* tokenlist,
-                                     const Settings*) const override {
-        Analyzer::Result result{};
-        for (const ValueFlow::Value& value : values)
-            result.update(valueFlowContainerForward(start->next(), stop, exprTok, value, tokenlist));
-        return result;
-    }
-
-    virtual Analyzer::Result forward(Token* top,
-                                     const Token* exprTok,
-                                     const std::list<ValueFlow::Value>& values,
-                                     TokenList* tokenlist,
-                                     const Settings*) const override {
-        Analyzer::Result result{};
-        for (const ValueFlow::Value& value : values)
-            result.update(valueFlowContainerForwardRecursive(top, exprTok, value, tokenlist));
-        return result;
-    }
-
-    virtual void reverse(Token* start,
-                         const Token* endTok,
-                         const Token* exprTok,
-                         const std::list<ValueFlow::Value>& values,
-                         TokenList* tokenlist,
-                         const Settings* settings) const override {
-        return valueFlowContainerReverse(start, endTok, exprTok, values, tokenlist, settings);
-    }
-
     virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const override
     {
         Condition cond;
