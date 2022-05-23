@@ -5314,7 +5314,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                     value.errorPath.emplace_back(tok,
                                                  tok->astOperand1()->expressionString() + " is assigned '" +
                                                  tok->astOperand2()->expressionString() + "' here.");
-                    valueFlowForward(start, end, expr, {value}, tokenlist);
+                    valueFlowForward(start, end, expr, value, tokenlist);
                 }
             }
         }
