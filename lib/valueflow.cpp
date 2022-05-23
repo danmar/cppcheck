@@ -1358,9 +1358,9 @@ static void valueFlowArrayBool(TokenList *tokenlist)
     }
 }
 
-static void valueFlowArrayElement(TokenList *tokenlist, const Settings* settings)
+static void valueFlowArrayElement(TokenList* tokenlist, const Settings* settings)
 {
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+    for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
         if (!Token::simpleMatch(tok, "["))
             continue;
         if (!tok->isBinaryOp())
@@ -1370,10 +1370,10 @@ static void valueFlowArrayElement(TokenList *tokenlist, const Settings* settings
         const Token* indexTok = tok->astOperand2();
         const Token* arrayTok = tok->astOperand1();
 
-        for (const ValueFlow::Value &arrayValue : arrayTok->values()) {
+        for (const ValueFlow::Value& arrayValue : arrayTok->values()) {
             if (!arrayValue.isTokValue())
                 continue;
-            for (const ValueFlow::Value &indexValue : indexTok->values()) {
+            for (const ValueFlow::Value& indexValue : indexTok->values()) {
                 if (!indexValue.isIntValue())
                     continue;
                 if (arrayValue.varId != 0 && indexValue.varId != 0 &&
