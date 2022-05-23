@@ -242,15 +242,17 @@ int main(int argc, char **argv)
          << "    $(warning Usage of SRCDIR to activate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)\n"
          << "    MATCHCOMPILER:=yes\n"
          << "endif\n";
+    // TODO: bail out when matchcompiler.py fails (i.e. invalid PYTHON_INTERPRETER specified)
+    // TODO: handle "PYTHON_INTERPRETER="
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
          << "    # Find available Python interpreter\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        PYTHON_INTERPRETER := $(shell which python3)\n"
          << "    endif\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        PYTHON_INTERPRETER := $(shell which python)\n"
          << "    endif\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        $(error Did not find a Python interpreter)\n"
          << "    endif\n"
          << "    ifdef VERIFY\n"
@@ -424,7 +426,7 @@ int main(int argc, char **argv)
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
     fout << "clean:\n";
-    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
+    fout << "\trm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
@@ -494,7 +496,11 @@ int main(int argc, char **argv)
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
     fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";
-    fout << "\t./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
+    // TODO: handle "PYTHON_INTERPRETER="
+    fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python3)))\n";
+    fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python)))\n";
+    fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(error Did not find a Python interpreter)))\n";
+    fout << "\t$(PYTHON_INTERPRETER) tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
     fout << ".PHONY: validateRules\n";
     fout << "validateRules:\n";
     fout << "\txmllint --noout rules/*.xml\n";
