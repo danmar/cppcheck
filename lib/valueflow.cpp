@@ -2986,21 +2986,6 @@ struct MemberExpressionAnalyzer : SubExpressionAnalyzer {
     }
 };
 
-static Analyzer::Result valueFlowForwardExpression(Token* startToken,
-                                                   const Token* endToken,
-                                                   const Token* exprTok,
-                                                   const std::list<ValueFlow::Value>& values,
-                                                   const TokenList* const tokenlist,
-                                                   const Settings* settings)
-{
-    Analyzer::Result result{};
-    for (const ValueFlow::Value& v : values) {
-        ExpressionAnalyzer a(exprTok, v, tokenlist);
-        result.update(valueFlowGenericForward(startToken, endToken, a, settings));
-    }
-    return result;
-}
-
 enum class LifetimeCapture { Undefined, ByValue, ByReference };
 
 std::string lifetimeType(const Token *tok, const ValueFlow::Value *val)
@@ -3532,12 +3517,11 @@ static void valueFlowForwardLifetime(Token * tok, TokenList *tokenlist, ErrorLog
         const Token *nextExpression = nextAfterAstRightmostLeaf(parent);
 
         if (expr->exprId() > 0) {
-            valueFlowForwardExpression(const_cast<Token*>(nextExpression),
+            valueFlowForward(const_cast<Token*>(nextExpression),
                                        endOfVarScope->next(),
                                        expr,
                                        values,
-                                       tokenlist,
-                                       settings);
+                                       tokenlist);
 
             for (ValueFlow::Value& val : values) {
                 if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
