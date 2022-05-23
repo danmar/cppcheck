@@ -1888,8 +1888,8 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void assign4() { // #11019
-        check("struct S { int a, b, c; };\n"
+    void assign4() {
+        check("struct S { int a, b, c; };\n" // #11019
               "void f() {\n"
               "    struct S s;\n"
               "    *&s.a = open(\"xx.log\", O_RDONLY);\n"
@@ -1899,6 +1899,15 @@ private:
         ASSERT_EQUALS("[test.c:7]: (error) Memory leak: s.a\n"
                       "[test.c:7]: (error) Memory leak: s.b\n"
                       "[test.c:7]: (error) Memory leak: s.c\n",
+                      errout.str());
+
+        check("struct S { int *p, *q; };\n" // #7705
+              "void f(S s) {\n"
+              "    s.p = new int[10];\n"
+              "    s.q = malloc(40);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: s.p\n"
+                      "[test.cpp:5]: (error) Memory leak: s.q\n",
                       errout.str());
     }
 

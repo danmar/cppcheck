@@ -725,7 +725,7 @@ void CheckMemoryLeakStructMember::check()
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || !var->isLocal() || var->isStatic() || var->isReference())
+        if (!var || (!var->isLocal() && !(var->isArgument() && var->scope())) || var->isStatic() || var->isReference())
             continue;
         if (var->typeEndToken()->isStandardType())
             continue;
@@ -805,7 +805,10 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
     };
     std::pair<const Token*, const Token*> assignToks;
 
-    for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
+    const Token* tokStart = variable->nameToken();
+    if (variable->isArgument() && variable->scope())
+        tokStart = variable->scope()->bodyStart->next();
+    for (const Token *tok2 = tokStart; tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
         if (tok2->str() == "{")
             ++indentlevel2;
 
