@@ -292,32 +292,18 @@ static void parseCompareEachInt(
     });
 }
 
-const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
+const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, 
+    const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
 {
-    if (!tok->astOperand1() || !tok->astOperand2())
-        return nullptr;
-    if (tok->isComparisonOp()) {
-        std::vector<MathLib::bigint> value1 = evaluate(tok->astOperand1());
-        std::vector<MathLib::bigint> value2 = evaluate(tok->astOperand2());
-        if (!value1.empty() && !value2.empty()) {
-            if (tok->astOperand1()->hasKnownIntValue())
-                value2.clear();
-            if (tok->astOperand2()->hasKnownIntValue())
-                value1.clear();
-        }
-        if (!value1.empty()) {
-            if (isSaturated(value1.front()) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
-                return nullptr;
-            setConditionalValues(tok, true, value1.front(), true_value, false_value);
-            return tok->astOperand2();
-        } else if (!value2.empty()) {
-            if (isSaturated(value2.front()) || astIsFloat(tok->astOperand1(), /*unknown*/ false))
-                return nullptr;
-            setConditionalValues(tok, false, value2.front(), true_value, false_value);
-            return tok->astOperand1();
-        }
-    }
-    return nullptr;
+    const Token* result = nullptr;
+    parseCompareEachInt(tok, [&](const Token* vartok, ValueFlow::Value true_value2, ValueFlow::Value false_value2) {
+        if (result)
+            return;
+        result = vartok;
+        true_value = std::move(true_value2);
+        false_value = std::move(false_value2);
+    }, evaluate);
+    return result;
 }
 
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
