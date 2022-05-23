@@ -249,15 +249,15 @@ static void parseCompareEachInt(const Token *tok, const std::function<void(const
             ValueFlow::Value true_value;
             ValueFlow::Value false_value;
             if (isSaturated(v1) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
-                continue;;
+                continue;
             setConditionalValues(tok, true, v1, true_value, false_value);
             each(tok->astOperand2(), std::move(true_value), std::move(false_value));
         }
         for(MathLib::bigint v2:value2) {
             ValueFlow::Value true_value;
             ValueFlow::Value false_value;
-            if (isSaturated(v2) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
-                continue;;
+            if (isSaturated(v2) || astIsFloat(tok->astOperand1(), /*unknown*/ false))
+                continue;
             setConditionalValues(tok, false, v2, true_value, false_value);
             each(tok->astOperand1(), std::move(true_value), std::move(false_value));
         }
