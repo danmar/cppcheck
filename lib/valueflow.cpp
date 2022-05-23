@@ -277,6 +277,8 @@ static void parseCompareEachInt(const Token *tok, const std::function<void(const
                 continue;
             if (v.condition)
                 continue;
+            if (!v.isPossible())
+                continue;
             if (!v.isIntValue())
                 continue;
             result.push_back(v.intvalue);
@@ -6754,34 +6756,6 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             ps[var->nameToken()] = p.second;
         }
         return ps;
-    }
-
-    virtual void forkScope(const Token* endBlock) override {
-        ProgramMemory pm{getProgramState()};
-        const Scope* scope = endBlock->scope();
-        const Token* condTok = getCondTokFromEnd(endBlock);
-        if (scope && condTok)
-            programMemoryParseCondition(pm, condTok, nullptr, getSettings(), scope->type != Scope::eElse);
-        if (condTok && Token::simpleMatch(condTok->astParent(), ";")) {
-            ProgramMemory endMemory;
-            if (valueFlowForLoop2(condTok->astTop()->previous(), nullptr, &endMemory, nullptr))
-                pm.replace(endMemory);
-        }
-        // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
-        for (const auto& p : pm) {
-            nonneg int varid = p.first.getExpressionId();
-            if (symboldatabase && !symboldatabase->isVarId(varid))
-                continue;
-            ValueFlow::Value value = p.second;
-            if (vars.count(varid) != 0)
-                continue;
-            if (value.isImpossible())
-                continue;
-            value.setPossible();
-            values[varid] = value;
-            if (symboldatabase)
-                vars[varid] = symboldatabase->getVariableFromVarId(varid);
-        }
     }
 };
 
