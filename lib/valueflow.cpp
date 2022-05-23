@@ -7990,21 +7990,24 @@ struct ContainerConditionHandler : ConditionHandler {
 
     virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const override
     {
-        Condition cond;
-        ValueFlow::Value true_value;
-        ValueFlow::Value false_value;
-        const Token *vartok = parseCompareInt(tok, true_value, false_value);
-        if (vartok) {
+        std::vector<Condition> conds;
+        parseCompareEachInt(tok, [&](const Token* vartok, ValueFlow::Value true_value, ValueFlow::Value false_value) {
+            Condition cond;
             vartok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
             if (!vartok)
-                return {};
+                return;
             true_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             false_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
-            return {cond};
-        }
+            conds.push_back(cond);
+        });
+        if (!conds.empty())
+            return conds;
+
+        Condition cond;
+        const Token *vartok = nullptr;
 
         // Empty check
         if (tok->str() == "(") {
