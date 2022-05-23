@@ -3088,7 +3088,19 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("using HWND = void*;\n"
+              "void f(const HWND h) {\n"
+              "    if (h == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("typedef int A;\n"
+              "void f(A* x) {\n"
+              "    if (x == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
+
+        check("using A = int;\n"
               "void f(A* x) {\n"
               "    if (x == nullptr) {}\n"
               "}\n");
