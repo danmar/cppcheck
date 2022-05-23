@@ -793,7 +793,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
     auto isMemberAssignment = [](const Token* varTok, int varId) -> std::pair<const Token*, const Token*> {
         if (varTok->varId() != varId)
             return {};
-        auto top = varTok->astTop();
+        const Token* top = varTok->astTop();
         if (!Token::simpleMatch(top, "="))
             return {};
         const Token* dot = top->astOperand1();
