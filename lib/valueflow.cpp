@@ -196,6 +196,7 @@ static void setConditionalValue(ValueFlow::Value& value, const Token* tok, MathL
     assert(value.isIntValue());
     value.intvalue = i;
     value.assumeCondition(tok);
+    value.setPossible();
 }
 
 static void setConditionalValues(const Token* tok,
