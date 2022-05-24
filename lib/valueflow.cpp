@@ -191,6 +191,13 @@ static void setValueBound(ValueFlow::Value& value, const Token* tok, bool invert
     }
 }
 
+static void setConditionalValue(ValueFlow::Value& value, const Token* tok, MathLib::bigint i)
+{
+    assert(value.isIntValue());
+    value.intvalue = i;
+    value.assumeCondition(tok);
+}
+
 static void setConditionalValues(const Token* tok,
                                  bool lhs,
                                  MathLib::bigint value,
@@ -216,11 +223,11 @@ static void setConditionalValues(const Token* tok,
         if (lhs)
             std::swap(greaterThan, lessThan);
         if (Token::simpleMatch(tok, greaterThan, strlen(greaterThan))) {
-            true_value = ValueFlow::Value{tok, value + 1};
-            false_value = ValueFlow::Value{tok, value};
+            setConditionalValue(true_value, tok, value + 1);
+            setConditionalValue(false_value, tok, value);
         } else if (Token::simpleMatch(tok, lessThan, strlen(lessThan))) {
-            true_value = ValueFlow::Value{tok, value - 1};
-            false_value = ValueFlow::Value{tok, value};
+            setConditionalValue(true_value, tok, value - 1);
+            setConditionalValue(false_value, tok, value);
         }
     }
     setValueBound(true_value, tok, lhs);
@@ -235,33 +242,33 @@ static bool isSaturated(MathLib::bigint value)
 static void parseCompareEachInt(
     const Token* tok,
     const std::function<void(const Token* varTok, ValueFlow::Value true_value, ValueFlow::Value false_value)>& each,
-    const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
+    const std::function<std::vector<ValueFlow::Value>(const Token*)>& evaluate)
 {
     if (!tok->astOperand1() || !tok->astOperand2())
         return;
     if (tok->isComparisonOp()) {
-        std::vector<MathLib::bigint> value1 = evaluate(tok->astOperand1());
-        std::vector<MathLib::bigint> value2 = evaluate(tok->astOperand2());
+        std::vector<ValueFlow::Value> value1 = evaluate(tok->astOperand1());
+        std::vector<ValueFlow::Value> value2 = evaluate(tok->astOperand2());
         if (!value1.empty() && !value2.empty()) {
             if (tok->astOperand1()->hasKnownIntValue())
                 value2.clear();
             if (tok->astOperand2()->hasKnownIntValue())
                 value1.clear();
         }
-        for (MathLib::bigint v1 : value1) {
-            ValueFlow::Value true_value;
-            ValueFlow::Value false_value;
-            if (isSaturated(v1) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
+        for (const ValueFlow::Value& v1 : value1) {
+            ValueFlow::Value true_value = v1;
+            ValueFlow::Value false_value = v1;
+            if (isSaturated(v1.intvalue) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
                 continue;
-            setConditionalValues(tok, true, v1, true_value, false_value);
+            setConditionalValues(tok, true, v1.intvalue, true_value, false_value);
             each(tok->astOperand2(), std::move(true_value), std::move(false_value));
         }
-        for (MathLib::bigint v2 : value2) {
-            ValueFlow::Value true_value;
-            ValueFlow::Value false_value;
-            if (isSaturated(v2) || astIsFloat(tok->astOperand1(), /*unknown*/ false))
+        for (const ValueFlow::Value& v2 : value2) {
+            ValueFlow::Value true_value = v2;
+            ValueFlow::Value false_value = v2;
+            if (isSaturated(v2.intvalue) || astIsFloat(tok->astOperand1(), /*unknown*/ false))
                 continue;
-            setConditionalValues(tok, false, v2, true_value, false_value);
+            setConditionalValues(tok, false, v2.intvalue, true_value, false_value);
             each(tok->astOperand1(), std::move(true_value), std::move(false_value));
         }
     }
@@ -271,23 +278,23 @@ static void parseCompareEachInt(
     const Token* tok,
     const std::function<void(const Token* varTok, ValueFlow::Value true_value, ValueFlow::Value false_value)>& each)
 {
-    parseCompareEachInt(tok, each, [](const Token* t) -> std::vector<MathLib::bigint> {
+    parseCompareEachInt(tok, each, [](const Token* t) -> std::vector<ValueFlow::Value> {
         if (t->hasKnownIntValue())
-            return {t->values().front().intvalue};
-        std::vector<MathLib::bigint> result;
-        for (const ValueFlow::Value& v : t->values()) {
+            return {t->values().front()};
+        std::vector<ValueFlow::Value> result;
+        std::copy_if(t->values().begin(), t->values().end(), std::back_inserter(result), [&](const ValueFlow::Value& v) {
             if (v.path < 1)
-                continue;
+                return false;
             if (v.conditional)
-                continue;
+                return false;
             if (v.condition)
-                continue;
+                return false;
             if (!v.isPossible())
-                continue;
+                return false;
             if (!v.isIntValue())
-                continue;
-            result.push_back(v.intvalue);
-        }
+                return false;
+            return true;
+        });
         return result;
     });
 }
@@ -307,7 +314,15 @@ const Token* parseCompareInt(const Token* tok,
         true_value = std::move(true_value2);
         false_value = std::move(false_value2);
     },
-        evaluate);
+        [&](const Token* t) -> std::vector<ValueFlow::Value> {
+            std::vector<ValueFlow::Value> r;
+            std::vector<MathLib::bigint> v = evaluate(t);
+
+            std::transform(v.begin(), v.end(), std::back_inserter(r), [&](MathLib::bigint i) {
+                return ValueFlow::Value{i};
+            });
+            return r;
+        });
     return result;
 }
 
