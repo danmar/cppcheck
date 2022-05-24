@@ -602,6 +602,13 @@ public:
         setFlag(fIncompleteVar, b);
     }
 
+    bool isSimplifiedTypedef() const {
+        return getFlag(fIsSimplifiedTypedef);
+    }
+    void isSimplifiedTypedef(bool b) {
+        setFlag(fIsSimplifiedTypedef, b);
+    }
+
     bool isIncompleteConstant() const {
         return getFlag(fIsIncompleteConstant);
     }
@@ -1285,6 +1292,7 @@ private:
         fIsRemovedVoidParameter = (1ULL << 35), // A void function parameter has been removed
         fIsIncompleteConstant   = (1ULL << 36),
         fIsRestrict             = (1ULL << 37), // Is this a restrict pointer type
+        fIsSimplifiedTypedef    = (1ULL << 38),
     };
 
     Token::Type mTokType;

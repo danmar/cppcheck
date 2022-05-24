@@ -151,6 +151,7 @@ private:
         TEST_CASE(localvaralias17); // ticket #8911
         TEST_CASE(localvaralias18); // ticket #9234 - iterator
         TEST_CASE(localvaralias19); // ticket #9828
+        TEST_CASE(localvaralias20); // ticket #10966
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -4672,6 +4673,21 @@ private:
                               "            m.val = 1;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvaralias20() { // #10966
+        functionVariableUsage("struct A {};\n"
+                              "A g();\n"
+                              "void f() {\n"
+                              "    const auto& a = g();\n"
+                              "    const auto& b = a;\n"
+                              "    const auto&& c = g();\n"
+                              "    auto&& d = c;\n"
+                              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used.\n"
+                           "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
+                           "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
+                           errout.str());
     }
 
     void localvarasm() {
