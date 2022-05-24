@@ -3105,6 +3105,12 @@ private:
               "    if (x == nullptr) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
+
+        check("struct S { void v(); };\n" // #11095
+              "void f(S* s) {\n"
+              "    (s - 1)->v();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
