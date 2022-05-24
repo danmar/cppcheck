@@ -323,14 +323,14 @@ const Token* parseCompareInt(const Token* tok,
         false_value = std::move(false_value2);
     },
         [&](const Token* t) -> std::vector<ValueFlow::Value> {
-            std::vector<ValueFlow::Value> r;
-            std::vector<MathLib::bigint> v = evaluate(t);
+        std::vector<ValueFlow::Value> r;
+        std::vector<MathLib::bigint> v = evaluate(t);
 
-            std::transform(v.begin(), v.end(), std::back_inserter(r), [&](MathLib::bigint i) {
-                return ValueFlow::Value{i};
-            });
-            return r;
+        std::transform(v.begin(), v.end(), std::back_inserter(r), [&](MathLib::bigint i) {
+            return ValueFlow::Value{i};
         });
+        return r;
+    });
     return result;
 }
 
@@ -5615,7 +5615,8 @@ struct ConditionHandler {
             return it->path;
         }
 
-        MathLib::bigint getPath() const {
+        MathLib::bigint getPath() const
+        {
             assert(std::abs(findPath(true_values) - findPath(false_values)) == 0);
             return findPath(true_values) | findPath(false_values);
         }
