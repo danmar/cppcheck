@@ -1378,6 +1378,9 @@ void Tokenizer::simplifyTypedef()
                         typeEnd = typeStart;
 
                     // start substituting at the typedef name by replacing it with the type
+                    Token* replStart = tok2; // track first replaced token
+                    for (Token* tok3 = typeStart; tok3->str() != ";"; tok3 = tok3->next())
+                        tok3->isSimplifiedTypedef(true);
                     tok2->str(typeStart->str());
 
                     // restore qualification if it was removed
@@ -1386,7 +1389,7 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->previous();
 
                         if (globalScope) {
-                            tok2->insertToken("::");
+                            replStart = tok2->insertToken("::");
                             tok2 = tok2->next();
                         }
 
@@ -1415,7 +1418,7 @@ void Tokenizer::simplifyTypedef()
                                     startIdx = spaceIdx + 1;
                                 }
                                 tok2->previous()->insertToken(removed1.substr(startIdx));
-                                tok2->previous()->insertToken("::");
+                                replStart = tok2->previous()->insertToken("::");
                                 break;
                             }
                             idx = removed1.rfind(" ::");
@@ -1425,12 +1428,21 @@ void Tokenizer::simplifyTypedef()
                             removed1.resize(idx);
                         }
                     }
+                    replStart->isSimplifiedTypedef(true);
+                    Token* constTok = Token::simpleMatch(tok2->previous(), "const") ? tok2->previous() : nullptr;
                     // add remainder of type
                     tok2 = TokenList::copyTokens(tok2, typeStart->next(), typeEnd);
 
                     if (!pointers.empty()) {
                         for (const std::string &p : pointers) {
                             tok2->insertToken(p);
+                            tok2->isSimplifiedTypedef(true);
+                            tok2 = tok2->next();
+                        }
+                        if (constTok) {
+                            constTok->deleteThis();
+                            tok2->insertToken("const");
+                            tok2->isSimplifiedTypedef(true);
                             tok2 = tok2->next();
                         }
                     }
