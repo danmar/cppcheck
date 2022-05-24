@@ -793,8 +793,13 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
     auto isMemberAssignment = [](const Token* varTok, int varId) -> std::pair<const Token*, const Token*> {
         if (varTok->varId() != varId)
             return {};
-        const Token* top = varTok->astTop();
-        if (!Token::simpleMatch(top, "="))
+        const Token* top = varTok;
+        while (top->astParent()) {
+            if (top->astParent()->str() == "(")
+                return {};
+            top = top->astParent();
+        }
+        if (!Token::simpleMatch(top, "=") || !precedes(varTok, top))
             return {};
         const Token* dot = top->astOperand1();
         while (dot && dot->str() != ".")
@@ -824,7 +829,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
             break;
 
         // Struct member is allocated => check if it is also properly deallocated..
-        else if ((assignToks = isMemberAssignment(tok2, variable->declarationId())).first) {
+        else if ((assignToks = isMemberAssignment(tok2, variable->declarationId())).first && assignToks.first->varId()) {
             if (getAllocationType(assignToks.second, assignToks.first->varId()) == AllocType::No)
                 continue;
 
