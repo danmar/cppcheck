@@ -182,9 +182,12 @@ void TestCppcheckLibraryData::smartPointerValid()
     // Do size and content checks against swapped data.
     QCOMPARE(libraryData.smartPointers.size(), 3);
 
-    QCOMPARE(libraryData.smartPointers[0], QString("wxObjectDataPtr"));
-    QCOMPARE(libraryData.smartPointers[1], QString("wxScopedArray"));
-    QCOMPARE(libraryData.smartPointers[2], QString("wxScopedPtr"));
+    QCOMPARE(libraryData.smartPointers[0].name, QString("wxObjectDataPtr"));
+    QCOMPARE(libraryData.smartPointers[0].unique, false);
+    QCOMPARE(libraryData.smartPointers[1].name, QString("wxScopedArray"));
+    QCOMPARE(libraryData.smartPointers[1].unique, true);
+    QCOMPARE(libraryData.smartPointers[2].name, QString("wxScopedPtr"));
+    QCOMPARE(libraryData.smartPointers[2].unique, false);
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);
@@ -199,7 +202,10 @@ void TestCppcheckLibraryData::smartPointerValid()
     // Verify no data got lost or modified
     QCOMPARE(libraryData.smartPointers.size(), fileLibraryData.smartPointers.size());
     QCOMPARE(libraryData.smartPointers.size(), 3);
-    QCOMPARE(libraryData.smartPointers, fileLibraryData.smartPointers);
+    for (int idx=0; idx < libraryData.smartPointers.size(); idx++) {
+        QCOMPARE(libraryData.smartPointers[idx].name, fileLibraryData.smartPointers[idx].name);
+        QCOMPARE(libraryData.smartPointers[idx].unique, fileLibraryData.smartPointers[idx].unique);
+    }
 }
 
 void TestCppcheckLibraryData::platformTypeValid()

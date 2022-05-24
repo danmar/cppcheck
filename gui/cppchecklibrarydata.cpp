@@ -105,9 +105,23 @@ static QString loadUndefine(const QXmlStreamReader &xmlReader)
     return xmlReader.attributes().value("name").toString();
 }
 
-static QString loadSmartPointer(const QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::SmartPointer loadSmartPointer(QXmlStreamReader &xmlReader)
 {
-    return xmlReader.attributes().value("class-name").toString();
+    CppcheckLibraryData::SmartPointer smartPointer;
+    smartPointer.name = xmlReader.attributes().value("class-name").toString();
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != "smart-pointer") {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (elementName == "unique") {
+            smartPointer.unique = true;
+        } else {
+            unhandledElement(xmlReader);
+        }
+    }
+    return smartPointer;
 }
 
 static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReader)
@@ -835,9 +849,12 @@ QString CppcheckLibraryData::toString() const
         writeTypeChecks(xmlWriter, check);
     }
 
-    for (const QString &smartPtr : smartPointers) {
+    for (const SmartPointer &smartPtr : smartPointers) {
         xmlWriter.writeStartElement("smart-pointer");
-        xmlWriter.writeAttribute("class-name", smartPtr);
+        xmlWriter.writeAttribute("class-name", smartPtr.name);
+        if (smartPtr.unique) {
+            xmlWriter.writeEmptyElement("unique");
+        }
         xmlWriter.writeEndElement();
     }
 

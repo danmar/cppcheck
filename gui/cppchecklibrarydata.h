@@ -219,6 +219,15 @@ public:
         QList<Exporter> exporter;
     };
 
+    struct SmartPointer {
+        SmartPointer() :
+            unique {false}
+        {}
+
+        QString name;
+        bool unique;
+    };
+
     void clear() {
         containers.clear();
         defines.clear();
@@ -258,7 +267,7 @@ public:
     QList<TypeChecks> typeChecks;
     QList<struct PlatformType> platformTypes;
     QStringList undefines;
-    QStringList smartPointers;
+    QList<struct SmartPointer> smartPointers;
     QList<struct Reflection> reflections;
     QList<struct Markup> markups;
 };
