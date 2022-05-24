@@ -7,7 +7,8 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-22.04
+    # 'ubuntu-22.04' removes Python 2.7, 3.6 and 3.6 so keep the previous LTS version
+    runs-on: ubuntu-20.04
 
     steps:
       - uses: actions/checkout@v2
@@ -26,7 +27,8 @@ jobs:
   scriptcheck:
 
     needs: build
-    runs-on: ubuntu-22.04
+    # 'ubuntu-22.04' removes Python 2.7, 3.5 and 3.6 so keep the previous LTS version
+    runs-on: ubuntu-20.04
     strategy:
       matrix:
         python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, '3.10']
