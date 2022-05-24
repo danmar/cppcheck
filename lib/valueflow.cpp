@@ -174,6 +174,19 @@ static void changePossibleToKnown(std::list<ValueFlow::Value>& values, int indir
     }
 }
 
+static bool isNonConditionalPossibleIntValue(const ValueFlow::Value& v)
+{
+    if (v.conditional)
+        return false;
+    if (v.condition)
+        return false;
+    if (!v.isPossible())
+        return false;
+    if (!v.isIntValue())
+        return false;
+    return true;
+}
+
 static void setValueUpperBound(ValueFlow::Value& value, bool upper)
 {
     if (upper)
@@ -286,13 +299,7 @@ static void parseCompareEachInt(
         std::copy_if(t->values().begin(), t->values().end(), std::back_inserter(result), [&](const ValueFlow::Value& v) {
             if (v.path < 1)
                 return false;
-            if (v.conditional)
-                return false;
-            if (v.condition)
-                return false;
-            if (!v.isPossible())
-                return false;
-            if (!v.isIntValue())
+            if (!isNonConditionalPossibleIntValue(v))
                 return false;
             return true;
         });
@@ -5595,6 +5602,24 @@ struct ConditionHandler {
             return astIsBool(vartok);
         }
 
+        static MathLib::bigint findPath(const std::list<ValueFlow::Value>& values)
+        {
+            auto it = std::find_if(values.begin(), values.end(), [](const ValueFlow::Value& v) {
+                return v.path > 0;
+            });
+            if (it == values.end())
+                return 0;
+            assert(std::all_of(it, values.end(), [&](const ValueFlow::Value& v) {
+                return v.path == 0 || v.path == it->path;
+            }));
+            return it->path;
+        }
+
+        MathLib::bigint getPath() const {
+            assert(std::abs(findPath(true_values) - findPath(false_values)) == 0);
+            return findPath(true_values) | findPath(false_values);
+        }
+
         Condition() : vartok(nullptr), true_values(), false_values(), inverted(false), impossible(true) {}
     };
 
@@ -5786,10 +5811,18 @@ struct ConditionHandler {
         return tok;
     }
 
-    static bool isFromSubFunction(const std::list<ValueFlow::Value>& values)
+    static void fillFromPath(ProgramMemory& pm, const Token* top, MathLib::bigint path)
     {
-        return std::any_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
-            return v.path > 0;
+        if (path < 1)
+            return;
+        visitAstNodes(top, [&](const Token* tok) {
+            const ValueFlow::Value* v = ValueFlow::findValue(tok->values(), nullptr, [&](const ValueFlow::Value& v) {
+                return v.path == path && isNonConditionalPossibleIntValue(v);
+            });
+            if (v == nullptr)
+                return ChildrenToVisit::op1_and_op2;
+            pm.setValue(tok, *v);
+            return ChildrenToVisit::op1_and_op2;
         });
     }
 
@@ -5800,7 +5833,8 @@ struct ConditionHandler {
         traverseCondition(tokenlist, symboldatabase, [&](const Condition& cond, Token* condTok, const Scope* scope) {
             const Token* top = condTok->astTop();
 
-            const bool allowKnown = !isFromSubFunction(cond.true_values) && !isFromSubFunction(cond.false_values);
+            const MathLib::bigint path = cond.getPath();
+            const bool allowKnown = path == 0;
             const bool allowImpossible = cond.impossible && allowKnown;
 
             std::list<ValueFlow::Value> thenValues;
@@ -5967,6 +6001,8 @@ struct ConditionHandler {
                 // Check if condition in for loop is always false
                 const Token* initTok = getInitTok(top);
                 ProgramMemory pm;
+                fillFromPath(pm, initTok, path);
+                fillFromPath(pm, condTok, path);
                 execute(initTok, &pm, nullptr, nullptr);
                 MathLib::bigint result = 1;
                 execute(condTok, &pm, &result, nullptr);
