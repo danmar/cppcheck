@@ -1642,6 +1642,12 @@ private:
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
+        check("void f(void) {\n" // #8892
+              "    const char c[1] = { \'x\' }; \n"
+              "    if(c[0] == \'x\'){;}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'c[0]=='x'' is always true\n", errout.str());
+
         check("void f(int x) {\n"
               "    if (x > 5 && x != 1)\n"
               "        a++;\n"

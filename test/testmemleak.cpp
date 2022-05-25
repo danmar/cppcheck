@@ -1909,6 +1909,19 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: s.p\n"
                       "[test.cpp:5]: (error) Memory leak: s.q\n",
                       errout.str());
+
+        check("struct S** f(struct S** s) {\n" // don't throw
+              "    struct S** ret = malloc(sizeof(*ret));\n"
+              "    ret[0] = malloc(sizeof(**s));\n"
+              "    ret[0]->g = strdup(s[0]->g);\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void run_rcmd(enum rcommand rcmd, rsh_session *sess, char *cmd) {\n"
+              "    sess->fp = popen(cmd, rcmd == RSH_PIPE_READ ? \"r\" : \"w\");\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void failedAllocation() {
