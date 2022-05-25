@@ -1922,6 +1922,14 @@ private:
               "    sess->fp = popen(cmd, rcmd == RSH_PIPE_READ ? \"r\" : \"w\");\n"
               "}\n", false);
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char* a[2]; };\n"
+              "enum E { E0, E1 };\n"
+              "void f(struct S* s, enum E e, const char* n) {\n"
+              "    free(s->a[e]);\n"
+              "    s->a[e] = strdup(n);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void failedAllocation() {
