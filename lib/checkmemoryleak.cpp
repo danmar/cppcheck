@@ -795,7 +795,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
             return {};
         const Token* top = varTok;
         while (top->astParent()) {
-            if (top->astParent()->str() == "(")
+            if (Token::Match(top->astParent(), "(|["))
                 return {};
             top = top->astParent();
         }
