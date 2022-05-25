@@ -1830,29 +1830,58 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                 else
                     typeMaxValue = unsignedTypeMaxValue / 2;
 
-                bool result;
+                bool result{};
+                const auto kiv = valueTok->getKnownIntValue();
                 if (tok->str() == "==")
                     result = false;
                 else if (tok->str() == "!=")
                     result = true;
                 else if (tok->str()[0] == '>' && i == 0)
                     // num > var
-                    result = (valueTok->getKnownIntValue() > 0);
+                    result = (kiv > 0);
                 else if (tok->str()[0] == '>' && i == 1)
                     // var > num
-                    result = (valueTok->getKnownIntValue() < 0);
+                    result = (kiv < 0);
                 else if (tok->str()[0] == '<' && i == 0)
                     // num < var
-                    result = (valueTok->getKnownIntValue() < 0);
+                    result = (kiv < 0);
                 else if (tok->str()[0] == '<' && i == 1)
                     // var < num
-                    result = (valueTok->getKnownIntValue() > 0);
+                    result = (kiv > 0);
 
-                if (valueTok->getKnownIntValue() < typeMinValue) {
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+                bool error = false;
+                if (kiv < typeMinValue || kiv > typeMaxValue) {
+                    error = true;
+                } else {
+                    switch (i) {
+                    case 0: // num cmp var
+                        if (kiv == typeMinValue) {
+                            if (tok->str() == "<=") {
+                                result = true;
+                                error = true;
+                            } else if (tok->str() == ">")
+                                error = true;
+                        }
+                        else if (kiv == typeMaxValue && (tok->str() == ">=" || tok->str() == "<")) {
+                            error = true;
+                        }
+                        break;
+                    case 1: // var cmp num
+                        if (kiv == typeMinValue) {
+                            if (tok->str() == ">=") {
+                                result = true;
+                                error = true;
+                            } else if (tok->str() == "<")
+                                error = true;
+                        }
+                        else if (kiv == typeMaxValue && (tok->str() == "<=" || tok->str() == ">")) {
+                            error = true;
+                        }
+                        break;
+                    }
                 }
-                else if (valueTok->getKnownIntValue() > typeMaxValue)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+                if (error)
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
             }
         }
     }
