@@ -24,6 +24,7 @@ RE_VARNAME = None
 RE_CONSTNAME = None
 RE_PRIVATE_MEMBER_VARIABLE = None
 RE_FUNCTIONNAME = None
+RE_CLASSNAME = None
 for arg in sys.argv[1:]:
     if arg[:6] == '--var=':
         RE_VARNAME = arg[6:]
@@ -37,6 +38,9 @@ for arg in sys.argv[1:]:
     elif arg[:11] == '--function=':
         RE_FUNCTIONNAME = arg[11:]
         validate_regex(RE_FUNCTIONNAME)
+    elif arg[:8] == '--class=':
+        RE_CLASSNAME = arg[8:]
+        validate_regex(RE_CLASSNAME)
 
 
 def reportError(token, severity, msg, errorId):
@@ -87,5 +91,13 @@ for arg in sys.argv[1:]:
                     if not res:
                         reportError(
                             scope.bodyStart, 'style', 'Function ' + scope.className + ' violates naming convention', 'functionName')
+
+        if RE_CLASSNAME:
+            for scope in cfg.scopes:
+                if scope.type == 'Class':
+                    res = re.match(RE_CLASSNAME, scope.className)
+                    if not res:
+                        reportError(
+                            scope.bodyStart, 'style', 'Class ' + scope.className + ' violates naming convention', 'className')
 
 sys.exit(cppcheckdata.EXIT_CODE)
