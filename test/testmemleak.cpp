@@ -1930,6 +1930,22 @@ private:
               "    s->a[e] = strdup(n);\n"
               "}\n", false);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(struct S** s, const char* c) {\n"
+              "    *s = malloc(sizeof(struct S));\n"
+              "    (*s)->value = strdup(c);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    size_t mpsz;\n"
+              "    void* hdr;\n"
+              "};\n"
+              "void f(struct S s[static 1U], int fd, size_t size) {\n"
+              "    s->mpsz = size;\n"
+              "    s->hdr = mmap(NULL, s->mpsz, PROT_READ, MAP_SHARED, fd, 0);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void failedAllocation() {
