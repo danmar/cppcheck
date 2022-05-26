@@ -153,6 +153,7 @@ private:
         TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
         TEST_CASE(varid_templateArray);
         TEST_CASE(varid_templateParameter); // #7046 set varid for "X":  std::array<int,X> Y;
+        TEST_CASE(varid_templateParameterFunctionPointer); // #11050
         TEST_CASE(varid_templateUsing); // #5781 #7273
         TEST_CASE(varid_not_template_in_condition); // #7988
         TEST_CASE(varid_cppcast); // #6190
@@ -2354,6 +2355,17 @@ private:
             const char code[] = "std::optional<N::Foo<A>> Foo;\n"; // #11003
 
             ASSERT_EQUALS("1: std :: optional < N :: Foo < A > > Foo@1 ;\n",
+                          tokenize(code));
+        }
+    }
+
+    void varid_templateParameterFunctionPointer() {
+        {
+            const char code[] = "template <class, void (*F)()>\n"
+                                "struct a;\n";
+
+            ASSERT_EQUALS("1: template < class , void ( * F ) ( ) >\n"
+                          "2: struct a ;\n",
                           tokenize(code));
         }
     }

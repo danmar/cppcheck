@@ -71,8 +71,8 @@ TEST(Test, warning_in_assert_macros)
     ASSERT_GE(i, i);
 
     unsigned int u = errno;
-    // cppcheck-suppress unsignedPositive
+    // cppcheck-suppress [unsignedPositive, compareValueOutOfTypeRangeError]
     ASSERT_GE(u, 0);
-    // cppcheck-suppress unsignedLessThanZero
+    // cppcheck-suppress [unsignedLessThanZero, compareValueOutOfTypeRangeError]
     ASSERT_LT(u, 0);
 }

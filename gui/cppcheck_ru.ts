@@ -1731,18 +1731,18 @@ Options:
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="86"/>
+        <location filename="translationhandler.cpp" line="87"/>
         <source>Unknown language specified!</source>
         <translation>Неизвестный язык!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="111"/>
+        <location filename="translationhandler.cpp" line="112"/>
         <source>Language file %1 not found!</source>
         <oldsource>Language file %1.qm not found!</oldsource>
         <translation>Языковой файл %1 не найден!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="117"/>
+        <location filename="translationhandler.cpp" line="118"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <oldsource>Failed to load translation for language %1 from file %2.qm</oldsource>
         <translation>Ошибка загрузки переводов для языка %1 из файла %2</translation>
@@ -1902,22 +1902,22 @@ Options:
 <context>
     <name>QPlatformTheme</name>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>Cancel</source>
         <translation>Отмена</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>Close</source>
         <translation>Закрыть</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Save</source>
         <translation>Сохранить</translation>
     </message>
@@ -1925,109 +1925,109 @@ Options:
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>File</source>
         <translation>Файл</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Severity</source>
         <translation>Важность</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Line</source>
         <translation>Строка</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Summary</source>
         <translation>Кратко</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="162"/>
+        <location filename="resultstree.cpp" line="157"/>
         <source>Undefined file</source>
         <translation>Неопределенный файл</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="654"/>
+        <location filename="resultstree.cpp" line="649"/>
         <source>Copy</source>
         <translation>Копировать</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="836"/>
+        <location filename="resultstree.cpp" line="832"/>
         <source>Could not find file:</source>
         <translation>Невозможно найти файл:</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="840"/>
+        <location filename="resultstree.cpp" line="836"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>Выберите каталог &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="841"/>
+        <location filename="resultstree.cpp" line="837"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>Выбрать каталог &apos;%1&apos;</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="843"/>
+        <location filename="resultstree.cpp" line="839"/>
         <source>Please select the directory where file is located.</source>
         <translation>Укажите каталог с расположением файла.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="351"/>
+        <location filename="resultstree.cpp" line="346"/>
         <source>debug</source>
         <translation>отлаживать</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="288"/>
+        <location filename="resultstree.cpp" line="283"/>
         <source>note</source>
         <translation>заметка</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="653"/>
+        <location filename="resultstree.cpp" line="648"/>
         <source>Recheck</source>
         <translation>Проверить заново</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="655"/>
+        <location filename="resultstree.cpp" line="650"/>
         <source>Hide</source>
         <translation>Скрыть</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="656"/>
+        <location filename="resultstree.cpp" line="651"/>
         <source>Hide all with id</source>
         <translation>Скрыть все с id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="675"/>
+        <location filename="resultstree.cpp" line="670"/>
         <source>Suppress selected id(s)</source>
         <translation>Подавить выбранные id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="657"/>
+        <location filename="resultstree.cpp" line="652"/>
         <source>Open containing folder</source>
         <translation>Открыть содержащую папку</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="691"/>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="686"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Tag</source>
         <translation>Тег</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="693"/>
+        <location filename="resultstree.cpp" line="688"/>
         <source>No tag</source>
         <translation>Тег отсутствует</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="735"/>
-        <location filename="resultstree.cpp" line="749"/>
+        <location filename="resultstree.cpp" line="730"/>
+        <location filename="resultstree.cpp" line="744"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="736"/>
+        <location filename="resultstree.cpp" line="731"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2036,7 +2036,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 Сконфигурируйте приложение редактора для Cppcheck в предпочтениях/Приложениях.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="750"/>
+        <location filename="resultstree.cpp" line="745"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2044,12 +2044,12 @@ Please select the default editor application in preferences/Applications.</sourc
 Выберите приложение редактора по умолчанию в предпочтениях/Приложениях.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="776"/>
+        <location filename="resultstree.cpp" line="771"/>
         <source>Could not find the file!</source>
         <translation>Не удается найти файл!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="822"/>
+        <location filename="resultstree.cpp" line="818"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2057,52 +2057,52 @@ Please check the application path and parameters are correct.</source>
 Пожалуйста, проверьте путь приложения, и верны ли параметры.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="844"/>
+        <location filename="resultstree.cpp" line="840"/>
         <source>Select Directory</source>
         <translation>Выберите директорию</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Inconclusive</source>
         <translation>Спорное</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Since date</source>
         <translation>Начиная с даты</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="333"/>
+        <location filename="resultstree.cpp" line="328"/>
         <source>style</source>
         <translation>стиль</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="336"/>
+        <location filename="resultstree.cpp" line="331"/>
         <source>error</source>
         <translation>ошибка</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="339"/>
+        <location filename="resultstree.cpp" line="334"/>
         <source>warning</source>
         <translation>предупреждение</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="342"/>
+        <location filename="resultstree.cpp" line="337"/>
         <source>performance</source>
         <translation>производительность</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="345"/>
+        <location filename="resultstree.cpp" line="340"/>
         <source>portability</source>
         <translation>переносимость</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="348"/>
+        <location filename="resultstree.cpp" line="343"/>
         <source>information</source>
         <translation>информация</translation>
     </message>
@@ -2738,7 +2738,7 @@ To toggle what kind of errors are shown, open view menu.</source>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="124"/>
+        <location filename="translationhandler.cpp" line="125"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -2751,7 +2751,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 Язык пользовательского интерфейса был сброшен на английский. Откройте Настройки-диалог для выбора любого из доступных языков.</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="130"/>
+        <location filename="translationhandler.cpp" line="131"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>

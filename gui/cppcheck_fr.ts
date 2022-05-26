@@ -1679,17 +1679,17 @@ Do you want to proceed?</source>
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="111"/>
+        <location filename="translationhandler.cpp" line="112"/>
         <source>Language file %1 not found!</source>
         <translation>Fichier de langue %1 non trouvé !</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="117"/>
+        <location filename="translationhandler.cpp" line="118"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>Erreur lors du chargement de la langue %1 depuis le fichier %2</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="86"/>
+        <location filename="translationhandler.cpp" line="87"/>
         <source>Unknown language specified!</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1847,22 +1847,22 @@ Do you want to proceed?</source>
 <context>
     <name>QPlatformTheme</name>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>OK</source>
         <translation type="unfinished">OK</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>Cancel</source>
         <translation type="unfinished">Annuler</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>Close</source>
         <translation type="unfinished">Fermer</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Save</source>
         <translation type="unfinished">Sauvegarder</translation>
     </message>
@@ -1870,33 +1870,33 @@ Do you want to proceed?</source>
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>File</source>
         <translation type="unfinished">Fichier</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Severity</source>
         <translation type="unfinished">Sévérité</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Line</source>
         <translation type="unfinished">Ligne</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="162"/>
+        <location filename="resultstree.cpp" line="157"/>
         <source>Undefined file</source>
         <translation>Fichier indéterminé</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="735"/>
-        <location filename="resultstree.cpp" line="749"/>
+        <location filename="resultstree.cpp" line="730"/>
+        <location filename="resultstree.cpp" line="744"/>
         <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="822"/>
+        <location filename="resultstree.cpp" line="818"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -1905,147 +1905,147 @@ Please check the application path and parameters are correct.</source>
 Merci de vérifier que le chemin de l&apos;application et que les paramètres sont corrects.</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="333"/>
+        <location filename="resultstree.cpp" line="328"/>
         <source>style</source>
         <translation>erreur de style</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="336"/>
+        <location filename="resultstree.cpp" line="331"/>
         <source>error</source>
         <translation>erreur</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Summary</source>
         <translation>Résumé</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="655"/>
+        <location filename="resultstree.cpp" line="650"/>
         <source>Hide</source>
         <translation>Cacher</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="776"/>
+        <location filename="resultstree.cpp" line="771"/>
         <source>Could not find the file!</source>
         <translation>Fichier introuvable !</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="844"/>
+        <location filename="resultstree.cpp" line="840"/>
         <source>Select Directory</source>
         <translation>Selectionner dossier</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="339"/>
+        <location filename="resultstree.cpp" line="334"/>
         <source>warning</source>
         <translation>avertissement</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="342"/>
+        <location filename="resultstree.cpp" line="337"/>
         <source>performance</source>
         <translation>performance</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="345"/>
+        <location filename="resultstree.cpp" line="340"/>
         <source>portability</source>
         <translation>portabilité</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="348"/>
+        <location filename="resultstree.cpp" line="343"/>
         <source>information</source>
         <translation>information</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="351"/>
+        <location filename="resultstree.cpp" line="346"/>
         <source>debug</source>
         <translation>débogage</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="736"/>
+        <location filename="resultstree.cpp" line="731"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="750"/>
+        <location filename="resultstree.cpp" line="745"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="656"/>
+        <location filename="resultstree.cpp" line="651"/>
         <source>Hide all with id</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="657"/>
+        <location filename="resultstree.cpp" line="652"/>
         <source>Open containing folder</source>
         <translation>Ouvrir l&apos;emplacement du fichier</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Inconclusive</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="653"/>
+        <location filename="resultstree.cpp" line="648"/>
         <source>Recheck</source>
         <translation>Revérifier</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="288"/>
+        <location filename="resultstree.cpp" line="283"/>
         <source>note</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="675"/>
+        <location filename="resultstree.cpp" line="670"/>
         <source>Suppress selected id(s)</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="691"/>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="686"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="693"/>
+        <location filename="resultstree.cpp" line="688"/>
         <source>No tag</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Since date</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="836"/>
+        <location filename="resultstree.cpp" line="832"/>
         <source>Could not find file:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="840"/>
+        <location filename="resultstree.cpp" line="836"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="841"/>
+        <location filename="resultstree.cpp" line="837"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="843"/>
+        <location filename="resultstree.cpp" line="839"/>
         <source>Please select the directory where file is located.</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="654"/>
+        <location filename="resultstree.cpp" line="649"/>
         <source>Copy</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2680,7 +2680,7 @@ Pour configurer les erreurs affichées, ouvrez le menu d&apos;affichage.</transl
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="124"/>
+        <location filename="translationhandler.cpp" line="125"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -2689,7 +2689,7 @@ The user interface language has been reset to English. Open the Preferences-dial
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="130"/>
+        <location filename="translationhandler.cpp" line="131"/>
         <source>Cppcheck</source>
         <translation type="unfinished"></translation>
     </message>

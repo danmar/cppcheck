@@ -1708,6 +1708,7 @@ private:
         TEST_CASE(assign1);
         TEST_CASE(assign2);
         TEST_CASE(assign3);
+        TEST_CASE(assign4); // #11019
 
         // Failed allocation
         TEST_CASE(failedAllocation);
@@ -1884,6 +1885,50 @@ private:
               "    f2.a = malloc(100);\n"
               "    *f1 = f2;\n"
               "}", false);
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void assign4() {
+        check("struct S { int a, b, c; };\n" // #11019
+              "void f() {\n"
+              "    struct S s;\n"
+              "    *&s.a = open(\"xx.log\", O_RDONLY);\n"
+              "    ((s).b) = open(\"xx.log\", O_RDONLY);\n"
+              "    (&s)->c = open(\"xx.log\", O_RDONLY);\n"
+              "}\n", false);
+        ASSERT_EQUALS("[test.c:7]: (error) Memory leak: s.a\n"
+                      "[test.c:7]: (error) Memory leak: s.b\n"
+                      "[test.c:7]: (error) Memory leak: s.c\n",
+                      errout.str());
+
+        check("struct S { int *p, *q; };\n" // #7705
+              "void f(S s) {\n"
+              "    s.p = new int[10];\n"
+              "    s.q = malloc(40);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: s.p\n"
+                      "[test.cpp:5]: (error) Memory leak: s.q\n",
+                      errout.str());
+
+        check("struct S** f(struct S** s) {\n" // don't throw
+              "    struct S** ret = malloc(sizeof(*ret));\n"
+              "    ret[0] = malloc(sizeof(**s));\n"
+              "    ret[0]->g = strdup(s[0]->g);\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void run_rcmd(enum rcommand rcmd, rsh_session *sess, char *cmd) {\n"
+              "    sess->fp = popen(cmd, rcmd == RSH_PIPE_READ ? \"r\" : \"w\");\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char* a[2]; };\n"
+              "enum E { E0, E1 };\n"
+              "void f(struct S* s, enum E e, const char* n) {\n"
+              "    free(s->a[e]);\n"
+              "    s->a[e] = strdup(n);\n"
+              "}\n", false);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2137,7 +2182,7 @@ private:
               "  ((f)->realm) = strdup(realm);\n"
               "  if(f->realm == NULL) {}\n"
               "}", false);
-        TODO_ASSERT_EQUALS("[test.c:6]: (error) Memory leak: f.realm\n", "", errout.str());
+        ASSERT_EQUALS("[test.c:6]: (error) Memory leak: f.realm\n", errout.str());
     }
 
     void customAllocation() { // #4770
