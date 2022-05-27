@@ -1948,8 +1948,8 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(type_t t) {\n"
-          "    t->p = malloc(10);\n"
-          "}\n", false);
+              "    t->p = malloc(10);\n"
+              "}\n", false);
         ASSERT_EQUALS("", errout.str());
     }
 
