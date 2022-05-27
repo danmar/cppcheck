@@ -1937,11 +1937,6 @@ private:
               "}\n", false);
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(type_t t) {\n"
-              "    t->p = malloc(10);\n"
-              "}\n", false);
-        ASSERT_EQUALS("", errout.str());
-
         check("struct S {\n"
               "    size_t mpsz;\n"
               "    void* hdr;\n"
@@ -1950,6 +1945,11 @@ private:
               "    s->mpsz = size;\n"
               "    s->hdr = mmap(NULL, s->mpsz, PROT_READ, MAP_SHARED, fd, 0);\n"
               "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(type_t t) {\n"
+          "    t->p = malloc(10);\n"
+          "}\n", false);
         ASSERT_EQUALS("", errout.str());
     }
 
