@@ -1909,6 +1909,43 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Memory leak: s.p\n"
                       "[test.cpp:5]: (error) Memory leak: s.q\n",
                       errout.str());
+
+        check("struct S** f(struct S** s) {\n" // don't throw
+              "    struct S** ret = malloc(sizeof(*ret));\n"
+              "    ret[0] = malloc(sizeof(**s));\n"
+              "    ret[0]->g = strdup(s[0]->g);\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void run_rcmd(enum rcommand rcmd, rsh_session *sess, char *cmd) {\n"
+              "    sess->fp = popen(cmd, rcmd == RSH_PIPE_READ ? \"r\" : \"w\");\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { char* a[2]; };\n"
+              "enum E { E0, E1 };\n"
+              "void f(struct S* s, enum E e, const char* n) {\n"
+              "    free(s->a[e]);\n"
+              "    s->a[e] = strdup(n);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(struct S** s, const char* c) {\n"
+              "    *s = malloc(sizeof(struct S));\n"
+              "    (*s)->value = strdup(c);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    size_t mpsz;\n"
+              "    void* hdr;\n"
+              "};\n"
+              "void f(struct S s[static 1U], int fd, size_t size) {\n"
+              "    s->mpsz = size;\n"
+              "    s->hdr = mmap(NULL, s->mpsz, PROT_READ, MAP_SHARED, fd, 0);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void failedAllocation() {

@@ -164,6 +164,7 @@ private:
         TEST_CASE(ifelse22); // #10187
         TEST_CASE(ifelse23); // #5473
         TEST_CASE(ifelse24); // #1733
+        TEST_CASE(ifelse25); // #9966
 
         // switch
         TEST_CASE(switch1);
@@ -1825,6 +1826,17 @@ private:
               "    return fopen(temp, \"rt\");\n"
               "}\n", s);
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: temp\n", "", errout.str());
+    }
+
+    void ifelse25() { // #9966
+        check("void f() {\n"
+              "    void *p, *p2;\n"
+              "    if((p2 = p = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    (void)p;\n"
+              "    free(p2);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switch1() {

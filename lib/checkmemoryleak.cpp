@@ -725,7 +725,9 @@ void CheckMemoryLeakStructMember::check()
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || (!var->isLocal() && !(var->isArgument() && var->scope())) || var->isStatic() || var->isReference())
+        if (!var || (!var->isLocal() && !(var->isArgument() && var->scope())) || var->isStatic())
+            continue;
+        if (var->isReference() || (var->valueType() && var->valueType()->pointer > 1))
             continue;
         if (var->typeEndToken()->isStandardType())
             continue;
@@ -752,7 +754,7 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
 void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable)
 {
     // Is struct variable a pointer?
-    if (variable->isPointer()) {
+    if (variable->isArrayOrPointer()) {
         // Check that variable is allocated with malloc
         if (!isMalloc(variable))
             return;
@@ -793,8 +795,13 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
     auto isMemberAssignment = [](const Token* varTok, int varId) -> std::pair<const Token*, const Token*> {
         if (varTok->varId() != varId)
             return {};
-        const Token* top = varTok->astTop();
-        if (!Token::simpleMatch(top, "="))
+        const Token* top = varTok;
+        while (top->astParent()) {
+            if (Token::Match(top->astParent(), "(|["))
+                return {};
+            top = top->astParent();
+        }
+        if (!Token::simpleMatch(top, "=") || !precedes(varTok, top))
             return {};
         const Token* dot = top->astOperand1();
         while (dot && dot->str() != ".")
@@ -824,7 +831,7 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
             break;
 
         // Struct member is allocated => check if it is also properly deallocated..
-        else if ((assignToks = isMemberAssignment(tok2, variable->declarationId())).first) {
+        else if ((assignToks = isMemberAssignment(tok2, variable->declarationId())).first && assignToks.first->varId()) {
             if (getAllocationType(assignToks.second, assignToks.first->varId()) == AllocType::No)
                 continue;
 
