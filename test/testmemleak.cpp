@@ -1937,6 +1937,11 @@ private:
               "}\n", false);
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(type_t t) {\n"
+              "    t->p = malloc(10);\n"
+              "}\n", false);
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S {\n"
               "    size_t mpsz;\n"
               "    void* hdr;\n"
