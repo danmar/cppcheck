@@ -442,7 +442,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     continue;
 
                 // Check assignments in the if-statement. Skip multiple assignments since we don't track those
-                if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next() && !innerTok->next()->astParent()->isAssignmentOp()) {
+                if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next() &&
+                    !(innerTok->next()->astParent() && innerTok->next()->astParent()->isAssignmentOp())) {
                     // allocation?
                     // right ast part (after `=` operator)
                     const Token* tokRightAstOperand = innerTok->next()->astOperand2();
