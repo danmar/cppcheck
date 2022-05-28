@@ -1318,18 +1318,6 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         const Token* refTok2 = followReferences(tok2, errors);
         if (refTok1 != tok1 || refTok2 != tok2)
             return isSameExpression(cpp, macro, refTok1, refTok2, library, pure, followVar, errors);
-        //if (refTok1 != tok1 || refTok2 != tok2) {
-        //    const bool same = isSameExpression(cpp, macro, refTok1, refTok2, library, pure, followVar, errors);
-        //    if (!precedes(refTok1, refTok2))
-        //        std::swap(refTok1, refTok2);
-        //    const Token* lml1 = previousBeforeAstLeftmostLeaf(refTok1);
-        //    if (lml1)
-        //        lml1 = lml1->next();
-        //    const Token* lml2 = previousBeforeAstLeftmostLeaf(refTok2);
-        //    if (lml2)
-        //        lml2 = lml2->next();
-        //    return same && !isVariableChanged(lml1, lml2, lml1->exprId(), false, /*settings*/ nullptr, cpp);
-        //}
     }
     if (tok1->varId() != tok2->varId() || !tok_str_eq || tok1->originalName() != tok2->originalName()) {
         if ((Token::Match(tok1,"<|>") && Token::Match(tok2,"<|>")) ||
