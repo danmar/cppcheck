@@ -3377,7 +3377,7 @@ void TemplateSimplifier::getSpecializations()
     for (const auto& spec : mTemplateDeclarations) {
         if (spec.isSpecialization()) {
             bool found = false;
-            for (auto & decl : mTemplateDeclarations) {
+            for (const auto& decl : mTemplateDeclarations) {
                 if (specMatch(spec, decl)) {
                     mTemplateSpecializationMap[spec.token()] = decl.token();
                     found = true;

@@ -888,7 +888,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     // check for default constructor
                     bool hasDefaultConstructor = false;
 
-                    for (Function& func: scope.functionList) {
+                    for (const Function& func : scope.functionList) {
                         if (func.type == Function::eConstructor) {
                             // check for no arguments: func ( )
                             if (func.argCount() == 0) {

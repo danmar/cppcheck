@@ -1043,7 +1043,7 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
     return crc32(ostr.str());
 }
 
-void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
+void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList) const
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
     for (const std::pair<const std::string, simplecpp::TokenList*>& list : mTokenLists) {
