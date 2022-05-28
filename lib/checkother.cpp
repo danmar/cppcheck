@@ -1410,7 +1410,7 @@ void CheckOther::checkConstVariable()
         const Scope* scope = var->scope();
         if (!scope)
             continue;
-        const Function* function = scope->function;        
+        const Function* function = scope->function;
         if (function && var->isArgument()) {
             if (function->isImplicitlyVirtual() || function->templateDef)
                 continue;
