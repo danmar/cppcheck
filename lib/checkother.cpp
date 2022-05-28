@@ -1411,6 +1411,8 @@ void CheckOther::checkConstVariable()
         if (!scope)
             continue;
         const Function* function = scope->function;
+        if (!function && !scope->isLocal())
+            continue;
         if (function && var->isArgument()) {
             if (function->isImplicitlyVirtual() || function->templateDef)
                 continue;
