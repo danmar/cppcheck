@@ -920,7 +920,7 @@ bool isStructuredBindingVariable(const Variable* var)
     if (!var)
         return false;
     const Token* tok = var->nameToken();
-    while (Token::Match(tok->astParent(), "[|,|:"))
+    while (tok && Token::Match(tok->astParent(), "[|,|:"))
         tok = tok->astParent();
     return tok && (tok->str() == "[" || Token::simpleMatch(tok->previous(), "] :")); // TODO: remove workaround when #11105 is fixed
 }
