@@ -61,7 +61,7 @@ static bool isRaiiClass(const ValueType *valueType, bool cpp, bool defaultReturn
     if (!valueType)
         return defaultReturn;
 
-    if (valueType->smartPointerType && isRaiiClassScope(valueType->smartPointerType->classScope))
+    if ((valueType->smartPointerType && isRaiiClassScope(valueType->smartPointerType->classScope)) || (!valueType->smartPointerType && valueType->type == ValueType::Type::SMART_POINTER))
         return true;
 
     switch (valueType->type) {

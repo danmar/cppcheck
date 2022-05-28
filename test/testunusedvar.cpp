@@ -5910,6 +5910,14 @@ private:
                               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'a' is assigned a value that is never used.\n"
                       "[test.cpp:8]: (style) Variable 'a2' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void g();\n" // #11094
+                              "void f() {\n"
+                              "    auto p = std::make_unique<S>();\n"
+                              "    p = nullptr;\n"
+                              "    g();\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // ticket #3104 - false positive when variable is read with "if (NOT var)"

@@ -725,7 +725,9 @@ void CheckMemoryLeakStructMember::check()
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || (!var->isLocal() && !(var->isArgument() && var->scope())) || var->isStatic() || var->isReference())
+        if (!var || (!var->isLocal() && !(var->isArgument() && var->scope())) || var->isStatic())
+            continue;
+        if (var->isReference() || (var->valueType() && var->valueType()->pointer > 1))
             continue;
         if (var->typeEndToken()->isStandardType())
             continue;
@@ -752,7 +754,7 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
 void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable)
 {
     // Is struct variable a pointer?
-    if (variable->isPointer()) {
+    if (variable->isArrayOrPointer()) {
         // Check that variable is allocated with malloc
         if (!isMalloc(variable))
             return;
@@ -831,6 +833,10 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
         // Struct member is allocated => check if it is also properly deallocated..
         else if ((assignToks = isMemberAssignment(tok2, variable->declarationId())).first && assignToks.first->varId()) {
             if (getAllocationType(assignToks.second, assignToks.first->varId()) == AllocType::No)
+                continue;
+
+            if (variable->isArgument() && variable->valueType() && variable->valueType()->type == ValueType::UNKNOWN_TYPE &&
+                Token::simpleMatch(assignToks.first->astParent(), ".") && assignToks.first->astParent()->originalName() == "->")
                 continue;
 
             const int structid(variable->declarationId());
