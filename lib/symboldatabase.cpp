@@ -863,7 +863,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
 {
     if (mTokenizer->isC()) {
         // For C code it is easy, as there are no constructors and no default values
-        for (Scope& scope : scopeList) {
+        for (const Scope& scope : scopeList) {
             if (scope.definedType)
                 scope.definedType->needInitialization = Type::NeedInitialization::True;
         }
@@ -1452,7 +1452,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 
 void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 {
-    for (Scope & scope : scopeList) {
+    for (const Scope& scope : scopeList) {
         if (scope.type != Scope::eFunction)
             continue;
         Function * function = scope.function;
