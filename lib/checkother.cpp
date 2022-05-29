@@ -1407,13 +1407,13 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isConst())
             continue;
-        if (!var->scope())
+        const Scope* scope = var->scope();
+        if (!scope)
             continue;
-        const Scope *scope = var->scope();
-        if (!scope->function)
+        const Function* function = scope->function;
+        if (!function && !scope->isLocal())
             continue;
-        const Function *function = scope->function;
-        if (var->isArgument()) {
+        if (function && var->isArgument()) {
             if (function->isImplicitlyVirtual() || function->templateDef)
                 continue;
             if (isUnusedVariable(var))
@@ -1433,9 +1433,18 @@ void CheckOther::checkConstVariable()
             continue;
         if (isAliased(var))
             continue;
+        if (isStructuredBindingVariable(var)) // TODO: check all bound variables
+            continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
             continue;
-        if (Function::returnsReference(function) && !Function::returnsConst(function)) {
+        const bool hasFunction = function != nullptr;
+        if (!hasFunction) {
+            const Scope* functionScope = scope;
+            do {
+                functionScope = functionScope->nestedIn;
+            } while (functionScope && !(function = functionScope->function));
+        }
+        if (function && Function::returnsReference(function) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
             if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
                 if (retTok->varId() == var->declarationId())
@@ -1531,7 +1540,7 @@ void CheckOther::checkConstVariable()
                 continue;
         }
 
-        constVariableError(var, function);
+        constVariableError(var, hasFunction ? function : nullptr);
     }
 }
 
