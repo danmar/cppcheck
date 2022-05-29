@@ -835,9 +835,13 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
             if (getAllocationType(assignToks.second, assignToks.first->varId()) == AllocType::No)
                 continue;
 
-            if (variable->isArgument() && variable->valueType() && variable->valueType()->type == ValueType::UNKNOWN_TYPE &&
-                Token::simpleMatch(assignToks.first->astParent(), ".") && assignToks.first->astParent()->originalName() == "->")
-                continue;
+            if (variable->isArgument() && variable->valueType() && variable->valueType()->type == ValueType::UNKNOWN_TYPE && assignToks.first->astParent()) {
+                const Token* accessTok = assignToks.first->astParent();
+                while (Token::simpleMatch(accessTok->astOperand1(), "."))
+                    accessTok = accessTok->astOperand1();
+                if (Token::simpleMatch(accessTok, ".") && accessTok->originalName() == "->")
+                    continue;
+            }
 
             const int structid(variable->declarationId());
             const int structmemberid(assignToks.first->varId());
