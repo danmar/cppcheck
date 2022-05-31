@@ -2621,7 +2621,7 @@ void CheckStl::useStlAlgorithm()
                 if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() || loopVar->valueType()->type != ValueType::Type::ITERATOR)
                     continue;
                 const Token* initAssign = splitTok->astOperand1();
-                if (!Token::simpleMatch(initAssign, "=") || !Token::Match(initAssign->astOperand1(), "%var%", loopVar->varId()))
+                if (!Token::simpleMatch(initAssign, "=") || !Token::Match(initAssign->astOperand1(), "%varid%", loopVar->varId()))
                     continue;
                 const Token* inc = splitTok->astOperand2() ? splitTok->astOperand2()->astOperand2() : nullptr;
                 if (!inc || (!Token::Match(inc, "%op% %varid%", loopVar->varId()) && !Token::Match(inc->previous(), "%varid% %op%", loopVar->varId())))
