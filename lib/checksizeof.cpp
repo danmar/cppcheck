@@ -479,3 +479,98 @@ void CheckSizeof::arithOperationsOnVoidPointerError(const Token* tok, const std:
     const std::string verbose = message + " Arithmetic operations on 'void *' is a GNU C extension, which defines the 'sizeof(void)' to be 1.";
     reportError(tok, Severity::portability, "arithOperationsOnVoidPointer", "$symbol:" + varname + '\n' + message + '\n' + verbose, CWE467, Certainty::normal);
 }
+
+//checkAllocationSizeStart--------------------------------------------------------------------------------------------------
+std::string getTypeVarName(enum ValueType::Type var_types)
+{
+    switch (var_types)
+    {
+    case ValueType::UNKNOWN_TYPE: return "UNKNOWN_TYPE";
+    case ValueType::NONSTD: return "NONSTD";
+    case ValueType::SMART_POINTER: return "SMART_POINTER";
+    case ValueType::CONTAINER: return "CONTAINER";
+    case ValueType::ITERATOR: return "ITERATOR";
+    case ValueType::VOID: return "void";
+    case ValueType::POD: return "POD";
+    case ValueType::RECORD: return "RECORD";
+    case ValueType::BOOL: return "bool";
+    case ValueType::CHAR: return "char";
+    case ValueType::SHORT: return "short";
+    case ValueType::WCHAR_T: return "WCHAR_T";
+    case ValueType::INT: return "int";
+    case ValueType::LONG: return "long";
+    case ValueType::LONGLONG: return "longlong";
+    case ValueType::UNKNOWN_INT: return "UNKNOWN_INT";
+    case ValueType::FLOAT: return "float";
+    case ValueType::DOUBLE: return "double";
+    case ValueType::LONGDOUBLE: return "longDouble";
+    }
+    return "UNKNOWN_INT";
+}
+
+const int getSizeOfType(enum ValueType::Type var_types)
+{
+    switch (var_types)
+    {
+    case ValueType::UNKNOWN_TYPE: return 0;
+    case ValueType::NONSTD: return -1;
+    case ValueType::SMART_POINTER: return -1;
+    case ValueType::CONTAINER: return -1;
+    case ValueType::ITERATOR: return -1;
+    case ValueType::VOID: return -1;
+    case ValueType::POD: return -1;
+    case ValueType::RECORD: return -1;
+    case ValueType::BOOL: return 1;
+    case ValueType::CHAR: return 1;
+    case ValueType::SHORT: return 2;
+    case ValueType::WCHAR_T: return 2;
+    case ValueType::INT: return 4;
+    case ValueType::LONG: return 4;
+    case ValueType::LONGLONG: return 8;
+    case ValueType::UNKNOWN_INT: return -1;
+    case ValueType::FLOAT: return 4;
+    case ValueType::DOUBLE: return 8;
+    case ValueType::LONGDOUBLE: return 8;
+    default: return -1;
+    }
+    return -1;
+}
+
+void CheckSizeof::checkAllocationSize()
+{
+    if (!mSettings->severity.isEnabled(Severity::warning))
+        return;
+    int sizeOfType = 0;
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (Token::Match(tok, "calloc|malloc|realloc|g_malloc|g_try_malloc|g_realloc|g_try_realloc ("))
+            {
+                const Token* dup = tok;
+                while (!Token::Match(dup, "%var% ="))
+                {
+                    dup = dup->tokAt(-1);
+                }
+
+                std::string TypeVarName = getTypeVarName(dup->valueType()->type);
+                if (TypeVarName == "UNKNOWN_TYPE")
+                    continue;
+
+                sizeOfType = getSizeOfType(dup->valueType()->type);
+                bool divide_by = tok->tokAt(1)->astOperand2()->valueDividedBy(sizeOfType);
+                if (divide_by == false) {
+                    checkAllocationSizeError(tok, TypeVarName);
+                }
+
+            }
+
+        }
+    }
+}
+
+void CheckSizeof::checkAllocationSizeError(const Token* tok, std::string type)
+{
+    reportError(tok, Severity::error, "checkAllocationSize", "Error in allocation size. The size of the allocated memory does not match the size of variables from type " + type, CWE467, Certainty::normal);
+}
+
+//checkAllocationSizeEnd--------------------------------------------------------------------------------------------------

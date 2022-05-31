@@ -2417,6 +2417,20 @@ const ValueFlow::Value* Token::getValue(const MathLib::bigint val) const
     return it == mImpl->mValues->end() ? nullptr : &*it;
 }
 
+//---------------------------------------------------------------------
+const bool Token::valueDividedBy(const MathLib::bigint val) const
+{
+    if (!mImpl->mValues) {
+        return false;
+    }
+    const auto it = std::find_if(mImpl->mValues->begin(), mImpl->mValues->end(), [=](const ValueFlow::Value& value) {
+        return value.isIntValue() && !value.isImpossible() && value.intvalue >= 0 && val >= 0 && value.intvalue % val == 0;
+        });
+    return it == mImpl->mValues->end() ? false : true;
+}
+
+//----------------------------------------------------------------------
+
 const ValueFlow::Value* Token::getMaxValue(bool condition, MathLib::bigint path) const
 {
     if (!mImpl->mValues)

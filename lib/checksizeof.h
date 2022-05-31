@@ -60,6 +60,7 @@ public:
         checkSizeof.checkSizeofForPointerSize();
         checkSizeof.checkSizeofForNumericParameter();
         checkSizeof.sizeofVoid();
+        checkSizeof.checkAllocationSize();
     }
 
     /** @brief %Check for 'sizeof sizeof ..' */
@@ -86,6 +87,9 @@ public:
     /** @brief %Check for using sizeof(void) */
     void sizeofVoid();
 
+    void checkAllocationSize();
+
+
 private:
     // Error messages..
     void sizeofsizeofError(const Token* tok);
@@ -100,6 +104,7 @@ private:
     void sizeofVoidError(const Token *tok);
     void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
     void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype);
+    void checkAllocationSizeError(const Token* tok, std::string type);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckSizeof c(nullptr, settings, errorLogger);
@@ -116,6 +121,7 @@ private:
         c.sizeofVoidError(nullptr);
         c.sizeofDereferencedVoidPointerError(nullptr, "varname");
         c.arithOperationsOnVoidPointerError(nullptr, "varname", "vartype");
+        c.checkAllocationSizeError(nullptr, "varname");
     }
 
     static std::string myName() {
