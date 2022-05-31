@@ -915,14 +915,14 @@ static bool hasUnknownVars(const Token* startTok)
     return result;
 }
 
-static bool isStructuredBindingVariable(const Variable* var)
+bool isStructuredBindingVariable(const Variable* var)
 {
     if (!var)
         return false;
     const Token* tok = var->nameToken();
-    while (Token::Match(tok->astParent(), "[|,"))
+    while (tok && Token::Match(tok->astParent(), "[|,|:"))
         tok = tok->astParent();
-    return Token::simpleMatch(tok, "[");
+    return tok && (tok->str() == "[" || Token::simpleMatch(tok->previous(), "] :")); // TODO: remove workaround when #11105 is fixed
 }
 
 /// This takes a token that refers to a variable and it will return the token

@@ -4357,6 +4357,31 @@ private:
                "    f(x, -1);\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, -1));
+
+        code = "void g() {\n"
+               "    const std::vector<int> v;\n"
+               "    f(v);\n"
+               "}\n"
+               "void f(const std::vector<int>& w) {\n"
+               "    for (int i = 0; i < w.size(); ++i) {\n"
+               "        int x = i != 0;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 8U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 8U, 1));
+
+        code = "void g() {\n"
+               "    const std::vector<int> v;\n"
+               "    f(v);\n"
+               "}\n"
+               "void f(const std::vector<int>& w) {\n"
+               "    for (int i = 0; i < w.size(); ++i) {\n"
+               "        int x = i;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, -1));
     }
     void valueFlowFunctionReturn() {
         const char *code;

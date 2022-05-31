@@ -2181,7 +2181,24 @@ private:
         check("void f(std::vector<int>& v) {\n"
               "    for(auto& x:v) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
+                      "[test.cpp:2]: (style) Variable 'x' can be declared as reference to const\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v) {\n" // #10980
+              "    for (int& i : v)\n"
+              "        if (i == 0) {}\n"
+              "    for (const int& i : v)\n"
+              "        if (i == 0) {}\n"
+              "    for (auto& i : v)\n"
+              "        if (i == 0) {}\n"
+              "    for (const auto& i : v)\n"
+              "        if (i == 0) {}\n"
+              "    v.clear();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as reference to const\n"
+                      "[test.cpp:6]: (style) Variable 'i' can be declared as reference to const\n",
+                      errout.str());
 
         check("void f(std::vector<int>& v) {\n"
               "    for(const auto& x:v) {}\n"
