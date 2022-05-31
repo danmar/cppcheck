@@ -4648,7 +4648,7 @@ private:
               true);
         ASSERT_EQUALS("", errout.str());
 
-        check("std::size_t f(const std::map<std::string, std::size_t>& m) {\n"
+        check("std::size_t f(const std::map<std::string, std::size_t>& m) {\n" // #10412
               "    std::size_t t = 0;\n"
               "    for (std::map<std::string, std::size_t>::const_iterator i = m.begin(); i != m.end(); ++i) {\n"
               "        t += i->second;\n"
@@ -4661,6 +4661,15 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n"
                       "[test.cpp:7]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n",
                       errout.str());
+
+        check("int g(const std::vector<int>& v) {\n"
+              "    int t = 0;\n"
+              "    for (auto i = v.begin(); i != v.end(); ++i) {\n"
+              "        t += *i;\n"
+              "    }\n"
+              "    return t;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
     }
 
     void loopAlgoContainerInsert() {
