@@ -2610,10 +2610,24 @@ void CheckStl::useStlAlgorithm()
                 continue;
             const Token *bodyTok = tok->next()->link()->next();
             const Token *splitTok = tok->next()->astOperand2();
-            if (!Token::simpleMatch(splitTok, ":"))
-                continue;
-            const Token *loopVar = splitTok->previous();
-            if (!Token::Match(loopVar, "%var%"))
+            const Token* loopVar{};
+            if (Token::simpleMatch(splitTok, ":")) {
+                loopVar = splitTok->previous();
+                if (!Token::Match(loopVar, "%var%"))
+                    continue;
+            }
+            else if (Token::simpleMatch(splitTok, ";")) { // iterator-based loop
+                loopVar = splitTok->next();
+                if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() || loopVar->valueType()->type != ValueType::Type::ITERATOR)
+                    continue;
+                const Token* initAssign = splitTok->astOperand1();
+                if (!Token::simpleMatch(initAssign, "=") || !Token::Match(initAssign->astOperand1(), "%var%", loopVar->varId()))
+                    continue;
+                const Token* inc = splitTok->astOperand2() ? splitTok->astOperand2()->astOperand2() : nullptr;
+                if (!inc || (!Token::Match(inc, "%op% %varid%", loopVar->varId()) && !Token::Match(inc->previous(), "%varid% %op% ", loopVar->varId())))
+                    continue;
+            }
+            else
                 continue;
 
             // Check for single assignment
