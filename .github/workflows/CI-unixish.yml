@@ -59,19 +59,17 @@ jobs:
         if: contains(matrix.os, 'ubuntu')
         run: |
           mkdir cmake.output
-          cd cmake.output
+          pushd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On ..
           cmake --build . -- -j$(nproc)
-          cd ..
 
       - name: CMake build on macos (with GUI)
         if: contains(matrix.os, 'macos')
         run: |
           mkdir cmake.output
-          cd cmake.output
+          pushd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 ..
           cmake --build . -- -j$(nproc)
-          cd ..
 
       - name: Run CMake test
         run: |
@@ -79,15 +77,27 @@ jobs:
 
       - name: Run CTest
         run: |
-          cd cmake.output
+          pushd cmake.output
           ctest -j$(nproc)
-          cd ..
 
-      - name: Build and test with Unsigned char
+      - name: Build with Unsigned char
         run: |
           make clean
           make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
+
+      - name: Test with Unsigned char
+        run: |
           ./testrunner TestSymbolDatabase
+
+      - name: Build with TEST_MATHLIB_VALUE
+        run: |
+          make clean
+          touch lib/mathlib.cpp test/testmathlib.cpp
+          make -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE all
+
+      - name: Test with TEST_MATHLIB_VALUE
+        run: |
+          make -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE check
 
       - name: Check syntax with NONNEG
         run: |
@@ -112,6 +122,7 @@ jobs:
         run: |
           tools/generate_and_run_more_tests.sh
 
+      # do not use pushd in this step since we go below the working directory
       - name: Run test/cli
         run: |
           cd test/cli
@@ -149,14 +160,33 @@ jobs:
         run: |
           make -j$(nproc) checkCWEEntries validateXML
 
+      # TODO: move to scriptcheck.yml so these are tested with all Python versions?
       - name: Test addons
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
           ./cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
-          cd addons/test
-          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 && python3 ../misra.py -verify misra/misra-test.c.dump
+          pushd addons/test
+          # We'll force C89 standard to enable an additional verification for
+          # rules 5.4 and 5.5 which have standard-dependent options.
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 
+          python3 ../misra.py -verify misra/misra-test.c.dump
+          # TODO: do we need to verify something here?
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.h
+          ../../cppcheck --dump misra/misra-test.cpp 
+          python3 ../misra.py -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_utf8.txt -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_windows1250.txt -verify misra/misra-test.cpp.dump
           ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
+          ../../cppcheck --dump misc-test.cpp 
+          python3 ../misc.py -verify misc-test.cpp.dump
+          ../../cppcheck --dump naming_test.c 
+          python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump
+          ../../cppcheck --dump naming_test.cpp 
+          python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump
+          ../../cppcheck --dump namingng_test.c 
+          python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
 
       - name: Ensure misra addon does not crash
         if: contains(matrix.os, 'ubuntu')
