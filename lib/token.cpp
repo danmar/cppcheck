@@ -638,8 +638,11 @@ const char *Token::chrInFirstWord(const char *str, char c)
 
 bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
 {
+    if (!(*pattern))
+        return true;
+
     const char *p = pattern;
-    while (*p) {
+    while (true) {
         // Skip spaces in pattern..
         while (*p == ' ')
             ++p;
@@ -654,8 +657,9 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
                 while (*p && *p != ' ')
                     ++p;
                 continue;
-            } else
-                return false;
+            }
+
+            return false;
         }
 
         // [.. => search for a one-character token..
@@ -686,8 +690,6 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
                 return false;
 
             p = temp;
-            while (*p && *p != ' ')
-                ++p;
         }
 
         // Parse "not" options. Token can be anything except the given one
@@ -695,8 +697,6 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
             p += 2;
             if (firstWordEquals(p, tok->str().c_str()))
                 return false;
-            while (*p && *p != ' ')
-                ++p;
         }
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
@@ -707,14 +707,16 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
                 while (*p && *p != ' ')
                     ++p;
                 continue;
-            } else if (res == -1) {
+            }
+            if (res == -1) {
                 // No match
                 return false;
             }
         }
 
-        while (*p && *p != ' ')
-            ++p;
+        // using strchr() for the other instances leads to a performance decrease
+        if (!(p = strchr(p, ' ')))
+            break;
 
         tok = tok->next();
     }
