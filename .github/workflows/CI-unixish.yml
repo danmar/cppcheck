@@ -9,7 +9,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, macos-10.15, macos-11, macos-12]
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-10.15, macos-11, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -23,11 +23,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install libxml2-utils
           sudo apt-get install libtinyxml2-dev
-          sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qt5-default
+          sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
+
+      # required so a default Qt installation is configured
+      - name: Install missing software on ubuntu 18.04
+        if: matrix.os == 'ubuntu-18.04'
+        run: |
+          sudo apt-get install qt5-default
 
       # packages for strict cfg checks
-      - name: Install missing software on ubuntu 20.04
-        if: matrix.os == 'ubuntu-20.04'
+      - name: Install missing software on ubuntu 22.04
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           sudo apt-get install libcairo2-dev libcurl4-openssl-dev liblua5.3-dev libssl-dev libsqlite3-dev libcppunit-dev libsigc++-2.0-dev libgtk-3-dev libboost-all-dev libwxgtk3.0-gtk3-dev xmlstarlet
 
@@ -134,12 +140,12 @@ jobs:
 
       # fails on macos since some includes (e.g. sys/epoll.h) are not available
       - name: Run cfg tests
-        if: contains(matrix.os, 'ubuntu') && matrix.os != 'ubuntu-20.04'
+        if: contains(matrix.os, 'ubuntu') && matrix.os != 'ubuntu-22.04'
         run: |
           make -j$(nproc) checkcfg
 
       - name: Run cfg tests (strict)
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           make -j$(nproc) checkcfg
         env:
@@ -238,26 +244,26 @@ jobs:
           qcollectiongenerator online-help.qhcp -o online-help.qhc
 
       - name: Generate Qt help file on ubuntu 20.04
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
 
       - name: Build triage on ubuntu
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           pushd tools/triage
           qmake CONFIG+=debug
           make -j$(nproc)
 
       - name: Build Fuzzer
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           pushd oss-fuzz
           make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
 
       - name: Self check (build)
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           # compile with verification and ast matchers
           make clean
@@ -265,7 +271,7 @@ jobs:
 
       # Run self check after "Build GUI" to include generated headers in analysis
       - name: Self check
-        if: matrix.os == 'ubuntu-20.04'
+        if: matrix.os == 'ubuntu-22.04'
         run: |
           ec=0
           # self check lib/cli
