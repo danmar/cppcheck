@@ -52,12 +52,24 @@ void CheckBool::checkIncrementBoolean()
 {
     if (!mSettings->severity.isEnabled(Severity::style))
         return;
-
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
+    const Token* first_var = NULL;
+    const Token* second_var = NULL;
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope* scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
             if (astIsBool(tok) && tok->astParent() && tok->astParent()->str() == "++") {
                 incrementBooleanError(tok);
+            }
+            //check if there is an operation between bool and bool. if there is - report error
+            else if (Token::Match(tok, "%var% %assign% %var% %op% %num%"))
+            {
+                first_var = tok;
+                second_var = tok->tokAt(2);
+                if ((first_var->valueType()->type == ValueType::Type::BOOL) && (second_var->valueType()->type == ValueType::Type::BOOL))
+                {
+                    incrementBooleanError(tok);
+                }
+
             }
         }
     }
