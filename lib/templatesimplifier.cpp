@@ -3374,10 +3374,10 @@ static bool specMatch(
 void TemplateSimplifier::getSpecializations()
 {
     // try to locate a matching declaration for each user defined specialization
-    for (auto & spec : mTemplateDeclarations) {
+    for (const auto& spec : mTemplateDeclarations) {
         if (spec.isSpecialization()) {
             bool found = false;
-            for (auto & decl : mTemplateDeclarations) {
+            for (const auto& decl : mTemplateDeclarations) {
                 if (specMatch(spec, decl)) {
                     mTemplateSpecializationMap[spec.token()] = decl.token();
                     found = true;
@@ -3386,7 +3386,7 @@ void TemplateSimplifier::getSpecializations()
             }
 
             if (!found) {
-                for (auto & decl : mTemplateForwardDeclarations) {
+                for (const auto& decl : mTemplateForwardDeclarations) {
                     if (specMatch(spec, decl)) {
                         mTemplateSpecializationMap[spec.token()] = decl.token();
                         break;
@@ -3400,10 +3400,10 @@ void TemplateSimplifier::getSpecializations()
 void TemplateSimplifier::getPartialSpecializations()
 {
     // try to locate a matching declaration for each user defined partial specialization
-    for (auto & spec : mTemplateDeclarations) {
+    for (const auto& spec : mTemplateDeclarations) {
         if (spec.isPartialSpecialization()) {
             bool found = false;
-            for (auto & decl : mTemplateDeclarations) {
+            for (const auto& decl : mTemplateDeclarations) {
                 if (specMatch(spec, decl)) {
                     mTemplatePartialSpecializationMap[spec.token()] = decl.token();
                     found = true;
@@ -3412,7 +3412,7 @@ void TemplateSimplifier::getPartialSpecializations()
             }
 
             if (!found) {
-                for (auto & decl : mTemplateForwardDeclarations) {
+                for (const auto& decl : mTemplateForwardDeclarations) {
                     if (specMatch(spec, decl)) {
                         mTemplatePartialSpecializationMap[spec.token()] = decl.token();
                         break;
@@ -3841,7 +3841,7 @@ void TemplateSimplifier::simplifyTemplates(
         }
 
         // remove explicit instantiations
-        for (TokenAndName & j : mExplicitInstantiationsToDelete) {
+        for (const TokenAndName& j : mExplicitInstantiationsToDelete) {
             Token * start = j.token();
             if (start) {
                 Token * end = start->next();

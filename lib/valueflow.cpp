@@ -174,6 +174,19 @@ static void changePossibleToKnown(std::list<ValueFlow::Value>& values, int indir
     }
 }
 
+static bool isNonConditionalPossibleIntValue(const ValueFlow::Value& v)
+{
+    if (v.conditional)
+        return false;
+    if (v.condition)
+        return false;
+    if (!v.isPossible())
+        return false;
+    if (!v.isIntValue())
+        return false;
+    return true;
+}
+
 static void setValueUpperBound(ValueFlow::Value& value, bool upper)
 {
     if (upper)
@@ -189,6 +202,14 @@ static void setValueBound(ValueFlow::Value& value, const Token* tok, bool invert
     } else if (Token::Match(tok, ">|>=")) {
         setValueUpperBound(value, invert);
     }
+}
+
+static void setConditionalValue(ValueFlow::Value& value, const Token* tok, MathLib::bigint i)
+{
+    assert(value.isIntValue());
+    value.intvalue = i;
+    value.assumeCondition(tok);
+    value.setPossible();
 }
 
 static void setConditionalValues(const Token* tok,
@@ -216,11 +237,11 @@ static void setConditionalValues(const Token* tok,
         if (lhs)
             std::swap(greaterThan, lessThan);
         if (Token::simpleMatch(tok, greaterThan, strlen(greaterThan))) {
-            true_value = ValueFlow::Value{tok, value + 1};
-            false_value = ValueFlow::Value{tok, value};
+            setConditionalValue(true_value, tok, value + 1);
+            setConditionalValue(false_value, tok, value);
         } else if (Token::simpleMatch(tok, lessThan, strlen(lessThan))) {
-            true_value = ValueFlow::Value{tok, value - 1};
-            false_value = ValueFlow::Value{tok, value};
+            setConditionalValue(true_value, tok, value - 1);
+            setConditionalValue(false_value, tok, value);
         }
     }
     setValueBound(true_value, tok, lhs);
@@ -232,32 +253,85 @@ static bool isSaturated(MathLib::bigint value)
     return value == std::numeric_limits<MathLib::bigint>::max() || value == std::numeric_limits<MathLib::bigint>::min();
 }
 
-const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value, const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
+static void parseCompareEachInt(
+    const Token* tok,
+    const std::function<void(const Token* varTok, ValueFlow::Value true_value, ValueFlow::Value false_value)>& each,
+    const std::function<std::vector<ValueFlow::Value>(const Token*)>& evaluate)
 {
     if (!tok->astOperand1() || !tok->astOperand2())
-        return nullptr;
+        return;
     if (tok->isComparisonOp()) {
-        std::vector<MathLib::bigint> value1 = evaluate(tok->astOperand1());
-        std::vector<MathLib::bigint> value2 = evaluate(tok->astOperand2());
+        std::vector<ValueFlow::Value> value1 = evaluate(tok->astOperand1());
+        std::vector<ValueFlow::Value> value2 = evaluate(tok->astOperand2());
         if (!value1.empty() && !value2.empty()) {
             if (tok->astOperand1()->hasKnownIntValue())
                 value2.clear();
             if (tok->astOperand2()->hasKnownIntValue())
                 value1.clear();
         }
-        if (!value1.empty()) {
-            if (isSaturated(value1.front()) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
-                return nullptr;
-            setConditionalValues(tok, true, value1.front(), true_value, false_value);
-            return tok->astOperand2();
-        } else if (!value2.empty()) {
-            if (isSaturated(value2.front()) || astIsFloat(tok->astOperand1(), /*unknown*/ false))
-                return nullptr;
-            setConditionalValues(tok, false, value2.front(), true_value, false_value);
-            return tok->astOperand1();
+        for (const ValueFlow::Value& v1 : value1) {
+            ValueFlow::Value true_value = v1;
+            ValueFlow::Value false_value = v1;
+            if (isSaturated(v1.intvalue) || astIsFloat(tok->astOperand2(), /*unknown*/ false))
+                continue;
+            setConditionalValues(tok, true, v1.intvalue, true_value, false_value);
+            each(tok->astOperand2(), std::move(true_value), std::move(false_value));
+        }
+        for (const ValueFlow::Value& v2 : value2) {
+            ValueFlow::Value true_value = v2;
+            ValueFlow::Value false_value = v2;
+            if (isSaturated(v2.intvalue) || astIsFloat(tok->astOperand1(), /*unknown*/ false))
+                continue;
+            setConditionalValues(tok, false, v2.intvalue, true_value, false_value);
+            each(tok->astOperand1(), std::move(true_value), std::move(false_value));
         }
     }
-    return nullptr;
+}
+
+static void parseCompareEachInt(
+    const Token* tok,
+    const std::function<void(const Token* varTok, ValueFlow::Value true_value, ValueFlow::Value false_value)>& each)
+{
+    parseCompareEachInt(tok, each, [](const Token* t) -> std::vector<ValueFlow::Value> {
+        if (t->hasKnownIntValue())
+            return {t->values().front()};
+        std::vector<ValueFlow::Value> result;
+        std::copy_if(t->values().begin(), t->values().end(), std::back_inserter(result), [&](const ValueFlow::Value& v) {
+            if (v.path < 1)
+                return false;
+            if (!isNonConditionalPossibleIntValue(v))
+                return false;
+            return true;
+        });
+        return result;
+    });
+}
+
+const Token* parseCompareInt(const Token* tok,
+                             ValueFlow::Value& true_value,
+                             ValueFlow::Value& false_value,
+                             const std::function<std::vector<MathLib::bigint>(const Token*)>& evaluate)
+{
+    const Token* result = nullptr;
+    parseCompareEachInt(
+        tok,
+        [&](const Token* vartok, ValueFlow::Value true_value2, ValueFlow::Value false_value2) {
+        if (result)
+            return;
+        result = vartok;
+        true_value = std::move(true_value2);
+        false_value = std::move(false_value2);
+    },
+        [&](const Token* t) -> std::vector<ValueFlow::Value> {
+        std::vector<ValueFlow::Value> r;
+        std::vector<MathLib::bigint> v = evaluate(t);
+
+        std::transform(v.begin(), v.end(), std::back_inserter(r), [&](MathLib::bigint i) {
+            return ValueFlow::Value{i};
+        });
+        return r;
+    });
+    return result;
 }
 
 const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, ValueFlow::Value &false_value)
@@ -5431,6 +5505,25 @@ struct ConditionHandler {
             return astIsBool(vartok);
         }
 
+        static MathLib::bigint findPath(const std::list<ValueFlow::Value>& values)
+        {
+            auto it = std::find_if(values.begin(), values.end(), [](const ValueFlow::Value& v) {
+                return v.path > 0;
+            });
+            if (it == values.end())
+                return 0;
+            assert(std::all_of(it, values.end(), [&](const ValueFlow::Value& v) {
+                return v.path == 0 || v.path == it->path;
+            }));
+            return it->path;
+        }
+
+        MathLib::bigint getPath() const
+        {
+            assert(std::abs(findPath(true_values) - findPath(false_values)) == 0);
+            return findPath(true_values) | findPath(false_values);
+        }
+
         Condition() : vartok(nullptr), true_values(), false_values(), inverted(false), impossible(true) {}
     };
 
@@ -5628,6 +5721,21 @@ struct ConditionHandler {
         return tok;
     }
 
+    static void fillFromPath(ProgramMemory& pm, const Token* top, MathLib::bigint path)
+    {
+        if (path < 1)
+            return;
+        visitAstNodes(top, [&](const Token* tok) {
+            const ValueFlow::Value* v = ValueFlow::findValue(tok->values(), nullptr, [&](const ValueFlow::Value& v) {
+                return v.path == path && isNonConditionalPossibleIntValue(v);
+            });
+            if (v == nullptr)
+                return ChildrenToVisit::op1_and_op2;
+            pm.setValue(tok, *v);
+            return ChildrenToVisit::op1_and_op2;
+        });
+    }
+
     void afterCondition(TokenList* tokenlist,
                         SymbolDatabase* symboldatabase,
                         ErrorLogger* errorLogger,
@@ -5635,17 +5743,21 @@ struct ConditionHandler {
         traverseCondition(tokenlist, symboldatabase, [&](const Condition& cond, Token* condTok, const Scope* scope) {
             const Token* top = condTok->astTop();
 
+            const MathLib::bigint path = cond.getPath();
+            const bool allowKnown = path == 0;
+            const bool allowImpossible = cond.impossible && allowKnown;
+
             std::list<ValueFlow::Value> thenValues;
             std::list<ValueFlow::Value> elseValues;
 
             if (!Token::Match(condTok, "!=|=|(|.") && condTok != cond.vartok) {
                 thenValues.insert(thenValues.end(), cond.true_values.begin(), cond.true_values.end());
-                if (cond.impossible && isConditionKnown(condTok, false))
+                if (allowImpossible && isConditionKnown(condTok, false))
                     insertImpossible(elseValues, cond.false_values);
             }
             if (!Token::Match(condTok, "==|!")) {
                 elseValues.insert(elseValues.end(), cond.false_values.begin(), cond.false_values.end());
-                if (cond.impossible && isConditionKnown(condTok, true)) {
+                if (allowImpossible && isConditionKnown(condTok, true)) {
                     insertImpossible(thenValues, cond.true_values);
                     if (cond.isBool())
                         insertNegateKnown(thenValues, cond.true_values);
@@ -5676,7 +5788,7 @@ struct ConditionHandler {
                         values = thenValues;
                     else if (op == "||")
                         values = elseValues;
-                    if (Token::Match(condTok, "==|!=") || cond.isBool())
+                    if (allowKnown && (Token::Match(condTok, "==|!=") || cond.isBool()))
                         changePossibleToKnown(values);
                     if (astIsFloat(cond.vartok, false) ||
                         (!cond.vartok->valueType() &&
@@ -5799,6 +5911,8 @@ struct ConditionHandler {
                 // Check if condition in for loop is always false
                 const Token* initTok = getInitTok(top);
                 ProgramMemory pm;
+                fillFromPath(pm, initTok, path);
+                fillFromPath(pm, condTok, path);
                 execute(initTok, &pm, nullptr, nullptr);
                 MathLib::bigint result = 1;
                 execute(condTok, &pm, &result, nullptr);
@@ -5830,7 +5944,8 @@ struct ConditionHandler {
                 if (!startToken)
                     continue;
                 std::list<ValueFlow::Value>& values = (i == 0 ? thenValues : elseValues);
-                valueFlowSetConditionToKnown(condTok, values, i == 0);
+                if (allowKnown)
+                    valueFlowSetConditionToKnown(condTok, values, i == 0);
 
                 Analyzer::Result r = forward(startTokens[i], startTokens[i]->link(), cond.vartok, values, tokenlist);
                 deadBranch[i] = r.terminate == Analyzer::Terminate::Escape;
@@ -5927,7 +6042,7 @@ struct ConditionHandler {
                     if (possible) {
                         values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
                         changeKnownToPossible(values);
-                    } else {
+                    } else if (allowKnown) {
                         valueFlowSetConditionToKnown(condTok, values, true);
                         valueFlowSetConditionToKnown(condTok, values, false);
                     }
@@ -5953,20 +6068,26 @@ static void valueFlowCondition(const ValuePtr<ConditionHandler>& handler,
 
 struct SimpleConditionHandler : ConditionHandler {
     virtual std::vector<Condition> parse(const Token* tok, const Settings*) const override {
-        Condition cond;
-        ValueFlow::Value true_value;
-        ValueFlow::Value false_value;
-        const Token *vartok = parseCompareInt(tok, true_value, false_value);
-        if (vartok) {
+
+        std::vector<Condition> conds;
+        parseCompareEachInt(tok, [&](const Token* vartok, ValueFlow::Value true_value, ValueFlow::Value false_value) {
+            Condition cond;
             if (vartok->hasKnownIntValue())
-                return {};
+                return;
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
-            return {cond};
-        }
+            conds.push_back(cond);
+        });
+        if (!conds.empty())
+            return conds;
+
+        Condition cond;
+        ValueFlow::Value true_value;
+        ValueFlow::Value false_value;
+        const Token* vartok = nullptr;
 
         if (tok->str() == "!") {
             vartok = tok->astOperand1();
@@ -6561,34 +6682,6 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
             ps[var->nameToken()] = p.second;
         }
         return ps;
-    }
-
-    virtual void forkScope(const Token* endBlock) override {
-        ProgramMemory pm{getProgramState()};
-        const Scope* scope = endBlock->scope();
-        const Token* condTok = getCondTokFromEnd(endBlock);
-        if (scope && condTok)
-            programMemoryParseCondition(pm, condTok, nullptr, getSettings(), scope->type != Scope::eElse);
-        if (condTok && Token::simpleMatch(condTok->astParent(), ";")) {
-            ProgramMemory endMemory;
-            if (valueFlowForLoop2(condTok->astTop()->previous(), nullptr, &endMemory, nullptr))
-                pm.replace(endMemory);
-        }
-        // ProgramMemory pm = pms.get(endBlock->link()->next(), getProgramState());
-        for (const auto& p : pm) {
-            nonneg int varid = p.first.getExpressionId();
-            if (symboldatabase && !symboldatabase->isVarId(varid))
-                continue;
-            ValueFlow::Value value = p.second;
-            if (vars.count(varid) != 0)
-                continue;
-            if (value.isImpossible())
-                continue;
-            value.setPossible();
-            values[varid] = value;
-            if (symboldatabase)
-                vars[varid] = symboldatabase->getVariableFromVarId(varid);
-        }
     }
 };
 
@@ -7845,21 +7938,24 @@ static void valueFlowContainerSize(TokenList* tokenlist,
 struct ContainerConditionHandler : ConditionHandler {
     virtual std::vector<Condition> parse(const Token* tok, const Settings* settings) const override
     {
-        Condition cond;
-        ValueFlow::Value true_value;
-        ValueFlow::Value false_value;
-        const Token *vartok = parseCompareInt(tok, true_value, false_value);
-        if (vartok) {
+        std::vector<Condition> conds;
+        parseCompareEachInt(tok, [&](const Token* vartok, ValueFlow::Value true_value, ValueFlow::Value false_value) {
+            Condition cond;
             vartok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
             if (!vartok)
-                return {};
+                return;
             true_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             false_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
-            return {cond};
-        }
+            conds.push_back(cond);
+        });
+        if (!conds.empty())
+            return conds;
+
+        Condition cond;
+        const Token* vartok = nullptr;
 
         // Empty check
         if (tok->str() == "(") {
