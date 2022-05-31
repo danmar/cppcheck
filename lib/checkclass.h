@@ -85,6 +85,7 @@ public:
         checkClass.checkOverride();
         checkClass.checkThisUseAfterFree();
         checkClass.checkUnsafeClassRefMember();
+        checkClass.checkMoveConstructor();
     }
 
     /** @brief %Check that all class constructors are ok */
@@ -230,6 +231,9 @@ private:
     void thisUseAfterFree(const Token *self, const Token *free, const Token *use);
     void unsafeClassRefMemberError(const Token *tok, const std::string &varname);
     void checkDuplInheritedMembersRecursive(const Type* typeCurrent, const Type* typeBase);
+    void checkMoveConstructor();
+    bool checkIfClass(const Token* tok);
+    void checkMoveConstructorError(const Token* tok1, const Token* tok2);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckClass c(nullptr, settings, errorLogger);
@@ -270,6 +274,7 @@ private:
         c.overrideError(nullptr, nullptr);
         c.thisUseAfterFree(nullptr, nullptr, nullptr);
         c.unsafeClassRefMemberError(nullptr, "UnsafeClass::var");
+        c.checkMoveConstructorError(nullptr, nullptr);
     }
 
     static std::string myName() {

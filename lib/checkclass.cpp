@@ -3141,4 +3141,76 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
     return foundErrors;
 }
 
+//checkMoveConstructorStart---------------------------------------------------------------------------
+
+bool CheckClass::checkIfClass(const Token* tok)
+{
+    std::string type = tok->str();
+    if (type != "int" && type != "double" && type != "long" && type != "float" &&
+        type != "short" && type != "char" && type != "bool" && type != "longlong" &&
+        type != "longdouble" && type != "string" && type != "void")
+    {
+        return true;
+    }
+    return false;
+
+
+}
+void CheckClass::checkMoveConstructor()
+{
+    //runs over all classes and structs
+    for (const Scope* scope : mSymbolDatabase->classAndStructScopes)
+    {
+        //runs over all functions
+        for (const Function& func : scope->functionList)
+        {
+            // if the current function is not a constructor, continue to the next function. 
+            if (!func.isConstructor()) {
+                continue;
+            }
+            //checking if the function type is a regular constructor or a move constructor. 
+            if ((func.type == Function::eConstructor || func.type == Function::eMoveConstructor) && func.argCount() > 0) {
+                const Variable* firstArg = func.getArgumentVar(0); // first argument of the constructor. 
+                if (!checkIfClass(firstArg->typeStartToken()))
+                    continue;
+                // We are intersted in functions in which the first argument is Rvalue. 
+                if (firstArg->isRValueReference()) {
+                    const Token* startCheckFrom = func.token; //first token of the function
+
+                    while (startCheckFrom->str() != "{" && startCheckFrom->str() != ":" && startCheckFrom->str() != "}")
+                    {
+                        startCheckFrom = startCheckFrom->next();
+                    }
+                    while (startCheckFrom->str() != "}")
+                    {
+                        if (startCheckFrom->str() == firstArg->name()) {
+                            //checking if the move operation exists in the function. 
+                            if (!(Token::Match(startCheckFrom->tokAt(-4), "std :: move ("))) {
+                                //print Error
+                                checkMoveConstructorError(startCheckFrom, startCheckFrom->tokAt(-2));
+                            }
+                        }
+                        startCheckFrom = startCheckFrom->next();
+                    }
+
+                }
+            }
+
+        }
+    }
+}
+
+
+void CheckClass::checkMoveConstructorError(const Token* tok1, const Token* tok2)
+{
+    std::string if_point = tok1->str();
+    if (tok1->next()->str() == ".")
+        if_point = tok1->str() + tok1->next()->str() + tok1->next()->next()->str();
+    // adding the types to the message
+    reportError(tok1, Severity::performance, "checkMoveConstructor",
+        "Missing move operation on " + if_point + " in the assignment to " + tok2->str() + ". Consider adding move operation in intialization list to increase efficiency",
+        CWE398, Certainty::normal);
+}
+
+//checkMoveConstructorEnd---------------------------------------------------------------------------
 
