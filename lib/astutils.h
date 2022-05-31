@@ -53,7 +53,11 @@ void visitAstNodes(T *ast, const TFunc &visitor)
     if (!ast)
         return;
 
-    std::stack<T *, std::vector<T *>> tokens;
+    std::vector<T *> tokensContainer;
+    // the size of 8 was determined in tests to be sufficient to avoid excess allocations. also add 1 as a buffer.
+    // we might need to increase that value in the future.
+    tokensContainer.reserve(8 + 1);
+    std::stack<T *, std::vector<T *>> tokens(std::move(tokensContainer));
     T *tok = ast;
     do {
         ChildrenToVisit c = visitor(tok);
