@@ -101,6 +101,7 @@ public:
         checkOther.checkAccessOfMovedVariable();
         checkOther.checkModuloOfOne();
         checkOther.checkOverlappingWrite();
+        checkOther.checkSuspiciousForLoop();
     }
 
     /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
@@ -230,6 +231,10 @@ public:
     void overlappingWriteUnion(const Token *tok);
     void overlappingWriteFunction(const Token *tok);
 
+    void checkSuspiciousForLoop();
+    void checkSuspiciousForLoopError(const Token* tok, const Token* first_var);
+    //check if in a for loops there are two seperators (;)
+    bool checkForLoopStructure(const Token* tok);
 private:
     // Error messages..
     void checkComparisonFunctionIsAlwaysTrueOrFalseError(const Token* tok, const std::string &functionName, const std::string &varName, const bool result);

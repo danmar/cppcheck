@@ -3767,3 +3767,154 @@ void CheckOther::overlappingWriteFunction(const Token *tok)
     const std::string funcname = tok ? tok->str() : "";
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
 }
+//checkSuspiciousForLoopStart---------------------------------------------------------------------------
+
+//check if in a for loops there are two seperators (;)
+bool CheckOther::checkForLoopStructure(const Token* tok)
+{
+    int countSeparators = 0;
+    int count_open_bracket = 0;
+    int count_close_bracket = 0;
+    while (tok->str() != "{")
+    {
+        if (tok->str() == "(") {
+            count_open_bracket++;
+        }
+        if (tok->str() == ")") {
+            count_close_bracket++;
+        }
+        if ((tok->str() == ")") && (count_open_bracket - count_close_bracket == 0))
+            break;
+
+        if (tok->str() == ";") {
+            countSeparators++;
+        }
+        tok = tok->next();
+    }
+
+    if (countSeparators == 2) {
+        return true;
+    }
+    return false;
+}
+
+void CheckOther::checkSuspiciousForLoop()
+{
+    const bool styleEnabled = mSettings->severity.isEnabled(Severity::style);
+    const bool warningEnabled = mSettings->severity.isEnabled(Severity::warning);
+    if (!styleEnabled && !warningEnabled)
+        return;
+
+    const Token* first_var = nullptr;
+
+    const Token* last_tok = nullptr;
+    int num_first_part = 0;
+    bool flag1 = true;
+    bool flag2 = true;
+    bool flag3 = true;
+
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+
+    //runs over all functions
+    for (const Scope* scope : symbolDatabase->functionScopes)
+    {
+        //runs over all the tokens
+        for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next())
+        {
+            //reached to for loop
+            if (Token::Match(tok, "for ("))
+            {
+                if (!checkForLoopStructure(tok->tokAt(1)))
+                {
+                    continue;
+                }
+                //case that there is no first part
+                if (tok->tokAt(2)->str() == ";")
+                    continue;
+
+                //reached to for loop with two seperators
+                last_tok = tok;
+                num_first_part = 0;
+                flag1 = true;
+                flag2 = true;
+                flag3 = true;
+                //in num_first_part there is the number of initialized variables in the first part of the for loop,
+                //like - for ( int i = 0, j = 0 ...;)
+                while (";" != tok->str())
+                {
+                    if (tok->str() == "=") {
+                        first_var = last_tok;
+                        if (num_first_part == 1)
+                        {
+                            flag1 = false;
+                            break;
+                        }
+                        num_first_part++;
+                    }
+
+                    last_tok = tok;
+                    tok = tok->next();
+                }
+
+                if (!flag1) {
+                    first_var = NULL;
+                    break;
+                }
+                //reached to the first var of the first part of the for loop (the initial part)
+                while (";" != tok->str())
+                    tok = tok->next();
+
+                tok = tok->next();
+                //searching the first_var until the next seperator (;)
+                while (";" != tok->str())
+                {
+                    if (tok->str() == first_var->str()) {
+                        flag2 = false;
+                        break;
+                    }
+                    tok = tok->next();
+                }
+                //in the second part of the for loop ( for ( ... ; second_part ; ...) ) there is no match to the first_var -
+                //report error
+                if (flag2)
+                {
+                    checkSuspiciousForLoopError(tok, first_var);
+                    first_var = NULL;
+                    break;
+                }
+
+                else {
+                    while (";" != tok->str())
+                        tok = tok->next();
+                }
+                tok = tok->next();
+                //case that there is no thirs part
+                if (tok->str() == ")")
+                    continue;
+                //searching the first_var until the end of the for loop
+                while (")" != tok->str())
+                {
+                    if (tok->str() == first_var->str()) {
+                        flag3 = false;
+                        break;
+                    }
+                    tok = tok->next();
+                }
+                //in the third part of the for loop ( for ( ... ; ... ; third_part) ) there is no match to the first_var -
+                //report error
+                if (flag3) {
+                    checkSuspiciousForLoopError(tok, first_var);
+                    first_var = NULL;
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void CheckOther::checkSuspiciousForLoopError(const Token* tok, const Token* first_var)
+{
+    reportError(tok, Severity::style, "checkForLoopStructure", "This for loop has suspicious behavior: the variable " + first_var->str() + " does not exist in all parts of the for loop.", CWE369, Certainty::normal);
+}
+
+//checkSuspiciousForLoopEnd---------------------------------------------------------------------------
