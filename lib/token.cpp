@@ -711,8 +711,9 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
             }
         }
 
-        while (*p && *p != ' ')
-            ++p;
+        // using strchr() for the other instances leads to a performance decrease
+        if (!(p = strchr(p, ' ')))
+            break;
 
         tok = tok->next();
     }
