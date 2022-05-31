@@ -1595,7 +1595,7 @@ void CheckOther::checkConstPointer()
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
         } else {
-            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
+            if (Token::Match(parent, "%oror%|%comp%|&&|?|!"))
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
