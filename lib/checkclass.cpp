@@ -3141,4 +3141,86 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
     return foundErrors;
 }
 
+//checkcheckUsedDataMembersBeforeInitializingStart---------------------------------------------------------------------------
+bool CheckClass::IsInitializedDataMember(std::string DataMemberName, std::string ClassName)
+{
+    for (const Scope* scope : mSymbolDatabase->classAndStructScopes) {
+        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+            if (tok->str() == DataMemberName && ClassName == scope->className) {
+                if (Token::Match(tok->tokAt(-1), "%type% %var% ")) {
+                    if (tok->tokAt(3)->str() == "=") {
+                        return true;
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
 
+void CheckClass::checkUsedDataMembersBeforeInitializaion()
+{
+    //runs over all classes and structs
+    for (const Scope* scope : mSymbolDatabase->classAndStructScopes)
+    {
+        //if (isVcl(mSettings) && isVclTypeInit(scope->definedType))
+        //    continue;
+        //runs over all functions
+        for (const Function& func : scope->functionList)
+        {
+            // if the current function is not a constructor, continue to the next function. 
+            if (!func.isConstructor()) {
+                continue;
+            }
+            const Token* startCheckFrom = func.token; //first token of the function
+            const Token* initList = func.constructorMemberInitialization(); //first token of initList
+            bool FoundVar = false;
+            for (const Variable& var : scope->varlist)
+            {
+                FoundVar = false;
+                std::string className = scope->className;
+                if (initList != nullptr) {
+                    startCheckFrom = initList;
+                    while (startCheckFrom->str() != "{")
+                    {
+                        if (startCheckFrom->str() == var.name() && startCheckFrom->variable() != nullptr)
+                        {
+                            FoundVar = true;
+                        }
+                        startCheckFrom = startCheckFrom->next();
+                    }
+                }
+                else {
+                    while (startCheckFrom->str() != "{")
+                    {
+                        startCheckFrom = startCheckFrom->next();
+                    }
+                }
+                for (const Token* tok = startCheckFrom; tok != scope->bodyEnd; tok = tok->next())
+                {
+
+                    if (tok->str() == var.name() && tok->variable() != nullptr && FoundVar == false && scope->className == className && tok->next()->str() != "=" && !IsInitializedDataMember(tok->str(), className)) {
+                        bool isClass = scope->type == Scope::ScopeType::eClass;
+                        checkUsedDataMembersBeforeInitializaionError(tok, scope->className, tok->str(), isClass);
+                    }
+
+                    if (tok->str() == var.name() && tok->variable() != nullptr && FoundVar == false && scope->className == className && (tok->next()->str() == "=" || IsInitializedDataMember(tok->str(), className))) {
+                        FoundVar = true;
+                    }
+                }
+
+            }
+
+        }
+    }
+}
+
+void CheckClass::checkUsedDataMembersBeforeInitializaionError(const Token* tok, std::string className, std::string dataMember, bool isClass)
+{
+    std::string classOrStruct = (isClass) ? "class" : "struct";
+    // adding the types to the message
+    reportError(tok, Severity::warning, "checkUsedDataMembersBeforeAssignment",
+        "Found usage of data member called : '" + dataMember + "', in " + classOrStruct + " : '" + className + "' in the constructor, before initializing",
+        CWE398, Certainty::normal);
+}
+//checkcheckUsedDataMembersBeforeInitializingEnd---------------------------------------------------------------------------
