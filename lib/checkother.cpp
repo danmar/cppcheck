@@ -1575,8 +1575,6 @@ void CheckOther::checkConstPointer()
             deref = true;
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
             deref = true;
-        else if (Token::Match(parent, "%op%") && Token::simpleMatch(parent->astParent(), "."))
-            deref = true;
         else if (astIsRangeBasedForDecl(tok))
             continue;
         if (deref) {
