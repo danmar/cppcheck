@@ -6008,7 +6008,7 @@ struct ConditionHandler {
                         parent = parent->astParent();
                     bool possible = false;
                     if (Token::Match(parent, "&&|%oror%")) {
-                        const std::string& op = parent->str();
+                        const std::string& op(parent->str());
                         while (parent && parent->str() == op)
                             parent = parent->astParent();
                         if (Token::simpleMatch(parent, "!") || Token::simpleMatch(parent, "== false"))
