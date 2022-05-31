@@ -65,7 +65,7 @@ struct ScopeInfo2 {
     std::set<std::string> usingNamespaces;
 };
 
-enum class TokenDebug {None, ValueFlow};
+enum class TokenDebug { None, ValueFlow };
 
 struct TokenImpl {
     nonneg int mVarId;
@@ -135,27 +135,28 @@ struct TokenImpl {
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
 
     TokenImpl()
-        : mVarId(0)
-        , mFileIndex(0)
-        , mLineNumber(0)
-        , mColumn(0)
-        , mExprId(0)
-        , mAstOperand1(nullptr)
-        , mAstOperand2(nullptr)
-        , mAstParent(nullptr)
-        , mScope(nullptr)
-        , mFunction(nullptr) // Initialize whole union
-        , mProgressValue(0)
-        , mIndex(0)
-        , mOriginalName(nullptr)
-        , mValueType(nullptr)
-        , mValues(nullptr)
-        , mTemplateSimplifierPointers(nullptr)
-        , mScopeInfo(nullptr)
-        , mCppcheckAttributes(nullptr)
-        , mCpp11init(Cpp11init::UNKNOWN)
-        , mBits(0)
-        , mDebug(TokenDebug::None)
+        : mVarId(0),
+        mFileIndex(0),
+        mLineNumber(0),
+        mColumn(0),
+        mExprId(0),
+        mAstOperand1(nullptr),
+        mAstOperand2(nullptr),
+        mAstParent(nullptr),
+        mScope(nullptr),
+        mFunction(nullptr)   // Initialize whole union
+        ,
+        mProgressValue(0),
+        mIndex(0),
+        mOriginalName(nullptr),
+        mValueType(nullptr),
+        mValues(nullptr),
+        mTemplateSimplifierPointers(nullptr),
+        mScopeInfo(nullptr),
+        mCppcheckAttributes(nullptr),
+        mCpp11init(Cpp11init::UNKNOWN),
+        mBits(0),
+        mDebug(TokenDebug::None)
     {}
 
     ~TokenImpl();

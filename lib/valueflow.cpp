@@ -8203,17 +8203,17 @@ static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings 
     }
 }
 
-static void valueFlowDebug(TokenList *tokenlist, ErrorLogger* errorLogger)
+static void valueFlowDebug(TokenList* tokenlist, ErrorLogger* errorLogger)
 {
     if (!tokenlist->getSettings()->debugnormal && !tokenlist->getSettings()->debugwarnings)
         return;
-    for (Token *tok = tokenlist->front(); tok; tok = tok->next()) {
+    for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->getTokenDebug() != TokenDebug::ValueFlow)
             continue;
-        for(const ValueFlow::Value& v:tok->values()) {
+        for (const ValueFlow::Value& v : tok->values()) {
             std::string kind;
             switch (v.valueKind) {
-        
+
             case ValueFlow::Value::ValueKind::Impossible:
             case ValueFlow::Value::ValueKind::Known:
                 kind = "always";
@@ -8302,7 +8302,7 @@ std::string ValueFlow::Value::toString() const
         break;
     case ValueFlow::Value::ValueType::LIFETIME:
         ss << "lifetime[" << ValueFlow::Value::toString(this->lifetimeKind) << "]=("
-            << this->tokvalue->expressionString() << ")";
+           << this->tokvalue->expressionString() << ")";
         break;
     case ValueFlow::Value::ValueType::SYMBOLIC:
         ss << "symbolic=(" << this->tokvalue->expressionString();
@@ -8314,7 +8314,7 @@ std::string ValueFlow::Value::toString() const
         break;
     }
     if (this->indirect > 0)
-        for (int i=0; i<this->indirect; i++)
+        for (int i = 0; i < this->indirect; i++)
             ss << "*";
     if (this->path > 0)
         ss << "@" << this->path;

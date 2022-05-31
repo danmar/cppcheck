@@ -11342,7 +11342,7 @@ static Token* setTokenDebug(Token* start, TokenDebug td)
         return nullptr;
     Token* end = start->link();
     start->deleteThis();
-    for (Token *tok = start; tok != end; tok = tok->next()) {
+    for (Token* tok = start; tok != end; tok = tok->next()) {
         tok->setTokenDebug(td);
     }
     end->deleteThis();
@@ -11353,7 +11353,7 @@ void Tokenizer::simplifyDebug()
 {
     if (!mSettings->debugnormal && !mSettings->debugwarnings)
         return;
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
             continue;
         if (Token::simpleMatch(tok, "debug_valueflow")) {
