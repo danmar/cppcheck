@@ -687,8 +687,6 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
                 return false;
 
             p = temp;
-            while (*p && *p != ' ')
-                ++p;
         }
 
         // Parse "not" options. Token can be anything except the given one
@@ -696,8 +694,6 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
             p += 2;
             if (firstWordEquals(p, tok->str().c_str()))
                 return false;
-            while (*p && *p != ' ')
-                ++p;
         }
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
