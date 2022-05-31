@@ -654,8 +654,9 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
                 while (*p && *p != ' ')
                     ++p;
                 continue;
-            } else
-                return false;
+            }
+
+            return false;
         }
 
         // [.. => search for a one-character token..
@@ -707,7 +708,8 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
                 while (*p && *p != ' ')
                     ++p;
                 continue;
-            } else if (res == -1) {
+            }
+            if (res == -1) {
                 // No match
                 return false;
             }
