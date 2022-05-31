@@ -3141,4 +3141,33 @@ bool CheckClass::analyseWholeProgram(const CTU::FileInfo *ctu, const std::list<C
     return foundErrors;
 }
 
+//checkUnnecssaryPublicDataMembersStart---------------------------------------------------------------------------
+
+void CheckClass::checkUnnecssaryPublicDataMembers()
+{
+    //runs over all classes and structs
+    for (const Scope* scope : mSymbolDatabase->classAndStructScopes) {
+        //runs over all the variables
+        for (const Variable& var : scope->varlist)
+        {
+            //if the data member is public then report the error
+            if (var.accessControl() == AccessControl::Public)
+            {
+                bool isClass = scope->type == Scope::ScopeType::eClass;
+                checkUnnecssaryPublicDataMembersError(var.nameToken(), scope->className, var.name(), isClass);
+            }
+        }
+    }
+}
+
+void CheckClass::checkUnnecssaryPublicDataMembersError(const Token* tok, std::string className, std::string dataMember, bool isClass)
+{
+    std::string classOrStruct = (isClass) ? "class" : "struct";
+    // adding the types to the message
+    reportError(tok, Severity::style, "checkUnnecssaryPublicDataMembers",
+        "Found unnecssary public data member called : '" + dataMember + "', in " + classOrStruct + " : '" + className + "'",
+        CWE398, Certainty::normal);
+}
+
+//checkUnnecssaryPublicDataMembersEnd---------------------------------------------------------------------------
 
