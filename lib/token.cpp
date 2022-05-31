@@ -638,8 +638,11 @@ const char *Token::chrInFirstWord(const char *str, char c)
 
 bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
 {
+    if (!(*pattern))
+        return true;
+
     const char *p = pattern;
-    while (*p) {
+    while (true) {
         // Skip spaces in pattern..
         while (*p == ' ')
             ++p;
