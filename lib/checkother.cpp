@@ -3767,3 +3767,115 @@ void CheckOther::overlappingWriteFunction(const Token *tok)
     const std::string funcname = tok ? tok->str() : "";
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
 }
+
+//checkDifferentVariablesTypesStart---------------------------------------------------------------------------
+
+//gets enum and return its string
+const char* CheckOther::getTypeName(enum ValueType::Type var_types)
+{
+    switch (var_types)
+    {
+    case ValueType::UNKNOWN_TYPE: return "UNKNOWN_TYPE";
+    case ValueType::NONSTD: return "NONSTD";
+    case ValueType::SMART_POINTER: return "SMART_POINTER";
+    case ValueType::CONTAINER: return "CONTAINER";
+    case ValueType::ITERATOR: return "ITERATOR";
+    case ValueType::RECORD: return "RECORD";
+    case ValueType::POD: return "POD";
+    case ValueType::VOID: return "void";
+    case ValueType::BOOL: return "bool";
+    case ValueType::CHAR: return "char";
+    case ValueType::SHORT: return "short";
+    case ValueType::WCHAR_T: return "WCHAR_T";
+    case ValueType::INT: return "int";
+    case ValueType::LONG: return "long";
+    case ValueType::LONGLONG: return "longlong";
+    case ValueType::UNKNOWN_INT: return "UNKNOWN_INT";
+    case ValueType::FLOAT: return "float";
+    case ValueType::DOUBLE: return "double";
+    case ValueType::LONGDOUBLE: return "longDouble";
+    }
+    return "UNKNOWN_INT";
+}
+
+void CheckOther::checkDifferentVariablesTypes()
+{
+    const bool styleEnabled = mSettings->severity.isEnabled(Severity::style);
+    const bool warningEnabled = mSettings->severity.isEnabled(Severity::warning);
+    if (!styleEnabled && !warningEnabled)
+        return;
+
+    const Token* first_var = NULL;
+    const Token* second_var = NULL;
+    int num_open_brackets = 0;
+    int close_brackets_left = -1;
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    //runs over all functions
+    for (const Scope* scope : symbolDatabase->functionScopes) {
+        //runs over all tokens
+        for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+            //searching for matching to the patterns
+            if (Token::Match(tok, "%var% %assign%") || Token::Match(tok, "%var% %comp%"))
+            {
+                num_open_brackets = 0;
+                close_brackets_left = -1;
+                first_var = tok;
+                second_var = tok->tokAt(2);
+                while (((second_var->str() != ";") && ((close_brackets_left != 0))) && (second_var->str() != "}"))
+                {
+                    if (second_var->str() == ";")
+                        break;
+                    if (second_var->str() == "(")
+                    {
+                        num_open_brackets++;
+                        close_brackets_left = num_open_brackets;
+                        second_var = second_var->tokAt(1);
+                        continue;
+                    }
+                    if (second_var->str() == ")")
+                    {
+                        close_brackets_left--;
+                        if ((close_brackets_left == 0) && (Token::Match(second_var->tokAt(1), "%op%")))
+                        {
+                            close_brackets_left = -1;
+                        }
+
+                        if (Token::Match(second_var->tokAt(1), "%op%"))
+                            second_var = second_var->tokAt(2);
+                        else
+                            second_var = second_var->tokAt(1);
+                        continue;
+                    }
+                    if (Token::Match(second_var, "%var%"))
+                    {
+                        if (first_var && second_var &&
+                            second_var->valueType() && first_var->valueType() &&
+                            (second_var->valueType()->type > first_var->valueType()->type) &&
+                            (getTypeName(second_var->valueType()->type) != "UNKNOWN_TYPE") &&
+                            (getTypeName(first_var->valueType()->type) != "UNKNOWN_TYPE"))
+                        {
+                            checkDifferentVariablesTypesError(first_var, second_var, second_var->tokAt(-1));
+                        }
+                    }
+                    if ((Token::Match(second_var, "%var% %op%")) || (Token::Match(second_var, "%num% %op%")))
+                        second_var = second_var->tokAt(2);
+                    else
+                        second_var = second_var->tokAt(1);
+                }
+            }
+        }
+    }
+}
+
+
+
+void CheckOther::checkDifferentVariablesTypesError(const Token* first_var, const Token* second_var, const Token* tok)
+{
+    const std::string& var1 = first_var->expressionString();
+    const std::string& var2 = second_var->expressionString();
+    // adding the types to the message
+    reportError(tok->tokAt(1), Severity::warning, "checkDifferentVariablesTypes", "In the expression, the variables: " + var1 + " , " + var2 + " are from different types: " + var1 + " is from type: " + getTypeName(first_var->valueType()->type)
+        + " and " + var2 + " is from type: " + getTypeName(second_var->valueType()->type) + ". It is possible for implicit conversions to lose information", CWE398, Certainty::normal);
+}
+
+//checkDifferentVariablesTypesEnd---------------------------------------------------------------------------

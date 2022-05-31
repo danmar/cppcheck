@@ -101,6 +101,7 @@ public:
         checkOther.checkAccessOfMovedVariable();
         checkOther.checkModuloOfOne();
         checkOther.checkOverlappingWrite();
+        checkOther.checkDifferentVariablesTypes();
     }
 
     /** Is expression a comparison that checks if a nonzero (unsigned/pointer) expression is less than zero? */
@@ -229,6 +230,11 @@ public:
     void checkOverlappingWrite();
     void overlappingWriteUnion(const Token *tok);
     void overlappingWriteFunction(const Token *tok);
+
+    void checkDifferentVariablesTypes();
+    void checkDifferentVariablesTypesError(const Token* first_var, const Token* second_var, const Token* tok);
+    //gets enum and return its string
+    const char* getTypeName(enum ValueType::Type var_types);
 
 private:
     // Error messages..
