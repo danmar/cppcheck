@@ -59,7 +59,6 @@ struct ForwardTraversal {
     bool analyzeOnly;
     bool analyzeTerminate;
     Analyzer::Terminate terminate = Analyzer::Terminate::None;
-    bool forked = false;
     std::vector<Token*> loopEnds = {};
 
     Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None) {
@@ -250,7 +249,6 @@ struct ForwardTraversal {
     }
 
     Progress updateRecursive(Token* tok) {
-        forked = false;
         auto f = [this](Token* tok2) {
             return update(tok2);
         };
@@ -297,7 +295,6 @@ struct ForwardTraversal {
             ft.analyzeTerminate = true;
         }
         ft.actions = Analyzer::Action::None;
-        ft.forked = true;
         return ft;
     }
 
@@ -545,13 +542,10 @@ struct ForwardTraversal {
     }
 
     Progress updateScope(Token* endBlock) {
-        if (forked)
-            analyzer->forkScope(endBlock);
         return updateRange(endBlock->link(), endBlock);
     }
 
     Progress updateRange(Token* start, const Token* end, int depth = 20) {
-        forked = false;
         if (depth < 0)
             return Break(Analyzer::Terminate::Bail);
         std::size_t i = 0;

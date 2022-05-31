@@ -754,6 +754,20 @@ private:
                 "    return x[0];\n"
                 "}";
         ASSERT_EQUALS(0, valueOfTok(code, "[").intvalue);
+
+        code = "int g() { return 3; }\n"
+               "void f() {\n"
+               "    const int x[2] = { g(), g() };\n"
+               "    return x[0];\n"
+               "}\n";
+        ASSERT_EQUALS(3, valueOfTok(code, "[ 0").intvalue);
+
+        code = "int g() { return 3; }\n"
+               "void f() {\n"
+               "    const int x[2] = { g(), g() };\n"
+               "    return x[1];\n"
+               "}\n";
+        ASSERT_EQUALS(3, valueOfTok(code, "[ 1").intvalue);
     }
 
     void valueFlowMove() {
@@ -4267,6 +4281,22 @@ private:
                "    }\n"
                "}\n";
         testValueOfX(code, 0, 0); // <- don't throw
+
+        // #11072
+        code = "struct a {\n"
+               "    long b;\n"
+               "    long c[6];\n"
+               "    long d;\n"
+               "};\n"
+               "void e(long) {\n"
+               "    a f = {0};\n"
+               "    for (f.d = 0; 2; f.d++)\n"
+               "        e(f.c[f.b]);\n"
+               "}\n";
+        values = tokenValues(code, ". c");
+        ASSERT_EQUALS(true, values.empty());
+        values = tokenValues(code, "[ f . b");
+        ASSERT_EQUALS(true, values.empty());
     }
 
     void valueFlowSubFunction() {
@@ -4327,6 +4357,31 @@ private:
                "    f(x, -1);\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 4U, -1));
+
+        code = "void g() {\n"
+               "    const std::vector<int> v;\n"
+               "    f(v);\n"
+               "}\n"
+               "void f(const std::vector<int>& w) {\n"
+               "    for (int i = 0; i < w.size(); ++i) {\n"
+               "        int x = i != 0;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 8U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 8U, 1));
+
+        code = "void g() {\n"
+               "    const std::vector<int> v;\n"
+               "    f(v);\n"
+               "}\n"
+               "void f(const std::vector<int>& w) {\n"
+               "    for (int i = 0; i < w.size(); ++i) {\n"
+               "        int x = i;\n"
+               "        int a = x;\n"
+               "    }\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 8U, -1));
     }
     void valueFlowFunctionReturn() {
         const char *code;
@@ -6598,6 +6653,14 @@ private:
                "    }\n"
                "}\n";
         valueOfTok(code, "age");
+
+        code = "void a() {\n"
+               "  struct b {\n"
+               "    int d;\n"
+               "  };\n"
+               "  for (b c : {b{}, {}}) {}\n"
+               "}\n";
+        valueOfTok(code, "c");
     }
 
     void valueFlowHang() {

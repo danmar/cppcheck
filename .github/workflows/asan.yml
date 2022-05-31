@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-20.04
 
     container:
-      image: "ubuntu:21.10"
+      image: "ubuntu:22.04"
 
     env:
       ASAN_OPTIONS: detect_stack_use_after_return=1
@@ -27,13 +27,13 @@ jobs:
         run: |
           apt-get update
           apt-get install -y make libpcre3-dev
-          apt-get install -y clang-13
+          apt-get install -y clang-14
 
       - name: Build
         run: make -j$(nproc) cppcheck testrunner HAVE_RULES=yes MATCHCOMPILER=yes VERIFY=1
         env:
-          CC: clang-13
-          CXX: clang++-13
+          CC: clang-14
+          CXX: clang++-14
           CXXFLAGS: "-fsanitize=address -O2 -g3 -DCPPCHK_GLIBCXX_DEBUG"
           CPPFLAGS: "-DCHECK_INTERNAL"
 

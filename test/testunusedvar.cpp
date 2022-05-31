@@ -151,6 +151,7 @@ private:
         TEST_CASE(localvaralias17); // ticket #8911
         TEST_CASE(localvaralias18); // ticket #9234 - iterator
         TEST_CASE(localvaralias19); // ticket #9828
+        TEST_CASE(localvaralias20); // ticket #10966
         TEST_CASE(localvarasm);
         TEST_CASE(localvarstatic);
         TEST_CASE(localvarextern);
@@ -4674,6 +4675,21 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void localvaralias20() { // #10966
+        functionVariableUsage("struct A {};\n"
+                              "A g();\n"
+                              "void f() {\n"
+                              "    const auto& a = g();\n"
+                              "    const auto& b = a;\n"
+                              "    const auto&& c = g();\n"
+                              "    auto&& d = c;\n"
+                              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'b' is assigned a value that is never used.\n"
+                           "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
+                           "[test.cpp:7]: (style) Variable 'd' is assigned a value that is never used.\n",
+                           errout.str());
+    }
+
     void localvarasm() {
 
         functionVariableUsage("void foo(int &b)\n"
@@ -5894,6 +5910,14 @@ private:
                               "}\n");
         ASSERT_EQUALS("[test.cpp:7]: (style) Variable 'a' is assigned a value that is never used.\n"
                       "[test.cpp:8]: (style) Variable 'a2' is assigned a value that is never used.\n", errout.str());
+
+        functionVariableUsage("void g();\n" // #11094
+                              "void f() {\n"
+                              "    auto p = std::make_unique<S>();\n"
+                              "    p = nullptr;\n"
+                              "    g();\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // ticket #3104 - false positive when variable is read with "if (NOT var)"
@@ -5961,6 +5985,29 @@ private:
                               "    p = (Foo *)NULL;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("void f() {\n" // #11079
+                              "    std::string s1{ nullptr };\n"
+                              "    std::string s2{ NULL };\n"
+                              "    std::string s4(nullptr);\n"
+                              "    std::string s5(NULL);\n"
+                              "}\n"
+                              "struct A { A(void*) {} };\n"
+                              "static void g() {\n"
+                              "    A a1{ nullptr };\n"
+                              "    A a2{ NULL };\n"
+                              "    A a4(nullptr);\n"
+                              "    A a5(NULL);\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's1' is assigned a value that is never used.\n"
+                      "[test.cpp:3]: (style) Variable 's2' is assigned a value that is never used.\n"
+                      "[test.cpp:4]: (style) Variable 's4' is assigned a value that is never used.\n"
+                      "[test.cpp:5]: (style) Variable 's5' is assigned a value that is never used.\n"
+                      "[test.cpp:9]: (style) Variable 'a1' is assigned a value that is never used.\n"
+                      "[test.cpp:10]: (style) Variable 'a2' is assigned a value that is never used.\n"
+                      "[test.cpp:11]: (style) Variable 'a4' is assigned a value that is never used.\n"
+                      "[test.cpp:12]: (style) Variable 'a5' is assigned a value that is never used.\n",
+                      errout.str());
     }
 
     void localvarUnusedGoto() {

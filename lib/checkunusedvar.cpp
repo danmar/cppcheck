@@ -61,7 +61,7 @@ static bool isRaiiClass(const ValueType *valueType, bool cpp, bool defaultReturn
     if (!valueType)
         return defaultReturn;
 
-    if (valueType->smartPointerType && isRaiiClassScope(valueType->smartPointerType->classScope))
+    if ((valueType->smartPointerType && isRaiiClassScope(valueType->smartPointerType->classScope)) || (!valueType->smartPointerType && valueType->type == ValueType::Type::SMART_POINTER))
         return true;
 
     switch (valueType->type) {
@@ -1198,6 +1198,8 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (tok->str() == "=" && isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
                 continue;
 
+            const bool isPointer = tok->valueType() && tok->valueType()->pointer;
+
             if (tok->isName()) {
                 if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
                     continue;
@@ -1213,7 +1215,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
             }
             // Do not warn about assignment with NULL
-            if (isNullOperand(tok->astOperand2()))
+            if (isPointer && isNullOperand(tok->astOperand2()))
                 continue;
 
             if (!tok->astOperand1())

@@ -1178,7 +1178,7 @@ static int estimateSize(const Type* type, const Settings* settings, const Symbol
             size = settings->sizeof_pointer;
         else if (var.type() && var.type()->classScope)
             size = estimateSize(var.type(), settings, symbolDatabase, recursionDepth+1);
-        else if (var.valueType()->type == ValueType::Type::CONTAINER)
+        else if (var.valueType() && var.valueType()->type == ValueType::Type::CONTAINER)
             size = 3 * settings->sizeof_pointer; // Just guess
         else
             size = symbolDatabase->sizeOfType(var.typeStartToken());
@@ -1414,13 +1414,13 @@ void CheckOther::checkConstVariable()
             continue;
         if (var->isConst())
             continue;
-        if (!var->scope())
+        const Scope* scope = var->scope();
+        if (!scope)
             continue;
-        const Scope *scope = var->scope();
-        if (!scope->function)
+        const Function* function = scope->function;
+        if (!function && !scope->isLocal())
             continue;
-        const Function *function = scope->function;
-        if (var->isArgument()) {
+        if (function && var->isArgument()) {
             if (function->isImplicitlyVirtual() || function->templateDef)
                 continue;
             if (isUnusedVariable(var))
@@ -1440,9 +1440,18 @@ void CheckOther::checkConstVariable()
             continue;
         if (isAliased(var))
             continue;
+        if (isStructuredBindingVariable(var)) // TODO: check all bound variables
+            continue;
         if (isVariableChanged(var, mSettings, mTokenizer->isCPP()))
             continue;
-        if (Function::returnsReference(function) && !Function::returnsConst(function)) {
+        const bool hasFunction = function != nullptr;
+        if (!hasFunction) {
+            const Scope* functionScope = scope;
+            do {
+                functionScope = functionScope->nestedIn;
+            } while (functionScope && !(function = functionScope->function));
+        }
+        if (function && Function::returnsReference(function) && !Function::returnsConst(function)) {
             std::vector<const Token*> returns = Function::findReturns(function);
             if (std::any_of(returns.begin(), returns.end(), [&](const Token* retTok) {
                 if (retTok->varId() == var->declarationId())
@@ -1538,7 +1547,7 @@ void CheckOther::checkConstVariable()
                 continue;
         }
 
-        constVariableError(var, function);
+        constVariableError(var, hasFunction ? function : nullptr);
     }
 }
 
@@ -1574,6 +1583,8 @@ void CheckOther::checkConstPointer()
             deref = true;
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
             deref = true;
+        else if (Token::Match(parent, "%op%") && Token::simpleMatch(parent->astParent(), "."))
+            deref = true;
         if (deref) {
             const Token* const gparent = parent->astParent();
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
@@ -1607,6 +1618,8 @@ void CheckOther::checkConstPointer()
             const int indirect = p->isArray() ? p->dimensions().size() : 1;
             if (isVariableChanged(start, p->scope()->bodyEnd, indirect, p->declarationId(), false, mSettings, mTokenizer->isCPP()))
                 continue;
+            if (p->isArgument() && p->typeStartToken() && p->typeStartToken()->isSimplifiedTypedef() && !(Token::simpleMatch(p->typeEndToken(), "*") && !p->typeEndToken()->isSimplifiedTypedef()))
+                continue;
             constVariableError(p, nullptr);
         }
     }
@@ -1622,10 +1635,11 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
 
     const std::string vartype(var->isArgument() ? "Parameter" : "Variable");
     const std::string varname(var->name());
+    const std::string ptrRefArray = var->isArray() ? "const array" : (var->isPointer() ? "pointer to const" : "reference to const");
 
     ErrorPath errorPath;
     std::string id = "const" + vartype;
-    std::string message = "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared with const";
+    std::string message = "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared as " + ptrRefArray;
     errorPath.push_back(ErrorPathItem(var ? var->nameToken() : nullptr, message));
     if (var && var->isArgument() && function && function->functionPointerUsage) {
         errorPath.push_front(ErrorPathItem(function->functionPointerUsage, "You might need to cast the function pointer here"));

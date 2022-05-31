@@ -1378,6 +1378,9 @@ void Tokenizer::simplifyTypedef()
                         typeEnd = typeStart;
 
                     // start substituting at the typedef name by replacing it with the type
+                    Token* replStart = tok2; // track first replaced token
+                    for (Token* tok3 = typeStart; tok3->str() != ";"; tok3 = tok3->next())
+                        tok3->isSimplifiedTypedef(true);
                     tok2->str(typeStart->str());
 
                     // restore qualification if it was removed
@@ -1386,7 +1389,7 @@ void Tokenizer::simplifyTypedef()
                             tok2 = tok2->previous();
 
                         if (globalScope) {
-                            tok2->insertToken("::");
+                            replStart = tok2->insertToken("::");
                             tok2 = tok2->next();
                         }
 
@@ -1415,7 +1418,7 @@ void Tokenizer::simplifyTypedef()
                                     startIdx = spaceIdx + 1;
                                 }
                                 tok2->previous()->insertToken(removed1.substr(startIdx));
-                                tok2->previous()->insertToken("::");
+                                replStart = tok2->previous()->insertToken("::");
                                 break;
                             }
                             idx = removed1.rfind(" ::");
@@ -1425,12 +1428,21 @@ void Tokenizer::simplifyTypedef()
                             removed1.resize(idx);
                         }
                     }
+                    replStart->isSimplifiedTypedef(true);
+                    Token* constTok = Token::simpleMatch(tok2->previous(), "const") ? tok2->previous() : nullptr;
                     // add remainder of type
                     tok2 = TokenList::copyTokens(tok2, typeStart->next(), typeEnd);
 
                     if (!pointers.empty()) {
                         for (const std::string &p : pointers) {
                             tok2->insertToken(p);
+                            tok2->isSimplifiedTypedef(true);
+                            tok2 = tok2->next();
+                        }
+                        if (constTok) {
+                            constTok->deleteThis();
+                            tok2->insertToken("const");
+                            tok2->isSimplifiedTypedef(true);
                             tok2 = tok2->next();
                         }
                     }
@@ -1884,6 +1896,8 @@ namespace {
         }
 
         bool findTypeInBase(const std::string &scope) const {
+            if (scope.empty())
+                return false;
             // check in base types first
             if (baseTypes.find(scope) != baseTypes.end())
                 return true;
@@ -3748,6 +3762,13 @@ void Tokenizer::setVarIdPass1()
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (tok->isOp())
             continue;
+        if (isCPP() && Token::simpleMatch(tok, "template <")) {
+            Token* closingBracket = tok->next()->findClosingBracket();
+            if (closingBracket)
+                tok = closingBracket;
+            continue;
+        }
+
         if (tok == functionDeclEndToken) {
             functionDeclEndStack.pop();
             functionDeclEndToken = functionDeclEndStack.empty() ? nullptr : functionDeclEndStack.top();
@@ -5489,6 +5510,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " isImplicitInt=\"true\"";
         if (tok->isComplex())
             out << " isComplex=\"true\"";
+        if (tok->isRestrict())
+            out << " isRestrict=\"true\"";
         if (tok->link())
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
@@ -11240,11 +11263,14 @@ void Tokenizer::simplifyKeyword()
         if (keywords.find(tok->str()) != keywords.end()) {
             // Don't remove struct members
             if (!Token::simpleMatch(tok->previous(), ".")) {
-                if (tok->str().find("inline") != std::string::npos) {
-                    Token *temp = tok->next();
-                    while (temp != nullptr && Token::Match(temp, "%name%")) {
-                        temp->isInline(true);
-                        temp = temp->next();
+                const bool isinline = (tok->str().find("inline") != std::string::npos);
+                const bool isrestrict = (tok->str().find("restrict") != std::string::npos);
+                if (isinline || isrestrict) {
+                    for (Token *temp = tok->next(); Token::Match(temp, "%name%"); temp = temp->next()) {
+                        if (isinline)
+                            temp->isInline(true);
+                        if (isrestrict)
+                            temp->isRestrict(true);
                     }
                 }
                 tok->deleteThis(); // Simplify..
@@ -11262,8 +11288,12 @@ void Tokenizer::simplifyKeyword()
             tok->deleteNext();
 
         if (c99) {
-            while (tok->str() == "restrict")
+            if (tok->str() == "restrict") {
+                for (Token *temp = tok->next(); Token::Match(temp, "%name%"); temp = temp->next()) {
+                    temp->isRestrict(true);
+                }
                 tok->deleteThis();
+            }
 
             if (mSettings->standards.c >= Standards::C11) {
                 while (tok->str() == "_Atomic")

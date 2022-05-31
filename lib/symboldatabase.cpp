@@ -863,7 +863,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
 {
     if (mTokenizer->isC()) {
         // For C code it is easy, as there are no constructors and no default values
-        for (Scope& scope : scopeList) {
+        for (const Scope& scope : scopeList) {
             if (scope.definedType)
                 scope.definedType->needInitialization = Type::NeedInitialization::True;
         }
@@ -888,7 +888,7 @@ void SymbolDatabase::createSymbolDatabaseNeedInitialization()
                     // check for default constructor
                     bool hasDefaultConstructor = false;
 
-                    for (Function& func: scope.functionList) {
+                    for (const Function& func : scope.functionList) {
                         if (func.type == Function::eConstructor) {
                             // check for no arguments: func ( )
                             if (func.argCount() == 0) {
@@ -1452,7 +1452,7 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
 
 void SymbolDatabase::createSymbolDatabaseEscapeFunctions()
 {
-    for (Scope & scope : scopeList) {
+    for (const Scope& scope : scopeList) {
         if (scope.type != Scope::eFunction)
             continue;
         Function * function = scope.function;
@@ -6139,7 +6139,7 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     // range for loop, auto
     if (vt2 &&
         parent->str() == ":" &&
-        Token::Match(parent->astParent(), "( const| auto *|&| %var% :") &&
+        Token::Match(parent->astParent(), "( const| auto *|&| %var% :") && // TODO: east-const, multiple const, ref to ptr, rvalue ref
         !parent->previous()->valueType() &&
         Token::simpleMatch(parent->astParent()->astOperand1(), "for")) {
         const bool isconst = Token::simpleMatch(parent->astParent()->next(), "const");
@@ -6152,8 +6152,14 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
             setAutoTokenProperties(autoToken);
             ValueType varvt(*vt2);
             varvt.pointer--;
-            if (isconst)
-                varvt.constness |= 1;
+            if (Token::simpleMatch(autoToken->next(), "&"))
+                varvt.reference = Reference::LValue;
+            if (isconst) {
+                if (varvt.pointer && varvt.reference != Reference::None)
+                    varvt.constness |= 2;
+                else
+                    varvt.constness |= 1;
+            }
             setValueType(parent->previous(), varvt);
             Variable *var = const_cast<Variable *>(parent->previous()->variable());
             if (var) {

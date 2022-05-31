@@ -2,7 +2,8 @@
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
 name: valgrind
 
-on: [push, pull_request]
+# on: [push, pull_request]
+on: workflow_dispatch
 
 jobs:
   build:

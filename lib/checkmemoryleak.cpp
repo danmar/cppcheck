@@ -725,7 +725,9 @@ void CheckMemoryLeakStructMember::check()
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || !var->isLocal() || var->isStatic() || var->isReference())
+        if (!var || (!var->isLocal() && !(var->isArgument() && var->scope())) || var->isStatic())
+            continue;
+        if (var->isReference() || (var->valueType() && var->valueType()->pointer > 1))
             continue;
         if (var->typeEndToken()->isStandardType())
             continue;
@@ -752,7 +754,7 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
 void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable)
 {
     // Is struct variable a pointer?
-    if (variable->isPointer()) {
+    if (variable->isArrayOrPointer()) {
         // Check that variable is allocated with malloc
         if (!isMalloc(variable))
             return;
@@ -789,7 +791,31 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
         return deallocated;
     };
 
-    for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
+    // return { memberTok, rhsTok }
+    auto isMemberAssignment = [](const Token* varTok, int varId) -> std::pair<const Token*, const Token*> {
+        if (varTok->varId() != varId)
+            return {};
+        const Token* top = varTok;
+        while (top->astParent()) {
+            if (Token::Match(top->astParent(), "(|["))
+                return {};
+            top = top->astParent();
+        }
+        if (!Token::simpleMatch(top, "=") || !precedes(varTok, top))
+            return {};
+        const Token* dot = top->astOperand1();
+        while (dot && dot->str() != ".")
+            dot = dot->astOperand1();
+        if (!dot)
+            return {};
+        return { dot->astOperand2(), top->next() };
+    };
+    std::pair<const Token*, const Token*> assignToks;
+
+    const Token* tokStart = variable->nameToken();
+    if (variable->isArgument() && variable->scope())
+        tokStart = variable->scope()->bodyStart->next();
+    for (const Token *tok2 = tokStart; tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
         if (tok2->str() == "{")
             ++indentlevel2;
 
@@ -805,12 +831,20 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
             break;
 
         // Struct member is allocated => check if it is also properly deallocated..
-        else if (Token::Match(tok2->previous(), "[;{}] %varid% . %var% =", variable->declarationId())) {
-            if (getAllocationType(tok2->tokAt(4), tok2->tokAt(2)->varId()) == AllocType::No)
+        else if ((assignToks = isMemberAssignment(tok2, variable->declarationId())).first && assignToks.first->varId()) {
+            if (getAllocationType(assignToks.second, assignToks.first->varId()) == AllocType::No)
                 continue;
 
+            if (variable->isArgument() && variable->valueType() && variable->valueType()->type == ValueType::UNKNOWN_TYPE && assignToks.first->astParent()) {
+                const Token* accessTok = assignToks.first->astParent();
+                while (Token::simpleMatch(accessTok->astOperand1(), "."))
+                    accessTok = accessTok->astOperand1();
+                if (Token::simpleMatch(accessTok, ".") && accessTok->originalName() == "->")
+                    continue;
+            }
+
             const int structid(variable->declarationId());
-            const int structmemberid(tok2->tokAt(2)->varId());
+            const int structmemberid(assignToks.first->varId());
 
             // This struct member is allocated.. check that it is deallocated
             int indentlevel3 = indentlevel2;

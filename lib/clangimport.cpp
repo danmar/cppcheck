@@ -1519,7 +1519,7 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
 {
     const Settings * const settings = tokenizer->getSettings();
 
-    for (Scope &scope: symbolDatabase->scopeList) {
+    for (const Scope& scope : symbolDatabase->scopeList) {
         if (!scope.definedType)
             continue;
 

@@ -86,7 +86,7 @@ class ElementDef:
     def getChildByIndex(self, index):
         if self.isFlexible:
             while len(self.children) <= index:
-                createChild(self, self.flexibleToken, len(self.children))
+                createChild(self, self.flexibleToken, len(self.children), None)
         return self.children[index] if 0 <= index < len(self.children) else None
 
     def getChildByName(self, name):
@@ -384,7 +384,7 @@ def misra_9_x(self, data, rule, rawTokens = None):
     parser = InitializerParser()
 
     for variable in data.variables:
-        if not variable.nameToken:
+        if variable.nameToken is None:
             continue
 
         nameToken = variable.nameToken
@@ -425,15 +425,15 @@ def misra_9_x(self, data, rule, rawTokens = None):
 def getElementDef(nameToken, rawTokens = None):
     if nameToken.variable.isArray:
         ed = ElementDef("array", nameToken.str, nameToken.valueType)
-        createArrayChildrenDefs(ed, nameToken.astParent, rawTokens)
+        createArrayChildrenDefs(ed, nameToken.astParent, nameToken.variable, rawTokens)
     elif nameToken.variable.isClass:
         ed = ElementDef("record", nameToken.str, nameToken.valueType)
-        createRecordChildrenDefs(ed)
+        createRecordChildrenDefs(ed, nameToken.variable)
     else:
         ed = ElementDef("value", nameToken.str, nameToken.valueType)
     return ed
 
-def createArrayChildrenDefs(ed, token, rawTokens = None):
+def createArrayChildrenDefs(ed, token, var, rawTokens = None):
     if token.str == '[':
         if rawTokens is not None:
             foundToken = next((rawToken for rawToken in rawTokens
@@ -447,30 +447,32 @@ def createArrayChildrenDefs(ed, token, rawTokens = None):
 
         if (token.astOperand2 is not None) and (token.astOperand2.getKnownIntValue() is not None):
             for i in range(token.astOperand2.getKnownIntValue()):
-                createChild(ed, token, i)
+                createChild(ed, token, i, var)
         else:
             ed.markAsFlexibleArray(token)
 
 
-def createChild(ed, token, name):
+def createChild(ed, token, name, var):
     if token.astParent and token.astParent.str == '[':
         child = ElementDef("array", name, ed.valueType)
-        createArrayChildrenDefs(child, token.astParent)
+        createArrayChildrenDefs(child, token.astParent, var)
     else:
         if ed.valueType and ed.valueType.type == "record":
             child = ElementDef("record", name, ed.valueType)
-            createRecordChildrenDefs(child)
+            createRecordChildrenDefs(child, var)
         else:
             child = ElementDef("value", name, ed.valueType)
 
     ed.addChild(child)
 
-def createRecordChildrenDefs(ed):
+def createRecordChildrenDefs(ed, var):
     valueType = ed.valueType
     if not valueType or not valueType.typeScope:
         return
 
     for variable in valueType.typeScope.varlist:
+        if variable is var:
+            continue
         child = getElementDef(variable.nameToken)
         ed.addChild(child)
 

@@ -71,7 +71,7 @@ Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSett
 
 Preprocessor::~Preprocessor()
 {
-    for (std::pair<const std::string, simplecpp::TokenList *>& tokenList : mTokenLists)
+    for (const std::pair<const std::string, simplecpp::TokenList*>& tokenList : mTokenLists)
         delete tokenList.second;
 }
 
@@ -1043,10 +1043,10 @@ unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1
     return crc32(ostr.str());
 }
 
-void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
+void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList) const
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
-    for (std::pair<const std::string, simplecpp::TokenList *>& list : mTokenLists) {
+    for (const std::pair<const std::string, simplecpp::TokenList*>& list : mTokenLists) {
         Preprocessor::simplifyPragmaAsmPrivate(list.second);
     }
 }

@@ -1733,17 +1733,17 @@ Options:
 <context>
     <name>QObject</name>
     <message>
-        <location filename="translationhandler.cpp" line="86"/>
+        <location filename="translationhandler.cpp" line="87"/>
         <source>Unknown language specified!</source>
         <translation>未知の言語が指定されました!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="111"/>
+        <location filename="translationhandler.cpp" line="112"/>
         <source>Language file %1 not found!</source>
         <translation>言語ファイル %1 が見つかりません!</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="117"/>
+        <location filename="translationhandler.cpp" line="118"/>
         <source>Failed to load translation for language %1 from file %2</source>
         <translation>言語 %2 から %1 への翻訳ファイルの読み込みに失敗</translation>
     </message>
@@ -1902,22 +1902,22 @@ Options:
 <context>
     <name>QPlatformTheme</name>
     <message>
-        <location filename="translationhandler.cpp" line="34"/>
+        <location filename="translationhandler.cpp" line="35"/>
         <source>OK</source>
         <translation>OK</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="35"/>
+        <location filename="translationhandler.cpp" line="36"/>
         <source>Cancel</source>
         <translation>キャンセル</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="36"/>
+        <location filename="translationhandler.cpp" line="37"/>
         <source>Close</source>
         <translation>閉じる</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="37"/>
+        <location filename="translationhandler.cpp" line="38"/>
         <source>Save</source>
         <translation>保存する</translation>
     </message>
@@ -1925,109 +1925,109 @@ Options:
 <context>
     <name>ResultsTree</name>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>File</source>
         <translation>ファイル</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Severity</source>
         <translation>警告の種別</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Line</source>
         <translation>行</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Summary</source>
         <translation>要約</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="162"/>
+        <location filename="resultstree.cpp" line="157"/>
         <source>Undefined file</source>
         <translation>未定義ファイル</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="654"/>
+        <location filename="resultstree.cpp" line="649"/>
         <source>Copy</source>
         <translation>コピー</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="836"/>
+        <location filename="resultstree.cpp" line="832"/>
         <source>Could not find file:</source>
         <translation>ファイルが見つかりません:</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="840"/>
+        <location filename="resultstree.cpp" line="836"/>
         <source>Please select the folder &apos;%1&apos;</source>
         <translation>フォルダ &apos;%1&apos; を選択してください</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="841"/>
+        <location filename="resultstree.cpp" line="837"/>
         <source>Select Directory &apos;%1&apos;</source>
         <translation>ディレクトリ &apos;%1&apos; 選択</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="843"/>
+        <location filename="resultstree.cpp" line="839"/>
         <source>Please select the directory where file is located.</source>
         <translation>ファイルのあるディレクトリを選択してください。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="351"/>
+        <location filename="resultstree.cpp" line="346"/>
         <source>debug</source>
         <translation>デバッグ</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="288"/>
+        <location filename="resultstree.cpp" line="283"/>
         <source>note</source>
         <translation>注意</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="653"/>
+        <location filename="resultstree.cpp" line="648"/>
         <source>Recheck</source>
         <translation>再チェック</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="655"/>
+        <location filename="resultstree.cpp" line="650"/>
         <source>Hide</source>
         <translation>非表示</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="656"/>
+        <location filename="resultstree.cpp" line="651"/>
         <source>Hide all with id</source>
         <translation>IDで非表示を指定</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="675"/>
+        <location filename="resultstree.cpp" line="670"/>
         <source>Suppress selected id(s)</source>
         <translation>選択したidを抑制</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="657"/>
+        <location filename="resultstree.cpp" line="652"/>
         <source>Open containing folder</source>
         <translation>含まれるフォルダを開く</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="691"/>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="686"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Tag</source>
         <translation>タグ</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="693"/>
+        <location filename="resultstree.cpp" line="688"/>
         <source>No tag</source>
         <translation>タグなし</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="735"/>
-        <location filename="resultstree.cpp" line="749"/>
+        <location filename="resultstree.cpp" line="730"/>
+        <location filename="resultstree.cpp" line="744"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="736"/>
+        <location filename="resultstree.cpp" line="731"/>
         <source>No editor application configured.
 
 Configure the editor application for Cppcheck in preferences/Applications.</source>
@@ -2037,7 +2037,7 @@ Configure the editor application for Cppcheck in preferences/Applications.</sour
 Cppcheckの「設定」からテキストファイルを編集するアプリケーションを設定してください。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="750"/>
+        <location filename="resultstree.cpp" line="745"/>
         <source>No default editor application selected.
 
 Please select the default editor application in preferences/Applications.</source>
@@ -2046,12 +2046,12 @@ Please select the default editor application in preferences/Applications.</sourc
 設定からデフォルトのエディタアプリケーションを設定してください。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="776"/>
+        <location filename="resultstree.cpp" line="771"/>
         <source>Could not find the file!</source>
         <translation>ファイルが見つかりません!</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="822"/>
+        <location filename="resultstree.cpp" line="818"/>
         <source>Could not start %1
 
 Please check the application path and parameters are correct.</source>
@@ -2060,52 +2060,52 @@ Please check the application path and parameters are correct.</source>
 実行ファイルパスや引数の設定を確認してください。</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="844"/>
+        <location filename="resultstree.cpp" line="840"/>
         <source>Select Directory</source>
         <translation>ディレクトリを選択</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Id</source>
         <translation>Id</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Inconclusive</source>
         <translation>結論のでない</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="1427"/>
+        <location filename="resultstree.cpp" line="1423"/>
         <source>Since date</source>
         <translation>日付</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="333"/>
+        <location filename="resultstree.cpp" line="328"/>
         <source>style</source>
         <translation>スタイル</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="336"/>
+        <location filename="resultstree.cpp" line="331"/>
         <source>error</source>
         <translation>エラー</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="339"/>
+        <location filename="resultstree.cpp" line="334"/>
         <source>warning</source>
         <translation>警告</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="342"/>
+        <location filename="resultstree.cpp" line="337"/>
         <source>performance</source>
         <translation>パフォーマンス</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="345"/>
+        <location filename="resultstree.cpp" line="340"/>
         <source>portability</source>
         <translation>移植可能性</translation>
     </message>
     <message>
-        <location filename="resultstree.cpp" line="348"/>
+        <location filename="resultstree.cpp" line="343"/>
         <source>information</source>
         <translation>情報</translation>
     </message>
@@ -2740,7 +2740,7 @@ To toggle what kind of errors are shown, open view menu.</source>
 <context>
     <name>TranslationHandler</name>
     <message>
-        <location filename="translationhandler.cpp" line="124"/>
+        <location filename="translationhandler.cpp" line="125"/>
         <source>Failed to change the user interface language:
 
 %1
@@ -2751,7 +2751,7 @@ The user interface language has been reset to English. Open the Preferences-dial
 そのため言語を 英語にリセットします。設定ダイアログから利用可能な言語を選択してください。</translation>
     </message>
     <message>
-        <location filename="translationhandler.cpp" line="130"/>
+        <location filename="translationhandler.cpp" line="131"/>
         <source>Cppcheck</source>
         <translation>Cppcheck</translation>
     </message>
