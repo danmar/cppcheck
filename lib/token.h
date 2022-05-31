@@ -65,6 +65,8 @@ struct ScopeInfo2 {
     std::set<std::string> usingNamespaces;
 };
 
+enum class TokenDebug {None, ValueFlow};
+
 struct TokenImpl {
     nonneg int mVarId;
     nonneg int mFileIndex;
@@ -127,6 +129,8 @@ struct TokenImpl {
     /** Bitfield bit count. */
     unsigned char mBits;
 
+    TokenDebug mDebug;
+
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
 
@@ -151,6 +155,7 @@ struct TokenImpl {
         , mCppcheckAttributes(nullptr)
         , mCpp11init(Cpp11init::UNKNOWN)
         , mBits(0)
+        , mDebug(TokenDebug::None)
     {}
 
     ~TokenImpl();
@@ -1436,6 +1441,13 @@ public:
     }
     TokenImpl::Cpp11init isCpp11init() const {
         return mImpl->mCpp11init;
+    }
+
+    TokenDebug getTokenDebug() const {
+        return mImpl->mDebug;
+    }
+    void setTokenDebug(TokenDebug td) {
+        mImpl->mDebug = td;
     }
 };
 

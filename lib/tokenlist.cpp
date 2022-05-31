@@ -344,6 +344,7 @@ Token *TokenList::copyTokens(Token *dest, const Token *first, const Token *last,
         tok2->tokType(tok->tokType());
         tok2->flags(tok->flags());
         tok2->varId(tok->varId());
+        tok2->setTokenDebug(tok->getTokenDebug());
 
         // Check for links and fix them up
         if (Token::Match(tok2, "(|[|{"))
