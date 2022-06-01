@@ -182,7 +182,7 @@ def process(dumpfiles, configfile, debugprint=False):
             if "RE_FUNCTIONNAME" in conf and conf["RE_FUNCTIONNAME"]:
                 for token in cfg.tokenlist:
                     if token.function:
-                        if token.function.type == 'Constructor' or token.function.type == 'Destructor':
+                        if token.function.type in ('Constructor', 'Destructor', 'CopyConstructor', 'MoveConstructor'):
                             continue
                         retval = token.previous.str
                         prev = token.previous
