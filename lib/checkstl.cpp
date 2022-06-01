@@ -2616,12 +2616,13 @@ void CheckStl::useStlAlgorithm()
                 if (!Token::Match(loopVar, "%var%"))
                     continue;
             }
-            else if (Token::simpleMatch(splitTok, ";")) { // iterator-based loop
-                loopVar = splitTok->next();
+            else if (Token::simpleMatch(splitTok, ";") && Token::simpleMatch(splitTok->astOperand2(), ";")) { // iterator-based loop
+                const Token* cmp = splitTok->astOperand2()->astOperand1();
+                loopVar = Token::Match(cmp, "%cmp%") ? cmp->astOperand1() : nullptr;
                 if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() || loopVar->valueType()->type != ValueType::Type::ITERATOR)
                     continue;
-                const Token* initAssign = splitTok->astOperand1();
-                if (!Token::simpleMatch(initAssign, "=") || !Token::Match(initAssign->astOperand1(), "%varid%", loopVar->varId()))
+                const Token* init = splitTok->astOperand1();
+                if (!Token::simpleMatch(init, "=") || !Token::Match(init->astOperand1(), "%varid%", loopVar->varId()))
                     continue;
                 const Token* inc = splitTok->astOperand2() ? splitTok->astOperand2()->astOperand2() : nullptr;
                 if (!inc || (!Token::Match(inc, "%op% %varid%", loopVar->varId()) && !Token::Match(inc->previous(), "%varid% %op%", loopVar->varId())))
