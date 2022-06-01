@@ -191,6 +191,11 @@ class MatchCompilerTest(unittest.TestCase):
             'if (match16(parent->tokAt(-3)) && tok->strAt(1) == MatchCompiler::makeConstString(")"))',
             output)
 
+        # Multiple str() ==
+        input = 'if (tok2->str() == "abc" && tok3->str() == "def") {'
+        output = self.mc._replaceCStrings(input)
+        self.assertEqual('if (tok2->str() == MatchCompiler::makeConstString("abc") && tok3->str() == MatchCompiler::makeConstString("def")) {', output)
+
     def test_parseMatchSkipComments(self):
         input = '// TODO: suggest Token::exactMatch() for Token::simpleMatch() when pattern contains no whitespaces'
         output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")

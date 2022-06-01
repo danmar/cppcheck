@@ -654,26 +654,27 @@ class MatchCompiler:
 
         return line
 
+    @staticmethod
+    def _findCStringStartEnd(line):
+        match = re.search('(==|!=) *"', line)
+        if not match:
+            return None, None
+        if MatchCompiler._isInString(line, match.start()):
+            return None, None
+        res = MatchCompiler._parseStringComparison(line, match.start())
+        if res is None:
+            return None, None
+        startPos = res[0]
+        endPos = res[1]
+        return startPos, endPos
+
     def _replaceCStrings(self, line):
-        while True:
-            match = re.search('(==|!=) *"', line)
-            if not match:
-                break
-
-            if self._isInString(line, match.start()):
-                break
-
-            res = self._parseStringComparison(line, match.start())
-            if res is None:
-                break
-
-            startPos = res[0]
-            endPos = res[1]
-            text = line[startPos + 1:endPos - 1]
-            line = line[:startPos] + 'MatchCompiler::makeConstStringBegin' +\
-                text + 'MatchCompiler::makeConstStringEnd' + line[endPos:]
-        line = line.replace('MatchCompiler::makeConstStringBegin', 'MatchCompiler::makeConstString("')
-        line = line.replace('MatchCompiler::makeConstStringEnd', '")')
+        startPos, endPos = self._findCStringStartEnd(line)
+        if startPos is None:
+            return line
+        text = line[startPos + 1:endPos - 1]
+        line = line[:startPos] + 'MatchCompiler::makeConstString("' +\
+            text + '")' + self._replaceCStrings(line[endPos:])
         return line
 
     def convertFile(self, srcname, destname, line_directive):
