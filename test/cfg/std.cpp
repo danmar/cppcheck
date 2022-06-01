@@ -36,6 +36,18 @@
 #include <iterator>
 #include <vector>
 
+void invalidFunctionArgStr_fopen(const char * const fileName, const char * const mode)
+{
+    const char fileNameBuf[] = {'f','i','l','e'};
+    const char modeBuf[] = {'r'};
+    // cppcheck-suppress invalidFunctionArgStr
+    FILE *fp = fopen(fileName, modeBuf);
+    fclose(fp);
+    // cppcheck-suppress invalidFunctionArgStr
+    fp = fopen(fileNameBuf, mode);
+    fclose(fp);
+}
+
 float invalidFunctionArg_remquo (float x, float y, int* quo )
 {
     // cppcheck-suppress invalidFunctionArg

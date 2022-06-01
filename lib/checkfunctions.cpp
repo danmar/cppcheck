@@ -94,7 +94,7 @@ void CheckFunctions::checkProhibitedFunctions()
 }
 
 //---------------------------------------------------------------------------
-// Check <valid> and <not-bool>
+// Check <valid>, <strz> and <not-bool>
 //---------------------------------------------------------------------------
 void CheckFunctions::invalidFunctionUsage()
 {
@@ -125,7 +125,7 @@ void CheckFunctions::invalidFunctionUsage()
                     else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
-
+// check <strz>
                 if (mSettings->library.isargstrz(functionToken, argnr)) {
                     if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
                         const ValueType * valueType = argtok->next()->valueType();
@@ -133,6 +133,33 @@ void CheckFunctions::invalidFunctionUsage()
                         if (valueType->type == ValueType::Type::CHAR && !variable->isArray() && !variable->isGlobal() &&
                             (!argtok->next()->hasKnownValue() || argtok->next()->getValue(0) == nullptr)) {
                             invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                        }
+                    }
+                    const ValueType* const valueType = argtok->valueType();
+                    const Variable* const variable = argtok->variable();
+                    // Is non-null terminated local variable of type char (e.g. char buf[] = {'x'};) ?
+                    if (variable && variable->isLocal()
+                        && valueType->type == ValueType::Type::CHAR) {
+                        const Token* varTok = variable->declEndToken();
+                        auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
+                        if (varTok && Token::simpleMatch(varTok->previous(), "]"))
+                        {
+                            const Token* countTok = varTok->previous()->tokAt(-1);
+                            if (countTok && countTok->hasKnownIntValue())
+                                count = countTok->getKnownIntValue();
+                        }
+                        if (Token::simpleMatch(varTok, "=") && Token::simpleMatch(varTok->next(), "{")) {
+                            varTok = varTok->next();
+                            auto actualCharCount = 0;
+                            while (varTok && !Token::simpleMatch(varTok->next(), "}")) {
+                                if (!Token::simpleMatch(varTok->next(), ","))
+                                    ++actualCharCount;
+                                varTok = varTok->next();
+                            }
+                            if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() != 0
+                                && (count == -1 || (count > 0 && count <= actualCharCount))) {
+                                invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                            }
                         }
                     }
                 }

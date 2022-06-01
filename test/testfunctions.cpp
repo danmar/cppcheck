@@ -613,6 +613,42 @@ private:
               "  return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Invalid strcat() argument nr 2. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[1] = { \'x\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid fopen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[2] = { \'x\', \'y\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid fopen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[3] = { \'x\', \'y\' ,\'\\0\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[3] = { \'x\', \'y\' };\n" // implicit '\0' added at the end
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[] = { \'\\0\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[] = { };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mathfunctionCall_sqrt() {
