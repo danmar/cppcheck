@@ -1782,56 +1782,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             else {
                 if (&value != &tok->mImpl->mValues->front())
                     out << ",";
-                if (value.isImpossible())
-                    out << "!";
-                if (value.bound == ValueFlow::Value::Bound::Lower)
-                    out << ">=";
-                if (value.bound == ValueFlow::Value::Bound::Upper)
-                    out << "<=";
-                switch (value.valueType) {
-                case ValueFlow::Value::ValueType::INT:
-                    out << value.intvalue;
-                    break;
-                case ValueFlow::Value::ValueType::TOK:
-                    out << value.tokvalue->str();
-                    break;
-                case ValueFlow::Value::ValueType::FLOAT:
-                    out << value.floatValue;
-                    break;
-                case ValueFlow::Value::ValueType::MOVED:
-                    out << ValueFlow::Value::toString(value.moveKind);
-                    break;
-                case ValueFlow::Value::ValueType::UNINIT:
-                    out << "Uninit";
-                    break;
-                case ValueFlow::Value::ValueType::BUFFER_SIZE:
-                case ValueFlow::Value::ValueType::CONTAINER_SIZE:
-                    out << "size=" << value.intvalue;
-                    break;
-                case ValueFlow::Value::ValueType::ITERATOR_START:
-                    out << "start=" << value.intvalue;
-                    break;
-                case ValueFlow::Value::ValueType::ITERATOR_END:
-                    out << "end=" << value.intvalue;
-                    break;
-                case ValueFlow::Value::ValueType::LIFETIME:
-                    out << "lifetime[" << ValueFlow::Value::toString(value.lifetimeKind) << "]=("
-                        << value.tokvalue->expressionString() << ")";
-                    break;
-                case ValueFlow::Value::ValueType::SYMBOLIC:
-                    out << "symbolic=(" << value.tokvalue->expressionString();
-                    if (value.intvalue > 0)
-                        out << "+" << value.intvalue;
-                    else if (value.intvalue < 0)
-                        out << "-" << -value.intvalue;
-                    out << ")";
-                    break;
-                }
-                if (value.indirect > 0)
-                    for (int i=0; i<value.indirect; i++)
-                        out << "*";
-                if (value.path > 0)
-                    out << "@" << value.path;
+                out << value.toString();
             }
         }
         if (xml)

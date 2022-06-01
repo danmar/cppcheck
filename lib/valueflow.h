@@ -251,6 +251,8 @@ namespace ValueFlow {
 
         std::string infoString() const;
 
+        std::string toString() const;
+
         enum class ValueType {
             INT,
             TOK,
