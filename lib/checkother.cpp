@@ -945,10 +945,32 @@ void CheckOther::checkVariableScope()
         if (forHead)
             continue;
 
+        auto isSimpleExpr = [](const Token* tok) {
+            return tok && (tok->isNumber() || tok->tokType() == Token::eString || tok->tokType() == Token::eChar || tok->isBoolean());
+        };
+
         const Token* tok = var->nameToken()->next();
-        if (Token::Match(tok, "; %varid% = %any% ;", var->declarationId())) {
+        if (Token::Match(tok, "; %varid% = %any% ;", var->declarationId())) { // bail for assignment
             tok = tok->tokAt(3);
-            if (!tok->isNumber() && tok->tokType() != Token::eString && tok->tokType() != Token::eChar && !tok->isBoolean())
+            if (!isSimpleExpr(tok))
+                continue;
+        }
+        else if (Token::Match(tok, "{|(")) { // bail for constructor
+            const Token* argTok = tok->astOperand2();
+            bool bail = false;
+            do {
+                if (Token::simpleMatch(argTok, ",")) {
+                    if (!isSimpleExpr(argTok->astOperand2())) {
+                        bail = true;
+                        break;
+                    }
+                } else if (!isSimpleExpr(argTok)) {
+                    bail = true;
+                    break;
+                }
+                argTok = argTok->astOperand1();
+            } while (argTok);
+            if (bail)
                 continue;
         }
         // bailout if initialized with function call that has possible side effects
