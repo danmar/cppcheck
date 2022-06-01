@@ -98,6 +98,7 @@ private:
         TEST_CASE(varScope28);      // #10527
         TEST_CASE(varScope29);      // #10888
         TEST_CASE(varScope30);      // #8541
+        TEST_CASE(varScope31);      // #11099
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1378,6 +1379,86 @@ private:
               "    return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope31() { // #11099
+        check("bool g(std::vector<int>&);\n"
+              "void h(std::vector<int>);\n"
+              "void f0(std::vector<int> v) {\n"
+              "    std::vector<int> w{ v };"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f1(std::vector<int> v) {\n"
+              "    std::vector<int> w{ v.begin(), v.end() };"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f2(std::vector<int> v) {\n"
+              "    std::vector<int> w{ 10, 0, std::allocator<int>() };" // FN
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f3(std::vector<int> v) {\n"
+              "    std::vector<int> w{ 10, 0 };" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f4(std::vector<int> v) {\n"
+              "    std::vector<int> w{ 10 };" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f5(std::vector<int> v) {\n"
+              "    std::vector<int> w(v);"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f6(std::vector<int> v) {\n"
+              "    std::vector<int> w(v.begin(), v.end());"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f7(std::vector<int> v) {\n"
+              "    std::vector<int> w(10, 0, std::allocator<int>);" // FN
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f8(std::vector<int> v) {\n"
+              "    std::vector<int> w(10, 0);" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f9(std::vector<int> v) {\n"
+              "    std::vector<int> w(10);" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:22]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:28]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:52]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:58]: (style) The scope of the variable 'w' can be reduced.\n",
+                      errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
