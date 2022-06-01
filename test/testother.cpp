@@ -1385,79 +1385,87 @@ private:
         check("bool g(std::vector<int>&);\n"
               "void h(std::vector<int>);\n"
               "void f0(std::vector<int> v) {\n"
-              "    std::vector<int> w{ v };"
+              "    std::vector<int> w{ v };\n"
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n"
               "void f1(std::vector<int> v) {\n"
-              "    std::vector<int> w{ v.begin(), v.end() };"
+              "    std::vector<int> w{ v.begin(), v.end() };\n"
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n"
               "void f2(std::vector<int> v) {\n"
-              "    std::vector<int> w{ 10, 0, std::allocator<int>() };" // FN
+              "    std::vector<int> w{ 10, 0, std::allocator<int>() };\n" // FN
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n"
               "void f3(std::vector<int> v) {\n"
-              "    std::vector<int> w{ 10, 0 };" // warn
+              "    std::vector<int> w{ 10, 0 };\n" // warn
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n"
               "void f4(std::vector<int> v) {\n"
-              "    std::vector<int> w{ 10 };" // warn
+              "    std::vector<int> w{ 10 };\n" // warn
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n"
               "void f5(std::vector<int> v) {\n"
-              "    std::vector<int> w(v);"
+              "    std::vector<int> w(v);\n"
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n"
               "void f6(std::vector<int> v) {\n"
-              "    std::vector<int> w(v.begin(), v.end());"
+              "    std::vector<int> w(v.begin(), v.end());\n"
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n"
               "void f7(std::vector<int> v) {\n"
-              "    std::vector<int> w(10, 0, std::allocator<int>);" // FN
+              "    std::vector<int> w(10, 0, std::allocator<int>);\n" // FN
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n"
               "void f8(std::vector<int> v) {\n"
-              "    std::vector<int> w(10, 0);" // warn
+              "    std::vector<int> w(10, 0);\n" // warn
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n"
               "void f9(std::vector<int> v) {\n"
-              "    std::vector<int> w(10);" // warn
+              "    std::vector<int> w(10);\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f10(std::vector<int> v) {\n"
+              "    std::vector<int> w{};\n" // warn
               "    bool b = g(v);\n"
               "    if (b)\n"
               "        h(w);\n"
               "    h(v);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:22]: (style) The scope of the variable 'w' can be reduced.\n"
-                      "[test.cpp:28]: (style) The scope of the variable 'w' can be reduced.\n"
-                      "[test.cpp:52]: (style) The scope of the variable 'w' can be reduced.\n"
-                      "[test.cpp:58]: (style) The scope of the variable 'w' can be reduced.\n",
+        ASSERT_EQUALS("[test.cpp:25]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:32]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:60]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:67]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:74]: (style) The scope of the variable 'w' can be reduced.\n",
                       errout.str());
     }
 

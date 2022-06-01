@@ -950,15 +950,15 @@ void CheckOther::checkVariableScope()
         };
 
         const Token* tok = var->nameToken()->next();
-        if (Token::Match(tok, "; %varid% = %any% ;", var->declarationId())) { // bail for assignment
+        if (Token::Match(tok, "; %varid% = %any% ;", var->declarationId())) { // bailout for assignment
             tok = tok->tokAt(3);
             if (!isSimpleExpr(tok))
                 continue;
         }
-        else if (Token::Match(tok, "{|(")) { // bail for constructor
+        else if (Token::Match(tok, "{|(")) { // bailout for constructor
             const Token* argTok = tok->astOperand2();
             bool bail = false;
-            do {
+            while (argTok) {
                 if (Token::simpleMatch(argTok, ",")) {
                     if (!isSimpleExpr(argTok->astOperand2())) {
                         bail = true;
@@ -969,7 +969,7 @@ void CheckOther::checkVariableScope()
                     break;
                 }
                 argTok = argTok->astOperand1();
-            } while (argTok);
+            }
             if (bail)
                 continue;
         }
