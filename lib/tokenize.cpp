@@ -4855,6 +4855,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    // Simplify debug intrinsics
+    simplifyDebug();
+
     removePragma();
 
     // Simplify the C alternative tokens (and, or, etc.)
@@ -11329,6 +11332,33 @@ void Tokenizer::simplifyKeyword()
                 tok->originalName(tok->str());
                 tok->str("static");
             }
+        }
+    }
+}
+
+static Token* setTokenDebug(Token* start, TokenDebug td)
+{
+    if (!start->link())
+        return nullptr;
+    Token* end = start->link();
+    start->deleteThis();
+    for (Token* tok = start; tok != end; tok = tok->next()) {
+        tok->setTokenDebug(td);
+    }
+    end->deleteThis();
+    return end;
+}
+
+void Tokenizer::simplifyDebug()
+{
+    if (!mSettings->debugnormal && !mSettings->debugwarnings)
+        return;
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%name% ("))
+            continue;
+        if (Token::simpleMatch(tok, "debug_valueflow")) {
+            tok->deleteThis();
+            tok = setTokenDebug(tok, TokenDebug::ValueFlow);
         }
     }
 }

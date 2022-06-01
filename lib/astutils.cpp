@@ -45,19 +45,6 @@
 #include <unordered_map>
 #include <utility>
 
-const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred)
-{
-    const Token* result = nullptr;
-    visitAstNodes(ast, [&](const Token* tok) {
-        if (pred(tok)) {
-            result = tok;
-            return ChildrenToVisit::done;
-        }
-        return ChildrenToVisit::op1_and_op2;
-    });
-    return result;
-}
-
 const Token* findExpression(const nonneg int exprid,
                             const Token* start,
                             const Token* end,
