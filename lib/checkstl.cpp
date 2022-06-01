@@ -2617,8 +2617,8 @@ void CheckStl::useStlAlgorithm()
                     continue;
             }
             else if (Token::simpleMatch(splitTok, ";") && Token::simpleMatch(splitTok->astOperand2(), ";")) { // iterator-based loop
-                const Token* cmp = splitTok->astOperand2()->astOperand1();
-                loopVar = Token::Match(cmp, "%cmp%") ? cmp->astOperand1() : nullptr;
+                const Token* comp = splitTok->astOperand2()->astOperand1();
+                loopVar = Token::Match(comp, "%comp%") ? comp->astOperand1() : nullptr;
                 if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() || loopVar->valueType()->type != ValueType::Type::ITERATOR)
                     continue;
                 const Token* init = splitTok->astOperand1();
