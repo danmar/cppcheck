@@ -9,10 +9,10 @@ jobs:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:22.04"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04"]
       fail-fast: false # Prefer quick result
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     container:
       image: ${{ matrix.image }}
@@ -35,7 +35,7 @@ jobs:
 
       # tests require CMake 3.4
       - name: Test CMake build (no tests)
-        if: matrix.image != 'ubuntu:22.04'
+        if: matrix.image != 'ubuntu:22.10'
         run: |
           mkdir cmake.output
           cd cmake.output
@@ -44,7 +44,7 @@ jobs:
           cd ..
 
       - name: Test CMake build
-        if: matrix.image == 'ubuntu:22.04'
+        if: matrix.image == 'ubuntu:22.10'
         run: |
           mkdir cmake.output
           cd cmake.output

@@ -8299,6 +8299,36 @@ static void valueFlowUnknownFunctionReturn(TokenList *tokenlist, const Settings 
     }
 }
 
+static void valueFlowDebug(TokenList* tokenlist, ErrorLogger* errorLogger)
+{
+    if (!tokenlist->getSettings()->debugnormal && !tokenlist->getSettings()->debugwarnings)
+        return;
+    for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
+        if (tok->getTokenDebug() != TokenDebug::ValueFlow)
+            continue;
+        for (const ValueFlow::Value& v : tok->values()) {
+            std::string kind;
+            switch (v.valueKind) {
+
+            case ValueFlow::Value::ValueKind::Impossible:
+            case ValueFlow::Value::ValueKind::Known:
+                kind = "always";
+                break;
+            case ValueFlow::Value::ValueKind::Inconclusive:
+                kind = "inconclusive";
+                break;
+            case ValueFlow::Value::ValueKind::Possible:
+                kind = "possible";
+                break;
+            }
+            std::string msg = "The value is " + kind + " " + v.toString();
+            ErrorPath errorPath = v.errorPath;
+            errorPath.emplace_back(tok, "");
+            errorLogger->reportErr({errorPath, tokenlist, Severity::debug, "valueFlow", msg, CWE{0}, Certainty::normal});
+        }
+    }
+}
+
 ValueFlow::Value::Value(const Token* c, long long val, Bound b)
     : valueType(ValueType::INT),
     bound(b),
@@ -8329,6 +8359,62 @@ void ValueFlow::Value::assumeCondition(const Token* tok)
 {
     condition = tok;
     errorPath.emplace_back(tok, "Assuming that condition '" + tok->expressionString() + "' is not redundant");
+}
+
+std::string ValueFlow::Value::toString() const
+{
+    std::stringstream ss;
+    if (this->isImpossible())
+        ss << "!";
+    if (this->bound == ValueFlow::Value::Bound::Lower)
+        ss << ">=";
+    if (this->bound == ValueFlow::Value::Bound::Upper)
+        ss << "<=";
+    switch (this->valueType) {
+    case ValueFlow::Value::ValueType::INT:
+        ss << this->intvalue;
+        break;
+    case ValueFlow::Value::ValueType::TOK:
+        ss << this->tokvalue->str();
+        break;
+    case ValueFlow::Value::ValueType::FLOAT:
+        ss << this->floatValue;
+        break;
+    case ValueFlow::Value::ValueType::MOVED:
+        ss << ValueFlow::Value::toString(this->moveKind);
+        break;
+    case ValueFlow::Value::ValueType::UNINIT:
+        ss << "Uninit";
+        break;
+    case ValueFlow::Value::ValueType::BUFFER_SIZE:
+    case ValueFlow::Value::ValueType::CONTAINER_SIZE:
+        ss << "size=" << this->intvalue;
+        break;
+    case ValueFlow::Value::ValueType::ITERATOR_START:
+        ss << "start=" << this->intvalue;
+        break;
+    case ValueFlow::Value::ValueType::ITERATOR_END:
+        ss << "end=" << this->intvalue;
+        break;
+    case ValueFlow::Value::ValueType::LIFETIME:
+        ss << "lifetime[" << ValueFlow::Value::toString(this->lifetimeKind) << "]=("
+           << this->tokvalue->expressionString() << ")";
+        break;
+    case ValueFlow::Value::ValueType::SYMBOLIC:
+        ss << "symbolic=(" << this->tokvalue->expressionString();
+        if (this->intvalue > 0)
+            ss << "+" << this->intvalue;
+        else if (this->intvalue < 0)
+            ss << "-" << -this->intvalue;
+        ss << ")";
+        break;
+    }
+    if (this->indirect > 0)
+        for (int i = 0; i < this->indirect; i++)
+            ss << "*";
+    if (this->path > 0)
+        ss << "@" << this->path;
+    return ss.str();
 }
 
 std::string ValueFlow::Value::infoString() const
@@ -8509,6 +8595,8 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
     }
 
     valueFlowDynamicBufferSize(tokenlist, symboldatabase, settings);
+
+    valueFlowDebug(tokenlist, errorLogger);
 }
 
 ValueFlow::Value ValueFlow::Value::unknown()

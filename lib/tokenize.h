@@ -209,6 +209,7 @@ public:
      */
     nonneg int sizeOfType(const Token *type) const;
 
+    void simplifyDebug();
     /**
      * Try to determine if function parameter is passed by value by looking
      * at the function declaration.
