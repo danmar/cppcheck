@@ -150,10 +150,10 @@ void CheckFunctions::invalidFunctionUsage()
                         }
                         if (Token::simpleMatch(varTok, "= {")) {
                             varTok = varTok->tokAt(1);
-                            auto actualCharCount = 0;
+                            auto charsUntilFirstZero = 0;
                             while (varTok && !Token::simpleMatch(varTok->next(), "}")) {
                                 if (!Token::simpleMatch(varTok->next(), ",")) {
-                                    ++actualCharCount;
+                                    ++charsUntilFirstZero;
                                 }
                                 varTok = varTok->next();
                                 if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() == 0) {
@@ -161,7 +161,7 @@ void CheckFunctions::invalidFunctionUsage()
                                 }
                             }
                             if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() != 0
-                                && (count == -1 || (count > 0 && count <= actualCharCount))) {
+                                && (count == -1 || (count > 0 && count <= charsUntilFirstZero))) {
                                 invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
                             }
                         }

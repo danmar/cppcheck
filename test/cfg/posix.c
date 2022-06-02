@@ -35,6 +35,17 @@
 #include <string.h>
 #include <strings.h>
 
+void invalidFunctionArgStr_mbsnrtowcs(void)
+{
+    wchar_t wenough[10];
+    mbstate_t s;
+    memset (&s, '\0', sizeof (s));
+    const char* cp = "ABC";
+    wcscpy (wenough, L"DEF");
+    // No warning is expected for - #11119
+    if (mbsnrtowcs (wenough, &cp, 1, 10, &s) != 1 || wcscmp (wenough, L"AEF") != 0) {}
+}
+
 int nullPointer_getpwuid_r(uid_t uid, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
 {
     // cppcheck-suppress nullPointer
