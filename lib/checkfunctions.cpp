@@ -144,7 +144,7 @@ void CheckFunctions::invalidFunctionUsage()
                         auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
                         if (varTok && Token::simpleMatch(varTok->previous(), "]"))
                         {
-                            const Token* countTok = varTok->previous()->tokAt(-1);
+                            const Token* countTok = varTok->tokAt(-2);
                             if (countTok && countTok->hasKnownIntValue())
                                 count = countTok->getKnownIntValue();
                         }
