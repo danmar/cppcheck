@@ -633,6 +633,12 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("FILE* f(void) {\n"
+              "  const char fileName[3] = { \'x\', \'\\0\' ,\'y\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
               "  const char fileName[3] = { \'x\', \'y\' };\n" // implicit '\0' added at the end
               "  return fopen(fileName, \"r\"); \n"
               "}");
