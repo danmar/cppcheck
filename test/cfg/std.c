@@ -29,6 +29,12 @@
 #include <inttypes.h>
 #include <float.h>
 
+int invalidFunctionArgStr_strncmp( const char *p )
+{
+    // No warning is expected for:
+    const char emdash[3] = { -42, -43, -44 };
+    return strncmp( p, emdash, 3 );
+}
 
 float invalidFunctionArg_float_remquo (float x, float y, int* quo )
 {
