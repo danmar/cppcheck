@@ -139,7 +139,7 @@ void CheckFunctions::invalidFunctionUsage()
                     const Variable* const variable = argtok->variable();
                     // Is non-null terminated local variable of type char (e.g. char buf[] = {'x'};) ?
                     if (variable && variable->isLocal()
-                        && valueType->type == ValueType::Type::CHAR) {
+                        && valueType && valueType->type == ValueType::Type::CHAR) {
                         const Token* varTok = variable->declEndToken();
                         auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
                         if (varTok && Token::simpleMatch(varTok->previous(), "]"))

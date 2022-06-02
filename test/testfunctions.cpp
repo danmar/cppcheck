@@ -649,6 +649,17 @@ private:
               "  return fopen(fileName, \"r\"); \n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void scanMetaTypes()\n" // don't crash
+              "{\n"
+              "    QVector<int> metaTypes;\n"
+              "    for (int mtId = 0; mtId <= QMetaType::User; ++mtId) {\n"
+              "        const auto name = QMetaType::typeName(mtId);\n"
+              "        if (strstr(name, \"GammaRay::\") != name)\n"
+              "            metaTypes.push_back(mtId);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mathfunctionCall_sqrt() {
