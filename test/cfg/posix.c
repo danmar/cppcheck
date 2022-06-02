@@ -537,8 +537,10 @@ void bufferAccessOutOfBounds_bzero(void *s, size_t n)
 
 size_t bufferAccessOutOfBounds_strnlen(const char *s, size_t maxlen)
 {
-    char buf[2]={'4','2'};
+    const char buf[2]={'4','2'};
+    // cppcheck-suppress invalidFunctionArgStr
     size_t len = strnlen(buf,2);
+    // cppcheck-suppress invalidFunctionArgStr
     // cppcheck-suppress bufferAccessOutOfBounds
     len+=strnlen(buf,3);
     return len;
