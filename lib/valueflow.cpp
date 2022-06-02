@@ -219,17 +219,17 @@ static void setConditionalValues(const Token* tok,
                                  ValueFlow::Value& false_value)
 {
     if (Token::Match(tok, "==|!=|>=|<=")) {
-        true_value = ValueFlow::Value{tok, value};
+        setConditionalValue(true_value, tok, value);
         const char* greaterThan = ">=";
         const char* lessThan = "<=";
         if (lhs)
             std::swap(greaterThan, lessThan);
         if (Token::simpleMatch(tok, greaterThan, strlen(greaterThan))) {
-            false_value = ValueFlow::Value{tok, value - 1};
+            setConditionalValue(false_value, tok, value - 1);
         } else if (Token::simpleMatch(tok, lessThan, strlen(lessThan))) {
-            false_value = ValueFlow::Value{tok, value + 1};
+            setConditionalValue(false_value, tok, value + 1);
         } else {
-            false_value = ValueFlow::Value{tok, value};
+            setConditionalValue(false_value, tok, value);
         }
     } else {
         const char* greaterThan = ">";
