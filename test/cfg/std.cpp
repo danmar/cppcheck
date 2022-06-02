@@ -36,6 +36,14 @@
 #include <iterator>
 #include <vector>
 
+void invalidFunctionArgStr_fprintf(FILE *stream, const char *format)
+{
+    const char formatBuf[] = {'%','d'};
+    // cppcheck-suppress invalidFunctionArgStr
+    (void)fprintf(stream,formatBuf,42);
+    (void)fprintf(stream,format,42);
+}
+
 void invalidFunctionArgStr_fopen(const char * const fileName, const char * const mode)
 {
     const char fileNameBuf[] = {'f','i','l','e'};
