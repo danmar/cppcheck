@@ -152,9 +152,13 @@ void CheckFunctions::invalidFunctionUsage()
                             varTok = varTok->tokAt(1);
                             auto actualCharCount = 0;
                             while (varTok && !Token::simpleMatch(varTok->next(), "}")) {
-                                if (!Token::simpleMatch(varTok->next(), ","))
+                                if (!Token::simpleMatch(varTok->next(), ",")) {
                                     ++actualCharCount;
+                                }
                                 varTok = varTok->next();
+                                if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() == 0) {
+                                    break; // stop counting for cases like char buf[3] = {'x', '\0', 'y'};
+                                }
                             }
                             if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() != 0
                                 && (count == -1 || (count > 0 && count <= actualCharCount))) {
