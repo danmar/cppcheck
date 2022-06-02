@@ -613,6 +613,59 @@ private:
               "  return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Invalid strcat() argument nr 2. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[1] = { \'x\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid fopen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[2] = { \'x\', \'y\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid fopen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[3] = { \'x\', \'y\' ,\'\\0\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[3] = { \'x\', \'\\0\' ,\'y\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[3] = { \'x\', \'y\' };\n" // implicit '\0' added at the end
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[] = { \'\\0\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[] = { };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void scanMetaTypes()\n" // don't crash
+              "{\n"
+              "    QVector<int> metaTypes;\n"
+              "    for (int mtId = 0; mtId <= QMetaType::User; ++mtId) {\n"
+              "        const auto name = QMetaType::typeName(mtId);\n"
+              "        if (strstr(name, \"GammaRay::\") != name)\n"
+              "            metaTypes.push_back(mtId);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mathfunctionCall_sqrt() {
