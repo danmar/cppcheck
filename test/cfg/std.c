@@ -29,6 +29,16 @@
 #include <inttypes.h>
 #include <float.h>
 
+void invalidFunctionArgStr_strncat(void)
+{
+    char str1[20];
+    strcpy (str1,"test");
+    const char src = '/';
+    // No warning is expected for
+    strncat (str1, &src, 1);
+    puts (str1);
+}
+
 char * invalidFunctionArgStr_strpbrk( const char *p )
 {
     const char search[] = { -42, -43, -44 };

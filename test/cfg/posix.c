@@ -30,6 +30,7 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <mqueue.h>
 #define _XOPEN_SOURCE
 #include <wchar.h>
 #include <string.h>
@@ -37,6 +38,7 @@
 
 int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio)
 {
+    // No warning is expected for:
     const char msg = '0';
     (void) mq_send(mqdes, &msg, 1, 0);
     return mq_send(mqdes, msg_ptr, msg_len, 0);
