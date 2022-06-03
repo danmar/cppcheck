@@ -35,6 +35,13 @@
 #include <string.h>
 #include <strings.h>
 
+int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio)
+{
+    const char msg = '0';
+    (void) mq_send(mqdes, &msg, 1, 0);
+    return mq_send(mqdes, msg_ptr, msg_len, 0);
+}
+
 void invalidFunctionArgStr_mbsnrtowcs(void)
 {
     wchar_t wenough[10];
