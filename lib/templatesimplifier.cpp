@@ -2967,11 +2967,11 @@ std::string TemplateSimplifier::getNewName(
         const bool constconst = tok3->str() == "const" && tok3->strAt(1) == "const";
         if (!constconst) {
             if (tok3->isUnsigned())
-                typeStringsUsedInTemplateInstantiation.push_back("unsigned");
+                typeStringsUsedInTemplateInstantiation.emplace_back("unsigned");
             else if (tok3->isSigned())
-                typeStringsUsedInTemplateInstantiation.push_back("signed");
+                typeStringsUsedInTemplateInstantiation.emplace_back("signed");
             if (tok3->isLong())
-                typeStringsUsedInTemplateInstantiation.push_back("long");
+                typeStringsUsedInTemplateInstantiation.emplace_back("long");
             typeStringsUsedInTemplateInstantiation.push_back(tok3->str());
         }
         // add additional type information
