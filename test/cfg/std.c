@@ -29,6 +29,19 @@
 #include <inttypes.h>
 #include <float.h>
 
+char * invalidFunctionArgStr_strpbrk( const char *p )
+{
+    const char search[] = { -42, -43, -44 };
+    const char pattern[3] = { -42, -43, -44 };
+    (void) strpbrk( "abc42", "42" );
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) strpbrk( search, "42" );
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) strpbrk( search, pattern );
+    // cppcheck-suppress invalidFunctionArgStr
+    return strpbrk( p, pattern );
+}
+
 int invalidFunctionArgStr_strncmp( const char *p )
 {
     // No warning is expected for:
