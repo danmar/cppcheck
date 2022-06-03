@@ -125,7 +125,7 @@ void CheckFunctions::invalidFunctionUsage()
                     else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
-// check <strz>
+                // check <strz>
                 if (mSettings->library.isargstrz(functionToken, argnr)) {
                     if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
                         const ValueType * valueType = argtok->next()->valueType();
@@ -151,13 +151,17 @@ void CheckFunctions::invalidFunctionUsage()
                         if (Token::simpleMatch(varTok, "= {")) {
                             varTok = varTok->tokAt(1);
                             auto charsUntilFirstZero = 0;
-                            while (varTok && !Token::simpleMatch(varTok->next(), "}")) {
-                                if (!Token::simpleMatch(varTok->next(), ",")) {
-                                    ++charsUntilFirstZero;
-                                }
+                            bool search = true;
+                            while (search && varTok && !Token::simpleMatch(varTok->next(), "}")) {
                                 varTok = varTok->next();
-                                if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() == 0) {
-                                    break; // stop counting for cases like char buf[3] = {'x', '\0', 'y'};
+                                if (!Token::simpleMatch(varTok, ",")) {
+                                    if (Token::Match(varTok, "%op%")) {
+                                        varTok = varTok->next();
+                                        continue;
+                                    }
+                                    ++charsUntilFirstZero;
+                                    if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() == 0)
+                                        search=false; // stop counting for cases like char buf[3] = {'x', '\0', 'y'};
                                 }
                             }
                             if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() != 0
