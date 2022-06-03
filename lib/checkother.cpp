@@ -1581,8 +1581,7 @@ void CheckOther::checkConstPointer()
         const Token* const nameTok = var->nameToken();
         // declarations of (static) pointers are (not) split up, array declarations are never split up
         if (tok == nameTok && (!var->isStatic() || Token::simpleMatch(nameTok->next(), "[")) &&
-            // range-based for loop
-            !(Token::simpleMatch(nameTok->astParent(), ":") && Token::simpleMatch(nameTok->astParent()->astParent(), "(")))
+            !astIsRangeBasedForDecl(nameTok))
             continue;
         const ValueType* const vt = tok->valueType();
         if (!vt)
@@ -1598,8 +1597,8 @@ void CheckOther::checkConstPointer()
             deref = true;
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
             deref = true;
-        else if (Token::Match(parent, "%op%") && Token::simpleMatch(parent->astParent(), "."))
-            deref = true;
+        else if (astIsRangeBasedForDecl(tok))
+            continue;
         if (deref) {
             const Token* const gparent = parent->astParent();
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
@@ -1616,7 +1615,7 @@ void CheckOther::checkConstPointer()
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
         } else {
-            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
+            if (Token::Match(parent, "%oror%|%comp%|&&|?|!"))
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;

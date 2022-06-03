@@ -3124,21 +3124,36 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #10466
+        check("typedef void* HWND;\n"
+              "void f(const std::vector<HWND>&v) {\n"
+              "    for (const auto* h : v)\n"
+              "        if (h) {}\n"
+              "    for (const auto& h : v)\n"
+              "        if (h) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'h' can be declared as pointer to const\n", errout.str());
+
         check("void f(const std::vector<int*>& v) {\n"
               "    for (const auto& p : v)\n"
               "        if (p == nullptr) {}\n"
               "    for (const auto* p : v)\n"
               "        if (p == nullptr) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n", errout.str());
 
         check("void f(std::vector<int*>& v) {\n"
               "    for (const auto& p : v)\n"
               "        if (p == nullptr) {}\n"
               "    for (const auto* p : v)\n"
               "        if (p == nullptr) {}\n"
+              "    for (const int* const& p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "    for (const int* p : v)\n"
+              "        if (p == nullptr) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
+                      "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
 
         check("void f(std::vector<const int*>& v) {\n"
               "    for (const auto& p : v)\n"
@@ -3188,7 +3203,7 @@ private:
                       "[test.cpp:4]: (style) Variable 'b' can be declared as const array\n",
                       errout.str());
 
-        check("typedef void* HWND;\n"
+        check("typedef void* HWND;\n" // #11084
               "void f(const HWND h) {\n"
               "    if (h == nullptr) {}\n"
               "}\n");
@@ -3217,6 +3232,19 @@ private:
               "    (s - 1)->v();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int*>& v) {\n" // #11085
+              "    for (int* p : v) {\n"
+              "        if (p) {}\n"
+              "    }\n"
+              "    for (auto* p : v) {\n"
+              "        if (p) {}\n"
+              "    }\n"
+              "    v.clear();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
+                      "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {

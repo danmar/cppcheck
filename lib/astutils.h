@@ -139,6 +139,9 @@ bool astIsContainer(const Token *tok);
 bool astIsContainerView(const Token* tok);
 bool astIsContainerOwned(const Token* tok);
 
+/** Is given token a range-declaration in a range-based for loop */
+bool astIsRangeBasedForDecl(const Token* tok);
+
 /**
  * Get canonical type of expression. const/static/etc are not included and neither *&.
  * For example:

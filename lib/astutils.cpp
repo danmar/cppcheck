@@ -260,6 +260,11 @@ bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
+bool astIsRangeBasedForDecl(const Token* tok)
+{
+    return Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "(");
+}
+
 std::string astCanonicalType(const Token *expr)
 {
     if (!expr)
