@@ -576,7 +576,8 @@ private:
               "  size_t l2 = strlen(&s2.x);\n"
               "  return l1 + l2;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n"
+                      "[test.cpp:9]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
 
         check("const char x = 'x'; size_t f() { return strlen(&x); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
