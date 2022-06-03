@@ -475,6 +475,9 @@ void CheckNullPointer::arithmetic()
                 continue;
             if (numericOperand && numericOperand->valueType() && !numericOperand->valueType()->isIntegral())
                 continue;
+            const ValueFlow::Value* numValue = numericOperand ? numericOperand->getValue(0) : nullptr;
+            if (numValue && numValue->intvalue == 0) // don't warn for arithmetic with 0
+                continue;
             const ValueFlow::Value* value = pointerOperand->getValue(0);
             if (!value)
                 continue;
