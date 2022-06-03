@@ -50,14 +50,14 @@ class QSettings;
 class CodeEditorStyle {
 public:
     explicit CodeEditorStyle(
-        const QColor& CtrlFGColor, const QColor& CtrlBGColor,
-        const QColor& HiLiBGColor,
-        const QColor& LnNumFGColor, const QColor& LnNumBGColor,
-        const QColor& KeyWdFGColor, const QFont::Weight& KeyWdWeight,
-        const QColor& ClsFGColor, const QFont::Weight& ClsWeight,
-        const QColor& QteFGColor, const QFont::Weight& QteWeight,
-        const QColor& CmtFGColor, const QFont::Weight& CmtWeight,
-        const QColor& SymbFGColor, const QColor& SymbBGColor,
+        QColor CtrlFGColor, QColor CtrlBGColor,
+        QColor HiLiBGColor,
+        QColor LnNumFGColor, QColor LnNumBGColor,
+        QColor KeyWdFGColor, const QFont::Weight& KeyWdWeight,
+        QColor ClsFGColor, const QFont::Weight& ClsWeight,
+        QColor QteFGColor, const QFont::Weight& QteWeight,
+        QColor CmtFGColor, const QFont::Weight& CmtWeight,
+        QColor SymbFGColor, QColor SymbBGColor,
         const QFont::Weight& SymbWeight);
     ~CodeEditorStyle() {}
 

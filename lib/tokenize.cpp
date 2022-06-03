@@ -1835,8 +1835,8 @@ namespace {
     struct ScopeInfo3 {
         enum Type { Global, Namespace, Record, MemberFunction, Other };
         ScopeInfo3() : parent(nullptr), type(Global), bodyStart(nullptr), bodyEnd(nullptr) {}
-        ScopeInfo3(ScopeInfo3 *parent_, Type type_, const std::string &name_, const Token *bodyStart_, const Token *bodyEnd_)
-            : parent(parent_), type(type_), name(name_), bodyStart(bodyStart_), bodyEnd(bodyEnd_) {
+        ScopeInfo3(ScopeInfo3 *parent_, Type type_, std::string name_, const Token *bodyStart_, const Token *bodyEnd_)
+            : parent(parent_), type(type_), name(std::move(name_)), bodyStart(bodyStart_), bodyEnd(bodyEnd_) {
             if (name.empty())
                 return;
             fullName = name;
@@ -4182,7 +4182,7 @@ void Tokenizer::setVarIdPass1()
 
 namespace {
     struct Member {
-        Member(const std::list<std::string> &s, const std::list<const Token *> &ns, Token *t) : usingnamespaces(ns), scope(s), tok(t) {}
+        Member(std::list<std::string> s, std::list<const Token *> ns, Token *t) : usingnamespaces(std::move(ns)), scope(std::move(s)), tok(t) {}
         std::list<const Token *> usingnamespaces;
         std::list<std::string> scope;
         Token *tok;

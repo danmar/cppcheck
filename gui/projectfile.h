@@ -46,7 +46,7 @@ class ProjectFile : public QObject {
 
 public:
     explicit ProjectFile(QObject *parent = nullptr);
-    explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
+    explicit ProjectFile(QString filename, QObject *parent = nullptr);
     ~ProjectFile() override {
         if (this == mActiveProject) mActiveProject = nullptr;
     }

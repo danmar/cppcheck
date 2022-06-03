@@ -528,7 +528,7 @@ namespace {
     };
 
     struct ItemDefinitionGroup {
-        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg, const std::string &includePaths) : additionalIncludePaths(includePaths) {
+        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg, std::string includePaths) : additionalIncludePaths(std::move(includePaths)) {
             const char *condAttr = idg->Attribute("Condition");
             if (condAttr)
                 condition = condAttr;

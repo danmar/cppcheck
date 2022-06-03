@@ -19,33 +19,34 @@
 #include "codeeditorstyle.h"
 
 #include <QSettings>
+#include <utility>
 
 CodeEditorStyle::CodeEditorStyle(
-    const QColor& CtrlFGColor, const QColor& CtrlBGColor,
-    const QColor& HiLiBGColor,
-    const QColor& LnNumFGColor, const QColor& LnNumBGColor,
-    const QColor& KeyWdFGColor, const QFont::Weight& KeyWdWeight,
-    const QColor& ClsFGColor, const QFont::Weight& ClsWeight,
-    const QColor& QteFGColor, const QFont::Weight& QteWeight,
-    const QColor& CmtFGColor, const QFont::Weight& CmtWeight,
-    const QColor& SymbFGColor, const QColor& SymbBGColor,
+    QColor CtrlFGColor, QColor CtrlBGColor,
+    QColor HiLiBGColor,
+    QColor LnNumFGColor, QColor LnNumBGColor,
+    QColor KeyWdFGColor, const QFont::Weight& KeyWdWeight,
+    QColor ClsFGColor, const QFont::Weight& ClsWeight,
+    QColor QteFGColor, const QFont::Weight& QteWeight,
+    QColor CmtFGColor, const QFont::Weight& CmtWeight,
+    QColor SymbFGColor, QColor SymbBGColor,
     const QFont::Weight& SymbWeight) :
     mSystemTheme(false),
-    widgetFGColor(CtrlFGColor),
-    widgetBGColor(CtrlBGColor),
-    highlightBGColor(HiLiBGColor),
-    lineNumFGColor(LnNumFGColor),
-    lineNumBGColor(LnNumBGColor),
-    keywordColor(KeyWdFGColor),
+    widgetFGColor(std::move(CtrlFGColor)),
+    widgetBGColor(std::move(CtrlBGColor)),
+    highlightBGColor(std::move(HiLiBGColor)),
+    lineNumFGColor(std::move(LnNumFGColor)),
+    lineNumBGColor(std::move(LnNumBGColor)),
+    keywordColor(std::move(KeyWdFGColor)),
     keywordWeight(KeyWdWeight),
-    classColor(ClsFGColor),
+    classColor(std::move(ClsFGColor)),
     classWeight(ClsWeight),
-    quoteColor(QteFGColor),
+    quoteColor(std::move(QteFGColor)),
     quoteWeight(QteWeight),
-    commentColor(CmtFGColor),
+    commentColor(std::move(CmtFGColor)),
     commentWeight(CmtWeight),
-    symbolFGColor(SymbFGColor),
-    symbolBGColor(SymbBGColor),
+    symbolFGColor(std::move(SymbFGColor)),
+    symbolBGColor(std::move(SymbBGColor)),
     symbolWeight(SymbWeight)
 {}
 
