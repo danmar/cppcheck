@@ -365,7 +365,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // use a file filter
             else if (std::strncmp(argv[i], "--file-filter=", 14) == 0)
-                mSettings->fileFilters.push_back(argv[i] + 14);
+                mSettings->fileFilters.emplace_back(argv[i] + 14);
 
             // file list specified
             else if (std::strncmp(argv[i], "--file-list=", 12) == 0)

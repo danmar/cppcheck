@@ -438,8 +438,8 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                     }
                 }
                 if (includeGuard) {
-                    configs_if.push_back(std::string());
-                    configs_ifndef.push_back(std::string());
+                    configs_if.emplace_back(std::string());
+                    configs_ifndef.emplace_back(std::string());
                     continue;
                 }
             }
