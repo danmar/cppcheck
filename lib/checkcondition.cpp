@@ -310,13 +310,22 @@ void CheckCondition::checkBadBitmaskCheck()
 
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
+
+            const bool isNoOp = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0) ||
+                                (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
+
+            if (isNoOp)
+                badBitmaskCheckError(tok, isNoOp);
         }
     }
 }
 
-void CheckCondition::badBitmaskCheckError(const Token *tok)
+void CheckCondition::badBitmaskCheckError(const Token *tok, bool isNoOp)
 {
-    reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, Certainty::normal);
+    if (isNoOp)
+        reportError(tok, Severity::warning, "badBitmaskCheck", "Operator '|' with one operand equal to zero is redundant.", CWE571, Certainty::normal);
+    else
+        reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, Certainty::normal);
 }
 
 void CheckCondition::comparison()
