@@ -582,6 +582,21 @@ private:
         check("const char x = 'x'; size_t f() { return strlen(&x); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
 
+        check("struct someStruct {\n"
+              "    union {\n"
+              "        struct {\n"
+              "            uint16_t nr;\n"
+              "            uint8_t d[40];\n"
+              "        } data;\n"
+              "        char buf[42];\n"
+              "    } x;\n"
+              "};\n"
+              "int f(struct someStruct * const tp, const int k)\n"
+              "{\n"
+              "    return strcmp(&tp->x.buf[k], \"needle\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         check("const char x = 'x'; size_t f() { char y = x; return strlen(&y); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
 

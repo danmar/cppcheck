@@ -130,7 +130,7 @@ void CheckFunctions::invalidFunctionUsage()
                     if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
                         const ValueType * valueType = argtok->next()->valueType();
                         const Variable * variable = argtok->next()->variable();
-                        if ((valueType->type == ValueType::Type::CHAR || (valueType->type == ValueType::Type::RECORD && Token::Match(argtok, "& %var% . %var% !!["))) &&
+                        if ((valueType->type == ValueType::Type::CHAR || (valueType->type == ValueType::Type::RECORD && Token::Match(argtok, "& %var% . %var% !!."))) &&
                             !variable->isArray() &&
                             (variable->isConst() || !variable->isGlobal()) &&
                             (!argtok->next()->hasKnownValue() || argtok->next()->getValue(0) == nullptr)) {
