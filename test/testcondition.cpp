@@ -4626,6 +4626,17 @@ private:
               "  }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11096
+        check("int g();\n"
+            "void f(int i) {\n"
+            "	do {	\n"
+            "		if (i == 0)\n"
+            "			break;\n"
+            "	}\n"
+            "	while (g());\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueTryCatch()
