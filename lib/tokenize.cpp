@@ -2042,10 +2042,22 @@ namespace {
                     base += tok->str();
                     tok = tok->next();
                     // skip template parameters
+                    //if (tok && tok->str() == "<") {
+                    //    tok = tok->findClosingBracket();
+                    //    if (tok)
+                    //        tok = tok->next();
+                    //}
+                    
+                    // add template parameters
                     if (tok && tok->str() == "<") {
-                        tok = tok->findClosingBracket();
-                        if (tok)
-                            tok = tok->next();
+                        const Token* endTok = tok->findClosingBracket();
+                        if (endTok) {
+                            endTok = endTok->next();
+                            while (tok != endTok) {
+                                base += tok->str();
+                                tok = tok->next();
+                            }
+                        }
                     }
                 }
                 baseTypes.insert(base);

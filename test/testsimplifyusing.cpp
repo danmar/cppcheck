@@ -72,6 +72,7 @@ private:
         TEST_CASE(simplifyUsing23);
         TEST_CASE(simplifyUsing24);
         TEST_CASE(simplifyUsing25);
+        TEST_CASE(simplifyUsing26); // #11090
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -608,6 +609,31 @@ private:
                             "template <>\n"
                             "struct VecTraits<UnusualType> : VecTraits<UnusualType::T> { };\n"
                             "}";
+        const char expected[] = "struct UnusualType { "
+                                "vtkm :: Id X ; "
+                                "} ; "
+                                "namespace vtkm { "
+                                "struct VecTraits<UnusualType> : VecTraits < vtkm :: Id > { } ; "
+                                "}";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyUsing26() { // #11090
+        const char code[] = "namespace M {\n"
+                            "    struct A;\n"
+                            "    struct B;\n"
+                            "    struct C;\n"
+                            "    template<typename T>\n"
+                            "    struct F {};\n"
+                            "    template<>\n"
+                            "    struct F<B> : F<A> {};\n"
+                            "    template<>\n"
+                            "    struct F<C> : F<A> {};\n"
+                            "}\n"
+                            "namespace N {\n"
+                            "    using namespace M;\n"
+                            "    using A = void;\n"
+                            "}\n";
         const char expected[] = "struct UnusualType { "
                                 "vtkm :: Id X ; "
                                 "} ; "
