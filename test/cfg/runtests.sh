@@ -29,7 +29,7 @@ CPPCHECK_OPT='--check-library --platform=unix64 --enable=information --enable=st
 CXX=g++
 CXX_OPT='-fsyntax-only -std=c++0x -Wno-format -Wno-format-security -Wno-deprecated-declarations'
 CC=gcc
-CC_OPT='-Wno-format -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
+CC_OPT='-Wno-format -Wno-stringop-overread -Wno-nonnull -Wno-implicit-function-declaration -Wno-deprecated-declarations -Wno-format-security -Wno-nonnull -fsyntax-only'
 
 function get_pkg_config_cflags {
     set +e
