@@ -5918,6 +5918,16 @@ private:
                               "    g();\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int f(int *p) {\n" // #10703
+                              "    std::unique_ptr<int> up(p);\n"
+                              "    return *p;\n"
+                              "}\n"
+                              "int g(int* p) {\n"
+                              "    auto up = std::unique_ptr<int>(p);\n"
+                              "    return *p;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // ticket #3104 - false positive when variable is read with "if (NOT var)"
