@@ -260,6 +260,11 @@ bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
+bool astIsRangeBasedForDecl(const Token* tok)
+{
+    return Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "(");
+}
+
 std::string astCanonicalType(const Token *expr)
 {
     if (!expr)
@@ -2225,7 +2230,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             derefs++;
         if (derefs > indirect)
             break;
-        if ((tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->"))
+        if (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->")
             tok2 = tok2->astParent();
         tok2 = tok2->astParent();
     }
@@ -2238,7 +2243,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
 
     auto skipRedundantPtrOp = [](const Token* tok, const Token* parent) {
         const Token* gparent = parent ? parent->astParent() : nullptr;
-        while (parent && gparent && ((parent->isUnaryOp("*") && gparent->isUnaryOp("&")) || ((parent->isUnaryOp("&") && gparent->isUnaryOp("*"))))) {
+        while (parent && gparent && ((parent->isUnaryOp("*") && gparent->isUnaryOp("&")) || (parent->isUnaryOp("&") && gparent->isUnaryOp("*")))) {
             tok = gparent;
             parent = gparent->astParent();
             if (parent)

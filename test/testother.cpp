@@ -98,6 +98,7 @@ private:
         TEST_CASE(varScope28);      // #10527
         TEST_CASE(varScope29);      // #10888
         TEST_CASE(varScope30);      // #8541
+        TEST_CASE(varScope31);      // #11099
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1378,6 +1379,94 @@ private:
               "    return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void varScope31() { // #11099
+        check("bool g(std::vector<int>&);\n"
+              "void h(std::vector<int>);\n"
+              "void f0(std::vector<int> v) {\n"
+              "    std::vector<int> w{ v };\n"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f1(std::vector<int> v) {\n"
+              "    std::vector<int> w{ v.begin(), v.end() };\n"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f2(std::vector<int> v) {\n"
+              "    std::vector<int> w{ 10, 0, std::allocator<int>() };\n" // FN
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f3(std::vector<int> v) {\n"
+              "    std::vector<int> w{ 10, 0 };\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f4(std::vector<int> v) {\n"
+              "    std::vector<int> w{ 10 };\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f5(std::vector<int> v) {\n"
+              "    std::vector<int> w(v);\n"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f6(std::vector<int> v) {\n"
+              "    std::vector<int> w(v.begin(), v.end());\n"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f7(std::vector<int> v) {\n"
+              "    std::vector<int> w(10, 0, std::allocator<int>);\n" // FN
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f8(std::vector<int> v) {\n"
+              "    std::vector<int> w(10, 0);\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f9(std::vector<int> v) {\n"
+              "    std::vector<int> w(10);\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f10(std::vector<int> v) {\n"
+              "    std::vector<int> w{};\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:25]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:32]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:60]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:67]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:74]: (style) The scope of the variable 'w' can be reduced.\n",
+                      errout.str());
     }
 
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
@@ -3035,21 +3124,36 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #10466
+        check("typedef void* HWND;\n"
+              "void f(const std::vector<HWND>&v) {\n"
+              "    for (const auto* h : v)\n"
+              "        if (h) {}\n"
+              "    for (const auto& h : v)\n"
+              "        if (h) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'h' can be declared as pointer to const\n", errout.str());
+
         check("void f(const std::vector<int*>& v) {\n"
               "    for (const auto& p : v)\n"
               "        if (p == nullptr) {}\n"
               "    for (const auto* p : v)\n"
               "        if (p == nullptr) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n", errout.str());
 
         check("void f(std::vector<int*>& v) {\n"
               "    for (const auto& p : v)\n"
               "        if (p == nullptr) {}\n"
               "    for (const auto* p : v)\n"
               "        if (p == nullptr) {}\n"
+              "    for (const int* const& p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "    for (const int* p : v)\n"
+              "        if (p == nullptr) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
+                      "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
 
         check("void f(std::vector<const int*>& v) {\n"
               "    for (const auto& p : v)\n"
@@ -3099,7 +3203,7 @@ private:
                       "[test.cpp:4]: (style) Variable 'b' can be declared as const array\n",
                       errout.str());
 
-        check("typedef void* HWND;\n"
+        check("typedef void* HWND;\n" // #11084
               "void f(const HWND h) {\n"
               "    if (h == nullptr) {}\n"
               "}\n");
@@ -3128,6 +3232,19 @@ private:
               "    (s - 1)->v();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int*>& v) {\n" // #11085
+              "    for (int* p : v) {\n"
+              "        if (p) {}\n"
+              "    }\n"
+              "    for (auto* p : v) {\n"
+              "        if (p) {}\n"
+              "    }\n"
+              "    v.clear();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
+                      "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {

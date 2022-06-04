@@ -36,6 +36,37 @@
 #include <iterator>
 #include <vector>
 
+char* invalidFunctionArgStr_strncpy(char * destination)
+{
+    // Copies the first num characters of source to destination.
+    // If the end of the source C string (which is signaled by a null-character)
+    // is found before num characters have been copied, destination
+    // is padded with zeros until a total of num characters have been written to it.
+    const char source = 'x';
+    const std::size_t num = 1U;
+    return strncpy(destination, &source, num);
+}
+
+void invalidFunctionArgStr_fprintf(FILE *stream, const char *format)
+{
+    const char formatBuf[] = {'%','d'};
+    // cppcheck-suppress invalidFunctionArgStr
+    (void)fprintf(stream,formatBuf,42);
+    (void)fprintf(stream,format,42);
+}
+
+void invalidFunctionArgStr_fopen(const char * const fileName, const char * const mode)
+{
+    const char fileNameBuf[] = {'f','i','l','e'};
+    const char modeBuf[] = {'r'};
+    // cppcheck-suppress invalidFunctionArgStr
+    FILE *fp = fopen(fileName, modeBuf);
+    fclose(fp);
+    // cppcheck-suppress invalidFunctionArgStr
+    fp = fopen(fileNameBuf, mode);
+    fclose(fp);
+}
+
 float invalidFunctionArg_remquo (float x, float y, int* quo )
 {
     // cppcheck-suppress invalidFunctionArg

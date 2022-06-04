@@ -945,10 +945,32 @@ void CheckOther::checkVariableScope()
         if (forHead)
             continue;
 
+        auto isSimpleExpr = [](const Token* tok) {
+            return tok && (tok->isNumber() || tok->tokType() == Token::eString || tok->tokType() == Token::eChar || tok->isBoolean());
+        };
+
         const Token* tok = var->nameToken()->next();
-        if (Token::Match(tok, "; %varid% = %any% ;", var->declarationId())) {
+        if (Token::Match(tok, "; %varid% = %any% ;", var->declarationId())) { // bailout for assignment
             tok = tok->tokAt(3);
-            if (!tok->isNumber() && tok->tokType() != Token::eString && tok->tokType() != Token::eChar && !tok->isBoolean())
+            if (!isSimpleExpr(tok))
+                continue;
+        }
+        else if (Token::Match(tok, "{|(")) { // bailout for constructor
+            const Token* argTok = tok->astOperand2();
+            bool bail = false;
+            while (argTok) {
+                if (Token::simpleMatch(argTok, ",")) {
+                    if (!isSimpleExpr(argTok->astOperand2())) {
+                        bail = true;
+                        break;
+                    }
+                } else if (!isSimpleExpr(argTok)) {
+                    bail = true;
+                    break;
+                }
+                argTok = argTok->astOperand1();
+            }
+            if (bail)
                 continue;
         }
         // bailout if initialized with function call that has possible side effects
@@ -1559,8 +1581,7 @@ void CheckOther::checkConstPointer()
         const Token* const nameTok = var->nameToken();
         // declarations of (static) pointers are (not) split up, array declarations are never split up
         if (tok == nameTok && (!var->isStatic() || Token::simpleMatch(nameTok->next(), "[")) &&
-            // range-based for loop
-            !(Token::simpleMatch(nameTok->astParent(), ":") && Token::simpleMatch(nameTok->astParent()->astParent(), "(")))
+            !astIsRangeBasedForDecl(nameTok))
             continue;
         const ValueType* const vt = tok->valueType();
         if (!vt)
@@ -1576,8 +1597,8 @@ void CheckOther::checkConstPointer()
             deref = true;
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
             deref = true;
-        else if (Token::Match(parent, "%op%") && Token::simpleMatch(parent->astParent(), "."))
-            deref = true;
+        else if (astIsRangeBasedForDecl(tok))
+            continue;
         if (deref) {
             const Token* const gparent = parent->astParent();
             if (Token::Match(gparent, "%cop%") && !gparent->isUnaryOp("&") && !gparent->isUnaryOp("*"))
@@ -1594,7 +1615,7 @@ void CheckOther::checkConstPointer()
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
         } else {
-            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
+            if (Token::Match(parent, "%oror%|%comp%|&&|?|!"))
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;

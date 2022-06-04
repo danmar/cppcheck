@@ -60,7 +60,7 @@ bool cppcheck::Platform::platform(cppcheck::Platform::PlatformType type)
         if (type == Unspecified) {
             defaultSign = '\0';
         } else {
-            defaultSign = (std::numeric_limits<char>::is_signed) ? 's' : 'u';
+            defaultSign = std::numeric_limits<char>::is_signed ? 's' : 'u';
         }
         char_bit = 8;
         short_bit = char_bit * sizeof_short;
