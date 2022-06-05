@@ -893,6 +893,12 @@ private:
               "    if (i | j) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Operator '|' with one operand equal to zero is redundant.\n", errout.str());
+
+        check("#define EIGHTTOIS(x) (((x) << 8) | (x))\n"
+              "int f() {\n"
+              "    return EIGHTTOIS(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
