@@ -49,7 +49,7 @@ public:
         int type;
         int reallocedFromType = -1;
         const Token * allocTok;
-        AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC, const Token* allocTok_ = nullptr) : status(status_), type(type_), allocTok(allocTok_) {}
+        explicit AllocInfo(int type_ = 0, AllocStatus status_ = NOALLOC, const Token* allocTok_ = nullptr) : status(status_), type(type_), allocTok(allocTok_) {}
 
         bool managed() const {
             return status < 0;
