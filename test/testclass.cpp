@@ -480,6 +480,13 @@ private:
                                   "    explicit constexpr Baz(int) {}\n"
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("class Token;\n" // #11126
+                                  "struct Branch {\n"
+                                  "    Branch(Token* tok = nullptr) : endBlock(tok) {}\n"
+                                  "    Token* endBlock = nullptr;\n"
+                                  "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'Branch' has a constructor with 1 argument that is not explicit.\n", errout.str());
     }
 
 #define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
