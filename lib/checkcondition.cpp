@@ -314,7 +314,7 @@ void CheckCondition::checkBadBitmaskCheck()
             const bool isNoOp = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0) ||
                                 (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
 
-            if (isNoOp)
+            if (isNoOp && !tok->isExpandedMacro())
                 badBitmaskCheckError(tok, isNoOp);
         }
     }
