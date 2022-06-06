@@ -354,6 +354,7 @@ void CheckClass::checkExplicitConstructors()
 
             if (!func.isExplicit() &&
                 func.argCount() > 0 && func.minArgCount() < 2 &&
+                func.argumentList.front().getTypeName() != "std::initializer_list" &&
                 func.type != Function::eCopyConstructor &&
                 func.type != Function::eMoveConstructor) {
                 noExplicitConstructorError(func.tokenDef, scope->className, scope->type == Scope::eStruct);

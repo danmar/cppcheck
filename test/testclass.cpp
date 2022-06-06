@@ -487,6 +487,12 @@ private:
                                   "    Token* endBlock = nullptr;\n"
                                   "};\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'Branch' has a constructor with 1 argument that is not explicit.\n", errout.str());
+
+        checkExplicitConstructors("struct S {\n"
+                                  "    S(std::initializer_list<int> il) : v(il) {}\n"
+                                  "    std::vector<int> v;\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
