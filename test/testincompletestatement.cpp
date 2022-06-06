@@ -646,6 +646,16 @@ private:
               "    };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace N {\n" // #10876
+              "    template <class R, class S, void(*T)(R&, float, S)>\n"
+              "    inline void f() {}\n"
+              "    template<class T>\n"
+              "    void g(T& c) {\n"
+              "        for (typename T::iterator v = c.begin(); v != c.end(); ++v) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
