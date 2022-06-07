@@ -311,11 +311,11 @@ void CheckCondition::checkBadBitmaskCheck()
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
 
-            const bool isNoOp = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0) ||
-                                (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
+            const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0);
+            const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
 
-            if (isNoOp && !tok->isExpandedMacro())
-                badBitmaskCheckError(tok, isNoOp);
+            if ((isZero1 || isZero2) && !tok->isExpandedMacro() && !(isZero1 && tok->astOperand1()->isExpandedMacro()) && !(isZero2 && tok->astOperand2()->isExpandedMacro()))
+                badBitmaskCheckError(tok, /*isNoOp*/ true);
         }
     }
 }
