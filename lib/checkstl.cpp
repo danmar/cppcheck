@@ -2617,21 +2617,21 @@ void CheckStl::useStlAlgorithm()
                 if (!Token::Match(loopVar, "%var%"))
                     continue;
             }
-            else if (Token::simpleMatch(splitTok, ";") && Token::simpleMatch(splitTok->astOperand2(), ";")) { // iterator-based loop
-                const Token* comp = splitTok->astOperand2()->astOperand1();
-                loopVar = Token::Match(comp, "%comp%") ? comp->astOperand1() : nullptr;
+            else { // iterator-based loop?
+                const Token* initTok = getInitTok(tok);
+                const Token* condTok = getCondTok(tok);
+                const Token* stepTok = getStepTok(tok);
+                if (!initTok || !condTok || !stepTok)
+                    continue;
+                loopVar = Token::Match(condTok, "%comp%") ? condTok->astOperand1() : nullptr;
                 if (!Token::Match(loopVar, "%var%") || !loopVar->valueType() || loopVar->valueType()->type != ValueType::Type::ITERATOR)
                     continue;
-                const Token* init = splitTok->astOperand1();
-                if (!Token::simpleMatch(init, "=") || !Token::Match(init->astOperand1(), "%varid%", loopVar->varId()))
+                if (!Token::simpleMatch(initTok, "=") || !Token::Match(initTok->astOperand1(), "%varid%", loopVar->varId()))
                     continue;
-                const Token* inc = splitTok->astOperand2() ? splitTok->astOperand2()->astOperand2() : nullptr;
-                if (!inc || (!Token::Match(inc, "%op% %varid%", loopVar->varId()) && !Token::Match(inc->previous(), "%varid% %op%", loopVar->varId())))
+                if (!Token::Match(stepTok, "%op% %varid%", loopVar->varId()) && !Token::Match(stepTok->previous(), "%varid% %op%", loopVar->varId()))
                     continue;
                 isIteratorLoop = true;
             }
-            else
-                continue;
 
             // Check for single assignment
             bool useLoopVarInAssign;
