@@ -76,6 +76,9 @@ private:
         ArgumentInfo(const Token *arg, const Settings *settings, bool _isCPP);
         ~ArgumentInfo();
 
+        ArgumentInfo(const ArgumentInfo &) = delete;
+        ArgumentInfo& operator= (const ArgumentInfo &) = delete;
+
         bool isArrayOrPointer() const;
         bool isComplexType() const;
         bool isKnownType() const;
@@ -91,10 +94,6 @@ private:
         bool _template;
         bool address;
         bool isCPP;
-
-    private:
-        ArgumentInfo(const ArgumentInfo &); // not implemented
-        ArgumentInfo operator = (const ArgumentInfo &); // not implemented
     };
 
     void checkFormatString(const Token * const tok,

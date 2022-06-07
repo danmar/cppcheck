@@ -179,11 +179,10 @@ class CPPCHECKLIB Token {
 private:
     TokensFrontBack* mTokensFrontBack;
 
-    // Not implemented..
-    Token(const Token &);
-    Token operator=(const Token &);
-
 public:
+    Token(const Token &) = delete;
+    Token& operator=(const Token &) = delete;
+
     enum Type {
         eVariable, eType, eFunction, eKeyword, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Language keyword, Name (unknown identifier)
         eNumber, eString, eChar, eBoolean, eLiteral, eEnumerator, // Literals: Number, String, Character, Boolean, User defined literal (C++11), Enumerator
