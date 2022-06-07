@@ -2611,6 +2611,7 @@ void CheckStl::useStlAlgorithm()
             const Token *bodyTok = tok->next()->link()->next();
             const Token *splitTok = tok->next()->astOperand2();
             const Token* loopVar{};
+            bool isIteratorLoop = false;
             if (Token::simpleMatch(splitTok, ":")) {
                 loopVar = splitTok->previous();
                 if (!Token::Match(loopVar, "%var%"))
@@ -2627,6 +2628,7 @@ void CheckStl::useStlAlgorithm()
                 const Token* inc = splitTok->astOperand2() ? splitTok->astOperand2()->astOperand2() : nullptr;
                 if (!inc || (!Token::Match(inc, "%op% %varid%", loopVar->varId()) && !Token::Match(inc->previous(), "%varid% %op%", loopVar->varId())))
                     continue;
+                isIteratorLoop = true;
             }
             else
                 continue;
@@ -2662,7 +2664,7 @@ void CheckStl::useStlAlgorithm()
             // Check for container calls
             bool useLoopVarInMemCall;
             const Token *memberAccessTok = singleMemberCallInScope(bodyTok, loopVar->varId(), useLoopVarInMemCall);
-            if (memberAccessTok) {
+            if (memberAccessTok && !isIteratorLoop) {
                 const Token *memberCallTok = memberAccessTok->astOperand2();
                 const int contVarId = memberAccessTok->astOperand1()->varId();
                 if (contVarId == loopVar->varId())

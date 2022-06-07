@@ -4670,6 +4670,15 @@ private:
               "    return t;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::accumulate algorithm instead of a raw loop.\n", errout.str());
+
+        check("auto g(const std::vector<int>& v) {\n"
+              "    std::vector<std::vector<int>::iterator> r;\n"
+              "    for (auto i = v.begin(); i != v.end(); ++i) {\n"
+              "        r.push_back(i);\n"
+              "    }\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void loopAlgoContainerInsert() {
