@@ -2041,13 +2041,6 @@ namespace {
                         base += ' ';
                     base += tok->str();
                     tok = tok->next();
-                    // skip template parameters
-                    //if (tok && tok->str() == "<") {
-                    //    tok = tok->findClosingBracket();
-                    //    if (tok)
-                    //        tok = tok->next();
-                    //}
-                    
                     // add template parameters
                     if (tok && tok->str() == "<") {
                         const Token* endTok = tok->findClosingBracket();

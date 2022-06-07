@@ -634,12 +634,15 @@ private:
                             "    using namespace M;\n"
                             "    using A = void;\n"
                             "}\n";
-        const char expected[] = "struct UnusualType { "
-                                "vtkm :: Id X ; "
-                                "} ; "
-                                "namespace vtkm { "
-                                "struct VecTraits<UnusualType> : VecTraits < vtkm :: Id > { } ; "
-                                "}";
+        const char expected[] = "namespace M { "
+                                "struct A ; struct B ; struct C ; "
+                                "struct F<C> ; struct F<B> ; struct F<A> ; "
+                                "struct F<B> : F<A> { } ; struct F<C> : F<A> { } ; "
+                                "} "
+                                "namespace N { "
+                                "using namespace M ; "
+                                "} "
+                                "struct M :: F<A> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 
