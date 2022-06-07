@@ -69,12 +69,13 @@ class CPPCHECKLIB Timer {
 public:
     Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
     ~Timer();
+
+    Timer(const Timer&) = delete;
+    Timer& operator=(const Timer&) = delete;
+
     void stop();
 
 private:
-    Timer(const Timer& other); // disallow copying
-    Timer& operator=(const Timer&); // disallow assignments
-
     const std::string mStr;
     TimerResultsIntf* mTimerResults;
     std::clock_t mStart;

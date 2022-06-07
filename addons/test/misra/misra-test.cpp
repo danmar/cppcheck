@@ -7,7 +7,7 @@ class C {
 
 class misra_21_1_C {
     public:
-       misra_21_1_C operator=(const misra_21_1_C &); // 8.2
+       misra_21_1_C operator=(const misra_21_1_C &);
 };
 
 class C2 {

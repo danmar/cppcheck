@@ -43,6 +43,9 @@ public:
     explicit TokenList(const Settings* settings);
     ~TokenList();
 
+    TokenList(const TokenList &) = delete;
+    TokenList &operator=(const TokenList &) = delete;
+
     void setSettings(const Settings *settings) {
         mSettings = settings;
     }
@@ -192,13 +195,6 @@ public:
     bool isKeyword(const std::string &str) const;
 
 private:
-
-    /** Disable copy constructor, no implementation */
-    TokenList(const TokenList &);
-
-    /** Disable assignment operator, no implementation */
-    TokenList &operator=(const TokenList &);
-
     void determineCppC();
 
     /** Token list */

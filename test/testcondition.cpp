@@ -899,6 +899,12 @@ private:
               "    return EIGHTTOIS(0);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("#define O_RDONLY 0\n"
+              "void f(const char* s, int* pFd) {\n"
+              "    *pFd = open(s, O_RDONLY | O_BINARY, 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
