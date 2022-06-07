@@ -3240,11 +3240,33 @@ private:
               "    for (auto* p : v) {\n"
               "        if (p) {}\n"
               "    }\n"
+              "    for (auto* p : v) {\n"
+              "        if (p) { *p = 42; }\n"
+              "    }\n"
               "    v.clear();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
                       "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n",
                       errout.str());
+
+        check("void f(std::vector<std::optional<int>>& v) {\n"
+              "    for (std::optional<int> &p : v) {\n"
+              "        if (p) {}\n"
+              "    }\n"
+              "    for (auto& p : v) {\n"
+              "        if (p) {}\n"
+              "    }\n"
+              "    for (auto& p : v) {\n"
+              "        if (p) { *p = 42; }\n"
+              "    }\n"
+              "    v.clear();\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as reference to const\n"
+                           "[test.cpp:5]: (style) Variable 'p' can be declared as reference to const\n",
+                           "[test.cpp:2]: (style) Variable 'p' can be declared as reference to const\n"
+                           "[test.cpp:5]: (style) Variable 'p' can be declared as reference to const\n"
+                           "[test.cpp:8]: (style) Variable 'p' can be declared as reference to const\n",
+                           errout.str());
     }
 
     void switchRedundantAssignmentTest() {
