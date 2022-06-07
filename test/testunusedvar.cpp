@@ -131,6 +131,7 @@ private:
         TEST_CASE(localvar61); // #9407
         TEST_CASE(localvar62); // #10824
         TEST_CASE(localvar63); // #6928
+        TEST_CASE(localvar64); // #9997
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -3483,6 +3484,28 @@ private:
                               "  y:return;\n"
                               "}");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'x' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvar64() { // #9997
+        functionVariableUsage("class S {\n"
+                              "    ~S();\n"
+                              "    S* f();\n"
+                              "    S* g(int);\n"
+                              "};\n"
+                              "void h(S* s, bool b) {\n"
+                              "    S* p = nullptr;\n"
+                              "    S* q = nullptr;\n"
+                              "    if (b) {\n"
+                              "        p = s;\n"
+                              "        q = s->f()->g(-2);\n"
+                              "    }\n"
+                              "    else\n"
+                              "        q = s;\n"
+                              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (style) Variable 'p' is assigned a value that is never used.\n"
+                      "[test.cpp:11]: (style) Variable 'q' is assigned a value that is never used.\n"
+                      "[test.cpp:14]: (style) Variable 'q' is assigned a value that is never used.\n",
+                      errout.str());
     }
 
     void localvarloops() {

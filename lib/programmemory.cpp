@@ -381,7 +381,6 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                         ++indentlevel;
                         continue;
                     }
-                    tok2 = cond->astParent()->previous();
                 } else if (conditionIsTrue(cond, state)) {
                     if (inElse)
                         tok2 = tok2->link()->tokAt(-2);

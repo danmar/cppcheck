@@ -1281,8 +1281,7 @@ private:
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "sizeof (");
         ASSERT(!!tok);
         tok = tok->next();
-        // TODO ASSERT(tok->hasKnownIntValue());
-        // TODO ASSERT_EQUALS(10, tok->getKnownIntValue());
+        TODO_ASSERT_EQUALS(true, false, tok->hasKnownIntValue() && tok->getKnownIntValue() == 10);
     }
 
     void valueType1() {
