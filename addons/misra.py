@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
 # MISRA C 2012 checkers
+# Partially reused for "MISRA C++ 2008" checking
 #
 # Example usage of this addon (scan a sourcefile main.cpp)
 # cppcheck --dump main.cpp
@@ -4208,7 +4209,8 @@ class MisraChecker:
         :param args: Check function arguments
         """
         if not self.isRuleGloballySuppressed(rule_num):
-            check_function(*args)
+            if (not self.is_cpp) or rule_num in (202,203,1901):
+                check_function(*args)
 
     def parseDump(self, dumpfile):
         def fillVerifyExpected(verify_expected, tok):
@@ -4248,6 +4250,8 @@ class MisraChecker:
                         fillVerifyExpected(self.verify_expected, tok)
         else:
             self.printStatus('Checking ' + dumpfile + '...')
+
+        self.is_cpp = data.files and data.files[0].endswith('.cpp')
 
         for cfgNumber, cfg in enumerate(data.iterconfigurations()):
             if not self.settings.quiet:
