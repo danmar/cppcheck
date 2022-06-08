@@ -887,19 +887,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 if (!mSettings.buildDir.empty())
                     checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), &mSettings);
 
-                // simplify more if required, skip rest of iteration if failed
+                // handling of "simple" rules has been removed.
                 if (mSimplify && hasRule("simple")) {
-                    std::cout << "Handling of \"simple\" rules is deprecated and will be removed in Cppcheck 2.5." << std::endl;
-
-                    // if further simplification fails then skip rest of iteration
-                    Timer timer3("Tokenizer::simplifyTokenList2", mSettings.showtime, &s_timerResults);
-                    result = tokenizer.simplifyTokenList2();
-                    timer3.stop();
-                    if (!result)
-                        continue;
-
-                    if (!Settings::terminated())
-                        executeRules("simple", tokenizer);
+                    // FIXME Remove this function
+                    tokenizer.simplifyTokenList2();
+                    throw InternalError(nullptr, "Handling of \"simple\" rules has been removed in Cppcheck. Use --addon instead.");
                 }
 
             } catch (const simplecpp::Output &o) {

@@ -60,36 +60,6 @@ private:
 
         TEST_CASE(test1); // array access. replace "*(p+1)" => "p[1]"
 
-        TEST_CASE(simplifyMathFunctions_sqrt);
-        TEST_CASE(simplifyMathFunctions_cbrt);
-        TEST_CASE(simplifyMathFunctions_exp);
-        TEST_CASE(simplifyMathFunctions_exp2);
-        TEST_CASE(simplifyMathFunctions_logb);
-        TEST_CASE(simplifyMathFunctions_log1p);
-        TEST_CASE(simplifyMathFunctions_ilogb);
-        TEST_CASE(simplifyMathFunctions_log10);
-        TEST_CASE(simplifyMathFunctions_log);
-        TEST_CASE(simplifyMathFunctions_log2);
-        TEST_CASE(simplifyMathFunctions_pow);
-        TEST_CASE(simplifyMathFunctions_fmin);
-        TEST_CASE(simplifyMathFunctions_fmax);
-        TEST_CASE(simplifyMathFunctions_acosh);
-        TEST_CASE(simplifyMathFunctions_acos);
-        TEST_CASE(simplifyMathFunctions_cosh);
-        TEST_CASE(simplifyMathFunctions_cos);
-        TEST_CASE(simplifyMathFunctions_erfc);
-        TEST_CASE(simplifyMathFunctions_erf);
-        TEST_CASE(simplifyMathFunctions_sin);
-        TEST_CASE(simplifyMathFunctions_sinh);
-        TEST_CASE(simplifyMathFunctions_asin);
-        TEST_CASE(simplifyMathFunctions_asinh);
-        TEST_CASE(simplifyMathFunctions_tan);
-        TEST_CASE(simplifyMathFunctions_tanh);
-        TEST_CASE(simplifyMathFunctions_atan);
-        TEST_CASE(simplifyMathFunctions_atanh);
-        TEST_CASE(simplifyMathFunctions_expm1);
-        TEST_CASE(simplifyMathExpressions); //ticket #1620
-
         // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
         TEST_CASE(simplifyAssignmentInFunctionCall);
 
@@ -187,8 +157,6 @@ private:
         // Simplify nested strcat() calls
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
-
-        TEST_CASE(simplifyAtol);
 
         TEST_CASE(simplifyOperator1);
         TEST_CASE(simplifyOperator2);
@@ -4115,13 +4083,6 @@ private:
                               "strcat ( dst , \" \" ) ;";
 
         ASSERT_EQUALS(expect, tok(code));
-    }
-
-    void simplifyAtol() {
-        ASSERT_EQUALS("a = std :: atol ( x ) ;", tok("a = std::atol(x);"));
-        ASSERT_EQUALS("a = atol ( \"text\" ) ;", tok("a = atol(\"text\");"));
-        ASSERT_EQUALS("a = 0 ;", tok("a = std::atol(\"0\");"));
-        ASSERT_EQUALS("a = 10 ;", tok("a = atol(\"0xa\");"));
     }
 
     void simplifyOperator1() {

@@ -5275,9 +5275,6 @@ bool Tokenizer::simplifyTokenList2()
         tok->clearValueFlow();
     }
 
-    // Convert e.g. atol("0") into 0
-    simplifyMathFunctions();
-
     // f(x=g())   =>   x=g(); f(x)
     simplifyAssignmentInFunctionCall();
 
@@ -5387,8 +5384,6 @@ bool Tokenizer::simplifyTokenList2()
     simplifyRedundantConsecutiveBraces();
 
     simplifyEmptyNamespaces();
-
-    simplifyMathFunctions();
 
     validate();
 
@@ -9682,16 +9677,6 @@ static bool isNumberOneOf(const std::string &s, const MathLib::bigint& intConsta
 }
 
 // ------------------------------------------------------------------------
-// Helper function to check whether number is zero (0 or 0.0 or 0E+0) or not?
-// @param s the string to check
-// @return true in case s is zero and false otherwise.
-// ------------------------------------------------------------------------
-bool Tokenizer::isZeroNumber(const std::string &s)
-{
-    return isNumberOneOf(s, 0L, "0.0");
-}
-
-// ------------------------------------------------------------------------
 // Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?
 // @param s the string to check
 // @return true in case s is one and false otherwise.
@@ -9713,187 +9698,6 @@ bool Tokenizer::isTwoNumber(const std::string &s)
     if (!MathLib::isPositive(s))
         return false;
     return isNumberOneOf(s, 2L, "2.0");
-}
-
-// ------------------------------------------------------
-// Simplify math functions.
-// It simplifies the following functions: atol(), fmin(),
-// fminl(), fminf(), fmax(), fmaxl(), fmaxf(), pow(),
-// powf(), powl(), cbrt(), cbrtl(), cbtrf(), sqrt(),
-// sqrtf(), sqrtl(), exp(), expf(), expl(), exp2(),
-// exp2f(), exp2l(), log2(), log2f(), log2l(), log1p(),
-// log1pf(), log1pl(), log10(), log10l(), log10f(),
-// log(), logf(), logl(), logb(), logbf(), logbl(), acosh()
-// acoshf(), acoshl(), acos(), acosf(), acosl(), cosh()
-// coshf(), coshf(), cos(), cosf(), cosl(), erfc(),
-// erfcf(), erfcl(), ilogb(), ilogbf(), ilogbf(), erf(),
-// erfl(), erff(), asin(), asinf(), asinf(), asinh(),
-// asinhf(), asinhl(), tan(), tanf(), tanl(), tanh(),
-// tanhf(), tanhl(), atan(), atanf(), atanl(), atanh(),
-// atanhf(), atanhl(), expm1(), expm1l(), expm1f(), sin(),
-// sinf(), sinl(), sinh(), sinhf(), sinhl()
-// in the tokenlist.
-//
-// Reference:
-// - http://www.cplusplus.com/reference/cmath/
-// ------------------------------------------------------
-void Tokenizer::simplifyMathFunctions()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->isName() && !tok->varId() && tok->strAt(1) == "(") { // precondition for function
-            bool simplifcationMade = false;
-            if (Token::Match(tok, "atol ( %str% )")) { //@todo Add support for atoll()
-                if (Token::simpleMatch(tok->tokAt(-2), "std ::")) {
-                    tok = tok->tokAt(-2);// set token index two steps back
-                    tok->deleteNext(2);  // delete "std ::"
-                }
-                const std::string& strNumber = tok->tokAt(2)->strValue(); // get number
-                const bool isNotAnInteger = (!MathLib::isInt(strNumber));// check: is not an integer
-                if (strNumber.empty() || isNotAnInteger) {
-                    // Ignore strings which we can't convert
-                    continue;
-                }
-                // Convert string into a number and insert into token list
-                tok->str(MathLib::toString(MathLib::toLongNumber(strNumber)));
-                // remove ( %num% )
-                tok->deleteNext(3);
-                simplifcationMade = true;
-            } else if (Token::Match(tok, "sqrt|sqrtf|sqrtl|cbrt|cbrtf|cbrtl ( %num% )")) {
-                // Simplify: sqrt(0) = 0 and cbrt(0) == 0
-                //           sqrt(1) = 1 and cbrt(1) == 1
-                // get number string
-                const std::string& parameter(tok->strAt(2));
-                // is parameter 0 ?
-                if (isZeroNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("0"); // insert result into token list
-                    simplifcationMade = true;
-                } else if (isOneNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("1"); // insert result into token list
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "exp|expf|expl|exp2|exp2f|exp2l|cos|cosf|cosl|cosh|coshf|coshl|erfc|erfcf|erfcl ( %num% )")) {
-                // Simplify: exp[f|l](0)  = 1 and exp2[f|l](0) = 1
-                //           cosh[f|l](0) = 1 and cos[f|l](0)  = 1
-                //           erfc[f|l](0) = 1
-                // get number string
-                const std::string& parameter(tok->strAt(2));
-                // is parameter 0 ?
-                if (isZeroNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("1"); // insert result into token list
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "log1p|log1pf|log1pl|sin|sinf|sinl|sinh|sinhf|sinhl|erf|erff|erfl|asin|asinf|asinl|asinh|asinhf|asinhl|tan|tanf|tanl|tanh|tanhf|tanhl|atan|atanf|atanl|atanh|atanhf|atanhl|expm1|expm1f|expm1l ( %num% )")) {
-                // Simplify: log1p[f|l](0) = 0 and sin[f|l](0)  = 0
-                //           sinh[f|l](0)  = 0 and erf[f|l](0)  = 0
-                //           asin[f|l](0)  = 0 and sinh[f|l](0) = 0
-                //           tan[f|l](0)   = 0 and tanh[f|l](0) = 0
-                //           atan[f|l](0)  = 0 and atanh[f|l](0)= 0
-                //           expm1[f|l](0) = 0
-                // get number string
-                const std::string& parameter(tok->strAt(2));
-                // is parameter 0 ?
-                if (isZeroNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("0"); // insert result into token list
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "log2|log2f|log2l|log|logf|logl|log10|log10f|log10l|logb|logbf|logbl|acosh|acoshf|acoshl|acos|acosf|acosl|ilogb|ilogbf|ilogbl ( %num% )")) {
-                // Simplify: log2[f|l](1)  = 0 , log10[f|l](1)  = 0
-                //           log[f|l](1)   = 0 , logb10[f|l](1) = 0
-                //           acosh[f|l](1) = 0 , acos[f|l](1)   = 0
-                //           ilogb[f|l](1) = 0
-                // get number string
-                const std::string& parameter(tok->strAt(2));
-                // is parameter 1 ?
-                if (isOneNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("0"); // insert result into token list
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "fmin|fminl|fminf ( %num% , %num% )")) {
-                // @todo if one of the parameters is NaN the other is returned
-                // e.g. printf ("fmin (NaN, -1.0) = %f\n", fmin(NaN,-1.0));
-                // e.g. printf ("fmin (-1.0, NaN) = %f\n", fmin(-1.0,NaN));
-                const std::string& strLeftNumber(tok->strAt(2));
-                const std::string& strRightNumber(tok->strAt(4));
-                const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
-                // case: left <= right ==> insert left
-                if (isLessEqual) {
-                    tok->str(strLeftNumber); // insert e.g. -1.0
-                    tok->deleteNext(5);      // delete e.g. fmin ( -1.0, 1.0 )
-                    simplifcationMade = true;
-                } else { // case left > right ==> insert right
-                    tok->str(strRightNumber); // insert e.g. 0.0
-                    tok->deleteNext(5);       // delete e.g. fmin ( 1.0, 0.0 )
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "fmax|fmaxl|fmaxf ( %num% , %num% )")) {
-                // @todo if one of the parameters is NaN the other is returned
-                // e.g. printf ("fmax (NaN, -1.0) = %f\n", fmax(NaN,-1.0));
-                // e.g. printf ("fmax (-1.0, NaN) = %f\n", fmax(-1.0,NaN));
-                const std::string& strLeftNumber(tok->strAt(2));
-                const std::string& strRightNumber(tok->strAt(4));
-                const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
-                // case: left <= right ==> insert right
-                if (isLessEqual) {
-                    tok->str(strRightNumber);// insert e.g. 1.0
-                    tok->deleteNext(5);      // delete e.g. fmax ( -1.0, 1.0 )
-                    simplifcationMade = true;
-                } else { // case left > right ==> insert left
-                    tok->str(strLeftNumber);  // insert e.g. 1.0
-                    tok->deleteNext(5);       // delete e.g. fmax ( 1.0, 0.0 )
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "pow|powf|powl (")) {
-                if (Token::Match(tok->tokAt(2), "%num% , %num% )")) {
-                    // In case of pow ( 0 , anyNumber > 0): It can be simplified to 0
-                    // In case of pow ( 0 , 0 ): It simplified to 1
-                    // In case of pow ( 1 , anyNumber ): It simplified to 1
-                    const std::string& leftNumber(tok->strAt(2)); // get the left parameter
-                    const std::string& rightNumber(tok->strAt(4)); // get the right parameter
-                    const bool isLeftNumberZero = isZeroNumber(leftNumber);
-                    const bool isLeftNumberOne = isOneNumber(leftNumber);
-                    const bool isRightNumberZero = isZeroNumber(rightNumber);
-                    if (isLeftNumberZero && !isRightNumberZero && MathLib::isPositive(rightNumber)) { // case: 0^(y) = 0 and y > 0
-                        tok->deleteNext(5); // delete tokens
-                        tok->str("0");  // insert simplified result
-                        simplifcationMade = true;
-                    } else if (isLeftNumberZero && isRightNumberZero) { // case: 0^0 = 1
-                        tok->deleteNext(5); // delete tokens
-                        tok->str("1");  // insert simplified result
-                        simplifcationMade = true;
-                    } else if (isLeftNumberOne) { // case 1^(y) = 1
-                        tok->deleteNext(5); // delete tokens
-                        tok->str("1");  // insert simplified result
-                        simplifcationMade = true;
-                    }
-                }
-                if (Token::Match(tok->tokAt(2), "%any% , %num% )")) {
-                    // In case of pow( x , 1 ): It can be simplified to x.
-                    const std::string& leftParameter(tok->strAt(2)); // get the left parameter
-                    const std::string& rightNumber(tok->strAt(4)); // get right number
-                    if (isOneNumber(rightNumber)) { // case: x^(1) = x
-                        tok->str(leftParameter);  // insert simplified result
-                        tok->deleteNext(5); // delete tokens
-                        simplifcationMade = true;
-                    } else if (isZeroNumber(rightNumber)) { // case: x^(0) = 1
-                        tok->deleteNext(5); // delete tokens
-                        tok->str("1");  // insert simplified result
-                        simplifcationMade = true;
-                    }
-                }
-            }
-            // Jump back to begin of statement if a simplification was performed
-            if (simplifcationMade) {
-                while (tok->previous() && tok->str() != ";") {
-                    tok = tok->previous();
-                }
-            }
-        }
-    }
 }
 
 void Tokenizer::simplifyComma()

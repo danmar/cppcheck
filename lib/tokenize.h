@@ -548,11 +548,6 @@ public:
     void findComplicatedSyntaxErrorsInTemplates();
 
     /**
-     * Simplify e.g. 'atol("0")' into '0'
-     */
-    void simplifyMathFunctions();
-
-    /**
      * Simplify e.g. 'sin(0)' into '0'
      */
     void simplifyMathExpressions();
@@ -896,13 +891,6 @@ public:
     const Token* tokens() const {
         return list.front();
     }
-
-    /**
-     * Helper function to check whether number is zero (0 or 0.0 or 0E+0) or not?
-     * @param s the string to check
-     * @return true in case is is zero and false otherwise.
-     */
-    static bool isZeroNumber(const std::string &s);
 
     /**
      * Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?
