@@ -218,10 +218,6 @@ public:
      */
     bool isFunctionParameterPassedByValue(const Token *fpar) const;
 
-    /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
-     */
-    void simplifyAssignmentInFunctionCall();
-
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
     void simplifyAssignmentBlock();
 

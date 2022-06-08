@@ -60,9 +60,6 @@ private:
 
         TEST_CASE(test1); // array access. replace "*(p+1)" => "p[1]"
 
-        // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
-        TEST_CASE(simplifyAssignmentInFunctionCall);
-
         // ";a+=b;" => ";a=a+b;"
         TEST_CASE(simplifyCompoundAssignment);
 
@@ -1776,11 +1773,6 @@ private:
         ASSERT_EQUALS(code6, tokWithNewlines(code6));
     }
 
-
-    void simplifyAssignmentInFunctionCall() {
-        ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tok(";f(x=g());"));
-        ASSERT_EQUALS("; hs = ( xyz_t ) { h . centerX , h . centerY , 1 + index } ; putInput ( hs , 1 ) ;", tok(";putInput(hs = (xyz_t) { h->centerX, h->centerY, 1 + index }, 1);"));
-    }
 
     void simplifyCompoundAssignment() {
         ASSERT_EQUALS("; x = x + y ;", tok("; x += y;"));

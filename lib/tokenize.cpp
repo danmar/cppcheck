@@ -5275,9 +5275,6 @@ bool Tokenizer::simplifyTokenList2()
         tok->clearValueFlow();
     }
 
-    // f(x=g())   =>   x=g(); f(x)
-    simplifyAssignmentInFunctionCall();
-
     // ";a+=b;" => ";a=a+b;"
     simplifyCompoundAssignment();
 
@@ -11168,45 +11165,6 @@ void Tokenizer::simplifyDebug()
         if (Token::simpleMatch(tok, "debug_valueflow")) {
             tok->deleteThis();
             tok = setTokenDebug(tok, TokenDebug::ValueFlow);
-        }
-    }
-}
-
-void Tokenizer::simplifyAssignmentInFunctionCall()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "(")
-            tok = tok->link();
-
-        // Find 'foo(var='. Exclude 'assert(var=' to allow tests to check that assert(...) does not contain side-effects
-        else if (Token::Match(tok, "[;{}] %name% ( %name% =") &&
-                 Token::simpleMatch(tok->linkAt(2), ") ;") &&
-                 !Token::Match(tok->next(), "assert|while")) {
-            const std::string& funcname(tok->next()->str());
-            Token* const vartok = tok->tokAt(3);
-
-            // Goto ',' or ')'..
-            for (Token *tok2 = vartok->tokAt(2); tok2; tok2 = tok2->next()) {
-                if (tok2->link() && Token::Match(tok2, "(|[|{"))
-                    tok2 = tok2->link();
-                else if (tok2->str() == ";")
-                    break;
-                else if (Token::Match(tok2, ")|,")) {
-                    tok2 = tok2->previous();
-
-                    tok2->insertToken(vartok->str());
-                    tok2->next()->varId(vartok->varId());
-
-                    tok2->insertToken("(");
-                    Token::createMutualLinks(tok2->next(), tok->linkAt(2));
-
-                    tok2->insertToken(funcname);
-                    tok2->insertToken(";");
-
-                    Token::eraseTokens(tok, vartok);
-                    break;
-                }
-            }
         }
     }
 }
