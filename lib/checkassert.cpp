@@ -49,9 +49,8 @@ namespace {
 
 /**
  * \brief returns the lhs variable of the modification
- * \param modifyOperator  - the modify operator
- * \retval Variable - variable if found
- * \retval nullptr  - if no variable found
+ * \param modifyOperator the modify operator
+ * \return variable if found else nullptr
  */
 static const Variable *getLhsVariable(const Token *modifyOperator) {
     const Token *lhs = modifyOperator->astOperand1();
@@ -67,9 +66,9 @@ static const Variable *getLhsVariable(const Token *modifyOperator) {
 
 /**
  * \brief searches for the correct argument/variable passed on function call for the given parameter
- * \param function      - function which arguments should be searched for the variable
- * \param parameter     - variable which may is one of the function's parameter
- * \param argsChecking  - arguments passed on function call
+ * \param function function which arguments should be searched for the variable
+ * \param parameter variable which may is one of the function's parameter
+ * \param argsChecking arguments passed on function call
  * \return found variable passed to the function
  */
 static const Variable *findPassedVariable(const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking) {
@@ -87,8 +86,8 @@ static const Variable *findPassedVariable(const Function *function, const Variab
 
 /**
  * \brief checks if a variable's value may be changed with the given operator
- * \retval true   - is variable's value may change
- * \retval false  - no possible value altering
+ * \retval true variable's value may change
+ * \retval false no possible value altering
  */
 static bool isVariableValueChangingOperator(const Token *token) {
     if (token->isAssignmentOp())
@@ -102,10 +101,10 @@ static bool isVariableValueChangingOperator(const Token *token) {
 
 /**
  * \brief checks if assignment of variable has side effect
- * \param var             - variable a value is assigned to
- * \param assertionScope  - scope of the assertion
- * \retval true           - the assignment has a possible side effect
- * \retval false          - no side effect from assignment
+ * \param var variable a value is assigned to
+ * \param assertionScope scope of the assertion
+ * \retval true the assignment has a possible side effect
+ * \retval false no side effect from assignment
  */
 static bool isVariableAssignmentWithSideEffect(const Variable *var, const Scope *assertionScope) {
     if (!var)
@@ -133,12 +132,12 @@ static bool isVariableAssignmentWithSideEffect(const Variable *var, const Scope 
 
 /**
  * \brief check if the function is modifying a passed argument
- * \param modifyOperator  - operator which leads to variable modification
- * \param function        - function currently beeing processed
- * \param parameter       - the argument to check
- * \param argsChecking    - all arguments passed to the function
- * \retval true           - argument is being modified
- * \retval false          - argument not modified
+ * \param modifyOperator operator which leads to variable modification
+ * \param function function currently beeing processed
+ * \param parameter the argument to check
+ * \param argsChecking all arguments passed to the function
+ * \retval true argument is being modified
+ * \retval false argument not modified
  */
 static bool isArgumentModified(const Token *modifyOperator, const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking) {
     const Variable *variable = findPassedVariable(function, parameter, argsChecking);
@@ -159,10 +158,10 @@ static bool isArgumentModified(const Token *modifyOperator, const Function *func
 
 /**
  * \brief checks if a function call may has side effects
- * \param function      - function to check
- * \param argsChecking  - function arguments
- * \retval true         - function has side effects
- * \retval false        - not sure if function has side effects
+ * \param function function to check
+ * \param argsChecking function arguments
+ * \retval true function has side effects
+ * \retval false not sure if function has side effects
  */
 static bool isFunctionCallWithSideEffect(const Function *function, ArgumentCheck argsChecking = {}) {
     // constexpr never has any side effect
