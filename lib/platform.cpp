@@ -191,6 +191,14 @@ bool cppcheck::Platform::loadPlatformFile(const char exename[], const std::strin
     return loadFromXmlDocument(&doc);
 }
 
+static unsigned int xmlTextAsUInt(const tinyxml2::XMLElement* node, bool& error)
+{
+    unsigned int retval = 0;
+    if (node->QueryUnsignedText(&retval) != tinyxml2::XML_SUCCESS)
+        error = true;
+    return retval;
+}
+
 bool cppcheck::Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
 {
     const tinyxml2::XMLElement * const rootnode = doc->FirstChildElement();
@@ -198,35 +206,40 @@ bool cppcheck::Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
     if (!rootnode || std::strcmp(rootnode->Name(), "platform") != 0)
         return false;
 
+    bool error = false;
     for (const tinyxml2::XMLElement *node = rootnode->FirstChildElement(); node; node = node->NextSiblingElement()) {
-        if (std::strcmp(node->Name(), "default-sign") == 0)
-            defaultSign = *node->GetText();
-        else if (std::strcmp(node->Name(), "char_bit") == 0)
-            char_bit = std::atoi(node->GetText());
+        if (std::strcmp(node->Name(), "default-sign") == 0) {
+            const char* str = node->GetText();
+            if (str)
+                defaultSign = *str;
+            else
+                error = true;
+        } else if (std::strcmp(node->Name(), "char_bit") == 0)
+            char_bit = xmlTextAsUInt(node, error);
         else if (std::strcmp(node->Name(), "sizeof") == 0) {
             for (const tinyxml2::XMLElement *sz = node->FirstChildElement(); sz; sz = sz->NextSiblingElement()) {
                 if (std::strcmp(sz->Name(), "short") == 0)
-                    sizeof_short = std::atoi(sz->GetText());
+                    sizeof_short = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "bool") == 0)
-                    sizeof_bool = std::atoi(sz->GetText());
+                    sizeof_bool = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "int") == 0)
-                    sizeof_int = std::atoi(sz->GetText());
+                    sizeof_int = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "long") == 0)
-                    sizeof_long = std::atoi(sz->GetText());
+                    sizeof_long = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "long-long") == 0)
-                    sizeof_long_long = std::atoi(sz->GetText());
+                    sizeof_long_long = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "float") == 0)
-                    sizeof_float = std::atoi(sz->GetText());
+                    sizeof_float = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "double") == 0)
-                    sizeof_double = std::atoi(sz->GetText());
+                    sizeof_double = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "long-double") == 0)
-                    sizeof_long_double = std::atoi(sz->GetText());
+                    sizeof_long_double = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "pointer") == 0)
-                    sizeof_pointer = std::atoi(sz->GetText());
+                    sizeof_pointer = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "size_t") == 0)
-                    sizeof_size_t = std::atoi(sz->GetText());
+                    sizeof_size_t = xmlTextAsUInt(sz, error);
                 else if (std::strcmp(sz->Name(), "wchar_t") == 0)
-                    sizeof_wchar_t = std::atoi(sz->GetText());
+                    sizeof_wchar_t = xmlTextAsUInt(sz, error);
             }
         }
     }
@@ -237,5 +250,5 @@ bool cppcheck::Platform::loadFromXmlDocument(const tinyxml2::XMLDocument *doc)
     long_long_bit = char_bit * sizeof_long_long;
 
     platformType = PlatformFile;
-    return true;
+    return !error;
 }
