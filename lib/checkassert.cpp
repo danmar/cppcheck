@@ -112,7 +112,7 @@ static bool isVariableAssignmentWithSideEffect(const Variable *var, const Scope 
         return false;
 
     // Variable declared in inner scope in assert => don't warn
-    const auto *variableScope = var->scope();
+    const Scope *variableScope = var->scope();
     if (assertionScope != variableScope) {
         const Scope *scope = variableScope;
         while (scope && scope != assertionScope)
@@ -177,7 +177,7 @@ static bool isFunctionCallWithSideEffect(const Function *function, ArgumentCheck
     if (!scope) return false;
 
     if (function->isConstructor()) {
-        const auto *initializationList = function->constructorMemberInitialization();
+        const Token *initializationList = function->constructorMemberInitialization();
         if (initializationList) {
             for (const Token *tok = initializationList; tok != scope->bodyStart; tok = tok->next()) {
                 if (tok->tokType() == Token::eIncDecOp) {
@@ -236,7 +236,7 @@ void CheckAssert::assertWithSideEffects()
                 tmp = tmp->linkAt(1);
 
             if (isVariableValueChangingOperator(tmp)) {
-                const auto *var = tmp->astOperand1()->variable();
+                const Variable *var = tmp->astOperand1()->variable();
                 if (isVariableAssignmentWithSideEffect(var, tok->scope())) {
                     assignmentInAssertError(tmp, var->name());
                 }
@@ -245,7 +245,7 @@ void CheckAssert::assertWithSideEffects()
             if (tmp->tokType() != Token::eFunction)   // TODO: constructor calls with initializer list are not detected!
                 continue;
             const Function *func = tmp->function();
-            const auto args = getArguments(tmp);
+            const std::vector<const Token *> args = getArguments(tmp);
             if (isFunctionCallWithSideEffect(func, {&args, tok->scope()})) {
                 sideEffectInAssertError(tmp, func->name());
             }
