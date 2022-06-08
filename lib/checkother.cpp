@@ -228,7 +228,7 @@ void CheckOther::clarifyStatement()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "* %name%") && tok->astOperand1()) {
+            if (tok->astOperand1() && Token::Match(tok, "* %name%")) {
                 const Token *tok2 = tok->previous();
 
                 while (tok2 && tok2->str() == "*")
@@ -445,7 +445,7 @@ void CheckOther::checkRedundantAssignment()
             if (Token::simpleMatch(tok, "try {"))
                 // todo: check try blocks
                 tok = tok->linkAt(1);
-            if ((tok->isAssignmentOp() || Token::Match(tok, "++|--")) && tok->astOperand1()) {
+            if ((tok->isAssignmentOp() || tok->tokType() == Token::eIncDecOp) && tok->astOperand1()) {
                 if (tok->astParent())
                     continue;
 
@@ -1777,7 +1777,7 @@ static bool isVarDeclOp(const Token* tok)
     if (vartok && vartok->variable() && vartok->variable()->nameToken() == vartok)
         return true;
     const Token * typetok = tok->astOperand1();
-    return isType(typetok, Token::Match(vartok, "%var%"));
+    return isType(typetok, vartok && vartok->varId() != 0);
 }
 
 static bool isBracketAccess(const Token* tok)
@@ -1800,9 +1800,9 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (tok->isExpandedMacro())
         return false;
-    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
+    if (tok->varId() != 0)
         return true;
-    if (Token::Match(tok, "%var%"))
+    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
         return true;
     if (Token::Match(tok, "*|&|&&") &&
         (Token::Match(tok->previous(), "::|.|const|volatile|restrict") || isVarDeclOp(tok)))
@@ -1939,7 +1939,7 @@ void CheckOther::checkIncompleteStatement()
         if (mTokenizer->isCPP() && tok->str() == "&" && !(tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->isIntegral()))
             // Possible archive
             continue;
-        bool inconclusive = Token::Match(tok, "%cop%");
+        bool inconclusive = tok->isConstOp();
         if (mSettings->certainty.isEnabled(Certainty::inconclusive) || !inconclusive)
             constStatementError(tok, tok->isNumber() ? "numeric" : "string", inconclusive);
     }
@@ -3117,7 +3117,7 @@ void CheckOther::checkEvaluationOrder()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * functionScope : symbolDatabase->functionScopes) {
         for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "++|--") && !tok->isAssignmentOp())
+            if (tok->tokType() != Token::eIncDecOp && !tok->isAssignmentOp())
                 continue;
             if (!tok->astOperand1())
                 continue;
@@ -3470,7 +3470,7 @@ void CheckOther::shadowError(const Token *var, const Token *shadowed, std::strin
 
 static bool isVariableExpression(const Token* tok)
 {
-    if (Token::Match(tok, "%var%"))
+    if (tok->varId() != 0)
         return true;
     if (Token::simpleMatch(tok, "."))
         return isVariableExpression(tok->astOperand1()) &&
@@ -3498,7 +3498,7 @@ void CheckOther::checkKnownArgument()
                 continue;
             if (!tok->hasKnownIntValue())
                 continue;
-            if (Token::Match(tok, "++|--"))
+            if (tok->tokType() == Token::eIncDecOp)
                 continue;
             if (isConstVarExpression(tok))
                 continue;

@@ -663,7 +663,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), pm);
         return execute(expr->astOperand2(), pm);
-    } else if (Token::Match(expr, "++|--") && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
+    } else if (expr->tokType() == Token::eIncDecOp && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
         if (!pm.hasValue(expr->astOperand1()->exprId()))
             return unknown;
         ValueFlow::Value& lhs = pm.at(expr->astOperand1()->exprId());

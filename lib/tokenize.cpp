@@ -12203,7 +12203,7 @@ void Tokenizer::printUnknownTypes() const
     if (!mSymbolDatabase)
         return;
 
-    std::multimap<std::string, const Token *> unknowns;
+    std::vector<std::pair<std::string, const Token *>> unknowns;
 
     for (int i = 1; i <= mVarId; ++i) {
         const Variable *var = mSymbolDatabase->getVariableFromVarId(i);
@@ -12252,14 +12252,14 @@ void Tokenizer::printUnknownTypes() const
             }
         }
 
-        unknowns.insert(std::pair<std::string, const Token *>(name, nameTok));
+        unknowns.emplace_back(std::make_pair(name, nameTok));
     }
 
     if (!unknowns.empty()) {
         std::string last;
         int count = 0;
 
-        for (std::multimap<std::string, const Token *>::const_iterator it = unknowns.begin(); it != unknowns.end(); ++it) {
+        for (auto it = unknowns.begin(); it != unknowns.end(); ++it) {
             // skip types is std namespace because they are not interesting
             if (it->first.find("std::") != 0) {
                 if (it->first != last) {
