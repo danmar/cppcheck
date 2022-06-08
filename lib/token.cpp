@@ -1508,7 +1508,7 @@ bool Token::isUnaryPreOp() const
 {
     if (!astOperand1() || astOperand2())
         return false;
-    if (!Token::Match(this, "++|--"))
+    if (this->tokType() != Token::eIncDecOp)
         return true;
     const Token *tokbefore = mPrevious;
     const Token *tokafter = mNext;
@@ -2197,23 +2197,17 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
     if (typeTok != nullptr)
         *typeTok = tok;
     const Token* lhsVarTok{};
-    if (Token::simpleMatch(tok, "return")) {
+    if (tok->type()) {
+        return tok->type();
+    } else if (tok->variable()) {
+        return tok->variable()->type();
+    } else if (tok->function()) {
+        return tok->function()->retType;
+    } else if (Token::simpleMatch(tok, "return")) {
         const Scope *scope = tok->scope();
         if (!scope)
             return nullptr;
         const Function *function = scope->function;
-        if (!function)
-            return nullptr;
-        return function->retType;
-    } else if (Token::Match(tok, "%type%")) {
-        return tok->type();
-    } else if (Token::Match(tok, "%var%")) {
-        const Variable *var = tok->variable();
-        if (!var)
-            return nullptr;
-        return var->type();
-    } else if (Token::Match(tok, "%name%")) {
-        const Function *function = tok->function();
         if (!function)
             return nullptr;
         return function->retType;
@@ -2251,20 +2245,10 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
 {
     if (!tok)
         return {};
-    if (Token::simpleMatch(tok, "return")) {
-        const Scope *scope = tok->scope();
-        if (!scope)
-            return {};
-        const Function *function = scope->function;
-        if (!function)
-            return {};
-        return {function->retDef, function->returnDefEnd()};
-    } else if (Token::Match(tok, "%type%")) {
+    else if (tok->type()) {
         return {tok, tok->next()};
-    } else if (Token::Match(tok, "%var%")) {
+    } else if (tok->variable()) {
         const Variable *var = tok->variable();
-        if (!var)
-            return {};
         if (!var->typeStartToken() || !var->typeEndToken())
             return {};
         if (Token::simpleMatch(var->typeStartToken(), "auto")) {
@@ -2278,10 +2262,16 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
             }
         }
         return {var->typeStartToken(), var->typeEndToken()->next()};
-    } else if (Token::Match(tok->previous(), "%name% (")) {
-        const Function *function = tok->previous()->function();
+    } else if (Token::simpleMatch(tok, "return")) {
+        const Scope* scope = tok->scope();
+        if (!scope)
+            return {};
+        const Function* function = scope->function;
         if (!function)
             return {};
+        return { function->retDef, function->returnDefEnd() };
+    } else if (tok->previous()->function()) {
+        const Function *function = tok->previous()->function();
         return {function->retDef, function->returnDefEnd()};
     } else if (Token::simpleMatch(tok, "=")) {
         return Token::typeDecl(tok->astOperand1());

@@ -1601,7 +1601,7 @@ const Library::SmartPointer* Library::detectSmartPointer(const Token* tok) const
     return &it->second;
 }
 
-CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok)
+const Library::Container * getLibraryContainer(const Token * tok)
 {
     if (!tok)
         return nullptr;

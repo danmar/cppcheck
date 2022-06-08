@@ -465,7 +465,8 @@ private:
 
         TEST_CASE(executableScopeWithUnknownFunction);
 
-        TEST_CASE(valuetype);
+        TEST_CASE(valueType1);
+        TEST_CASE(valueType2);
 
         TEST_CASE(variadic1); // #7453
         TEST_CASE(variadic2); // #7649
@@ -7331,7 +7332,7 @@ private:
         return tok->valueType() ? tok->valueType()->str() : std::string();
     }
 
-    void valuetype() {
+    void valueType1() {
         // stringification
         ASSERT_EQUALS("", ValueType().str());
 
@@ -7781,6 +7782,49 @@ private:
                           typeOf("void f() { MyPtr<int> p; return p; }", "p ;", "test.cpp", &set));
             ASSERT_EQUALS("signed int", typeOf("void f() { MyPtr<int> p; return *p; }", "* p ;", "test.cpp", &set));
             ASSERT_EQUALS("smart-pointer(MyPtr)", typeOf("void f() {return MyPtr<int>();}", "(", "test.cpp", &set));
+        }
+    }
+
+    void valueType2() {
+        GET_SYMBOL_DB("int i;\n"
+                      "bool b;\n"
+                      "Unknown u;\n"
+                      "std::string s;\n"
+                      "std::vector<int> v;\n"
+                      "std::map<int, void*>::const_iterator it;\n"
+                      "void* p;\n"
+                      "\n"
+                      "void f() {\n"
+                      "    func(i, b, u, s, v, it, p);\n"
+                      "}");
+
+        const Token* tok = tokenizer.tokens();
+
+        for (int i = 0; i < 2; i++) {
+            tok = Token::findsimplematch(tok, "i");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("signed int", tok->valueType()->str());
+
+            tok = Token::findsimplematch(tok, "b");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("bool", tok->valueType()->str());
+
+            tok = Token::findsimplematch(tok, "u");
+            ASSERT(tok && !tok->valueType());
+
+            tok = Token::findsimplematch(tok, "s");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("container(std :: string|wstring|u16string|u32string)", tok->valueType()->str());
+            ASSERT(tok->valueType()->container && tok->valueType()->container->stdStringLike);
+
+            tok = Token::findsimplematch(tok, "v");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("container(std :: vector <)", tok->valueType()->str());
+            ASSERT(tok->valueType()->container && !tok->valueType()->container->stdStringLike);
+
+            tok = Token::findsimplematch(tok, "it");
+            ASSERT(tok && tok->valueType());
+            ASSERT_EQUALS("iterator(std :: map|unordered_map <)", tok->valueType()->str());
         }
     }
 

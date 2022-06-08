@@ -885,7 +885,7 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
         if (classScope && classScope->isClassOrStruct())
             return contains(classScope->findAssociatedScopes(), expr->function()->nestedIn);
         return false;
-    } else if (onVar && Token::Match(expr, "%var%") && expr->variable()) {
+    } else if (onVar && expr->variable()) {
         const Variable* var = expr->variable();
         return (var->isPrivate() || var->isPublic() || var->isProtected());
     }
@@ -1287,7 +1287,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return true;
 
     // Follow variable
-    if (followVar && !tok_str_eq && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
+    if (followVar && !tok_str_eq && (tok1->varId() || tok2->varId())) {
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
         if ((varTok1->str() == tok2->str()) || isSameConstantValue(macro, varTok1, tok2)) {
             followVariableExpressionError(tok1, varTok1, errors);
@@ -2156,7 +2156,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         parenTok = parenTok->link()->next();
     const bool possiblyPassedByReference = (parenTok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)}]"));
 
-    if (!tok->function() && !tok->variable() && Token::Match(tok, "%name%")) {
+    if (!tok->function() && !tok->variable() && tok->isName()) {
         if (settings) {
             const bool requireInit = settings->library.isuninitargbad(tok, 1 + argnr);
             const bool requireNonNull = settings->library.isnullargbad(tok, 1 + argnr);
@@ -2238,7 +2238,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     while (Token::simpleMatch(tok2->astParent(), "?") || (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
         tok2 = tok2->astParent();
 
-    if (Token::Match(tok2->astParent(), "++|--"))
+    if (tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)
         return true;
 
     auto skipRedundantPtrOp = [](const Token* tok, const Token* parent) {
@@ -2816,7 +2816,7 @@ static const Token* getLHSVariableRecursive(const Token* tok)
 
 const Variable *getLHSVariable(const Token *tok)
 {
-    if (!Token::Match(tok, "%assign%"))
+    if (!tok || !tok->isAssignmentOp())
         return nullptr;
     if (!tok->astOperand1())
         return nullptr;

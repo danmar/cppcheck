@@ -646,8 +646,9 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     }
 
                     bool newFunc = true; // Is this function already in the database?
-                    for (std::multimap<std::string, const Function *>::const_iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
-                        if (i->second->argsMatch(scope, i->second->argDef, argStart, emptyString, 0)) {
+                    auto range = scope->functionMap.equal_range(tok->str());
+                    for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+                        if (it->second->argsMatch(scope, it->second->argDef, argStart, emptyString, 0)) {
                             newFunc = false;
                             break;
                         }
@@ -1319,6 +1320,8 @@ void SymbolDatabase::createSymbolDatabaseEnums()
             const_cast<Token *>(i.name)->enumerator(&i);
     }
 
+    std::set<std::string> tokensThatAreNotEnumeratorValues;
+
     for (Scope &scope : scopeList) {
         if (scope.type != Scope::eEnum)
             continue;
@@ -1330,7 +1333,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
                     mTokenizer->syntaxError(enumerator.start);
                 for (const Token * tok3 = enumerator.start; tok3 && tok3 != enumerator.end->next(); tok3 = tok3->next()) {
                     if (tok3->tokType() == Token::eName) {
-                        const Enumerator * e = findEnumerator(tok3);
+                        const Enumerator * e = findEnumerator(tok3, tokensThatAreNotEnumeratorValues);
                         if (e)
                             const_cast<Token *>(tok3)->enumerator(e);
                     }
@@ -1343,7 +1346,7 @@ void SymbolDatabase::createSymbolDatabaseEnums()
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
         if (tok->tokType() != Token::eName)
             continue;
-        const Enumerator * enumerator = findEnumerator(tok);
+        const Enumerator * enumerator = findEnumerator(tok, tokensThatAreNotEnumeratorValues);
         if (enumerator)
             const_cast<Token *>(tok)->enumerator(enumerator);
     }
@@ -1417,11 +1420,9 @@ void SymbolDatabase::createSymbolDatabaseIncompleteVars()
             continue;
         if (!scope->isExecutable())
             continue;
-        if (!Token::Match(tok, "%name%"))
+        if (tok->varId() != 0)
             continue;
         if (!tok->isNameOnly())
-            continue;
-        if (Token::Match(tok, "%var%"))
             continue;
         if (tok->type())
             continue;
@@ -1763,7 +1764,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
         // skip over qualification
         while (Token::simpleMatch(tok1, "::")) {
             tok1 = tok1->previous();
-            if (Token::Match(tok1, "%name%"))
+            if (tok1 && tok1->isName())
                 tok1 = tok1->previous();
             else if (tok1 && tok1->str() == ">" && tok1->link() && Token::Match(tok1->link()->previous(), "%name%"))
                 tok1 = tok1->link()->tokAt(-2);
@@ -1810,7 +1811,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
                 return false;
 
             // skip over return type
-            if (Token::Match(tok1, "%name%")) {
+            if (tok1 && tok1->isName()) {
                 if (tok1->str() == "return")
                     return false;
                 if (tok1->str() != "friend")
@@ -1820,7 +1821,7 @@ bool SymbolDatabase::isFunction(const Token *tok, const Scope* outerScope, const
             // skip over qualification
             while (Token::simpleMatch(tok1, "::")) {
                 tok1 = tok1->previous();
-                if (Token::Match(tok1, "%name%"))
+                if (tok1 && tok1->isName())
                     tok1 = tok1->previous();
                 else if (tok1 && tok1->str() == ">" && tok1->link() && Token::Match(tok1->link()->previous(), "%name%"))
                     tok1 = tok1->link()->tokAt(-2);
@@ -2931,12 +2932,13 @@ Function* SymbolDatabase::addGlobalFunction(Scope*& scope, const Token*& tok, co
     Function* function = nullptr;
     // Lambda functions are always unique
     if (tok->str() != "[") {
-        for (std::multimap<std::string, const Function *>::iterator i = scope->functionMap.find(tok->str()); i != scope->functionMap.end() && i->first == tok->str(); ++i) {
-            const Function *f = i->second;
+        auto range = scope->functionMap.equal_range(tok->str());
+        for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
+            const Function *f = it->second;
             if (f->hasBody())
                 continue;
             if (f->argsMatch(scope, f->argDef, argStart, emptyString, 0)) {
-                function = const_cast<Function *>(i->second);
+                function = const_cast<Function *>(it->second);
                 break;
             }
         }
@@ -3019,7 +3021,7 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
 
         // check in namespace if using found
         if (*scope == scope1 && !scope1->usingList.empty()) {
-            std::list<Scope::UsingInfo>::const_iterator it2;
+            std::vector<Scope::UsingInfo>::const_iterator it2;
             for (it2 = scope1->usingList.begin(); it2 != scope1->usingList.end(); ++it2) {
                 if (it2->scope) {
                     Function * func = findFunctionInScope(tok1, it2->scope, path, path_length);
@@ -3090,7 +3092,8 @@ void SymbolDatabase::addClassFunction(Scope **scope, const Token **tok, const To
         }
 
         if (match) {
-            for (std::multimap<std::string, const Function *>::iterator it = scope1->functionMap.find((*tok)->str()); it != scope1->functionMap.end() && it->first == (*tok)->str(); ++it) {
+            auto range = scope1->functionMap.equal_range((*tok)->str());
+            for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
                 Function * func = const_cast<Function *>(it->second);
                 if (!func->hasBody()) {
                     if (func->argsMatch(scope1, func->argDef, (*tok)->next(), path, path_length)) {
@@ -3597,17 +3600,15 @@ void SymbolDatabase::printOut(const char *title) const
     if (title)
         std::cout << "\n### " << title << " ###\n";
 
-    for (std::list<Scope>::const_iterator scope = scopeList.begin(); scope != scopeList.end(); ++scope) {
+    for (std::list<Scope>::const_iterator scope = scopeList.cbegin(); scope != scopeList.cend(); ++scope) {
         std::cout << "Scope: " << &*scope << " " << scope->type << std::endl;
         std::cout << "    className: " << scope->className << std::endl;
         std::cout << "    classDef: " << tokenToString(scope->classDef, mTokenizer) << std::endl;
         std::cout << "    bodyStart: " << tokenToString(scope->bodyStart, mTokenizer) << std::endl;
         std::cout << "    bodyEnd: " << tokenToString(scope->bodyEnd, mTokenizer) << std::endl;
 
-        std::list<Function>::const_iterator func;
-
         // find the function body if not implemented inline
-        for (func = scope->functionList.begin(); func != scope->functionList.end(); ++func) {
+        for (auto func = scope->functionList.cbegin(); func != scope->functionList.cend(); ++func) {
             std::cout << "    Function: " << &*func << std::endl;
             std::cout << "        name: " << tokenToString(func->tokenDef, mTokenizer) << std::endl;
             std::cout << "        type: " << (func->type == Function::eConstructor? "Constructor" :
@@ -3686,17 +3687,13 @@ void SymbolDatabase::printOut(const char *title) const
             std::cout << "        nestedIn: " << scopeToString(func->nestedIn, mTokenizer) << std::endl;
             std::cout << "        functionScope: " << scopeToString(func->functionScope, mTokenizer) << std::endl;
 
-            std::list<Variable>::const_iterator var;
-
-            for (var = func->argumentList.begin(); var != func->argumentList.end(); ++var) {
+            for (auto var = func->argumentList.cbegin(); var != func->argumentList.cend(); ++var) {
                 std::cout << "        Variable: " << &*var << std::endl;
                 printVariable(&*var, "            ");
             }
         }
 
-        std::list<Variable>::const_iterator var;
-
-        for (var = scope->varlist.begin(); var != scope->varlist.end(); ++var) {
+        for (auto var = scope->varlist.cbegin(); var != scope->varlist.cend(); ++var) {
             std::cout << "    Variable: " << &*var << std::endl;
             printVariable(&*var, "        ");
         }
@@ -3741,10 +3738,8 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::cout << "    nestedList[" << scope->nestedList.size() << "] = (";
 
-        std::list<Scope *>::const_iterator nsi;
-
         std::size_t count = scope->nestedList.size();
-        for (nsi = scope->nestedList.begin(); nsi != scope->nestedList.end(); ++nsi) {
+        for (std::vector<Scope*>::const_iterator nsi = scope->nestedList.cbegin(); nsi != scope->nestedList.cend(); ++nsi) {
             std::cout << " " << (*nsi) << " " << (*nsi)->type << " " << (*nsi)->className;
             if (count-- > 1)
                 std::cout << ",";
@@ -3752,9 +3747,7 @@ void SymbolDatabase::printOut(const char *title) const
 
         std::cout << " )" << std::endl;
 
-        std::list<Scope::UsingInfo>::const_iterator use;
-
-        for (use = scope->usingList.begin(); use != scope->usingList.end(); ++use) {
+        for (auto use = scope->usingList.cbegin(); use != scope->usingList.cend(); ++use) {
             std::cout << "    using: " << use->scope << " " << use->start->strAt(2);
             const Token *tok1 = use->start->tokAt(3);
             while (tok1 && tok1->str() == "::") {
@@ -4160,7 +4153,8 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
         const Scope *parent = derivedFromType->classScope;
 
         // check if function defined in base class
-        for (std::multimap<std::string, const Function *>::const_iterator it = parent->functionMap.find(tokenDef->str()); it != parent->functionMap.end() && it->first == tokenDef->str(); ++it) {
+        auto range = parent->functionMap.equal_range(tokenDef->str());
+        for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
             const Function * func = it->second;
             if (func->hasVirtualSpecifier()) { // Base is virtual and of same name
                 const Token *temp1 = func->tokenDef->previous();
@@ -4714,13 +4708,13 @@ const Token * Scope::addEnum(const Token * tok, bool isCpp)
     return tok2;
 }
 
-const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
+const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const
 {
     const Scope * scope = tok->scope();
 
     const std::string &tokStr = tok->str();
 
-    if (mTokensThatAreNotEnumeratorValues.find(tokStr) != mTokensThatAreNotEnumeratorValues.end()) {
+    if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end()) {
         return nullptr;
     }
 
@@ -4761,7 +4755,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
                     return enumerator;
                 // enum
                 else {
-                    for (std::list<Scope *>::const_iterator it = scope->nestedList.begin(), end = scope->nestedList.end(); it != end; ++it) {
+                    for (std::vector<Scope *>::const_iterator it = scope->nestedList.begin(), end = scope->nestedList.end(); it != end; ++it) {
                         enumerator = (*it)->findEnumerator(tokStr);
 
                         if (enumerator)
@@ -4776,7 +4770,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
         if (enumerator)
             return enumerator;
 
-        for (std::list<Scope *>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
+        for (std::vector<Scope *>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
             enumerator = (*s)->findEnumerator(tokStr);
 
             if (enumerator)
@@ -4807,7 +4801,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
             if (enumerator)
                 return enumerator;
 
-            for (std::list<Scope*>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
+            for (std::vector<Scope*>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
                 enumerator = (*s)->findEnumerator(tokStr);
 
                 if (enumerator)
@@ -4816,7 +4810,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok) const
         }
     }
 
-    mTokensThatAreNotEnumeratorValues.insert(tokStr);
+    tokensThatAreNotEnumeratorValues.insert(tokStr);
 
     return nullptr;
 }
@@ -4986,7 +4980,8 @@ void Scope::findFunctionInBase(const std::string & name, nonneg int args, std::v
                 if (base->classScope == this) // Ticket #5120, #5125: Recursive class; tok should have been found already
                     continue;
 
-                for (std::multimap<std::string, const Function *>::const_iterator it = base->classScope->functionMap.find(name); it != base->classScope->functionMap.end() && it->first == name; ++it) {
+                auto range = base->classScope->functionMap.equal_range(name);
+                for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
                     const Function *func = it->second;
                     if ((func->isVariadic() && args >= (func->argCount() - 1)) ||
                         (args == func->argCount() || (args < func->argCount() && args >= func->minArgCount()))) {
@@ -5127,7 +5122,8 @@ const Function* Scope::findFunction(const Token *tok, bool requireConst) const
     const std::size_t args = arguments.size();
 
     auto addMatchingFunctions = [&](const Scope *scope) {
-        for (std::multimap<std::string, const Function *>::const_iterator it = scope->functionMap.find(tok->str()); it != scope->functionMap.cend() && it->first == tok->str(); ++it) {
+        auto range = scope->functionMap.equal_range(tok->str());
+        for (std::multimap<std::string, const Function *>::const_iterator it = range.first; it != range.second; ++it) {
             const Function *func = it->second;
             if (!isCall || args == func->argCount() ||
                 (func->isVariadic() && args >= (func->minArgCount() - 1)) ||
@@ -5677,7 +5673,7 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
 
     // check using namespaces
     while (startScope) {
-        for (std::list<Scope::UsingInfo>::const_iterator it = startScope->usingList.begin();
+        for (std::vector<Scope::UsingInfo>::const_iterator it = startScope->usingList.begin();
              it != startScope->usingList.end(); ++it) {
             tok = startTok;
             scope = it->scope;
@@ -5796,9 +5792,8 @@ Function * SymbolDatabase::findFunctionInScope(const Token *func, const Scope *n
     const Function * function = nullptr;
     const bool destructor = func->strAt(-1) == "~";
 
-    for (std::multimap<std::string, const Function *>::const_iterator it = ns->functionMap.find(func->str());
-         it != ns->functionMap.end() && it->first == func->str(); ++it) {
-
+    auto range = ns->functionMap.equal_range(func->str());
+    for (std::multimap<std::string, const Function*>::const_iterator it = range.first; it != range.second; ++it) {
         if (it->second->argsMatch(ns, it->second->argDef, func->next(), path, path_length) &&
             it->second->isDestructor() == destructor) {
             function = it->second;

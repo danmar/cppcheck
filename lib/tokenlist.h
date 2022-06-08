@@ -156,7 +156,7 @@ public:
      * Calculates a 64-bit checksum of the token list used to compare
      * multiple token lists with each other as quickly as possible.
      */
-    unsigned long long calculateChecksum() const;
+    uint64_t calculateChecksum() const;
 
     /**
      * Create abstract syntax tree.

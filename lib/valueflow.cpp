@@ -2181,9 +2181,9 @@ static bool bifurcate(const Token* tok, const std::set<nonneg int>& varids, cons
         return true;
     if (tok->hasKnownIntValue())
         return true;
-    if (Token::Match(tok, "%cop%"))
+    if (tok->isConstOp())
         return bifurcate(tok->astOperand1(), varids, settings, depth) && bifurcate(tok->astOperand2(), varids, settings, depth);
-    if (Token::Match(tok, "%var%")) {
+    if (tok->varId() != 0) {
         if (varids.count(tok->varId()) > 0)
             return true;
         const Variable* var = tok->variable();

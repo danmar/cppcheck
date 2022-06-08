@@ -822,8 +822,8 @@ void TemplateSimplifier::getTemplateInstantiations()
                     fullName = tok->str();
 
                 // get all declarations with this name
-                for (auto pos = functionNameMap.lower_bound(tok->str());
-                     pos != functionNameMap.upper_bound(tok->str()); ++pos) {
+                auto range = functionNameMap.equal_range(tok->str());
+                for (auto pos = range.first; pos != range.second; ++pos) {
                     // look for declaration with same qualification or constructor with same qualification
                     if (pos->second->fullName() == fullName ||
                         (pos->second->scope() == fullName && tok->str() == pos->second->name())) {
@@ -2550,7 +2550,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
 
         for (Token *tok = first->next(); tok && tok != end; tok = tok->next()) {
             if (Token::Match(tok, "( %num%|%bool% )") &&
-                (tok->previous() && !Token::Match(tok->previous(), "%name%"))) {
+                (tok->previous() && !tok->previous()->isName())) {
                 tok->deleteThis();
                 tok->deleteNext();
                 again = true;
