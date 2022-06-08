@@ -158,6 +158,28 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
 
+        check("struct SquarePack {\n"
+              "   static bool isRank1Or8( int *sq ) {\n"
+              "      sq[0]++;\n"
+              "      return *sq == 0 || *sq == 0x38;\n"
+              "    }\n"
+              "};\n"
+              "void foo() {\n"
+              "   assert( !SquarePack::isRank1Or8(push2) );\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
+
+        check("struct SquarePack {\n"
+              "   static bool isRank1Or8( int *sq ) {\n"
+              "      sq[0] = 4;\n"
+              "      return *sq == 0 || *sq == 0x38;\n"
+              "    }\n"
+              "};\n"
+              "void foo() {\n"
+              "   assert( !SquarePack::isRank1Or8(push2) );\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
+
 
         check("struct SquarePack {\n"
               "   static bool isRank1Or8( Square *sq ) {\n"
@@ -267,6 +289,17 @@ private:
 
         check("class SquarePack {\n"
               "  SquarePack(int* i) : a(*i++){}\n"
+              "  bool foo() const;\n"
+              "  int a;\n"
+              "};\n"
+              "void foo() {\n"
+              "   int i = 2;\n"
+              "   assert( SquarePack(i).foo() );\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'SquarePack'.\n", errout.str());
+
+        check("class SquarePack {\n"
+              "  SquarePack(int* i) : a(i[0]++){}\n"
               "  bool foo() const;\n"
               "  int a;\n"
               "};\n"
@@ -394,8 +427,21 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
 
         check("void f() {\n"
-              "    int a = 0;\n"
+              "    int a = 0; int b = 0;\n"
               "    assert(--a);\n"
+              "    return a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());
+
+        check("void f(int* a, int b) {\n"
+              "    assert(*a == 2 && (a[b] = 1));\n"
+              "    return a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assert statement modifies 'a'.\n", errout.str());
+
+        check("void f() {\n"
+              "    int a[3]; int b = 0; a[0] = 0;\n"
+              "    assert(a[b] += 2);\n"
               "    return a;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Assert statement modifies 'a'.\n", errout.str());

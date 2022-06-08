@@ -48,17 +48,29 @@ namespace {
 
 
 /**
+ * \brief checks if token is able to dereference a pointer/variable
+ * \param token the token to analyze
+ * \retval true token is dereferencing a variable
+ * \retval false not a valid token
+ */
+static bool isDereferencingToken(const Token *token){
+    if (!token)
+        return false;
+
+    const std::string dereferencingToken = token->str();
+    return dereferencingToken == "*" || dereferencingToken == "[";
+}
+
+/**
  * \brief returns the lhs variable of the modification
  * \param modifyOperator the modify operator
  * \return variable if found else nullptr
  */
 static const Variable *getLhsVariable(const Token *modifyOperator) {
-    const Token *lhs = modifyOperator->astOperand1();
-    while (lhs != modifyOperator && lhs->variable() == nullptr) {
-        // de-referenced or address of -> this seems to be something with a side effect
-        // let checkArgument decide
-        if (lhs->str() == "*" || lhs->str() == "&")
-            lhs = lhs->next();
+    const std::pair<const Token *, const Token *> tokens = modifyOperator->findExpressionStartEndTokens();
+    const Token* lhs = tokens.first;
+    while (lhs != tokens.second && lhs->variable() == nullptr) {
+        lhs = lhs->next();
     }
     return lhs->variable();
 }
@@ -148,10 +160,12 @@ static bool isArgumentModified(const Token *modifyOperator, const Function *func
         return isVariableAssignmentWithSideEffect(variable, argsChecking.assertionScope);
     // Pointers need to be de-referenced, otherwise there is no error
     // TODO: what if assigned first and then de-referenced?
-    if (parameter->isPointer() &&
-        ((modifyOperator->astOperand1() && modifyOperator->astOperand1()->str() == "*") || // needed for modifyOperator type eAssignmentOp
-         (modifyOperator->astParent() && modifyOperator->astParent()->str() == "*"))) // needed for modifyOperator type eIncDecOp
-        return isVariableAssignmentWithSideEffect(variable, argsChecking.assertionScope);
+    if (parameter->isPointer()) {
+        if (isDereferencingToken(modifyOperator->astOperand1()))
+            return isVariableAssignmentWithSideEffect(variable, argsChecking.assertionScope);
+        if (isDereferencingToken(modifyOperator->astParent()))
+            return isVariableAssignmentWithSideEffect(variable, argsChecking.assertionScope);
+    }
     return false;
 }
 
@@ -235,7 +249,7 @@ void CheckAssert::assertWithSideEffects()
                 tmp = tmp->linkAt(1);
 
             if (isVariableValueChangingOperator(tmp)) {
-                const Variable *var = tmp->astOperand1()->variable();
+                const Variable *var = getLhsVariable(tmp);
                 if (isVariableAssignmentWithSideEffect(var, tok->scope())) {
                     assignmentInAssertError(tmp, var->name());
                 }
