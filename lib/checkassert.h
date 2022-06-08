@@ -68,19 +68,6 @@ private:
         c.assignmentInAssertError(nullptr, "var");
     }
 
-    struct ArgumentCheck {
-        const std::vector<const Token *> *arguments;
-        const Scope *assertionScope;
-    };
-
-    static bool isVariableValueChangingOperator(const Token *token);
-    static bool checkVariableAssignmentSideEffect(const Variable *var, const Scope *assertionScope);
-    static bool isFunctionWithSideEffect(const Function *function, ArgumentCheck argsChecking = {});
-
-    static const Variable *getLhsVariable(const Token *modifyOperator);
-    static bool checkArgument(const Token *modifyOperator, const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking);
-    static const Variable *findPassedVariable(const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking);
-
     static std::string myName() {
         return "Assert";
     }

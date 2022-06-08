@@ -38,76 +38,59 @@ static const struct CWE CWE398(398U);   // Indicator of Poor Code Quality
 // Register this check class (by creating a static instance of it)
 namespace {
     CheckAssert instance;
+
+    struct ArgumentCheck {
+        const std::vector<const Token *> *arguments;
+        const Scope *assertionScope;
+    };
+
 }
 
-void CheckAssert::assertWithSideEffects()
-{
-    if (!mSettings->severity.isEnabled(Severity::warning))
-        return;
 
-    for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "assert ("))
-            continue;
-
-        const Token *endTok = tok->next()->link();
-        for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
-            if (Token::simpleMatch(tmp, "sizeof ("))
-                tmp = tmp->linkAt(1);
-
-            if (isVariableValueChangingOperator(tmp)) {
-                const auto *var = tmp->astOperand1()->variable();
-                if (checkVariableAssignmentSideEffect(var, tok->scope())) {
-                    assignmentInAssertError(tmp, var->name());
-                }
-            }
-
-            if (tmp->tokType() != Token::eFunction)   // TODO: constructor calls with initializer list are not detected!
-                continue;
-            const Function *func = tmp->function();
-            const auto args = getArguments(tmp);
-            if (isFunctionWithSideEffect(func, {&args, tok->scope()})) {
-                sideEffectInAssertError(tmp, func->name());
-            }
-        }
-        tok = endTok;
+/**
+ * \brief returns the lhs variable of the modification
+ * \param modifyOperator  - the modify operator
+ * \retval Variable - variable if found
+ * \retval nullptr  - if no variable found
+ */
+static const Variable *getLhsVariable(const Token *modifyOperator) {
+    const Token *lhs = modifyOperator->astOperand1();
+    while (lhs != modifyOperator && lhs->variable() == nullptr) {
+        // de-referenced or address of -> this seems to be something with a side effect
+        // let checkArgument decide
+        if (lhs->str() == "*" || lhs->str() == "&")
+            lhs = lhs->next();
     }
+    return lhs->variable();
 }
 
-//---------------------------------------------------------------------------
 
-
-void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& functionName)
-{
-    reportError(tok, Severity::warning,
-                "assertWithSideEffect",
-                "$symbol:" + functionName + "\n"
-                "Assert statement calls a function which may have desired side effects: '$symbol'.\n"
-                "Non-pure function: '$symbol' is called inside assert statement. "
-                "Assert statements are removed from release builds so the code inside "
-                "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.", CWE398, Certainty::normal);
+/**
+ * \brief searches for the correct argument/variable passed on function call for the given parameter
+ * \param function      - function which arguments should be searched for the variable
+ * \param parameter     - variable which may is one of the function's parameter
+ * \param argsChecking  - arguments passed on function call
+ * \return found variable passed to the function
+ */
+static const Variable *findPassedVariable(const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking) {
+    const Variable *variable = nullptr;
+    for (int paramCtr = 0; paramCtr < argsChecking.arguments->size(); paramCtr++) {
+        const Variable *arg = function->getArgumentVar(paramCtr);
+        if (arg == parameter) {
+            variable = argsChecking.arguments->at(paramCtr)->variable();
+            break;
+        }
+    }
+    return variable;
 }
 
-void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
-{
-    reportError(tok, Severity::warning,
-                "assignmentInAssert",
-                "$symbol:" + varname + "\n"
-                "Assert statement modifies '$symbol'.\n"
-                "Variable '$symbol' is modified inside assert statement. "
-                "Assert statements are removed from release builds so the code inside "
-                "assert statement is not executed. If the code is needed also in release "
-                "builds, this is a bug.", CWE398, Certainty::normal);
-}
-
-//---------------------------------------------------------------------------
 
 /**
  * \brief checks if a variable's value may be changed with the given operator
  * \retval true   - is variable's value may change
  * \retval false  - no possible value altering
  */
-bool CheckAssert::isVariableValueChangingOperator(const Token *token) {
+static bool isVariableValueChangingOperator(const Token *token) {
     if (token->isAssignmentOp())
         return true;
     if (token->isIncDecOp())
@@ -116,6 +99,7 @@ bool CheckAssert::isVariableValueChangingOperator(const Token *token) {
     return false;
 }
 
+
 /**
  * \brief checks if assignment of variable has side effect
  * \param var             - variable a value is assigned to
@@ -123,7 +107,7 @@ bool CheckAssert::isVariableValueChangingOperator(const Token *token) {
  * \retval true           - the assignment has a possible side effect
  * \retval false          - no side effect from assignment
  */
-bool CheckAssert::checkVariableAssignmentSideEffect(const Variable *var, const Scope *assertionScope) {
+static bool isVariableAssignmentWithSideEffect(const Variable *var, const Scope *assertionScope) {
     if (!var)
         return false;
 
@@ -146,6 +130,33 @@ bool CheckAssert::checkVariableAssignmentSideEffect(const Variable *var, const S
     return true;
 }
 
+
+/**
+ * \brief check if the function is modifying a passed argument
+ * \param modifyOperator  - operator which leads to variable modification
+ * \param function        - function currently beeing processed
+ * \param parameter       - the argument to check
+ * \param argsChecking    - all arguments passed to the function
+ * \retval true           - argument is being modified
+ * \retval false          - argument not modified
+ */
+static bool isArgumentModified(const Token *modifyOperator, const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking) {
+    const Variable *variable = findPassedVariable(function, parameter, argsChecking);
+    if (!variable)
+        variable = parameter;
+    // See ticket #4937. Assigning function arguments not passed by reference is ok.
+    if (parameter->isReference())
+        return isVariableAssignmentWithSideEffect(variable, argsChecking.assertionScope);
+    // Pointers need to be de-referenced, otherwise there is no error
+    // TODO: what if assigned first and then de-referenced?
+    if (parameter->isPointer() &&
+        ((modifyOperator->astOperand1() && modifyOperator->astOperand1()->str() == "*") || // needed for modifyOperator type eAssignmentOp
+         (modifyOperator->astParent() && modifyOperator->astParent()->str() == "*"))) // needed for modifyOperator type eIncDecOp
+        return isVariableAssignmentWithSideEffect(variable, argsChecking.assertionScope);
+    return false;
+}
+
+
 /**
  * \brief checks if a function call may has side effects
  * \param function      - function to check
@@ -153,7 +164,7 @@ bool CheckAssert::checkVariableAssignmentSideEffect(const Variable *var, const S
  * \retval true         - function has side effects
  * \retval false        - not sure if function has side effects
  */
-bool CheckAssert::isFunctionWithSideEffect(const Function *function, ArgumentCheck argsChecking) {
+static bool isFunctionCallWithSideEffect(const Function *function, ArgumentCheck argsChecking = {}) {
     // constexpr never has any side effect
     if (function->isConstexpr())
         return false;
@@ -174,7 +185,7 @@ bool CheckAssert::isFunctionWithSideEffect(const Function *function, ArgumentChe
                     if (!var)
                         continue;
                     if (var->isArgument() && argsChecking.arguments) {
-                        return checkArgument(tok, function, var, argsChecking);
+                        return isArgumentModified(tok, function, var, argsChecking);
                     }
                 }
             }
@@ -185,7 +196,7 @@ bool CheckAssert::isFunctionWithSideEffect(const Function *function, ArgumentChe
         if (tok->tokType() == Token::eFunction) {
             // previously function calls on a second level from assert aren't checked at all
             // now check at least if static or global variables are changed
-            if (isFunctionWithSideEffect(tok->function()))
+            if (isFunctionCallWithSideEffect(tok->function()))
                 return true;
             continue;
         }
@@ -203,70 +214,68 @@ bool CheckAssert::isFunctionWithSideEffect(const Function *function, ArgumentChe
             continue;
 
         if (var->isArgument() && argsChecking.arguments) {
-            return checkArgument(tok, function, var, argsChecking);
+            return isArgumentModified(tok, function, var, argsChecking);
         }
     }
     return false;
 }
 
-/**
- * \brief returns the lhs variable of the modification
- * \param modifyOperator  - the modify operator
- * \retval Variable - variable if found
- * \retval nullptr  - if no variable found
- */
-const Variable *CheckAssert::getLhsVariable(const Token *modifyOperator) {
-    const Token *lhs = modifyOperator->astOperand1();
-    while (lhs != modifyOperator && lhs->variable() == nullptr) {
-        // de-referenced or address of -> this seems to be something with a side effect
-        // let checkArgument decide
-        if (lhs->str() == "*" || lhs->str() == "&")
-            lhs = lhs->next();
-    }
-    return lhs->variable();
-}
 
+void CheckAssert::assertWithSideEffects()
+{
+    if (!mSettings->severity.isEnabled(Severity::warning))
+        return;
 
-/**
- * \brief check if the function is modifying a passed argument
- * \param modifyOperator  - operator which leads to variable modification
- * \param function        - function currently beeing processed
- * \param parameter       - the argument to check
- * \param argsChecking    - all arguments passed to the function
- * \retval true           - argument is being modified
- * \retval false          - argument not modified
- */
-bool CheckAssert::checkArgument(const Token *modifyOperator, const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking) {
-    const Variable *variable = findPassedVariable(function, parameter, argsChecking);
-    if (!variable)
-        variable = parameter;
-    // See ticket #4937. Assigning function arguments not passed by reference is ok.
-    if (parameter->isReference())
-        return checkVariableAssignmentSideEffect(variable, argsChecking.assertionScope);
-    // Pointers need to be de-referenced, otherwise there is no error
-    // TODO: what if assigned first and then de-referenced?
-    if (parameter->isPointer() &&
-        ((modifyOperator->astOperand1() && modifyOperator->astOperand1()->str() == "*") || // needed for modifyOperator type eAssignmentOp
-         (modifyOperator->astParent() && modifyOperator->astParent()->str() == "*"))) // needed for modifyOperator type eIncDecOp
-        return checkVariableAssignmentSideEffect(variable, argsChecking.assertionScope);
-    return false;
-}
+    for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
+        if (!Token::simpleMatch(tok, "assert ("))
+            continue;
 
-/**
- * \brief searches for the correct argument/variable passed on function call for the given parameter
- * \param function      - function which arguments should be searched for the variable
- * \param parameter     - variable which may is one of the function's parameter
- * \param argsChecking  - arguments passed on function call
- * \return found variable passed to the function
- */
-const Variable *CheckAssert::findPassedVariable(const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking) {
-    const Variable *variable = nullptr;
-    for (int paramCtr = 0; paramCtr < argsChecking.arguments->size(); paramCtr++) {
-        const Variable *arg = function->getArgumentVar(paramCtr);
-        if (arg == parameter) {
-            variable = argsChecking.arguments->at(paramCtr)->variable();
-            break;
+        const Token *endTok = tok->next()->link();
+        for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
+            if (Token::simpleMatch(tmp, "sizeof ("))
+                tmp = tmp->linkAt(1);
+
+            if (isVariableValueChangingOperator(tmp)) {
+                const auto *var = tmp->astOperand1()->variable();
+                if (isVariableAssignmentWithSideEffect(var, tok->scope())) {
+                    assignmentInAssertError(tmp, var->name());
+                }
+            }
+
+            if (tmp->tokType() != Token::eFunction)   // TODO: constructor calls with initializer list are not detected!
+                continue;
+            const Function *func = tmp->function();
+            const auto args = getArguments(tmp);
+            if (isFunctionCallWithSideEffect(func, {&args, tok->scope()})) {
+                sideEffectInAssertError(tmp, func->name());
+            }
         }
+        tok = endTok;
     }
-    return variable;
+}
+
+
+void CheckAssert::sideEffectInAssertError(const Token *tok, const std::string& functionName)
+{
+    reportError(tok, Severity::warning,
+                "assertWithSideEffect",
+                "$symbol:" + functionName + "\n"
+                "Assert statement calls a function which may have desired side effects: '$symbol'.\n"
+                "Non-pure function: '$symbol' is called inside assert statement. "
+                "Assert statements are removed from release builds so the code inside "
+                "assert statement is not executed. If the code is needed also in release "
+                "builds, this is a bug.", CWE398, Certainty::normal);
+}
+
+
+void CheckAssert::assignmentInAssertError(const Token *tok, const std::string& varname)
+{
+    reportError(tok, Severity::warning,
+                "assignmentInAssert",
+                "$symbol:" + varname + "\n"
+                "Assert statement modifies '$symbol'.\n"
+                "Variable '$symbol' is modified inside assert statement. "
+                "Assert statements are removed from release builds so the code inside "
+                "assert statement is not executed. If the code is needed also in release "
+                "builds, this is a bug.", CWE398, Certainty::normal);
 }
