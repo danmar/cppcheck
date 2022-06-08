@@ -31,12 +31,12 @@
 
 int invalidFunctionArgStr_strcpn(void)
 {
-   const char str1[] = "ABCDEF49620910";
-   const char str2[] = "42";
-   const char pattern[3] = { -42, -43, -44 };
-   // cppcheck-suppress invalidFunctionArgStr
-   (void) strcspn(str1, pattern);
-   return strcspn(str1, str2);
+    const char str1[] = "ABCDEF49620910";
+    const char str2[] = "42";
+    const char pattern[3] = { -42, -43, -44 };
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) strcspn(str1, pattern);
+    return strcspn(str1, str2);
 }
 
 void invalidFunctionArgStr_strncat(void)
