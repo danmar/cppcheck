@@ -6074,8 +6074,8 @@ struct ConditionHandler {
                 if (values.empty())
                     return;
                 bool isKnown = std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& v) {
-                        return v.isKnown() || v.isImpossible();
-                    });
+                    return v.isKnown() || v.isImpossible();
+                });
                 if (isKnown && isBreakOrContinueScope(after)) {
                     const Scope* loopScope = getLoopScope(cond.vartok);
                     if (loopScope) {
