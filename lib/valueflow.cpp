@@ -4846,7 +4846,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             // Check if the block terminates early
             if (isEscapeScope(blockTok, tokenlist)) {
                 const Scope* scope2 = scope;
-                // If escaping a loop when only use the loop scope
+                // If escaping a loop then only use the loop scope
                 if (isBreakOrContinueScope(blockTok->link())) {
                     scope2 = getLoopScope(blockTok->link());
                     if (!scope2)
