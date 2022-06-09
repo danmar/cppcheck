@@ -3261,12 +3261,9 @@ private:
               "    }\n"
               "    v.clear();\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as reference to const\n"
-                           "[test.cpp:5]: (style) Variable 'p' can be declared as reference to const\n",
-                           "[test.cpp:2]: (style) Variable 'p' can be declared as reference to const\n"
-                           "[test.cpp:5]: (style) Variable 'p' can be declared as reference to const\n"
-                           "[test.cpp:8]: (style) Variable 'p' can be declared as reference to const\n",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as reference to const\n"
+                      "[test.cpp:5]: (style) Variable 'p' can be declared as reference to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {

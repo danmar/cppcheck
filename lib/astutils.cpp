@@ -2220,6 +2220,9 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     if (indirect == 0 && isConstVarExpression(tok))
         return false;
 
+    if (tok->astParent() && tok->astParent()->isUnaryOp("*") && tok->variable() && !tok->variable()->isPointer() && !astIsIterator(tok))
+        return true;
+
     const Token *tok2 = tok;
     int derefs = 0;
     while (Token::simpleMatch(tok2->astParent(), "*") ||

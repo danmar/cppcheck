@@ -494,6 +494,9 @@ private:
         TEST_CASE(unionWithConstructor);
 
         TEST_CASE(incomplete_type); // #9255 (infinite recursion)
+
+        TEST_CASE(iterator);
+        TEST_CASE(iterator2);
     }
 
     void array() {
@@ -8512,6 +8515,7 @@ private:
         ASSERT_EQUALS(0, autotok->valueType()->pointer);
         ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
         ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
+        ASSERT_EQUALS(ValueType::ITERATOR, autotok->next()->valueType()->type);
     }
 
     void auto11() {
@@ -8629,6 +8633,37 @@ private:
 
         ASSERT_EQUALS("", errout.str());
     }
+
+    void iterator() {
+        GET_SYMBOL_DB("void f(std::string s) {\n"
+                      "    std::string::const_iterator iter = s.begin();\n"
+                      "}");
+        const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "iter");
+
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
+    }
+
+
+    void iterator2() {
+        GET_SYMBOL_DB("void f(std::string s) {\n"
+                      "    auto iter = s.begin();\n"
+                      "}");
+        const Token *autotok = Token::findsimplematch(tokenizer.tokens(), "iter");
+
+        ASSERT(autotok);
+        ASSERT(autotok->valueType());
+        ASSERT_EQUALS(0, autotok->valueType()->constness);
+        ASSERT_EQUALS(0, autotok->valueType()->pointer);
+        ASSERT_EQUALS(ValueType::UNKNOWN_SIGN, autotok->valueType()->sign);
+        ASSERT_EQUALS(ValueType::ITERATOR, autotok->valueType()->type);
+    }
+
+
 };
 
 REGISTER_TEST(TestSymbolDatabase)
