@@ -629,6 +629,9 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
     if (!value.isImpossible() && value.isIntValue())
         value = truncateImplicitConversion(tok->astParent(), value, settings);
 
+    if (value.isPossible() && tok->str() == "x" && value.isIntValue() && value.intvalue == 0)
+        std::printf("Here\n");
+
     if (!tok->addValue(value))
         return;
 
@@ -6002,6 +6005,8 @@ struct ConditionHandler {
                 Token* after = top->link()->linkAt(1);
                 bool dead_if = deadBranch[0];
                 bool dead_else = deadBranch[1];
+                bool break_if = isBreakScope(after);
+                bool break_else = false;
                 const Token* unknownFunction = nullptr;
                 if (condTok->astParent() && Token::Match(top->previous(), "while|for ("))
                     dead_if = !isBreakScope(after);
@@ -6024,15 +6029,16 @@ struct ConditionHandler {
                             bailout(tokenlist, errorLogger, unknownFunction, "possible noreturn scope");
                         return;
                     }
+                    break_else = isBreakScope(after);
                 }
 
                 if (dead_if && dead_else)
                     return;
 
                 std::list<ValueFlow::Value> values;
-                if (dead_if) {
+                if (break_if) {
                     values = elseValues;
-                } else if (dead_else) {
+                } else if (break_else) {
                     values = thenValues;
                 } else {
                     std::copy_if(thenValues.begin(),
@@ -6045,30 +6051,40 @@ struct ConditionHandler {
                                  std::mem_fn(&ValueFlow::Value::isPossible));
                 }
 
+                // exitValues are set the to values exiting the loop on break
+                std::list<ValueFlow::Value> exitValues;
+                if (dead_if) {
+                    exitValues = thenValues;
+                } else if (dead_else) {
+                    exitValues = elseValues;
+                }
+
                 if (values.empty())
                     return;
 
                 if (dead_if || dead_else) {
-                    const Token* parent = condTok->astParent();
-                    // Skip the not operator
-                    while (Token::simpleMatch(parent, "!"))
-                        parent = parent->astParent();
-                    bool possible = false;
-                    if (Token::Match(parent, "&&|%oror%")) {
-                        std::string op = parent->str();
-                        while (parent && parent->str() == op)
+                    for(std::list<ValueFlow::Value>& xvalues:{std::ref(values), std::ref(exitValues)}) {
+                        const Token* parent = condTok->astParent();
+                        // Skip the not operator
+                        while (Token::simpleMatch(parent, "!"))
                             parent = parent->astParent();
-                        if (Token::simpleMatch(parent, "!") || Token::simpleMatch(parent, "== false"))
-                            possible = op == "||";
-                        else
-                            possible = op == "&&";
-                    }
-                    if (possible) {
-                        values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
-                        changeKnownToPossible(values);
-                    } else if (allowKnown) {
-                        valueFlowSetConditionToKnown(condTok, values, true);
-                        valueFlowSetConditionToKnown(condTok, values, false);
+                        bool possible = false;
+                        if (Token::Match(parent, "&&|%oror%")) {
+                            std::string op = parent->str();
+                            while (parent && parent->str() == op)
+                                parent = parent->astParent();
+                            if (Token::simpleMatch(parent, "!") || Token::simpleMatch(parent, "== false"))
+                                possible = op == "||";
+                            else
+                                possible = op == "&&";
+                        }
+                        if (possible) {
+                            xvalues.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
+                            changeKnownToPossible(xvalues);
+                        } else if (allowKnown) {
+                            valueFlowSetConditionToKnown(condTok, xvalues, true);
+                            valueFlowSetConditionToKnown(condTok, xvalues, false);
+                        }
                     }
                 }
                 if (values.empty())
@@ -6076,13 +6092,19 @@ struct ConditionHandler {
                 if (allowKnown && isBreakOrContinueScope(after)) {
                     const Scope* loopScope = getLoopScope(cond.vartok);
                     if (loopScope) {
-                        Analyzer::Result r = forward(after, loopScope->bodyEnd, cond.vartok, values, tokenlist);
-                        if (r.terminate != Analyzer::Terminate::None)
-                            return;
-                        if (r.action.isModified())
-                            return;
-                        // changeKnownToPossible(values);
-                        forward(const_cast<Token*>(loopScope->bodyEnd->next()), getEndOfExprScope(cond.vartok, scope), cond.vartok, values, tokenlist);
+                        Token* loopEnd = const_cast<Token*>(loopScope->bodyEnd);
+                        if (Token::Match(loopEnd, "while ("))
+                            loopEnd = loopEnd->linkAt(1)->next();
+                        Analyzer::Result r = forward(after, loopEnd, cond.vartok, values, tokenlist);
+                        if (exitValues.empty()) {
+                            if (r.terminate != Analyzer::Terminate::None)
+                                return;
+                            if (r.action.isModified())
+                                changeKnownToPossible(values);
+                            forward(loopEnd, getEndOfExprScope(cond.vartok, scope), cond.vartok, values, tokenlist);
+                        } else {
+                            forward(loopEnd, getEndOfExprScope(cond.vartok, scope), cond.vartok, exitValues, tokenlist);
+                        }
                         return;
                     }
                 }

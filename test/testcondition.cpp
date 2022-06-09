@@ -4630,13 +4630,24 @@ private:
         // #11096
         check("int g();\n"
             "void f(int i) {\n"
-            "	do {	\n"
+            "	do {\n"
             "		if (i == 0)\n"
             "			break;\n"
             "	}\n"
             "	while (g());\n"
             "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int g();\n"
+            "void f(int i) {\n"
+            "	do {\n"
+            "		if (i == 0)\n"
+            "			break;\n"
+            "	}\n"
+            "	while (g());\n"
+            "	if (i == 0) {}\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:8]: (style) Condition 'i==0' is always true\n", errout.str());
     }
 
     void alwaysTrueTryCatch()
