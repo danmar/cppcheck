@@ -60,9 +60,6 @@ private:
 
         TEST_CASE(test1); // array access. replace "*(p+1)" => "p[1]"
 
-        // ";a+=b;" => ";a=a+b;"
-        TEST_CASE(simplifyCompoundAssignment);
-
         TEST_CASE(cast);
         TEST_CASE(iftruefalse);
 
@@ -497,7 +494,7 @@ private:
         // "(x-y)" => "(x-y)" and "(x+y)" => "(x+y)"
         ASSERT_EQUALS("; a = b * ( x - y ) ;", tok("; a = b * (x - y);"));
         ASSERT_EQUALS("; a = b * x [ - y ] ;", tok("; a = b * *(x - y);"));
-        ASSERT_EQUALS("; a = a * ( x - y ) ;", tok("; a *= (x - y);"));
+        ASSERT_EQUALS("; a *= ( x - y ) ;", tok("; a *= (x - y);"));
         ASSERT_EQUALS("; z = a ++ * ( x - y ) ;", tok("; z = a++ * (x - y);"));
         ASSERT_EQUALS("; z = a ++ * ( x + y ) ;", tok("; z = a++ * (x + y);"));
         ASSERT_EQUALS("; z = a -- * ( x - y ) ;", tok("; z = a-- * (x - y);"));

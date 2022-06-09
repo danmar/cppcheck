@@ -311,12 +311,6 @@ public:
     bool simplifyConstTernaryOp();
 
     /**
-     * Simplify compound assignments
-     * Example: ";a+=b;" => ";a=a+b;"
-     */
-    void simplifyCompoundAssignment();
-
-    /**
      * Simplify the location of "static" and "const" qualifiers in
      * a variable declaration or definition.
      * Example: "int static const a;" => "static const a;"
