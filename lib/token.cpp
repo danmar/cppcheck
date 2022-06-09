@@ -2270,7 +2270,7 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
         if (!function)
             return {};
         return { function->retDef, function->returnDefEnd() };
-    } else if (tok->previous()->function()) {
+    } else if (tok->previous() && tok->previous()->function()) {
         const Function *function = tok->previous()->function();
         return {function->retDef, function->returnDefEnd()};
     } else if (Token::simpleMatch(tok, "=")) {
