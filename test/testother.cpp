@@ -7545,7 +7545,7 @@ private:
               "}", nullptr, false, true);
         ASSERT_EQUALS("", errout.str());
 
-        check("struct S {\n"
+        check("struct S {\n" // #10545
               "    int modify();\n"
               "    const std::string& get() const;\n"
               "};\n"
