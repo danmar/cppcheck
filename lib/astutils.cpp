@@ -871,14 +871,8 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
         return true;
     ++depth;
 
-    auto isNonStaticMethod = [](const Token* expr) -> bool {
-        if (Token::Match(expr, "%name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct())
-            return !(Token::simpleMatch(expr->previous(), "::") && expr->function()->isStatic());
-        return false;
-    };
-
     // calling nonstatic method?
-    if (isNonStaticMethod(expr)) {
+    if (Token::Match(expr, "%name% (") && expr->function() && expr->function()->nestedIn && expr->function()->nestedIn->isClassOrStruct() && !expr->function()->isStatic()) {
         // is it a method of this?
         const Scope* fScope = expr->scope();
         while (!fScope->functionOf && fScope->nestedIn)
