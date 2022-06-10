@@ -4710,13 +4710,15 @@ const Token * Scope::addEnum(const Token * tok, bool isCpp)
 
 const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const
 {
-    const Scope * scope = tok->scope();
-
-    const std::string &tokStr = tok->str();
-
-    if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end()) {
+    if (tok->isKeyword())
         return nullptr;
-    }
+
+    const std::string& tokStr = tok->str();
+
+    if (tokensThatAreNotEnumeratorValues.find(tokStr) != tokensThatAreNotEnumeratorValues.end())
+        return nullptr;
+
+    const Scope* scope = tok->scope();
 
     // check for qualified name
     if (tok->strAt(-1) == "::") {
@@ -4758,22 +4760,22 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
                     for (std::vector<Scope *>::const_iterator it = scope->nestedList.begin(), end = scope->nestedList.end(); it != end; ++it) {
                         enumerator = (*it)->findEnumerator(tokStr);
 
-                        if (enumerator)
+                        if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
                             return enumerator;
                     }
                 }
             }
         }
-    } else {
+    } else { // unqualified name
         const Enumerator * enumerator = scope->findEnumerator(tokStr);
 
-        if (enumerator)
+        if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
             return enumerator;
 
         for (std::vector<Scope *>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
             enumerator = (*s)->findEnumerator(tokStr);
 
-            if (enumerator)
+            if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
                 return enumerator;
         }
 
@@ -4784,7 +4786,7 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
                 if (derivedFromType && derivedFromType->classScope) {
                     enumerator = derivedFromType->classScope->findEnumerator(tokStr);
 
-                    if (enumerator)
+                    if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
                         return enumerator;
                 }
             }
@@ -4798,13 +4800,13 @@ const Enumerator * SymbolDatabase::findEnumerator(const Token * tok, std::set<st
 
             enumerator = scope->findEnumerator(tokStr);
 
-            if (enumerator)
+            if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
                 return enumerator;
 
             for (std::vector<Scope*>::const_iterator s = scope->nestedList.begin(); s != scope->nestedList.end(); ++s) {
                 enumerator = (*s)->findEnumerator(tokStr);
 
-                if (enumerator)
+                if (enumerator && !(enumerator->scope && enumerator->scope->enumClass))
                     return enumerator;
             }
         }

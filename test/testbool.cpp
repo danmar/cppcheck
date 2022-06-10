@@ -1137,6 +1137,23 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void comparisonOfBoolWithInt10() { // #10935
+        check("enum class E { H = 2 };\n"
+              "template <bool H>\n"
+              "void f(bool v) {\n"
+              "    if (v == H) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace N {\n"
+              "    enum class E { H = 2 };\n"
+              "}\n"
+              "void f(bool v) {\n"
+              "    if (v == N::H) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
     void pointerArithBool1() { // #5126
         check("void f(char *p) {\n"
