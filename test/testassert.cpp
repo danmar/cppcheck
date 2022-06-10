@@ -170,6 +170,38 @@ private:
         ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'isRank1Or8'.\n", errout.str());
 
         check("struct SquarePack {\n"
+              "    static bool func2( int& sq2, int& sq3 ) {\n"
+              "      sq3++;\n"
+              "      return true;\n"
+              "    }\n"
+              "   static bool func1( int& sq1 ) {\n"
+              "      int sq11 = 0;"
+              "      return func2(sq11, sq1);\n"
+              "    }\n"
+              "};\n"
+              "void foo() {\n"
+              "   int push2 = 0;\n"
+              "   assert( !SquarePack::func1(push2) );\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:12]: (warning) Assert statement calls a function which may have desired side effects: 'func1'.\n", errout.str());
+
+        check("struct SquarePack {\n"
+              "    static bool func2( int& sq2, int& sq3 ) {\n"
+              "      sq3++;\n"
+              "      return true;\n"
+              "    }\n"
+              "   static bool func1( int& sq1 ) {\n"
+              "      int sq11 = 0;"
+              "      return func2(sq1,sq11);\n"
+              "    }\n"
+              "};\n"
+              "void foo() {\n"
+              "   int push2 = 0;\n"
+              "   assert( !SquarePack::func1(push2) );\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:12]: (warning) Assert statement calls a function which may have desired side effects: 'func1'.\n", errout.str());
+
+        check("struct SquarePack {\n"
               "   static bool isRank1Or8( int *sq ) {\n"
               "      sq[0] = 4;\n"
               "      return *sq == 0 || *sq == 0x38;\n"
@@ -263,15 +295,16 @@ private:
         ASSERT_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'SquarePack'.\n", errout.str());
 
         check("class SquarePack {\n"
-              "  SquarePack(int& i) : a(i++){}\n"
+              "  SquarePack(int i, int& ii) : a(i++),b(ii++){}\n"
               "  bool foo() const;\n"
               "  int a;\n"
+              "  int b;\n"
               "};\n"
               "void foo() {\n"
-              "   int i = 2;\n"
-              "   assert( SquarePack(i).foo() );\n"
+              "   int x = 2; int xx = 3;\n"
+              "   assert( SquarePack(x,xx).foo() );\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:8]: (warning) Assert statement calls a function which may have desired side effects: 'SquarePack'.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9]: (warning) Assert statement calls a function which may have desired side effects: 'SquarePack'.\n", errout.str());
 
         check("class SquarePack {\n"
               "  SquarePack(){}\n"

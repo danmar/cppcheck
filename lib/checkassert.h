@@ -53,9 +53,9 @@ public:
         checkAssert.assertWithSideEffects();
     }
 
-    void assertWithSideEffects();
-
 private:
+
+    void assertWithSideEffects();
     void sideEffectInAssertError(const Token *tok, const std::string& functionName);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
 

@@ -40,7 +40,7 @@ namespace {
     CheckAssert instance;
 
     struct ArgumentCheck {
-        const std::vector<const Token *> *arguments;
+        std::vector<const Token *> arguments;
         const Scope *assertionScope;
     };
 
@@ -57,8 +57,7 @@ static bool isDereferencingToken(const Token *token){
     if (!token)
         return false;
 
-    const std::string dereferencingToken = token->str();
-    return dereferencingToken == "*" || dereferencingToken == "[";
+    return token->isUnaryOp("*") || token->str() == "[";
 }
 
 /**
@@ -67,32 +66,44 @@ static bool isDereferencingToken(const Token *token){
  * \return variable if found else nullptr
  */
 static const Variable *getLhsVariable(const Token *modifyOperator) {
-    const std::pair<const Token *, const Token *> tokens = modifyOperator->findExpressionStartEndTokens();
-    const Token* lhs = tokens.first;
-    while (lhs != tokens.second && lhs->variable() == nullptr) {
-        lhs = lhs->next();
+    const Token *tok = modifyOperator->astOperand1();
+    while (tok) {
+        if (tok->str() == "."){
+            const Token* lhs = tok->astOperand1();
+            if(lhs){
+                tok = lhs;
+                continue;
+            }
+            tok = tok->astOperand2();
+        }
+        else if (tok->str() == "[")
+            tok = tok->astOperand1();
+        else if (tok->str() == "::")
+            tok = tok->astOperand2();
+        else if (tok->isUnaryOp("*"))
+            tok = tok->astOperand1();
+        else if (tok->variable())
+            return tok->variable();
+        else
+            break;
     }
-    return lhs->variable();
+    return nullptr;
 }
 
 
 /**
  * \brief searches for the correct argument/variable passed on function call for the given parameter
- * \param function function which arguments should be searched for the variable
  * \param parameter variable which may is one of the function's parameter
  * \param argsChecking arguments passed on function call
  * \return found variable passed to the function
  */
-static const Variable *findPassedVariable(const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking) {
-    const Variable *variable = nullptr;
-    for (int paramCtr = 0; paramCtr < argsChecking.arguments->size(); paramCtr++) {
-        const Variable *arg = function->getArgumentVar(paramCtr);
-        if (arg == parameter) {
-            variable = argsChecking.arguments->at(paramCtr)->variable();
-            break;
-        }
-    }
-    return variable;
+static const Variable *findPassedVariable(const Variable *parameter, const ArgumentCheck &argsChecking) {
+    if(argsChecking.arguments.size() < parameter->index())
+        return nullptr;
+    const Token* argument =  argsChecking.arguments.at(parameter->index());
+    if(!argument)
+        return nullptr;
+    return argument->variable();
 }
 
 
@@ -127,7 +138,7 @@ static bool isVariableAssignmentWithSideEffect(const Variable *var, const Scope 
     if (assertionScope != variableScope) {
         const Scope *scope = variableScope;
         while (scope && scope != assertionScope)
-            scope = scope->nestedIn;
+            scope = scope->nestedIn;  // TODO: this is not working as I expected it to work! not like a stacktrace..
         if (scope == assertionScope)
             return false;
     }
@@ -145,14 +156,13 @@ static bool isVariableAssignmentWithSideEffect(const Variable *var, const Scope 
 /**
  * \brief check if the function is modifying a passed argument
  * \param modifyOperator operator which leads to variable modification
- * \param function function currently beeing processed
  * \param parameter the argument to check
  * \param argsChecking all arguments passed to the function
  * \retval true argument is being modified
  * \retval false argument not modified
  */
-static bool isArgumentModified(const Token *modifyOperator, const Function *function, const Variable *parameter, const ArgumentCheck &argsChecking) {
-    const Variable *variable = findPassedVariable(function, parameter, argsChecking);
+static bool isArgumentModified(const Token *modifyOperator, const Variable *parameter, const ArgumentCheck &argsChecking) {
+    const Variable *variable = findPassedVariable(parameter, argsChecking);
     if (!variable)
         variable = parameter;
     // See ticket #4937. Assigning function arguments not passed by reference is ok.
@@ -197,8 +207,9 @@ static bool isFunctionCallWithSideEffect(const Function *function, ArgumentCheck
                     const Variable* var = getLhsVariable(tok);
                     if (!var)
                         continue;
-                    if (var->isArgument() && argsChecking.arguments) {
-                        return isArgumentModified(tok, function, var, argsChecking);
+                    if (var->isArgument() && !argsChecking.arguments.empty()) {
+                        if(isArgumentModified(tok, var, argsChecking))
+                            return true;
                     }
                 }
             }
@@ -209,7 +220,23 @@ static bool isFunctionCallWithSideEffect(const Function *function, ArgumentCheck
         if (tok->tokType() == Token::eFunction) {
             // previously function calls on a second level from assert aren't checked at all
             // now check at least if static or global variables are changed
-            if (isFunctionCallWithSideEffect(tok->function()))
+            ArgumentCheck newArgsChecking;
+            if(!argsChecking.arguments.empty()) {
+                newArgsChecking.arguments = getArguments(tok);
+                newArgsChecking.assertionScope = argsChecking.assertionScope;
+                for ( const Token* &newArg: newArgsChecking.arguments) {
+                    const Variable* newVariable = newArg->variable();
+                    if(!newVariable->isPointer() && !newVariable->isReference()) {
+                        continue;
+                    }
+                    const Variable* oldVariable = findPassedVariable(newVariable, argsChecking);
+                    if(oldVariable == newVariable) {
+                        continue;
+                    }
+                    newArg = argsChecking.arguments.at(newVariable->index());
+                }
+            }
+            if (isFunctionCallWithSideEffect(tok->function(),newArgsChecking))
                 return true;
             continue;
         }
@@ -226,8 +253,9 @@ static bool isFunctionCallWithSideEffect(const Function *function, ArgumentCheck
         if (var->isLocal())
             continue;
 
-        if (var->isArgument() && argsChecking.arguments) {
-            return isArgumentModified(tok, function, var, argsChecking);
+        if (var->isArgument() && !argsChecking.arguments.empty()) {
+            if(isArgumentModified(tok, var, argsChecking))
+                return true;
         }
     }
     return false;
@@ -254,12 +282,10 @@ void CheckAssert::assertWithSideEffects()
                     assignmentInAssertError(tmp, var->name());
                 }
             }
-
             if (tmp->tokType() != Token::eFunction)   // TODO: constructor calls with initializer list are not detected!
                 continue;
             const Function *func = tmp->function();
-            const std::vector<const Token *> args = getArguments(tmp);
-            if (isFunctionCallWithSideEffect(func, {&args, tok->scope()})) {
+            if (isFunctionCallWithSideEffect(func, {getArguments(tmp), tok->scope()})) {
                 sideEffectInAssertError(tmp, func->name());
             }
         }
