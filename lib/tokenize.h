@@ -269,9 +269,6 @@ public:
     /** Remove unknown macro in variable declarations: PROGMEM char x; */
     void removeMacroInVarDecl();
 
-    /** Remove redundant assignment */
-    void removeRedundantAssignment();
-
     /** Simplifies some realloc usage like
      * 'x = realloc (0, n);' => 'x = malloc(n);'
      * 'x = realloc (y, 0);' => 'x = 0; free(y);'
@@ -582,11 +579,6 @@ private:
      * simplify "while (0)"
      */
     void simplifyWhile0();
-
-    /**
-     * Simplify while(func() && errno==EINTR)
-     */
-    void simplifyErrNoInWhile();
 
     /**
      * Simplify while(func(f))

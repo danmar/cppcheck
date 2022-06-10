@@ -5304,8 +5304,6 @@ bool Tokenizer::simplifyTokenList2()
     // Replace "&str[num]" => "(str + num)"
     simplifyOffsetPointerReference();
 
-    removeRedundantAssignment();
-
     simplifyRealloc();
 
     // Change initialisation of variable to assignment
@@ -5314,7 +5312,6 @@ bool Tokenizer::simplifyTokenList2()
     // Simplify variable declarations
     simplifyVarDecl(false);
 
-    simplifyErrNoInWhile();
     simplifyIfAndWhileAssign();
     simplifyRedundantParentheses();
     simplifyNestedStrcat();
@@ -5366,8 +5363,6 @@ bool Tokenizer::simplifyTokenList2()
     }
 
     simplifyReturnStrncat();
-
-    removeRedundantAssignment();
 
     simplifyComma();
 
@@ -5912,59 +5907,6 @@ void Tokenizer::addSemicolonAfterUnknownMacro()
     }
 }
 //---------------------------------------------------------------------------
-
-void Tokenizer::removeRedundantAssignment()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "{")
-            tok = tok->link();
-
-        const Token * const start = const_cast<Token *>(startOfExecutableScope(tok));
-        if (start) {
-            tok = start->previous();
-            // parse in this function..
-            std::set<int> localvars;
-            const Token * const end = tok->next()->link();
-            for (Token * tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next()) {
-                // skip local class or struct
-                if (Token::Match(tok2, "class|struct %type% {|:")) {
-                    // skip to '{'
-                    tok2 = tok2->tokAt(2);
-                    while (tok2 && tok2->str() != "{")
-                        tok2 = tok2->next();
-
-                    if (tok2)
-                        tok2 = tok2->link(); // skip local class or struct
-                    else
-                        return;
-                } else if (Token::Match(tok2, "[;{}] %type% * %name% ;") && tok2->next()->str() != "return") {
-                    tok2 = tok2->tokAt(3);
-                    localvars.insert(tok2->varId());
-                } else if (Token::Match(tok2, "[;{}] %type% %name% ;") && tok2->next()->isStandardType()) {
-                    tok2 = tok2->tokAt(2);
-                    localvars.insert(tok2->varId());
-                } else if (tok2->varId() &&
-                           !Token::Match(tok2->previous(), "[;{}] %name% = %char%|%num%|%name% ;")) {
-                    localvars.erase(tok2->varId());
-                }
-            }
-            localvars.erase(0);
-            if (!localvars.empty()) {
-                for (Token *tok2 = tok->next(); tok2 && tok2 != end;) {
-                    if (Token::Match(tok2, "[;{}] %type% %name% ;") && localvars.find(tok2->tokAt(2)->varId()) != localvars.end()) {
-                        tok2->deleteNext(3);
-                    } else if ((Token::Match(tok2, "[;{}] %type% * %name% ;") &&
-                                localvars.find(tok2->tokAt(3)->varId()) != localvars.end()) ||
-                               (Token::Match(tok2, "[;{}] %name% = %any% ;") &&
-                                localvars.find(tok2->next()->varId()) != localvars.end())) {
-                        tok2->deleteNext(4);
-                    } else
-                        tok2 = tok2->next();
-                }
-            }
-        }
-    }
-}
 
 void Tokenizer::simplifyRealloc()
 {
@@ -10402,35 +10344,6 @@ void Tokenizer::simplifyFunctionTryCatch()
         tok->previous()->insertToken("{");
         endToken->insertToken("}");
         Token::createMutualLinks(tok->previous(), endToken->next());
-    }
-}
-
-void Tokenizer::simplifyErrNoInWhile()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() != "errno")
-            continue;
-
-        Token *endpar = nullptr;
-        if (Token::Match(tok->previous(), "&& errno == EINTR ) { ;| }"))
-            endpar = tok->tokAt(3);
-        else if (Token::Match(tok->tokAt(-2), "&& ( errno == EINTR ) ) { ;| }"))
-            endpar = tok->tokAt(4);
-        else
-            continue;
-
-        if (Token::simpleMatch(endpar->link()->previous(), "while (")) {
-            Token *tok1 = tok->previous();
-            if (tok1->str() == "(")
-                tok1 = tok1->previous();
-
-            // erase "&& errno == EINTR"
-            tok1 = tok1->previous();
-            Token::eraseTokens(tok1, endpar);
-
-            // tok is invalid.. move to endpar
-            tok = endpar;
-        }
     }
 }
 
