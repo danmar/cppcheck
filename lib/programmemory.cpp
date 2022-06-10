@@ -579,11 +579,11 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     // If not the same type then one must be int
     if (lhs.valueType != rhs.valueType && !lhs.isIntValue() && !rhs.isIntValue())
         return ValueFlow::Value::unknown();
-    // Only add and subtract for non-integers
-    if (!contains({"+", "-"}, op) || (!lhs.isIntValue() && !rhs.isIntValue()))
+    // Only add, subtract, and compare for non-integers
+    if (!contains({"+", "-", "==", "!=", "<", ">", ">=", "<="}, op) && !lhs.isIntValue() && !rhs.isIntValue())
         return ValueFlow::Value::unknown();
-    // Both cant be iterators
-    if (lhs.isIteratorValue() && rhs.isIteratorValue())
+    // Both cant be iterators for non-compare
+    if (contains({"+", "-"}, op) && lhs.isIteratorValue() && rhs.isIteratorValue())
         return ValueFlow::Value::unknown();
     // Symbolic values must be in the same ring
     if (lhs.isSymbolicValue() && rhs.isSymbolicValue() && lhs.tokvalue != rhs.tokvalue)
