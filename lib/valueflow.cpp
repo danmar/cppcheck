@@ -6085,7 +6085,7 @@ struct ConditionHandler {
                         if (r.action.isModified())
                             return;
                         Token* start = const_cast<Token*>(loopScope->bodyEnd);
-                        if (Token::Match(start, "} while (")) {
+                        if (Token::simpleMatch(start, "} while (")) {
                             start = start->tokAt(2);
                             forward(start, start->link(), cond.vartok, values, tokenlist);
                             start = start->link();
