@@ -548,6 +548,10 @@ struct assign {
     }
 };
 
+static bool isIntegralValue(const ValueFlow::Value& value) {
+    return value.isIntValue() || value.isIteratorValue() || value.isSymbolicValue();
+}
+
 static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& lhs, const ValueFlow::Value& rhs)
 {
     ValueFlow::Value result;
@@ -569,14 +573,29 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
             return result;
         }
     }
-    result.valueType = ValueFlow::Value::ValueType::INT;
-    if (op == "+") {
-        if (lhs.isIteratorValue())
-            result.valueType = lhs.valueType;
-        else if (rhs.isIteratorValue())
-            result.valueType = rhs.valueType;
-    } else if (lhs.valueType != rhs.valueType) {
+    // Must be integral types
+    if (!isIntegralValue(lhs) && !isIntegralValue(rhs))
         return ValueFlow::Value::unknown();
+    // If not the same type then one must be int
+    if (lhs.valueType != rhs.valueType && !lhs.isIntValue() && !rhs.isIntValue())
+        return ValueFlow::Value::unknown();
+    // Only add and subtract for non-integers
+    if (!contains({"+", "-"}, op) || (!lhs.isIntValue() && !rhs.isIntValue()))
+        return ValueFlow::Value::unknown();
+    // Both cant be iterators
+    if (lhs.isIteratorValue() && rhs.isIteratorValue())
+        return ValueFlow::Value::unknown();
+    // Symbolic values must be in the same ring
+    if (lhs.isSymbolicValue() && rhs.isSymbolicValue() && lhs.tokvalue != rhs.tokvalue)
+        return ValueFlow::Value::unknown();
+    if (!lhs.isIntValue()) {
+        result.valueType = lhs.valueType;
+        result.tokvalue = lhs.tokvalue;
+    } else if (!rhs.isIntValue()) {
+        result.valueType = rhs.valueType;
+        result.tokvalue = rhs.tokvalue;
+    } else {
+        result.valueType = ValueFlow::Value::ValueType::INT;
     }
     bool error = false;
     result.intvalue = calculate(op, lhs.intvalue, rhs.intvalue, &error);
