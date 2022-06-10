@@ -138,15 +138,6 @@ static void bailoutInternal(const std::string& type, TokenList *tokenlist, Error
 
 #define bailoutIncompleteVar(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailoutIncompleteVar", tokenlist, errorLogger, tok, what)
 
-static void setSourceLocation(ValueFlow::Value& v, SourceLocation loc, const Token* tok, const std::string& msg)
-{
-    std::string file = loc.file_name();
-    if (file.empty())
-        return;
-    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(loc.line()) + ": " + loc.function_name() + ": " + msg;
-    v.debugPath.emplace_back(tok, s);
-}
-
 static std::string debugString(const ValueFlow::Value& v)
 {
     std::string kind;
@@ -164,6 +155,15 @@ static std::string debugString(const ValueFlow::Value& v)
         break;
     }
     return kind + " " + v.toString();
+}
+
+static void setSourceLocation(ValueFlow::Value& v, SourceLocation ctx, const Token* tok, SourceLocation local = SourceLocation::current())
+{
+    std::string file = ctx.file_name();
+    if (file.empty())
+        return;
+    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() + ": " + local.function_name() + ": " + debugString(v);
+    v.debugPath.emplace_back(tok, s);
 }
 
 static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indirect=-1)
@@ -659,7 +659,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
         value = truncateImplicitConversion(tok->astParent(), value, settings);
 
     if (settings->debugnormal)
-        setSourceLocation(value, loc, tok, "Set value to " + debugString(value));
+        setSourceLocation(value, loc, tok);
 
     if (!tok->addValue(value))
         return;
@@ -1944,7 +1944,7 @@ static Analyzer::Result valueFlowForward(Token* startToken,
                                          SourceLocation loc = SourceLocation::current())
 {
     if (tokenlist->getSettings()->debugnormal)
-        setSourceLocation(value, loc, startToken, "Forward value that is " + debugString(value));
+        setSourceLocation(value, loc, startToken);
     return valueFlowGenericForward(startToken, endToken, makeAnalyzer(exprTok, std::move(value), tokenlist), tokenlist->getSettings());
 }
 
@@ -1981,7 +1981,7 @@ static Analyzer::Result valueFlowForwardRecursive(Token* top,
     Analyzer::Result result{};
     for (ValueFlow::Value& v : values) {
         if (tokenlist->getSettings()->debugnormal)
-            setSourceLocation(v, loc, top, "Forward value that is " + debugString(v));
+            setSourceLocation(v, loc, top);
         result.update(valueFlowGenericForward(top, makeAnalyzer(exprTok, std::move(v), tokenlist), tokenlist->getSettings()));
     }
     return result;
@@ -1996,7 +1996,7 @@ static void valueFlowReverse(Token* tok,
 {
     for (ValueFlow::Value& v : values) {
         if (tokenlist->getSettings()->debugnormal)
-            setSourceLocation(v, loc, tok, "Reverse value that is " + debugString(v));
+            setSourceLocation(v, loc, tok);
         valueFlowGenericReverse(tok, endToken, makeReverseAnalyzer(varToken, v, tokenlist), tokenlist->getSettings());
     }
 }
@@ -4781,7 +4781,7 @@ static const Token* findIncompleteVar(const Token* start, const Token* end)
     return nullptr;
 }
 
-static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, bool assume)
+static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, bool assume, SourceLocation loc = SourceLocation::current())
 {
     ValueFlow::Value v(val);
     v.setKnown();
@@ -4790,6 +4790,7 @@ static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, 
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is true");
     else
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is false");
+    setSourceLocation(v, loc, condTok);
     return v;
 }
 
