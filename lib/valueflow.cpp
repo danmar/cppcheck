@@ -4768,6 +4768,23 @@ static std::vector<const Token*> getConditions(const Token* tok, const char* op)
     return conds;
 }
 
+static bool isBreakOrContinueScope(const Token* endToken)
+{
+    if (!Token::simpleMatch(endToken, "}"))
+        return false;
+    return Token::Match(endToken->tokAt(-2), "break|continue ;");
+}
+
+static const Scope* getLoopScope(const Token* tok)
+{
+    if (!tok)
+        return nullptr;
+    const Scope* scope = tok->scope();
+    while (scope && scope->type != Scope::eWhile && scope->type != Scope::eFor && scope->type != Scope::eDo)
+        scope = scope->nestedIn;
+    return scope;
+}
+
 //
 static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* symboldatabase, ErrorLogger *errorLogger, const Settings *settings)
 {
@@ -4828,13 +4845,20 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
 
             // Check if the block terminates early
             if (isEscapeScope(blockTok, tokenlist)) {
+                const Scope* scope2 = scope;
+                // If escaping a loop then only use the loop scope
+                if (isBreakOrContinueScope(blockTok->link())) {
+                    scope2 = getLoopScope(blockTok->link());
+                    if (!scope2)
+                        continue;
+                }
                 for (const Token* condTok2:conds) {
                     ExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
-                    valueFlowGenericForward(startTok->link()->next(), scope->bodyEnd, a1, settings);
+                    valueFlowGenericForward(startTok->link()->next(), scope2->bodyEnd, a1, settings);
 
                     if (is1) {
                         OppositeExpressionAnalyzer a2(true, condTok2, makeConditionValue(1, condTok2, false), tokenlist);
-                        valueFlowGenericForward(startTok->link()->next(), scope->bodyEnd, a2, settings);
+                        valueFlowGenericForward(startTok->link()->next(), scope2->bodyEnd, a2, settings);
                     }
                 }
             }
@@ -6049,6 +6073,27 @@ struct ConditionHandler {
                 }
                 if (values.empty())
                     return;
+                bool isKnown = std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& v) {
+                    return v.isKnown() || v.isImpossible();
+                });
+                if (isKnown && isBreakOrContinueScope(after)) {
+                    const Scope* loopScope = getLoopScope(cond.vartok);
+                    if (loopScope) {
+                        Analyzer::Result r = forward(after, loopScope->bodyEnd, cond.vartok, values, tokenlist);
+                        if (r.terminate != Analyzer::Terminate::None)
+                            return;
+                        if (r.action.isModified())
+                            return;
+                        Token* start = const_cast<Token*>(loopScope->bodyEnd);
+                        if (Token::simpleMatch(start, "} while (")) {
+                            start = start->tokAt(2);
+                            forward(start, start->link(), cond.vartok, values, tokenlist);
+                            start = start->link();
+                        }
+                        values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
+                        changeKnownToPossible(values);
+                    }
+                }
                 forward(after, getEndOfExprScope(cond.vartok, scope), cond.vartok, values, tokenlist);
             }
         });
