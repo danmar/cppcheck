@@ -4781,7 +4781,7 @@ static const Token* findIncompleteVar(const Token* start, const Token* end)
     return nullptr;
 }
 
-static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, bool assume, SourceLocation loc = SourceLocation::current())
+static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, bool assume, const Settings* settings = nullptr, SourceLocation loc = SourceLocation::current())
 {
     ValueFlow::Value v(val);
     v.setKnown();
@@ -4790,7 +4790,8 @@ static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, 
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is true");
     else
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is false");
-    setSourceLocation(v, loc, condTok);
+    if (settings && settings->debugnormal)
+        setSourceLocation(v, loc, condTok);
     return v;
 }
 
