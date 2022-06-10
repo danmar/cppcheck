@@ -341,7 +341,7 @@ namespace ValueFlow {
         const Token *condition;
 
         ErrorPath errorPath;
-        
+
         ErrorPath debugPath;
 
         /** For calculated values - varId that calculated value depends on */

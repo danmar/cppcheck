@@ -157,12 +157,16 @@ static std::string debugString(const ValueFlow::Value& v)
     return kind + " " + v.toString();
 }
 
-static void setSourceLocation(ValueFlow::Value& v, SourceLocation ctx, const Token* tok, SourceLocation local = SourceLocation::current())
+static void setSourceLocation(ValueFlow::Value& v,
+                              SourceLocation ctx,
+                              const Token* tok,
+                              SourceLocation local = SourceLocation::current())
 {
     std::string file = ctx.file_name();
     if (file.empty())
         return;
-    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() + " => " + local.function_name() + ": " + debugString(v);
+    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
+                    " => " + local.function_name() + ": " + debugString(v);
     v.debugPath.emplace_back(tok, s);
 }
 
@@ -648,7 +652,10 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
 }
 
 /** set ValueFlow value and perform calculations if possible */
-static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* settings, SourceLocation loc = SourceLocation::current())
+static void setTokenValue(Token* tok,
+                          ValueFlow::Value value,
+                          const Settings* settings,
+                          SourceLocation loc = SourceLocation::current())
 {
     // Skip setting values that are too big since its ambiguous
     if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
@@ -1945,7 +1952,10 @@ static Analyzer::Result valueFlowForward(Token* startToken,
 {
     if (tokenlist->getSettings()->debugnormal)
         setSourceLocation(value, loc, startToken);
-    return valueFlowGenericForward(startToken, endToken, makeAnalyzer(exprTok, std::move(value), tokenlist), tokenlist->getSettings());
+    return valueFlowGenericForward(startToken,
+                                   endToken,
+                                   makeAnalyzer(exprTok, std::move(value), tokenlist),
+                                   tokenlist->getSettings());
 }
 
 static Analyzer::Result valueFlowForward(Token* startToken,
@@ -1963,7 +1973,11 @@ static Analyzer::Result valueFlowForward(Token* startToken,
 }
 
 template<class ValueOrValues>
-static Analyzer::Result valueFlowForward(Token* startToken, const Token* exprTok, ValueOrValues v, TokenList* tokenlist, SourceLocation loc = SourceLocation::current())
+static Analyzer::Result valueFlowForward(Token* startToken,
+                                         const Token* exprTok,
+                                         ValueOrValues v,
+                                         TokenList* tokenlist,
+                                         SourceLocation loc = SourceLocation::current())
 {
     const Token* endToken = nullptr;
     const Function* f = Scope::nestedInFunction(startToken->scope());
@@ -1982,7 +1996,8 @@ static Analyzer::Result valueFlowForwardRecursive(Token* top,
     for (ValueFlow::Value& v : values) {
         if (tokenlist->getSettings()->debugnormal)
             setSourceLocation(v, loc, top);
-        result.update(valueFlowGenericForward(top, makeAnalyzer(exprTok, std::move(v), tokenlist), tokenlist->getSettings()));
+        result.update(
+            valueFlowGenericForward(top, makeAnalyzer(exprTok, std::move(v), tokenlist), tokenlist->getSettings()));
     }
     return result;
 }
@@ -4781,7 +4796,11 @@ static const Token* findIncompleteVar(const Token* start, const Token* end)
     return nullptr;
 }
 
-static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, bool assume, const Settings* settings = nullptr, SourceLocation loc = SourceLocation::current())
+static ValueFlow::Value makeConditionValue(long long val,
+                                           const Token* condTok,
+                                           bool assume,
+                                           const Settings* settings = nullptr,
+                                           SourceLocation loc = SourceLocation::current())
 {
     ValueFlow::Value v(val);
     v.setKnown();
