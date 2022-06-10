@@ -579,19 +579,20 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     // If not the same type then one must be int
     if (lhs.valueType != rhs.valueType && !lhs.isIntValue() && !rhs.isIntValue())
         return ValueFlow::Value::unknown();
+    bool compareOp = contains({"==", "!=", "<", ">", ">=", "<="}, op);
     // Only add, subtract, and compare for non-integers
-    if (!contains({"+", "-", "==", "!=", "<", ">", ">=", "<="}, op) && !lhs.isIntValue() && !rhs.isIntValue())
+    if (!compareOp && !contains({"+", "-"}, op) && !lhs.isIntValue() && !rhs.isIntValue())
         return ValueFlow::Value::unknown();
     // Both cant be iterators for non-compare
-    if (contains({"+", "-"}, op) && lhs.isIteratorValue() && rhs.isIteratorValue())
+    if (!compareOp && lhs.isIteratorValue() && rhs.isIteratorValue())
         return ValueFlow::Value::unknown();
     // Symbolic values must be in the same ring
     if (lhs.isSymbolicValue() && rhs.isSymbolicValue() && lhs.tokvalue != rhs.tokvalue)
         return ValueFlow::Value::unknown();
-    if (!lhs.isIntValue()) {
+    if (!lhs.isIntValue() && !compareOp) {
         result.valueType = lhs.valueType;
         result.tokvalue = lhs.tokvalue;
-    } else if (!rhs.isIntValue()) {
+    } else if (!rhs.isIntValue() && !compareOp) {
         result.valueType = rhs.valueType;
         result.tokvalue = rhs.tokvalue;
     } else {
