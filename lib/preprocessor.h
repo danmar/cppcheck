@@ -170,9 +170,9 @@ public:
      * @param toolinfo   Arbitrary extra toolinfo
      * @return CRC32 checksum
      */
-    unsigned int calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
+    uint32_t calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const;
 
-    void simplifyPragmaAsm(simplecpp::TokenList *tokenList);
+    void simplifyPragmaAsm(simplecpp::TokenList *tokenList) const;
 
 private:
 

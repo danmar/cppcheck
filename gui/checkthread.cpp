@@ -398,7 +398,7 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
         std::list<ErrorMessage::FileLocation> callstack;
         for (const QErrorPathItem &path : e.errorPath) {
-            callstack.push_back(ErrorMessage::FileLocation(path.file.toStdString(), path.info.toStdString(), path.line, path.column));
+            callstack.emplace_back(path.file.toStdString(), path.info.toStdString(), path.line, path.column);
         }
         const std::string f0 = file0.toStdString();
         const std::string msg = e.message.toStdString();

@@ -209,6 +209,7 @@ public:
      */
     nonneg int sizeOfType(const Token *type) const;
 
+    void simplifyDebug();
     /**
      * Try to determine if function parameter is passed by value by looking
      * at the function declaration.
@@ -216,10 +217,6 @@ public:
      * @return true if the parameter is passed by value. if unsure, false is returned
      */
     bool isFunctionParameterPassedByValue(const Token *fpar) const;
-
-    /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
-     */
-    void simplifyAssignmentInFunctionCall();
 
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
     void simplifyAssignmentBlock();
@@ -312,12 +309,6 @@ public:
      *         false if nothing is done.
      */
     bool simplifyConstTernaryOp();
-
-    /**
-     * Simplify compound assignments
-     * Example: ";a+=b;" => ";a=a+b;"
-     */
-    void simplifyCompoundAssignment();
 
     /**
      * Simplify the location of "static" and "const" qualifiers in
@@ -545,11 +536,6 @@ public:
     void checkForEnumsWithTypedef();
 
     void findComplicatedSyntaxErrorsInTemplates();
-
-    /**
-     * Simplify e.g. 'atol("0")' into '0'
-     */
-    void simplifyMathFunctions();
 
     /**
      * Simplify e.g. 'sin(0)' into '0'
@@ -895,13 +881,6 @@ public:
     const Token* tokens() const {
         return list.front();
     }
-
-    /**
-     * Helper function to check whether number is zero (0 or 0.0 or 0E+0) or not?
-     * @param s the string to check
-     * @return true in case is is zero and false otherwise.
-     */
-    static bool isZeroNumber(const std::string &s);
 
     /**
      * Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?

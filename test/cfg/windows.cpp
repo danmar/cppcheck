@@ -16,6 +16,24 @@
 #include <mbstring.h>
 #include <wchar.h>
 
+int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
+{
+    // cppcheck-suppress stringCompare
+    (void) _mbscmp(string1, string1);
+    // cppcheck-suppress staticStringCompare
+    (void) _mbscmp("x", "x");
+    return _mbscmp(string1, string2);
+}
+
+int stringCompare_mbscmp_l(const unsigned char *string1, const unsigned char *string2, _locale_t locale)
+{
+    // cppcheck-suppress stringCompare
+    (void) _mbscmp_l(string1, string1, locale);
+    // cppcheck-suppress staticStringCompare
+    (void) _mbscmp_l("x", "x", locale);
+    return _mbscmp_l(string1, string2, locale);
+}
+
 int ignoredReturnValue__wtoi_l(const wchar_t *str, _locale_t locale)
 {
     // cppcheck-suppress ignoredReturnValue

@@ -1583,10 +1583,8 @@ static const Token *skipLocalVars(const Token *tok)
             return tok;
         return skipLocalVars(semi->next());
     }
-    if (Token::Match(top, "%assign%")) {
+    if (tok->isAssignmentOp()) {
         const Token *varTok = top->astOperand1();
-        if (!Token::Match(varTok, "%var%"))
-            return tok;
         const Variable *var = varTok->variable();
         if (!var)
             return tok;
@@ -1956,8 +1954,7 @@ void CheckStl::string_c_str()
                     if (var->isPointer())
                         string_c_strError(tok);
                 }
-            } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->function()) != c_strFuncParam.end() &&
-                       tok->str() != scope.className) {
+            } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
                 const std::pair<std::multimap<const Function*, int>::const_iterator, std::multimap<const Function*, int>::const_iterator> range = c_strFuncParam.equal_range(tok->function());
                 for (std::multimap<const Function*, int>::const_iterator i = range.first; i != range.second; ++i) {
                     if (i->second == 0)
@@ -2613,7 +2610,7 @@ void CheckStl::useStlAlgorithm()
             if (!Token::simpleMatch(splitTok, ":"))
                 continue;
             const Token *loopVar = splitTok->previous();
-            if (!Token::Match(loopVar, "%var%"))
+            if (loopVar->varId() == 0)
                 continue;
 
             // Check for single assignment

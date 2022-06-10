@@ -822,8 +822,8 @@ void TemplateSimplifier::getTemplateInstantiations()
                     fullName = tok->str();
 
                 // get all declarations with this name
-                for (auto pos = functionNameMap.lower_bound(tok->str());
-                     pos != functionNameMap.upper_bound(tok->str()); ++pos) {
+                auto range = functionNameMap.equal_range(tok->str());
+                for (auto pos = range.first; pos != range.second; ++pos) {
                     // look for declaration with same qualification or constructor with same qualification
                     if (pos->second->fullName() == fullName ||
                         (pos->second->scope() == fullName && tok->str() == pos->second->name())) {
@@ -2550,7 +2550,7 @@ void TemplateSimplifier::simplifyTemplateArgs(Token *start, Token *end)
 
         for (Token *tok = first->next(); tok && tok != end; tok = tok->next()) {
             if (Token::Match(tok, "( %num%|%bool% )") &&
-                (tok->previous() && !Token::Match(tok->previous(), "%name%"))) {
+                (tok->previous() && !tok->previous()->isName())) {
                 tok->deleteThis();
                 tok->deleteNext();
                 again = true;
@@ -2967,11 +2967,11 @@ std::string TemplateSimplifier::getNewName(
         const bool constconst = tok3->str() == "const" && tok3->strAt(1) == "const";
         if (!constconst) {
             if (tok3->isUnsigned())
-                typeStringsUsedInTemplateInstantiation.push_back("unsigned");
+                typeStringsUsedInTemplateInstantiation.emplace_back("unsigned");
             else if (tok3->isSigned())
-                typeStringsUsedInTemplateInstantiation.push_back("signed");
+                typeStringsUsedInTemplateInstantiation.emplace_back("signed");
             if (tok3->isLong())
-                typeStringsUsedInTemplateInstantiation.push_back("long");
+                typeStringsUsedInTemplateInstantiation.emplace_back("long");
             typeStringsUsedInTemplateInstantiation.push_back(tok3->str());
         }
         // add additional type information
@@ -3374,10 +3374,10 @@ static bool specMatch(
 void TemplateSimplifier::getSpecializations()
 {
     // try to locate a matching declaration for each user defined specialization
-    for (auto & spec : mTemplateDeclarations) {
+    for (const auto& spec : mTemplateDeclarations) {
         if (spec.isSpecialization()) {
             bool found = false;
-            for (auto & decl : mTemplateDeclarations) {
+            for (const auto& decl : mTemplateDeclarations) {
                 if (specMatch(spec, decl)) {
                     mTemplateSpecializationMap[spec.token()] = decl.token();
                     found = true;
@@ -3386,7 +3386,7 @@ void TemplateSimplifier::getSpecializations()
             }
 
             if (!found) {
-                for (auto & decl : mTemplateForwardDeclarations) {
+                for (const auto& decl : mTemplateForwardDeclarations) {
                     if (specMatch(spec, decl)) {
                         mTemplateSpecializationMap[spec.token()] = decl.token();
                         break;
@@ -3400,10 +3400,10 @@ void TemplateSimplifier::getSpecializations()
 void TemplateSimplifier::getPartialSpecializations()
 {
     // try to locate a matching declaration for each user defined partial specialization
-    for (auto & spec : mTemplateDeclarations) {
+    for (const auto& spec : mTemplateDeclarations) {
         if (spec.isPartialSpecialization()) {
             bool found = false;
-            for (auto & decl : mTemplateDeclarations) {
+            for (const auto& decl : mTemplateDeclarations) {
                 if (specMatch(spec, decl)) {
                     mTemplatePartialSpecializationMap[spec.token()] = decl.token();
                     found = true;
@@ -3412,7 +3412,7 @@ void TemplateSimplifier::getPartialSpecializations()
             }
 
             if (!found) {
-                for (auto & decl : mTemplateForwardDeclarations) {
+                for (const auto& decl : mTemplateForwardDeclarations) {
                     if (specMatch(spec, decl)) {
                         mTemplatePartialSpecializationMap[spec.token()] = decl.token();
                         break;
@@ -3841,7 +3841,7 @@ void TemplateSimplifier::simplifyTemplates(
         }
 
         // remove explicit instantiations
-        for (TokenAndName & j : mExplicitInstantiationsToDelete) {
+        for (const TokenAndName& j : mExplicitInstantiationsToDelete) {
             Token * start = j.token();
             if (start) {
                 Token * end = start->next();

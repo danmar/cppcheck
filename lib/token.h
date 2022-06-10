@@ -65,6 +65,8 @@ struct ScopeInfo2 {
     std::set<std::string> usingNamespaces;
 };
 
+enum class TokenDebug { None, ValueFlow };
+
 struct TokenImpl {
     nonneg int mVarId;
     nonneg int mFileIndex;
@@ -127,30 +129,34 @@ struct TokenImpl {
     /** Bitfield bit count. */
     unsigned char mBits;
 
+    TokenDebug mDebug;
+
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
 
     TokenImpl()
-        : mVarId(0)
-        , mFileIndex(0)
-        , mLineNumber(0)
-        , mColumn(0)
-        , mExprId(0)
-        , mAstOperand1(nullptr)
-        , mAstOperand2(nullptr)
-        , mAstParent(nullptr)
-        , mScope(nullptr)
-        , mFunction(nullptr) // Initialize whole union
-        , mProgressValue(0)
-        , mIndex(0)
-        , mOriginalName(nullptr)
-        , mValueType(nullptr)
-        , mValues(nullptr)
-        , mTemplateSimplifierPointers(nullptr)
-        , mScopeInfo(nullptr)
-        , mCppcheckAttributes(nullptr)
-        , mCpp11init(Cpp11init::UNKNOWN)
-        , mBits(0)
+        : mVarId(0),
+        mFileIndex(0),
+        mLineNumber(0),
+        mColumn(0),
+        mExprId(0),
+        mAstOperand1(nullptr),
+        mAstOperand2(nullptr),
+        mAstParent(nullptr),
+        mScope(nullptr),
+        mFunction(nullptr)   // Initialize whole union
+        ,
+        mProgressValue(0),
+        mIndex(0),
+        mOriginalName(nullptr),
+        mValueType(nullptr),
+        mValues(nullptr),
+        mTemplateSimplifierPointers(nullptr),
+        mScopeInfo(nullptr),
+        mCppcheckAttributes(nullptr),
+        mCpp11init(Cpp11init::UNKNOWN),
+        mBits(0),
+        mDebug(TokenDebug::None)
     {}
 
     ~TokenImpl();
@@ -173,11 +179,10 @@ class CPPCHECKLIB Token {
 private:
     TokensFrontBack* mTokensFrontBack;
 
-    // Not implemented..
-    Token(const Token &);
-    Token operator=(const Token &);
-
 public:
+    Token(const Token &) = delete;
+    Token& operator=(const Token &) = delete;
+
     enum Type {
         eVariable, eType, eFunction, eKeyword, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Language keyword, Name (unknown identifier)
         eNumber, eString, eChar, eBoolean, eLiteral, eEnumerator, // Literals: Number, String, Character, Boolean, User defined literal (C++11), Enumerator
@@ -602,6 +607,13 @@ public:
         setFlag(fIncompleteVar, b);
     }
 
+    bool isSimplifiedTypedef() const {
+        return getFlag(fIsSimplifiedTypedef);
+    }
+    void isSimplifiedTypedef(bool b) {
+        setFlag(fIsSimplifiedTypedef, b);
+    }
+
     bool isIncompleteConstant() const {
         return getFlag(fIsIncompleteConstant);
     }
@@ -649,6 +661,13 @@ public:
     }
     void isInline(bool b) {
         setFlag(fIsInline, b);
+    }
+
+    bool isRestrict() const {
+        return getFlag(fIsRestrict);
+    }
+    void isRestrict(bool b) {
+        setFlag(fIsRestrict, b);
     }
 
     bool isRemovedVoidParameter() const {
@@ -1277,6 +1296,8 @@ private:
         fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ...; ...)
         fIsRemovedVoidParameter = (1ULL << 35), // A void function parameter has been removed
         fIsIncompleteConstant   = (1ULL << 36),
+        fIsRestrict             = (1ULL << 37), // Is this a restrict pointer type
+        fIsSimplifiedTypedef    = (1ULL << 38),
     };
 
     Token::Type mTokType;
@@ -1420,6 +1441,13 @@ public:
     }
     TokenImpl::Cpp11init isCpp11init() const {
         return mImpl->mCpp11init;
+    }
+
+    TokenDebug getTokenDebug() const {
+        return mImpl->mDebug;
+    }
+    void setTokenDebug(TokenDebug td) {
+        mImpl->mDebug = td;
     }
 };
 

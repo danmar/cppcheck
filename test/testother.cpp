@@ -98,6 +98,7 @@ private:
         TEST_CASE(varScope28);      // #10527
         TEST_CASE(varScope29);      // #10888
         TEST_CASE(varScope30);      // #8541
+        TEST_CASE(varScope31);      // #11099
 
         TEST_CASE(oldStylePointerCast);
         TEST_CASE(invalidPointerCast);
@@ -1380,6 +1381,94 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void varScope31() { // #11099
+        check("bool g(std::vector<int>&);\n"
+              "void h(std::vector<int>);\n"
+              "void f0(std::vector<int> v) {\n"
+              "    std::vector<int> w{ v };\n"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f1(std::vector<int> v) {\n"
+              "    std::vector<int> w{ v.begin(), v.end() };\n"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f2(std::vector<int> v) {\n"
+              "    std::vector<int> w{ 10, 0, std::allocator<int>() };\n" // FN
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f3(std::vector<int> v) {\n"
+              "    std::vector<int> w{ 10, 0 };\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f4(std::vector<int> v) {\n"
+              "    std::vector<int> w{ 10 };\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f5(std::vector<int> v) {\n"
+              "    std::vector<int> w(v);\n"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f6(std::vector<int> v) {\n"
+              "    std::vector<int> w(v.begin(), v.end());\n"
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f7(std::vector<int> v) {\n"
+              "    std::vector<int> w(10, 0, std::allocator<int>);\n" // FN
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f8(std::vector<int> v) {\n"
+              "    std::vector<int> w(10, 0);\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f9(std::vector<int> v) {\n"
+              "    std::vector<int> w(10);\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n"
+              "void f10(std::vector<int> v) {\n"
+              "    std::vector<int> w{};\n" // warn
+              "    bool b = g(v);\n"
+              "    if (b)\n"
+              "        h(w);\n"
+              "    h(v);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:25]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:32]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:60]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:67]: (style) The scope of the variable 'w' can be reduced.\n"
+                      "[test.cpp:74]: (style) The scope of the variable 'w' can be reduced.\n",
+                      errout.str());
+    }
+
 #define checkOldStylePointerCast(code) checkOldStylePointerCast_(code, __FILE__, __LINE__)
     void checkOldStylePointerCast_(const char code[], const char* file, int line) {
         // Clear the error buffer..
@@ -1858,7 +1947,7 @@ private:
         check("void f(std::string str) {\n"
               "    std::string& s2 = str;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's2' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's2' can be declared as reference to const\n", errout.str());
 
         check("void f(std::string str) {\n"
               "    const std::string& s2 = str;\n"
@@ -2013,12 +2102,12 @@ private:
               "    int& i = x[0];\n"
               "    return i;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as reference to const\n", errout.str());
 
         check("int f(std::vector<int>& x) {\n"
               "    return x[0];\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
 
         check("int f(std::vector<int> x) {\n"
               "    const int& i = x[0];\n"
@@ -2059,7 +2148,7 @@ private:
         check("const int& f(std::vector<int>& x) {\n"
               "    return x[0];\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
 
         check("int f(std::vector<int>& x) {\n"
               "    x[0]++;\n"
@@ -2176,17 +2265,34 @@ private:
               "    for(auto x:v)\n"
               "        x = 1;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n", errout.str());
 
         check("void f(std::vector<int>& v) {\n"
               "    for(auto& x:v) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
+                      "[test.cpp:2]: (style) Variable 'x' can be declared as reference to const\n",
+                      errout.str());
+
+        check("void f(std::vector<int>& v) {\n" // #10980
+              "    for (int& i : v)\n"
+              "        if (i == 0) {}\n"
+              "    for (const int& i : v)\n"
+              "        if (i == 0) {}\n"
+              "    for (auto& i : v)\n"
+              "        if (i == 0) {}\n"
+              "    for (const auto& i : v)\n"
+              "        if (i == 0) {}\n"
+              "    v.clear();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as reference to const\n"
+                      "[test.cpp:6]: (style) Variable 'i' can be declared as reference to const\n",
+                      errout.str());
 
         check("void f(std::vector<int>& v) {\n"
               "    for(const auto& x:v) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n", errout.str());
 
         check("void f(int& i) {\n"
               "    int& j = i;\n"
@@ -2290,14 +2396,14 @@ private:
               "    a x;\n"
               "    x(i);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'i' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'i' can be declared as reference to const\n", errout.str());
 
         //cast or assignment to a non-const reference should prevent the warning
         check("struct T { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
         check("struct T : public U  { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -2311,7 +2417,7 @@ private:
               "    x.dostuff();\n"
               "    const U& y = x\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
         check("struct T : public U  { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -2332,7 +2438,7 @@ private:
               "    const U& y = static_cast<const U&>(x)\n"
               "    y.mutate();\n" //to avoid warnings that y can be const
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
         check("struct T : public U  { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -2345,7 +2451,7 @@ private:
               "    x.dostuff();\n"
               "    const U& y = dynamic_cast<const U&>(x)\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
         check(
             "struct T : public U { void dostuff() const {}};\n"
             "void a(T& x) {\n"
@@ -2353,13 +2459,13 @@ private:
             "    const U& y = dynamic_cast<U const &>(x)\n"
             "}"
             );
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
               "    const U& y = dynamic_cast<U & const>(x)\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -2372,7 +2478,7 @@ private:
               "    x.dostuff();\n"
               "    const U& y = dynamic_cast<typename const U&>(x)\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -2443,7 +2549,7 @@ private:
               "    x.dostuff();\n"
               "    const U& y = (const U&)(x)\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -2456,7 +2562,7 @@ private:
               "    x.dostuff();\n"
               "    const U& y = (typename const U&)(x)\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as reference to const\n", errout.str());
         check("struct T : public U { void dostuff() const {}};\n"
               "void a(T& x) {\n"
               "    x.dostuff();\n"
@@ -2495,7 +2601,7 @@ private:
               "void f(int& i) {\n"
               "    a()(i);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'i' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Parameter 'i' can be declared as reference to const\n", errout.str());
 
         // #9767
         check("void fct1(MyClass& object) {\n"
@@ -2744,7 +2850,7 @@ private:
               "  : c(i)\n"
               "{\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared as reference to const\n", "", errout.str());
 
         check("class C\n"
               "{\n"
@@ -2765,7 +2871,7 @@ private:
               "  : c(i)\n"
               "{\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared as reference to const\n", "", errout.str());
 
         check("class C\n"
               "{\n"
@@ -2786,7 +2892,7 @@ private:
               "  : c(0, i)\n"
               "{\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared with const\n", "", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:16]: (style) Parameter 'i' can be declared as reference to const\n", "", errout.str());
 
         check("void f(std::map<int, std::vector<int>> &map) {\n" // #10266
               "  for (auto &[slave, panels] : map)\n"
@@ -2839,7 +2945,7 @@ private:
     void constParameterCallback() {
         check("int callback(std::vector<int>& x) { return x[0]; }\n"
               "void f() { dostuff(callback); }");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Parameter 'x' can be declared with const. However it seems that 'callback' is a callback function, if 'x' is declared with const you might also need to cast function pointer(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (style) Parameter 'x' can be declared as reference to const. However it seems that 'callback' is a callback function, if 'x' is declared with const you might also need to cast function pointer(s).\n", errout.str());
 
         // #9906
         check("class EventEngine : public IEventEngine {\n"
@@ -2857,51 +2963,51 @@ private:
               "void EventEngine::signalEvent(ev::sig& signal, int revents) {\n"
               "    switch (signal.signum) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:13]: (style) Parameter 'signal' can be declared with const. However it seems that 'signalEvent' is a callback function, if 'signal' is declared with const you might also need to cast function pointer(s).\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:10] -> [test.cpp:13]: (style) Parameter 'signal' can be declared as reference to const. However it seems that 'signalEvent' is a callback function, if 'signal' is declared with const you might also need to cast function pointer(s).\n", errout.str());
     }
 
     void constPointer() {
         check("void foo(int *p) { return *p; }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { x = *p; }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { int &ref = *p; ref = 12; }");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int *p) { x = *p + 10; }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { return p[10]; }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { int &ref = p[0]; ref = 12; }");
         ASSERT_EQUALS("", errout.str());
 
         check("void foo(int *p) { x[*p] = 12; }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { if (p) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { if (p || x) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { if (p == 0) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { if (!p) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { if (*p > 123) {} }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { return *p + 1; }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(int *p) { return *p > 1; }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p' can be declared as pointer to const\n", errout.str());
 
         check("void foo(const int* c) { if (c == 0) {}; }");
         ASSERT_EQUALS("", errout.str());
@@ -3002,14 +3108,14 @@ private:
               "    static int i[1] = {};\n"
               "    return i[0];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as const array\n", errout.str());
 
         check("int f() {\n"
               "    static int i[] = { 0 };\n"
               "    int j = i[0] + 1;\n"
               "    return j;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'i' can be declared as const array\n", errout.str());
 
         // #10471
         check("void f(std::array<int, 1> const& i) {\n"
@@ -3018,21 +3124,36 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #10466
+        check("typedef void* HWND;\n"
+              "void f(const std::vector<HWND>&v) {\n"
+              "    for (const auto* h : v)\n"
+              "        if (h) {}\n"
+              "    for (const auto& h : v)\n"
+              "        if (h) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Variable 'h' can be declared as pointer to const\n", errout.str());
+
         check("void f(const std::vector<int*>& v) {\n"
               "    for (const auto& p : v)\n"
               "        if (p == nullptr) {}\n"
               "    for (const auto* p : v)\n"
               "        if (p == nullptr) {}\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n", errout.str());
 
         check("void f(std::vector<int*>& v) {\n"
               "    for (const auto& p : v)\n"
               "        if (p == nullptr) {}\n"
               "    for (const auto* p : v)\n"
               "        if (p == nullptr) {}\n"
+              "    for (const int* const& p : v)\n"
+              "        if (p == nullptr) {}\n"
+              "    for (const int* p : v)\n"
+              "        if (p == nullptr) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n"
+                      "[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
 
         check("void f(std::vector<const int*>& v) {\n"
               "    for (const auto& p : v)\n"
@@ -3040,7 +3161,7 @@ private:
               "    for (const auto* p : v)\n"
               "        if (p == nullptr) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'v' can be declared as reference to const\n", errout.str());
 
         check("void f(const std::vector<const int*>& v) {\n"
               "    for (const auto& p : v)\n"
@@ -3078,8 +3199,51 @@ private:
               "    tmp = b[i];\n"
               "    printf(\"%s\", tmp);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' can be declared with const\n"
-                      "[test.cpp:4]: (style) Variable 'b' can be declared with const\n",
+        ASSERT_EQUALS("[test.cpp:3]: (style) Variable 'a' can be declared as const array\n"
+                      "[test.cpp:4]: (style) Variable 'b' can be declared as const array\n",
+                      errout.str());
+
+        check("typedef void* HWND;\n" // #11084
+              "void f(const HWND h) {\n"
+              "    if (h == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("using HWND = void*;\n"
+              "void f(const HWND h) {\n"
+              "    if (h == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("typedef int A;\n"
+              "void f(A* x) {\n"
+              "    if (x == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
+
+        check("using A = int;\n"
+              "void f(A* x) {\n"
+              "    if (x == nullptr) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Parameter 'x' can be declared as pointer to const\n", errout.str());
+
+        check("struct S { void v(); };\n" // #11095
+              "void f(S* s) {\n"
+              "    (s - 1)->v();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::vector<int*>& v) {\n" // #11085
+              "    for (int* p : v) {\n"
+              "        if (p) {}\n"
+              "    }\n"
+              "    for (auto* p : v) {\n"
+              "        if (p) {}\n"
+              "    }\n"
+              "    v.clear();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
+                      "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n",
                       errout.str());
     }
 
@@ -5254,7 +5418,7 @@ private:
 
         // #5535: Reference named like its type
         check("void foo() { UMSConfig& UMSConfig = GetUMSConfiguration(); }");
-        ASSERT_EQUALS("[test.cpp:1]: (style) Variable 'UMSConfig' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (style) Variable 'UMSConfig' can be declared as reference to const\n", errout.str());
 
         // #3868 - false positive (same expression on both sides of |)
         check("void f(int x) {\n"
@@ -9280,7 +9444,7 @@ private:
               "    int local_argc = 0;\n"
               "    local_argv[local_argc++] = argv[0];\n"
               "}\n", "test.c");
-        ASSERT_EQUALS("[test.c:1]: (style) Parameter 'argv' can be declared with const\n", errout.str());
+        ASSERT_EQUALS("[test.c:1]: (style) Parameter 'argv' can be declared as const array\n", errout.str());
 
         check("void f() {\n"
               "  int x = 0;\n"

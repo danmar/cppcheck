@@ -887,6 +887,24 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n" // #11082
+              "    int j = 0;\n"
+              "    if (i | j) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Operator '|' with one operand equal to zero is redundant.\n", errout.str());
+
+        check("#define EIGHTTOIS(x) (((x) << 8) | (x))\n"
+              "int f() {\n"
+              "    return EIGHTTOIS(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("#define O_RDONLY 0\n"
+              "void f(const char* s, int* pFd) {\n"
+              "    *pFd = open(s, O_RDONLY | O_BINARY, 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -1642,6 +1660,12 @@ private:
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
+        check("void f(void) {\n" // #8892
+              "    const char c[1] = { \'x\' }; \n"
+              "    if(c[0] == \'x\'){;}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'c[0]=='x'' is always true\n", errout.str());
+
         check("void f(int x) {\n"
               "    if (x > 5 && x != 1)\n"
               "        a++;\n"

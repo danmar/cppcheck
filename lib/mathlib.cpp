@@ -31,16 +31,6 @@
 
 #include <simplecpp.h>
 
-#if defined(_MSC_VER) && _MSC_VER <= 1700  // VS2012 doesn't have std::isinf and std::isnan
-#define ISINF(x)      (!_finite(x))
-#define ISNAN(x)      (_isnan(x))
-#elif defined(__INTEL_COMPILER)
-#define ISINF(x)      (isinf(x))
-#define ISNAN(x)      (isnan(x))
-#else  // Use C++11 functions
-#define ISINF(x)      (std::isinf(x))
-#define ISNAN(x)      (std::isnan(x))
-#endif
 
 const int MathLib::bigint_bits = 64;
 
@@ -83,9 +73,9 @@ std::string MathLib::value::str() const
 {
     std::ostringstream ostr;
     if (mType == MathLib::value::Type::FLOAT) {
-        if (ISNAN(mDoubleValue))
+        if (std::isnan(mDoubleValue))
             return "nan.0";
-        if (ISINF(mDoubleValue))
+        if (std::isinf(mDoubleValue))
             return (mDoubleValue > 0) ? "inf.0" : "-inf.0";
 
         ostr.precision(9);

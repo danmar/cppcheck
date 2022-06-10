@@ -45,19 +45,6 @@
 #include <unordered_map>
 #include <utility>
 
-const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred)
-{
-    const Token* result = nullptr;
-    visitAstNodes(ast, [&](const Token* tok) {
-        if (pred(tok)) {
-            result = tok;
-            return ChildrenToVisit::done;
-        }
-        return ChildrenToVisit::op1_and_op2;
-    });
-    return result;
-}
-
 const Token* findExpression(const nonneg int exprid,
                             const Token* start,
                             const Token* end,
@@ -271,6 +258,11 @@ bool astIsContainerView(const Token* tok)
 
 bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
+}
+
+bool astIsRangeBasedForDecl(const Token* tok)
+{
+    return Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "(");
 }
 
 std::string astCanonicalType(const Token *expr)
@@ -899,7 +891,7 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
         if (classScope && classScope->isClassOrStruct())
             return contains(classScope->findAssociatedScopes(), expr->function()->nestedIn);
         return false;
-    } else if (onVar && Token::Match(expr, "%var%") && expr->variable()) {
+    } else if (onVar && expr->variable()) {
         const Variable* var = expr->variable();
         return (var->isPrivate() || var->isPublic() || var->isProtected());
     }
@@ -921,14 +913,14 @@ static bool hasUnknownVars(const Token* startTok)
     return result;
 }
 
-static bool isStructuredBindingVariable(const Variable* var)
+bool isStructuredBindingVariable(const Variable* var)
 {
     if (!var)
         return false;
     const Token* tok = var->nameToken();
-    while (Token::Match(tok->astParent(), "[|,"))
+    while (tok && Token::Match(tok->astParent(), "[|,|:"))
         tok = tok->astParent();
-    return Token::simpleMatch(tok, "[");
+    return tok && (tok->str() == "[" || Token::simpleMatch(tok->previous(), "] :")); // TODO: remove workaround when #11105 is fixed
 }
 
 /// This takes a token that refers to a variable and it will return the token
@@ -1301,7 +1293,7 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
         return true;
 
     // Follow variable
-    if (followVar && !tok_str_eq && (Token::Match(tok1, "%var%") || Token::Match(tok2, "%var%"))) {
+    if (followVar && !tok_str_eq && (tok1->varId() || tok2->varId())) {
         const Token * varTok1 = followVariableExpression(tok1, cpp, tok2);
         if ((varTok1->str() == tok2->str()) || isSameConstantValue(macro, varTok1, tok2)) {
             followVariableExpressionError(tok1, varTok1, errors);
@@ -2170,7 +2162,7 @@ bool isVariableChangedByFunctionCall(const Token *tok, int indirect, const Setti
         parenTok = parenTok->link()->next();
     const bool possiblyPassedByReference = (parenTok->next() == tok1 || Token::Match(tok1->previous(), ", %name% [,)}]"));
 
-    if (!tok->function() && !tok->variable() && Token::Match(tok, "%name%")) {
+    if (!tok->function() && !tok->variable() && tok->isName()) {
         if (settings) {
             const bool requireInit = settings->library.isuninitargbad(tok, 1 + argnr);
             const bool requireNonNull = settings->library.isnullargbad(tok, 1 + argnr);
@@ -2244,7 +2236,7 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
             derefs++;
         if (derefs > indirect)
             break;
-        if ((tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->"))
+        if (tok2->astParent() && tok2->astParent()->isUnaryOp("&") && Token::simpleMatch(tok2->astParent()->astParent(), ".") && tok2->astParent()->astParent()->originalName()=="->")
             tok2 = tok2->astParent();
         tok2 = tok2->astParent();
     }
@@ -2252,12 +2244,12 @@ bool isVariableChanged(const Token *tok, int indirect, const Settings *settings,
     while (Token::simpleMatch(tok2->astParent(), "?") || (Token::simpleMatch(tok2->astParent(), ":") && Token::simpleMatch(tok2->astParent()->astParent(), "?")))
         tok2 = tok2->astParent();
 
-    if (Token::Match(tok2->astParent(), "++|--"))
+    if (tok2->astParent() && tok2->astParent()->tokType() == Token::eIncDecOp)
         return true;
 
     auto skipRedundantPtrOp = [](const Token* tok, const Token* parent) {
         const Token* gparent = parent ? parent->astParent() : nullptr;
-        while (parent && gparent && ((parent->isUnaryOp("*") && gparent->isUnaryOp("&")) || ((parent->isUnaryOp("&") && gparent->isUnaryOp("*"))))) {
+        while (parent && gparent && ((parent->isUnaryOp("*") && gparent->isUnaryOp("&")) || (parent->isUnaryOp("&") && gparent->isUnaryOp("*")))) {
             tok = gparent;
             parent = gparent->astParent();
             if (parent)
@@ -2830,7 +2822,7 @@ static const Token* getLHSVariableRecursive(const Token* tok)
 
 const Variable *getLHSVariable(const Token *tok)
 {
-    if (!Token::Match(tok, "%assign%"))
+    if (!tok || !tok->isAssignmentOp())
         return nullptr;
     if (!tok->astOperand1())
         return nullptr;

@@ -35,9 +35,7 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 #include <windows.h>
-#ifndef __BORLANDC__
 #include <shlwapi.h>
-#endif
 
 // Here is the catch: cppcheck core is Ansi code (using char type).
 // When compiling Unicode targets WinAPI automatically uses *W Unicode versions
@@ -45,12 +43,8 @@
 
 static BOOL myIsDirectory(const std::string& path)
 {
-#ifdef __BORLANDC__
-    return (GetFileAttributes(path.c_str()) & FILE_ATTRIBUTE_DIRECTORY);
-#else
 // See http://msdn.microsoft.com/en-us/library/bb773621(VS.85).aspx
     return PathIsDirectoryA(path.c_str());
-#endif
 }
 
 static HANDLE myFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findData)
@@ -61,15 +55,7 @@ static HANDLE myFindFirstFile(const std::string& path, LPWIN32_FIND_DATAA findDa
 
 static BOOL myFileExists(const std::string& path)
 {
-#ifdef __BORLANDC__
-    DWORD fa = GetFileAttributes(path.c_str());
-    BOOL result = FALSE;
-    if (fa != INVALID_FILE_ATTRIBUTES && !(fa & FILE_ATTRIBUTE_DIRECTORY))
-        result = TRUE;
-#else
-    const BOOL result = PathFileExistsA(path.c_str()) && !PathIsDirectoryA(path.c_str());
-#endif
-    return result;
+    return PathFileExistsA(path.c_str()) && !PathIsDirectoryA(path.c_str());
 }
 
 std::string FileLister::recursiveAddFiles(std::map<std::string, std::size_t> &files, const std::string &path, const std::set<std::string> &extra, const PathMatch& ignored)
