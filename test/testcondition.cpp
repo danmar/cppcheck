@@ -4344,22 +4344,22 @@ private:
 
         // #11124
         check("struct Basket {\n"
-                  "	std::vector<int> getApples() const;\n"
-                  "	std::vector<int> getBananas() const;	\n"
-                  "};\n"
-                  "int getFruit(const Basket & b, bool preferApples)\n"
-                  "{\n"
-                  "    std::vector<int> apples = b.getApples();\n"
-                  "    int apple = apples.empty() ? -1 : apples.front();\n"
-                  "    std::vector<int> bananas = b.getBananas();\n"
-                  "    int banana = bananas.empty() ? -1 : bananas.front();\n"
-                  "    int fruit = std::max(apple, banana);\n"
-                  "    if (fruit == -1)\n"
-                  "        return fruit;\n"
-                  "    if (std::min(apple, banana) != -1)\n"
-                  "        fruit = preferApples ? apple : banana;\n"
-                  "    return fruit;\n"
-                  "}\n");
+              "	std::vector<int> getApples() const;\n"
+              "	std::vector<int> getBananas() const;	\n"
+              "};\n"
+              "int getFruit(const Basket & b, bool preferApples)\n"
+              "{\n"
+              "    std::vector<int> apples = b.getApples();\n"
+              "    int apple = apples.empty() ? -1 : apples.front();\n"
+              "    std::vector<int> bananas = b.getBananas();\n"
+              "    int banana = bananas.empty() ? -1 : bananas.front();\n"
+              "    int fruit = std::max(apple, banana);\n"
+              "    if (fruit == -1)\n"
+              "        return fruit;\n"
+              "    if (std::min(apple, banana) != -1)\n"
+              "        fruit = preferApples ? apple : banana;\n"
+              "    return fruit;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

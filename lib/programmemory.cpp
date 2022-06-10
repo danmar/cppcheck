@@ -548,7 +548,8 @@ struct assign {
     }
 };
 
-static bool isIntegralValue(const ValueFlow::Value& value) {
+static bool isIntegralValue(const ValueFlow::Value& value)
+{
     return value.isIntValue() || value.isIteratorValue() || value.isSymbolicValue();
 }
 
