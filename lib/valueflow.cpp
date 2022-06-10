@@ -162,7 +162,7 @@ static void setSourceLocation(ValueFlow::Value& v, SourceLocation ctx, const Tok
     std::string file = ctx.file_name();
     if (file.empty())
         return;
-    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() + ": " + local.function_name() + ": " + debugString(v);
+    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() + " => " + local.function_name() + ": " + debugString(v);
     v.debugPath.emplace_back(tok, s);
 }
 
@@ -8353,6 +8353,8 @@ static void valueFlowDebug(TokenList* tokenlist, ErrorLogger* errorLogger)
         return;
     for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->getTokenDebug() != TokenDebug::ValueFlow)
+            continue;
+        if (tok->astParent() && tok->astParent()->getTokenDebug() == TokenDebug::ValueFlow)
             continue;
         for (const ValueFlow::Value& v : tok->values()) {
             std::string msg = "The value is " + debugString(v);
