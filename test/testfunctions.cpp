@@ -97,6 +97,8 @@ private:
         TEST_CASE(returnLocalStdMove4);
 
         TEST_CASE(returnLocalStdMove5);
+
+        TEST_CASE(negativeMemoryAllocationSizeError); // #389
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -1705,6 +1707,23 @@ private:
         check("struct A{} a; A f1() { return std::move(a); }\n"
               "A f2() { volatile A var; return std::move(var); }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void negativeMemoryAllocationSizeError() { // #389
+        check("void f() {\n"
+              "   int *a;\n"
+              "   a = malloc( -10 );\n"
+              "   free(a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid malloc() argument nr 1. The value is -10 but the valid values are '0:'.\n", errout.str());
+
+        check("void f() {\n"
+              "   int *a;\n"
+              "   a = alloca( -10 );\n"
+              "   free(a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'alloca' called.\n"
+                      "[test.cpp:3]: (error) Invalid alloca() argument nr 1. The value is -10 but the valid values are '0:'.\n", errout.str());
     }
 };
 
