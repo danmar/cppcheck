@@ -2926,8 +2926,10 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         assert(e && e->exprId() != 0 && "Not a valid expression");
         dependOnThis = exprDependsOnThis(expr);
         setupExprVarIds(expr);
-        if (val.isSymbolicValue())
+        if (val.isSymbolicValue()) {
+            dependOnThis |= exprDependsOnThis(val.tokvalue);
             setupExprVarIds(val.tokvalue);
+        }
     }
 
     static bool nonLocal(const Variable* var, bool deref) {
