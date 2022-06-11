@@ -4209,6 +4209,17 @@ private:
               "const char* get() const { return 0; }\n"
               "void f(foo x) { if (get()) x += get(); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("typedef struct { uint8_t* buf, *buf_end; } S;\n" // #11117
+              "void f(S* s, uint8_t* buffer, int buffer_size) {\n"
+              "    if (buffer_size < 0) {\n"
+              "        buffer_size = 0;\n"
+              "        buffer = NULL;\n"
+              "    }\n"
+              "    s->buf = buffer;\n"
+              "    s->buf_end = s->buf + buffer_size;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isPointerDeRefFunctionDecl() {

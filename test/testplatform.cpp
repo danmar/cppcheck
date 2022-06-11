@@ -36,7 +36,7 @@ private:
         TEST_CASE(valid_config_file_3);
         TEST_CASE(valid_config_file_4);
         TEST_CASE(invalid_config_file_1);
-        // TEST_CASE(empty_elements); // TODO: Trac issue #8409
+        TEST_CASE(empty_elements);
     }
 
     static bool readPlatform(cppcheck::Platform& platform, const char* xmldata) {
@@ -286,7 +286,6 @@ private:
         ASSERT(!readPlatform(platform, xmldata));
     }
 
-#if 0 // @TODO: Enable when Trac issue #8409 has been fixed
     void empty_elements() {
         // Valid platform configuration without any usable information.
         // Similar like an empty file.
@@ -310,18 +309,10 @@ private:
                                " </platform>";
         cppcheck::Platform platform;
         ASSERT(platform.platform(cppcheck::Platform::Win64));
-        ASSERT(readPlatform(platform, xmldata));
+        ASSERT(!readPlatform(platform, xmldata));
         ASSERT_EQUALS(platform.PlatformFile, platform.platformType);
         ASSERT(!platform.isWindowsPlatform());
-        ASSERT_EQUALS(8, platform.char_bit);
-        ASSERT_EQUALS('\0', platform.defaultSign);
-        ASSERT_EQUALS(1, platform.sizeof_bool);
-        ASSERT_EQUALS(2, platform.sizeof_short);
-        ASSERT_EQUALS(4, platform.sizeof_int);
-        ASSERT_EQUALS(4, platform.sizeof_long);
-        ASSERT_EQUALS(8, platform.sizeof_long_long);
     }
-#endif
 };
 
 REGISTER_TEST(TestPlatform)

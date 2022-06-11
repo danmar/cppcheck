@@ -1444,6 +1444,8 @@ private:
                "  if (x) {}\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, 1));
+        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 6U, 0));
     }
 
     void valueFlowBeforeConditionAssignIncDec() {  // assignment / increment
@@ -4382,6 +4384,20 @@ private:
                "    }\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfX(code, 8U, -1));
+
+        code = "typedef enum {\n"
+               "  K0, K1\n"
+               "} K;\n"
+               "bool valid(Object *obj, K x) {\n"
+               "  if (!obj || obj->kind != x)\n"
+               "    return false;\n"
+               "  return x == K0;\n"
+               "}\n"
+               "void f(Object *obj) {\n"
+               "  if (valid(obj, K0)) {}\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 7U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 0));
     }
     void valueFlowFunctionReturn() {
         const char *code;

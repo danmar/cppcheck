@@ -40,6 +40,7 @@ class Token;
 class TemplateSimplifier;
 class ErrorLogger;
 class Preprocessor;
+class VariableMap;
 
 namespace simplecpp {
     class TokenList;
@@ -58,33 +59,6 @@ class CPPCHECKLIB Tokenizer {
     friend class SymbolDatabase;
     friend class TestSimplifyTemplate;
     friend class TemplateSimplifier;
-
-    /** Class used in Tokenizer::setVarIdPass1 */
-    class VariableMap {
-    private:
-        std::map<std::string, int> mVariableId;
-        std::stack<std::list<std::pair<std::string,int>>> mScopeInfo;
-        mutable nonneg int mVarId;
-    public:
-        VariableMap();
-        void enterScope();
-        bool leaveScope();
-        void addVariable(const std::string &varname);
-        bool hasVariable(const std::string &varname) const;
-        std::map<std::string,int>::const_iterator find(const std::string &varname) const {
-            return mVariableId.find(varname);
-        }
-        std::map<std::string,int>::const_iterator end() const {
-            return mVariableId.end();
-        }
-        const std::map<std::string,int> &map() const {
-            return mVariableId;
-        }
-        nonneg int *getVarId() const {
-            return &mVarId;
-        }
-    };
-
 
 public:
     Tokenizer();
@@ -209,6 +183,7 @@ public:
      */
     nonneg int sizeOfType(const Token *type) const;
 
+    void simplifyDebug();
     /**
      * Try to determine if function parameter is passed by value by looking
      * at the function declaration.
@@ -216,10 +191,6 @@ public:
      * @return true if the parameter is passed by value. if unsure, false is returned
      */
     bool isFunctionParameterPassedByValue(const Token *fpar) const;
-
-    /** Simplify assignment in function call "f(x=g());" => "x=g();f(x);"
-     */
-    void simplifyAssignmentInFunctionCall();
 
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
     void simplifyAssignmentBlock();
@@ -272,9 +243,6 @@ public:
     /** Remove unknown macro in variable declarations: PROGMEM char x; */
     void removeMacroInVarDecl();
 
-    /** Remove redundant assignment */
-    void removeRedundantAssignment();
-
     /** Simplifies some realloc usage like
      * 'x = realloc (0, n);' => 'x = malloc(n);'
      * 'x = realloc (y, 0);' => 'x = 0; free(y);'
@@ -312,12 +280,6 @@ public:
      *         false if nothing is done.
      */
     bool simplifyConstTernaryOp();
-
-    /**
-     * Simplify compound assignments
-     * Example: ";a+=b;" => ";a=a+b;"
-     */
-    void simplifyCompoundAssignment();
 
     /**
      * Simplify the location of "static" and "const" qualifiers in
@@ -547,11 +509,6 @@ public:
     void findComplicatedSyntaxErrorsInTemplates();
 
     /**
-     * Simplify e.g. 'atol("0")' into '0'
-     */
-    void simplifyMathFunctions();
-
-    /**
      * Simplify e.g. 'sin(0)' into '0'
      */
     void simplifyMathExpressions();
@@ -596,11 +553,6 @@ private:
      * simplify "while (0)"
      */
     void simplifyWhile0();
-
-    /**
-     * Simplify while(func() && errno==EINTR)
-     */
-    void simplifyErrNoInWhile();
 
     /**
      * Simplify while(func(f))
@@ -820,17 +772,17 @@ private:
     void setVarIdClassDeclaration(const Token * const startToken,
                                   const VariableMap &variableMap,
                                   const nonneg int scopeStartVarId,
-                                  std::map<int, std::map<std::string,int>>& structMembers);
+                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
 
     void setVarIdStructMembers(Token **tok1,
-                               std::map<int, std::map<std::string, int>>& structMembers,
+                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
                                nonneg int *varId) const;
 
     void setVarIdClassFunction(const std::string &classname,
                                Token * const startToken,
                                const Token * const endToken,
-                               const std::map<std::string,int> &varlist,
-                               std::map<int, std::map<std::string,int>>& structMembers,
+                               const std::map<std::string, nonneg int> &varlist,
+                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
                                nonneg int *varId_);
 
     /**
@@ -895,13 +847,6 @@ public:
     const Token* tokens() const {
         return list.front();
     }
-
-    /**
-     * Helper function to check whether number is zero (0 or 0.0 or 0E+0) or not?
-     * @param s the string to check
-     * @return true in case is is zero and false otherwise.
-     */
-    static bool isZeroNumber(const std::string &s);
 
     /**
      * Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?

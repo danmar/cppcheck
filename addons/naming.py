@@ -81,7 +81,7 @@ for arg in sys.argv[1:]:
             for scope in cfg.scopes:
                 if scope.type == 'Function':
                     function = scope.function
-                    if function is not None and function.type in ('Constructor', 'Destructor'):
+                    if function is not None and function.type in ('Constructor', 'Destructor', 'CopyConstructor', 'MoveConstructor'):
                         continue
                     res = re.match(RE_FUNCTIONNAME, scope.className)
                     if not res:

@@ -68,7 +68,7 @@ struct ForwardTraversal {
     }
 
     struct Branch {
-        Branch(Token* tok = nullptr) : endBlock(tok) {}
+        explicit Branch(Token* tok = nullptr) : endBlock(tok) {}
         Token* endBlock = nullptr;
         Analyzer::Action action = Analyzer::Action::None;
         bool check = false;
@@ -857,12 +857,12 @@ Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const V
 {
     ForwardTraversal ft{a, settings};
     ft.updateRange(start, end);
-    return {ft.actions, ft.terminate};
+    return Analyzer::Result{ ft.actions, ft.terminate };
 }
 
 Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings)
 {
     ForwardTraversal ft{a, settings};
     ft.updateRecursive(start);
-    return {ft.actions, ft.terminate};
+    return Analyzer::Result{ ft.actions, ft.terminate };
 }
