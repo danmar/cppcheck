@@ -2422,9 +2422,9 @@ static bool isExpressionChangedAt(const F& getExprTok,
         if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure())) {
             const Token* exprTok = getExprTok();
             if (!((exprTok && exprTok->variable() && exprTok->variable()->scope() && tok->function() && tok->function()->isConst() &&
-                  (exprTok->variable()->scope() == tok->function()->nestedIn || // member variable doesn't get changed within const member function
-                   exprTok->variable()->typeScope() == tok->function()->nestedIn)) || // variable doesn't get changed by calling const member function on it
-                   (settings && settings->library.isFunctionConst(tok))))
+                   (exprTok->variable()->scope() == tok->function()->nestedIn || // member variable doesn't get changed within const member function
+                    exprTok->variable()->typeScope() == tok->function()->nestedIn)) || // variable doesn't get changed by calling const member function on it
+                  (settings && settings->library.isFunctionConst(tok))))
                 // TODO: Is global variable really changed by function call?
                 return true;
         }
