@@ -638,8 +638,11 @@ const char *Token::chrInFirstWord(const char *str, char c)
 
 bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
 {
+    if (!(*pattern))
+        return true;
+
     const char *p = pattern;
-    while (*p) {
+    while (true) {
         // Skip spaces in pattern..
         while (*p == ' ')
             ++p;
@@ -654,8 +657,9 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
                 while (*p && *p != ' ')
                     ++p;
                 continue;
-            } else
-                return false;
+            }
+
+            return false;
         }
 
         // [.. => search for a one-character token..
@@ -686,8 +690,6 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
                 return false;
 
             p = temp;
-            while (*p && *p != ' ')
-                ++p;
         }
 
         // Parse "not" options. Token can be anything except the given one
@@ -695,8 +697,6 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
             p += 2;
             if (firstWordEquals(p, tok->str().c_str()))
                 return false;
-            while (*p && *p != ' ')
-                ++p;
         }
 
         // Parse multi options, such as void|int|char (accept token which is one of these 3)
@@ -707,14 +707,16 @@ bool Token::Match(const Token *tok, const char pattern[], nonneg int varid)
                 while (*p && *p != ' ')
                     ++p;
                 continue;
-            } else if (res == -1) {
+            }
+            if (res == -1) {
                 // No match
                 return false;
             }
         }
 
-        while (*p && *p != ' ')
-            ++p;
+        // using strchr() for the other instances leads to a performance decrease
+        if (!(p = strchr(p, ' ')))
+            break;
 
         tok = tok->next();
     }
@@ -1506,7 +1508,7 @@ bool Token::isUnaryPreOp() const
 {
     if (!astOperand1() || astOperand2())
         return false;
-    if (!Token::Match(this, "++|--"))
+    if (this->tokType() != Token::eIncDecOp)
         return true;
     const Token *tokbefore = mPrevious;
     const Token *tokafter = mNext;
@@ -1780,56 +1782,7 @@ void Token::printValueFlow(bool xml, std::ostream &out) const
             else {
                 if (&value != &tok->mImpl->mValues->front())
                     out << ",";
-                if (value.isImpossible())
-                    out << "!";
-                if (value.bound == ValueFlow::Value::Bound::Lower)
-                    out << ">=";
-                if (value.bound == ValueFlow::Value::Bound::Upper)
-                    out << "<=";
-                switch (value.valueType) {
-                case ValueFlow::Value::ValueType::INT:
-                    out << value.intvalue;
-                    break;
-                case ValueFlow::Value::ValueType::TOK:
-                    out << value.tokvalue->str();
-                    break;
-                case ValueFlow::Value::ValueType::FLOAT:
-                    out << value.floatValue;
-                    break;
-                case ValueFlow::Value::ValueType::MOVED:
-                    out << ValueFlow::Value::toString(value.moveKind);
-                    break;
-                case ValueFlow::Value::ValueType::UNINIT:
-                    out << "Uninit";
-                    break;
-                case ValueFlow::Value::ValueType::BUFFER_SIZE:
-                case ValueFlow::Value::ValueType::CONTAINER_SIZE:
-                    out << "size=" << value.intvalue;
-                    break;
-                case ValueFlow::Value::ValueType::ITERATOR_START:
-                    out << "start=" << value.intvalue;
-                    break;
-                case ValueFlow::Value::ValueType::ITERATOR_END:
-                    out << "end=" << value.intvalue;
-                    break;
-                case ValueFlow::Value::ValueType::LIFETIME:
-                    out << "lifetime[" << ValueFlow::Value::toString(value.lifetimeKind) << "]=("
-                        << value.tokvalue->expressionString() << ")";
-                    break;
-                case ValueFlow::Value::ValueType::SYMBOLIC:
-                    out << "symbolic=(" << value.tokvalue->expressionString();
-                    if (value.intvalue > 0)
-                        out << "+" << value.intvalue;
-                    else if (value.intvalue < 0)
-                        out << "-" << -value.intvalue;
-                    out << ")";
-                    break;
-                }
-                if (value.indirect > 0)
-                    for (int i=0; i<value.indirect; i++)
-                        out << "*";
-                if (value.path > 0)
-                    out << "@" << value.path;
+                out << value.toString();
             }
         }
         if (xml)
@@ -2244,23 +2197,17 @@ const ::Type* Token::typeOf(const Token* tok, const Token** typeTok)
     if (typeTok != nullptr)
         *typeTok = tok;
     const Token* lhsVarTok{};
-    if (Token::simpleMatch(tok, "return")) {
+    if (tok->type()) {
+        return tok->type();
+    } else if (tok->variable()) {
+        return tok->variable()->type();
+    } else if (tok->function()) {
+        return tok->function()->retType;
+    } else if (Token::simpleMatch(tok, "return")) {
         const Scope *scope = tok->scope();
         if (!scope)
             return nullptr;
         const Function *function = scope->function;
-        if (!function)
-            return nullptr;
-        return function->retType;
-    } else if (Token::Match(tok, "%type%")) {
-        return tok->type();
-    } else if (Token::Match(tok, "%var%")) {
-        const Variable *var = tok->variable();
-        if (!var)
-            return nullptr;
-        return var->type();
-    } else if (Token::Match(tok, "%name%")) {
-        const Function *function = tok->function();
         if (!function)
             return nullptr;
         return function->retType;
@@ -2298,20 +2245,10 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
 {
     if (!tok)
         return {};
-    if (Token::simpleMatch(tok, "return")) {
-        const Scope *scope = tok->scope();
-        if (!scope)
-            return {};
-        const Function *function = scope->function;
-        if (!function)
-            return {};
-        return {function->retDef, function->returnDefEnd()};
-    } else if (Token::Match(tok, "%type%")) {
+    else if (tok->type()) {
         return {tok, tok->next()};
-    } else if (Token::Match(tok, "%var%")) {
+    } else if (tok->variable()) {
         const Variable *var = tok->variable();
-        if (!var)
-            return {};
         if (!var->typeStartToken() || !var->typeEndToken())
             return {};
         if (Token::simpleMatch(var->typeStartToken(), "auto")) {
@@ -2325,10 +2262,16 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
             }
         }
         return {var->typeStartToken(), var->typeEndToken()->next()};
-    } else if (Token::Match(tok->previous(), "%name% (")) {
-        const Function *function = tok->previous()->function();
+    } else if (Token::simpleMatch(tok, "return")) {
+        const Scope* scope = tok->scope();
+        if (!scope)
+            return {};
+        const Function* function = scope->function;
         if (!function)
             return {};
+        return { function->retDef, function->returnDefEnd() };
+    } else if (tok->previous() && tok->previous()->function()) {
+        const Function *function = tok->previous()->function();
         return {function->retDef, function->returnDefEnd()};
     } else if (Token::simpleMatch(tok, "=")) {
         return Token::typeDecl(tok->astOperand1());

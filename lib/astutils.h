@@ -53,7 +53,11 @@ void visitAstNodes(T *ast, const TFunc &visitor)
     if (!ast)
         return;
 
-    std::stack<T *, std::vector<T *>> tokens;
+    std::vector<T *> tokensContainer;
+    // the size of 8 was determined in tests to be sufficient to avoid excess allocations. also add 1 as a buffer.
+    // we might need to increase that value in the future.
+    tokensContainer.reserve(8 + 1);
+    std::stack<T *, std::vector<T *>> tokens(std::move(tokensContainer));
     T *tok = ast;
     do {
         ChildrenToVisit c = visitor(tok);
@@ -79,7 +83,20 @@ void visitAstNodes(T *ast, const TFunc &visitor)
     } while (true);
 }
 
-const Token* findAstNode(const Token* ast, const std::function<bool(const Token*)>& pred);
+template<class TFunc>
+const Token* findAstNode(const Token* ast, const TFunc& pred)
+{
+    const Token* result = nullptr;
+    visitAstNodes(ast, [&](const Token* tok) {
+        if (pred(tok)) {
+            result = tok;
+            return ChildrenToVisit::done;
+        }
+        return ChildrenToVisit::op1_and_op2;
+    });
+    return result;
+}
+
 const Token* findExpression(const nonneg int exprid,
                             const Token* start,
                             const Token* end,
@@ -121,6 +138,9 @@ bool astIsContainer(const Token *tok);
 
 bool astIsContainerView(const Token* tok);
 bool astIsContainerOwned(const Token* tok);
+
+/** Is given token a range-declaration in a range-based for loop */
+bool astIsRangeBasedForDecl(const Token* tok);
 
 /**
  * Get canonical type of expression. const/static/etc are not included and neither *&.

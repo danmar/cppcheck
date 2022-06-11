@@ -30,10 +30,30 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <mqueue.h>
 #define _XOPEN_SOURCE
 #include <wchar.h>
 #include <string.h>
 #include <strings.h>
+
+int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio)
+{
+    // No warning is expected for:
+    const char msg = '0';
+    (void) mq_send(mqdes, &msg, 1, 0);
+    return mq_send(mqdes, msg_ptr, msg_len, 0);
+}
+
+void invalidFunctionArgStr_mbsnrtowcs(void)
+{
+    wchar_t wenough[10];
+    mbstate_t s;
+    memset (&s, '\0', sizeof (s));
+    const char* cp = "ABC";
+    wcscpy (wenough, L"DEF");
+    // No warning is expected for - #11119
+    if (mbsnrtowcs (wenough, &cp, 1, 10, &s) != 1 || wcscmp (wenough, L"AEF") != 0) {}
+}
 
 int nullPointer_getpwuid_r(uid_t uid, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
 {
@@ -537,8 +557,10 @@ void bufferAccessOutOfBounds_bzero(void *s, size_t n)
 
 size_t bufferAccessOutOfBounds_strnlen(const char *s, size_t maxlen)
 {
-    char buf[2]={'4','2'};
+    const char buf[2]={'4','2'};
+    // cppcheck-suppress invalidFunctionArgStr
     size_t len = strnlen(buf,2);
+    // cppcheck-suppress invalidFunctionArgStr
     // cppcheck-suppress bufferAccessOutOfBounds
     len+=strnlen(buf,3);
     return len;

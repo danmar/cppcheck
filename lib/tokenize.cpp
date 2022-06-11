@@ -2041,11 +2041,16 @@ namespace {
                         base += ' ';
                     base += tok->str();
                     tok = tok->next();
-                    // skip template parameters
+                    // add template parameters
                     if (tok && tok->str() == "<") {
-                        tok = tok->findClosingBracket();
-                        if (tok)
-                            tok = tok->next();
+                        const Token* endTok = tok->findClosingBracket();
+                        if (endTok) {
+                            endTok = endTok->next();
+                            while (tok != endTok) {
+                                base += tok->str();
+                                tok = tok->next();
+                            }
+                        }
                     }
                 }
                 baseTypes.insert(base);
@@ -4855,6 +4860,9 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     createLinks();
 
+    // Simplify debug intrinsics
+    simplifyDebug();
+
     removePragma();
 
     // Simplify the C alternative tokens (and, or, etc.)
@@ -5267,15 +5275,6 @@ bool Tokenizer::simplifyTokenList2()
         tok->clearValueFlow();
     }
 
-    // Convert e.g. atol("0") into 0
-    simplifyMathFunctions();
-
-    // f(x=g())   =>   x=g(); f(x)
-    simplifyAssignmentInFunctionCall();
-
-    // ";a+=b;" => ";a=a+b;"
-    simplifyCompoundAssignment();
-
     simplifyCharAt();
 
     // simplify references
@@ -5305,8 +5304,6 @@ bool Tokenizer::simplifyTokenList2()
     // Replace "&str[num]" => "(str + num)"
     simplifyOffsetPointerReference();
 
-    removeRedundantAssignment();
-
     simplifyRealloc();
 
     // Change initialisation of variable to assignment
@@ -5315,7 +5312,6 @@ bool Tokenizer::simplifyTokenList2()
     // Simplify variable declarations
     simplifyVarDecl(false);
 
-    simplifyErrNoInWhile();
     simplifyIfAndWhileAssign();
     simplifyRedundantParentheses();
     simplifyNestedStrcat();
@@ -5368,8 +5364,6 @@ bool Tokenizer::simplifyTokenList2()
 
     simplifyReturnStrncat();
 
-    removeRedundantAssignment();
-
     simplifyComma();
 
     removeRedundantSemicolons();
@@ -5379,8 +5373,6 @@ bool Tokenizer::simplifyTokenList2()
     simplifyRedundantConsecutiveBraces();
 
     simplifyEmptyNamespaces();
-
-    simplifyMathFunctions();
 
     validate();
 
@@ -5916,59 +5908,6 @@ void Tokenizer::addSemicolonAfterUnknownMacro()
 }
 //---------------------------------------------------------------------------
 
-void Tokenizer::removeRedundantAssignment()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "{")
-            tok = tok->link();
-
-        const Token * const start = const_cast<Token *>(startOfExecutableScope(tok));
-        if (start) {
-            tok = start->previous();
-            // parse in this function..
-            std::set<int> localvars;
-            const Token * const end = tok->next()->link();
-            for (Token * tok2 = tok->next(); tok2 && tok2 != end; tok2 = tok2->next()) {
-                // skip local class or struct
-                if (Token::Match(tok2, "class|struct %type% {|:")) {
-                    // skip to '{'
-                    tok2 = tok2->tokAt(2);
-                    while (tok2 && tok2->str() != "{")
-                        tok2 = tok2->next();
-
-                    if (tok2)
-                        tok2 = tok2->link(); // skip local class or struct
-                    else
-                        return;
-                } else if (Token::Match(tok2, "[;{}] %type% * %name% ;") && tok2->next()->str() != "return") {
-                    tok2 = tok2->tokAt(3);
-                    localvars.insert(tok2->varId());
-                } else if (Token::Match(tok2, "[;{}] %type% %name% ;") && tok2->next()->isStandardType()) {
-                    tok2 = tok2->tokAt(2);
-                    localvars.insert(tok2->varId());
-                } else if (tok2->varId() &&
-                           !Token::Match(tok2->previous(), "[;{}] %name% = %char%|%num%|%name% ;")) {
-                    localvars.erase(tok2->varId());
-                }
-            }
-            localvars.erase(0);
-            if (!localvars.empty()) {
-                for (Token *tok2 = tok->next(); tok2 && tok2 != end;) {
-                    if (Token::Match(tok2, "[;{}] %type% %name% ;") && localvars.find(tok2->tokAt(2)->varId()) != localvars.end()) {
-                        tok2->deleteNext(3);
-                    } else if ((Token::Match(tok2, "[;{}] %type% * %name% ;") &&
-                                localvars.find(tok2->tokAt(3)->varId()) != localvars.end()) ||
-                               (Token::Match(tok2, "[;{}] %name% = %any% ;") &&
-                                localvars.find(tok2->next()->varId()) != localvars.end())) {
-                        tok2->deleteNext(4);
-                    } else
-                        tok2 = tok2->next();
-                }
-            }
-        }
-    }
-}
-
 void Tokenizer::simplifyRealloc()
 {
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -6448,117 +6387,6 @@ Token *Tokenizer::simplifyAddBracesPair(Token *tok, bool commandWithCondition)
     }
 
     return tokBracesEnd;
-}
-
-void Tokenizer::simplifyCompoundAssignment()
-{
-    // Simplify compound assignments:
-    // "a+=b" => "a = a + b"
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "[;{}] (| *| (| %name%"))
-            continue;
-        if (tok->next()->str() == "return")
-            continue;
-        // backup current token..
-        Token * const tok1 = tok;
-
-        if (tok->next()->str() == "*")
-            tok = tok->next();
-
-        if (tok->next() && tok->next()->str() == "(") {
-            tok = tok->next()->link()->next();
-        } else {
-            // variable..
-            tok = tok->tokAt(2);
-            while (Token::Match(tok, ". %name%") ||
-                   Token::Match(tok, "[|(")) {
-                if (tok->str() == ".")
-                    tok = tok->tokAt(2);
-                else {
-                    // goto "]" or ")"
-                    tok = tok->link();
-
-                    // goto next token..
-                    tok = tok ? tok->next() : nullptr;
-                }
-            }
-        }
-        if (!tok)
-            break;
-
-        // Is current token at a compound assignment: +=|-=|.. ?
-        const std::string &str = tok->str();
-        std::string op;  // operator used in assignment
-        if (tok->isAssignmentOp() && str.size() == 2)
-            op = str.substr(0, 1);
-        else if (tok->isAssignmentOp() && str.size() == 3)
-            op = str.substr(0, 2);
-        else {
-            tok = tok1;
-            continue;
-        }
-
-        // Remove the whole statement if it says: "+=0;", "-=0;", "*=1;" or "/=1;"
-        if (Token::Match(tok, "+=|-= 0 ;") ||
-            Token::simpleMatch(tok, "|= 0 ;") ||
-            Token::Match(tok, "*=|/= 1 ;")) {
-            tok = tok1;
-            while (tok->next()->str() != ";")
-                tok->deleteNext();
-        } else {
-            // Enclose the rhs in parentheses..
-            if (!Token::Match(tok->tokAt(2), "[;)]")) {
-                // Only enclose rhs in parentheses if there is some operator
-                bool someOperator = false;
-                for (Token *tok2 = tok->next(); tok2; tok2 = tok2->next()) {
-                    if (tok2->link() && Token::Match(tok2, "{|[|("))
-                        tok2 = tok2->link();
-
-                    if (Token::Match(tok2->next(), "[;)]")) {
-                        if (someOperator) {
-                            tok->insertToken("(");
-                            tok2->insertToken(")");
-                            Token::createMutualLinks(tok->next(), tok2->next());
-                        }
-                        break;
-                    }
-
-                    someOperator |= (tok2->isOp() || tok2->str() == "?");
-                }
-            }
-
-            // simplify the compound assignment..
-            tok->str("=");
-            tok->insertToken(op);
-
-            std::stack<Token *> tokend;
-            for (Token *tok2 = tok->previous(); tok2 && tok2 != tok1; tok2 = tok2->previous()) {
-                // Don't duplicate ++ and --. Put preincrement in lhs. Put
-                // postincrement in rhs.
-                if (tok2->tokType() == Token::eIncDecOp) {
-                    // pre increment/decrement => don't copy
-                    if (tok2->next()->isName()) {
-                        continue;
-                    }
-
-                    // post increment/decrement => move from lhs to rhs
-                    tok->insertToken(tok2->str());
-                    tok2->deleteThis();
-                    continue;
-                }
-
-                // Copy token from lhs to rhs
-                tok->insertToken(tok2->str());
-                tok->next()->varId(tok2->varId());
-                if (Token::Match(tok->next(), "]|)|}"))
-                    tokend.push(tok->next());
-                else if (Token::Match(tok->next(), "(|[|{")) {
-                    Token::createMutualLinks(tok->next(), tokend.top());
-                    tokend.pop();
-                }
-            }
-        }
-    }
 }
 
 bool Tokenizer::simplifyConditions()
@@ -9674,16 +9502,6 @@ static bool isNumberOneOf(const std::string &s, const MathLib::bigint& intConsta
 }
 
 // ------------------------------------------------------------------------
-// Helper function to check whether number is zero (0 or 0.0 or 0E+0) or not?
-// @param s the string to check
-// @return true in case s is zero and false otherwise.
-// ------------------------------------------------------------------------
-bool Tokenizer::isZeroNumber(const std::string &s)
-{
-    return isNumberOneOf(s, 0L, "0.0");
-}
-
-// ------------------------------------------------------------------------
 // Helper function to check whether number is one (1 or 0.1E+1 or 1E+0) or not?
 // @param s the string to check
 // @return true in case s is one and false otherwise.
@@ -9705,187 +9523,6 @@ bool Tokenizer::isTwoNumber(const std::string &s)
     if (!MathLib::isPositive(s))
         return false;
     return isNumberOneOf(s, 2L, "2.0");
-}
-
-// ------------------------------------------------------
-// Simplify math functions.
-// It simplifies the following functions: atol(), fmin(),
-// fminl(), fminf(), fmax(), fmaxl(), fmaxf(), pow(),
-// powf(), powl(), cbrt(), cbrtl(), cbtrf(), sqrt(),
-// sqrtf(), sqrtl(), exp(), expf(), expl(), exp2(),
-// exp2f(), exp2l(), log2(), log2f(), log2l(), log1p(),
-// log1pf(), log1pl(), log10(), log10l(), log10f(),
-// log(), logf(), logl(), logb(), logbf(), logbl(), acosh()
-// acoshf(), acoshl(), acos(), acosf(), acosl(), cosh()
-// coshf(), coshf(), cos(), cosf(), cosl(), erfc(),
-// erfcf(), erfcl(), ilogb(), ilogbf(), ilogbf(), erf(),
-// erfl(), erff(), asin(), asinf(), asinf(), asinh(),
-// asinhf(), asinhl(), tan(), tanf(), tanl(), tanh(),
-// tanhf(), tanhl(), atan(), atanf(), atanl(), atanh(),
-// atanhf(), atanhl(), expm1(), expm1l(), expm1f(), sin(),
-// sinf(), sinl(), sinh(), sinhf(), sinhl()
-// in the tokenlist.
-//
-// Reference:
-// - http://www.cplusplus.com/reference/cmath/
-// ------------------------------------------------------
-void Tokenizer::simplifyMathFunctions()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->isName() && !tok->varId() && tok->strAt(1) == "(") { // precondition for function
-            bool simplifcationMade = false;
-            if (Token::Match(tok, "atol ( %str% )")) { //@todo Add support for atoll()
-                if (Token::simpleMatch(tok->tokAt(-2), "std ::")) {
-                    tok = tok->tokAt(-2);// set token index two steps back
-                    tok->deleteNext(2);  // delete "std ::"
-                }
-                const std::string& strNumber = tok->tokAt(2)->strValue(); // get number
-                const bool isNotAnInteger = (!MathLib::isInt(strNumber));// check: is not an integer
-                if (strNumber.empty() || isNotAnInteger) {
-                    // Ignore strings which we can't convert
-                    continue;
-                }
-                // Convert string into a number and insert into token list
-                tok->str(MathLib::toString(MathLib::toLongNumber(strNumber)));
-                // remove ( %num% )
-                tok->deleteNext(3);
-                simplifcationMade = true;
-            } else if (Token::Match(tok, "sqrt|sqrtf|sqrtl|cbrt|cbrtf|cbrtl ( %num% )")) {
-                // Simplify: sqrt(0) = 0 and cbrt(0) == 0
-                //           sqrt(1) = 1 and cbrt(1) == 1
-                // get number string
-                const std::string& parameter(tok->strAt(2));
-                // is parameter 0 ?
-                if (isZeroNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("0"); // insert result into token list
-                    simplifcationMade = true;
-                } else if (isOneNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("1"); // insert result into token list
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "exp|expf|expl|exp2|exp2f|exp2l|cos|cosf|cosl|cosh|coshf|coshl|erfc|erfcf|erfcl ( %num% )")) {
-                // Simplify: exp[f|l](0)  = 1 and exp2[f|l](0) = 1
-                //           cosh[f|l](0) = 1 and cos[f|l](0)  = 1
-                //           erfc[f|l](0) = 1
-                // get number string
-                const std::string& parameter(tok->strAt(2));
-                // is parameter 0 ?
-                if (isZeroNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("1"); // insert result into token list
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "log1p|log1pf|log1pl|sin|sinf|sinl|sinh|sinhf|sinhl|erf|erff|erfl|asin|asinf|asinl|asinh|asinhf|asinhl|tan|tanf|tanl|tanh|tanhf|tanhl|atan|atanf|atanl|atanh|atanhf|atanhl|expm1|expm1f|expm1l ( %num% )")) {
-                // Simplify: log1p[f|l](0) = 0 and sin[f|l](0)  = 0
-                //           sinh[f|l](0)  = 0 and erf[f|l](0)  = 0
-                //           asin[f|l](0)  = 0 and sinh[f|l](0) = 0
-                //           tan[f|l](0)   = 0 and tanh[f|l](0) = 0
-                //           atan[f|l](0)  = 0 and atanh[f|l](0)= 0
-                //           expm1[f|l](0) = 0
-                // get number string
-                const std::string& parameter(tok->strAt(2));
-                // is parameter 0 ?
-                if (isZeroNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("0"); // insert result into token list
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "log2|log2f|log2l|log|logf|logl|log10|log10f|log10l|logb|logbf|logbl|acosh|acoshf|acoshl|acos|acosf|acosl|ilogb|ilogbf|ilogbl ( %num% )")) {
-                // Simplify: log2[f|l](1)  = 0 , log10[f|l](1)  = 0
-                //           log[f|l](1)   = 0 , logb10[f|l](1) = 0
-                //           acosh[f|l](1) = 0 , acos[f|l](1)   = 0
-                //           ilogb[f|l](1) = 0
-                // get number string
-                const std::string& parameter(tok->strAt(2));
-                // is parameter 1 ?
-                if (isOneNumber(parameter)) {
-                    tok->deleteNext(3);  // delete tokens
-                    tok->str("0"); // insert result into token list
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "fmin|fminl|fminf ( %num% , %num% )")) {
-                // @todo if one of the parameters is NaN the other is returned
-                // e.g. printf ("fmin (NaN, -1.0) = %f\n", fmin(NaN,-1.0));
-                // e.g. printf ("fmin (-1.0, NaN) = %f\n", fmin(-1.0,NaN));
-                const std::string& strLeftNumber(tok->strAt(2));
-                const std::string& strRightNumber(tok->strAt(4));
-                const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
-                // case: left <= right ==> insert left
-                if (isLessEqual) {
-                    tok->str(strLeftNumber); // insert e.g. -1.0
-                    tok->deleteNext(5);      // delete e.g. fmin ( -1.0, 1.0 )
-                    simplifcationMade = true;
-                } else { // case left > right ==> insert right
-                    tok->str(strRightNumber); // insert e.g. 0.0
-                    tok->deleteNext(5);       // delete e.g. fmin ( 1.0, 0.0 )
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "fmax|fmaxl|fmaxf ( %num% , %num% )")) {
-                // @todo if one of the parameters is NaN the other is returned
-                // e.g. printf ("fmax (NaN, -1.0) = %f\n", fmax(NaN,-1.0));
-                // e.g. printf ("fmax (-1.0, NaN) = %f\n", fmax(-1.0,NaN));
-                const std::string& strLeftNumber(tok->strAt(2));
-                const std::string& strRightNumber(tok->strAt(4));
-                const bool isLessEqual =  MathLib::isLessEqual(strLeftNumber, strRightNumber);
-                // case: left <= right ==> insert right
-                if (isLessEqual) {
-                    tok->str(strRightNumber);// insert e.g. 1.0
-                    tok->deleteNext(5);      // delete e.g. fmax ( -1.0, 1.0 )
-                    simplifcationMade = true;
-                } else { // case left > right ==> insert left
-                    tok->str(strLeftNumber);  // insert e.g. 1.0
-                    tok->deleteNext(5);       // delete e.g. fmax ( 1.0, 0.0 )
-                    simplifcationMade = true;
-                }
-            } else if (Token::Match(tok, "pow|powf|powl (")) {
-                if (Token::Match(tok->tokAt(2), "%num% , %num% )")) {
-                    // In case of pow ( 0 , anyNumber > 0): It can be simplified to 0
-                    // In case of pow ( 0 , 0 ): It simplified to 1
-                    // In case of pow ( 1 , anyNumber ): It simplified to 1
-                    const std::string& leftNumber(tok->strAt(2)); // get the left parameter
-                    const std::string& rightNumber(tok->strAt(4)); // get the right parameter
-                    const bool isLeftNumberZero = isZeroNumber(leftNumber);
-                    const bool isLeftNumberOne = isOneNumber(leftNumber);
-                    const bool isRightNumberZero = isZeroNumber(rightNumber);
-                    if (isLeftNumberZero && !isRightNumberZero && MathLib::isPositive(rightNumber)) { // case: 0^(y) = 0 and y > 0
-                        tok->deleteNext(5); // delete tokens
-                        tok->str("0");  // insert simplified result
-                        simplifcationMade = true;
-                    } else if (isLeftNumberZero && isRightNumberZero) { // case: 0^0 = 1
-                        tok->deleteNext(5); // delete tokens
-                        tok->str("1");  // insert simplified result
-                        simplifcationMade = true;
-                    } else if (isLeftNumberOne) { // case 1^(y) = 1
-                        tok->deleteNext(5); // delete tokens
-                        tok->str("1");  // insert simplified result
-                        simplifcationMade = true;
-                    }
-                }
-                if (Token::Match(tok->tokAt(2), "%any% , %num% )")) {
-                    // In case of pow( x , 1 ): It can be simplified to x.
-                    const std::string& leftParameter(tok->strAt(2)); // get the left parameter
-                    const std::string& rightNumber(tok->strAt(4)); // get right number
-                    if (isOneNumber(rightNumber)) { // case: x^(1) = x
-                        tok->str(leftParameter);  // insert simplified result
-                        tok->deleteNext(5); // delete tokens
-                        simplifcationMade = true;
-                    } else if (isZeroNumber(rightNumber)) { // case: x^(0) = 1
-                        tok->deleteNext(5); // delete tokens
-                        tok->str("1");  // insert simplified result
-                        simplifcationMade = true;
-                    }
-                }
-            }
-            // Jump back to begin of statement if a simplification was performed
-            if (simplifcationMade) {
-                while (tok->previous() && tok->str() != ";") {
-                    tok = tok->previous();
-                }
-            }
-        }
-    }
 }
 
 void Tokenizer::simplifyComma()
@@ -10710,35 +10347,6 @@ void Tokenizer::simplifyFunctionTryCatch()
     }
 }
 
-void Tokenizer::simplifyErrNoInWhile()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() != "errno")
-            continue;
-
-        Token *endpar = nullptr;
-        if (Token::Match(tok->previous(), "&& errno == EINTR ) { ;| }"))
-            endpar = tok->tokAt(3);
-        else if (Token::Match(tok->tokAt(-2), "&& ( errno == EINTR ) ) { ;| }"))
-            endpar = tok->tokAt(4);
-        else
-            continue;
-
-        if (Token::simpleMatch(endpar->link()->previous(), "while (")) {
-            Token *tok1 = tok->previous();
-            if (tok1->str() == "(")
-                tok1 = tok1->previous();
-
-            // erase "&& errno == EINTR"
-            tok1 = tok1->previous();
-            Token::eraseTokens(tok1, endpar);
-
-            // tok is invalid.. move to endpar
-            tok = endpar;
-        }
-    }
-}
-
 
 void Tokenizer::simplifyFuncInWhile()
 {
@@ -11333,41 +10941,29 @@ void Tokenizer::simplifyKeyword()
     }
 }
 
-void Tokenizer::simplifyAssignmentInFunctionCall()
+static Token* setTokenDebug(Token* start, TokenDebug td)
 {
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() == "(")
-            tok = tok->link();
+    if (!start->link())
+        return nullptr;
+    Token* end = start->link();
+    start->deleteThis();
+    for (Token* tok = start; tok != end; tok = tok->next()) {
+        tok->setTokenDebug(td);
+    }
+    end->deleteThis();
+    return end;
+}
 
-        // Find 'foo(var='. Exclude 'assert(var=' to allow tests to check that assert(...) does not contain side-effects
-        else if (Token::Match(tok, "[;{}] %name% ( %name% =") &&
-                 Token::simpleMatch(tok->linkAt(2), ") ;") &&
-                 !Token::Match(tok->next(), "assert|while")) {
-            const std::string& funcname(tok->next()->str());
-            Token* const vartok = tok->tokAt(3);
-
-            // Goto ',' or ')'..
-            for (Token *tok2 = vartok->tokAt(2); tok2; tok2 = tok2->next()) {
-                if (tok2->link() && Token::Match(tok2, "(|[|{"))
-                    tok2 = tok2->link();
-                else if (tok2->str() == ";")
-                    break;
-                else if (Token::Match(tok2, ")|,")) {
-                    tok2 = tok2->previous();
-
-                    tok2->insertToken(vartok->str());
-                    tok2->next()->varId(vartok->varId());
-
-                    tok2->insertToken("(");
-                    Token::createMutualLinks(tok2->next(), tok->linkAt(2));
-
-                    tok2->insertToken(funcname);
-                    tok2->insertToken(";");
-
-                    Token::eraseTokens(tok, vartok);
-                    break;
-                }
-            }
+void Tokenizer::simplifyDebug()
+{
+    if (!mSettings->debugnormal && !mSettings->debugwarnings)
+        return;
+    for (Token* tok = list.front(); tok; tok = tok->next()) {
+        if (!Token::Match(tok, "%name% ("))
+            continue;
+        if (Token::simpleMatch(tok, "debug_valueflow")) {
+            tok->deleteThis();
+            tok = setTokenDebug(tok, TokenDebug::ValueFlow);
         }
     }
 }
@@ -12365,7 +11961,7 @@ void Tokenizer::printUnknownTypes() const
     if (!mSymbolDatabase)
         return;
 
-    std::multimap<std::string, const Token *> unknowns;
+    std::vector<std::pair<std::string, const Token *>> unknowns;
 
     for (int i = 1; i <= mVarId; ++i) {
         const Variable *var = mSymbolDatabase->getVariableFromVarId(i);
@@ -12414,14 +12010,14 @@ void Tokenizer::printUnknownTypes() const
             }
         }
 
-        unknowns.insert(std::pair<std::string, const Token *>(name, nameTok));
+        unknowns.emplace_back(std::make_pair(name, nameTok));
     }
 
     if (!unknowns.empty()) {
         std::string last;
         int count = 0;
 
-        for (std::multimap<std::string, const Token *>::const_iterator it = unknowns.begin(); it != unknowns.end(); ++it) {
+        for (auto it = unknowns.begin(); it != unknowns.end(); ++it) {
             // skip types is std namespace because they are not interesting
             if (it->first.find("std::") != 0) {
                 if (it->first != last) {

@@ -145,7 +145,6 @@ private:
         TEST_CASE(simplifyExternC);
         TEST_CASE(simplifyKeyword); // #5842 - remove C99 static keyword between []
 
-        TEST_CASE(isZeroNumber);
         TEST_CASE(isOneNumber);
         TEST_CASE(isTwoNumber);
 
@@ -5626,24 +5625,6 @@ private:
         const char code2[] = "LPCVOID a; ::LPCVOID b; foo::LPCVOID c;";
         const char expected2[] = "const void * a ; const void * b ; foo :: LPCVOID c ;";
         ASSERT_EQUALS(expected2, tokenizeAndStringifyWindows(code2, true, Settings::Win32A));
-    }
-
-    void isZeroNumber() const {
-        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("0.0"));
-        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("+0.0"));
-        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("-0.0"));
-        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("+0L"));
-        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("+0"));
-        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("-0"));
-        ASSERT_EQUALS(true, Tokenizer::isZeroNumber("-0E+0"));
-
-        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("1.0"));
-        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("+1.0"));
-        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("-1"));
-        ASSERT_EQUALS(false, Tokenizer::isZeroNumber(""));
-        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("garbage"));
-        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("E2"));
-        ASSERT_EQUALS(false, Tokenizer::isZeroNumber("2e"));
     }
 
     void isOneNumber() const {

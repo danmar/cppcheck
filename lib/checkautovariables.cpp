@@ -214,7 +214,7 @@ void CheckAutoVariables::assignFunctionArg()
             // TODO: What happens if this is removed?
             if (tok->astParent())
                 continue;
-            if (!(tok->isAssignmentOp() || Token::Match(tok, "++|--")) || !Token::Match(tok->astOperand1(), "%var%"))
+            if (!(tok->isAssignmentOp() || tok->tokType() == Token::eIncDecOp) || !Token::Match(tok->astOperand1(), "%var%"))
                 continue;
             const Token* const vartok = tok->astOperand1();
             if (isNonReferenceArg(vartok) &&

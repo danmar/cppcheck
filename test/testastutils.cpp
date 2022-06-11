@@ -144,7 +144,7 @@ private:
         const Token * const tok = (offset < 0)
                                   ? tokenizer.list.back()->tokAt(1+offset)
                                   : tokenizer.tokens()->tokAt(offset);
-        return (::isReturnScope)(tok);
+        return (isReturnScope)(tok);
     }
 
     void isReturnScopeTest() {
@@ -176,7 +176,7 @@ private:
         tokenizer.simplifyTokens1("");
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), tokStr1, strlen(tokStr1));
         const Token * const tok2 = Token::findsimplematch(tok1->next(), tokStr2, strlen(tokStr2));
-        return (::isSameExpression)(false, false, tok1, tok2, library, false, true, nullptr);
+        return (isSameExpression)(false, false, tok1, tok2, library, false, true, nullptr);
     }
 
     void isSameExpressionTest() {
@@ -214,7 +214,7 @@ private:
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const tok1 = Token::findsimplematch(tokenizer.tokens(), startPattern, strlen(startPattern));
         const Token * const tok2 = Token::findsimplematch(tokenizer.tokens(), endPattern, strlen(endPattern));
-        return (::isVariableChanged)(tok1, tok2, 1, false, &settings, true);
+        return (isVariableChanged)(tok1, tok2, 1, false, &settings, true);
     }
 
     void isVariableChangedTest() {
@@ -236,7 +236,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
         const Token * const argtok = Token::findmatch(tokenizer.tokens(), pattern);
-        return (::isVariableChangedByFunctionCall)(argtok, 0, &settings, inconclusive);
+        return (isVariableChangedByFunctionCall)(argtok, 0, &settings, inconclusive);
     }
 
     void isVariableChangedByFunctionCallTest() {

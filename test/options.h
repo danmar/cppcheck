@@ -38,10 +38,9 @@ public:
 
     const std::string& exe() const;
 
-private:
-    options();
-    options(const options& non_copy);
-    const options& operator =(const options& non_assign);
+    options() = delete;
+    options(const options&) = delete;
+    options& operator =(const options&) = delete;
 
 private:
     std::set<std::string> mWhichTests;

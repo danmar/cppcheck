@@ -887,6 +887,24 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n" // #11082
+              "    int j = 0;\n"
+              "    if (i | j) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Operator '|' with one operand equal to zero is redundant.\n", errout.str());
+
+        check("#define EIGHTTOIS(x) (((x) << 8) | (x))\n"
+              "int f() {\n"
+              "    return EIGHTTOIS(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("#define O_RDONLY 0\n"
+              "void f(const char* s, int* pFd) {\n"
+              "    *pFd = open(s, O_RDONLY | O_BINARY, 0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -4178,6 +4196,29 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: s.bar(1) == 0 && s.bar(1) > 0.\n",
                       errout.str());
+
+        check("struct B {\n" // #10618
+              "    void Modify();\n"
+              "    static void Static();\n"
+              "    virtual void CalledByModify();\n"
+              "};\n"
+              "struct D : B {\n"
+              "    int i{};\n"
+              "    void testV();\n"
+              "    void testS();\n"
+              "    void CalledByModify() override { i = 0; }\n"
+              "};\n"
+              "void D::testV() {\n"
+              "    i = 1;\n"
+              "    B::Modify();\n"
+              "    if (i == 1) {}\n"
+              "}\n"
+              "void D::testS() {\n"
+              "    i = 1;\n"
+              "    B::Static();\n"
+              "    if (i == 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:20]: (style) Condition 'i==1' is always true\n", errout.str());
     }
 
     void alwaysTrueSymbolic()

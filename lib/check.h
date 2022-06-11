@@ -69,6 +69,9 @@ public:
             instances().remove(this);
     }
 
+    Check(const Check &) = delete;
+    Check& operator=(const Check &) = delete;
+
     /** List of registered check classes. This is used by Cppcheck to run checks and generate documentation */
     static std::list<Check *> &instances();
 
@@ -159,9 +162,6 @@ protected:
      */
     bool wrongData(const Token *tok, const char *str);
 
-    /** disabled assignment operator and copy constructor */
-    void operator=(const Check &) = delete;
-    Check(const Check &) = delete;
 private:
     const std::string mName;
 };

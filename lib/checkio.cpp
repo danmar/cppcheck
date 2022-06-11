@@ -1340,7 +1340,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
 
     // Use AST type info
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
-    if (!Token::Match(arg, "%str% ,|)") && !(Token::Match(arg,"%var%") && arg->variable() && arg->variable()->isArray())) {
+    if (!Token::Match(arg, "%str% ,|)") && !(arg->variable() && arg->variable()->isArray())) {
         const Token *top = arg;
         while (top->str() == "(" && !top->isCast())
             top = top->next();
