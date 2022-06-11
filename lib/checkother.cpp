@@ -2769,7 +2769,7 @@ void CheckOther::checkRedundantCopy()
         const Token* dot = tok->astOperand1();
         if (Token::simpleMatch(dot, ".") && dot->astOperand1() && isVariableChanged(dot->astOperand1()->variable(), mSettings, mTokenizer->isCPP()))
             continue;
-        if (exprDependsOnThis(tok->previous())/* && !(tok->scope() && tok->scope()->function && tok->scope()->function->isConst())*/)
+        if (exprDependsOnThis(tok->previous()))
             continue;
 
         const Function* func = tok->previous()->function();
