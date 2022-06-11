@@ -1131,8 +1131,8 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
 
 const Library::Container* Library::detectContainer(const Token* typeStart, bool iterator) const
 {
-    for (std::map<std::string, Container>::const_iterator i = containers.begin(); i != containers.end(); ++i) {
-        const Container& container = i->second;
+    for (const auto &c : containers) {
+        const Container& container = c.second;
         if (container.startPattern.empty())
             continue;
 
@@ -1208,13 +1208,13 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName)
         return (callargs == 0);
     int args = 0;
     int firstOptionalArg = -1;
-    for (std::map<int, ArgumentChecks>::const_iterator it2 = it->second.argumentChecks.cbegin(); it2 != it->second.argumentChecks.cend(); ++it2) {
-        if (it2->first > args)
-            args = it2->first;
-        if (it2->second.optional && (firstOptionalArg == -1 || firstOptionalArg > it2->first))
-            firstOptionalArg = it2->first;
+    for (const auto & argCheck : it->second.argumentChecks) {
+        if (argCheck.first > args)
+            args = argCheck.first;
+        if (argCheck.second.optional && (firstOptionalArg == -1 || firstOptionalArg > argCheck.first))
+            firstOptionalArg = argCheck.first;
 
-        if (it2->second.formatstr || it2->second.variadic)
+        if (argCheck.second.formatstr || argCheck.second.variadic)
             return args <= callargs;
     }
     return (firstOptionalArg < 0) ? args == callargs : (callargs >= firstOptionalArg-1 && callargs <= args);
@@ -1287,9 +1287,9 @@ bool Library::formatstr_function(const Token* ftok) const
 int Library::formatstr_argno(const Token* ftok) const
 {
     const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = functions.at(getFunctionName(ftok)).argumentChecks;
-    for (std::map<int, Library::ArgumentChecks>::const_iterator i = argumentChecksFunc.cbegin(); i != argumentChecksFunc.cend(); ++i) {
-        if (i->second.formatstr) {
-            return i->first - 1;
+    for (const auto & argCheckFunc : argumentChecksFunc) {
+        if (argCheckFunc.second.formatstr) {
+            return argCheckFunc.first - 1;
         }
     }
     return -1;
@@ -1373,8 +1373,8 @@ bool Library::hasminsize(const Token *ftok) const
     const std::unordered_map<std::string, Function>::const_iterator it1 = functions.find(getFunctionName(ftok));
     if (it1 == functions.cend())
         return false;
-    for (std::map<int, ArgumentChecks>::const_iterator it2 = it1->second.argumentChecks.cbegin(); it2 != it1->second.argumentChecks.cend(); ++it2) {
-        if (!it2->second.minsizes.empty())
+    for (const auto & argCheck : it1->second.argumentChecks) {
+        if (!argCheck.second.minsizes.empty())
             return true;
     }
     return false;

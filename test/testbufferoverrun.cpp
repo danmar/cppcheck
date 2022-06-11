@@ -4784,6 +4784,14 @@ private:
         check("void f()\n"
               "{\n"
               "   int *a;\n"
+              "   a = new int[-1];\n"
+              "   delete [] a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   int *a;\n"
               "   a = (int *)malloc( -10 );\n"
               "   free(a);\n"
               "}");
@@ -4810,7 +4818,7 @@ private:
               "   int a[sz];\n"
               "}\n"
               "void x() { f(-100); }");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Declaration of array 'a' with negative size is undefined behaviour\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Declaration of array 'a' with negative size is undefined behaviour\n", errout.str());
 
         // don't warn for constant sizes -> this is a compiler error so this is used for static assertions for instance
         check("int x, y;\n"

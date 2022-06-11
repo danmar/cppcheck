@@ -2757,6 +2757,10 @@ void CheckOther::checkRedundantCopy()
         if (!Token::Match(tok->link(), ") )| ;")) // bailout for usage like "const A a = getA()+3"
             continue;
 
+        const Token* dot = tok->astOperand1();
+        if (Token::simpleMatch(dot, ".") && dot->astOperand1() && isVariableChanged(dot->astOperand1()->variable(), mSettings, mTokenizer->isCPP()))
+            continue;
+
         const Function* func = tok->previous()->function();
         if (func && func->tokenDef->strAt(-1) == "&") {
             redundantCopyError(startTok, startTok->str());

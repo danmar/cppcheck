@@ -743,7 +743,7 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
         if (parent->isUnaryOp("&")) {
             pvalue.indirect++;
             setTokenValue(parent, pvalue, settings);
-        } else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok) {
+        } else if (Token::Match(parent, ". %var%") && parent->astOperand1() == tok && parent->astOperand2()) {
             if (parent->originalName() == "->" && pvalue.indirect > 0)
                 pvalue.indirect--;
             setTokenValue(parent->astOperand2(), pvalue, settings);
@@ -2926,8 +2926,10 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
         assert(e && e->exprId() != 0 && "Not a valid expression");
         dependOnThis = exprDependsOnThis(expr);
         setupExprVarIds(expr);
-        if (val.isSymbolicValue())
+        if (val.isSymbolicValue()) {
+            dependOnThis |= exprDependsOnThis(val.tokvalue);
             setupExprVarIds(val.tokvalue);
+        }
     }
 
     static bool nonLocal(const Variable* var, bool deref) {
