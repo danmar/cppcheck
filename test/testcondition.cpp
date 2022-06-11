@@ -4363,9 +4363,9 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("void f(const std::string & s, int i) {\n"
-                  "    const char c = s[i];\n"
-                  "    if (!std::isalnum(c)) {}\n"
-                  "}\n");
+              "    const char c = s[i];\n"
+              "    if (!std::isalnum(c)) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
