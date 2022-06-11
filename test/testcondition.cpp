@@ -4483,6 +4483,20 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #11100
+        check("struct T {\n"
+              "  bool m{};\n"
+              "  void f(bool b);\n"
+              "  bool get() const { return m; }\n"
+              "  void set(bool v) { m = v; }\n"
+              "};\n"
+              "void T::f(bool b) {\n"
+              "	bool tmp = get();\n"
+              "	set(b);\n"
+              "	if (tmp != get()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #9541
         check("int f(int pos, int a) {\n"
               "    if (pos <= 0)\n"
