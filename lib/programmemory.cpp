@@ -581,6 +581,9 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     if (lhs.valueType != rhs.valueType && !lhs.isIntValue() && !rhs.isIntValue())
         return ValueFlow::Value::unknown();
     bool compareOp = contains({"==", "!=", "<", ">", ">=", "<="}, op);
+    // Comparison must be the same type
+    if (compareOp && lhs.valueType != rhs.valueType)
+        return ValueFlow::Value::unknown();
     // Only add, subtract, and compare for non-integers
     if (!compareOp && !contains({"+", "-"}, op) && !lhs.isIntValue() && !rhs.isIntValue())
         return ValueFlow::Value::unknown();
