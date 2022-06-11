@@ -10940,6 +10940,7 @@ void Tokenizer::simplifyKeyword()
 
     const bool c99 = isC() && mSettings->standards.c >= Standards::C99;
     const bool cpp11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
+    const bool cpp20 = isCPP() && mSettings->standards.cpp >= Standards::CPP20;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (keywords.find(tok->str()) != keywords.end()) {
@@ -10984,6 +10985,13 @@ void Tokenizer::simplifyKeyword()
         }
 
         else if (cpp11) {
+            if (cpp20 && tok->str() == "consteval") {
+                tok->originalName(tok->str());
+                tok->str("constexpr");
+            } else if (cpp20 && tok->str() == "constinit") {
+                tok->deleteThis();
+            }
+
             // final:
             // 1) struct name final { };   <- struct is final
             if (Token::Match(tok->previous(), "struct|class|union %type% final [:{]")) {
