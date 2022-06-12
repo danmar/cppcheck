@@ -1252,7 +1252,7 @@ public:
     ///< container element type.
     std::string originalTypeName;    ///< original type name as written in the source code. eg. this might be "uint8_t"
     ///< when type is CHAR.
-    ErrorPath debugPath;             ///< debug path to the type
+    ErrorPath debugPath; ///< debug path to the type
 
     ValueType()
         : sign(UNKNOWN_SIGN),
@@ -1493,9 +1493,9 @@ private:
 
     const Enumerator * findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const;
 
-    void setValueType(Token *tok, const ValueType &valuetype, SourceLocation loc = SourceLocation::current());
-    void setValueType(Token *tok, const Variable &var, SourceLocation loc = SourceLocation::current());
-    void setValueType(Token *tok, const Enumerator &enumerator, SourceLocation loc = SourceLocation::current());
+    void setValueType(Token* tok, const ValueType& valuetype, SourceLocation loc = SourceLocation::current());
+    void setValueType(Token* tok, const Variable& var, SourceLocation loc = SourceLocation::current());
+    void setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc = SourceLocation::current());
 
     const Tokenizer *mTokenizer;
     const Settings *mSettings;

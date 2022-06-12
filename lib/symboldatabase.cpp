@@ -1986,7 +1986,8 @@ void SymbolDatabase::debugSymbolDatabase() const
                 msg += "missing";
             }
             errorPath.emplace_back(tok, "");
-            mErrorLogger->reportErr({errorPath, &mTokenizer->list, Severity::debug, "valueType", msg, CWE{0}, Certainty::normal});
+            mErrorLogger->reportErr(
+                {errorPath, &mTokenizer->list, Severity::debug, "valueType", msg, CWE{0}, Certainty::normal});
         }
     }
 }
@@ -5896,9 +5897,13 @@ nonneg int SymbolDatabase::sizeOfType(const Token *type) const
     return size;
 }
 
-static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Settings* settings, SourceLocation loc = SourceLocation::current());
+static const Token* parsedecl(const Token* type,
+                              ValueType* const valuetype,
+                              ValueType::Sign defaultSignedness,
+                              const Settings* settings,
+                              SourceLocation loc = SourceLocation::current());
 
-void SymbolDatabase::setValueType(Token *tok, const Variable &var, SourceLocation loc)
+void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocation loc)
 {
     ValueType valuetype;
     if (mSettings->debugnormal || mSettings->debugwarnings)
@@ -5922,7 +5927,7 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var, SourceLocatio
     }
 }
 
-void SymbolDatabase::setValueType(Token *tok, const Enumerator &enumerator, SourceLocation loc)
+void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc)
 {
     ValueType valuetype;
     if (mSettings->debugnormal || mSettings->debugwarnings)
@@ -5971,7 +5976,7 @@ static bool isContainerYieldPointer(Library::Container::Yield yield)
     return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;
 }
 
-void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype, SourceLocation loc)
+void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, SourceLocation loc)
 {
     ValueType* valuetypePtr = new ValueType(valuetype);
     if (mSettings->debugnormal || mSettings->debugwarnings)
@@ -6384,7 +6389,11 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype, Source
     }
 }
 
-static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Settings* settings, SourceLocation loc)
+static const Token* parsedecl(const Token* type,
+                              ValueType* const valuetype,
+                              ValueType::Sign defaultSignedness,
+                              const Settings* settings,
+                              SourceLocation loc)
 {
     if (settings->debugnormal || settings->debugwarnings)
         valuetype->setDebugPath(type, loc);
