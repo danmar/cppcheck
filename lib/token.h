@@ -65,7 +65,7 @@ struct ScopeInfo2 {
     std::set<std::string> usingNamespaces;
 };
 
-enum class TokenDebug { None, ValueFlow };
+enum class TokenDebug { None, ValueFlow, ValueType };
 
 struct TokenImpl {
     nonneg int mVarId;

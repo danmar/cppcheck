@@ -1463,6 +1463,8 @@ private:
     // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
 
+    void debugSymbolDatabase() const;
+
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);

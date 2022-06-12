@@ -82,6 +82,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseEscapeFunctions();
     createSymbolDatabaseIncompleteVars();
     createSymbolDatabaseExprIds();
+    debugSymbolDatabase();
 }
 
 static const Token* skipScopeIdentifiers(const Token* tok)
@@ -1963,6 +1964,25 @@ void SymbolDatabase::validate() const
 void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &variableList)
 {
     mVariableList = variableList;
+}
+
+void SymbolDatabase::debugSymbolDatabase() const
+{
+    for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
+        if (tok->astParent() && tok->astParent()->getTokenDebug() == tok->getTokenDebug())
+            continue;
+        if (tok->getTokenDebug() == TokenDebug::ValueType) {
+
+            std::string msg = "Value type is ";
+            if (tok->valueType())
+                msg += tok->valueType()->str();
+            else
+                msg += "missing";
+            ErrorPath errorPath;
+            errorPath.emplace_back(tok, "");
+            mErrorLogger->reportErr({errorPath, &mTokenizer->list, Severity::debug, "valueType", msg, CWE{0}, Certainty::normal});
+        }
+    }
 }
 
 Variable::Variable(const Token *name_, const std::string &clangType, const Token *typeStart,
