@@ -2767,8 +2767,12 @@ void CheckOther::checkRedundantCopy()
             continue;
 
         const Token* dot = tok->astOperand1();
-        if (Token::simpleMatch(dot, ".") && dot->astOperand1() && isVariableChanged(dot->astOperand1()->variable(), mSettings, mTokenizer->isCPP()))
-            continue;
+        if (Token::simpleMatch(dot, ".")) {
+            if (dot->astOperand1() && isVariableChanged(dot->astOperand1()->variable(), mSettings, mTokenizer->isCPP()))
+                continue;
+            if (isTemporary(/*cpp*/ true, dot, &mSettings->library, /*unknown*/ true))
+                continue;
+        }
         if (exprDependsOnThis(tok->previous()))
             continue;
 

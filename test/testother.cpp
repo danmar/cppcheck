@@ -7597,6 +7597,19 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:8]: (performance, inconclusive) Use const reference for 's' to avoid unnecessary data copying.\n", errout.str());
+
+        check("struct C {\n"
+              "    const std::string & get() const { return m; }\n"
+              "    std::string m;\n"
+              "};\n"
+              "C getC();\n"
+              "void f() {\n"
+              "    const std::string s = getC().get();\n"
+              "}\n"
+              "void g() {\n"
+              "    std::string s = getC().get();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkNegativeShift() {
