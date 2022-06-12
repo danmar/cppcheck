@@ -4398,6 +4398,17 @@ private:
                "}\n";
         ASSERT_EQUALS(true, testValueOfX(code, 7U, 0));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 7U, 0));
+
+        code = "int f(int i) {\n"
+               "    int x = abs(i);\n"
+               "    return x;\n"
+               "}\n"
+               "void g() {\n"
+               "    f(1);\n"
+               "    f(0);\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 1));
+        ASSERT_EQUALS(true, testValueOfX(code, 3U, 0));
     }
     void valueFlowFunctionReturn() {
         const char *code;
