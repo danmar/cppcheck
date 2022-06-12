@@ -462,7 +462,7 @@ There are false positives with this option. Each result must be carefully invest
       </varlistentry>
       <varlistentry>
         <term>
-          <option>--max-ctu-depths=&lt;limit&gt;</option>
+          <option>--max-ctu-depth=&lt;limit&gt;</option>
         </term>
         <listitem>
           <para>Maximum depth in whole program analysis. Default is 2.</para>
