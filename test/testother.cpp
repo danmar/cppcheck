@@ -7509,6 +7509,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("class A {};\n"
+              "class B { B(const A& a); };\n"
+              "const A& getA();\n"
+              "void f() {\n"
+              "    const B b{ getA() };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #5618
         const char* code5618 = "class Token {\n"
                                "public:\n"
@@ -7556,6 +7564,24 @@ private:
               "        return old;\n"
               "    return {};\n"
               "}", nullptr, /*experimental*/ false, /*inconclusive*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct X { int x; };\n" // #10191
+              "struct S {\n"
+              "    X _x;\n"
+              "    X& get() { return _x; }\n"
+              "    void modify() { _x.x += 42; }\n"
+              "    int copy() {\n"
+              "        const X x = get();\n"
+              "        modify();\n"
+              "        return x.x;\n"
+              "    }\n"
+              "    int constref() {\n"
+              "        const X& x = get();\n"
+              "        modify();\n"
+              "        return x.x;\n"
+              "    }\n"
+              "};\n", nullptr, /*experimental*/ false, /*inconclusive*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 

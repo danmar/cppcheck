@@ -1131,7 +1131,7 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
 
 const Library::Container* Library::detectContainer(const Token* typeStart, bool iterator) const
 {
-    for (const auto &c : containers) {
+    for (const std::pair<const std::string, Library::Container> & c : containers) {
         const Container& container = c.second;
         if (container.startPattern.empty())
             continue;
@@ -1208,7 +1208,7 @@ bool Library::matchArguments(const Token *ftok, const std::string &functionName)
         return (callargs == 0);
     int args = 0;
     int firstOptionalArg = -1;
-    for (const auto & argCheck : it->second.argumentChecks) {
+    for (const std::pair<const int, Library::ArgumentChecks> & argCheck : it->second.argumentChecks) {
         if (argCheck.first > args)
             args = argCheck.first;
         if (argCheck.second.optional && (firstOptionalArg == -1 || firstOptionalArg > argCheck.first))
@@ -1287,7 +1287,7 @@ bool Library::formatstr_function(const Token* ftok) const
 int Library::formatstr_argno(const Token* ftok) const
 {
     const std::map<int, Library::ArgumentChecks>& argumentChecksFunc = functions.at(getFunctionName(ftok)).argumentChecks;
-    for (const auto & argCheckFunc : argumentChecksFunc) {
+    for (const std::pair<const int, Library::ArgumentChecks> & argCheckFunc : argumentChecksFunc) {
         if (argCheckFunc.second.formatstr) {
             return argCheckFunc.first - 1;
         }
@@ -1373,7 +1373,7 @@ bool Library::hasminsize(const Token *ftok) const
     const std::unordered_map<std::string, Function>::const_iterator it1 = functions.find(getFunctionName(ftok));
     if (it1 == functions.cend())
         return false;
-    for (const auto & argCheck : it1->second.argumentChecks) {
+    for (const std::pair<const int, Library::ArgumentChecks> & argCheck : it1->second.argumentChecks) {
         if (!argCheck.second.minsizes.empty())
             return true;
     }
