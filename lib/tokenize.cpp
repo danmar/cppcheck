@@ -5349,8 +5349,6 @@ bool Tokenizer::simplifyTokenList2()
         tok->clearValueFlow();
     }
 
-    simplifyCharAt();
-
     // simplify references
     simplifyReference();
 
@@ -8990,21 +8988,6 @@ void Tokenizer::simplifyTypeIntrinsics()
         end->insertToken("}");
         end->insertToken("{");
         Token::createMutualLinks(end->tokAt(1), end->tokAt(2));
-    }
-}
-
-void Tokenizer::simplifyCharAt()
-{
-    // Replace "string"[0] with 's'
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%str% [ %num% ]")) {
-            const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2));
-            // Check within range
-            if (index >= 0 && index <= Token::getStrLength(tok)) {
-                tok->str("'" + Token::getCharAt(tok, index) + "'");
-                tok->deleteNext(3);
-            }
-        }
     }
 }
 

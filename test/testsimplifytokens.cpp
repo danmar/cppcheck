@@ -213,7 +213,6 @@ private:
         TEST_CASE(undefinedSizeArray);
 
         TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
-        TEST_CASE(simplifyCharAt);
         TEST_CASE(simplifyOverride); // ticket #5069
         TEST_CASE(simplifyNestedNamespace);
         TEST_CASE(simplifyNamespaceAliases1);
@@ -4848,18 +4847,6 @@ private:
                       " int a [ 10 ] ;"
                       " memset ( a + 4 , 0 , 80 ) ;"
                       " }", tok(code, true));
-    }
-
-    void simplifyCharAt() { // ticket #4481
-        ASSERT_EQUALS("'h' ;", tok("\"hello\"[0] ;"));
-        ASSERT_EQUALS("'\\n' ;", tok("\"\\n\"[0] ;"));
-        ASSERT_EQUALS("'\\0' ;", tok("\"hello\"[5] ;"));
-        ASSERT_EQUALS("'\\0' ;", tok("\"\"[0] ;"));
-        ASSERT_EQUALS("'\\0' ;", tok("\"\\0\"[0] ;"));
-        ASSERT_EQUALS("'\\n' ;", tok("\"hello\\nworld\"[5] ;"));
-        ASSERT_EQUALS("'w' ;", tok("\"hello world\"[6] ;"));
-        ASSERT_EQUALS("\"hello\" [ 7 ] ;", tok("\"hello\"[7] ;"));
-        ASSERT_EQUALS("\"hello\" [ -1 ] ;", tok("\"hello\"[-1] ;"));
     }
 
     void test_4881() {

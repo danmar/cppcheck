@@ -458,8 +458,6 @@ public:
      */
     bool simplifyRedundantParentheses();
 
-    void simplifyCharAt();
-
     /** Simplify references */
     void simplifyReference();
 
