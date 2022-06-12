@@ -6753,6 +6753,8 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
             for (auto arg:args) {
                 if (value.path != 0) {
                     for (const auto& q:arg) {
+                        if (q.first == p.first)
+                            continue;
                         if (q.second.path == 0)
                             continue;
                         if (q.second.path != value.path)
