@@ -6004,8 +6004,8 @@ private:
 
         check("void f(const char* s) {\n" // #6371
               "    if (*s == '\x0F') {\n"
-              "      if (!s[1] || !s[2] || !s[1])\n"
-              "        break;\n"
+              "        if (!s[1] || !s[2] || !s[1])\n"
+              "            break;\n"
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Same expression '!s[1]' found multiple times in chain of '||' operators.\n", errout.str());
