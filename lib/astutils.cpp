@@ -2420,13 +2420,8 @@ static bool isExpressionChangedAt(const F& getExprTok,
         return true;
     if (tok->exprId() != exprid) {
         if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure())) {
-            const Token* exprTok = getExprTok();
-            if (!((exprTok && exprTok->variable() && exprTok->variable()->scope() && tok->function() && tok->function()->isConst() &&
-                   (exprTok->variable()->scope() == tok->function()->nestedIn || // member variable doesn't get changed within const member function
-                    exprTok->variable()->typeScope() == tok->function()->nestedIn)) || // variable doesn't get changed by calling const member function on it
-                  (settings && settings->library.isFunctionConst(tok))))
-                // TODO: Is global variable really changed by function call?
-                return true;
+            // TODO: Is global variable really changed by function call?
+            return true;
         }
         const bool pointer = astIsPointer(tok);
         bool aliased = false;
@@ -2578,7 +2573,8 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
         if (tok->variable()) {
             if (tok->variable()->isConst())
                 return false;
-            global = !tok->variable()->isLocal() && !tok->variable()->isArgument();
+            global = !tok->variable()->isLocal() && !tok->variable()->isArgument() &&
+                     !(tok->variable()->scope() && tok->variable()->scope()->isClassOrStructOrUnion() && !tok->variable()->isStatic());
         } else if (tok->isIncompleteVar() && !tok->isIncompleteConstant()) {
             global = true;
         }

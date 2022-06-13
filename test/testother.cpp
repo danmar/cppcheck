@@ -6637,7 +6637,8 @@ private:
               "    if (i == j) {}\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+            "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n"
+            "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:6]: (style) The comparison 'i == j' is always true because 'i' and 'j' represent the same value.\n",
             errout.str());
 
         check("struct A { int x; int y; };"
@@ -6649,7 +6650,8 @@ private:
               "    if (i == a.x) {}\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+            "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n"
+            "[test.cpp:3] -> [test.cpp:6]: (style) The comparison 'i == a.x' is always true because 'i' and 'a.x' represent the same value.\n",
             errout.str());
 
         check("struct A { int x; int y; };"
@@ -6661,7 +6663,8 @@ private:
               "    if (j == a.x) {}\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n",
+            "[test.cpp:4] -> [test.cpp:3]: (style, inconclusive) Same expression used in consecutive assignments of 'i' and 'j'.\n"
+            "[test.cpp:4] -> [test.cpp:6]: (style) The comparison 'j == a.x' is always true because 'j' and 'a.x' represent the same value.\n",
             errout.str());
 
         // Issue #8612
