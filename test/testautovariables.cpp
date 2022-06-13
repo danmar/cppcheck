@@ -3583,7 +3583,7 @@ private:
               "    std::vector<char*> cargs = f({ \"0\", \"0\" });\n"
               "    (void)cargs;\n"
               "};\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4] -> [test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using object that is a temporary.\n", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()
