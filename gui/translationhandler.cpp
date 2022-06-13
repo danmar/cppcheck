@@ -18,6 +18,7 @@
 
 #include "translationhandler.h"
 
+#include "config.h"
 #include "common.h"
 
 #include <QApplication>
@@ -29,7 +30,7 @@
 
 
 // Provide own translations for standard buttons. This (garbage) code is needed to enforce them to appear in .ts files even after "lupdate gui.pro"
-static void unused()
+static UNUSED void unused()
 {
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "OK"))
     Q_UNUSED(QT_TRANSLATE_NOOP("QPlatformTheme", "Cancel"))

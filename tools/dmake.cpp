@@ -55,9 +55,6 @@ static std::string objfiles(const std::vector<std::string> &files)
 
 static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
-    if (filename == "externals/z3_version.h")
-        return;
-
     static const std::vector<std::string> externalfolders{"externals", "externals/picojson", "externals/simplecpp", "externals/tinyxml2" };
 
     // Is the dependency already included?
@@ -239,28 +236,23 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
-    // Z3 is an optional dependency now..
-    makeConditionalVariable(fout, "USE_Z3", "no");
-    fout << "ifeq ($(USE_Z3),yes)\n"
-         << "    CPPFLAGS += -DUSE_Z3\n"
-         << "    LIBS += -lz3\n"
-         << "endif\n";
-
     // use match compiler..
     fout << "# use match compiler\n";
     fout << "ifeq ($(SRCDIR),build)\n"
          << "    $(warning Usage of SRCDIR to activate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)\n"
          << "    MATCHCOMPILER:=yes\n"
          << "endif\n";
+    // TODO: bail out when matchcompiler.py fails (i.e. invalid PYTHON_INTERPRETER specified)
+    // TODO: handle "PYTHON_INTERPRETER="
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
          << "    # Find available Python interpreter\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        PYTHON_INTERPRETER := $(shell which python3)\n"
          << "    endif\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        PYTHON_INTERPRETER := $(shell which python)\n"
          << "    endif\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        $(error Did not find a Python interpreter)\n"
          << "    endif\n"
          << "    ifdef VERIFY\n"
@@ -433,10 +425,8 @@ int main(int argc, char **argv)
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
-    fout << "generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)\n";
-    fout << "\tg++ -isystem externals/tinyxml2 -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "clean:\n";
-    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
+    fout << "\trm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
@@ -506,7 +496,11 @@ int main(int argc, char **argv)
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
     fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";
-    fout << "\t./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
+    // TODO: handle "PYTHON_INTERPRETER="
+    fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python3)))\n";
+    fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python)))\n";
+    fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(error Did not find a Python interpreter)))\n";
+    fout << "\t$(PYTHON_INTERPRETER) tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
     fout << ".PHONY: validateRules\n";
     fout << "validateRules:\n";
     fout << "\txmllint --noout rules/*.xml\n";

@@ -18,17 +18,22 @@
 
 #include "librarydialog.h"
 
-#include "ui_librarydialog.h"
-
 #include "common.h"
 #include "libraryaddfunctiondialog.h"
 #include "libraryeditargdialog.h"
 #include "path.h"
 
+#include "ui_librarydialog.h"
+
+#include <string>
+
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
+#include <QRegularExpression>
 #include <QTextStream>
+
+class QWidget;
 
 // TODO: get/compare functions from header
 
@@ -197,7 +202,8 @@ void LibraryDialog::editFunctionName(QListWidgetItem* item)
     QString functionName = item->text();
     CppcheckLibraryData::Function * const function = dynamic_cast<FunctionListItem*>(item)->function;
     if (functionName != function->name) {
-        if (QRegExp(NAMES).exactMatch(functionName)) {
+        const QRegularExpressionMatch matchRes = QRegularExpression("^" NAMES "$").match(functionName);
+        if (matchRes.hasMatch()) {
             function->name = functionName;
             mUi->buttonSave->setEnabled(true);
         } else {
@@ -276,11 +282,11 @@ void LibraryDialog::filterFunctions(const QString& filter)
     QList<QListWidgetItem *> allItems = mUi->functions->findItems(QString(), Qt::MatchContains);
 
     if (filter.isEmpty()) {
-        foreach (QListWidgetItem *item, allItems) {
+        for (QListWidgetItem *item : allItems) {
             item->setHidden(false);
         }
     } else {
-        foreach (QListWidgetItem *item, allItems) {
+        for (QListWidgetItem *item : allItems) {
             item->setHidden(!item->text().startsWith(filter));
         }
     }
@@ -335,7 +341,7 @@ QString LibraryDialog::getArgText(const CppcheckLibraryData::Function::Arg &arg)
     s += "\n    format string: " + QString(arg.formatstr ? "true" : "false");
     s += "\n    strz: " + QString(arg.strz ? "true" : "false");
     s += "\n    valid: " + QString(arg.valid.isEmpty() ? "any" : arg.valid);
-    foreach (const CppcheckLibraryData::Function::Arg::MinSize &minsize, arg.minsizes) {
+    for (const CppcheckLibraryData::Function::Arg::MinSize &minsize : arg.minsizes) {
         s += "\n    minsize: " + minsize.type + " " + minsize.arg + " " + minsize.arg2;
     }
     return s;
@@ -344,7 +350,7 @@ QString LibraryDialog::getArgText(const CppcheckLibraryData::Function::Arg &arg)
 void LibraryDialog::updateArguments(const CppcheckLibraryData::Function &function)
 {
     mUi->arguments->clear();
-    foreach (const CppcheckLibraryData::Function::Arg &arg, function.args) {
+    for (const CppcheckLibraryData::Function::Arg &arg : function.args) {
         mUi->arguments->addItem(getArgText(arg));
     }
 }

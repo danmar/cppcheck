@@ -6,8 +6,7 @@ CONFIG += warn_on debug
 DEPENDPATH += . \
     ../lib
 INCLUDEPATH += . \
-    ../lib \
-    ../externals/z3/include
+    ../lib
 QT += widgets
 QT += printsupport
 QT += help
@@ -27,15 +26,7 @@ contains(LINKCORE, [yY][eE][sS]) {
     LIBS += -l../bin/cppcheck-core
     DEFINES += CPPCHECKLIB_IMPORT
 }
-LIBS += -L$$PWD/../externals -L$$PWD/../externals/z3/bin
-
-# z3
-win32 {
-    LIBS += -llibz3
-} else {
-    LIBS += -lz3
-}
-QMAKE_CXXFLAGS += -DUSE_Z3
+LIBS += -L$$PWD/../externals
 
 DESTDIR = .
 RCC_DIR = temp
@@ -70,21 +61,19 @@ win32 {
 
 RESOURCES = gui.qrc
 FORMS = about.ui \
-        application.ui \
-        file.ui \
-        functioncontractdialog.ui \
+        applicationdialog.ui \
+        fileview.ui \
         helpdialog.ui \
         mainwindow.ui \
-        projectfiledialog.ui \
+        projectfile.ui \
         resultsview.ui \
         scratchpad.ui \
         settings.ui \
-        stats.ui \
+        statsdialog.ui \
         librarydialog.ui \
         libraryaddfunctiondialog.ui \
         libraryeditargdialog.ui \
-        newsuppressiondialog.ui \
-        variablecontractsdialog.ui
+        newsuppressiondialog.ui
 
 TRANSLATIONS =  cppcheck_de.ts \
                 cppcheck_es.ts \
@@ -136,7 +125,6 @@ HEADERS += aboutdialog.h \
            erroritem.h \
            filelist.h \
            fileviewdialog.h \
-           functioncontractdialog.h \
            helpdialog.h \
            mainwindow.h \
            platforms.h \
@@ -154,7 +142,6 @@ HEADERS += aboutdialog.h \
            threadresult.h \
            translationhandler.h \
            txtreport.h \
-           variablecontractsdialog.h \
            xmlreport.h \
            xmlreportv2.h \
            librarydialog.h \
@@ -178,7 +165,6 @@ SOURCES += aboutdialog.cpp \
            erroritem.cpp \
            filelist.cpp \
            fileviewdialog.cpp \
-           functioncontractdialog.cpp \
            helpdialog.cpp \
            main.cpp \
            mainwindow.cpp\
@@ -197,7 +183,6 @@ SOURCES += aboutdialog.cpp \
            threadresult.cpp \
            translationhandler.cpp \
            txtreport.cpp \
-           variablecontractsdialog.cpp \
            xmlreport.cpp \
            xmlreportv2.cpp \
            librarydialog.cpp \

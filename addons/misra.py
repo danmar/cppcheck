@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 #
 # MISRA C 2012 checkers
+# Partially reused for "MISRA C++ 2008" checking
 #
 # Example usage of this addon (scan a sourcefile main.cpp)
 # cppcheck --dump main.cpp
@@ -25,7 +26,6 @@ import argparse
 import codecs
 import string
 import copy
-import subprocess
 
 try:
     from itertools import izip as zip
@@ -1465,6 +1465,8 @@ class MisraChecker:
 
     def misra_2_2(self, cfg):
         for token in cfg.tokenlist:
+            if token.isExpandedMacro:
+                continue
             if (token.str in '+-') and token.astOperand2:
                 if simpleMatch(token.astOperand1, '0'):
                     self.reportError(token.astOperand1, 2, 2)
@@ -1835,7 +1837,7 @@ class MisraChecker:
                         usedParameter = parametersUsed[i]
                         parameterDefinition = functionDeclaration.argument.get(i+1)
 
-                        if usedParameter.isString and parameterDefinition.nameToken:
+                        if usedParameter.isString and parameterDefinition and parameterDefinition.nameToken:
                             reportErrorIfVariableIsNotConst(parameterDefinition.nameToken, usedParameter)
 
     def misra_8_1(self, cfg):
@@ -1862,17 +1864,11 @@ class MisraChecker:
 
         # Zero arguments should be in form ( void )
         def checkZeroArguments(func, startCall, endCall):
-            if (len(func.argument) == 0):
-                voidArg = startCall.next
-                while voidArg is not endCall:
-                    if voidArg.str == 'void':
-                        break
-                    voidArg = voidArg.next
-                if not voidArg.str == 'void':
-                    if func.tokenDef.next:
-                        self.reportError(func.tokenDef.next, 8, 2)
-                    else:
-                        self.reportError(func.tokenDef, 8, 2)
+            if not startCall.isRemovedVoidParameter and len(func.argument) == 0:
+                if func.tokenDef.next:
+                    self.reportError(func.tokenDef.next, 8, 2)
+                else:
+                    self.reportError(func.tokenDef, 8, 2)
 
         def checkDeclarationArgumentsViolations(func, startCall, endCall):
             # Collect the tokens for the arguments in function definition
@@ -2964,15 +2960,24 @@ class MisraChecker:
         STATE_OK = 2  # a case/default is allowed (we have seen 'break;'/'comment'/'{'/attribute)
         STATE_SWITCH = 3  # walking through switch statement scope
 
+        define = None
         state = STATE_NONE
-        end_swtich_token = None  # end '}' for the switch scope
+        end_switch_token = None  # end '}' for the switch scope
         for token in rawTokens:
+            if simpleMatch(token, '# define'):
+                define = token
+            if define:
+                if token.linenr != define.linenr:
+                    define = None
+                else:
+                    continue
+
             # Find switch scope borders
             if token.str == 'switch':
                 state = STATE_SWITCH
             if state == STATE_SWITCH:
                 if token.str == '{':
-                    end_swtich_token = findRawLink(token)
+                    end_switch_token = findRawLink(token)
                 else:
                     continue
 
@@ -2981,7 +2986,7 @@ class MisraChecker:
             elif token.str == ';':
                 if state == STATE_BREAK:
                     state = STATE_OK
-                elif token.next and token.next == end_swtich_token:
+                elif token.next and token.next == end_switch_token:
                     self.reportError(token.next, 16, 3)
                 else:
                     state = STATE_NONE
@@ -4055,10 +4060,11 @@ class MisraChecker:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
+                errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
                 if self.path_premium_addon:
-                    errmsg = subprocess.check_output([self.path_premium_addon, '--get-rule-text=' + errorId]).strip().decode('ascii')
-                else:
-                    errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
+                    for line in cppcheckdata.cmd_output([self.path_premium_addon, '--cli', '--get-rule-text=' + errorId]).split('\n'):
+                        if not line.startswith('{'):
+                            errmsg = line
             else:
                 errmsg = 'misra violation %s with no text in the supplied rule-texts-file' % (ruleNum)
 
@@ -4203,7 +4209,20 @@ class MisraChecker:
         :param args: Check function arguments
         """
         if not self.isRuleGloballySuppressed(rule_num):
-            check_function(*args)
+            misra_cpp = (
+                202, # misra-c2012-2.3 : misra c++2008 0-1-9
+                203, # misra-c2012-2.3 : misra c++2008 0-1-5
+                402, # misra-c2012-4.2 : misra c++2008 2-3-1
+                701, # misra-c2012-7.1 : misra c++2008 2-3-1
+                702, # misra-c2012-7.2 : misra c++2008 2-13-2
+                1203, # misra-c2012-12.3 : misra c++2008 5-14-1
+                1204, # misra-c2012-12.4 : misra c++2008 5-18-1
+                1305, # misra-c2012-13.5 : misra c++2008 5-19-1
+                1702, # misra-c2012-17.2 : misra c++2008 7-5-4
+                1901) # misra-c2012-19.1 : misra c++2008 2-13-3
+
+            if (not self.is_cpp) or rule_num in misra_cpp:
+                check_function(*args)
 
     def parseDump(self, dumpfile):
         def fillVerifyExpected(verify_expected, tok):
@@ -4243,6 +4262,8 @@ class MisraChecker:
                         fillVerifyExpected(self.verify_expected, tok)
         else:
             self.printStatus('Checking ' + dumpfile + '...')
+
+        self.is_cpp = data.files and data.files[0].endswith('.cpp')
 
         for cfgNumber, cfg in enumerate(data.iterconfigurations()):
             if not self.settings.quiet:
@@ -4394,7 +4415,7 @@ class MisraChecker:
 
             # Premium MISRA checking, deep analysis
             if cfgNumber == 0 and self.path_premium_addon:
-                subprocess.call([self.path_premium_addon, '--misra', dumpfile])
+                cppcheckdata.cmd_output([self.path_premium_addon, '--cli', '--misra', dumpfile])
 
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []
@@ -4659,8 +4680,9 @@ def main():
         premium_command = [checker.path_premium_addon, '--misra', '--file-list', args.file_list]
         if args.cli:
             premium_command.append('--cli')
-        for line in subprocess.check_output(premium_command).decode('ascii').split('\n'):
-            print(line.strip())
+        for line in cppcheckdata.cmd_output(premium_command).split('\n'):
+            if re.search(r'"errorId".*:.*"misra-', line) is not None:
+                print(line.strip())
 
     if settings.verify:
         sys.exit(exitCode)

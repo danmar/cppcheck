@@ -51,7 +51,7 @@
 #include <csignal>
 #include <unistd.h>
 
-// required for FD_ZERO
+// NOLINTNEXTLINE(misc-unused-using-decls) - required for FD_ZERO
 using std::memset;
 #endif
 
@@ -66,12 +66,6 @@ ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, 
 
 ThreadExecutor::~ThreadExecutor()
 {}
-
-// cppcheck-suppress unusedFunction - only used in unit tests
-void ThreadExecutor::addFileContent(const std::string &path, const std::string &content)
-{
-    mFileContents[path] = content;
-}
 
 ///////////////////////////////////////////////////////////////////////////////
 ////// This code is for platforms that support fork() only ////////////////////
@@ -95,10 +89,6 @@ public:
 
     void reportInfo(const ErrorMessage &msg) override {
         report(msg, MessageType::REPORT_INFO);
-    }
-
-    void bughuntingReport(const std::string &str) override {
-        writeToPipe(REPORT_VERIFICATION, str);
     }
 
     void writeEnd(const std::string& str) {
@@ -285,9 +275,6 @@ unsigned int ThreadExecutor::check()
 
                 if (iFileSettings != mSettings.project.fileSettings.end()) {
                     resultOfCheck = fileChecker.check(*iFileSettings);
-                } else if (!mFileContents.empty() && mFileContents.find(iFile->first) != mFileContents.end()) {
-                    // File content was given as a string
-                    resultOfCheck = fileChecker.check(iFile->first, mFileContents[iFile->first]);
                 } else {
                     // Read file from a file
                     resultOfCheck = fileChecker.check(iFile->first);
@@ -404,10 +391,10 @@ void ThreadExecutor::reportInternalChildErr(const std::string &childname, const 
 
 #elif defined(THREADING_MODEL_THREAD)
 
-class ThreadExecutor::LogWriter : public ErrorLogger
+class ThreadExecutor::SyncLogForwarder : public ErrorLogger
 {
 public:
-    LogWriter(ThreadExecutor &threadExecutor)
+    SyncLogForwarder(ThreadExecutor &threadExecutor)
         : mThreadExecutor(threadExecutor), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0), mTotalFileSize(0) {
 
         mItNextFile = threadExecutor.mFiles.begin();
@@ -432,12 +419,6 @@ public:
 
     void reportInfo(const ErrorMessage &msg) override {
         report(msg, MessageType::REPORT_INFO);
-    }
-
-    void bughuntingReport(const std::string &str) override
-    {
-        std::lock_guard<std::mutex> lg(mReportSync);
-        mThreadExecutor.mErrorLogger.bughuntingReport(str);
     }
 
     ThreadExecutor &mThreadExecutor;
@@ -494,11 +475,11 @@ unsigned int ThreadExecutor::check()
     std::vector<std::future<unsigned int>> threadFutures;
     threadFutures.reserve(mSettings.jobs);
 
-    LogWriter logwriter(*this);
+    SyncLogForwarder logforwarder(*this);
 
     for (unsigned int i = 0; i < mSettings.jobs; ++i) {
         try {
-            threadFutures.emplace_back(std::async(std::launch::async, threadProc, &logwriter));
+            threadFutures.emplace_back(std::async(std::launch::async, threadProc, &logforwarder));
         }
         catch (const std::system_error &e) {
             std::cerr << "#### ThreadExecutor::check exception :" << e.what() << std::endl;
@@ -511,59 +492,57 @@ unsigned int ThreadExecutor::check()
     });
 }
 
-unsigned int STDCALL ThreadExecutor::threadProc(LogWriter* logWriter)
+unsigned int STDCALL ThreadExecutor::threadProc(SyncLogForwarder* logForwarder)
 {
     unsigned int result = 0;
 
-    std::map<std::string, std::size_t>::const_iterator &itFile = logWriter->mItNextFile;
-    std::list<ImportProject::FileSettings>::const_iterator &itFileSettings = logWriter->mItNextFileSettings;
+    std::map<std::string, std::size_t>::const_iterator &itFile = logForwarder->mItNextFile;
+    std::list<ImportProject::FileSettings>::const_iterator &itFileSettings = logForwarder->mItNextFileSettings;
 
     // guard static members of CppCheck against concurrent access
-    logWriter->mFileSync.lock();
+    logForwarder->mFileSync.lock();
 
     for (;;) {
-        if (itFile == logWriter->mThreadExecutor.mFiles.end() && itFileSettings == logWriter->mThreadExecutor.mSettings.project.fileSettings.end()) {
-            logWriter->mFileSync.unlock();
+        if (itFile == logForwarder->mThreadExecutor.mFiles.end() && itFileSettings == logForwarder->mThreadExecutor.mSettings.project.fileSettings.end()) {
+            logForwarder->mFileSync.unlock();
             break;
         }
 
-        CppCheck fileChecker(*logWriter, false, CppCheckExecutor::executeCommand);
-        fileChecker.settings() = logWriter->mThreadExecutor.mSettings;
+        CppCheck fileChecker(*logForwarder, false, CppCheckExecutor::executeCommand);
+        fileChecker.settings() = logForwarder->mThreadExecutor.mSettings;
 
         std::size_t fileSize = 0;
-        if (itFile != logWriter->mThreadExecutor.mFiles.end()) {
+        if (itFile != logForwarder->mThreadExecutor.mFiles.end()) {
             const std::string &file = itFile->first;
             fileSize = itFile->second;
             ++itFile;
 
-            logWriter->mFileSync.unlock();
+            logForwarder->mFileSync.unlock();
 
-            const std::map<std::string, std::string>::const_iterator fileContent = logWriter->mThreadExecutor.mFileContents.find(file);
-            if (fileContent != logWriter->mThreadExecutor.mFileContents.end()) {
-                // File content was given as a string
-                result += fileChecker.check(file, fileContent->second);
-            } else {
-                // Read file from a file
-                result += fileChecker.check(file);
-            }
+            // Read file from a file
+            result += fileChecker.check(file);
         } else { // file settings..
             const ImportProject::FileSettings &fs = *itFileSettings;
             ++itFileSettings;
-            logWriter->mFileSync.unlock();
+            logForwarder->mFileSync.unlock();
             result += fileChecker.check(fs);
-            if (logWriter->mThreadExecutor.mSettings.clangTidy)
+            if (logForwarder->mThreadExecutor.mSettings.clangTidy)
                 fileChecker.analyseClangTidy(fs);
         }
 
-        logWriter->mFileSync.lock();
+        logForwarder->mFileSync.lock();
 
-        logWriter->mProcessedSize += fileSize;
-        logWriter->mProcessedFiles++;
-        if (!logWriter->mThreadExecutor.mSettings.quiet) {
-            std::lock_guard<std::mutex> lg(logWriter->mReportSync);
-            CppCheckExecutor::reportStatus(logWriter->mProcessedFiles, logWriter->mTotalFiles, logWriter->mProcessedSize, logWriter->mTotalFileSize);
+        logForwarder->mProcessedSize += fileSize;
+        logForwarder->mProcessedFiles++;
+        if (!logForwarder->mThreadExecutor.mSettings.quiet) {
+            std::lock_guard<std::mutex> lg(logForwarder->mReportSync);
+            CppCheckExecutor::reportStatus(logForwarder->mProcessedFiles, logForwarder->mTotalFiles, logForwarder->mProcessedSize, logForwarder->mTotalFileSize);
         }
     }
     return result;
 }
 #endif
+
+bool ThreadExecutor::isEnabled() {
+    return true;
+}

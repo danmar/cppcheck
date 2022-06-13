@@ -18,15 +18,17 @@
 
 #include "helpdialog.h"
 
-#include "ui_helpdialog.h"
-
 #include "common.h"
+
+#include "ui_helpdialog.h"
 
 #include <QFileInfo>
 #include <QHelpEngine>
 #include <QHelpContentWidget>
 #include <QHelpIndexWidget>
 #include <QMessageBox>
+
+class QWidget;
 
 void HelpBrowser::setHelpEngine(QHelpEngine *helpEngine)
 {

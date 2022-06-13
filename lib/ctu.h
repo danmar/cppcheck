@@ -60,18 +60,18 @@ namespace CTU {
             Location(const Tokenizer *tokenizer, const Token *tok);
             Location(const std::string &fileName, nonneg int lineNumber, nonneg int column) : fileName(fileName), lineNumber(lineNumber), column(column) {}
             std::string fileName;
-            nonneg int lineNumber;
-            nonneg int column;
+            nonneg int lineNumber{};
+            nonneg int column{};
         };
 
         struct UnsafeUsage {
             UnsafeUsage() = default;
             UnsafeUsage(const std::string &myId, nonneg int myArgNr, const std::string &myArgumentName, const Location &location, MathLib::bigint value) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location), value(value) {}
             std::string myId;
-            nonneg int myArgNr;
+            nonneg int myArgNr{};
             std::string myArgumentName;
             Location location;
-            MathLib::bigint value;
+            MathLib::bigint value{};
             std::string toString() const;
         };
 
@@ -84,7 +84,7 @@ namespace CTU {
             CallBase(const Tokenizer *tokenizer, const Token *callToken);
             virtual ~CallBase() {}
             std::string callId;
-            int callArgNr;
+            int callArgNr{};
             std::string callFunctionName;
             Location location;
         protected:
@@ -119,7 +119,7 @@ namespace CTU {
             bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
 
             std::string myId;
-            nonneg int myArgNr;
+            nonneg int myArgNr{};
         };
 
         std::list<FunctionCall> functionCalls;

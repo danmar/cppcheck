@@ -5,7 +5,6 @@ include($$PWD/../externals/externals.pri)
 INCLUDEPATH += $$PWD
 HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/astutils.h \
-           $${PWD}/bughuntingchecks.h \
            $${PWD}/check.h \
            $${PWD}/check64bit.h \
            $${PWD}/checkassert.h \
@@ -38,7 +37,6 @@ HEADERS += $${PWD}/analyzerinfo.h \
            $${PWD}/ctu.h \
            $${PWD}/errorlogger.h \
            $${PWD}/errortypes.h \
-           $${PWD}/exprengine.h \
            $${PWD}/forwardanalyzer.h \
            $${PWD}/importproject.h \
            $${PWD}/infer.h \
@@ -65,7 +63,6 @@ HEADERS += $${PWD}/analyzerinfo.h \
 
 SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/astutils.cpp \
-           $${PWD}/bughuntingchecks.cpp \
            $${PWD}/check.cpp \
            $${PWD}/check64bit.cpp \
            $${PWD}/checkassert.cpp \
@@ -98,7 +95,6 @@ SOURCES += $${PWD}/analyzerinfo.cpp \
            $${PWD}/ctu.cpp \
            $${PWD}/errorlogger.cpp \
            $${PWD}/errortypes.cpp \
-           $${PWD}/exprengine.cpp \
            $${PWD}/forwardanalyzer.cpp \
            $${PWD}/importproject.cpp \
            $${PWD}/infer.cpp \

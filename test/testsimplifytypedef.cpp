@@ -186,6 +186,8 @@ private:
         TEST_CASE(simplifyTypedef137);
         TEST_CASE(simplifyTypedef138);
         TEST_CASE(simplifyTypedef139);
+        TEST_CASE(simplifyTypedef140); // #10798
+        TEST_CASE(simplifyTypedef141); // #10144
 
         TEST_CASE(simplifyTypedefFunction1);
         TEST_CASE(simplifyTypedefFunction2); // ticket #1685
@@ -1389,7 +1391,7 @@ private:
                                 "I i;";
 
             // The expected result..
-            const char expected[] = "std :: pair < int , int > const i ;";
+            const char expected[] = "const std :: pair < int , int > i ;";
             ASSERT_EQUALS(expected, tok(code));
         }
 
@@ -2435,8 +2437,7 @@ private:
                                 "std :: vector < CharacterConversion > ( ) . swap ( c2c ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:4]: (debug) valueflow.cpp:4635:(valueFlow) bailout: variable 'it' used in loop\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout.str());
     }
 
     void simplifyTypedef117() { // #6507
@@ -3025,6 +3026,29 @@ private:
         ASSERT_EQUALS(
             "struct Anonymous0 { struct c * b ; } ; struct Anonymous0 * d ; void e ( struct c * a ) { if ( a < d [ 0 ] . b ) { } }",
             tok(code));
+    }
+
+    void simplifyTypedef140() { // #10798
+        {
+            const char code[] = "typedef void (*b)();\n"
+                                "enum class E { a, b, c };\n";
+            ASSERT_EQUALS("enum class E { a , b , c } ;", tok(code));
+        }
+        {
+            const char code[] = "typedef int A;\n"
+                                "enum class E { A };\n";
+            ASSERT_EQUALS("enum class E { A } ;", tok(code));
+        }
+    }
+
+    void simplifyTypedef141() { // #10144
+        const char code[] = "class C {\n"
+                            "    struct I {\n"
+                            "        using vt = const std::string;\n"
+                            "        using ptr = vt*;\n"
+                            "    };\n"
+                            "};\n";
+        ASSERT_EQUALS("class C { struct I { } ; } ;", tok(code));
     }
 
     void simplifyTypedefFunction1() {

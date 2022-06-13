@@ -130,7 +130,7 @@ struct Analyzer {
     enum class Terminate { None, Bail, Escape, Modified, Inconclusive, Conditional };
 
     struct Result {
-        Result(Action action = Action::None, Terminate terminate = Terminate::None)
+        explicit Result(Action action = Action::None, Terminate terminate = Terminate::None)
             : action(action), terminate(terminate)
         {}
         Action action;
@@ -172,8 +172,6 @@ struct Analyzer {
     virtual bool lowerToInconclusive() = 0;
     /// If the analysis is unsure whether to update a scope, this will return true if the analysis should bifurcate the scope
     virtual bool updateScope(const Token* endBlock, bool modified) const = 0;
-    /// Called when a scope will be forked
-    virtual void forkScope(const Token* /*endBlock*/) {}
     /// If the value is conditional
     virtual bool isConditional() const = 0;
     /// If analysis should stop on the condition

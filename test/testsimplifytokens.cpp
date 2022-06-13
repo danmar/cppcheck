@@ -60,42 +60,6 @@ private:
 
         TEST_CASE(test1); // array access. replace "*(p+1)" => "p[1]"
 
-        TEST_CASE(simplifyMathFunctions_sqrt);
-        TEST_CASE(simplifyMathFunctions_cbrt);
-        TEST_CASE(simplifyMathFunctions_exp);
-        TEST_CASE(simplifyMathFunctions_exp2);
-        TEST_CASE(simplifyMathFunctions_logb);
-        TEST_CASE(simplifyMathFunctions_log1p);
-        TEST_CASE(simplifyMathFunctions_ilogb);
-        TEST_CASE(simplifyMathFunctions_log10);
-        TEST_CASE(simplifyMathFunctions_log);
-        TEST_CASE(simplifyMathFunctions_log2);
-        TEST_CASE(simplifyMathFunctions_pow);
-        TEST_CASE(simplifyMathFunctions_fmin);
-        TEST_CASE(simplifyMathFunctions_fmax);
-        TEST_CASE(simplifyMathFunctions_acosh);
-        TEST_CASE(simplifyMathFunctions_acos);
-        TEST_CASE(simplifyMathFunctions_cosh);
-        TEST_CASE(simplifyMathFunctions_cos);
-        TEST_CASE(simplifyMathFunctions_erfc);
-        TEST_CASE(simplifyMathFunctions_erf);
-        TEST_CASE(simplifyMathFunctions_sin);
-        TEST_CASE(simplifyMathFunctions_sinh);
-        TEST_CASE(simplifyMathFunctions_asin);
-        TEST_CASE(simplifyMathFunctions_asinh);
-        TEST_CASE(simplifyMathFunctions_tan);
-        TEST_CASE(simplifyMathFunctions_tanh);
-        TEST_CASE(simplifyMathFunctions_atan);
-        TEST_CASE(simplifyMathFunctions_atanh);
-        TEST_CASE(simplifyMathFunctions_expm1);
-        TEST_CASE(simplifyMathExpressions); //ticket #1620
-
-        // foo(p = new char[10]);  =>  p = new char[10]; foo(p);
-        TEST_CASE(simplifyAssignmentInFunctionCall);
-
-        // ";a+=b;" => ";a=a+b;"
-        TEST_CASE(simplifyCompoundAssignment);
-
         TEST_CASE(cast);
         TEST_CASE(iftruefalse);
 
@@ -187,8 +151,6 @@ private:
         // Simplify nested strcat() calls
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
-
-        TEST_CASE(simplifyAtol);
 
         TEST_CASE(simplifyOperator1);
         TEST_CASE(simplifyOperator2);
@@ -329,6 +291,7 @@ private:
         TEST_CASE(simplifyKnownVariables60);    // #6829
         TEST_CASE(simplifyKnownVariables61);    // #7805
         TEST_CASE(simplifyKnownVariables62);    // #5666 - p=&str[0]
+        TEST_CASE(simplifyKnownVariables63);    // #10798
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
         TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
@@ -531,7 +494,7 @@ private:
         // "(x-y)" => "(x-y)" and "(x+y)" => "(x+y)"
         ASSERT_EQUALS("; a = b * ( x - y ) ;", tok("; a = b * (x - y);"));
         ASSERT_EQUALS("; a = b * x [ - y ] ;", tok("; a = b * *(x - y);"));
-        ASSERT_EQUALS("; a = a * ( x - y ) ;", tok("; a *= (x - y);"));
+        ASSERT_EQUALS("; a *= ( x - y ) ;", tok("; a *= (x - y);"));
         ASSERT_EQUALS("; z = a ++ * ( x - y ) ;", tok("; z = a++ * (x - y);"));
         ASSERT_EQUALS("; z = a ++ * ( x + y ) ;", tok("; z = a++ * (x + y);"));
         ASSERT_EQUALS("; z = a -- * ( x - y ) ;", tok("; z = a-- * (x - y);"));
@@ -1807,11 +1770,6 @@ private:
         ASSERT_EQUALS(code6, tokWithNewlines(code6));
     }
 
-
-    void simplifyAssignmentInFunctionCall() {
-        ASSERT_EQUALS("; x = g ( ) ; f ( x ) ;", tok(";f(x=g());"));
-        ASSERT_EQUALS("; hs = ( xyz_t ) { h . centerX , h . centerY , 1 + index } ; putInput ( hs , 1 ) ;", tok(";putInput(hs = (xyz_t) { h->centerX, h->centerY, 1 + index }, 1);"));
-    }
 
     void simplifyCompoundAssignment() {
         ASSERT_EQUALS("; x = x + y ;", tok("; x += y;"));
@@ -4116,13 +4074,6 @@ private:
         ASSERT_EQUALS(expect, tok(code));
     }
 
-    void simplifyAtol() {
-        ASSERT_EQUALS("a = std :: atol ( x ) ;", tok("a = std::atol(x);"));
-        ASSERT_EQUALS("a = atol ( \"text\" ) ;", tok("a = atol(\"text\");"));
-        ASSERT_EQUALS("a = 0 ;", tok("a = std::atol(\"0\");"));
-        ASSERT_EQUALS("a = 10 ;", tok("a = atol(\"0xa\");"));
-    }
-
     void simplifyOperator1() {
         // #3237 - error merging namespaces with operators
         const char code[] = "class c {\n"
@@ -4141,7 +4092,7 @@ private:
     void simplifyOperator2() {
         // #6576
         ASSERT_EQUALS("template < class T > class SharedPtr { "
-                      "SharedPtr & operator= ( SharedPtr < Y > const & r ) ; "
+                      "SharedPtr & operator= ( const SharedPtr < Y > & r ) ; "
                       "} ; "
                       "class TClass { "
                       "public: TClass & operator= ( const TClass & rhs ) ; "
@@ -6646,6 +6597,12 @@ private:
                                            "}", /*simplify=*/ true));
     }
 
+    void simplifyKnownVariables63() { // #10798
+        tokenizeAndStringify("typedef void (*a)();\n"
+                             "enum class E { a };\n");
+        ASSERT_EQUALS("", errout.str()); // don't throw
+    }
+
     void simplifyKnownVariablesBailOutAssign1() {
         const char code[] = "int foo() {\n"
                             "    int i; i = 0;\n"
@@ -6875,8 +6832,8 @@ private:
         ASSERT_EQUALS(exp, tokenizeAndStringify(code, /*simplify=*/ true));
     }
 
-    void simplifyKnownVariablesNamespace() { // #10059
-        {
+    void simplifyKnownVariablesNamespace() {
+        { // #10059
             const char code[] = "namespace N {\n"
                                 "    const int n = 0;\n"
                                 "    namespace M { const int m = 0; }\n"
@@ -6900,29 +6857,40 @@ private:
                                 "10: int l ( N :: M :: m@2 ) ;\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code));
         }
-
-        {
-            const char code[] = "struct S {\n"
-                                "    S() { f(); }\n"
-                                "    void f();\n"
-                                "    int i;\n"
-                                "};\n"
-                                "namespace N { int j; }\n"
-                                "using namespace N;\n"
-                                "void S::f() {\n"
-                                "  i = 0;\n"
+        { // #10835
+            const char code[] = "using namespace X;\n"
+                                "namespace N {\n"
+                                "    struct A {\n"
+                                "        static int i;\n"
+                                "        struct B {\n"
+                                "            double x;\n"
+                                "            void f();\n"
+                                "        };\n"
+                                "    };\n"
+                                "}\n"
+                                "namespace N {\n"
+                                "    int A::i = 0;\n"
+                                "    void A::B::f() {\n"
+                                "        x = 0;\n"
+                                "    }\n"
                                 "}\n";
             const char exp[]  = "\n\n##file 0\n"
-                                "1: struct S {\n"
-                                "2: S ( ) { f ( ) ; }\n"
-                                "3: void f ( ) ;\n"
-                                "4: int i@1 ;\n"
-                                "5: } ;\n"
-                                "6: namespace N { int j@2 ; }\n"
-                                "7: using namespace N ;\n"
-                                "8: void S :: f ( ) {\n"
-                                "9: i@1 = 0 ;\n"
-                                "10: }\n";
+                                "1: using namespace X ;\n"
+                                "2: namespace N {\n"
+                                "3: struct A {\n"
+                                "4: static int i@1 ;\n"
+                                "5: struct B {\n"
+                                "6: double x@2 ;\n"
+                                "7: void f ( ) ;\n"
+                                "8: } ;\n"
+                                "9: } ;\n"
+                                "10: }\n"
+                                "11: namespace N {\n"
+                                "12: int A :: i@1 = 0 ;\n"
+                                "13: void A :: B :: f ( ) {\n"
+                                "14: x@2 = 0 ;\n"
+                                "15: }\n"
+                                "16: }\n";
             ASSERT_EQUALS(exp, tokenizeDebugListing(code));
         }
     }

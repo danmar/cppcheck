@@ -10,5 +10,8 @@ endif()
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     target_compile_options_safe(tinyxml2_objs -Wno-extra-semi-stmt)
     target_compile_options_safe(tinyxml2_objs -Wno-implicit-fallthrough)
+    target_compile_options_safe(tinyxml2_objs -Wno-suggest-override)
+    target_compile_options_safe(tinyxml2_objs -Wno-suggest-destructor-override)
+    target_compile_options_safe(tinyxml2_objs -Wno-zero-as-null-pointer-constant)
 endif()
 

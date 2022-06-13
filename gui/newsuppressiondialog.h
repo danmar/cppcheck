@@ -23,6 +23,8 @@
 
 #include <QDialog>
 
+class QObject;
+class QWidget;
 namespace Ui {
     class NewSuppressionDialog;
 }
@@ -33,7 +35,7 @@ class NewSuppressionDialog : public QDialog {
 public:
     explicit NewSuppressionDialog(QWidget *parent = nullptr);
     NewSuppressionDialog(const NewSuppressionDialog &) = delete;
-    ~NewSuppressionDialog();
+    ~NewSuppressionDialog() override;
     NewSuppressionDialog &operator=(const NewSuppressionDialog &) = delete;
 
     /**

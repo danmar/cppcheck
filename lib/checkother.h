@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -260,7 +260,7 @@ private:
     void duplicateBranchError(const Token *tok1, const Token *tok2, ErrorPath errors);
     void duplicateAssignExpressionError(const Token *tok1, const Token *tok2, bool inconclusive);
     void oppositeExpressionError(const Token *opTok, ErrorPath errors);
-    void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors);
+    void duplicateExpressionError(const Token *tok1, const Token *tok2, const Token *opTok, ErrorPath errors, bool hasMultipleExpr = false);
     void duplicateValueTernaryError(const Token *tok);
     void duplicateExpressionTernaryError(const Token *tok, ErrorPath errors);
     void duplicateBreakError(const Token *tok, bool inconclusive);
@@ -275,7 +275,7 @@ private:
     void incompleteArrayFillError(const Token* tok, const std::string& buffer, const std::string& function, bool boolean);
     void varFuncNullUBError(const Token *tok);
     void commaSeparatedReturnError(const Token *tok);
-    void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive);
+    void redundantPointerOpError(const Token* tok, const std::string& varname, bool inconclusive, bool addressOfDeref);
     void raceAfterInterlockedDecrementError(const Token* tok);
     void unusedLabelError(const Token* tok, bool inSwitch, bool hasIfdef);
     void unknownEvaluationOrder(const Token* tok);
@@ -343,7 +343,7 @@ private:
         c.varFuncNullUBError(nullptr);
         c.nanInArithmeticExpressionError(nullptr);
         c.commaSeparatedReturnError(nullptr);
-        c.redundantPointerOpError(nullptr,  "varname", false);
+        c.redundantPointerOpError(nullptr,  "varname", false, /*addressOfDeref*/ true);
         c.unusedLabelError(nullptr, false, false);
         c.unusedLabelError(nullptr, false, true);
         c.unusedLabelError(nullptr, true, false);

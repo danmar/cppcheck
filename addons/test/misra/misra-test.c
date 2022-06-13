@@ -65,6 +65,8 @@ static _Noreturn void misra_1_4_func(void) // 1.4
     printf_s("hello"); // 1.4
 }
 
+#define MISRA_2_2 (1*60)
+
 static void misra_2_2(int x) {
     int a;
     a = x + 0; // 2.2
@@ -73,6 +75,7 @@ static void misra_2_2(int x) {
     a = 0 * x; // 2.2
     a = x * 1; // 2.2
     a = 1 * x; // 2.2
+    a = MISRA_2_2;
     (void)a;
 }
 
@@ -312,6 +315,7 @@ static const char *misra_7_4_return_const (void) { return 1 + "return_const"; } 
 static void misra_7_4_const_call(int a, const char* b) { } // 2.7
 static void misra_7_4_const_ptr_call(int a, const char const* b) { } // 2.7
 static void misra_7_4_call(int a, char* b) { } // 2.7
+static void misra_7_4_call_2(int a, ...) { } // 2.7
 
 static void misra_7_4(void)
 {
@@ -327,6 +331,7 @@ static void misra_7_4(void)
    misra_7_4_const_call(1, ("text_const_call"));
    misra_7_4_const_ptr_call(1, ("text_const_call"));
    misra_7_4_call(1, "text_call"); // 7.4 11.8
+   misra_7_4_call_2(1, "a", "b");
 }
 
 const misra_8_1_a; // 8.1 8.4
@@ -1552,6 +1557,8 @@ static void misra_16_3(void) {
     case 2:
         x++;
   } // 16.3
+
+  #define M_16_3(a,b,default) { (a), (b), (default) },
 }
 
 static void misra_16_4(void) {
@@ -1605,7 +1612,7 @@ static void misra_16_7(void) {
 }
 
 static void misra_17_1(void) {
-  va_list(); // 17.1
+  va_list(); // 17.1 17.7
   va_arg(); // 17.1
   va_start(); // 17.1
   va_end(); // 17.1

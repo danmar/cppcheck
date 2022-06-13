@@ -105,6 +105,7 @@ namespace ValueFlow {
             path(0),
             wideintvalue(val),
             subexpressions(),
+            capturetok(nullptr),
             lifetimeKind(LifetimeKind::Object),
             lifetimeScope(LifetimeScope::Local),
             valueKind(ValueKind::Possible)
@@ -250,6 +251,8 @@ namespace ValueFlow {
 
         std::string infoString() const;
 
+        std::string toString() const;
+
         enum class ValueType {
             INT,
             TOK,
@@ -364,6 +367,9 @@ namespace ValueFlow {
 
         std::vector<std::string> subexpressions;
 
+        // Set to where a lifetime is captured by value
+        const Token* capturetok;
+
         enum class LifetimeKind {
             // Pointer points to a member of lifetime
             Object,
@@ -458,6 +464,8 @@ namespace ValueFlow {
     std::vector<ValueFlow::Value> isOutOfBounds(const Value& size, const Token* indexTok, bool possible = true);
 }
 
+ValueFlow::Value asImpossible(ValueFlow::Value v);
+
 bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
 
 struct LifetimeToken {
@@ -496,6 +504,10 @@ ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token
 ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, MathLib::bigint val);
 
 CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
+
+const Token* solveExprValue(const Token* expr,
+                            const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                            ValueFlow::Value& value);
 
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                                              bool escape = false,

@@ -59,7 +59,6 @@ struct ForwardTraversal {
     bool analyzeOnly;
     bool analyzeTerminate;
     Analyzer::Terminate terminate = Analyzer::Terminate::None;
-    bool forked = false;
     std::vector<Token*> loopEnds = {};
 
     Progress Break(Analyzer::Terminate t = Analyzer::Terminate::None) {
@@ -69,7 +68,7 @@ struct ForwardTraversal {
     }
 
     struct Branch {
-        Branch(Token* tok = nullptr) : endBlock(tok) {}
+        explicit Branch(Token* tok = nullptr) : endBlock(tok) {}
         Token* endBlock = nullptr;
         Analyzer::Action action = Analyzer::Action::None;
         bool check = false;
@@ -123,17 +122,25 @@ struct ForwardTraversal {
 
     template<class T, class F, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
     Progress traverseTok(T* tok, F f, bool traverseUnknown, T** out = nullptr) {
-        if (Token::Match(tok, "asm|goto|setjmp|longjmp"))
+        if (Token::Match(tok, "asm|goto"))
             return Break(Analyzer::Terminate::Bail);
-        else if (Token::simpleMatch(tok, "continue")) {
+        else if (Token::Match(tok, "setjmp|longjmp (")) {
+            // Traverse the parameters of the function before escaping
+            traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
+            return Break(Analyzer::Terminate::Bail);
+        } else if (Token::simpleMatch(tok, "continue")) {
             if (loopEnds.empty())
                 return Break(Analyzer::Terminate::Escape);
             // If we are in a loop then jump to the end
             if (out)
                 *out = loopEnds.back();
-        } else if (Token::Match(tok, "return|throw") || isEscapeFunction(tok, &settings->library)) {
-            traverseRecursive(tok->astOperand1(), f, traverseUnknown);
+        } else if (Token::Match(tok, "return|throw")) {
             traverseRecursive(tok->astOperand2(), f, traverseUnknown);
+            traverseRecursive(tok->astOperand1(), f, traverseUnknown);
+            return Break(Analyzer::Terminate::Escape);
+        } else if (Token::Match(tok, "%name% (") && isEscapeFunction(tok, &settings->library)) {
+            // Traverse the parameters of the function before escaping
+            traverseRecursive(tok->next()->astOperand2(), f, traverseUnknown);
             return Break(Analyzer::Terminate::Escape);
         } else if (isUnevaluated(tok)) {
             if (out)
@@ -242,7 +249,6 @@ struct ForwardTraversal {
     }
 
     Progress updateRecursive(Token* tok) {
-        forked = false;
         auto f = [this](Token* tok2) {
             return update(tok2);
         };
@@ -289,7 +295,6 @@ struct ForwardTraversal {
             ft.analyzeTerminate = true;
         }
         ft.actions = Analyzer::Action::None;
-        ft.forked = true;
         return ft;
     }
 
@@ -312,7 +317,7 @@ struct ForwardTraversal {
         return Token::findsimplematch(endBlock->link(), "goto", endBlock);
     }
 
-    bool hasJump(const Token* endBlock) {
+    static bool hasJump(const Token* endBlock) {
         return Token::findmatch(endBlock->link(), "goto|break", endBlock);
     }
 
@@ -537,13 +542,10 @@ struct ForwardTraversal {
     }
 
     Progress updateScope(Token* endBlock) {
-        if (forked)
-            analyzer->forkScope(endBlock);
         return updateRange(endBlock->link(), endBlock);
     }
 
     Progress updateRange(Token* start, const Token* end, int depth = 20) {
-        forked = false;
         if (depth < 0)
             return Break(Analyzer::Terminate::Bail);
         std::size_t i = 0;
@@ -855,12 +857,12 @@ Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const V
 {
     ForwardTraversal ft{a, settings};
     ft.updateRange(start, end);
-    return {ft.actions, ft.terminate};
+    return Analyzer::Result{ ft.actions, ft.terminate };
 }
 
 Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings)
 {
     ForwardTraversal ft{a, settings};
     ft.updateRecursive(start);
-    return {ft.actions, ft.terminate};
+    return Analyzer::Result{ ft.actions, ft.terminate };
 }

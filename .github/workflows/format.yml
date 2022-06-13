@@ -7,7 +7,7 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     steps:
       - uses: actions/checkout@v2
@@ -34,4 +34,6 @@ jobs:
 
       - name: Uncrustify check
         run: |
-          ~/uncrustify/uncrustify -c .uncrustify.cfg -l CPP --check */*.cpp */*.h
+          ~/uncrustify/uncrustify -c .uncrustify.cfg -l CPP --no-backup --replace */*.cpp */*.h
+          git diff
+          git diff | diff - /dev/null &> /dev/null

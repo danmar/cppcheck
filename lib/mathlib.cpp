@@ -31,16 +31,6 @@
 
 #include <simplecpp.h>
 
-#if defined(_MSC_VER) && _MSC_VER <= 1700  // VS2012 doesn't have std::isinf and std::isnan
-#define ISINF(x)      (!_finite(x))
-#define ISNAN(x)      (_isnan(x))
-#elif defined(__INTEL_COMPILER)
-#define ISINF(x)      (isinf(x))
-#define ISNAN(x)      (isnan(x))
-#else  // Use C++11 functions
-#define ISINF(x)      (std::isinf(x))
-#define ISNAN(x)      (std::isnan(x))
-#endif
 
 const int MathLib::bigint_bits = 64;
 
@@ -83,9 +73,9 @@ std::string MathLib::value::str() const
 {
     std::ostringstream ostr;
     if (mType == MathLib::value::Type::FLOAT) {
-        if (ISNAN(mDoubleValue))
+        if (std::isnan(mDoubleValue))
             return "nan.0";
-        if (ISINF(mDoubleValue))
+        if (std::isinf(mDoubleValue))
             return (mDoubleValue > 0) ? "inf.0" : "-inf.0";
 
         ostr.precision(9);
@@ -452,9 +442,8 @@ static double myStod(const std::string& str, std::string::const_iterator from, s
             --distance;
         result += digitval(*it)* std::pow(base, distance);
     }
-    return (positivesign)?result:-result;
+    return positivesign ? result : -result;
 }
-
 
 // Assuming a limited support of built-in hexadecimal floats (see C99, C++17) that is a fall-back implementation.
 // Performance has been optimized WRT to heap activity, however the calculation part is not optimized.
@@ -463,7 +452,7 @@ static double floatHexToDoubleNumber(const std::string& str)
     const std::size_t p = str.find_first_of("pP",3);
     const double factor1 = myStod(str, str.begin() + 2, str.begin()+p, 16);
     const bool suffix = (str.back() == 'f') || (str.back() == 'F') || (str.back() == 'l') || (str.back() == 'L');
-    const double exponent = myStod(str, str.begin() + p + 1, (suffix)?str.end()-1:str.end(), 10);
+    const double exponent = myStod(str, str.begin() + p + 1, suffix ? str.end()-1:str.end(), 10);
     const double factor2 = std::pow(2, exponent);
     return factor1 * factor2;
 }

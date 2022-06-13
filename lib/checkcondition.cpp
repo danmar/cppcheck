@@ -310,13 +310,22 @@ void CheckCondition::checkBadBitmaskCheck()
 
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
+
+            const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0);
+            const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
+
+            if ((isZero1 || isZero2) && !tok->isExpandedMacro() && !(isZero1 && tok->astOperand1()->isExpandedMacro()) && !(isZero2 && tok->astOperand2()->isExpandedMacro()))
+                badBitmaskCheckError(tok, /*isNoOp*/ true);
         }
     }
 }
 
-void CheckCondition::badBitmaskCheckError(const Token *tok)
+void CheckCondition::badBitmaskCheckError(const Token *tok, bool isNoOp)
 {
-    reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, Certainty::normal);
+    if (isNoOp)
+        reportError(tok, Severity::warning, "badBitmaskCheck", "Operator '|' with one operand equal to zero is redundant.", CWE571, Certainty::normal);
+    else
+        reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, Certainty::normal);
 }
 
 void CheckCondition::comparison()
@@ -513,9 +522,10 @@ void CheckCondition::multiCondition()
 
             if (tok2->astOperand2()) {
                 ErrorPath errorPath;
-                if (isOverlappingCond(cond1, tok2->astOperand2(), true))
+                if (isOverlappingCond(cond1, tok2->astOperand2(), true) && !isExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
                     overlappingElseIfConditionError(tok2->astOperand2(), cond1->linenr());
-                else if (isOppositeCond(true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath))
+                else if (isOppositeCond(true, mTokenizer->isCPP(), cond1, tok2->astOperand2(), mSettings->library, true, true, &errorPath) &&
+                         !isExpressionChanged(cond1, cond1, tok2->astOperand2(), mSettings, mTokenizer->isCPP()))
                     oppositeElseIfConditionError(cond1, tok2->astOperand2(), errorPath);
             }
         }
@@ -1025,6 +1035,11 @@ static std::string conditionString(const Token * tok)
     return tok->expressionString();
 }
 
+static bool isIfConstexpr(const Token* tok) {
+    const Token* const top = tok->astTop();
+    return top && Token::simpleMatch(top->astOperand1(), "if") && top->astOperand1()->isConstexpr();
+}
+
 void CheckCondition::checkIncorrectLogicOperator()
 {
     const bool printStyle = mSettings->severity.isEnabled(Severity::style);
@@ -1134,15 +1149,22 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (inconclusive && !printInconclusive)
                 continue;
 
+            const bool isUnknown = (expr1 && expr1->valueType() && expr1->valueType()->type == ValueType::UNKNOWN_TYPE) ||
+                                   (expr2 && expr2->valueType() && expr2->valueType()->type == ValueType::UNKNOWN_TYPE);
+            if (isUnknown)
+                continue;
+
             const bool isfloat = astIsFloat(expr1, true) || MathLib::isFloat(value1) || astIsFloat(expr2, true) || MathLib::isFloat(value2);
 
             ErrorPath errorPath;
 
             // Opposite comparisons around || or && => always true or always false
-            if (!isfloat && isOppositeCond(tok->str() == "||", mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath)) {
-
-                const bool alwaysTrue(tok->str() == "||");
-                incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive, errorPath);
+            const bool isLogicalOr(tok->str() == "||");
+            if (!isfloat && isOppositeCond(isLogicalOr, mTokenizer->isCPP(), tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true, &errorPath)) {
+                if (!isIfConstexpr(tok)) {
+                    const bool alwaysTrue(isLogicalOr);
+                    incorrectLogicOperatorError(tok, conditionString(tok), alwaysTrue, inconclusive, errorPath);
+                }
                 continue;
             }
 
@@ -1417,7 +1439,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::Match(tok, "%oror%|&&|:"))
                 continue;
-            if (Token::Match(tok, "%comp%") && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
+            if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
             if (isConstVarExpression(tok, "[|(|&|+|-|*|/|%|^|>>|<<"))
                 continue;
@@ -1440,6 +1462,12 @@ void CheckCondition::alwaysTrueFalse()
             const bool returnExpression = Token::simpleMatch(tok->astTop(), "return") && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
 
             if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression || returnExpression))
+                continue;
+
+            const Token* expr1 = tok->astOperand1(), *expr2 = tok->astOperand2();
+            const bool isUnknown = (expr1 && expr1->valueType() && expr1->valueType()->type == ValueType::UNKNOWN_TYPE) ||
+                                   (expr2 && expr2->valueType() && expr2->valueType()->type == ValueType::UNKNOWN_TYPE);
+            if (isUnknown)
                 continue;
 
             // Don't warn when there are expanded macros..
@@ -1481,6 +1509,9 @@ void CheckCondition::alwaysTrueFalse()
                 return ChildrenToVisit::none;
             });
             if (hasSizeof)
+                continue;
+
+            if (isIfConstexpr(tok))
                 continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());
@@ -1808,29 +1839,58 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                 else
                     typeMaxValue = unsignedTypeMaxValue / 2;
 
-                bool result;
+                bool result{};
+                const auto kiv = valueTok->getKnownIntValue();
                 if (tok->str() == "==")
                     result = false;
                 else if (tok->str() == "!=")
                     result = true;
                 else if (tok->str()[0] == '>' && i == 0)
                     // num > var
-                    result = (valueTok->getKnownIntValue() > 0);
+                    result = (kiv > 0);
                 else if (tok->str()[0] == '>' && i == 1)
                     // var > num
-                    result = (valueTok->getKnownIntValue() < 0);
+                    result = (kiv < 0);
                 else if (tok->str()[0] == '<' && i == 0)
                     // num < var
-                    result = (valueTok->getKnownIntValue() < 0);
+                    result = (kiv < 0);
                 else if (tok->str()[0] == '<' && i == 1)
                     // var < num
-                    result = (valueTok->getKnownIntValue() > 0);
+                    result = (kiv > 0);
 
-                if (valueTok->getKnownIntValue() < typeMinValue) {
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+                bool error = false;
+                if (kiv < typeMinValue || kiv > typeMaxValue) {
+                    error = true;
+                } else {
+                    switch (i) {
+                    case 0: // num cmp var
+                        if (kiv == typeMinValue) {
+                            if (tok->str() == "<=") {
+                                result = true;
+                                error = true;
+                            } else if (tok->str() == ">")
+                                error = true;
+                        }
+                        else if (kiv == typeMaxValue && (tok->str() == ">=" || tok->str() == "<")) {
+                            error = true;
+                        }
+                        break;
+                    case 1: // var cmp num
+                        if (kiv == typeMinValue) {
+                            if (tok->str() == ">=") {
+                                result = true;
+                                error = true;
+                            } else if (tok->str() == "<")
+                                error = true;
+                        }
+                        else if (kiv == typeMaxValue && (tok->str() == "<=" || tok->str() == ">")) {
+                            error = true;
+                        }
+                        break;
+                    }
                 }
-                else if (valueTok->getKnownIntValue() > typeMaxValue)
-                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), valueTok->getKnownIntValue(), result);
+                if (error)
+                    compareValueOutOfTypeRangeError(valueTok, typeTok->valueType()->str(), kiv, result);
             }
         }
     }

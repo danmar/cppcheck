@@ -51,6 +51,15 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
     add_compile_options(-Wsuggest-attribute=noreturn)
     add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14)
+        if (CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+            # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
+            add_compile_options(-mllvm -inline-deferral)
+        endif()
+
+        # use force DWARF 4 debug format since not all tools might be able to handle DWARF 5 yet - e.g. valgrind on ubuntu 20.04
+        add_compile_options(-gdwarf-4)
+    endif()
 
    add_compile_options_safe(-Wno-documentation-unknown-command)
 
@@ -66,7 +75,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-shadow-field-in-constructor)
    add_compile_options_safe(-Wno-covered-switch-default)
    add_compile_options_safe(-Wno-shorten-64-to-32)
-   add_compile_options_safe(-Wno-zero-as-null-pointer-constant)
+   add_compile_options_safe(-Wno-zero-as-null-pointer-constant) # TODO: enable when warnings are fixed in in simplecpp and tinyxml2
    add_compile_options_safe(-Wno-format-nonliteral)
    add_compile_options_safe(-Wno-implicit-int-conversion)
    add_compile_options_safe(-Wno-double-promotion)
@@ -76,12 +85,17 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-implicit-float-conversion)
    add_compile_options_safe(-Wno-switch-enum)
    add_compile_options_safe(-Wno-float-conversion)
-   add_compile_options_safe(-Wno-redundant-parens) # caused by Qt moc code
    add_compile_options_safe(-Wno-enum-enum-conversion)
    add_compile_options_safe(-Wno-date-time)
-   add_compile_options_safe(-Wno-suggest-override)
-   add_compile_options_safe(-Wno-suggest-destructor-override)
    add_compile_options_safe(-Wno-conditional-uninitialized)
+   add_compile_options_safe(-Wno-suggest-override) # TODO: enable when warnings are fixed in in tinyxml2
+   add_compile_options_safe(-Wno-suggest-destructor-override) # TODO: enable when warnings are fixed in in tinyxml2
+   add_compile_options_safe(-Wno-extra-semi-stmt) # TODO: enable when warnings are fixed in in tinyxml2
+   add_compile_options_safe(-Wno-implicitly-unsigned-literal)
+   add_compile_options_safe(-Wno-tautological-type-limit-compare)
+   add_compile_options_safe(-Wno-unused-member-function)
+   add_compile_options(-Wno-disabled-macro-expansion)
+   add_compile_options_safe(-Wno-bitwise-instead-of-logical) # TODO: fix these
 
    # warnings we are not interested in
    add_compile_options(-Wno-four-char-constants)
@@ -89,8 +103,6 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options(-Wno-weak-vtables)
    add_compile_options(-Wno-padded)
    add_compile_options(-Wno-c++98-compat-pedantic)
-   add_compile_options(-Wno-disabled-macro-expansion)
-   add_compile_options(-Wno-reserved-id-macro)
    add_compile_options_safe(-Wno-return-std-move-in-c++11)
 
    if(ENABLE_COVERAGE OR ENABLE_COVERAGE_XML)
@@ -99,7 +111,48 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if (MSVC)
-    add_compile_options(/W4)
+    # General
+    add_compile_options(/W4) # Warning Level
+    add_compile_options(/Zi) # Debug Information Format - Program Database
+    if (WARNINGS_ARE_ERRORS)
+        add_compile_options(/WX) # Treat Warning As Errors
+    endif()
+    add_compile_options(/MP) # Multi-processor Compilation
+
+    # Advanced
+    # Character Set - Use Unicode Character Set
+    # No Whole Program Optimization
+
+    # C/C++ - Optimization
+    if(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+        add_compile_options(/O2) # Optimization - Maximum Optimization (Favor Speed)
+        add_compile_options(/Ob2) # Inline Function Expansion - Any Suitable
+        add_compile_options(/Oi) # Enable Intrinsic Functions
+        add_compile_options(/Ot) # Favor fast code
+        add_compile_options(/Oy) # Omit Frame Pointers
+    else()
+        add_compile_options(/Od) # Optimization - Disabled
+    endif()
+
+    # C/C++ - Code Generation
+    if(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+        add_compile_options(/GF) # Enable String Pooling
+        add_compile_options(/MD) # Runtime Library - Multi-threaded DLL
+        add_compile_options(/GS-) # Disable Security Check
+        add_compile_options(/Gy) # Enable Function-Level Linking
+    else()
+        add_compile_options(/MDd) # Runtime Library - Multi-threaded Debug DLL
+        add_compile_options(/GS) # Enable Security Check
+    endif()
+
+    # C/C++ - Language
+    add_compile_options(/Zc:rvalueCast) # Enforce type conversion rules
+    add_compile_options(/std:c++14) # C++ Langage Standard - ISO C++14 Standard
+
+    # C/C++ - Browse Information
+    # Enable Browse Information - No
+
+    # C/C++ - Advanced
     add_compile_options(/wd4018) # warning C4018: '>': signed/unsigned mismatch
     add_compile_options(/wd4127) # warning C4127: conditional expression is constant
     add_compile_options(/wd4146) # warning C4146: unary minus operator applied to unsigned type, result still unsigned
@@ -115,8 +168,31 @@ if (MSVC)
     add_compile_options(/wd4800) # warning C4800: 'const SymbolDatabase *' : forcing value to bool 'true' or 'false' (performance warning)
     add_compile_options(/wd4805) # warning C4805: '==' : unsafe mix of type 'bool' and type 'long long' in operation
 
-    if (WARNINGS_ARE_ERRORS)
-        add_compile_options(/WX)
+    # C/C++ - All Options
+    add_compile_options(/Zc:throwingNew /Zc:__cplusplus) # Additional Options
+
+    # Linker - General
+    if(CMAKE_BUILD_TYPE MATCHES "Debug")
+        add_link_options(/INCREMENTAL) # Enable Incremental Linking - Yes
+    endif()
+    add_link_options(/NOLOGO) # SUppress Startup Banner - Yes
+    # Ignore Import Library - Yes
+
+    # Linker - Debugging
+    add_link_options(/DEBUG) # Generate Debug Information
+
+    # Linker - System
+    # Stack Reserve Size - 8000000
+    # Stack Commit Size - 8000000
+    add_link_options(/LARGEADDRESSAWARE) # Enbale Large Addresses - Yes
+
+    # Linker - Optimization
+    add_link_options(/OPT:REF) # References - Yes
+    add_link_options(/OPT:ICF) # Enable COMDAT Folding - Yes
+
+    # Linker - Advanced
+    if(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+        add_link_options(/RELEASE) # Set Checksum - Yes
     endif()
 endif()
 

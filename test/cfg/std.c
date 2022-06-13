@@ -19,11 +19,150 @@
 #include <wctype.h>
 #include <fenv.h>
 #include <setjmp.h>
+#define __STDC_WANT_LIB_EXT1__ 1
 #include <time.h>
 #include <stdbool.h>
 #include <stdint.h>
+#ifndef __STDC_NO_THREADS__
+#include <threads.h>
+#endif
 #include <inttypes.h>
 #include <float.h>
+
+int invalidFunctionArgStr_strcpn(void)
+{
+    const char str1[] = "ABCDEF49620910";
+    const char str2[] = "42";
+    const char pattern[3] = { -42, -43, -44 };
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) strcspn(str1, pattern);
+    return strcspn(str1, str2);
+}
+
+void invalidFunctionArgStr_strncat(void)
+{
+    char str1[20];
+    strcpy (str1,"test");
+    const char src = '/';
+    // No warning is expected for
+    strncat (str1, &src, 1);
+    puts (str1);
+}
+
+char * invalidFunctionArgStr_strpbrk( const char *p )
+{
+    const char search[] = { -42, -43, -44 };
+    const char pattern[3] = { -42, -43, -44 };
+    (void) strpbrk( "abc42", "42" );
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) strpbrk( search, "42" );
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) strpbrk( search, pattern );
+    // cppcheck-suppress invalidFunctionArgStr
+    return strpbrk( p, pattern );
+}
+
+int invalidFunctionArgStr_strncmp( const char *p )
+{
+    // No warning is expected for:
+    const char emdash[3] = { -42, -43, -44 };
+    return strncmp( p, emdash, 3 );
+}
+
+float invalidFunctionArg_float_remquo (float x, float y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquof(x,0.0f,quo);
+    return remquo(x,y,quo);
+}
+
+double invalidFunctionArg_double_remquo (double x, double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0L,quo);
+    return remquo(x,y,quo);
+}
+
+double invalidFunctionArg_long_double_remquo (long double x, long double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquo(x,0.0L,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) remquol(x,0.0L,quo);
+    return remquo(x,y,quo);
+}
+
+void invalidFunctionArg_remainderl(long double f1, long double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderl(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderl(f1,0.0L);
+    (void)remainderl(f1,f2);
+}
+
+void invalidFunctionArg_remainder(double f1, double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainder(f1,0.0);
+    (void)remainder(f1,f2);
+}
+
+void invalidFunctionArg_remainderf(float f1, float f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderf(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)remainderf(f1,0.0f);
+    (void)remainderf(f1,f2);
+}
+
+int qsort_cmpfunc (const void * a, const void * b) {
+    return (*(int*)a - *(int*)b);
+}
+void nullPointer_qsort(void *base, size_t n, size_t size, int (*cmp)(const void *, const void *))
+{
+    // cppcheck-suppress nullPointer
+    qsort(NULL, n, size, qsort_cmpfunc);
+    // cppcheck-suppress nullPointer
+    qsort(base, n, size, NULL);
+    qsort(base, n, size, qsort_cmpfunc);
+}
+
+// As with all bounds-checked functions, localtime_s is only guaranteed to be available if __STDC_LIB_EXT1__ is defined by the implementation and if the user defines __STDC_WANT_LIB_EXT1__ to the integer constant 1 before including time.h.
+#ifdef __STDC_LIB_EXT1__
+void uninitvar_localtime_s(const time_t *restrict time, struct tm *restrict result)
+{
+    const time_t *restrict Time;
+    // cppcheck-suppress uninitvar
+    (void)localtime_s(Time, result);
+    (void)localtime_s(time, result);
+}
+
+void nullPointer_localtime_s(const time_t *restrict time, struct tm *restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void)localtime_s(NULL, result);
+    // cppcheck-suppress nullPointer
+    (void)localtime_s(time, NULL);
+    (void)localtime_s(time, result);
+}
+#endif // __STDC_LIB_EXT1__
+
+size_t bufferAccessOutOfBounds_wcsrtombs(char * dest, const wchar_t ** src, size_t len, mbstate_t * ps)
+{
+    char buf[42];
+    (void)wcsrtombs(buf,src,42,ps);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)wcsrtombs(buf,src,43,ps);
+    return wcsrtombs(dest,src,len,ps);
+}
 
 void bufferAccessOutOfBounds(void)
 {
@@ -83,6 +222,26 @@ void bufferAccessOutOfBounds(void)
     // cppcheck-suppress bufferAccessOutOfBounds
     memset(pAlloc1, 0, 17);
     free(pAlloc1);
+}
+
+wchar_t* nullPointer_fgetws(wchar_t* buffer, int n, FILE* stream)
+{
+    // cppcheck-suppress nullPointer
+    (void)fgetws(NULL,n,stream);
+    // cppcheck-suppress nullPointer
+    (void)fgetws(buffer,n,NULL);
+    // No warning is expected
+    return fgetws(buffer, n, stream);
+}
+
+char* nullPointer_fgets(char *buffer, int n, FILE *stream)
+{
+    // cppcheck-suppress nullPointer
+    (void)fgets(NULL,n,stream);
+    // cppcheck-suppress nullPointer
+    (void)fgets(buffer,n,NULL);
+    // No warning is expected
+    return fgets(buffer, n, stream);
 }
 
 void memleak_aligned_alloc(void)
@@ -229,7 +388,7 @@ void nullpointer(int value)
     fclose(fp);
     fp = 0;
     // No FP
-    fflush(0);
+    fflush(0); // If stream is a null pointer, all streams are flushed.
     fp = freopen(0,"abc",stdin);
     fclose(fp);
     fp = NULL;
@@ -361,6 +520,51 @@ void nullpointer(int value)
     wscanf(L"%i", NULL);
 }
 
+void nullPointer_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcsftime(NULL, maxsize, format, timeptr);
+    // cppcheck-suppress nullPointer
+    (void)wcsftime(ptr, maxsize, NULL, timeptr);
+    // cppcheck-suppress nullPointer
+    (void)wcsftime(ptr, maxsize, format, NULL);
+    (void)wcsftime(ptr, maxsize, format, timeptr);
+}
+
+void bufferAccessOutOfBounds_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
+{
+    wchar_t buf[42];
+    (void)wcsftime(buf, 42, format, timeptr);
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    (void)wcsftime(buf, 43, format, timeptr);
+    (void)wcsftime(ptr, maxsize, format, timeptr);
+}
+
+int nullPointer_wcsncmp(const wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) wcsncmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void) wcsncmp(s1,NULL,n);
+    return wcsncmp(s1,s2,n);
+}
+
+wchar_t* nullPointer_wcsncpy(wchar_t *s, const wchar_t *cs, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) wcsncpy(NULL,cs,n);
+    // cppcheck-suppress nullPointer
+    (void) wcsncpy(s,NULL,n);
+    return wcsncpy(s,cs,n);
+}
+
+size_t nullPointer_strlen(const char *s)
+{
+    // cppcheck-suppress nullPointer
+    (void) strlen(NULL);
+    return strlen(s);
+}
+
 void nullpointerMemchr1(char *p, char *s)
 {
     p = memchr(s, 'p', strlen(s));
@@ -379,18 +583,6 @@ void nullPointer_memchr(char *p)
     // cppcheck-suppress nullPointer
     p = memchr(s, 0, strlen(s));
     (void)p;
-}
-
-void nullPointer_memcmp(char *p)
-{
-    // cppcheck-suppress nullPointer
-    (void)memcmp(p, 0, 123);
-}
-
-void nullPointer_wmemcmp(wchar_t *p)
-{
-    // cppcheck-suppress nullPointer
-    (void)wmemcmp(p, 0, 123);
 }
 
 void nullPointer_vsnprintf(const char * format, ...)
@@ -1491,6 +1683,14 @@ void uninitvar_fmod(void)
     (void)fmodl(ld1,ld2);
 }
 
+void nullPointer_fprintf(FILE *Stream, char *Format, int Argument)
+{
+    // cppcheck-suppress nullPointer
+    (void)fprintf(Stream, NULL, Argument);
+    // no warning is expected
+    (void)fprintf(Stream, Format, Argument);
+}
+
 void uninitvar_fprintf(FILE *Stream, char *Format, int Argument)
 {
     FILE *stream1, *stream2;
@@ -1507,6 +1707,13 @@ void uninitvar_fprintf(FILE *Stream, char *Format, int Argument)
 
     // no warning is expected
     (void)fprintf(Stream, Format, Argument);
+}
+
+void nullPointer_vfprintf(FILE *Stream, const char *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)vfprintf(Stream, NULL, Arg);
+    (void)vfprintf(Stream, Format, Arg);
 }
 
 void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
@@ -1526,6 +1733,13 @@ void uninitvar_vfprintf(FILE *Stream, const char *Format, va_list Arg)
     (void)vfprintf(Stream, Format, Arg);
     // cppcheck-suppress va_list_usedBeforeStarted
     (void)vfprintf(Stream, Format, arg);
+}
+
+void nullPointer_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)vfwprintf(Stream, NULL, Arg);
+    (void)vfwprintf(Stream, Format, Arg);
 }
 
 void uninitvar_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
@@ -2623,6 +2837,15 @@ void uninitvar_memchr(void)
     (void)memchr(cs,c,n);
 }
 
+void *bufferAccessOutOfBounds_memchr(const void *s, int c, size_t n)
+{
+    char buf[42]={0};
+    (void)memchr(buf,c,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)memchr(buf,c,43);
+    return memchr(s,c,n);
+}
+
 void uninitvar_wmemchr(void)
 {
     wchar_t *cs;
@@ -2838,6 +3061,14 @@ void uninitvar_vprintf(char *Format, va_list Arg)
     (void)vprintf(Format,arg2);
 }
 
+void memleak_strdup (char *s) // #9328
+{
+    char *s1 = strdup(s);
+    printf("%s",s1);
+    free(s);     // s1 is not freed
+    // cppcheck-suppress memleak
+}
+
 void uninitvar_vwprintf(wchar_t *Format, va_list Arg)
 {
     wchar_t * format1, * format2;
@@ -2852,6 +3083,16 @@ void uninitvar_vwprintf(wchar_t *Format, va_list Arg)
     (void)vwprintf(Format,Arg);
     // cppcheck-suppress va_list_usedBeforeStarted
     (void)vwprintf(Format,arg);
+}
+
+void nullPointer_bsearch(void* key, void* base, size_t num, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void)bsearch(NULL,base,num,size,(int (*)(const void*,const void*))strcmp);
+    // cppcheck-suppress nullPointer
+    (void)bsearch(key,NULL,num,size,(int (*)(const void*,const void*))strcmp);
+    // No warning is expected
+    (void)bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
 }
 
 void uninitvar_bsearch(void)
@@ -3049,12 +3290,36 @@ void uninitvar_vwscanf(void)
     (void)vwscanf(format,arg);
 }
 
+void nullPointer_setbuf(FILE *stream, char *buf)
+{
+    // cppcheck-suppress nullPointer
+    setbuf(NULL,buf);
+    setbuf(stream,NULL);
+    setbuf(stream,buf);
+}
+
+int bufferAccessOutOfBounds_setvbuf(FILE* stream, int mode, size_t size)
+{
+    char buf[42]={0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) setvbuf(stream, buf, mode, 43);
+    return setvbuf(stream, buf, mode, 42);
+}
+
+int nullPointer_setvbuf(FILE* stream, char *buf, int mode, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void) setvbuf(NULL, buf, mode, size);
+    (void) setvbuf(stream, NULL, mode, size);
+    return setvbuf(stream, buf, mode, size);
+}
+
 void uninitvar_setbuf(void)
 {
     FILE *stream;
     char *buf;
     // cppcheck-suppress uninitvar
-    (void)setbuf(stream,buf);
+    setbuf(stream,buf);
 }
 
 void uninitvar_setvbuf(void)
@@ -3077,6 +3342,28 @@ void uninitvar_strcat(char *dest, const char * const source)
     (void)strcat(dest,srcstr2);
     // cppcheck-suppress uninitvar
     (void)strcat(deststr2,source);
+
+    // no warning shall be shown for
+    (void)strcat(dest,source);
+}
+
+void nullPointer_strcpy(char *dest, const char * const source)
+{
+    // cppcheck-suppress nullPointer
+    (void)strcpy(NULL,source);
+    // cppcheck-suppress nullPointer
+    (void)strcpy(dest,NULL);
+
+    // no warning shall be shown for
+    (void)strcpy(dest,source);
+}
+
+void nullPointer_strcat(char *dest, const char * const source)
+{
+    // cppcheck-suppress nullPointer
+    (void)strcat(NULL,source);
+    // cppcheck-suppress nullPointer
+    (void)strcat(dest,NULL);
 
     // no warning shall be shown for
     (void)strcat(dest,source);
@@ -3221,6 +3508,15 @@ void uninitvar_wcschr(void)
     (void)wcschr(cs,c);
 }
 
+void nullPointer_strcmp(char *s1, char *s2)
+{
+    // cppcheck-suppress nullPointer
+    (void)strcmp(NULL,s2);
+    // cppcheck-suppress nullPointer
+    (void)strcmp(s1,NULL);
+    (void)strcmp(s1,s2);
+}
+
 void uninitvar_strcmp(char *s1, char *s2)
 {
     char *str1;
@@ -3304,6 +3600,26 @@ void uninitvar_wcscpy(wchar_t *d, wchar_t*s)
 
     // No warning is expected
     (void)wcscpy(d,s);
+}
+
+size_t bufferAccessOutOfBounds_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+    char buf[42] = {0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) strftime(buf,43,fmt,p);
+    (void) strftime(buf,max,fmt,p);
+    return strftime(buf,42,fmt,p);
+}
+
+size_t nullPointer_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+    // cppcheck-suppress nullPointer
+    (void) strftime(NULL,max,fmt,p);
+    // cppcheck-suppress nullPointer
+    (void) strftime(s,max,NULL,p);
+    // cppcheck-suppress nullPointer
+    (void) strftime(s,max,fmt,NULL);
+    return strftime(s,max,fmt,p);
 }
 
 void uninitvar_strftime(void)
@@ -3407,6 +3723,26 @@ void uninitvar_strncat(char *d, char *s, size_t n)
 
     // no warning is expected for
     (void)strncat(d,s,n);
+}
+
+void nullPointer_strncat(char *d, char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)strncat(NULL,s,n);
+    // cppcheck-suppress nullPointer
+    (void)strncat(d,NULL,n);
+    // no warning is expected for
+    (void)strncat(d,s,n);
+}
+
+void nullPointer_strncpy(char *d, const char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)strncpy(NULL,s,n);
+    // cppcheck-suppress nullPointer
+    (void)strncpy(d,NULL,n);
+    // no warning is expected for
+    (void)strncpy(d,s,n);
 }
 
 // errno_t strcat_s(char *restrict dest, rsize_t destsz, const char *restrict src); // since C11
@@ -3577,6 +3913,67 @@ void bufferAccessOutOfBounds_strncmp(void)
     (void)strncmp(dest,src,2);
     // cppcheck-suppress bufferAccessOutOfBounds
     (void)strncmp(dest,src,3);
+}
+
+void nullPointer_wmemcmp(const wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wmemcmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)wmemcmp(s1,NULL,n);
+    (void)wmemcmp(s1,s2,n);
+}
+
+void nullPointer_wmemmove(wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wmemmove(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)wmemmove(s1,NULL,n);
+    (void)wmemmove(s1,s2,n);
+}
+
+void nullPointer_wmemset(wchar_t* s, wchar_t c, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wmemset(NULL,c,n);
+    (void)wmemset(s,c,n);
+}
+
+void nullPointer_memmove(void *s1, void *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)memmove(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)memmove(s1,NULL,n);
+    (void)memmove(s1,s2,n);
+}
+
+void nullPointer_memcmp(const void *s1, const void *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)memcmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)memcmp(s1,NULL,n);
+    (void)memcmp(s1,s2,n);
+}
+
+void nullPointer_memcpy(void *s1, const void *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)memcpy(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)memcpy(s1,NULL,n);
+    (void)memcpy(s1,s2,n);
+}
+
+void nullPointer_strncmp(const char *s1, const char *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)strncmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)strncmp(s1,NULL,n);
+    (void)strncmp(s1,s2,n);
 }
 
 void uninitvar_wcsxfrm(void)
@@ -3922,6 +4319,15 @@ void valid_vsprintf()
     valid_vsprintf_helper("%1.0f", 2.0f);
 }
 
+int nullPointer_vswprintf(wchar_t* restrict ws, size_t s, const wchar_t* restrict format, va_list ap)
+{
+    // cppcheck-suppress nullPointer
+    vswprintf(NULL, s,format, ap);
+    // cppcheck-suppress nullPointer
+    vswprintf(ws, s,NULL, ap);
+    return vswprintf(ws, s,format, ap);
+}
+
 void uninitvar_vswprintf(void)
 {
     wchar_t *s;
@@ -4045,6 +4451,24 @@ void uninitvar_system(void)
     // cppcheck-suppress uninitvar
     (void)system(c);
 }
+
+void nullPointer_system(char *c)
+{
+    // If a null pointer is given, command processor is checked for existence
+    (void)system(NULL);
+    (void)system(c);
+}
+
+#ifndef __STDC_NO_THREADS__
+int nullPointer_mtx_timedlock( mtx_t *restrict mutex, const struct timespec *restrict time_point )
+{
+    // cppcheck-suppress nullPointer
+    (void) mtx_timedlock(NULL, time_point);
+    // cppcheck-suppress nullPointer
+    (void) mtx_timedlock(mutex, NULL);
+    return mtx_timedlock(mutex, time_point);
+}
+#endif
 
 void uninitvar_zonetime(void)
 {
@@ -4420,17 +4844,6 @@ void nullPointer_asctime_s(void)
     asctime_s(1, 26, tm);
 }
 
-void nullPointer_wcsftime(size_t maxsize)
-{
-    wchar_t* ptr = 0;
-    wchar_t* format = 0;
-    struct tm* timeptr = 0;
-    // cppcheck-suppress nullPointer
-    (void)wcsftime(ptr,maxsize,format,timeptr);
-    // cppcheck-suppress nullPointer
-    (void)wcsftime(0,maxsize,0,0);
-}
-
 void nullPointer_fegetenv(void)
 {
     fenv_t* envp = 0;
@@ -4474,6 +4887,36 @@ void nullPointer_fesetexceptflag(int excepts)
     (void)fesetexceptflag(flagp,excepts);
     // cppcheck-suppress nullPointer
     (void)fesetexceptflag(0,excepts);
+}
+
+void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
+{
+    (void)fesetexceptflag(flagp, excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fesetexceptflag(flagp, 0);
+    (void)fesetexceptflag(flagp, FE_DIVBYZERO);
+    (void)fesetexceptflag(flagp, FE_INEXACT);
+    (void)fesetexceptflag(flagp, FE_INVALID);
+    (void)fesetexceptflag(flagp, FE_OVERFLOW);
+    (void)fesetexceptflag(flagp, FE_UNDERFLOW);
+    (void)fesetexceptflag(flagp, FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fesetexceptflag(flagp, FE_ALL_EXCEPT+1);
+}
+
+void invalidFunctionArg_fetestexcept(int excepts)
+{
+    (void)fetestexcept(excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fetestexcept(0);
+    (void)fetestexcept(FE_DIVBYZERO);
+    (void)fetestexcept(FE_INEXACT);
+    (void)fetestexcept(FE_INVALID);
+    (void)fetestexcept(FE_OVERFLOW);
+    (void)fetestexcept(FE_UNDERFLOW);
+    (void)fetestexcept(FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fetestexcept(FE_ALL_EXCEPT+1);
 }
 
 void nullPointer_feupdateenv(void)

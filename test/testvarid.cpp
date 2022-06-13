@@ -96,6 +96,7 @@ private:
         TEST_CASE(varid62);
         TEST_CASE(varid63);
         TEST_CASE(varid64); // #9928 - extern const char (*x[256])
+        TEST_CASE(varid65); // #10936
         TEST_CASE(varid_for_1);
         TEST_CASE(varid_for_2);
         TEST_CASE(varid_cpp_keywords_in_c_code);
@@ -133,6 +134,7 @@ private:
         TEST_CASE(varid_in_class19);
         TEST_CASE(varid_in_class20);    // #7267
         TEST_CASE(varid_in_class21);    // #7788
+        TEST_CASE(varid_in_class22);    // #10872
         TEST_CASE(varid_namespace_1);   // #7272
         TEST_CASE(varid_namespace_2);   // #7000
         TEST_CASE(varid_namespace_3);   // #8627
@@ -151,6 +153,7 @@ private:
         TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
         TEST_CASE(varid_templateArray);
         TEST_CASE(varid_templateParameter); // #7046 set varid for "X":  std::array<int,X> Y;
+        TEST_CASE(varid_templateParameterFunctionPointer); // #11050
         TEST_CASE(varid_templateUsing); // #5781 #7273
         TEST_CASE(varid_not_template_in_condition); // #7988
         TEST_CASE(varid_cppcast); // #6190
@@ -204,6 +207,8 @@ private:
         TEST_CASE(varidenum3);
         TEST_CASE(varidenum4);
         TEST_CASE(varidenum5);
+        TEST_CASE(varidenum6); // #9180
+        TEST_CASE(varidenum7); // #8991
 
         TEST_CASE(varidnamespace1);
         TEST_CASE(varidnamespace2);
@@ -1163,7 +1168,7 @@ private:
 
     void varid63() {
         const char code[] = "void f(boost::optional<int> const& x) {}";
-        const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        const char expected[] = "1: void f ( const boost :: optional < int > & x@1 ) { }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
@@ -1171,6 +1176,29 @@ private:
         const char code[] = "extern const char (*x[256]);";
         const char expected[] = "1: extern const char ( * x@1 [ 256 ] ) ;\n";
         ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varid65() { // #10936
+        {
+            const char code[] = "extern int (*p);";
+            const char expected[] = "1: extern int ( * p@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "extern int (i);";
+            const char expected[] = "1: extern int ( i@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "int (*p);";
+            const char expected[] = "1: int ( * p@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
+        {
+            const char code[] = "int (i);";
+            const char expected[] = "1: int ( i@1 ) ;\n";
+            ASSERT_EQUALS(expected, tokenize(code));
+        }
     }
 
     void varid_for_1() {
@@ -1710,7 +1738,7 @@ private:
                             "};";
         ASSERT_EQUALS("1: class Foo {\n"
                       "2: private:\n"
-                      "3: void f ( void ) ;\n"
+                      "3: void f ( ) ;\n"
                       "4: } ;\n",
                       tokenize(code));
     }
@@ -1910,6 +1938,30 @@ private:
         ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
     }
 
+    void varid_in_class22() {
+        const char code[] = "struct data {};\n"
+                            "    struct S {\n"
+                            "    std::vector<data> std;\n"
+                            "    void f();\n"
+                            "};\n"
+                            "void S::f() {\n"
+                            "    std::vector<data>::const_iterator end = std.end();\n"
+                            "    for (std::vector<data>::const_iterator i = std.begin(); i != end; ++i) {}\n"
+                            "}\n";
+
+        const char expected[] = "1: struct data { } ;\n"
+                                "2: struct S {\n"
+                                "3: std :: vector < data > std@1 ;\n"
+                                "4: void f ( ) ;\n"
+                                "5: } ;\n"
+                                "6: void S :: f ( ) {\n"
+                                "7: std :: vector < data > :: const_iterator end@2 ; end@2 = std@1 . end ( ) ;\n"
+                                "8: for ( std :: vector < data > :: const_iterator i@3 = std@1 . begin ( ) ; i@3 != end@2 ; ++ i@3 ) { }\n"
+                                "9: }\n";
+
+        ASSERT_EQUALS(expected, tokenize(code, "test.cpp"));
+    }
+
     void varid_namespace_1() { // #7272
         const char code[] = "namespace Blah {\n"
                             "  struct foo { int x;};\n"
@@ -1946,7 +1998,7 @@ private:
         ASSERT(actual.find("X@2 = 0") != std::string::npos);
     }
 
-    std::string getLine(const std::string &code, int lineNumber) {
+    static std::string getLine(const std::string &code, int lineNumber) {
         std::string nr = MathLib::toString(lineNumber);
         const std::string::size_type pos1 = code.find('\n' + nr + ": ");
         if (pos1 == std::string::npos)
@@ -2290,13 +2342,32 @@ private:
                       tokenize("VertexArrayIterator<float[2]> attrPos = m_AttributePos.GetIterator<float[2]>();"));
     }
 
-    void varid_templateParameter() { // #7046 set varid for "X":  std::array<int,X> Y;
-        const char code[] = "const int X = 0;\n"
-                            "std::array<int,X> Y;\n";
+    void varid_templateParameter() {
+        {
+            const char code[] = "const int X = 0;\n" // #7046 set varid for "X":  std::array<int,X> Y;
+                                "std::array<int,X> Y;\n";
 
-        ASSERT_EQUALS("1: const int X@1 = 0 ;\n"
-                      "2: std :: array < int , X@1 > Y@2 ;\n",
-                      tokenize(code));
+            ASSERT_EQUALS("1: const int X@1 = 0 ;\n"
+                          "2: std :: array < int , X@1 > Y@2 ;\n",
+                          tokenize(code));
+        }
+        {
+            const char code[] = "std::optional<N::Foo<A>> Foo;\n"; // #11003
+
+            ASSERT_EQUALS("1: std :: optional < N :: Foo < A > > Foo@1 ;\n",
+                          tokenize(code));
+        }
+    }
+
+    void varid_templateParameterFunctionPointer() {
+        {
+            const char code[] = "template <class, void (*F)()>\n"
+                                "struct a;\n";
+
+            ASSERT_EQUALS("1: template < class , void ( * F ) ( ) >\n"
+                          "2: struct a ;\n",
+                          tokenize(code));
+        }
     }
 
     void varid_templateUsing() { // #5781 #7273
@@ -2609,34 +2680,70 @@ private:
 
     void varid_lambda_arg() {
         // #8664
-        const char code1[] = "static void func(int ec) {\n"
-                             "    func2([](const std::error_code& ec) { return ec; });\n"
-                             "}";
-        const char exp1[] = "1: static void func ( int ec@1 ) {\n"
-                            "2: func2 ( [ ] ( const std :: error_code & ec@2 ) { return ec@2 ; } ) ;\n"
-                            "3: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
-
-        const char code2[] = "static void func(int ec) {\n"
-                             "    func2([](int x, const std::error_code& ec) { return x + ec; });\n"
-                             "}";
-        const char exp2[] = "1: static void func ( int ec@1 ) {\n"
-                            "2: func2 ( [ ] ( int x@2 , const std :: error_code & ec@3 ) { return x@2 + ec@3 ; } ) ;\n"
-                            "3: }\n";
-        ASSERT_EQUALS(exp2, tokenize(code2));
+        {
+            const char code[] = "static void func(int ec) {\n"
+                                "    func2([](const std::error_code& ec) { return ec; });\n"
+                                "}";
+            const char exp[] = "1: static void func ( int ec@1 ) {\n"
+                               "2: func2 ( [ ] ( const std :: error_code & ec@2 ) { return ec@2 ; } ) ;\n"
+                               "3: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        {
+            const char code[] = "static void func(int ec) {\n"
+                                "    func2([](int x, const std::error_code& ec) { return x + ec; });\n"
+                                "}";
+            const char exp[] = "1: static void func ( int ec@1 ) {\n"
+                               "2: func2 ( [ ] ( int x@2 , const std :: error_code & ec@3 ) { return x@2 + ec@3 ; } ) ;\n"
+                               "3: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // #9384
+        {
+            const char code[] = "auto g = [](const std::string& s) -> std::string { return {}; };\n";
+            const char exp[] = "1: auto g@1 ; g@1 = [ ] ( const std :: string & s@2 ) . std :: string { return { } ; } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        {
+            const char code[] = "auto g = [](std::function<void()> p) {};\n";
+            const char exp[] = "1: auto g@1 ; g@1 = [ ] ( std :: function < void ( ) > p@2 ) { } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // # 10849
+        {
+            const char code[] = "class T {};\n"
+                                "auto g = [](const T* t) -> int {\n"
+                                "    const T* u{}, *v{};\n"
+                                "    return 0;\n"
+                                "};\n";
+            const char exp[] = "1: class T { } ;\n"
+                               "2: auto g@1 ; g@1 = [ ] ( const T * t@2 ) . int {\n"
+                               "3: const T * u@3 { } ; const T * v@4 { } ;\n"
+                               "4: return 0 ;\n"
+                               "5: } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
     }
 
     void varid_lambda_mutable() {
         // #8957
-        const char code1[] = "static void func() {\n"
-                             "    auto x = []() mutable {};\n"
-                             "    dostuff(x);\n"
-                             "}";
-        const char exp1[] = "1: static void func ( ) {\n"
-                            "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
-                            "3: dostuff ( x@1 ) ;\n"
-                            "4: }\n";
-        ASSERT_EQUALS(exp1, tokenize(code1));
+        {
+            const char code[] = "static void func() {\n"
+                                "    auto x = []() mutable {};\n"
+                                "    dostuff(x);\n"
+                                "}";
+            const char exp[] = "1: static void func ( ) {\n"
+                               "2: auto x@1 ; x@1 = [ ] ( ) mutable { } ;\n"
+                               "3: dostuff ( x@1 ) ;\n"
+                               "4: }\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
+        // #9384
+        {
+            const char code[] = "auto g = [](int i) mutable {};\n";
+            const char exp[] = "1: auto g@1 ; g@1 = [ ] ( int i@2 ) mutable { } ;\n";
+            ASSERT_EQUALS(exp, tokenize(code));
+        }
     }
 
     void varid_trailing_return1() { // #8889
@@ -3249,6 +3356,28 @@ private:
                                "3: A = f ( x , eStart , y ) ;\n"
                                "4: } ;\n";
         TODO_ASSERT_EQUALS(expected, current, tokenize(code));
+    }
+
+    void varidenum6() { // #9180
+        const char code[] = "const int IDL1 = 13;\n"
+                            "enum class E { IDL1 = 16, };\n";
+        const char expected[] = "1: const int IDL1@1 = 13 ;\n"
+                                "2: enum class E { IDL1 = 16 , } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum7() { // #8991
+        const char code[] = "namespace N1 { const int c = 42; }\n"
+                            "namespace N2 { const int c = 24; }\n"
+                            "struct S {\n"
+                            "    enum { v1 = N1::c, v2 = N2::c };\n"
+                            "};\n";
+        const char expected[] = "1: namespace N1 { const int c@1 = 42 ; }\n"
+                                "2: namespace N2 { const int c@2 = 24 ; }\n"
+                                "3: struct S {\n"
+                                "4: enum Anonymous0 { v1 = N1 :: c@1 , v2 = N2 :: c@2 } ;\n"
+                                "5: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
     }
 
     void varid_classnameshaddowsvariablename() {

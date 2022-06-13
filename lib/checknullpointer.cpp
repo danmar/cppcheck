@@ -182,8 +182,13 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // Dereferencing pointer..
-    if (parent->isUnaryOp("*") && !addressOf)
-        return true;
+    if (parent->isUnaryOp("*")) {
+        // declaration of function pointer
+        if (tok->variable() && tok->variable()->nameToken() == tok)
+            return false;
+        if (!addressOf)
+            return true;
+    }
 
     // array access
     if (firstOperand && parent->str() == "[" && !addressOf)
@@ -210,9 +215,9 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return true;
 
     // std::string dereferences nullpointers
-    if (Token::Match(parent->tokAt(-3), "std :: string|wstring (") && tok->strAt(1) == ")")
+    if (Token::Match(parent->tokAt(-3), "std :: string|wstring (|{ %name% )|}"))
         return true;
-    if (Token::Match(parent->previous(), "%name% (") && tok->strAt(1) == ")") {
+    if (Token::Match(parent->previous(), "%name% (|{ %name% )|}")) {
         const Variable* var = tok->tokAt(-2)->variable();
         if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
             return true;
@@ -345,8 +350,8 @@ void CheckNullPointer::nullConstantDereference()
             else if (Token::Match(tok, "0 [") && (tok->previous()->str() != "&" || !Token::Match(tok->next()->link()->next(), "[.(]")))
                 nullPointerError(tok);
 
-            else if (Token::Match(tok->previous(), "!!. %name% (") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
-                if (Token::Match(tok->tokAt(2), "0|NULL|nullptr )") && tok->varId()) { // constructor call
+            else if (Token::Match(tok->previous(), "!!. %name% (|{") && (tok->previous()->str() != "::" || tok->strAt(-2) == "std")) {
+                if (Token::Match(tok->tokAt(2), "0|NULL|nullptr )|}") && tok->varId()) { // constructor call
                     const Variable *var = tok->variable();
                     if (var && !var->isPointer() && !var->isArray() && var->isStlStringType())
                         nullPointerError(tok);
@@ -469,6 +474,9 @@ void CheckNullPointer::arithmetic()
             } else
                 continue;
             if (numericOperand && numericOperand->valueType() && !numericOperand->valueType()->isIntegral())
+                continue;
+            const ValueFlow::Value* numValue = numericOperand ? numericOperand->getValue(0) : nullptr;
+            if (numValue && numValue->intvalue == 0) // don't warn for arithmetic with 0
                 continue;
             const ValueFlow::Value* value = pointerOperand->getValue(0);
             if (!value)

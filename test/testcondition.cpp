@@ -538,6 +538,25 @@ private:
               "    else if (!!a) {}\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (style) Expression is always false because 'else if' condition matches previous condition at line 2.\n", errout.str());
+
+        // #11059
+        check("int f();\n"
+              "void g() {\n"
+              "    int i = f();\n"
+              "    if (i == 3) {}\n"
+              "    else if ((i = f()) == 5) {}\n"
+              "    else if (i == 3) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f();\n"
+              "void g() {\n"
+              "    int i = f();\n"
+              "    if (i == 3) {}\n"
+              "    else if ((i = f()) == 5) {}\n"
+              "    else if (i != 3) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPureFunction_(const char code[], const char* file, int line) {
@@ -867,6 +886,24 @@ private:
               "    if (b == 0x0C) {}\n"
               "  }\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i) {\n" // #11082
+              "    int j = 0;\n"
+              "    if (i | j) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Operator '|' with one operand equal to zero is redundant.\n", errout.str());
+
+        check("#define EIGHTTOIS(x) (((x) << 8) | (x))\n"
+              "int f() {\n"
+              "    return EIGHTTOIS(0);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("#define O_RDONLY 0\n"
+              "void f(const char* s, int* pFd) {\n"
+              "    *pFd = open(s, O_RDONLY | O_BINARY, 0);\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1208,6 +1245,14 @@ private:
               "void f(int x) {\n"
               "  if (x && x != ZERO) {}\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int N) {\n" // #9789
+              "    T a[20] = { 0 };\n"
+              "    for (int i = 0; i < N; ++i) {\n"
+              "        if (0 < a[i] && a[i] < 1) {}\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1615,6 +1660,12 @@ private:
     }
 
     void secondAlwaysTrueFalseWhenFirstTrueError() {
+        check("void f(void) {\n" // #8892
+              "    const char c[1] = { \'x\' }; \n"
+              "    if(c[0] == \'x\'){;}\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'c[0]=='x'' is always true\n", errout.str());
+
         check("void f(int x) {\n"
               "    if (x > 5 && x != 1)\n"
               "        a++;\n"
@@ -2491,6 +2542,14 @@ private:
               "  if (!b && f()) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n"
+              "    if (d != 0) {\n"
+              "        int i = d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void identicalInnerCondition() {
@@ -2671,7 +2730,7 @@ private:
               "    }\n"
               "    int FileIndex;\n"
               "};");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'this->FileIndex<0' is always false\n", errout.str());
 
         // #8858 - #if
         check("short Do() {\n"
@@ -3422,6 +3481,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #9954
+        check("void f() {\n"
+              "    const size_t a(8 * sizeof(short));\n"
+              "    const size_t b(8 * sizeof(int));\n"
+              "    if constexpr (a == 16 && b == 16) {}\n"
+              "    else if constexpr (a == 16 && b == 32) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         // #9319
         check("struct S {\n"
               "  int a;\n"
@@ -3935,7 +4003,7 @@ private:
               "    if (logger == nullptr)\n"
               "        logger = Fun;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("", "[test.cpp:5]: (style) Condition 'logger==nullptr' is always true\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void Fun();\n"
               "typedef void (*Fn)();\n"
@@ -4008,6 +4076,126 @@ private:
               "  }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const uint32_t u) {\n"
+              "	const uint32_t v = u < 4;\n"
+              "	if (v) {\n"
+              "		const uint32_t w = v < 2;\n"
+              "		if (w) {}\n"
+              "	}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'w' is always true\n", errout.str());
+
+        check("void f(double d) {\n" // #10792
+              "    if (d != 0) {\n"
+              "        int i = (int)d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(double d) {\n"
+              "    if (0 != d) {\n"
+              "        int i = (int)d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A { double d; }\n"
+              "void f(A a) {\n"
+              "    if (a.d != 0) {\n"
+              "        int i = a.d;\n"
+              "        if (i == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    if(strlen(\"abc\") == 3) {;}\n"
+              "    if(strlen(\"abc\") == 1) {;}\n"
+              "    if(wcslen(L\"abc\") == 3) {;}\n"
+              "    if(wcslen(L\"abc\") == 1) {;}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'strlen(\"abc\")==3' is always true\n"
+                      "[test.cpp:3]: (style) Condition 'strlen(\"abc\")==1' is always false\n"
+                      "[test.cpp:4]: (style) Condition 'wcslen(L\"abc\")==3' is always true\n"
+                      "[test.cpp:5]: (style) Condition 'wcslen(L\"abc\")==1' is always false\n",
+                      errout.str());
+
+        check("int foo(bool a, bool b) {\n"
+              "  if(!a && b && (!a == !b))\n"
+              "   return 1;\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition '!a==!b' is always false\n", errout.str());
+
+        // #10454
+        check("struct S {\n"
+              "    int f() const { return g() ? 0 : 1; }\n"
+              "    bool g() const { return u == 18446744073709551615ULL; }\n"
+              "    unsigned long long u{};\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #8358
+        check("void f(double d) { if ((d * 0) != 0) {} }");
+        ASSERT_EQUALS("", errout.str());
+
+        // #6870
+        check("struct S {\n"
+              "    int* p;\n"
+              "    void f() const;\n"
+              "    int g();\n"
+              "};\n"
+              "void S::f() {\n"
+              "    if ((p == NULL) || ((p) && (g() >= *p))) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7]: (style) Condition 'p' is always true\n", errout.str());
+
+        // #10749
+        check("struct Interface {\n"
+              "    virtual int method() = 0;\n"
+              "};\n"
+              "struct Child : Interface {\n"
+              "   int method() override { return 0; }\n"
+              "   auto foo() {\n"
+              "       if (method() == 0)\n"
+              "           return true;\n"
+              "       else\n"
+              "           return false;\n"
+              "   }\n"
+              "};\n"
+              "struct GrandChild : Child {\n"
+              "   int method() override  { return 1; }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #6855
+        check("struct S { int i; };\n"
+              "void f(S& s) {\n"
+              "    if (!(s.i > 0) && (s.i != 0))\n"
+              "        s.i = 0;\n"
+              "    else if (s.i < 0)\n"
+              "        s.s = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (style) Condition 's.i<0' is always false\n", errout.str());
+
+        // #6857
+        check("int bar(int i) { return i; }\n"
+              "void foo() {\n"
+              "    if (bar(1) == 0 && bar(1) > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'bar(1)==0' is always false\n"
+                      "[test.cpp:3]: (style) Condition 'bar(1)>0' is always true\n",
+                      errout.str());
+
+        check("struct S { int bar(int i) const; };\n"
+              "void foo(const S& s) {\n"
+              "    if (s.bar(1) == 0 && s.bar(1) > 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Logical conjunction always evaluates to false: s.bar(1) == 0 && s.bar(1) > 0.\n",
+                      errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4146,6 +4334,13 @@ private:
               "        return CMD_OK;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int foo(bool a, bool b) {\n"
+              "  if((!a == !b) && !a && b)\n"
+              "   return 1;\n"
+              "  return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'b' is always false\n", errout.str());
     }
 
     void alwaysTrueInfer() {
@@ -4433,6 +4628,22 @@ private:
               "   if (pool) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #10863
+        check("void f(const int A[], int Len) {\n"
+              "  if (Len <= 0)\n"
+              "    return;\n"
+              "  int I = 0;\n"
+              "  while (I < Len) {\n"
+              "    int K = I + 1;\n"
+              "    for (; K < Len; K++) {\n"
+              "      if (A[I] != A[K])\n"
+              "        break;\n"
+              "    } \n"
+              "    I = K;   \n"
+              "  }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueTryCatch()
@@ -4693,6 +4904,17 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("struct S { int i; };\n"
+              "int f(const S& s) {\n"
+              "    int a = 0, b = 0;\n"
+              "    if (s.i == 0)\n"
+              "        a = 1;\n"
+              "    if (s.i == 0)\n"
+              "        b = 1;\n"
+              "    return a + b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:6]: (style) The if condition is the same as the previous if condition\n", errout.str());
+
         // do not crash
         check("void assign(const MMA& other) {\n"
               "    if (mPA.cols != other.mPA.cols || mPA.rows != other.mPA.rows)\n"
@@ -4932,6 +5154,11 @@ private:
               "}", &settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
 
+        check("void f(unsigned char* b, int i) {\n" // #6372
+              "  if (b[i] == 256) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'unsigned char' against value 256. Condition is always false.\n", errout.str());
+
         check("void f(unsigned char c) {\n"
               "  if (c == 255) {}\n"
               "}", &settingsUnix64);
@@ -4978,6 +5205,48 @@ private:
               "  if (x < 3000000000) {}\n"
               "}", &settingsUnix64);
         ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'signed int' against value 3000000000. Condition is always true.\n", errout.str());
+
+        check("void f(const signed char i) {\n" // #8545
+              "    if (i >  -129) {}\n" // warn
+              "    if (i >= -128) {}\n" // warn
+              "    if (i >= -127) {}\n"
+              "    if (i <  +128) {}\n" // warn
+              "    if (i <= +127) {}\n" // warn
+              "    if (i <= +126) {}\n"
+              "}\n", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:2]: (style) Comparing expression of type 'const signed char' against value -129. Condition is always true.\n"
+                      "[test.cpp:3]: (style) Comparing expression of type 'const signed char' against value -128. Condition is always true.\n"
+                      "[test.cpp:5]: (style) Comparing expression of type 'const signed char' against value 128. Condition is always true.\n"
+                      "[test.cpp:6]: (style) Comparing expression of type 'const signed char' against value 127. Condition is always true.\n",
+                      errout.str());
+
+        check("void f(const unsigned char u) {\n"
+              "    if (u >  0) {}\n"
+              "    if (u <  0) {}\n" // warn
+              "    if (u >= 0) {}\n" // warn
+              "    if (u <= 0) {}\n"
+              "    if (u >  255) {}\n" // warn
+              "    if (u <  255) {}\n"
+              "    if (u >= 255) {}\n"
+              "    if (u <= 255) {}\n" // warn
+              "    if (0   <  u) {}\n"
+              "    if (0   >  u) {}\n" // warn
+              "    if (0   <= u) {}\n" // warn
+              "    if (0   >= u) {}\n"
+              "    if (255 <  u) {}\n" // warn
+              "    if (255 >  u) {}\n"
+              "    if (255 <= u) {}\n"
+              "    if (255 >= u) {}\n" // warn
+              "}\n", &settingsUnix64);
+        ASSERT_EQUALS("[test.cpp:3]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always false.\n"
+                      "[test.cpp:4]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always true.\n"
+                      "[test.cpp:6]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false.\n"
+                      "[test.cpp:9]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always true.\n"
+                      "[test.cpp:11]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always false.\n"
+                      "[test.cpp:12]: (style) Comparing expression of type 'const unsigned char' against value 0. Condition is always true.\n"
+                      "[test.cpp:14]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always false.\n"
+                      "[test.cpp:17]: (style) Comparing expression of type 'const unsigned char' against value 255. Condition is always true.\n",
+                      errout.str());
     }
 
     void knownConditionCast() { // #9976

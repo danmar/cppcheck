@@ -20,6 +20,8 @@
 
 #include "ui_libraryeditargdialog.h"
 
+class QWidget;
+
 LibraryEditArgDialog::LibraryEditArgDialog(QWidget *parent, const CppcheckLibraryData::Function::Arg &arg) :
     QDialog(parent),
     mUi(new Ui::LibraryEditArgDialog),

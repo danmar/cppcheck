@@ -161,9 +161,6 @@
     <ClCompile Include="ctu.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="exprengine.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pathanalysis.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -180,9 +177,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="summaries.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="bughuntingchecks.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="reverseanalyzer.cpp">
@@ -362,9 +356,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="summaries.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="bughuntingchecks.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="tokenrange.h">

@@ -21,6 +21,7 @@
 #include "common.h"
 #include "erroritem.h"
 #include "errorlogger.h"
+#include "errortypes.h"
 
 #include <QFile>
 
@@ -96,7 +97,7 @@ void ThreadResult::setFiles(const QStringList &files)
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate
     quint64 sizeOfFiles = 0;
-    foreach (const QString& file, files) {
+    for (const QString& file : files) {
         sizeOfFiles += QFile(file).size();
     }
     mMaxProgress = sizeOfFiles;
@@ -114,7 +115,7 @@ void ThreadResult::setProject(const ImportProject &prj)
     // Determine the total size of all of the files to check, so that we can
     // show an accurate progress estimate
     quint64 sizeOfFiles = 0;
-    foreach (const ImportProject::FileSettings& fs, prj.fileSettings) {
+    for (const ImportProject::FileSettings& fs : prj.fileSettings) {
         sizeOfFiles += QFile(QString::fromStdString(fs.filename)).size();
     }
     mMaxProgress = sizeOfFiles;
@@ -133,11 +134,4 @@ int ThreadResult::getFileCount() const
 {
     QMutexLocker locker(&mutex);
     return mFiles.size() + mFileSettings.size();
-}
-
-void ThreadResult::bughuntingReport(const std::string &str)
-{
-    if (str.empty())
-        return;
-    emit bughuntingReportLine(QString::fromStdString(str));
 }

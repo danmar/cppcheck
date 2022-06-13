@@ -24,8 +24,11 @@
 #include <QSyntaxHighlighter>
 
 class CodeEditorStyle;
+class QObject;
 class QPaintEvent;
+class QRect;
 class QResizeEvent;
+class QTextDocument;
 
 class Highlighter : public QSyntaxHighlighter {
     Q_OBJECT
@@ -80,7 +83,7 @@ public:
     explicit CodeEditor(QWidget *parent);
     CodeEditor(const CodeEditor &) = delete;
     CodeEditor &operator=(const CodeEditor &) = delete;
-    ~CodeEditor();
+    ~CodeEditor() override;
 
     void lineNumberAreaPaintEvent(QPaintEvent *event);
     int lineNumberAreaWidth();

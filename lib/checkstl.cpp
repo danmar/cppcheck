@@ -72,6 +72,21 @@ static bool isElementAccessYield(const Library::Container::Yield& yield)
     return contains({Library::Container::Yield::ITEM, Library::Container::Yield::AT_INDEX}, yield);
 }
 
+static bool containerAppendsElement(const Library::Container* container, const Token* parent)
+{
+    if (Token::Match(parent, ". %name% (")) {
+        Library::Container::Action action = container->getAction(parent->strAt(1));
+        if (contains({Library::Container::Action::INSERT,
+                      Library::Container::Action::CHANGE,
+                      Library::Container::Action::CHANGE_INTERNAL,
+                      Library::Container::Action::PUSH,
+                      Library::Container::Action::RESIZE},
+                     action))
+            return true;
+    }
+    return false;
+}
+
 static bool containerYieldsElement(const Library::Container* container, const Token* parent)
 {
     if (Token::Match(parent, ". %name% (")) {
@@ -86,7 +101,7 @@ static const Token* getContainerIndex(const Library::Container* container, const
 {
     if (Token::Match(parent, ". %name% (")) {
         Library::Container::Yield yield = container->getYield(parent->strAt(1));
-        if (isElementAccessYield(yield) && !Token::simpleMatch(parent->tokAt(2), "( )"))
+        if (yield == Library::Container::Yield::AT_INDEX && !Token::simpleMatch(parent->tokAt(2), "( )"))
             return parent->tokAt(2)->astOperand2();
     }
     if (!container->arrayLike_indexOp && !container->stdStringLike)
@@ -133,7 +148,8 @@ void CheckStl::outOfBounds()
                     continue;
                 if (!value.errorSeverity() && !mSettings->severity.isEnabled(Severity::warning))
                     continue;
-                if (value.intvalue == 0 && (indexTok || containerYieldsElement(container, parent))) {
+                if (value.intvalue == 0 && (indexTok || (containerYieldsElement(container, parent) &&
+                                                         !containerAppendsElement(container, parent)))) {
                     std::string indexExpr;
                     if (indexTok && !indexTok->hasKnownValue())
                         indexExpr = indexTok->expressionString();
@@ -1019,6 +1035,39 @@ static const Token* getLoopContainer(const Token* tok)
     return sepTok->astOperand2();
 }
 
+static const ValueFlow::Value* getInnerLifetime(const Token* tok,
+                                                nonneg int id,
+                                                ErrorPath* errorPath = nullptr,
+                                                int depth = 4)
+{
+    if (depth < 0)
+        return nullptr;
+    if (!tok)
+        return nullptr;
+    for (const ValueFlow::Value& val : tok->values()) {
+        if (!val.isLocalLifetimeValue())
+            continue;
+        if (contains({ValueFlow::Value::LifetimeKind::Address,
+                      ValueFlow::Value::LifetimeKind::SubObject,
+                      ValueFlow::Value::LifetimeKind::Lambda},
+                     val.lifetimeKind)) {
+            if (val.isInconclusive())
+                return nullptr;
+            if (val.capturetok)
+                return getInnerLifetime(val.capturetok, id, errorPath, depth - 1);
+            if (errorPath)
+                errorPath->insert(errorPath->end(), val.errorPath.begin(), val.errorPath.end());
+            return getInnerLifetime(val.tokvalue, id, errorPath, depth - 1);
+        }
+        if (!val.tokvalue->variable())
+            continue;
+        if (val.tokvalue->varId() != id)
+            continue;
+        return &val;
+    }
+    return nullptr;
+}
+
 void CheckStl::invalidContainer()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1105,24 +1154,13 @@ void CheckStl::invalidContainer()
                                 }
                             }
                         }
-                        for (const ValueFlow::Value& val : info.tok->values()) {
-                            if (!val.isLocalLifetimeValue())
-                                continue;
-                            if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::Address)
-                                continue;
-                            if (val.lifetimeKind == ValueFlow::Value::LifetimeKind::SubObject)
-                                continue;
-                            if (!val.tokvalue->variable())
-                                continue;
-                            if (val.tokvalue->varId() != r.tok->varId())
-                                continue;
-                            ErrorPath ep;
-                            // Check the iterator is created before the change
-                            if (val.tokvalue != tok && reaches(val.tokvalue, tok, library, &ep)) {
-                                v = &val;
-                                errorPath = ep;
-                                return true;
-                            }
+                        ErrorPath ep;
+                        const ValueFlow::Value* val = getInnerLifetime(info.tok, r.tok->varId(), &ep);
+                        // Check the iterator is created before the change
+                        if (val && val->tokvalue != tok && reaches(val->tokvalue, tok, library, &ep)) {
+                            v = val;
+                            errorPath = ep;
+                            return true;
                         }
                         return false;
                     });
@@ -1545,10 +1583,8 @@ static const Token *skipLocalVars(const Token *tok)
             return tok;
         return skipLocalVars(semi->next());
     }
-    if (Token::Match(top, "%assign%")) {
+    if (tok->isAssignmentOp()) {
         const Token *varTok = top->astOperand1();
-        if (!Token::Match(varTok, "%var%"))
-            return tok;
         const Variable *var = varTok->variable();
         if (!var)
             return tok;
@@ -1918,8 +1954,7 @@ void CheckStl::string_c_str()
                     if (var->isPointer())
                         string_c_strError(tok);
                 }
-            } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && c_strFuncParam.find(tok->function()) != c_strFuncParam.end() &&
-                       tok->str() != scope.className) {
+            } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
                 const std::pair<std::multimap<const Function*, int>::const_iterator, std::multimap<const Function*, int>::const_iterator> range = c_strFuncParam.equal_range(tok->function());
                 for (std::multimap<const Function*, int>::const_iterator i = range.first; i != range.second; ++i) {
                     if (i->second == 0)
@@ -2575,7 +2610,7 @@ void CheckStl::useStlAlgorithm()
             if (!Token::simpleMatch(splitTok, ":"))
                 continue;
             const Token *loopVar = splitTok->previous();
-            if (!Token::Match(loopVar, "%var%"))
+            if (loopVar->varId() == 0)
                 continue;
 
             // Check for single assignment

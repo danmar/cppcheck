@@ -8,3 +8,8 @@ add_executable(test-cppchecklibrarydata
         )
 target_include_directories(test-cppchecklibrarydata PRIVATE ${CMAKE_SOURCE_DIR}/gui)
 target_link_libraries(test-cppchecklibrarydata ${QT_CORE_LIB} ${QT_TEST_LIB})
+
+if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    # Q_UNUSED() in generated code
+    target_compile_options_safe(test-cppchecklibrarydata -Wno-extra-semi-stmt)
+endif()

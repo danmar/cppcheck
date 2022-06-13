@@ -1,2 +1,2 @@
-release notes for cppcheck-2.8
+release notes for cppcheck-2.9
 

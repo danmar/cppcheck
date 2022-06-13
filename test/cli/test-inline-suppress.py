@@ -59,6 +59,18 @@ def test_compile_commands_unused_function_suppression():
     assert 'unusedFunction' not in stderr
 
 
+def test_unmatched_suppression_ifdef():
+    ret, stdout, stderr = cppcheck(['--enable=all', '--suppress=missingIncludeSystem', '--inline-suppr', '-DNO_ZERO_DIV', 'trac5704/trac5704a.c'])
+    assert ret == 0, stdout
+    assert 'unmatchedSuppression' not in stderr
+
+
+def test_unmatched_suppression_ifdef_0():
+    ret, stdout, stderr = cppcheck(['--enable=all', '--suppress=missingIncludeSystem', '--inline-suppr', 'trac5704/trac5704b.c'])
+    assert ret == 0, stdout
+    assert 'unmatchedSuppression' not in stderr
+
+
 def test_build_dir():
     with tempfile.TemporaryDirectory() as tempdir:
         args = f'--cppcheck-build-dir={tempdir} --enable=all --inline-suppr proj-inline-suppress/4.c'.split()

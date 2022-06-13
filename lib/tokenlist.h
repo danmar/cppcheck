@@ -43,6 +43,9 @@ public:
     explicit TokenList(const Settings* settings);
     ~TokenList();
 
+    TokenList(const TokenList &) = delete;
+    TokenList &operator=(const TokenList &) = delete;
+
     void setSettings(const Settings *settings) {
         mSettings = settings;
     }
@@ -70,8 +73,8 @@ public:
      */
     static void deleteTokens(Token *tok);
 
-    void addtoken(std::string str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split = false);
-    void addtoken(std::string str, const Token *locationTok);
+    void addtoken(const std::string& str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split = false);
+    void addtoken(const std::string& str, const Token *locationTok);
 
     void addtoken(const Token *tok, const nonneg int lineno, const nonneg int column, const nonneg int fileno);
     void addtoken(const Token *tok, const Token *locationTok);
@@ -153,7 +156,7 @@ public:
      * Calculates a 64-bit checksum of the token list used to compare
      * multiple token lists with each other as quickly as possible.
      */
-    unsigned long long calculateChecksum() const;
+    uint64_t calculateChecksum() const;
 
     /**
      * Create abstract syntax tree.
@@ -192,13 +195,6 @@ public:
     bool isKeyword(const std::string &str) const;
 
 private:
-
-    /** Disable copy constructor, no implementation */
-    TokenList(const TokenList &);
-
-    /** Disable assignment operator, no implementation */
-    TokenList &operator=(const TokenList &);
-
     void determineCppC();
 
     /** Token list */

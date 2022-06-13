@@ -16,35 +16,33 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "functioncontractdialog.h"
+#ifndef smallvectorH
+#define smallvectorH
 
-#include "ui_functioncontractdialog.h"
+#include <cstddef>
 
-static QString formatFunctionName(QString f)
+static constexpr std::size_t DefaultSmallVectorSize = 0;
+
+#ifdef HAVE_BOOST
+#include <boost/container/small_vector.hpp>
+
+template<typename T, std::size_t N = DefaultSmallVectorSize>
+using SmallVector = boost::container::small_vector<T, N>;
+#else
+#include <vector>
+
+template<class T, std::size_t N>
+struct TaggedAllocator : std::allocator<T>
 {
-    if (f.endsWith("()"))
-        return f;
-    f.replace("(", "(\n    ");
-    f.replace(",", ",\n    ");
-    return f;
-}
+    template<class ... Ts>
+    // cppcheck-suppress noExplicitConstructor
+    TaggedAllocator(Ts&&... ts)
+        : std::allocator<T>(std::forward<Ts>(ts)...)
+    {}
+};
 
-FunctionContractDialog::FunctionContractDialog(QWidget *parent, const QString &name, const QString &expects) :
-    QDialog(parent),
-    mUi(new Ui::FunctionContractDialog)
-{
-    mUi->setupUi(this);
-    mUi->functionName->setText(formatFunctionName(name));
-    mUi->expects->setPlainText(expects);
-}
+template<typename T, std::size_t N = DefaultSmallVectorSize>
+using SmallVector = std::vector<T, TaggedAllocator<T, N>>;
+#endif
 
-FunctionContractDialog::~FunctionContractDialog()
-{
-    delete mUi;
-}
-
-QString FunctionContractDialog::getExpects() const
-{
-    return mUi->expects->toPlainText();
-}
-
+#endif

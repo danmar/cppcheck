@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -72,7 +72,7 @@ std::string Path::fromNativeSeparators(std::string path)
 
 std::string Path::simplifyPath(std::string originalPath)
 {
-    return simplecpp::simplifyPath(originalPath);
+    return simplecpp::simplifyPath(std::move(originalPath));
 }
 
 std::string Path::getPathFromFilename(const std::string &filename)
@@ -88,13 +88,6 @@ std::string Path::getPathFromFilename(const std::string &filename)
 bool Path::sameFileName(const std::string &fname1, const std::string &fname2)
 {
     return caseInsensitiveFilesystem() ? (caseInsensitiveStringCompare(fname1, fname2) == 0) : (fname1 == fname2);
-}
-
-// This wrapper exists because Sun's CC does not allow a static_cast
-// from extern "C" int(*)(int) to int(*)(int).
-static int tolowerWrapper(int c)
-{
-    return std::tolower(c);
 }
 
 std::string Path::removeQuotationMarks(std::string path)
@@ -113,7 +106,7 @@ std::string Path::getFilenameExtension(const std::string &path)
     if (caseInsensitiveFilesystem()) {
         // on a case insensitive filesystem the case doesn't matter so
         // let's return the extension in lowercase
-        std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
+        strTolower(extension);
     }
     return extension;
 }
@@ -121,7 +114,7 @@ std::string Path::getFilenameExtension(const std::string &path)
 std::string Path::getFilenameExtensionInLowerCase(const std::string &path)
 {
     std::string extension = getFilenameExtension(path);
-    std::transform(extension.begin(), extension.end(), extension.begin(), tolowerWrapper);
+    strTolower(extension);
     return extension;
 }
 

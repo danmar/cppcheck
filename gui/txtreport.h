@@ -24,6 +24,9 @@
 #include <QString>
 #include <QTextStream>
 
+class ErrorItem;
+class QObject;
+
 /// @addtogroup GUI
 /// @{
 
@@ -37,7 +40,7 @@ class TxtReport : public Report {
 
 public:
     explicit TxtReport(const QString &filename);
-    virtual ~TxtReport();
+    ~TxtReport() override;
 
     /**
      * @brief Create the report (file).

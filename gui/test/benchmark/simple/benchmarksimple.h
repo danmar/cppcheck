@@ -16,7 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "color.h"
 #include "errorlogger.h"
+
+#include <string>
 
 #include <QObject>
 
@@ -33,5 +36,4 @@ private:
     // We don't care about the output in the benchmark tests.
     void reportOut(const std::string & /*outmsg*/, Color /*c*/ = Color::Reset) override {}
     void reportErr(const ErrorMessage & /*msg*/) override {}
-    void bughuntingReport(const std::string & /*str*/) override {}
 };

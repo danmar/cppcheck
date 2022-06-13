@@ -20,17 +20,25 @@
 #ifndef RESULTSVIEW_H
 #define RESULTSVIEW_H
 
-#include "ui_resultsview.h"
-
 #include "report.h"
 #include "showtypes.h"
 
+#include <QSet>
+#include <QString>
+#include <QWidget>
+
 class ErrorItem;
 class ApplicationList;
+class ThreadHandler;
 class QModelIndex;
 class QPrinter;
 class QSettings;
 class CheckStatistics;
+class QObject;
+class QPoint;
+namespace Ui {
+    class ResultsView;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -46,11 +54,8 @@ public:
     explicit ResultsView(QWidget * parent = nullptr);
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
     ResultsView(const ResultsView &) = delete;
-    virtual ~ResultsView();
+    ~ResultsView() override;
     ResultsView &operator=(const ResultsView &) = delete;
-
-    void setAddedFunctionContracts(const QStringList &addedContracts);
-    void setAddedVariableContracts(const QStringList &added);
 
     /**
      * @brief Clear results and statistics and reset progressinfo.
@@ -67,9 +72,6 @@ public:
      * @brief Remove a recheck file from the results.
      */
     void clearRecheckFile(const QString &filename);
-
-    /** Clear the contracts */
-    void clearContracts();
 
     /**
      * @brief Write statistics in file
@@ -195,12 +197,7 @@ public:
      * @brief Return Showtypes.
      * @return Pointer to Showtypes.
      */
-    ShowTypes * getShowTypes() const {
-        return &mUI.mTree->mShowSeverities;
-    }
-
-    /** Show/hide the contract tabs */
-    void showContracts(bool visible);
+    ShowTypes * getShowTypes() const;
 
 signals:
 
@@ -226,18 +223,6 @@ signals:
 
     /** Suppress Ids */
     void suppressIds(QStringList ids);
-
-    /** Edit contract for function */
-    void editFunctionContract(QString function);
-
-    /** Delete contract for function */
-    void deleteFunctionContract(QString function);
-
-    /** Edit contract for variable */
-    void editVariableContract(QString var);
-
-    /** Delete variable contract */
-    void deleteVariableContract(QString var);
 
     /**
      * @brief Show/hide certain type of errors
@@ -335,11 +320,6 @@ public slots:
     void debugError(const ErrorItem &item);
 
     /**
-     * \brief bughunting report line
-     */
-    void bughuntingReportLine(const QString& line);
-
-    /**
      * \brief Clear log messages
      */
     void logClear();
@@ -354,34 +334,22 @@ public slots:
      */
     void logCopyComplete();
 
-    /** \brief Contract was double clicked => edit it */
-    void contractDoubleClicked(QListWidgetItem* item);
-
-    /** \brief Variable was double clicked => edit it */
-    void variableDoubleClicked(QListWidgetItem* item);
-
-    void editVariablesFilter(const QString &text);
-
 protected:
     /**
      * @brief Should we show a "No errors found dialog" every time no errors were found?
      */
     bool mShowNoErrorsMessage;
 
-    Ui::ResultsView mUI;
+    Ui::ResultsView *mUI;
 
     CheckStatistics *mStatistics;
 
-    bool eventFilter(QObject *target, QEvent *event);
 private slots:
     /**
      * @brief Custom context menu for Analysis Log
      * @param pos Mouse click position
      */
     void on_mListLog_customContextMenuRequested(const QPoint &pos);
-private:
-    QSet<QString> mFunctionContracts;
-    QSet<QString> mVariableContracts;
 };
 /// @}
 #endif // RESULTSVIEW_H

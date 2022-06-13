@@ -92,6 +92,7 @@ private:
         TEST_CASE(assign20); // #9187
         TEST_CASE(assign21); // #10186
         TEST_CASE(assign22); // #9139
+        TEST_CASE(assign23);
 
         TEST_CASE(isAutoDealloc);
 
@@ -124,6 +125,7 @@ private:
         TEST_CASE(doublefree9);
         TEST_CASE(doublefree10); // #8706
         TEST_CASE(doublefree11);
+        TEST_CASE(doublefree12); // #10502
 
         // exit
         TEST_CASE(exit1);
@@ -162,6 +164,8 @@ private:
         TEST_CASE(ifelse22); // #10187
         TEST_CASE(ifelse23); // #5473
         TEST_CASE(ifelse24); // #1733
+        TEST_CASE(ifelse25); // #9966
+        TEST_CASE(ifelse26);
 
         // switch
         TEST_CASE(switch1);
@@ -184,6 +188,7 @@ private:
         TEST_CASE(return6); // #8282 return {p, p}
         TEST_CASE(return7); // #9343 return (uint8_t*)x
         TEST_CASE(return8);
+        TEST_CASE(return9);
 
         // General tests: variable type, allocation type, etc
         TEST_CASE(test1);
@@ -212,6 +217,7 @@ private:
         TEST_CASE(smartPtrInContainer); // #8262
 
         TEST_CASE(functionCallCastConfig); // #9652
+        TEST_CASE(functionCallLeakIgnoreConfig); // #7923
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -458,6 +464,44 @@ private:
               "    const void * const p = malloc(10);\n"
               "}", true);
         ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: p\n", errout.str());
+    }
+
+    void assign23() {
+        Settings s = settings;
+        LOAD_LIB_2(settings.library, "posix.cfg");
+        check("void f() {\n"
+              "    int n1, n2, n3, n4, n5, n6, n7, n8, n9, n10, n11, n12, n13, n14;\n"
+              "    *&n1 = open(\"xx.log\", O_RDONLY);\n"
+              "    *&(n2) = open(\"xx.log\", O_RDONLY);\n"
+              "    *(&n3) = open(\"xx.log\", O_RDONLY);\n"
+              "    *&*&n4 = open(\"xx.log\", O_RDONLY);\n"
+              "    *&*&*&(n5) = open(\"xx.log\", O_RDONLY);\n"
+              "    *&*&(*&n6) = open(\"xx.log\", O_RDONLY);\n"
+              "    *&*(&*&n7) = open(\"xx.log\", O_RDONLY);\n"
+              "    *(&*&n8) = open(\"xx.log\", O_RDONLY);\n"
+              "    *&(*&*&(*&n9)) = open(\"xx.log\", O_RDONLY);\n"
+              "    (n10) = open(\"xx.log\", O_RDONLY);\n"
+              "    ((n11)) = open(\"xx.log\", O_RDONLY);\n"
+              "    ((*&n12)) = open(\"xx.log\", O_RDONLY);\n"
+              "    *(&(*&n13)) = open(\"xx.log\", O_RDONLY);\n"
+              "    ((*&(*&n14))) = open(\"xx.log\", O_RDONLY);\n"
+              "}\n", true);
+        ASSERT_EQUALS("[test.cpp:17]: (error) Resource leak: n1\n"
+                      "[test.cpp:17]: (error) Resource leak: n2\n"
+                      "[test.cpp:17]: (error) Resource leak: n3\n"
+                      "[test.cpp:17]: (error) Resource leak: n4\n"
+                      "[test.cpp:17]: (error) Resource leak: n5\n"
+                      "[test.cpp:17]: (error) Resource leak: n6\n"
+                      "[test.cpp:17]: (error) Resource leak: n7\n"
+                      "[test.cpp:17]: (error) Resource leak: n8\n"
+                      "[test.cpp:17]: (error) Resource leak: n9\n"
+                      "[test.cpp:17]: (error) Resource leak: n10\n"
+                      "[test.cpp:17]: (error) Resource leak: n11\n"
+                      "[test.cpp:17]: (error) Resource leak: n12\n"
+                      "[test.cpp:17]: (error) Resource leak: n13\n"
+                      "[test.cpp:17]: (error) Resource leak: n14\n",
+                      errout.str());
+        settings = s;
     }
 
     void isAutoDealloc() {
@@ -725,6 +769,15 @@ private:
               "        return a;\n"
               "    }\n"
               "};\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g(int *p) {\n" // #9838
+              "    std::unique_ptr<int> temp(p);\n"
+              "    return DoSomething(p);\n"
+              "}\n"
+              "int f() {\n"
+              "    return g(new int(3));\n"
+              "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1315,6 +1368,16 @@ private:
         ASSERT_EQUALS("[test.c:3] -> [test.c:8]: (error) Memory pointed to by 'p' is freed twice.\n", errout.str());
     }
 
+    void doublefree12() { // #10502
+        check("int f(FILE *fp, const bool b) {\n"
+              "    if (b)\n"
+              "        return fclose(fp);\n"
+              "    fclose(fp);\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -1766,6 +1829,28 @@ private:
         TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Memory leak: temp\n", "", errout.str());
     }
 
+    void ifelse25() { // #9966
+        check("void f() {\n"
+              "    void *p, *p2;\n"
+              "    if((p2 = p = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    (void)p;\n"
+              "    free(p2);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse26() { // don't crash
+        check("union tidi {\n"
+              "    long long ti;\n"
+              "    unsigned int di[2];\n"
+              "};\n"
+              "void f(long long val) {\n"
+              "    if (val == ({ union tidi d = {.di = {0x0, 0x80000000}}; d.ti; })) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void switch1() {
         check("void f() {\n"
               "    char *p = 0;\n"
@@ -2104,6 +2189,14 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void return9() {
+        check("void* f() {\n"
+              "    void *x = malloc (sizeof (struct alloc));\n"
+              "    return x + sizeof (struct alloc);\n"
+              "}", true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void test1() { // 3809
         check("void f(double*&p) {\n"
               "    p = malloc(0x100);\n"
@@ -2330,6 +2423,27 @@ private:
               "    free_func((void *)(1), buf);\n"
               "}", settingsFunctionCall);
         ASSERT_EQUALS("[test.cpp:5]: (information) --check-library: Function free_func() should have <use>/<leak-ignore> configuration\n", errout.str());
+    }
+
+    void functionCallLeakIgnoreConfig() { // #7923
+        Settings settingsLeakIgnore = settings;
+
+        const char xmldata[] = "<?xml version=\"1.0\"?>\n"
+                               "<def format=\"2\">\n"
+                               "  <function name=\"SomeClass::someMethod\">\n"
+                               "    <leak-ignore/>\n"
+                               "    <noreturn>false</noreturn>\n"
+                               "    <arg nr=\"1\" direction=\"in\"/>\n"
+                               "  </function>\n"
+                               "</def>\n";
+        tinyxml2::XMLDocument doc;
+        doc.Parse(xmldata, sizeof(xmldata));
+        settingsLeakIgnore.library.load(doc);
+        check("void f() {\n"
+              "    double* a = new double[1024];\n"
+              "    SomeClass::someMethod(a);\n"
+              "}\n", settingsLeakIgnore);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory leak: a\n", errout.str());
     }
 };
 

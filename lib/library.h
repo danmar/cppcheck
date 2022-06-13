@@ -28,6 +28,7 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -35,6 +36,7 @@
 #include <vector>
 
 class Token;
+class Settings;
 
 namespace tinyxml2 {
     class XMLDocument;
@@ -282,6 +284,7 @@ public:
     };
     std::map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
+    const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
 
     class ArgumentChecks {
     public:
@@ -405,7 +408,6 @@ public:
             return MathLib::isInt(op1);
         }
     };
-    static std::vector<InvalidArgValue> getInvalidArgValues(const std::string &validExpr);
 
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
@@ -553,8 +555,6 @@ public:
     enum class TypeCheck { def, check, suppress };
     TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
 
-    bool bugHunting;
-
 private:
     // load a <function> xml node
     Error loadFunction(const tinyxml2::XMLElement * const node, const std::string &name, std::set<std::string> &unknown_elements);
@@ -649,6 +649,10 @@ private:
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
+
+std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                 const Settings* settings,
+                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId = nullptr);
 
 /// @}
 //---------------------------------------------------------------------------

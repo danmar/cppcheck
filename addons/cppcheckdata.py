@@ -9,8 +9,27 @@ License: No restrictions, use this as you need.
 import argparse
 import json
 import os
-import pathlib
 import sys
+import subprocess
+
+try:
+    import pathlib
+except ImportError:
+    message = "Failed to load pathlib. Upgrade python to 3.x or install pathlib with 'pip install pathlib'."
+    error_id = 'pythonError'
+    if '--cli' in sys.argv:
+        msg = { 'file': '',
+                'linenr': 0,
+                'column': 0,
+                'severity': 'error',
+                'message': message,
+                'addon': 'cppcheckdata',
+                'errorId': error_id,
+                'extra': ''}
+        sys.stdout.write(json.dumps(msg) + '\n')
+    else:
+        sys.stderr.write('%s [%s]\n' % (message, error_id))
+    sys.exit(1)
 
 from xml.etree import ElementTree
 from fnmatch import fnmatch
@@ -143,21 +162,11 @@ class ValueType:
     def __init__(self, element):
         self.type = element.get('valueType-type')
         self.sign = element.get('valueType-sign')
-        bits = element.get('valueType-bits')
-        if bits:
-            self.bits = int(bits)
+        self.bits = int(element.get('valueType-bits', 0))
         self.typeScopeId = element.get('valueType-typeScope')
         self.originalTypeName = element.get('valueType-originalTypeName')
-        constness = element.get('valueType-constness')
-        if constness:
-            self.constness = int(constness)
-        else:
-            self.constness = 0
-        pointer = element.get('valueType-pointer')
-        if pointer:
-            self.pointer = int(pointer)
-        else:
-            self.pointer = 0
+        self.constness = int(element.get('valueType-constness', 0))
+        self.pointer = int(element.get('valueType-pointer', 0))
 
     def __repr__(self):
         attrs = ["type", "sign", "bits", "typeScopeId", "originalTypeName",
@@ -212,6 +221,7 @@ class Token:
         isUnsigned         Is this token a unsigned type
         isSigned           Is this token a signed type
         isExpandedMacro    Is this token a expanded macro token
+        isRemovedVoidParameter  Has void parameter been removed?
         isSplittedVarDeclComma  Is this a comma changed to semicolon in a splitted variable declaration ('int a,b;' => 'int a; int b;')
         isSplittedVarDeclEq     Is this a '=' changed to semicolon in a splitted variable declaration ('int a=5;' => 'int a; a=5;')
         isImplicitInt      Is this token an implicit "int"?
@@ -264,6 +274,7 @@ class Token:
     isUnsigned = False
     isSigned = False
     isExpandedMacro = False
+    isRemovedVoidParameter = False
     isSplittedVarDeclComma = False
     isSplittedVarDeclEq = False
     isImplicitInt = False
@@ -328,6 +339,8 @@ class Token:
                 self.isLogicalOp = True
         if element.get('isExpandedMacro'):
             self.isExpandedMacro = True
+        if element.get('isRemovedVoidParameter'):
+            self.isRemovedVoidParameter = True
         if element.get('isSplittedVarDeclComma'):
             self.isSplittedVarDeclComma = True
         if element.get('isSplittedVarDeclEq'):
@@ -620,9 +633,7 @@ class Variable:
         self.isPointer = element.get('isPointer') == 'true'
         self.isReference = element.get('isReference') == 'true'
         self.isStatic = element.get('isStatic') == 'true'
-        self.constness = element.get('constness')
-        if self.constness:
-            self.constness = int(self.constness)
+        self.constness = int(element.get('constness',0))
 
     def __repr__(self):
         attrs = ["Id", "nameTokenId", "typeStartTokenId", "typeEndTokenId",
@@ -1375,6 +1386,12 @@ def get_path_premium_addon():
         p1 = os.path.join(p, 'premiumaddon' + ext)
         p2 = os.path.join(p, 'cppcheck' + ext)
         if os.path.isfile(p1) and os.path.isfile(p2):
-            print(p1)
             return p1
     return None
+
+
+def cmd_output(cmd):
+    try:
+        return subprocess.check_output(cmd).strip().decode('ascii')
+    except subprocess.CalledProcessError as e:
+        return e.output

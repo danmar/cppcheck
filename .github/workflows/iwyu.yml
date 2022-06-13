@@ -7,7 +7,7 @@ on: workflow_dispatch
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     container:
       image: "kalilinux/kali-rolling"
@@ -19,16 +19,13 @@ jobs:
       - name: Install missing software
         run: |
           apt-get update
-          apt-get install -y cmake g++ make libz3-dev libpcre3-dev
+          apt-get install -y cmake g++ make libpcre3-dev
           apt-get install -y qtbase5-dev qttools5-dev libqt5charts5-dev
           apt-get install -y wget iwyu
 
       - name: Prepare CMake
         run: |
-          mkdir cmake.output
-          cd cmake.output
-          cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off ..
-          cd ..
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off
 
       - name: Prepare CMake dependencies
         run: |

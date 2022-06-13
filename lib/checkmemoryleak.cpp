@@ -302,7 +302,7 @@ void CheckMemoryLeak::reportErr(const Token *tok, Severity::SeverityType severit
 
 void CheckMemoryLeak::reportErr(const std::list<const Token *> &callstack, Severity::SeverityType severity, const std::string &id, const std::string &msg, const CWE &cwe) const
 {
-    const ErrorMessage errmsg(callstack, mTokenizer_ ? &mTokenizer_->list : nullptr, severity, id, msg, cwe, Certainty::normal, mSettings_->bugHunting);
+    const ErrorMessage errmsg(callstack, mTokenizer_ ? &mTokenizer_->list : nullptr, severity, id, msg, cwe, Certainty::normal);
     if (mErrorLogger_)
         mErrorLogger_->reportErr(errmsg);
     else
@@ -725,7 +725,9 @@ void CheckMemoryLeakStructMember::check()
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Variable* var : symbolDatabase->variableList()) {
-        if (!var || !var->isLocal() || var->isStatic() || var->isReference())
+        if (!var || (!var->isLocal() && !(var->isArgument() && var->scope())) || var->isStatic())
+            continue;
+        if (var->isReference() || (var->valueType() && var->valueType()->pointer > 1))
             continue;
         if (var->typeEndToken()->isStandardType())
             continue;
@@ -752,7 +754,7 @@ bool CheckMemoryLeakStructMember::isMalloc(const Variable *variable)
 void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const variable)
 {
     // Is struct variable a pointer?
-    if (variable->isPointer()) {
+    if (variable->isArrayOrPointer()) {
         // Check that variable is allocated with malloc
         if (!isMalloc(variable))
             return;
@@ -789,7 +791,31 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
         return deallocated;
     };
 
-    for (const Token *tok2 = variable->nameToken(); tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
+    // return { memberTok, rhsTok }
+    auto isMemberAssignment = [](const Token* varTok, int varId) -> std::pair<const Token*, const Token*> {
+        if (varTok->varId() != varId)
+            return {};
+        const Token* top = varTok;
+        while (top->astParent()) {
+            if (Token::Match(top->astParent(), "(|["))
+                return {};
+            top = top->astParent();
+        }
+        if (!Token::simpleMatch(top, "=") || !precedes(varTok, top))
+            return {};
+        const Token* dot = top->astOperand1();
+        while (dot && dot->str() != ".")
+            dot = dot->astOperand1();
+        if (!dot)
+            return {};
+        return { dot->astOperand2(), top->next() };
+    };
+    std::pair<const Token*, const Token*> assignToks;
+
+    const Token* tokStart = variable->nameToken();
+    if (variable->isArgument() && variable->scope())
+        tokStart = variable->scope()->bodyStart->next();
+    for (const Token *tok2 = tokStart; tok2 && tok2 != variable->scope()->bodyEnd; tok2 = tok2->next()) {
         if (tok2->str() == "{")
             ++indentlevel2;
 
@@ -805,12 +831,20 @@ void CheckMemoryLeakStructMember::checkStructVariable(const Variable * const var
             break;
 
         // Struct member is allocated => check if it is also properly deallocated..
-        else if (Token::Match(tok2->previous(), "[;{}] %varid% . %var% =", variable->declarationId())) {
-            if (getAllocationType(tok2->tokAt(4), tok2->tokAt(2)->varId()) == AllocType::No)
+        else if ((assignToks = isMemberAssignment(tok2, variable->declarationId())).first && assignToks.first->varId()) {
+            if (getAllocationType(assignToks.second, assignToks.first->varId()) == AllocType::No)
                 continue;
 
+            if (variable->isArgument() && variable->valueType() && variable->valueType()->type == ValueType::UNKNOWN_TYPE && assignToks.first->astParent()) {
+                const Token* accessTok = assignToks.first->astParent();
+                while (Token::simpleMatch(accessTok->astOperand1(), "."))
+                    accessTok = accessTok->astOperand1();
+                if (Token::simpleMatch(accessTok, ".") && accessTok->originalName() == "->")
+                    continue;
+            }
+
             const int structid(variable->declarationId());
-            const int structmemberid(tok2->tokAt(2)->varId());
+            const int structmemberid(assignToks.first->varId());
 
             // This struct member is allocated.. check that it is deallocated
             int indentlevel3 = indentlevel2;
@@ -1000,7 +1034,8 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 {
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
-        if (!Token::Match(tok, "%name% ("))
+        const bool isNew = mTokenizer->isCPP() && tok->str() == "new";
+        if (!isNew && !Token::Match(tok, "%name% ("))
             continue;
 
         if (tok->varId())
@@ -1010,21 +1045,27 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
         if (allocType == No)
             continue;
 
-        if (tok != tok->next()->astOperand1())
+        if (tok != tok->next()->astOperand1() && !isNew)
             continue;
 
         if (isReopenStandardStream(tok))
             continue;
 
         // get ast parent, skip casts
-        const Token *parent = tok->next()->astParent();
+        const Token *parent = isNew ? tok->astParent() : tok->next()->astParent();
         while (parent && parent->str() == "(" && !parent->astOperand2())
             parent = parent->astParent();
 
-        if (!parent) {
+        bool warn = true;
+        if (isNew) {
+            const Token* typeTok = tok->next();
+            warn = typeTok && (typeTok->isStandardType() || mSettings->library.detectContainer(typeTok));
+        }
+
+        if (!parent && warn) {
             // Check if we are in a C++11 constructor
             const Token * closingBrace = Token::findmatch(tok, "}|;");
-            if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%"))
+            if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%") && (!isNew && precedes(tok, closingBrace->link())))
                 continue;
             returnValueNotUsedError(tok, tok->str());
         } else if (Token::Match(parent, "%comp%|!")) {

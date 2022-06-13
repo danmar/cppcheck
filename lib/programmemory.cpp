@@ -36,7 +36,6 @@
 #include <list>
 #include <memory>
 #include <string>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -51,6 +50,20 @@ std::size_t ExprIdToken::Hash::operator()(ExprIdToken etok) const
 
 void ProgramMemory::setValue(const Token* expr, const ValueFlow::Value& value) {
     mValues[expr] = value;
+    ValueFlow::Value subvalue = value;
+    const Token* subexpr = solveExprValue(
+        expr,
+        [&](const Token* tok) -> std::vector<MathLib::bigint> {
+        if (tok->hasKnownIntValue())
+            return {tok->values().front().intvalue};
+        MathLib::bigint result = 0;
+        if (getIntValue(tok->exprId(), &result))
+            return {result};
+        return {};
+    },
+        subvalue);
+    if (subexpr)
+        mValues[subexpr] = subvalue;
 }
 const ValueFlow::Value* ProgramMemory::getValue(nonneg int exprid, bool impossible) const
 {
@@ -78,7 +91,7 @@ void ProgramMemory::setIntValue(const Token* expr, MathLib::bigint value, bool i
     ValueFlow::Value v(value);
     if (impossible)
         v.setImpossible();
-    mValues[expr] = v;
+    setValue(expr, v);
 }
 
 bool ProgramMemory::getTokValue(nonneg int exprid, const Token** result) const
@@ -123,7 +136,7 @@ void ProgramMemory::setContainerSizeValue(const Token* expr, MathLib::bigint val
     v.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
     if (!isEqual)
         v.valueKind = ValueFlow::Value::ValueKind::Impossible;
-    mValues[expr] = v;
+    setValue(expr, v);
 }
 
 void ProgramMemory::setUnknown(const Token* expr) {
@@ -180,11 +193,13 @@ void ProgramMemory::insert(const ProgramMemory &pm)
         mValues.insert(p);
 }
 
-bool evaluateCondition(const std::string& op,
-                       MathLib::bigint r,
-                       const Token* condition,
-                       ProgramMemory& pm,
-                       const Settings* settings)
+static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
+
+static bool evaluateCondition(const std::string& op,
+                              MathLib::bigint r,
+                              const Token* condition,
+                              ProgramMemory& pm,
+                              const Settings* settings)
 {
     if (!condition)
         return false;
@@ -217,6 +232,25 @@ static bool frontIs(const std::vector<MathLib::bigint>& v, bool i)
     return !i;
 }
 
+// If the scope is a non-range for loop
+static bool isBasicForLoop(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (Token::simpleMatch(tok, "}"))
+        return isBasicForLoop(tok->link());
+    if (!Token::simpleMatch(tok->previous(), ") {"))
+        return false;
+    const Token* start = tok->linkAt(-1);
+    if (!start)
+        return false;
+    if (!Token::simpleMatch(start->previous(), "for ("))
+        return false;
+    if (!Token::simpleMatch(start->astOperand2(), ";"))
+        return false;
+    return true;
+}
+
 void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Token* endTok, const Settings* settings, bool then)
 {
     auto eval = [&](const Token* t) -> std::vector<MathLib::bigint> {
@@ -241,11 +275,12 @@ void programMemoryParseCondition(ProgramMemory& pm, const Token* tok, const Toke
             return;
         if (endTok && isExpressionChanged(vartok, tok->next(), endTok, settings, true))
             return;
-        bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
-        pm.setIntValue(vartok, then ? truevalue.intvalue : falsevalue.intvalue, impossible);
+        const bool impossible = (tok->str() == "==" && !then) || (tok->str() == "!=" && then);
+        const ValueFlow::Value& v = then ? truevalue : falsevalue;
+        pm.setValue(vartok, impossible ? asImpossible(v) : v);
         const Token* containerTok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
         if (containerTok)
-            pm.setContainerSizeValue(containerTok, then ? truevalue.intvalue : falsevalue.intvalue, !impossible);
+            pm.setContainerSizeValue(containerTok, v.intvalue, !impossible);
     } else if (Token::simpleMatch(tok, "!")) {
         programMemoryParseCondition(pm, tok->astOperand1(), endTok, settings, !then);
     } else if (then && Token::simpleMatch(tok, "&&")) {
@@ -317,13 +352,7 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
             }
             if (!setvar) {
                 if (!pm.hasValue(vartok->exprId())) {
-                    MathLib::bigint result = 0;
-                    bool error = false;
-                    execute(valuetok, &pm, &result, &error);
-                    if (!error)
-                        pm.setIntValue(vartok, result);
-                    else
-                        pm.setUnknown(vartok);
+                    pm.setValue(vartok, execute(valuetok, pm));
                 }
             }
         } else if (tok2->exprId() > 0 && Token::Match(tok2, ".|(|[|*|%var%") && !pm.hasValue(tok2->exprId()) &&
@@ -333,8 +362,10 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
 
         if (tok2->str() == "{") {
             if (indentlevel <= 0) {
-                // Keep progressing with anonymous/do scopes
-                if (!Token::Match(tok2->previous(), "do|; {"))
+                const Token* cond = getCondTokFromEnd(tok2->link());
+                // Keep progressing with anonymous/do scopes and always true branches
+                if (!Token::Match(tok2->previous(), "do|; {") && !conditionIsTrue(cond, state) &&
+                    (cond || !isBasicForLoop(tok2)))
                     break;
             } else
                 --indentlevel;
@@ -350,7 +381,6 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                         ++indentlevel;
                         continue;
                     }
-                    tok2 = cond->astParent()->previous();
                 } else if (conditionIsTrue(cond, state)) {
                     if (inElse)
                         tok2 = tok2->link()->tokAt(-2);
@@ -561,8 +591,6 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     return result;
 }
 
-static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Settings* settings = nullptr);
-
 static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const Settings* settings)
 {
     ValueFlow::Value unknown = ValueFlow::Value::unknown();
@@ -635,7 +663,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), pm);
         return execute(expr->astOperand2(), pm);
-    } else if (Token::Match(expr, "++|--") && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
+    } else if (expr->tokType() == Token::eIncDecOp && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
         if (!pm.hasValue(expr->astOperand1()->exprId()))
             return unknown;
         ValueFlow::Value& lhs = pm.at(expr->astOperand1()->exprId());
@@ -729,6 +757,36 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     }
 
     if (Token::Match(expr->previous(), ">|%name% {|(")) {
+        const Token* ftok = expr->previous();
+        const Function* f = ftok->function();
+        // TODO: Evaluate inline functions as well
+        if (!f && settings && expr->str() == "(") {
+            std::unordered_map<nonneg int, ValueFlow::Value> args;
+            int argn = 0;
+            for (const Token* tok : getArguments(expr)) {
+                ValueFlow::Value result = execute(tok, pm, settings);
+                if (!result.isUninitValue())
+                    args[argn] = result;
+                argn++;
+            }
+            // strlen is a special builtin
+            if (Token::simpleMatch(ftok, "strlen")) {
+                if (args.count(0) > 0) {
+                    ValueFlow::Value v = args.at(0);
+                    if (v.isTokValue() && v.tokvalue->tokType() == Token::eString) {
+                        v.valueType = ValueFlow::Value::ValueType::INT;
+                        v.intvalue = Token::getStrLength(v.tokvalue);
+                        v.tokvalue = nullptr;
+                        return v;
+                    }
+                }
+            } else {
+                const std::string& returnValue = settings->library.returnValue(ftok);
+                if (!returnValue.empty())
+                    return evaluateLibraryFunction(args, returnValue, settings);
+            }
+        }
+        // Check if functon modifies argument
         visitAstNodes(expr->astOperand2(), [&](const Token* child) {
             if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
                 ValueFlow::Value& v = pm.at(child->exprId());
@@ -756,18 +814,35 @@ static ValueFlow::Value execute(const Token* expr, ProgramMemory& pm, const Sett
         return v;
     if (pm.hasValue(expr->exprId()))
         return pm.at(expr->exprId());
-    // Find symbolic values
-    for (const ValueFlow::Value& value : expr->values()) {
-        if (!value.isSymbolicValue())
-            continue;
-        if (!pm.hasValue(value.tokvalue->exprId()))
-            continue;
-        ValueFlow::Value v2 = pm.at(value.tokvalue->exprId());
-        v2.intvalue += value.intvalue;
-        v2.valueKind = value.valueKind;
-        return v2;
-    }
     return v;
+}
+
+ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, ValueFlow::Value>& args,
+                                         const std::string& returnValue,
+                                         const Settings* settings)
+{
+    static std::unordered_map<std::string,
+                              std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>>
+    functions = {};
+    if (functions.count(returnValue) == 0) {
+
+        std::unordered_map<nonneg int, const Token*> lookupVarId;
+        std::shared_ptr<Token> expr = createTokenFromExpression(returnValue, settings, &lookupVarId);
+
+        functions[returnValue] =
+            [lookupVarId, expr, settings](const std::unordered_map<nonneg int, ValueFlow::Value>& xargs) {
+            if (!expr)
+                return ValueFlow::Value::unknown();
+            ProgramMemory pm{};
+            for (const auto& p : xargs) {
+                auto it = lookupVarId.find(p.first);
+                if (it != lookupVarId.end())
+                    pm.setValue(it->second, p.second);
+            }
+            return execute(expr.get(), pm, settings);
+        };
+    }
+    return functions.at(returnValue)(args);
 }
 
 void execute(const Token* expr,

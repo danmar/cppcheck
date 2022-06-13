@@ -13,6 +13,7 @@ include(cmake/compileroptions.cmake)
 include(cmake/compilerDefinitions.cmake)
 include(cmake/buildFiles.cmake)
 include(cmake/cxx11.cmake)
+include(cmake/printInfo.cmake)
 if (BUILD_GUI)
     include(cmake/qtCompat.cmake)
 endif()
@@ -23,14 +24,37 @@ file(GLOB addons "addons/*.py")
 file(GLOB cfgs "cfg/*.cfg")
 file(GLOB platforms "platforms/*.xml")
 
-find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)
 if (LIBXML2_XMLLINT_EXECUTABLE)
-    add_custom_target(validateCFG ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng)
+    add_custom_target(validateCFG DEPENDS validateCFG-cmd)
+    add_custom_command(OUTPUT validateCFG-cmd
+            COMMAND ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng)
     foreach(cfg ${cfgs})
-        get_filename_component(cfgname ${cfg} NAME_WE)
-        add_custom_target(validateCFG-${cfgname} ${LIBXML2_XMLLINT_EXECUTABLE} --noout --relaxng ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng ${cfg})
-        add_dependencies(validateCFG validateCFG-${cfgname})
+        add_custom_command(OUTPUT validateCFG-cmd APPEND
+                COMMAND ${LIBXML2_XMLLINT_EXECUTABLE} --noout --relaxng ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng ${cfg})
     endforeach()
+    # this is a symbolic name for a build rule and not an output file
+    set_source_files_properties(validateCFG-cmd PROPERTIES SYMBOLIC "true")
+
+    add_custom_target(errorlist-xml $<TARGET_FILE:cppcheck> --errorlist > ${CMAKE_BINARY_DIR}/errorlist.xml
+            DEPENDS cppcheck)
+
+    add_custom_target(example-xml $<TARGET_FILE:cppcheck> --xml --enable=all --inconclusive --max-configs=1 ${CMAKE_SOURCE_DIR}/samples 2> ${CMAKE_BINARY_DIR}/example.xml
+            DEPENDS cppcheck)
+
+    add_custom_target(createXMLExamples DEPENDS errorlist-xml example-xml)
+
+    if (PYTHON_EXECUTABLE)
+        add_custom_target(checkCWEEntries ${PYTHON_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tools/listErrorsWithoutCWE.py -F ${CMAKE_BINARY_DIR}/errorlist.xml
+                DEPENDS errorlist-xml)
+    endif()
+
+    add_custom_target(validateXML ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/cppcheck-errors.rng
+            COMMAND ${LIBXML2_XMLLINT_EXECUTABLE} --noout --relaxng ${CMAKE_SOURCE_DIR}/cppcheck-errors.rng ${CMAKE_BINARY_DIR}/errorlist.xml
+            COMMAND ${LIBXML2_XMLLINT_EXECUTABLE} --noout --relaxng ${CMAKE_SOURCE_DIR}/cppcheck-errors.rng ${CMAKE_BINARY_DIR}/example.xml
+            DEPENDS createXMLExamples
+            )
+
+    add_custom_target(validateRules ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/rules/*.xml)
 endif()
 
 if (BUILD_TESTS)
@@ -60,5 +84,4 @@ add_subdirectory(tools/triage)   # Triage tool
 add_subdirectory(oss-fuzz) # OSS-Fuzz clients
 add_subdirectory(tools)
 
-include(cmake/printInfo.cmake)
 include(cmake/clang_tidy.cmake)

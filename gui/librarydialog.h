@@ -24,7 +24,8 @@
 #include <QDialog>
 
 class QListWidgetItem;
-
+class QObject;
+class QWidget;
 namespace Ui {
     class LibraryDialog;
 }
@@ -35,7 +36,7 @@ class LibraryDialog : public QDialog {
 public:
     explicit LibraryDialog(QWidget *parent = nullptr);
     LibraryDialog(const LibraryDialog &) = delete;
-    ~LibraryDialog();
+    ~LibraryDialog() override;
     LibraryDialog &operator=(const LibraryDialog &) = delete;
 
 private slots:

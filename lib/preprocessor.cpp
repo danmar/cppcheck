@@ -71,7 +71,7 @@ Preprocessor::Preprocessor(Settings& settings, ErrorLogger *errorLogger) : mSett
 
 Preprocessor::~Preprocessor()
 {
-    for (std::pair<const std::string, simplecpp::TokenList *>& tokenList : mTokenLists)
+    for (const std::pair<const std::string, simplecpp::TokenList*>& tokenList : mTokenLists)
         delete tokenList.second;
 }
 
@@ -438,8 +438,8 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                     }
                 }
                 if (includeGuard) {
-                    configs_if.push_back(std::string());
-                    configs_ifndef.push_back(std::string());
+                    configs_if.emplace_back(std::string());
+                    configs_ifndef.emplace_back(std::string());
                     continue;
                 }
             }
@@ -621,8 +621,11 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
     dui.undefined = mSettings.userUndefs; // -U
     dui.includePaths = mSettings.includePaths; // -I
     dui.includes = mSettings.userIncludes;  // --include
+    // TODO: use mSettings.standards.stdValue instead
     if (Path::isCPP(filename))
         dui.std = mSettings.standards.getCPP();
+    else
+        dui.std = mSettings.standards.getC();
     return dui;
 }
 
@@ -1014,36 +1017,34 @@ static const std::uint32_t crc32Table[] = {
     0xb40bbe37, 0xc30c8ea1, 0x5a05df1b, 0x2d02ef8d
 };
 
-static std::uint32_t crc32(const std::string &data)
+static void crc32(const std::string &data, uint32_t& crc)
 {
-    std::uint32_t crc = ~0U;
     for (char c : data) {
         crc = crc32Table[(crc ^ (unsigned char)c) & 0xFF] ^ (crc >> 8);
     }
-    return crc ^ ~0U;
 }
 
-unsigned int Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const
+uint32_t Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const
 {
-    std::ostringstream ostr;
-    ostr << toolinfo << '\n';
+    std::uint32_t crc = ~0U;
+    crc32(toolinfo, crc);
     for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
         if (!tok->comment)
-            ostr << tok->str();
+            crc32(tok->str(), crc);
     }
     for (std::map<std::string, simplecpp::TokenList *>::const_iterator it = mTokenLists.begin(); it != mTokenLists.end(); ++it) {
         for (const simplecpp::Token *tok = it->second->cfront(); tok; tok = tok->next) {
             if (!tok->comment)
-                ostr << tok->str();
+                crc32(tok->str(), crc);
         }
     }
-    return crc32(ostr.str());
+    return crc ^ ~0U;
 }
 
-void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList)
+void Preprocessor::simplifyPragmaAsm(simplecpp::TokenList *tokenList) const
 {
     Preprocessor::simplifyPragmaAsmPrivate(tokenList);
-    for (std::pair<const std::string, simplecpp::TokenList *>& list : mTokenLists) {
+    for (const std::pair<const std::string, simplecpp::TokenList*>& list : mTokenLists) {
         Preprocessor::simplifyPragmaAsmPrivate(list.second);
     }
 }

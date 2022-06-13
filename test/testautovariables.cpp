@@ -124,6 +124,7 @@ private:
         TEST_CASE(returnReference22);
         TEST_CASE(returnReference23);
         TEST_CASE(returnReference24); // #10098
+        TEST_CASE(returnReference25); // #10983
         TEST_CASE(returnReferenceFunction);
         TEST_CASE(returnReferenceContainer);
         TEST_CASE(returnReferenceLiteral);
@@ -1552,6 +1553,18 @@ private:
         ASSERT_EQUALS("[test.cpp:5]: (error) Reference to temporary returned.\n", errout.str());
     }
 
+    void returnReference25()
+    {
+        check("int& f();\n" // #10983
+              "    auto g() -> decltype(f()) {\n"
+              "    return f();\n"
+              "}\n"
+              "int& h() {\n"
+              "    return g();\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void returnReferenceFunction() {
         check("int& f(int& a) {\n"
               "    return a;\n"
@@ -2318,18 +2331,19 @@ private:
         ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Returning iterator that will be invalid when returning.\n",
                       errout.str());
 
-        check("std::vector<int> f();\n"
+        check("std::vector<int> g();\n"
               "auto f() {\n"
               "    auto it = g().begin();\n"
               "    return it;\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Returning iterator that will be invalid when returning.\n",
+                      errout.str());
 
-        check("std::vector<int> f();\n"
+        check("std::vector<int> g();\n"
               "int& f() {\n"
               "    return *g().begin();\n"
               "}");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:3]: (error) Reference to temporary returned.\n", errout.str());
 
         check("struct A {\n"
               "    std::vector<std::string> v;\n"
@@ -2564,6 +2578,19 @@ private:
               "        return &(r.first->second);\n"
               "    }\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "	std::queue<int> q;\n"
+              "	auto& h = q.emplace();\n"
+              "    h = 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::string s) {\n"
+              "    std::string ss = (\":\" + s).c_str();\n"
+              "    return ss;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -3196,7 +3223,63 @@ private:
               "A f() {\n"
               "    return A{0};\n"
               "}\n");
-        TODO_ASSERT_EQUALS("error", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:8]: (error) Returning object that will be invalid when returning.\n",
+                      errout.str());
+
+        check("struct A {\n"
+              "    int n;\n"
+              "    A(const int &x) : n(x) {}\n"
+              "};\n"
+              "A f() {\n"
+              "    A m(4);\n"
+              "    return m;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct B {};\n"
+              "struct A {\n"
+              "    B n;\n"
+              "    A(const B &x) : n(x) {}\n"
+              "};\n"
+              "A f() {\n"
+              "    A m(B{});\n"
+              "    return m;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    A(std::vector<std::string> &filenames)\n"
+              "    : files(filenames) {}\n"
+              "    std::vector<std::string> &files;\n"
+              "};\n"
+              "A f() {\n"
+              "    std::vector<std::string> files;\n"
+              "    return A(files);\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:8] -> [test.cpp:7] -> [test.cpp:8]: (error) Returning object that points to local variable 'files' that will be invalid when returning.\n",
+            errout.str());
+
+        check("struct S {\n"
+              "    explicit S(std::string& s);\n"
+              "}\n"
+              "S f() {\n"
+              "    std::string m(\"abc\");\n"
+              "    return S(m);\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    std::string msg;\n"
+              "    explicit S(const char* m) : msg(m) {}\n"
+              "};\n"
+              "S f() {\n"
+              "    std::string s(\"abc\");\n"
+              "    return S(s.c_str());\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void danglingLifetimeAggegrateConstructor() {
@@ -3299,15 +3382,13 @@ private:
             "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
             errout.str());
 
-        // TODO: Ast is missing for this case
         check("std::vector<int*> f() {\n"
               "    int i = 0;\n"
               "    std::vector<int*> v{&i, &i};\n"
               "    return v;\n"
               "}");
-        TODO_ASSERT_EQUALS(
+        ASSERT_EQUALS(
             "[test.cpp:3] -> [test.cpp:3] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'i' that will be invalid when returning.\n",
-            "",
             errout.str());
 
         check("std::vector<int*> f() {\n"
@@ -3479,6 +3560,16 @@ private:
               "        Append(Val);\n"
               "    }\n"
               "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11057
+        check("struct S {\n"
+              "    int& r;\n"
+              "};\n"
+              "void f(int i) {\n"
+              "    const S a[] = { { i } };\n"
+              "    for (const auto& s : a) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
 
         check("std::vector<char*> f(const std::vector<std::string>& args) {\n" // #9773
