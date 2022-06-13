@@ -26,9 +26,9 @@
 #include "config.h"
 
 #include <string>
+#include <vector>
 
 class ErrorLogger;
-class Scope;
 class Settings;
 class Token;
 class Tokenizer;
@@ -53,13 +53,9 @@ public:
         checkAssert.assertWithSideEffects();
     }
 
-    void assertWithSideEffects();
-
-protected:
-    void checkVariableAssignment(const Token* assignTok, const Scope *assertionScope);
-    static bool inSameScope(const Token* returnTok, const Token* assignTok);
-
 private:
+
+    void assertWithSideEffects();
     void sideEffectInAssertError(const Token *tok, const std::string& functionName);
     void assignmentInAssertError(const Token *tok, const std::string &varname);
 
