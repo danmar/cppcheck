@@ -2573,7 +2573,7 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
             if (tok->variable()->isConst())
                 return false;
             global = !tok->variable()->isLocal() && !tok->variable()->isArgument() &&
-                     !(tok->variable()->scope() && tok->variable()->scope()->isClassOrStructOrUnion() && !tok->variable()->isStatic());
+                     !(tok->variable()->isMember() && !tok->variable()->isStatic());
         } else if (tok->isIncompleteVar() && !tok->isIncompleteConstant()) {
             global = true;
         }
