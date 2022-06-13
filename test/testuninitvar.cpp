@@ -6493,7 +6493,7 @@ private:
             "}\n");
         ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Using argument i that points at uninitialized variable n\n", errout.str());
 
-        ctu("void increment(int& i) {  ++i; }\n" // #6475
+        ctu("void increment(int& i) { ++i; }\n" // #6475
             "int f() { int n; increment(n); return n; }\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:1]: (error) Using argument i that points at uninitialized variable n\n", errout.str());
     }

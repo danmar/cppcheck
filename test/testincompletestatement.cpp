@@ -660,8 +660,8 @@ private:
         check("void f(std::string a, std::string b) {\n" // #7529
               "    const std::string s = \" x \" + a;\n"
               "    +\" y = \" + b;\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n", errout.str());
     }
 
     void vardecl() {
