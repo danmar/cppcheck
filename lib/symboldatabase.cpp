@@ -2065,7 +2065,7 @@ Variable& Variable::operator=(const Variable &var)
 }
 
 bool Variable::isMember() const {
-  return mScope && mScope->isClassOrStructOrUnion();
+    return mScope && mScope->isClassOrStructOrUnion();
 }
 
 bool Variable::isPointerArray() const
