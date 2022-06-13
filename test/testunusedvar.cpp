@@ -536,6 +536,16 @@ private:
             "   F f;\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage(
+            "struct S {\n"
+            "    static void f() { std::cout << \"f()\"; }\n"
+            "    ~S() { f(); }\n"
+            "};\n"
+            "void g() {\n"
+            "    S s;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void cleanFunction() {
