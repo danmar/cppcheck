@@ -5978,8 +5978,8 @@ private:
                       errout.str());
     }
 
-    void duplicateExpression16() { //#10569
-        check("void f(const std::string& a) {\n"
+    void duplicateExpression16() {
+        check("void f(const std::string& a) {\n" //#10569
               "    if ((a == \"x\") ||\n"
               "        (a == \"42\") ||\n"
               "        (a == \"y\") ||\n"
@@ -6001,6 +6001,14 @@ private:
                       "[test.cpp:7] -> [test.cpp:9]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n"
                       "[test.cpp:13] -> [test.cpp:16]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n",
                       errout.str());
+
+        check("void f(const char* s) {\n" // #6371
+              "    if (*s == '\x0F') {\n"
+              "        if (!s[1] || !s[2] || !s[1])\n"
+              "            break;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Same expression '!s[1]' found multiple times in chain of '||' operators.\n", errout.str());
     }
 
     void duplicateExpressionLoop() {

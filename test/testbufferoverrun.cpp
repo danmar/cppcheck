@@ -4902,6 +4902,18 @@ private:
             "  dostuff(s);\n"
             "}");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:7] -> [test.cpp:2]: (error) Array index out of bounds; 'p' buffer size is 4 and it is accessed at offset 4.\n", errout.str());
+
+        ctu("void f(int* p) {\n" // #10415
+            "    int b[1];\n"
+            "    b[0] = p[5];\n"
+            "    std::cout << b[0];\n"
+            "}\n"
+            "void g() {\n"
+            "    int* a = new int[1];\n"
+            "    a[0] = 5;\n"
+            "    f(a);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:9] -> [test.cpp:3]: (error) Array index out of bounds; 'p' buffer size is 4 and it is accessed at offset 20.\n", errout.str());
     }
 
     void ctu_array() {
