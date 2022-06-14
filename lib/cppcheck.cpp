@@ -243,8 +243,6 @@ static std::string getCtuInfoFileName(const std::string &dumpFile)
 
 static void createDumpFile(const Settings& settings,
                            const std::string& filename,
-                           const std::vector<std::string>& files,
-                           const simplecpp::Token* rawtokens,
                            std::ofstream& fdump,
                            std::string& dumpFile)
 {
@@ -271,20 +269,6 @@ static void createDumpFile(const Settings& settings,
           << " long_long_bit=\"" << settings.long_long_bit << '\"'
           << " pointer_bit=\"" << (settings.sizeof_pointer * settings.char_bit) << '\"'
           << "/>\n";
-    if (rawtokens) {
-        fdump << "  <rawtokens>" << std::endl;
-        for (unsigned int i = 0; i < files.size(); ++i)
-            fdump << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
-        for (const simplecpp::Token *tok = rawtokens; tok; tok = tok->next) {
-            fdump << "    <tok "
-                  << "fileIndex=\"" << tok->location.fileIndex << "\" "
-                  << "linenr=\"" << tok->location.line << "\" "
-                  << "column=\"" << tok->location.col << "\" "
-                  << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
-                  << "/>" << std::endl;
-        }
-        fdump << "  </rawtokens>" << std::endl;
-    }
 }
 
 static std::string executeAddon(const AddonInfo &addonInfo,
@@ -520,7 +504,7 @@ unsigned int CppCheck::check(const std::string &path)
             // create dumpfile
             std::ofstream fdump;
             std::string dumpFile;
-            createDumpFile(mSettings, path, tokenizer.list.getFiles(), nullptr, fdump, dumpFile);
+            createDumpFile(mSettings, path, fdump, dumpFile);
             if (fdump.is_open()) {
                 fdump << "<dump cfg=\"\">" << std::endl;
                 for (const ErrorMessage& errmsg: compilerWarnings)
@@ -686,15 +670,27 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             plistFile << ErrorLogger::plistHeader(version(), files);
         }
 
-        // write dump file xml prolog
-        std::ofstream fdump;
-        std::string dumpFile;
-        createDumpFile(mSettings, filename, files, tokens1.cfront(), fdump, dumpFile);
+        std::ostringstream dumpProlog;
+        if (mSettings.dump || !mSettings.addons.empty()) {
+            dumpProlog << "  <rawtokens>" << std::endl;
+            for (unsigned int i = 0; i < files.size(); ++i)
+                dumpProlog << "    <file index=\"" << i << "\" name=\"" << ErrorLogger::toxml(files[i]) << "\"/>" << std::endl;
+            for (const simplecpp::Token *tok = tokens1.cfront(); tok; tok = tok->next) {
+                dumpProlog
+                    << "    <tok "
+                    << "fileIndex=\"" << tok->location.fileIndex << "\" "
+                    << "linenr=\"" << tok->location.line << "\" "
+                    << "column=\"" << tok->location.col << "\" "
+                    << "str=\"" << ErrorLogger::toxml(tok->str()) << "\""
+                    << "/>" << std::endl;
+            }
+            dumpProlog << "  </rawtokens>" << std::endl;
+        }
 
         // Parse comments and then remove them
         preprocessor.inlineSuppressions(tokens1);
-        if ((mSettings.dump || !mSettings.addons.empty()) && fdump.is_open()) {
-            mSettings.nomsg.dump(fdump);
+        if (mSettings.dump || !mSettings.addons.empty()) {
+            mSettings.nomsg.dump(dumpProlog);
         }
         tokens1.removeComments();
         preprocessor.removeComments();
@@ -721,6 +717,15 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 }
                 return mExitCode;  // known results => no need to reanalyze file
             }
+        }
+
+        // write dump file xml prolog
+        std::ofstream fdump;
+        std::string dumpFile;
+        createDumpFile(mSettings, filename, fdump, dumpFile);
+        if (fdump.is_open()) {
+            fdump << dumpProlog.str();
+            dumpProlog.str("");
         }
 
         // Get directives

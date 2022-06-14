@@ -190,6 +190,7 @@ private:
         TEST_CASE(array_index_63); // #10979
         TEST_CASE(array_index_64); // #10878
         TEST_CASE(array_index_65); // #11066
+        TEST_CASE(array_index_66); // #10740
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1833,6 +1834,20 @@ private:
               "        c[j] = f[P[j] - 1];\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_66()
+    {
+        check("void foo(int j) {\n"
+              "    int offsets[256];\n"
+              "    while (x) {\n"
+              "        if (j >= 256) break;\n"
+              "        offsets[++j] = -1;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:4] -> [test.cpp:5]: (warning) Either the condition 'j>=256' is redundant or the array 'offsets[256]' is accessed at index 256, which is out of bounds.\n",
+            errout.str());
     }
 
     void array_index_multidim() {
@@ -4784,6 +4799,14 @@ private:
         check("void f()\n"
               "{\n"
               "   int *a;\n"
+              "   a = new int[-1];\n"
+              "   delete [] a;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", errout.str());
+
+        check("void f()\n"
+              "{\n"
+              "   int *a;\n"
               "   a = (int *)malloc( -10 );\n"
               "   free(a);\n"
               "}");
@@ -4810,7 +4833,7 @@ private:
               "   int a[sz];\n"
               "}\n"
               "void x() { f(-100); }");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (error) Declaration of array 'a' with negative size is undefined behaviour\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (error) Declaration of array 'a' with negative size is undefined behaviour\n", errout.str());
 
         // don't warn for constant sizes -> this is a compiler error so this is used for static assertions for instance
         check("int x, y;\n"

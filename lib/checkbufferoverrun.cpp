@@ -1069,3 +1069,65 @@ void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Val
                 CWE758,
                 Certainty::normal);
 }
+
+static bool isVLAIndex(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (tok->varId() != 0U)
+        return true;
+    if (tok->str() == "?") {
+        // this is a VLA index if both expressions around the ":" is VLA index
+        if (tok->astOperand2() &&
+            tok->astOperand2()->str() == ":" &&
+            isVLAIndex(tok->astOperand2()->astOperand1()) &&
+            isVLAIndex(tok->astOperand2()->astOperand2()))
+            return true;
+        return false;
+    }
+    return isVLAIndex(tok->astOperand1()) || isVLAIndex(tok->astOperand2());
+}
+
+void CheckBufferOverrun::negativeArraySize()
+{
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Variable* var : symbolDatabase->variableList()) {
+        if (!var || !var->isArray())
+            continue;
+        const Token* const nameToken = var->nameToken();
+        if (!Token::Match(nameToken, "%var% [") || !nameToken->next()->astOperand2())
+            continue;
+        const ValueFlow::Value* sz = nameToken->next()->astOperand2()->getValueLE(-1, mSettings);
+        // don't warn about constant negative index because that is a compiler error
+        if (sz && isVLAIndex(nameToken->next()->astOperand2()))
+            negativeArraySizeError(nameToken);
+    }
+
+    for (const Scope* functionScope : symbolDatabase->functionScopes) {
+        for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!tok->isKeyword() || tok->str() != "new" || !tok->astOperand1() || tok->astOperand1()->str() != "[")
+                continue;
+            const Token* valOperand = tok->astOperand1()->astOperand2();
+            if (!valOperand)
+                continue;
+            const ValueFlow::Value* sz = valOperand->getValueLE(-1, mSettings);
+            if (sz)
+                negativeMemoryAllocationSizeError(tok);
+        }
+    }
+}
+
+void CheckBufferOverrun::negativeArraySizeError(const Token* tok)
+{
+    const std::string arrayName = tok ? tok->expressionString() : std::string();
+    const std::string line1 = arrayName.empty() ? std::string() : ("$symbol:" + arrayName + '\n');
+    reportError(tok, Severity::error, "negativeArraySize",
+                line1 +
+                "Declaration of array '" + arrayName + "' with negative size is undefined behaviour", CWE758, Certainty::safe);
+}
+
+void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok)
+{
+    reportError(tok, Severity::error, "negativeMemoryAllocationSize",
+                "Memory allocation size is negative.", CWE131, Certainty::safe);
+}

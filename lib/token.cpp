@@ -780,36 +780,6 @@ nonneg int Token::getStrSize(const Token *tok, const Settings *settings)
     return getStrArraySize(tok) * sizeofType;
 }
 
-std::string Token::getCharAt(const Token *tok, MathLib::bigint index)
-{
-    assert(tok != nullptr);
-    std::string str(getStringLiteral(tok->str()));
-    std::string::const_iterator it = str.begin();
-    const std::string::const_iterator end = str.end();
-
-    while (it != end) {
-        if (index == 0) {
-            if (*it == '\0')
-                return "\\0";
-
-            std::string ret(1, *it);
-            if (*it == '\\') {
-                ++it;
-                ret += *it;
-            }
-            return ret;
-        }
-
-        if (*it == '\\')
-            ++it;
-        ++it;
-        --index;
-    }
-    assert(index == 0);
-
-    return "\\0";
-}
-
 void Token::move(Token *srcStart, Token *srcEnd, Token *newLocation)
 {
     /**[newLocation] -> b -> c -> [srcStart] -> [srcEnd] -> f */
@@ -2270,7 +2240,7 @@ std::pair<const Token*, const Token*> Token::typeDecl(const Token * tok)
         if (!function)
             return {};
         return { function->retDef, function->returnDefEnd() };
-    } else if (tok->previous()->function()) {
+    } else if (tok->previous() && tok->previous()->function()) {
         const Function *function = tok->previous()->function();
         return {function->retDef, function->returnDefEnd()};
     } else if (Token::simpleMatch(tok, "=")) {

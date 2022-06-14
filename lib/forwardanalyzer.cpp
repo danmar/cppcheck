@@ -580,6 +580,8 @@ struct ForwardTraversal {
                 if (!scopeEndToken)
                     return Break();
                 tok = skipTo(tok, scopeEndToken, end);
+                if (!precedes(tok, end))
+                    return Break(Analyzer::Terminate::Escape);
                 if (!analyzer->lowerToPossible())
                     return Break(Analyzer::Terminate::Bail);
                 // TODO: Don't break, instead move to the outer scope

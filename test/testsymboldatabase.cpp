@@ -4816,11 +4816,17 @@ private:
     }
 
     void symboldatabase92() { // daca crash
-        GET_SYMBOL_DB("template <size_t, typename...> struct a;\n"
-                      "template <size_t b, typename c, typename... d>\n"
-                      "struct a<b, c, d...> : a<1, d...> {};\n"
-                      "template <typename... e> struct f : a<0, e...> {};");
-        ASSERT_EQUALS("", errout.str());
+        {
+            GET_SYMBOL_DB("template <size_t, typename...> struct a;\n"
+                          "template <size_t b, typename c, typename... d>\n"
+                          "struct a<b, c, d...> : a<1, d...> {};\n"
+                          "template <typename... e> struct f : a<0, e...> {};");
+            ASSERT_EQUALS("", errout.str());
+        }
+        {
+            GET_SYMBOL_DB("b.f();");
+            ASSERT_EQUALS("", errout.str());
+        }
     }
 
     void symboldatabase93() { // alignas attribute

@@ -7517,6 +7517,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("class A {};\n"
+              "class B { B(const A& a); };\n"
+              "const A& getA();\n"
+              "void f() {\n"
+              "    const B b{ getA() };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #5618
         const char* code5618 = "class Token {\n"
                                "public:\n"
@@ -7529,7 +7537,7 @@ private:
                                "    }\n"
                                "}";
         check(code5618, nullptr, false, true);
-        TODO_ASSERT_EQUALS("", "[test.cpp:7]: (performance, inconclusive) Use const reference for 'temp' to avoid unnecessary data copying.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
         check(code5618, nullptr, false, false);
         ASSERT_EQUALS("", errout.str());
 
@@ -7551,6 +7559,37 @@ private:
               "void foo() {\n"
               "  const CD cd(CD::getOne());\n"
               "}", nullptr, false, true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #10545
+              "    int modify();\n"
+              "    const std::string& get() const;\n"
+              "};\n"
+              "std::string f(S& s) {\n"
+              "    const std::string old = s.get();\n"
+              "    int i = s.modify();\n"
+              "    if (i != 0)\n"
+              "        return old;\n"
+              "    return {};\n"
+              "}", nullptr, /*experimental*/ false, /*inconclusive*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct X { int x; };\n" // #10191
+              "struct S {\n"
+              "    X _x;\n"
+              "    X& get() { return _x; }\n"
+              "    void modify() { _x.x += 42; }\n"
+              "    int copy() {\n"
+              "        const X x = get();\n"
+              "        modify();\n"
+              "        return x.x;\n"
+              "    }\n"
+              "    int constref() {\n"
+              "        const X& x = get();\n"
+              "        modify();\n"
+              "        return x.x;\n"
+              "    }\n"
+              "};\n", nullptr, /*experimental*/ false, /*inconclusive*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 

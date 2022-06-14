@@ -2742,7 +2742,7 @@ void CheckOther::checkRedundantCopy()
         const Token* startTok = var->nameToken();
         if (startTok->strAt(1) == "=") // %type% %name% = ... ;
             ;
-        else if (startTok->strAt(1) == "(" && var->isClass() && var->typeScope()) {
+        else if (Token::Match(startTok->next(), "(|{") && var->isClass() && var->typeScope()) {
             // Object is instantiated. Warn if constructor takes arguments by value.
             if (constructorTakesReference(var->typeScope()))
                 continue;
@@ -2755,6 +2755,12 @@ void CheckOther::checkRedundantCopy()
         if (!Token::Match(tok->previous(), "%name% ("))
             continue;
         if (!Token::Match(tok->link(), ") )| ;")) // bailout for usage like "const A a = getA()+3"
+            continue;
+
+        const Token* dot = tok->astOperand1();
+        if (Token::simpleMatch(dot, ".") && dot->astOperand1() && isVariableChanged(dot->astOperand1()->variable(), mSettings, mTokenizer->isCPP()))
+            continue;
+        if (exprDependsOnThis(tok->previous()))
             continue;
 
         const Function* func = tok->previous()->function();

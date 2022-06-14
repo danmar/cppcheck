@@ -40,6 +40,7 @@ class Token;
 class TemplateSimplifier;
 class ErrorLogger;
 class Preprocessor;
+class VariableMap;
 
 namespace simplecpp {
     class TokenList;
@@ -58,33 +59,6 @@ class CPPCHECKLIB Tokenizer {
     friend class SymbolDatabase;
     friend class TestSimplifyTemplate;
     friend class TemplateSimplifier;
-
-    /** Class used in Tokenizer::setVarIdPass1 */
-    class VariableMap {
-    private:
-        std::map<std::string, int> mVariableId;
-        std::stack<std::list<std::pair<std::string,int>>> mScopeInfo;
-        mutable nonneg int mVarId;
-    public:
-        VariableMap();
-        void enterScope();
-        bool leaveScope();
-        void addVariable(const std::string &varname);
-        bool hasVariable(const std::string &varname) const;
-        std::map<std::string,int>::const_iterator find(const std::string &varname) const {
-            return mVariableId.find(varname);
-        }
-        std::map<std::string,int>::const_iterator end() const {
-            return mVariableId.end();
-        }
-        const std::map<std::string,int> &map() const {
-            return mVariableId;
-        }
-        nonneg int *getVarId() const {
-            return &mVarId;
-        }
-    };
-
 
 public:
     Tokenizer();
@@ -268,9 +242,6 @@ public:
 
     /** Remove unknown macro in variable declarations: PROGMEM char x; */
     void removeMacroInVarDecl();
-
-    /** Remove redundant assignment */
-    void removeRedundantAssignment();
 
     /** Simplifies some realloc usage like
      * 'x = realloc (0, n);' => 'x = malloc(n);'
@@ -487,8 +458,6 @@ public:
      */
     bool simplifyRedundantParentheses();
 
-    void simplifyCharAt();
-
     /** Simplify references */
     void simplifyReference();
 
@@ -582,11 +551,6 @@ private:
      * simplify "while (0)"
      */
     void simplifyWhile0();
-
-    /**
-     * Simplify while(func() && errno==EINTR)
-     */
-    void simplifyErrNoInWhile();
 
     /**
      * Simplify while(func(f))
@@ -806,17 +770,17 @@ private:
     void setVarIdClassDeclaration(const Token * const startToken,
                                   const VariableMap &variableMap,
                                   const nonneg int scopeStartVarId,
-                                  std::map<int, std::map<std::string,int>>& structMembers);
+                                  std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers);
 
     void setVarIdStructMembers(Token **tok1,
-                               std::map<int, std::map<std::string, int>>& structMembers,
+                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
                                nonneg int *varId) const;
 
     void setVarIdClassFunction(const std::string &classname,
                                Token * const startToken,
                                const Token * const endToken,
-                               const std::map<std::string,int> &varlist,
-                               std::map<int, std::map<std::string,int>>& structMembers,
+                               const std::map<std::string, nonneg int> &varlist,
+                               std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
                                nonneg int *varId_);
 
     /**
