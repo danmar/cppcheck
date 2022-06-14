@@ -3584,6 +3584,17 @@ private:
               "    (void)cargs;\n"
               "};\n");
         ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4] -> [test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using object that is a temporary.\n", errout.str());
+
+        check("struct C {\n" // #9194
+              "    const int& m;\n"
+              "    C(const int& i) : m(i) {}\n"
+              "    int get() { return m; }\n"
+              "};\n"
+              "int f() {\n"
+              "    C c(42);\n"
+              "    return c.get();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:7] -> [test.cpp:8]: (error) Using object that is a temporary.\n", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()
