@@ -3571,6 +3571,19 @@ private:
               "    for (const auto& s : a) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::vector<char*> f(const std::vector<std::string>& args) {\n" // #9773
+              "    std::vector<char*> cargs;\n"
+              "    for (const auto& a : args) {\n"
+              "      cargs.push_back(const_cast<char*>(a.data()));\n"
+              "    }\n"
+              "    return cargs;\n"
+              "}\n"
+              "void g() {\n"
+              "    std::vector<char*> cargs = f({ \"0\", \"0\" });\n"
+              "    (void)cargs;\n"
+              "};\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:4] -> [test.cpp:3] -> [test.cpp:1] -> [test.cpp:4] -> [test.cpp:9] -> [test.cpp:9] -> [test.cpp:10]: (error) Using object that is a temporary.\n", errout.str());
     }
 
     void danglingLifetimeBorrowedMembers()

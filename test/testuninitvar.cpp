@@ -5359,6 +5359,14 @@ private:
                         "        if (received[sig]) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void increment(int& i) { ++i; }\n" // #6475
+                        "int f() {\n"
+                        "    int n;\n"
+                        "    increment(n);\n"
+                        "    return n;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Uninitialized variable: i\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
