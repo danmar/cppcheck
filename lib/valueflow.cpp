@@ -5242,11 +5242,6 @@ static void valueFlowForwardAssign(Token* const tok,
 {
     if (Token::simpleMatch(tok->astParent(), "return"))
         return;
-    Token* parentSemiColon = nullptr;
-    // TODO: Search for parent semicolon instead
-    if (tok->astParent() && Token::simpleMatch(tok->astParent()->astParent(), ";"))
-        parentSemiColon = tok->astParent()->astParent();
-
     const Token* endOfVarScope = getEndOfExprScope(expr);
     if (std::any_of(values.begin(), values.end(), std::mem_fn(&ValueFlow::Value::isLifetimeValue))) {
         valueFlowForwardLifetime(tok, tokenlist, errorLogger, settings);
@@ -5294,6 +5289,11 @@ static void valueFlowForwardAssign(Token* const tok,
     }))
         lowerToPossible(values);
 
+    // Skip RHS
+    const Token * nextExpression = tok->astParent() ? nextAfterAstRightmostLeaf(tok->astParent()) : tok->next();
+    if (!nextExpression)
+        return;
+
     for (ValueFlow::Value& value : values) {
         if (value.isSymbolicValue())
             continue;
@@ -5301,32 +5301,6 @@ static void valueFlowForwardAssign(Token* const tok,
             continue;
         value.tokvalue = tok;
     }
-
-    // Skip RHS
-    const Token * nextExpression = tok->astParent() ? nextAfterAstRightmostLeaf(tok->astParent()) : tok->next();
-    if (!nextExpression)
-        return;
-    
-    if (parentSemiColon) {
-        Token* top = parentSemiColon->astTop();
-        if (top && Token::Match(top->previous(), "%name% (")) {
-            nextExpression = top->link()->next();
-            // If modified in loop change to possible values
-            if (Token::Match(top->previous(), "for|while")) {
-                if (isExpressionChanged(expr, parentSemiColon, nextExpression->link(), settings, true))
-                    lowerToPossible(values);
-            }
-            Token* start = parentSemiColon->astOperand2();
-            if (Token::simpleMatch(start, ";"))
-                start = start->astOperand1();
-            Analyzer::Result r = valueFlowForwardRecursive(start, expr, values, tokenlist);
-            if (r.terminate != Analyzer::Terminate::None)
-                return;
-            if (r.action.isModified())
-                return;
-        }
-    }
-
     // Const variable
     if (expr->variable() && expr->variable()->isConst() && !expr->variable()->isReference()) {
         auto it = std::remove_if(values.begin(), values.end(), [](const ValueFlow::Value& value) {
@@ -5491,7 +5465,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             valueFlowForwardAssign(
                 tok->astOperand2(), tok->astOperand1(), vars, values, init, tokenlist, errorLogger, settings);
             // Back propagate symbolic values
-            if (tok->astOperand1()->exprId() > 0 && !tok->astParent()) {
+            if (tok->astOperand1()->exprId() > 0) {
                 Token* start = nextAfterAstRightmostLeaf(tok);
                 const Token* end = scope->bodyEnd;
                 // Collect symbolic ids

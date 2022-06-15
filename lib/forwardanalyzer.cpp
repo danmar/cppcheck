@@ -575,6 +575,19 @@ struct ForwardTraversal {
                 tok = nextAfterAstRightmostLeaf(assignTok);
                 if (!tok)
                     return Break();
+            } else if (tok->str() ==  ";" && tok->astParent()) {
+                Token* top = tok->astTop();
+                if (top && Token::Match(top->previous(), "for|while (") && Token::Match(top->link(), ") {")) {
+                    Token* endCond = top->link();
+                    Token* endBlock = endCond->linkAt(1);
+                    Token* condTok = getCondTok(top);
+                    Token* stepTok = getStepTok(top);
+                    // The semicolon should belong to the initTok otherwise something went wrong, so just bail
+                    if (tok->astOperand2() != condTok && !Token::simpleMatch(tok->astOperand2(), ";"))
+                        return Break(Analyzer::Terminate::Bail);
+                    if (updateLoop(end, endBlock, condTok, nullptr, stepTok) == Progress::Break)
+                        return Break();
+                }
             } else if (tok->str() ==  "break") {
                 const Token *scopeEndToken = findNextTokenFromBreak(tok);
                 if (!scopeEndToken)
