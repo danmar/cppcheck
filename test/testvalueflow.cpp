@@ -3920,7 +3920,8 @@ private:
                "void foo(struct S s) {\n"
                "    for (s.x = 0; s.x < 127; s.x++) {}\n"
                "}";
-        values = removeImpossible(tokenValues(code, "<")); // TODO: comparison can be true or false
+        values = removeImpossible(tokenValues(code, "<"));
+        values.remove_if([&](const ValueFlow::Value& v) { return !v.isKnown(); });
         ASSERT_EQUALS(true, values.empty());
     }
 
@@ -4062,7 +4063,7 @@ private:
                "    for (int x = 0; x < 10 && y = do_something();)\n"
                "        x;\n"
                "}";
-        TODO_ASSERT_EQUALS(true, false, testValueOfX(code, 4U, 0));
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 0));
 
         code = "void f() {\n"
                "    int x,y;\n"

@@ -575,6 +575,9 @@ struct ForwardTraversal {
                 tok = nextAfterAstRightmostLeaf(assignTok);
                 if (!tok)
                     return Break();
+            } else if (Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->previous(), "for|while (")) {
+                // In the middle of a loop structure so bail
+                return Break(Analyzer::Terminate::Bail);
             } else if (tok->str() ==  ";" && tok->astParent()) {
                 Token* top = tok->astTop();
                 if (top && Token::Match(top->previous(), "for|while (") && Token::Match(top->link(), ") {")) {

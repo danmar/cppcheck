@@ -5417,7 +5417,7 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             if (tok->str() != "=" && !isVariableInit(tok))
                 continue;
 
-            if (tok->astParent() && tok->astParent()->str() != ";")
+            if (tok->astParent() && !(tok->astParent()->str() == ";" && astIsLHS(tok)))
                 continue;
 
             // Lhs should be a variable
