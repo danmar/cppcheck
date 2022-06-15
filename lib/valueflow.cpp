@@ -2436,7 +2436,11 @@ struct ValueFlowAnalyzer : Analyzer {
         Action read = Action::Read;
         const ValueFlow::Value* value = getValue(tok);
         if (value) {
+            // Moving a moved value wont change the moved value
             if (value->isMovedValue() && isMoveOrForward(tok) != ValueFlow::Value::MoveKind::NonMovedVariable)
+                return read;
+            // Inserting elements to container wont change the lifetime
+            if (astIsContainer(tok) && value->isLifetimeValue() && contains({Library::Container::Action::PUSH, Library::Container::Action::INSERT, Library::Container::Action::CHANGE_INTERNAL}, astContainerAction(tok)))
                 return read;
         }
         bool inconclusive = false;
