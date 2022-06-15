@@ -5474,7 +5474,7 @@ const Scope *SymbolDatabase::findScopeByName(const std::string& name) const
 {
     auto it = std::find_if(scopeList.begin(), scopeList.end(), [&](const Scope& s) {
         return s.className == name;
-    });    
+    });
     return it == scopeList.end() ? nullptr : &*it;
 }
 
@@ -5536,8 +5536,8 @@ const Type* Scope::findType(const std::string & name) const
 Scope *Scope::findInNestedListRecursive(const std::string & name)
 {
     auto it = std::find_if(nestedList.begin(), nestedList.end(), [&](const Scope* s) {
-      return s->className == name;
-      });
+        return s->className == name;
+    });
     if (it != nestedList.end())
         return *it;
 
