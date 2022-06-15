@@ -2603,6 +2603,23 @@ private:
                "  }\n"
                "};";
         ASSERT_EQUALS(true, testValueOfX(code, 6U, 10));
+
+        code = "void f(int i) {\n"
+                "    if (i == 3) {}\n"
+                "    for(int x = i;\n"
+                "        x;\n"
+                "        x++) {}\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 3));
+
+        code = "void f() {\n"
+                "    for(int x = 3;\n"
+                "        x;\n"
+                "        x++) {}\n"
+                "}\n";
+        ASSERT_EQUALS(true, testValueOfX(code, 4U, 3));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 3));
     }
 
     void valueFlowAfterSwap()
