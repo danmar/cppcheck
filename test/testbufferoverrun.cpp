@@ -2380,7 +2380,8 @@ private:
               "        some_condition ? 0 : a[i-1];\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n",
+                      errout.str());
 
         check("void f() {\n"
               "    int a[10];\n"

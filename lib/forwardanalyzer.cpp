@@ -578,7 +578,7 @@ struct ForwardTraversal {
             } else if (Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->previous(), "for|while (")) {
                 // In the middle of a loop structure so bail
                 return Break(Analyzer::Terminate::Bail);
-            } else if (tok->str() ==  ";" && tok->astParent()) {
+            } else if (tok->str() == ";" && tok->astParent()) {
                 Token* top = tok->astTop();
                 if (top && Token::Match(top->previous(), "for|while (") && Token::Match(top->link(), ") {")) {
                     Token* endCond = top->link();
@@ -591,7 +591,7 @@ struct ForwardTraversal {
                     if (updateLoop(end, endBlock, condTok, nullptr, stepTok) == Progress::Break)
                         return Break();
                 }
-            } else if (tok->str() ==  "break") {
+            } else if (tok->str() == "break") {
                 const Token *scopeEndToken = findNextTokenFromBreak(tok);
                 if (!scopeEndToken)
                     return Break();
@@ -648,7 +648,8 @@ struct ForwardTraversal {
                 } else if (Token::simpleMatch(tok->next(), "else {")) {
                     tok = tok->linkAt(2);
                 }
-            } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
+            } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&
+                       Token::simpleMatch(tok->next()->link(), ") {")) {
                 Token* endCond = tok->next()->link();
                 Token* endBlock = endCond->next()->link();
                 Token* condTok = getCondTok(tok);

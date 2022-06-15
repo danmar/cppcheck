@@ -3921,7 +3921,9 @@ private:
                "    for (s.x = 0; s.x < 127; s.x++) {}\n"
                "}";
         values = removeImpossible(tokenValues(code, "<"));
-        values.remove_if([&](const ValueFlow::Value& v) { return !v.isKnown(); });
+        values.remove_if([&](const ValueFlow::Value& v) {
+            return !v.isKnown();
+        });
         ASSERT_EQUALS(true, values.empty());
     }
 

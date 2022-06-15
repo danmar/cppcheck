@@ -2524,7 +2524,10 @@ private:
               "        }\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:7] -> [test.cpp:5] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:5]: (error) Using iterator to local container 'foo' that may be invalid.\n", "[test.cpp:5] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:7] -> [test.cpp:5] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:5]: (error, inconclusive) Using iterator to local container 'foo' that may be invalid.\n", errout.str());
+        TODO_ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:7] -> [test.cpp:5] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:5]: (error) Using iterator to local container 'foo' that may be invalid.\n",
+            "[test.cpp:5] -> [test.cpp:7] -> [test.cpp:8] -> [test.cpp:8] -> [test.cpp:7] -> [test.cpp:5] -> [test.cpp:9] -> [test.cpp:3] -> [test.cpp:5]: (error, inconclusive) Using iterator to local container 'foo' that may be invalid.\n",
+            errout.str());
     }
 
     void eraseGoto() {
