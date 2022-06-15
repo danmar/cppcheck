@@ -277,7 +277,6 @@ Library::Container::Action astContainerAction(const Token* tok)
     if (!ftok)
         return Library::Container::Action::NO_ACTION;
     return tok->valueType()->container->getAction(ftok->str());
-
 }
 Library::Container::Yield astContainerYield(const Token* tok)
 {
@@ -286,7 +285,6 @@ Library::Container::Yield astContainerYield(const Token* tok)
         return Library::Container::Yield::NO_YIELD;
     return tok->valueType()->container->getYield(ftok->str());
 }
-
 
 bool astIsRangeBasedForDecl(const Token* tok)
 {

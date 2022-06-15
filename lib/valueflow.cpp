@@ -2440,7 +2440,11 @@ struct ValueFlowAnalyzer : Analyzer {
             if (value->isMovedValue() && isMoveOrForward(tok) != ValueFlow::Value::MoveKind::NonMovedVariable)
                 return read;
             // Inserting elements to container wont change the lifetime
-            if (astIsContainer(tok) && value->isLifetimeValue() && contains({Library::Container::Action::PUSH, Library::Container::Action::INSERT, Library::Container::Action::CHANGE_INTERNAL}, astContainerAction(tok)))
+            if (astIsContainer(tok) && value->isLifetimeValue() &&
+                contains({Library::Container::Action::PUSH,
+                          Library::Container::Action::INSERT,
+                          Library::Container::Action::CHANGE_INTERNAL},
+                         astContainerAction(tok)))
                 return read;
         }
         bool inconclusive = false;
