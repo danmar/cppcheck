@@ -2041,6 +2041,20 @@ private:
               "    return NewT(s);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("typedef struct s { char* str; } attr_t;\n" // #10152
+              "attr_t* f(int type) {\n"
+              "    attr_t a;\n"
+              "    switch (type) {\n"
+              "    case 1:\n"
+              "        a.str = strdup(\"?\");\n"
+              "        break;\n"
+              "    default:\n"
+              "        return NULL;\n"
+              "    }\n"
+              "    return g(&a);\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("", "[test.cpp:9]: (error) Memory leak: a.str\n", errout.str());
     }
 
     void ifelse() {

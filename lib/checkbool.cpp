@@ -104,8 +104,7 @@ void CheckBool::checkBitwiseOnBoolean()
                     continue;
                 if (tok->str() == "|" && !isConvertedToBool(tok) && !(astIsBool(tok->astOperand1()) && astIsBool(tok->astOperand2())))
                     continue;
-                if (!isConstExpression(tok->astOperand1(), mSettings->library, true, mTokenizer->isCPP()))
-                    continue;
+                // first operand will always be evaluated
                 if (!isConstExpression(tok->astOperand2(), mSettings->library, true, mTokenizer->isCPP()))
                     continue;
                 if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())

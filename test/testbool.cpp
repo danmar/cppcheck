@@ -914,6 +914,24 @@ private:
               "    return ((p - xm >= d) << 1) | (x - p > d);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int g();\n" // #10655
+              "void f(bool b) {\n"
+              "    if (g() | b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'b' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+
+        check("int g();\n"
+              "void f(bool b) {\n"
+              "    if (b | g()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g();\n"
+              "bool f(bool b, bool c) {\n"
+              "    return b | g() | c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'c' is used in bitwise operation. Did you mean '||'?\n", errout.str());
     }
 
     void incrementBoolean() {
