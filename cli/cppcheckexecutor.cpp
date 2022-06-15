@@ -926,7 +926,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         // Single process
         settings.jointSuppressionReport = true;
 
-        const std::size_t totalfilesize = std::accumulate(mFiles.begin(), mFiles.end(), std::size_t(0), [](auto v, const auto& f) {
+        const std::size_t totalfilesize = std::accumulate(mFiles.begin(), mFiles.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& f) {
             return v + f.second;
         });
 
