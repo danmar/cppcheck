@@ -29,6 +29,45 @@
 #include <inttypes.h>
 #include <float.h>
 
+int invalidFunctionArgStr_strcpn(void)
+{
+    const char str1[] = "ABCDEF49620910";
+    const char str2[] = "42";
+    const char pattern[3] = { -42, -43, -44 };
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) strcspn(str1, pattern);
+    return strcspn(str1, str2);
+}
+
+void invalidFunctionArgStr_strncat(void)
+{
+    char str1[20];
+    strcpy (str1,"test");
+    const char src = '/';
+    // No warning is expected for
+    strncat (str1, &src, 1);
+    puts (str1);
+}
+
+char * invalidFunctionArgStr_strpbrk( const char *p )
+{
+    const char search[] = { -42, -43, -44 };
+    const char pattern[3] = { -42, -43, -44 };
+    (void) strpbrk( "abc42", "42" );
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) strpbrk( search, "42" );
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) strpbrk( search, pattern );
+    // cppcheck-suppress invalidFunctionArgStr
+    return strpbrk( p, pattern );
+}
+
+int invalidFunctionArgStr_strncmp( const char *p )
+{
+    // No warning is expected for:
+    const char emdash[3] = { -42, -43, -44 };
+    return strncmp( p, emdash, 3 );
+}
 
 float invalidFunctionArg_float_remquo (float x, float y, int* quo )
 {

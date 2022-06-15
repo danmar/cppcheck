@@ -381,7 +381,6 @@ static void fillProgramMemoryFromAssignments(ProgramMemory& pm, const Token* tok
                         ++indentlevel;
                         continue;
                     }
-                    tok2 = cond->astParent()->previous();
                 } else if (conditionIsTrue(cond, state)) {
                     if (inElse)
                         tok2 = tok2->link()->tokAt(-2);
@@ -549,6 +548,11 @@ struct assign {
     }
 };
 
+static bool isIntegralValue(const ValueFlow::Value& value)
+{
+    return value.isIntValue() || value.isIteratorValue() || value.isSymbolicValue();
+}
+
 static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& lhs, const ValueFlow::Value& rhs)
 {
     ValueFlow::Value result;
@@ -570,14 +574,33 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
             return result;
         }
     }
-    result.valueType = ValueFlow::Value::ValueType::INT;
-    if (op == "+") {
-        if (lhs.isIteratorValue())
-            result.valueType = lhs.valueType;
-        else if (rhs.isIteratorValue())
-            result.valueType = rhs.valueType;
-    } else if (lhs.valueType != rhs.valueType) {
+    // Must be integral types
+    if (!isIntegralValue(lhs) && !isIntegralValue(rhs))
         return ValueFlow::Value::unknown();
+    // If not the same type then one must be int
+    if (lhs.valueType != rhs.valueType && !lhs.isIntValue() && !rhs.isIntValue())
+        return ValueFlow::Value::unknown();
+    bool compareOp = contains({"==", "!=", "<", ">", ">=", "<="}, op);
+    // Comparison must be the same type
+    if (compareOp && lhs.valueType != rhs.valueType)
+        return ValueFlow::Value::unknown();
+    // Only add, subtract, and compare for non-integers
+    if (!compareOp && !contains({"+", "-"}, op) && !lhs.isIntValue() && !rhs.isIntValue())
+        return ValueFlow::Value::unknown();
+    // Both cant be iterators for non-compare
+    if (!compareOp && lhs.isIteratorValue() && rhs.isIteratorValue())
+        return ValueFlow::Value::unknown();
+    // Symbolic values must be in the same ring
+    if (lhs.isSymbolicValue() && rhs.isSymbolicValue() && lhs.tokvalue != rhs.tokvalue)
+        return ValueFlow::Value::unknown();
+    if (!lhs.isIntValue() && !compareOp) {
+        result.valueType = lhs.valueType;
+        result.tokvalue = lhs.tokvalue;
+    } else if (!rhs.isIntValue() && !compareOp) {
+        result.valueType = rhs.valueType;
+        result.tokvalue = rhs.tokvalue;
+    } else {
+        result.valueType = ValueFlow::Value::ValueType::INT;
     }
     bool error = false;
     result.intvalue = calculate(op, lhs.intvalue, rhs.intvalue, &error);
@@ -664,7 +687,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
     } else if (expr->str() == "," && expr->astOperand1() && expr->astOperand2()) {
         execute(expr->astOperand1(), pm);
         return execute(expr->astOperand2(), pm);
-    } else if (Token::Match(expr, "++|--") && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
+    } else if (expr->tokType() == Token::eIncDecOp && expr->astOperand1() && expr->astOperand1()->exprId() != 0) {
         if (!pm.hasValue(expr->astOperand1()->exprId()))
             return unknown;
         ValueFlow::Value& lhs = pm.at(expr->astOperand1()->exprId());

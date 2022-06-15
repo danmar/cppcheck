@@ -68,7 +68,7 @@ struct ForwardTraversal {
     }
 
     struct Branch {
-        Branch(Token* tok = nullptr) : endBlock(tok) {}
+        explicit Branch(Token* tok = nullptr) : endBlock(tok) {}
         Token* endBlock = nullptr;
         Analyzer::Action action = Analyzer::Action::None;
         bool check = false;
@@ -580,6 +580,8 @@ struct ForwardTraversal {
                 if (!scopeEndToken)
                     return Break();
                 tok = skipTo(tok, scopeEndToken, end);
+                if (!precedes(tok, end))
+                    return Break(Analyzer::Terminate::Escape);
                 if (!analyzer->lowerToPossible())
                     return Break(Analyzer::Terminate::Bail);
                 // TODO: Don't break, instead move to the outer scope
@@ -857,12 +859,12 @@ Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const V
 {
     ForwardTraversal ft{a, settings};
     ft.updateRange(start, end);
-    return {ft.actions, ft.terminate};
+    return Analyzer::Result{ ft.actions, ft.terminate };
 }
 
 Analyzer::Result valueFlowGenericForward(Token* start, const ValuePtr<Analyzer>& a, const Settings* settings)
 {
     ForwardTraversal ft{a, settings};
     ft.updateRecursive(start);
-    return {ft.actions, ft.terminate};
+    return Analyzer::Result{ ft.actions, ft.terminate };
 }

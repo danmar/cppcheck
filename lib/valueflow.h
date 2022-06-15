@@ -251,6 +251,8 @@ namespace ValueFlow {
 
         std::string infoString() const;
 
+        std::string toString() const;
+
         enum class ValueType {
             INT,
             TOK,
@@ -339,6 +341,8 @@ namespace ValueFlow {
         const Token *condition;
 
         ErrorPath errorPath;
+
+        ErrorPath debugPath;
 
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId;

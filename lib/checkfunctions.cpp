@@ -94,7 +94,7 @@ void CheckFunctions::checkProhibitedFunctions()
 }
 
 //---------------------------------------------------------------------------
-// Check <valid> and <not-bool>
+// Check <valid>, <strz> and <not-bool>
 //---------------------------------------------------------------------------
 void CheckFunctions::invalidFunctionUsage()
 {
@@ -125,14 +125,51 @@ void CheckFunctions::invalidFunctionUsage()
                     else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
-
+                // check <strz>
                 if (mSettings->library.isargstrz(functionToken, argnr)) {
                     if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
                         const ValueType * valueType = argtok->next()->valueType();
                         const Variable * variable = argtok->next()->variable();
-                        if (valueType->type == ValueType::Type::CHAR && !variable->isArray() && !variable->isGlobal() &&
+                        if ((valueType->type == ValueType::Type::CHAR || (valueType->type == ValueType::Type::RECORD && Token::Match(argtok, "& %var% . %var% ,|)"))) &&
+                            !variable->isArray() &&
+                            (variable->isConst() || !variable->isGlobal()) &&
                             (!argtok->next()->hasKnownValue() || argtok->next()->getValue(0) == nullptr)) {
                             invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                        }
+                    }
+                    const ValueType* const valueType = argtok->valueType();
+                    const Variable* const variable = argtok->variable();
+                    // Is non-null terminated local variable of type char (e.g. char buf[] = {'x'};) ?
+                    if (variable && variable->isLocal()
+                        && valueType && valueType->type == ValueType::Type::CHAR) {
+                        const Token* varTok = variable->declEndToken();
+                        auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
+                        if (varTok && Token::simpleMatch(varTok->previous(), "]"))
+                        {
+                            const Token* const countTok = varTok->tokAt(-2);
+                            if (countTok && countTok->hasKnownIntValue())
+                                count = countTok->getKnownIntValue();
+                        }
+                        if (Token::simpleMatch(varTok, "= {")) {
+                            varTok = varTok->tokAt(1);
+                            auto charsUntilFirstZero = 0;
+                            bool search = true;
+                            while (search && varTok && !Token::simpleMatch(varTok->next(), "}")) {
+                                varTok = varTok->next();
+                                if (!Token::simpleMatch(varTok, ",")) {
+                                    if (Token::Match(varTok, "%op%")) {
+                                        varTok = varTok->next();
+                                        continue;
+                                    }
+                                    ++charsUntilFirstZero;
+                                    if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() == 0)
+                                        search=false; // stop counting for cases like char buf[3] = {'x', '\0', 'y'};
+                                }
+                            }
+                            if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() != 0
+                                && (count == -1 || (count > 0 && count <= charsUntilFirstZero))) {
+                                invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                            }
                         }
                     }
                 }

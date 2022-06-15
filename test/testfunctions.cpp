@@ -97,6 +97,8 @@ private:
         TEST_CASE(returnLocalStdMove4);
 
         TEST_CASE(returnLocalStdMove5);
+
+        TEST_CASE(negativeMemoryAllocationSizeError); // #389
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -576,10 +578,35 @@ private:
               "  size_t l2 = strlen(&s2.x);\n"
               "  return l1 + l2;\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:9]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n"
+                      "[test.cpp:9]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
 
         check("const char x = 'x'; size_t f() { return strlen(&x); }");
-        TODO_ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("struct someStruct {\n"
+              "    union {\n"
+              "        struct {\n"
+              "            uint16_t nr;\n"
+              "            uint8_t d[40];\n"
+              "        } data;\n"
+              "        char buf[42];\n"
+              "    } x;\n"
+              "};\n"
+              "int f(struct someStruct * const tp, const int k)\n"
+              "{\n"
+              "    return strcmp(&tp->x.buf[k], \"needle\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct someStruct {\n"
+              "    char buf[42];\n"
+              "};\n"
+              "int f(struct someStruct * const tp, const int k)\n"
+              "{\n"
+              "    return strcmp(&tp->buf[k], \"needle\");\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
 
         check("const char x = 'x'; size_t f() { char y = x; return strlen(&y); }");
         ASSERT_EQUALS("[test.cpp:1]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
@@ -613,6 +640,77 @@ private:
               "  return 0;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Invalid strcat() argument nr 2. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[1] = { \'x\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid fopen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[2] = { \'x\', \'y\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid fopen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[3] = { \'x\', \'y\' ,\'\\0\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[3] = { \'x\', \'\\0\' ,\'y\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[3] = { \'x\', \'y\' };\n" // implicit '\0' added at the end
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[] = { \'\\0\' };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[] = { \'0\' + 42 };\n" // no size is explicitly defined, no implicit '\0' is added
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid fopen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[] = { \'0\' + 42, \'x\' };\n" // no size is explicitly defined, no implicit '\0' is added
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid fopen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[2] = { \'0\' + 42 };\n" // implicitly '\0' added at the end because size is set to 2
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("FILE* f(void) {\n"
+              "  const char fileName[] = { };\n"
+              "  return fopen(fileName, \"r\"); \n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void scanMetaTypes()\n" // don't crash
+              "{\n"
+              "    QVector<int> metaTypes;\n"
+              "    for (int mtId = 0; mtId <= QMetaType::User; ++mtId) {\n"
+              "        const auto name = QMetaType::typeName(mtId);\n"
+              "        if (strstr(name, \"GammaRay::\") != name)\n"
+              "            metaTypes.push_back(mtId);\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mathfunctionCall_sqrt() {
@@ -1609,6 +1707,23 @@ private:
         check("struct A{} a; A f1() { return std::move(a); }\n"
               "A f2() { volatile A var; return std::move(var); }");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void negativeMemoryAllocationSizeError() { // #389
+        check("void f() {\n"
+              "   int *a;\n"
+              "   a = malloc( -10 );\n"
+              "   free(a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid malloc() argument nr 1. The value is -10 but the valid values are '0:'.\n", errout.str());
+
+        check("void f() {\n"
+              "   int *a;\n"
+              "   a = alloca( -10 );\n"
+              "   free(a);\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'alloca' called.\n"
+                      "[test.cpp:3]: (error) Invalid alloca() argument nr 1. The value is -10 but the valid values are '0:'.\n", errout.str());
     }
 };
 

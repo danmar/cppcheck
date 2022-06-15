@@ -25,12 +25,15 @@ file(GLOB cfgs "cfg/*.cfg")
 file(GLOB platforms "platforms/*.xml")
 
 if (LIBXML2_XMLLINT_EXECUTABLE)
-    add_custom_target(validateCFG ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng)
+    add_custom_target(validateCFG DEPENDS validateCFG-cmd)
+    add_custom_command(OUTPUT validateCFG-cmd
+            COMMAND ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng)
     foreach(cfg ${cfgs})
-        get_filename_component(cfgname ${cfg} NAME_WE)
-        add_custom_target(validateCFG-${cfgname} ${LIBXML2_XMLLINT_EXECUTABLE} --noout --relaxng ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng ${cfg})
-        add_dependencies(validateCFG validateCFG-${cfgname})
+        add_custom_command(OUTPUT validateCFG-cmd APPEND
+                COMMAND ${LIBXML2_XMLLINT_EXECUTABLE} --noout --relaxng ${CMAKE_SOURCE_DIR}/cfg/cppcheck-cfg.rng ${cfg})
     endforeach()
+    # this is a symbolic name for a build rule and not an output file
+    set_source_files_properties(validateCFG-cmd PROPERTIES SYMBOLIC "true")
 
     add_custom_target(errorlist-xml $<TARGET_FILE:cppcheck> --errorlist > ${CMAKE_BINARY_DIR}/errorlist.xml
             DEPENDS cppcheck)

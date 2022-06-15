@@ -646,6 +646,22 @@ private:
               "    };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace N {\n" // #10876
+              "    template <class R, class S, void(*T)(R&, float, S)>\n"
+              "    inline void f() {}\n"
+              "    template<class T>\n"
+              "    void g(T& c) {\n"
+              "        for (typename T::iterator v = c.begin(); v != c.end(); ++v) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string a, std::string b) {\n" // #7529
+              "    const std::string s = \" x \" + a;\n"
+              "    +\" y = \" + b;\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n", errout.str());
     }
 
     void vardecl() {

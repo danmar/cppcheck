@@ -6,4 +6,6 @@ class TestClass1
 {
     TestClass1() {}
     ~TestClass1() {}
+    TestClass1(const TestClass1 &) {}
+    TestClass1(TestClass1 &&) {}
 };

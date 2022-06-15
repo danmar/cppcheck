@@ -1195,7 +1195,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (isIncrementOrDecrement && tok->astParent() && precedes(tok, tok->astOperand1()))
                 continue;
 
-            if (tok->str() == "=" && isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
+            if (tok->str() == "=" && !(tok->valueType() && tok->valueType()->pointer) && isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
                 continue;
 
             const bool isPointer = tok->valueType() && tok->valueType()->pointer;
@@ -1535,7 +1535,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 
     // Non-empty constructors => possible side effects
     for (const Function& f : type->classScope->functionList) {
-        if (!f.isConstructor())
+        if (!f.isConstructor() && !f.isDestructor())
             continue;
         if (f.argDef && Token::simpleMatch(f.argDef->link(), ") ="))
             continue; // ignore default/deleted constructors

@@ -65,6 +65,8 @@ struct ScopeInfo2 {
     std::set<std::string> usingNamespaces;
 };
 
+enum class TokenDebug { None, ValueFlow };
+
 struct TokenImpl {
     nonneg int mVarId;
     nonneg int mFileIndex;
@@ -127,30 +129,34 @@ struct TokenImpl {
     /** Bitfield bit count. */
     unsigned char mBits;
 
+    TokenDebug mDebug;
+
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
 
     TokenImpl()
-        : mVarId(0)
-        , mFileIndex(0)
-        , mLineNumber(0)
-        , mColumn(0)
-        , mExprId(0)
-        , mAstOperand1(nullptr)
-        , mAstOperand2(nullptr)
-        , mAstParent(nullptr)
-        , mScope(nullptr)
-        , mFunction(nullptr) // Initialize whole union
-        , mProgressValue(0)
-        , mIndex(0)
-        , mOriginalName(nullptr)
-        , mValueType(nullptr)
-        , mValues(nullptr)
-        , mTemplateSimplifierPointers(nullptr)
-        , mScopeInfo(nullptr)
-        , mCppcheckAttributes(nullptr)
-        , mCpp11init(Cpp11init::UNKNOWN)
-        , mBits(0)
+        : mVarId(0),
+        mFileIndex(0),
+        mLineNumber(0),
+        mColumn(0),
+        mExprId(0),
+        mAstOperand1(nullptr),
+        mAstOperand2(nullptr),
+        mAstParent(nullptr),
+        mScope(nullptr),
+        mFunction(nullptr)   // Initialize whole union
+        ,
+        mProgressValue(0),
+        mIndex(0),
+        mOriginalName(nullptr),
+        mValueType(nullptr),
+        mValues(nullptr),
+        mTemplateSimplifierPointers(nullptr),
+        mScopeInfo(nullptr),
+        mCppcheckAttributes(nullptr),
+        mCpp11init(Cpp11init::UNKNOWN),
+        mBits(0),
+        mDebug(TokenDebug::None)
     {}
 
     ~TokenImpl();
@@ -173,11 +179,10 @@ class CPPCHECKLIB Token {
 private:
     TokensFrontBack* mTokensFrontBack;
 
-    // Not implemented..
-    Token(const Token &);
-    Token operator=(const Token &);
-
 public:
+    Token(const Token &) = delete;
+    Token& operator=(const Token &) = delete;
+
     enum Type {
         eVariable, eType, eFunction, eKeyword, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Language keyword, Name (unknown identifier)
         eNumber, eString, eChar, eBoolean, eLiteral, eEnumerator, // Literals: Number, String, Character, Boolean, User defined literal (C++11), Enumerator
@@ -350,16 +355,6 @@ public:
      * @param settings Settings
      **/
     static nonneg int getStrSize(const Token *tok, const Settings *const settings);
-
-    /**
-     * @return char of C-string at index (possible escaped "\\n")
-     *
-     * Should be called for %%str%% tokens only.
-     *
-     * @param tok token with C-string
-     * @param index position of character
-     **/
-    static std::string getCharAt(const Token *tok, MathLib::bigint index);
 
     const ValueType *valueType() const {
         return mImpl->mValueType;
@@ -1436,6 +1431,13 @@ public:
     }
     TokenImpl::Cpp11init isCpp11init() const {
         return mImpl->mCpp11init;
+    }
+
+    TokenDebug getTokenDebug() const {
+        return mImpl->mDebug;
+    }
+    void setTokenDebug(TokenDebug td) {
+        mImpl->mDebug = td;
     }
 };
 
