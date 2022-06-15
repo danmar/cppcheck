@@ -2108,6 +2108,23 @@ static bool evalAssignment(Value& lhsValue, const std::string& assign, const Val
     return !error;
 }
 
+static ValueFlow::Value::MoveKind isMoveOrForward(const Token* tok) {
+    if (!tok)
+        return ValueFlow::Value::MoveKind::NonMovedVariable;
+    const Token* parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "("))
+        return ValueFlow::Value::MoveKind::NonMovedVariable;
+    const Token* ftok = parent->astOperand1();
+    if (!ftok)
+        return ValueFlow::Value::MoveKind::NonMovedVariable;
+    if (Token::simpleMatch(ftok->astOperand1(), "std :: move"))
+        return ValueFlow::Value::MoveKind::MovedVariable;
+    if (Token::simpleMatch(ftok->astOperand1(), "std :: forward"))
+        return ValueFlow::Value::MoveKind::ForwardedVariable;
+    // TODO: Check for cast
+    return ValueFlow::Value::MoveKind::NonMovedVariable;
+}
+
 template<class T>
 struct SingleRange {
     T* x;
@@ -2416,6 +2433,11 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual Action isModified(const Token* tok) const {
         Action read = Action::Read;
+        const ValueFlow::Value* value = getValue(tok);
+        if (value) {
+            if (value->isMovedValue() && isMoveOrForward(tok) != ValueFlow::Value::MoveKind::NonMovedVariable)
+                return read;
+        }
         bool inconclusive = false;
         if (isVariableChangedByFunctionCall(tok, getIndirect(tok), getSettings(), &inconclusive))
             return read | Action::Invalid;
@@ -2424,7 +2446,6 @@ struct ValueFlowAnalyzer : Analyzer {
         if (isVariableChanged(tok, getIndirect(tok), getSettings(), isCPP())) {
             if (Token::Match(tok->astParent(), "*|[|.|++|--"))
                 return read | Action::Invalid;
-            const ValueFlow::Value* value = getValue(tok);
             // Check if its assigned to the same value
             if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {

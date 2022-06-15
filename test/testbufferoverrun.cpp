@@ -867,7 +867,7 @@ private:
               "        i=4;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[5]' accessed at index 5, which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
