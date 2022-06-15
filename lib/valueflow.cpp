@@ -2108,7 +2108,8 @@ static bool evalAssignment(Value& lhsValue, const std::string& assign, const Val
     return !error;
 }
 
-static ValueFlow::Value::MoveKind isMoveOrForward(const Token* tok) {
+static ValueFlow::Value::MoveKind isMoveOrForward(const Token* tok)
+{
     if (!tok)
         return ValueFlow::Value::MoveKind::NonMovedVariable;
     const Token* parent = tok->astParent();

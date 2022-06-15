@@ -9830,21 +9830,22 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void moveInLoop() {
+    void moveInLoop()
+    {
         check("void g(std::string&& s);\n"
-                  "void f() {\n"
-                  "    std::string p;\n"
-                  "    while(true)\n"
-                  "        g(std::move(p));\n"
-                  "}\n");
+              "void f() {\n"
+              "    std::string p;\n"
+              "    while(true)\n"
+              "        g(std::move(p));\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'p'.\n", errout.str());
 
         check("std::list<int> g(std::list<int>&&);\n"
-                  "void f(std::list<int>l) {\n"
-                  "    for(int i = 0; i < 10; ++i) {\n"
-                  "        for (auto &j : g(std::move(l))) { (void)j; }\n"
-                  "    }\n"
-                  "}\n");
+              "void f(std::list<int>l) {\n"
+              "    for(int i = 0; i < 10; ++i) {\n"
+              "        for (auto &j : g(std::move(l))) { (void)j; }\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'l'.\n", errout.str());
     }
 
