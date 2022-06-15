@@ -33,6 +33,7 @@
 #include <iterator> // back_inserter
 #include <memory>
 #include <utility>
+#include <numeric>
 
 #include <simplecpp.h>
 
@@ -111,10 +112,9 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         if (!errmsg.empty())
             bad->push_back(BadInlineSuppression(tok->location, errmsg));
 
-        for (const Suppressions::Suppression &s : suppressions) {
-            if (!s.errorId.empty())
-                inlineSuppressions.push_back(s);
-        }
+        std::copy_if(suppressions.begin(), suppressions.end(), std::back_inserter(inlineSuppressions), [](const Suppressions::Suppression& s) {
+            return !s.errorId.empty();
+        });
     } else {
         //single suppress format
         std::string errmsg;
@@ -1019,9 +1019,9 @@ static const std::uint32_t crc32Table[] = {
 
 static void crc32(const std::string &data, uint32_t& crc)
 {
-    for (char c : data) {
-        crc = crc32Table[(crc ^ (unsigned char)c) & 0xFF] ^ (crc >> 8);
-    }
+  crc = std::accumulate(data.begin(), data.end(), crc, [](uint32_t v, char c) {
+      return crc32Table[(v ^ (unsigned char)c) & 0xFF] ^ (v >> 8);
+  });
 }
 
 uint32_t Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const
