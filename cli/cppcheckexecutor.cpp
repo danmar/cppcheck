@@ -49,6 +49,7 @@
 #include <type_traits>
 #include <utility>
 #include <vector>
+#include <numeric>
 
 #if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__OS2__)
 #define USE_UNIX_SIGNAL_HANDLING
@@ -925,10 +926,9 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         // Single process
         settings.jointSuppressionReport = true;
 
-        std::size_t totalfilesize = 0;
-        for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
-            totalfilesize += i->second;
-        }
+        const std::size_t totalfilesize = std::accumulate(mFiles.begin(), mFiles.end(), std::size_t(0), [](auto v, const auto& f) {
+            return v + f.second;
+        });
 
         std::size_t processedsize = 0;
         unsigned int c = 0;

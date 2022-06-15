@@ -98,11 +98,9 @@ inline static bool isPrefixStringCharLiteral(const std::string &str, char q, con
 inline static bool isStringCharLiteral(const std::string &str, char q)
 {
     static const std::vector<std::string> suffixes{"", "u8", "u", "U", "L"};
-    for (const std::string & p: suffixes) {
-        if (isPrefixStringCharLiteral(str, q, p))
-            return true;
-    }
-    return false;
+    return std::any_of(suffixes.begin(), suffixes.end(), [&](const std::string& p) {
+        return isPrefixStringCharLiteral(str, q, p);
+    });
 }
 
 inline static bool isStringLiteral(const std::string &str)
