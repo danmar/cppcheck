@@ -1953,6 +1953,24 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:6] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:7]: (error) Using reference to dangling temporary.\n",
             errout.str());
+
+        check("struct S1 {\n"
+              "    auto get() -> auto& { return val; }\n"
+              "    int val{42};\n"
+              "};\n"
+              "struct S2 {\n"
+              "    auto get() -> S1 { return s; }\n"
+              "    S1 s;\n"
+              "};\n"
+              "auto main() -> int {\n"
+              "    S2 c{};\n"
+              "    auto& v = c.get().get();\n"
+              "    v += 1;\n"
+              "    return c.s.val;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:2] -> [test.cpp:11] -> [test.cpp:12]: (error) Using reference to dangling temporary.\n",
+            errout.str());
     }
 
     void testglobalnamespace() {
