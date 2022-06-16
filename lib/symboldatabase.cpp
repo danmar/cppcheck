@@ -24,6 +24,7 @@
 #include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
+#include "path.h"
 #include "platform.h"
 #include "settings.h"
 #include "standards.h"
@@ -82,6 +83,7 @@ SymbolDatabase::SymbolDatabase(const Tokenizer *tokenizer, const Settings *setti
     createSymbolDatabaseEscapeFunctions();
     createSymbolDatabaseIncompleteVars();
     createSymbolDatabaseExprIds();
+    debugSymbolDatabase();
 }
 
 static const Token* skipScopeIdentifiers(const Token* tok)
@@ -1963,6 +1965,31 @@ void SymbolDatabase::validate() const
 void SymbolDatabase::clangSetVariables(const std::vector<const Variable *> &variableList)
 {
     mVariableList = variableList;
+}
+
+void SymbolDatabase::debugSymbolDatabase() const
+{
+    if (!mSettings->debugnormal && !mSettings->debugwarnings)
+        return;
+    for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
+        if (tok->astParent() && tok->astParent()->getTokenDebug() == tok->getTokenDebug())
+            continue;
+        if (tok->getTokenDebug() == TokenDebug::ValueType) {
+
+            std::string msg = "Value type is ";
+            ErrorPath errorPath;
+            if (tok->valueType()) {
+                msg += tok->valueType()->str();
+                errorPath.insert(errorPath.end(), tok->valueType()->debugPath.begin(), tok->valueType()->debugPath.end());
+
+            } else {
+                msg += "missing";
+            }
+            errorPath.emplace_back(tok, "");
+            mErrorLogger->reportErr(
+                {errorPath, &mTokenizer->list, Severity::debug, "valueType", msg, CWE{0}, Certainty::normal});
+        }
+    }
 }
 
 Variable::Variable(const Token *name_, const std::string &clangType, const Token *typeStart,
@@ -5870,11 +5897,17 @@ nonneg int SymbolDatabase::sizeOfType(const Token *type) const
     return size;
 }
 
-static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Settings* settings);
+static const Token* parsedecl(const Token* type,
+                              ValueType* const valuetype,
+                              ValueType::Sign defaultSignedness,
+                              const Settings* settings,
+                              SourceLocation loc = SourceLocation::current());
 
-void SymbolDatabase::setValueType(Token *tok, const Variable &var)
+void SymbolDatabase::setValueType(Token* tok, const Variable& var, SourceLocation loc)
 {
     ValueType valuetype;
+    if (mSettings->debugnormal || mSettings->debugwarnings)
+        valuetype.setDebugPath(tok, loc);
     if (var.nameToken())
         valuetype.bits = var.nameToken()->bits();
     valuetype.pointer = var.dimensions().size();
@@ -5894,9 +5927,11 @@ void SymbolDatabase::setValueType(Token *tok, const Variable &var)
     }
 }
 
-void SymbolDatabase::setValueType(Token *tok, const Enumerator &enumerator)
+void SymbolDatabase::setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc)
 {
     ValueType valuetype;
+    if (mSettings->debugnormal || mSettings->debugwarnings)
+        valuetype.setDebugPath(tok, loc);
     valuetype.typeScope = enumerator.scope;
     const Token * type = enumerator.scope->enumType;
     if (type) {
@@ -5941,9 +5976,12 @@ static bool isContainerYieldPointer(Library::Container::Yield yield)
     return yield == Library::Container::Yield::BUFFER || yield == Library::Container::Yield::BUFFER_NT;
 }
 
-void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
+void SymbolDatabase::setValueType(Token* tok, const ValueType& valuetype, SourceLocation loc)
 {
-    tok->setValueType(new ValueType(valuetype));
+    ValueType* valuetypePtr = new ValueType(valuetype);
+    if (mSettings->debugnormal || mSettings->debugwarnings)
+        valuetypePtr->setDebugPath(tok, loc);
+    tok->setValueType(valuetypePtr);
     Token *parent = tok->astParent();
     if (!parent || parent->valueType())
         return;
@@ -6351,8 +6389,14 @@ void SymbolDatabase::setValueType(Token *tok, const ValueType &valuetype)
     }
 }
 
-static const Token * parsedecl(const Token *type, ValueType * const valuetype, ValueType::Sign defaultSignedness, const Settings* settings)
+static const Token* parsedecl(const Token* type,
+                              ValueType* const valuetype,
+                              ValueType::Sign defaultSignedness,
+                              const Settings* settings,
+                              SourceLocation loc)
 {
+    if (settings->debugnormal || settings->debugwarnings)
+        valuetype->setDebugPath(type, loc);
     const Token * const previousType = type;
     const unsigned int pointer0 = valuetype->pointer;
     while (Token::Match(type->previous(), "%name%") && !endsWith(type->previous()->str(), ':'))
@@ -7243,6 +7287,16 @@ std::string ValueType::str() const
     else if (reference == Reference::RValue)
         ret += " &&";
     return ret.empty() ? ret : ret.substr(1);
+}
+
+void ValueType::setDebugPath(const Token* tok, SourceLocation ctx, SourceLocation local)
+{
+    std::string file = ctx.file_name();
+    if (file.empty())
+        return;
+    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
+                    " => " + local.function_name();
+    debugPath.emplace_back(tok, s);
 }
 
 ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const ValueType *func)
