@@ -52,6 +52,7 @@ TokenList::TokenList(const Settings* settings) :
     mIsCpp(false)
 {
     mTokensFrontBack.list = this;
+    mKeywords.insert("asm");
     mKeywords.insert("auto");
     mKeywords.insert("break");
     mKeywords.insert("case");
