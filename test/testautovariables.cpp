@@ -1940,6 +1940,61 @@ private:
               "    g(std::move(v));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11087
+        check("struct S1 {\n"
+              "    int& get() { return val; }\n"
+              "    int val{42};\n"
+              "};\n"
+              "void f() {\n"
+              "    int& v = S1().get();\n"
+              "    v += 1;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:7]: (error) Using reference to dangling temporary.\n",
+            errout.str());
+
+        check("struct A {\n"
+              "    const int& g() const { return i; }\n"
+              "    int i;\n"
+              "};\n"
+              "A* a();\n"
+              "int f() {\n"
+              "    const int& i = a()->g();\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct A {\n"
+              "    const int& g() const { return i; }\n"
+              "    int i;\n"
+              "};\n"
+              "std::unique_ptr<A> a();\n"
+              "int f() {\n"
+              "    const int& i = a()->g();\n"
+              "    return i;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:2] -> [test.cpp:7] -> [test.cpp:8]: (error) Using reference to dangling temporary.\n",
+            errout.str());
+
+        check("struct S1 {\n"
+              "    auto get() -> auto& { return val; }\n"
+              "    int val{42};\n"
+              "};\n"
+              "struct S2 {\n"
+              "    auto get() -> S1 { return s; }\n"
+              "    S1 s;\n"
+              "};\n"
+              "auto main() -> int {\n"
+              "    S2 c{};\n"
+              "    auto& v = c.get().get();\n"
+              "    v += 1;\n"
+              "    return c.s.val;\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:11] -> [test.cpp:2] -> [test.cpp:11] -> [test.cpp:12]: (error) Using reference to dangling temporary.\n",
+            errout.str());
     }
 
     void testglobalnamespace() {

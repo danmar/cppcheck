@@ -3247,6 +3247,31 @@ std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok, bool inconc
     return result;
 }
 
+static bool hasUniqueOwnership(const Token* tok)
+{
+    if (astIsPointer(tok))
+        return false;
+    if (astIsUniqueSmartPointer(tok))
+        return true;
+    if (astIsContainerOwned(tok))
+        return true;
+    return false;
+}
+
+// Check if dereferencing an object that doesn't have unique ownership
+static bool derefShared(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (tok->str() == "." && tok->originalName() != "->") {
+        return false;
+    } else if (!tok->isUnaryOp("*") && tok->str() == "[") {
+        return false;
+    }
+    const Token* ptrTok = tok->astOperand1();
+    return !hasUniqueOwnership(ptrTok);
+}
+
 ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive)
 {
     std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok, inconclusive);
@@ -3320,6 +3345,7 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                     const Variable* argvar = argvarTok->variable();
                     if (!argvar)
                         continue;
+                    const Token* argTok = nullptr;
                     if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
                         int n = getArgumentPos(argvar, f);
                         if (n < 0)
@@ -3328,9 +3354,17 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                         // TODO: Track lifetimes of default parameters
                         if (n >= args.size())
                             return std::vector<LifetimeToken> {};
-                        const Token* argTok = args[n];
+                        argTok = args[n];
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
+                    } else if (Token::Match(tok->tokAt(-2), ". %name% (") && !derefShared(tok->tokAt(-2)) &&
+                               exprDependsOnThis(argvarTok)) {
+                        argTok = tok->tokAt(-2)->astOperand1();
+                        lt.errorPath.emplace_back(returnTok, "Return reference that depends on 'this'.");
+                        lt.errorPath.emplace_back(tok->previous(),
+                                                  "Calling member function on '" + argTok->expressionString() + "'.");
+                    }
+                    if (argTok) {
                         std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
                             getLifetimeTokens(argTok, escape, std::move(lt.errorPath), pred, depth - returns.size()),
                             returns.size() > 1);
