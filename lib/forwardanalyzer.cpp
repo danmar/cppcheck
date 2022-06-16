@@ -607,15 +607,23 @@ struct ForwardTraversal {
                     } else if (condTok->values().front().intvalue == inElse) {
                         return Break();
                     }
-                    // Handle for loop
-                    Token* stepTok = getStepTokFromEnd(tok);
-                    bool checkThen, checkElse;
-                    std::tie(checkThen, checkElse) = evalCond(condTok);
-                    if (stepTok && !checkElse) {
-                        if (updateRecursive(stepTok) == Progress::Break)
-                            return Break();
-                        if (updateRecursive(condTok) == Progress::Break)
-                            return Break();
+                    // Handle loop
+                    if (inLoop) {
+                        Token* stepTok = getStepTokFromEnd(tok);
+                        bool checkThen, checkElse;
+                        std::tie(checkThen, checkElse) = evalCond(condTok);
+                        if (stepTok && !checkElse) {
+                            if (updateRecursive(stepTok) == Progress::Break)
+                                return Break();
+                            if (updateRecursive(condTok) == Progress::Break)
+                                return Break();
+                            // Reevaluate condition
+                            std::tie(checkThen, checkElse) = evalCond(condTok);
+                        }
+                        if (!checkElse) {
+                            if (updateLoopExit(end, tok, condTok, nullptr, stepTok) == Progress::Break)
+                                return Break();
+                        }
                     }
                     analyzer->assume(condTok, !inElse, Analyzer::Assume::Quiet);
                     if (Token::simpleMatch(tok, "} else {"))
@@ -852,7 +860,6 @@ struct ForwardTraversal {
             return nullptr;
         return getStepTok(end->link());
     }
-
 };
 
 Analyzer::Result valueFlowGenericForward(Token* start, const Token* end, const ValuePtr<Analyzer>& a, const Settings* settings)

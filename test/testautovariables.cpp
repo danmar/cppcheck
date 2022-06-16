@@ -3943,7 +3943,9 @@ private:
               "    if (former_hover != pitem)\n"
               "        dosth();\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'item' that is out of scope.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:3] -> [test.cpp:4] -> [test.cpp:7]: (error) Using pointer to local variable 'item' that is out of scope.\n",
+            errout.str());
 
         // #6575
         check("void trp_deliver_signal()  {\n"
