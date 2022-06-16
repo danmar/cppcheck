@@ -1940,6 +1940,17 @@ private:
               "    g(std::move(v));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11087
+        check("struct S1 {\n"
+              "    int& get() { return val; }\n"
+              "    int val{42};\n"
+              "};\n"
+              "void f() {\n"
+              "    int& v = S1().get();\n"
+              "    v += 1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:7]: (error) Using reference to dangling temporary.\n", errout.str());
     }
 
     void testglobalnamespace() {

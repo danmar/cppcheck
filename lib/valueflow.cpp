@@ -3289,6 +3289,7 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                     const Variable* argvar = argvarTok->variable();
                     if (!argvar)
                         continue;
+                    const Token* argTok = nullptr;
                     if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
                         int n = getArgumentPos(argvar, f);
                         if (n < 0)
@@ -3297,9 +3298,15 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                         // TODO: Track lifetimes of default parameters
                         if (n >= args.size())
                             return std::vector<LifetimeToken> {};
-                        const Token* argTok = args[n];
+                        argTok = args[n];
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
+                    } else if (Token::Match(tok->tokAt(-2), ". %name% (") && exprDependsOnThis(argvarTok)) {
+                        argTok = tok->tokAt(-2)->astOperand1();
+                        lt.errorPath.emplace_back(returnTok, "Return reference that depends on 'this'.");
+                        lt.errorPath.emplace_back(tok->previous(), "Calling member function on '" + argTok->expressionString() + "'.");
+                    }
+                    if (argTok) {
                         std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
                             getLifetimeTokens(argTok, escape, std::move(lt.errorPath), pred, depth - returns.size()),
                             returns.size() > 1);
