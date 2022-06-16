@@ -1391,7 +1391,10 @@ def get_path_premium_addon():
 
 
 def cmd_output(cmd):
-    try:
-        return subprocess.check_output(cmd).strip().decode('ascii')
-    except subprocess.CalledProcessError as e:
-        return e.output
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+        comm = p.communicate()
+        out = comm[0]
+        if p.returncode == 1 and len(comm[1]) > 2:
+            out = comm[1]
+        return out.decode(encoding='utf-8', errors='ignore')
+

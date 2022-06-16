@@ -260,6 +260,25 @@ bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
+static const Token* getContainerFunction(const Token* tok)
+{
+    if (!tok || !tok->valueType() || !tok->valueType()->container)
+        return nullptr;
+    const Token* parent = tok->astParent();
+    if (Token::Match(parent, ". %name% (") && astIsLHS(tok)) {
+        return parent->next();
+    }
+    return nullptr;
+}
+
+Library::Container::Action astContainerAction(const Token* tok)
+{
+    const Token* ftok = getContainerFunction(tok);
+    if (!ftok)
+        return Library::Container::Action::NO_ACTION;
+    return tok->valueType()->container->getAction(ftok->str());
+}
+
 bool astIsRangeBasedForDecl(const Token* tok)
 {
     return Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "(");
