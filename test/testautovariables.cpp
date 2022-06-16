@@ -1974,7 +1974,9 @@ private:
               "    const int& i = a()->g();\n"
               "    return i;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2] -> [test.cpp:7] -> [test.cpp:8]: (error) Using reference to dangling temporary.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:7] -> [test.cpp:2] -> [test.cpp:7] -> [test.cpp:8]: (error) Using reference to dangling temporary.\n",
+            errout.str());
 
         check("struct S1 {\n"
               "    auto get() -> auto& { return val; }\n"

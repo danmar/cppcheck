@@ -3216,7 +3216,8 @@ std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok, bool inconc
     return result;
 }
 
-static bool hasUniqueOwnership(const Token* tok) {
+static bool hasUniqueOwnership(const Token* tok)
+{
     if (astIsPointer(tok))
         return false;
     if (astIsUniqueSmartPointer(tok))
@@ -3325,7 +3326,8 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                         argTok = args[n];
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
-                    } else if (Token::Match(tok->tokAt(-2), ". %name% (") && !derefShared(tok->tokAt(-2)) && exprDependsOnThis(argvarTok)) {
+                    } else if (Token::Match(tok->tokAt(-2), ". %name% (") && !derefShared(tok->tokAt(-2)) &&
+                               exprDependsOnThis(argvarTok)) {
                         argTok = tok->tokAt(-2)->astOperand1();
                         lt.errorPath.emplace_back(returnTok, "Return reference that depends on 'this'.");
                         lt.errorPath.emplace_back(tok->previous(),
