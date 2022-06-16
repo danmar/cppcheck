@@ -202,19 +202,6 @@ public:
      */
     bool simplifyCalculations();
 
-    /**
-     * Simplify dereferencing a pointer offset by a number:
-     *     "*(ptr + num)" => "ptr[num]"
-     *     "*(ptr - num)" => "ptr[-num]"
-     */
-    void simplifyOffsetPointerDereference();
-
-    /**
-     * Simplify referencing a pointer offset:
-     *     "Replace "&str[num]" => "(str + num)"
-     */
-    void simplifyOffsetPointerReference();
-
     /** Insert array size where it isn't given */
     void arraySize();
 
@@ -458,9 +445,6 @@ public:
      */
     bool simplifyRedundantParentheses();
 
-    /** Simplify references */
-    void simplifyReference();
-
     /**
      * Simplify functions like "void f(x) int x; {"
      * into "void f(int x) {"
@@ -556,11 +540,6 @@ private:
      * Simplify while(func(f))
      */
     void simplifyFuncInWhile();
-
-    /**
-     * Remove "std::" before some function names
-     */
-    void simplifyStd();
 
     /** Simplify pointer to standard type (C only) */
     void simplifyPointerToStandardType();
