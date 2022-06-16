@@ -3249,6 +3249,11 @@ std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok, bool inconc
 
 static bool hasUniqueOwnership(const Token* tok)
 {
+    if (!tok)
+        return false;
+    const Variable* var = tok->variable();
+    if (var && var->isArray() && !var->isArgument())
+        return true;
     if (astIsPointer(tok))
         return false;
     if (astIsUniqueSmartPointer(tok))
@@ -3265,7 +3270,7 @@ static bool derefShared(const Token* tok)
         return false;
     if (tok->str() == "." && tok->originalName() != "->") {
         return false;
-    } else if (!tok->isUnaryOp("*") && tok->str() == "[") {
+    } else if (!tok->isUnaryOp("*") && tok->str() != "[") {
         return false;
     }
     const Token* ptrTok = tok->astOperand1();
