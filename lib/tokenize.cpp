@@ -11023,12 +11023,15 @@ void Tokenizer::simplifyDebug()
 {
     if (!mSettings->debugnormal && !mSettings->debugwarnings)
         return;
+    static const std::unordered_map<std::string, TokenDebug> m = {{"debug_valueflow", TokenDebug::ValueFlow},
+        {"debug_valuetype", TokenDebug::ValueType}};
     for (Token* tok = list.front(); tok; tok = tok->next()) {
         if (!Token::Match(tok, "%name% ("))
             continue;
-        if (Token::simpleMatch(tok, "debug_valueflow")) {
+        auto it = m.find(tok->str());
+        if (it != m.end()) {
             tok->deleteThis();
-            tok = setTokenDebug(tok, TokenDebug::ValueFlow);
+            tok = setTokenDebug(tok, it->second);
         }
     }
 }

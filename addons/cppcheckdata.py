@@ -1391,11 +1391,7 @@ def get_path_premium_addon():
 
 
 def cmd_output(cmd):
-    if sys.platform == 'win32':
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    else:
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
-    comm = p.communicate()
-    if p.returncode == 0:
-        return comm[0].decode(encoding='utf-8', errors='ignore')
-    return comm[1].decode(encoding='utf-8', errors='ignore')
+    try:
+        return subprocess.check_output(cmd).strip().decode('ascii')
+    except subprocess.CalledProcessError as e:
+        return e.output
