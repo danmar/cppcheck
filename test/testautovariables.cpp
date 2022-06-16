@@ -1950,7 +1950,9 @@ private:
               "    int& v = S1().get();\n"
               "    v += 1;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:7]: (error) Using reference to dangling temporary.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:2] -> [test.cpp:6] -> [test.cpp:7]: (error) Using reference to dangling temporary.\n",
+            errout.str());
     }
 
     void testglobalnamespace() {
