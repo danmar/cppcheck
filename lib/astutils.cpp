@@ -262,7 +262,7 @@ bool astIsContainerOwned(const Token* tok) {
 
 static const Token* getContainerFunction(const Token* tok)
 {
-    if (!tok && !tok->valueType() && !tok->valueType()->container)
+    if (!tok || !tok->valueType() || !tok->valueType()->container)
         return nullptr;
     const Token* parent = tok->astParent();
     if (Token::Match(parent, ". %name% (") && astIsLHS(tok)) {
