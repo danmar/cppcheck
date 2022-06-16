@@ -5349,11 +5349,6 @@ bool Tokenizer::simplifyTokenList2()
         tok->clearValueFlow();
     }
 
-    // simplify references
-    simplifyReference();
-
-    simplifyStd();
-
     if (Settings::terminated())
         return false;
 
@@ -5369,12 +5364,6 @@ bool Tokenizer::simplifyTokenList2()
 
     if (Settings::terminated())
         return false;
-
-    // Replace "*(ptr + num)" => "ptr[num]"
-    simplifyOffsetPointerDereference();
-
-    // Replace "&str[num]" => "(str + num)"
-    simplifyOffsetPointerReference();
 
     simplifyRealloc();
 
@@ -8991,126 +8980,9 @@ void Tokenizer::simplifyTypeIntrinsics()
     }
 }
 
-void Tokenizer::simplifyReference()
-{
-    if (isC())
-        return;
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // starting executable scope..
-        Token *start = const_cast<Token *>(startOfExecutableScope(tok));
-        if (start) {
-            tok = start;
-            // replace references in this scope..
-            Token * const end = tok->link();
-            for (Token *tok2 = tok; tok2 && tok2 != end; tok2 = tok2->next()) {
-                // found a reference..
-                if (Token::Match(tok2, "[;{}] %type% & %name% (|= %name% )| ;")) {
-                    const int refId = tok2->tokAt(3)->varId();
-                    if (!refId)
-                        continue;
-
-                    // replace reference in the code..
-                    for (Token *tok3 = tok2->tokAt(7); tok3 && tok3 != end; tok3 = tok3->next()) {
-                        if (tok3->varId() == refId) {
-                            tok3->str(tok2->strAt(5));
-                            tok3->varId(tok2->tokAt(5)->varId());
-                        }
-                    }
-
-                    tok2->deleteNext(6+(tok2->strAt(6)==")" ? 1 : 0));
-                }
-            }
-            tok = end;
-        }
-    }
-}
-
 bool Tokenizer::simplifyCalculations()
 {
     return mTemplateSimplifier->simplifyCalculations(nullptr, nullptr, false);
-}
-
-void Tokenizer::simplifyOffsetPointerDereference()
-{
-    // Replace "*(str + num)" => "str[num]" and
-    // Replace "*(str - num)" => "str[-num]"
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!tok->isName() && !tok->isLiteral()
-            && !Token::Match(tok, "]|)|++|--")
-            && Token::Match(tok->next(), "* ( %name% +|- %num%|%name% )")) {
-
-            // remove '* ('
-            tok->deleteNext(2);
-
-            // '+'->'['
-            tok = tok->tokAt(2);
-            Token* const openBraceTok = tok;
-            const bool isNegativeIndex = (tok->str() == "-");
-            tok->str("[");
-
-            // Insert a "-" in front of the number or variable
-            if (isNegativeIndex) {
-                if (tok->next()->isName()) {
-                    tok->insertToken("-");
-                    tok = tok->next();
-                } else
-                    tok->next()->str(std::string("-") + tok->next()->str());
-            }
-
-            tok = tok->tokAt(2);
-            tok->str("]");
-            Token::createMutualLinks(openBraceTok, tok);
-        }
-    }
-}
-
-void Tokenizer::simplifyOffsetPointerReference()
-{
-    std::set<int> pod;
-    for (const Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->isStandardType()) {
-            tok = tok->next();
-            while (tok && (tok->str() == "*" || tok->isName())) {
-                if (tok->varId() > 0) {
-                    pod.insert(tok->varId());
-                    break;
-                }
-                tok = tok->next();
-            }
-            if (!tok)
-                break;
-        }
-    }
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::Match(tok, "%num%|%name%|]|)") &&
-            (Token::Match(tok->next(), "& %name% [ %num%|%name% ] !!["))) {
-            tok = tok->next();
-
-            if (tok->next()->varId()) {
-                if (pod.find(tok->next()->varId()) == pod.end()) {
-                    tok = tok->tokAt(5);
-                    if (!tok)
-                        syntaxError(tok);
-                    continue;
-                }
-            }
-
-            // '&' => '('
-            tok->str("(");
-
-            tok = tok->next();
-            // '[' => '+'
-            tok->deleteNext();
-            tok->insertToken("+");
-
-            tok = tok->tokAt(3);
-            //remove ']'
-            tok->str(")");
-            Token::createMutualLinks(tok->tokAt(-4), tok);
-        }
-    }
 }
 
 void Tokenizer::simplifyNestedStrcat()
@@ -9144,33 +9016,6 @@ void Tokenizer::simplifyNestedStrcat()
 
         // Insert semicolon after the moved strcat()
         tok->insertToken(";");
-    }
-}
-
-static const std::set<std::string> stdFunctionsPresentInC = {
-    "strcat",
-    "strcpy",
-    "strncat",
-    "strncpy",
-    "free",
-    "malloc",
-    "strdup"
-};
-
-void Tokenizer::simplifyStd()
-{
-    if (isC())
-        return;
-
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (tok->str() != "std")
-            continue;
-
-        if (Token::Match(tok->previous(), "[(,{};] std :: %name% (") &&
-            stdFunctionsPresentInC.find(tok->strAt(2)) != stdFunctionsPresentInC.end()) {
-            tok->deleteNext();
-            tok->deleteThis();
-        }
     }
 }
 
