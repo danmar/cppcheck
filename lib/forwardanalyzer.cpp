@@ -575,7 +575,23 @@ struct ForwardTraversal {
                 tok = nextAfterAstRightmostLeaf(assignTok);
                 if (!tok)
                     return Break();
-            } else if (tok->str() ==  "break") {
+            } else if (Token::simpleMatch(tok, ") {") && Token::Match(tok->link()->previous(), "for|while (")) {
+                // In the middle of a loop structure so bail
+                return Break(Analyzer::Terminate::Bail);
+            } else if (tok->str() == ";" && tok->astParent()) {
+                Token* top = tok->astTop();
+                if (top && Token::Match(top->previous(), "for|while (") && Token::simpleMatch(top->link(), ") {")) {
+                    Token* endCond = top->link();
+                    Token* endBlock = endCond->linkAt(1);
+                    Token* condTok = getCondTok(top);
+                    Token* stepTok = getStepTok(top);
+                    // The semicolon should belong to the initTok otherwise something went wrong, so just bail
+                    if (tok->astOperand2() != condTok && !Token::simpleMatch(tok->astOperand2(), ";"))
+                        return Break(Analyzer::Terminate::Bail);
+                    if (updateLoop(end, endBlock, condTok, nullptr, stepTok) == Progress::Break)
+                        return Break();
+                }
+            } else if (tok->str() == "break") {
                 const Token *scopeEndToken = findNextTokenFromBreak(tok);
                 if (!scopeEndToken)
                     return Break();
@@ -640,7 +656,8 @@ struct ForwardTraversal {
                 } else if (Token::simpleMatch(tok->next(), "else {")) {
                     tok = tok->linkAt(2);
                 }
-            } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") && Token::simpleMatch(tok->next()->link(), ") {")) {
+            } else if (tok->isControlFlowKeyword() && Token::Match(tok, "if|while|for (") &&
+                       Token::simpleMatch(tok->next()->link(), ") {")) {
                 Token* endCond = tok->next()->link();
                 Token* endBlock = endCond->next()->link();
                 Token* condTok = getCondTok(tok);
