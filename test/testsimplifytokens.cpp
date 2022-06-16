@@ -52,8 +52,6 @@ private:
         settings_std.checkUnusedTemplates = true;
         settings_windows.checkUnusedTemplates = true;
 
-        TEST_CASE(test1); // array access. replace "*(p+1)" => "p[1]"
-
         TEST_CASE(cast);
         TEST_CASE(iftruefalse);
 
@@ -162,12 +160,6 @@ private:
         // ticket #3140
         TEST_CASE(while0for);
 
-        // remove "std::" on some standard functions
-        TEST_CASE(removestd);
-
-        // Tokenizer::simplifyReference
-        TEST_CASE(simplifyReference);
-
         // x = realloc(y,0);  =>  free(y);x=0;
         TEST_CASE(simplifyRealloc);
 
@@ -212,7 +204,6 @@ private:
 
         TEST_CASE(undefinedSizeArray);
 
-        TEST_CASE(simplifyArrayAddress);  // Replace "&str[num]" => "(str + num)"
         TEST_CASE(simplifyOverride); // ticket #5069
         TEST_CASE(simplifyNestedNamespace);
         TEST_CASE(simplifyNamespaceAliases1);
@@ -430,52 +421,6 @@ private:
         // result..
         return tokenizer.tokens()->stringifyList(true);
     }
-
-
-    void test1() {
-        // "&p[1]" => "p+1"
-        /*
-           ASSERT_EQUALS("; x = p + n ;", tok("; x = & p [ n ] ;"));
-           ASSERT_EQUALS("; x = ( p + n ) [ m ] ;", tok("; x = & p [ n ] [ m ] ;"));
-           ASSERT_EQUALS("; x = y & p [ n ] ;", tok("; x = y & p [ n ] ;"));
-           ASSERT_EQUALS("; x = 10 & p [ n ] ;", tok(";  x = 10 & p [ n ] ;"));
-           ASSERT_EQUALS("; x = y [ 10 ] & p [ n ] ;", tok("; x = y [ 10 ] & p [ n ] ;"));
-           ASSERT_EQUALS("; x = ( a + m ) & p [ n ] ;", tok("; x = ( a + m ) & p [ n ] ;"));
-         */
-        // "*(p+1)" => "p[1]"
-        ASSERT_EQUALS("; x = p [ 1 ] ;", tok("; x = * ( p + 1 ) ;"));
-        ASSERT_EQUALS("; x = p [ 0xA ] ;", tok("; x = * ( p + 0xA ) ;"));
-        ASSERT_EQUALS("; x = p [ n ] ;", tok("; x = * ( p + n ) ;"));
-        ASSERT_EQUALS("; x = y * ( p + n ) ;", tok("; x = y * ( p + n ) ;"));
-        ASSERT_EQUALS("; x = 10 * ( p + n ) ;", tok("; x = 10 * ( p + n ) ;"));
-        ASSERT_EQUALS("; x = y [ 10 ] * ( p + n ) ;", tok("; x = y [ 10 ] * ( p + n ) ;"));
-        ASSERT_EQUALS("; x = ( a + m ) * ( p + n ) ;", tok("; x = ( a + m ) * ( p + n ) ;"));
-
-        // "*(p-1)" => "p[-1]" and "*(p-n)" => "p[-n]"
-        ASSERT_EQUALS("; x = p [ -1 ] ;", tok("; x = *(p - 1);"));
-        ASSERT_EQUALS("; x = p [ -0xA ] ;", tok("; x = *(p - 0xA);"));
-        ASSERT_EQUALS("; x = p [ - n ] ;", tok("; x = *(p - n);"));
-        ASSERT_EQUALS("; x = y * ( p - 1 ) ;", tok("; x = y * (p - 1);"));
-        ASSERT_EQUALS("; x = 10 * ( p - 1 ) ;", tok("; x = 10 * (p - 1);"));
-        ASSERT_EQUALS("; x = y [ 10 ] * ( p - 1 ) ;", tok("; x = y[10] * (p - 1);"));
-        ASSERT_EQUALS("; x = ( a - m ) * ( p - n ) ;", tok("; x = (a - m) * (p - n);"));
-
-        // Test that the array-index simplification is not applied when there's no dereference:
-        // "(x-y)" => "(x-y)" and "(x+y)" => "(x+y)"
-        ASSERT_EQUALS("; a = b * ( x - y ) ;", tok("; a = b * (x - y);"));
-        ASSERT_EQUALS("; a = b * x [ - y ] ;", tok("; a = b * *(x - y);"));
-        ASSERT_EQUALS("; a *= ( x - y ) ;", tok("; a *= (x - y);"));
-        ASSERT_EQUALS("; z = a ++ * ( x - y ) ;", tok("; z = a++ * (x - y);"));
-        ASSERT_EQUALS("; z = a ++ * ( x + y ) ;", tok("; z = a++ * (x + y);"));
-        ASSERT_EQUALS("; z = a -- * ( x - y ) ;", tok("; z = a-- * (x - y);"));
-        ASSERT_EQUALS("; z = a -- * ( x + y ) ;", tok("; z = a-- * (x + y);"));
-        ASSERT_EQUALS("; z = 'a' * ( x - y ) ;", tok("; z = 'a' * (x - y);"));
-        ASSERT_EQUALS("; z = \"a\" * ( x - y ) ;", tok("; z = \"a\" * (x - y);"));
-        ASSERT_EQUALS("; z = 'a' * ( x + y ) ;", tok("; z = 'a' * (x + y);"));
-        ASSERT_EQUALS("; z = \"a\" * ( x + y ) ;", tok("; z = \"a\" * (x + y);"));
-        ASSERT_EQUALS("; z = foo ( ) * ( x + y ) ;", tok("; z = foo() * (x + y);"));
-    }
-
 
 
     void simplifyMathFunctions_erfc() {
@@ -4194,25 +4139,6 @@ private:
         ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 0 ; ++ i ) { } return i ; }", tok("void f() { int i; for (i=0;i<0;++i){ dostuff(); } return i; }"));
     }
 
-    void removestd() {
-        ASSERT_EQUALS("; strcpy ( a , b ) ;", tok("; std::strcpy(a,b);"));
-        ASSERT_EQUALS("; strcat ( a , b ) ;", tok("; std::strcat(a,b);"));
-        ASSERT_EQUALS("; strncpy ( a , b , 10 ) ;", tok("; std::strncpy(a,b,10);"));
-        ASSERT_EQUALS("; strncat ( a , b , 10 ) ;", tok("; std::strncat(a,b,10);"));
-        ASSERT_EQUALS("; free ( p ) ;", tok("; std::free(p);"));
-        ASSERT_EQUALS("; malloc ( 10 ) ;", tok("; std::malloc(10);"));
-    }
-
-    void simplifyReference() {
-        ASSERT_EQUALS("void f ( ) { int a ; a ++ ; }",
-                      tok("void f() { int a; int &b(a); b++; }"));
-        ASSERT_EQUALS("void f ( ) { int a ; a ++ ; }",
-                      tok("void f() { int a; int &b = a; b++; }"));
-
-        ASSERT_EQUALS("void test ( ) { c . f ( 7 ) ; }",
-                      tok("void test() { c.f(7); T3 &t3 = c; }")); // #6133
-    }
-
     void simplifyRealloc() {
         ASSERT_EQUALS("; free ( p ) ; p = 0 ;", tok("; p = realloc(p, 0);"));
         ASSERT_EQUALS("; p = malloc ( 100 ) ;", tok("; p = realloc(0, 100);"));
@@ -4836,17 +4762,6 @@ private:
         ASSERT_EQUALS("int * * * * x ;", tok("int * * x [][];"));
         ASSERT_EQUALS("void f ( int x [ ] , double y [ ] ) { }", tok("void f(int x[], double y[]) { }"));
         ASSERT_EQUALS("int x [ 13 ] = { [ 11 ] = 2 , [ 12 ] = 3 } ;", tok("int x[] = {[11]=2, [12]=3};"));
-    }
-
-    void simplifyArrayAddress() { // ticket #3304
-        const char code[] = "void foo() {\n"
-                            "    int a[10];\n"
-                            "    memset(&a[4], 0, 20*sizeof(int));\n"
-                            "}";
-        ASSERT_EQUALS("void foo ( ) {"
-                      " int a [ 10 ] ;"
-                      " memset ( a + 4 , 0 , 80 ) ;"
-                      " }", tok(code, true));
     }
 
     void test_4881() {
