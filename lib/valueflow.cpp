@@ -3268,9 +3268,9 @@ static bool derefShared(const Token* tok)
 {
     if (!tok)
         return false;
-    if (!tok->isUnaryOp("*") && tok->str() != "[" && tok->str() != ".") 
+    if (!tok->isUnaryOp("*") && tok->str() != "[" && tok->str() != ".")
         return false;
-    if (tok->str() == "." && tok->originalName() != "->") 
+    if (tok->str() == "." && tok->originalName() != "->")
         return false;
     const Token* ptrTok = tok->astOperand1();
     return !hasUniqueOwnership(ptrTok);
