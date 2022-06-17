@@ -411,13 +411,6 @@ public:
     bool removeRedundantConditions();
 
     /**
-     * Remove redundant for:
-     * "for (x=0;x<1;x++) { }" => "{ x = 1; }"
-     */
-    void removeRedundantFor();
-
-
-    /**
      * Reduces "; ;" to ";", except in "( ; ; )"
      */
     void removeRedundantSemicolons();
@@ -530,11 +523,6 @@ public:
     bool hasIfdef(const Token *start, const Token *end) const;
 
 private:
-
-    /**
-     * simplify "while (0)"
-     */
-    void simplifyWhile0();
 
     /**
      * Simplify while(func(f))
@@ -761,12 +749,6 @@ private:
                                const std::map<std::string, nonneg int> &varlist,
                                std::map<nonneg int, std::map<std::string, nonneg int>>& structMembers,
                                nonneg int *varId_);
-
-    /**
-     * Simplify e.g. 'return(strncat(temp,"a",1));' into
-     * strncat(temp,"a",1); return temp;
-     */
-    void simplifyReturnStrncat();
 
     /**
      * Output list of unknown types.
