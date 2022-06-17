@@ -5380,13 +5380,6 @@ bool Tokenizer::simplifyTokenList2()
 
     simplifyIfAndWhileAssign();
 
-    // replace strlen(str)
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "strlen ( %str% )")) {
-            tok->str(MathLib::toString(Token::getStrLength(tok->tokAt(2))));
-            tok->deleteNext(3);
-        }
-    }
 
     bool modified = true;
     while (modified) {
@@ -5397,7 +5390,6 @@ bool Tokenizer::simplifyTokenList2()
         modified |= simplifyConditions();
         modified |= simplifyFunctionReturn();
         modified |= simplifyKnownVariables();
-        modified |= simplifyStrlen();
 
         modified |= removeRedundantConditions();
         modified |= simplifyRedundantParentheses();
@@ -5405,25 +5397,6 @@ bool Tokenizer::simplifyTokenList2()
         modified |= simplifyCalculations();
         validate();
     }
-
-    // simplify redundant loops
-    simplifyWhile0();
-    removeRedundantFor();
-
-    // Remove redundant parentheses in return..
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        while (Token::simpleMatch(tok, "return (")) {
-            Token *tok2 = tok->next()->link();
-            if (Token::simpleMatch(tok2, ") ;")) {
-                tok->deleteNext();
-                tok2->deleteThis();
-            } else {
-                break;
-            }
-        }
-    }
-
-    simplifyReturnStrncat();
 
     simplifyComma();
 
@@ -6193,90 +6166,6 @@ bool Tokenizer::removeRedundantConditions()
     }
 
     return ret;
-}
-
-void Tokenizer::removeRedundantFor()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] for ( %name% = %num% ; %name% < %num% ; ++| %name% ++| ) {") ||
-            Token::Match(tok, "[;{}] for ( %type% %name% = %num% ; %name% < %num% ; ++| %name% ++| ) {")) {
-            // Same variable name..
-            const Token* varTok = tok->tokAt(3);
-            const bool type = varTok->next()->isName();
-            if (type)
-                varTok = varTok->next();
-            const std::string varname(varTok->str());
-            const int varid(varTok->varId());
-            if (varname != varTok->strAt(4))
-                continue;
-            const Token *vartok2 = tok->linkAt(2)->previous();
-            if (vartok2->str() == "++")
-                vartok2 = vartok2->previous();
-            else if (vartok2->strAt(-1) != "++")
-                continue;
-            if (varname != vartok2->str())
-                continue;
-
-            // Check that the difference of the numeric values is 1
-            const MathLib::bigint num1(MathLib::toLongNumber(varTok->strAt(2)));
-            const MathLib::bigint num2(MathLib::toLongNumber(varTok->strAt(6)));
-            if (num1 + 1 != num2)
-                continue;
-
-            // check how loop variable is used in loop..
-            bool read = false;
-            bool write = false;
-            const Token* end = tok->linkAt(2)->next()->link();
-            for (const Token *tok2 = tok->linkAt(2); tok2 != end; tok2 = tok2->next()) {
-                if (tok2->str() == varname) {
-                    if (tok2->previous()->isArithmeticalOp() &&
-                        tok2->next() &&
-                        (tok2->next()->isArithmeticalOp() || tok2->next()->str() == ";")) {
-                        read = true;
-                    } else {
-                        read = write = true;
-                        break;
-                    }
-                }
-            }
-
-            // Simplify loop if loop variable isn't written
-            if (!write) {
-                Token* bodyBegin = tok->linkAt(2)->next();
-                // remove "for ("
-                tok->deleteNext(2);
-
-                // If loop variable is read then keep assignment before
-                // loop body..
-                if (type) {
-                    tok->insertToken("{");
-                    Token::createMutualLinks(tok->next(), bodyBegin->link());
-                    bodyBegin->deleteThis();
-                    tok = tok->tokAt(6);
-                } else if (read) {
-                    // goto ";"
-                    tok = tok->tokAt(4);
-                } else {
-                    // remove "x = 0 ;"
-                    tok->deleteNext(4);
-                }
-
-                // remove "x < 1 ; x ++ )"
-                tok->deleteNext(7);
-
-                if (!type) {
-                    // Add assignment after the loop body so the loop variable
-                    // get the correct end value
-                    Token *tok2 = tok->next()->link();
-                    tok2->insertToken(";");
-                    tok2->insertToken(MathLib::toString(num2));
-                    tok2->insertToken("=");
-                    tok2->insertToken(varname);
-                    tok2->next()->varId(varid);
-                }
-            }
-        }
-    }
 }
 
 
@@ -10163,59 +10052,6 @@ std::string Tokenizer::simplifyString(const std::string &source)
     return str;
 }
 
-void Tokenizer::simplifyWhile0()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        // while (0)
-        const bool while0(Token::Match(tok->previous(), "[{};] while ( 0|false )"));
-
-        // for (0) - not banal, ticket #3140
-        const bool for0((Token::Match(tok->previous(), "[{};] for ( %name% = %num% ; %name% < %num% ;") &&
-                         tok->strAt(2) == tok->strAt(6) && tok->strAt(4) == tok->strAt(8)) ||
-                        (Token::Match(tok->previous(), "[{};] for ( %type% %name% = %num% ; %name% < %num% ;") &&
-                         tok->strAt(3) == tok->strAt(7) && tok->strAt(5) == tok->strAt(9)));
-
-        if (!while0 && !for0)
-            continue;
-
-        if (while0 && tok->previous()->str() == "}") {
-            // find "do"
-            Token *tok2 = tok->previous()->link();
-            tok2 = tok2->previous();
-            if (tok2 && tok2->str() == "do") {
-                const bool flowmatch = Token::findmatch(tok2, "continue|break", tok) != nullptr;
-                // delete "do ({)"
-                tok2->deleteThis();
-                if (!flowmatch)
-                    tok2->deleteThis();
-
-                // delete "(}) while ( 0 ) (;)"
-                tok = tok->previous();
-                tok->deleteNext(4);  // while ( 0 )
-                if (tok->next() && tok->next()->str() == ";")
-                    tok->deleteNext(); // ;
-                if (!flowmatch)
-                    tok->deleteThis(); // }
-
-                continue;
-            }
-        }
-
-        // remove "while (0) { .. }"
-        if (Token::simpleMatch(tok->next()->link(), ") {")) {
-            Token *end = tok->next()->link(), *old_prev = tok->previous();
-            end = end->next()->link();
-            if (Token::Match(tok, "for ( %name% ="))
-                old_prev = end->link();
-            eraseDeadCode(old_prev, end->next());
-            if (old_prev && old_prev->next())
-                tok = old_prev->next();
-            else
-                break;
-        }
-    }
-}
-
 void Tokenizer::simplifyFunctionTryCatch()
 {
     if (!isCPP())
@@ -11821,53 +11657,6 @@ void Tokenizer::removeUnnecessaryQualification()
     }
 }
 
-void Tokenizer::simplifyReturnStrncat()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::simpleMatch(tok, "return strncat (") &&
-            Token::simpleMatch(tok->linkAt(2), ") ;") &&
-            tok->strAt(3) != ")" && tok->strAt(3) != ",") {
-
-            //first argument
-            Token *tok2 = tok->tokAt(3);
-
-            //check if there are at least three arguments
-            for (int i = 0; i < 2; ++i) {
-                tok2 = tok2->nextArgument();
-                if (!tok2) {
-                    tok = tok->linkAt(2)->next();
-                    break;
-                }
-            }
-            if (!tok2)
-                continue;
-
-            tok2 = tok2->nextArgument();
-            //we want only three arguments
-            if (tok2) {
-                tok = tok->linkAt(2)->next();
-                continue;
-            }
-
-            // Remove 'return'
-            tok->deleteThis();
-
-            // Add 'return arg1 ;' after 'strncat(arg1, arg2, arg3);'
-            tok = tok->next();
-
-            tok2 = tok->link()->next();
-            tok2->insertToken(";");
-
-            //the last token of the first argument before ','
-            const Token * const end = tok->next()->nextArgument()->tokAt(-2);
-
-            //all the first argument is copied
-            TokenList::copyTokens(tok2, tok->next(), end);
-            tok2->insertToken("return");
-        }
-    }
-}
-
 void Tokenizer::printUnknownTypes() const
 {
     if (!mSymbolDatabase)
@@ -12034,20 +11823,6 @@ void Tokenizer::simplifyMathExpressions()
             }
         }
     }
-}
-
-bool Tokenizer::simplifyStrlen()
-{
-    // replace strlen(str)
-    bool modified=false;
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "strlen ( %str% )")) {
-            tok->str(MathLib::toString(Token::getStrLength(tok->tokAt(2))));
-            tok->deleteNext(3);
-            modified=true;
-        }
-    }
-    return modified;
 }
 
 void Tokenizer::prepareTernaryOpForAST()

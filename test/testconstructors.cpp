@@ -126,6 +126,7 @@ private:
         TEST_CASE(initvar_delegate);       // ticket #4302
         TEST_CASE(initvar_delegate2);
         TEST_CASE(initvar_derived_class);
+        TEST_CASE(initvar_derived_pod_struct); // #11101
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
         TEST_CASE(initvar_copy_constructor); // ticket #1611
@@ -1414,6 +1415,24 @@ private:
                       "[test.cpp:9]: (warning) Member variable 'B::ca' is not assigned a value in 'B::operator='.\n",
                       errout.str());
 
+    }
+
+    void initvar_derived_pod_struct() {
+        check("struct S {\n"
+              "    union {\n"
+              "        unsigned short       all;\n"
+              "        struct {\n"
+              "            unsigned char    flag1;\n"
+              "            unsigned char    flag2;\n"
+              "        };\n"
+              "    };\n"
+              "};\n"
+              "\n"
+              "class C : public S {\n"
+              "public:\n"
+              "    C() { all = 0; tick = 0; }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initvar_private_constructor() {
