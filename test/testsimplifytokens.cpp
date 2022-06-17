@@ -66,7 +66,6 @@ private:
         TEST_CASE(redundant_plus);
         TEST_CASE(redundant_plus_numbers);
         TEST_CASE(parentheses1);
-        TEST_CASE(parenthesesVar);      // Remove redundant parentheses around variable .. "( %name% )"
         TEST_CASE(declareVar);
 
         TEST_CASE(declareArray);
@@ -98,9 +97,6 @@ private:
         TEST_CASE(sizeof22);
         TEST_CASE(sizeofsizeof);
         TEST_CASE(casting);
-
-        TEST_CASE(strlen1);
-        TEST_CASE(strlen2);
 
         TEST_CASE(namespaces);
 
@@ -155,11 +151,6 @@ private:
         TEST_CASE(pointeralias3);
         TEST_CASE(pointeralias4);
 
-        // simplify "while (0)"
-        TEST_CASE(while0);
-        // ticket #3140
-        TEST_CASE(while0for);
-
         // x = realloc(y,0);  =>  free(y);x=0;
         TEST_CASE(simplifyRealloc);
 
@@ -189,16 +180,7 @@ private:
 
         TEST_CASE(simplifyFunctionPointer); // ticket #5339 (simplify function pointer after comma)
 
-        TEST_CASE(redundant_semicolon);
-
         TEST_CASE(simplifyFunctionReturn);
-
-        TEST_CASE(return_strncat); // ticket # 2860 Returning value of strncat() reported as memory leak
-
-        // #3069 : for loop with 1 iteration
-        // for (x=0;x<1;x++) { .. }
-        // The for is redundant
-        TEST_CASE(removeRedundantFor);
 
         TEST_CASE(consecutiveBraces);
 
@@ -2084,32 +2066,6 @@ private:
         ASSERT_EQUALS("{ while ( x ( ) == -1 ) { } }", tok("{while((x()) == -1){ }}"));
     }
 
-    void parenthesesVar() {
-        // remove parentheses..
-        ASSERT_EQUALS("a = p ;", tok("a = (p);"));
-        ASSERT_EQUALS("void f ( ) { if ( a < p ) { } }", tok("void f(){if(a<(p)){}}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( p == -1 ) { } }", tok("void f(){int p; if((p)==-1){}}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( -1 == p ) { } }", tok("void f(){int p; if(-1==(p)){}}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } }", tok("void f(){int p; if((p)){}}"));
-        ASSERT_EQUALS("void f ( ) { return p ; }", tok("void f(){return (p);}"));
-        ASSERT_EQUALS("void f ( ) { int * p ; if ( * p == 0 ) { } }", tok("void f(){int *p; if (*(p) == 0) {}}"));
-        ASSERT_EQUALS("void f ( ) { int * p ; if ( * p == 0 ) { } }", tok("void f(){int *p; if (*p == 0) {}}"));
-        ASSERT_EQUALS("void f ( int & p ) { p = 1 ; }", tok("void f(int &p) {(p) = 1;}"));
-        ASSERT_EQUALS("void f ( ) { int p [ 10 ] ; p [ 0 ] = 1 ; }", tok("void f(){int p[10]; (p)[0] = 1;}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( p == 0 ) { } }", tok("void f(){int p; if ((p) == 0) {}}"));
-        ASSERT_EQUALS("void f ( ) { int * p ; * p = 1 ; }", tok("void f(){int *p; *(p) = 1;}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( p ) { } p = 1 ; }", tok("void f(){int p; if ( p ) { } (p) = 1;}"));
-        ASSERT_EQUALS("void f ( ) { a . b ; }", tok("void f ( ) { ( & a ) -> b ; }")); // Ticket #5776
-
-        // keep parentheses..
-        ASSERT_EQUALS("b = a ;", tok("b = (char)a;"));
-        ASSERT_EQUALS("cast < char * > ( p ) ;", tok("cast<char *>(p);"));
-        ASSERT_EQUALS("void f ( ) { return ( a + b ) * c ; }", tok("void f(){return (a+b)*c;}"));
-        ASSERT_EQUALS("void f ( ) { int p ; if ( 2 * p == 0 ) { } }", tok("void f(){int p; if (2*p == 0) {}}"));
-        ASSERT_EQUALS("void f ( ) { DIR * f ; f = opendir ( dirname ) ; if ( closedir ( f ) ) { } }", tok("void f(){DIR * f = opendir(dirname);if (closedir(f)){}}"));
-        ASSERT_EQUALS("void foo ( int p ) { if ( p >= 0 ) { ; } }", tok("void foo(int p){if((p)>=0);}"));
-    }
-
     void declareVar() {
         const char code[] = "void f ( ) { char str [ 100 ] = \"100\" ; }";
         ASSERT_EQUALS(code, tok(code));
@@ -2627,7 +2583,7 @@ private:
                             "    sizeof 1;\n"
                             "    while (0);\n"
                             "}\n";
-        ASSERT_EQUALS("void f ( ) { sizeof ( 1 ) ; }", tok(code));
+        ASSERT_EQUALS("void f ( ) { sizeof ( 1 ) ; while ( false ) { ; } }", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2879,52 +2835,12 @@ private:
                                 "{\n"
                                 "    return dynamic_cast<Foo *>((bar()));\n"
                                 "}\n";
-            const char expected[] = "void f ( ) { return bar ( ) ; }";
+            const char expected[] = "void f ( ) { return ( bar ( ) ) ; }";
 
             ASSERT_EQUALS(expected, tok(code));
         }
     }
 
-
-    void strlen1() {
-        ASSERT_EQUALS("4", tok("strlen(\"abcd\")"));
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    const char *s = \"abcd\";\n"
-                                "    strlen(s);\n"
-                                "}\n";
-            const char expected[] = "void f ( ) "
-                                    "{"
-                                    " const char * s ;"
-                                    " s = \"abcd\" ;"
-                                    " 4 ; "
-                                    "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    const char s [ ] = \"abcd\";\n"
-                                "    strlen(s);\n"
-                                "}\n";
-            const char expected[] = "void f ( ) "
-                                    "{"
-                                    " const char s [ 5 ] = \"abcd\" ;"
-                                    " 4 ; "
-                                    "}";
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-    }
-
-    void strlen2() {
-        // #4530 - make sure calculation with strlen is simplified
-        ASSERT_EQUALS("i = -4 ;",
-                      tok("i = (strlen(\"abcd\") - 8);"));
-    }
 
 
     void namespaces() {
@@ -3003,7 +2919,7 @@ private:
                                "f = fopen ( \"foo\" , \"r\" ) ; "
                                "if ( f == NULL ) "
                                "{ "
-                               "return -1 ; "
+                               "return ( -1 ) ; "
                                "} "
                                "fclose ( f ) ; "
                                "}";
@@ -4119,26 +4035,6 @@ private:
         ASSERT_EQUALS(expected, tok(code));
     }
 
-    void while0() {
-        ASSERT_EQUALS("void foo ( ) { x = 1 ; }", tok("void foo() { do { x = 1 ; } while (0);}"));
-        ASSERT_EQUALS("void foo ( ) { return 0 ; }", tok("void foo() { do { return 0; } while (0);}"));
-        ASSERT_EQUALS("void foo ( ) { goto label ; }", tok("void foo() { do { goto label; } while (0); }"));
-        ASSERT_EQUALS("void foo ( ) { continue ; }", tok("void foo() { do { continue ; } while (0); }"));
-        ASSERT_EQUALS("void foo ( ) { break ; }", tok("void foo() { do { break; } while (0); }"));
-        ASSERT_EQUALS("void foo ( ) { }", tok("void foo() { while (false) { a; } }"));
-        ASSERT_EQUALS("void foo ( ) { }", tok("void foo() { while (false) { switch (n) { case 0: return; default: break; } n*=1; } }"));
-    }
-
-    void while0for() {
-        // for (condition is always false)
-        ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 0 ; i ++ ) { } }", tok("void f() { int i; for (i = 0; i < 0; i++) { a; } }"));
-        //ticket #3140
-        ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 0 ; i ++ ) { } }", tok("void f() { int i; for (i = 0; i < 0; i++) { foo(); break; } }"));
-        ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 0 ; i ++ ) { } }", tok("void f() { int i; for (i = 0; i < 0; i++) { foo(); continue; } }"));
-        // #8059
-        ASSERT_EQUALS("void f ( ) { int i ; for ( i = 0 ; i < 0 ; ++ i ) { } return i ; }", tok("void f() { int i; for (i=0;i<0;++i){ dostuff(); } return i; }"));
-    }
-
     void simplifyRealloc() {
         ASSERT_EQUALS("; free ( p ) ; p = 0 ;", tok("; p = realloc(p, 0);"));
         ASSERT_EQUALS("; p = malloc ( 100 ) ;", tok("; p = realloc(0, 100);"));
@@ -4602,11 +4498,6 @@ private:
         ASSERT_EQUALS("f ( double x , double ( * y ) ( ) ) ;", tok("f (double x, double (*y) ());", true));
     }
 
-    void redundant_semicolon() {
-        ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { ; }", false));
-        ASSERT_EQUALS("void f ( ) { ; }", tok("void f() { do { ; } while (0); }", true));
-    }
-
     void simplifyFunctionReturn() {
         {
             const char code[] = "typedef void (*testfp)();\n"
@@ -4662,88 +4553,6 @@ private:
                                 "  fact2<2> ();\n"
                                 "}";
             tok(code);
-        }
-    }
-
-    void return_strncat() {
-        {
-            const char code[] = "char *f()\n"
-                                "{\n"
-                                "    char *temp=malloc(2);\n"
-                                "    strcpy(temp,\"\");\n"
-                                "    return (strncat(temp,\"a\",1));\n"
-                                "}";
-            ASSERT_EQUALS("char * f ( ) {"
-                          " char * temp ;"
-                          " temp = malloc ( 2 ) ;"
-                          " strcpy ( temp , \"\" ) ;"
-                          " strncat ( temp , \"a\" , 1 ) ;"
-                          " return temp ; "
-                          "}", tok(code, true));
-        }
-        {
-            const char code[] = "char *f()\n"
-                                "{\n"
-                                "    char **temp=malloc(8);\n"
-                                "    *temp = malloc(2);\n"
-                                "    strcpy(*temp,\"\");\n"
-                                "    return (strncat(*temp,\"a\",1));\n"
-                                "}";
-            ASSERT_EQUALS("char * f ( ) {"
-                          " char * * temp ;"
-                          " temp = malloc ( 8 ) ;"
-                          " * temp = malloc ( 2 ) ;"
-                          " strcpy ( * temp , \"\" ) ;"
-                          " strncat ( * temp , \"a\" , 1 ) ;"
-                          " return * temp ; "
-                          "}", tok(code, true));
-        }
-        {
-            const char code[] = "char *f()\n"
-                                "{\n"
-                                "    char **temp=malloc(8);\n"
-                                "    *temp = malloc(2);\n"
-                                "    strcpy(*temp,\"\");\n"
-                                "    return (strncat(temp[0],foo(b),calc(c-d)));\n"
-                                "}";
-            ASSERT_EQUALS("char * f ( ) {"
-                          " char * * temp ;"
-                          " temp = malloc ( 8 ) ;"
-                          " * temp = malloc ( 2 ) ;"
-                          " strcpy ( * temp , \"\" ) ;"
-                          " strncat ( temp [ 0 ] , foo ( b ) , calc ( c - d ) ) ;"
-                          " return temp [ 0 ] ; "
-                          "}", tok(code, true));
-        }
-    }
-
-    void removeRedundantFor() { // ticket #3069
-        {
-            const char code[] = "void f() {"
-                                "    for(x=0;x<1;x++) {"
-                                "        y = 1;"
-                                "    }"
-                                "}";
-            ASSERT_EQUALS("void f ( ) { { y = 1 ; } x = 1 ; }", tok(code, true));
-        }
-
-        {
-            const char code[] = "void f() {"
-                                "    for(x=0;x<1;x++) {"
-                                "        y = 1 + x;"
-                                "    }"
-                                "}";
-            ASSERT_EQUALS("void f ( ) { x = 0 ; { y = 1 + x ; } x = 1 ; }", tok(code, true));
-        }
-
-        {
-            const char code[] = "void f() {"
-                                "    foo();"
-                                "    for(int x=0;x<1;x++) {"
-                                "        y = 1 + x;"
-                                "    }"
-                                "}";
-            ASSERT_EQUALS("void f ( ) { foo ( ) ; { int x = 0 ; y = 1 + x ; } }", tok(code, true));
         }
     }
 
