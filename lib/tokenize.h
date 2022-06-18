@@ -230,12 +230,6 @@ public:
     /** Remove unknown macro in variable declarations: PROGMEM char x; */
     void removeMacroInVarDecl();
 
-    /** Simplifies some realloc usage like
-     * 'x = realloc (0, n);' => 'x = malloc(n);'
-     * 'x = realloc (y, 0);' => 'x = 0; free(y);'
-     */
-    void simplifyRealloc();
-
     /** Add parentheses for sizeof: sizeof x => sizeof(x) */
     void sizeofAddParentheses();
 
@@ -275,14 +269,6 @@ public:
      * Example: "long long const static b;" => "static const long long b;"
      */
     void simplifyStaticConst();
-
-    /**
-     * Simplify assignments in "if" and "while" conditions
-     * Example: "if(a=b);" => "a=b;if(a);"
-     * Example: "while(a=b) { f(a); }" => "a = b; while(a){ f(a); a = b; }"
-     * Example: "do { f(a); } while(a=b);" => "do { f(a); a = b; } while(a);"
-     */
-    void simplifyIfAndWhileAssign();
 
     /**
      * Simplify multiple assignments.
@@ -397,29 +383,10 @@ public:
     /** Simplify C++17/C++20 if/switch/for initialization expression */
     void simplifyIfSwitchForInit();
 
-    /** Simplify conditions
-     * @return true if something is modified
-     *         false if nothing is done.
-     */
-    bool simplifyConditions();
-
-    /** Remove redundant code, e.g. if( false ) { int a; } should be
-     * removed, because it is never executed.
-     * @return true if something is modified
-     *         false if nothing is done.
-     */
-    bool removeRedundantConditions();
-
     /**
      * Reduces "; ;" to ";", except in "( ; ; )"
      */
     void removeRedundantSemicolons();
-
-    /** Simplify function calls - constant return value
-     * @return true if something is modified
-     *         false if nothing is done.
-     */
-    bool simplifyFunctionReturn();
 
     /** Struct simplification
      * "struct S { } s;" => "struct S { }; S s;"
