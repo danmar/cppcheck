@@ -53,7 +53,6 @@ private:
         settings_windows.checkUnusedTemplates = true;
 
         TEST_CASE(cast);
-        TEST_CASE(iftruefalse);
 
         TEST_CASE(combine_strings);
         TEST_CASE(combine_wstrings);
@@ -71,8 +70,6 @@ private:
         TEST_CASE(declareArray);
 
         TEST_CASE(dontRemoveIncrement);
-        TEST_CASE(removePostIncrement);
-        TEST_CASE(removePreIncrement);
 
         TEST_CASE(elseif1);
 
@@ -100,16 +97,6 @@ private:
 
         TEST_CASE(namespaces);
 
-        // Assignment in condition..
-        TEST_CASE(ifassign1);
-        TEST_CASE(ifAssignWithCast);
-        TEST_CASE(whileAssign1);
-        TEST_CASE(whileAssign2);
-        TEST_CASE(whileAssign3); // varid
-        TEST_CASE(whileAssign4); // links
-        TEST_CASE(doWhileAssign); // varid
-        TEST_CASE(test_4881); // similar to doWhileAssign (#4911), taken from #4881 with full code
-
         // Simplify "not" to "!" (#345)
         TEST_CASE(not1);
 
@@ -132,10 +119,6 @@ private:
         TEST_CASE(comparisons);
         TEST_CASE(simplifyCalculations);
 
-        //remove dead code after flow control statements
-        TEST_CASE(simplifyFlowControl);
-        TEST_CASE(flowControl);
-
         // Simplify nested strcat() calls
         TEST_CASE(strcat1);
         TEST_CASE(strcat2);
@@ -144,15 +127,11 @@ private:
         TEST_CASE(simplifyOperator2);
 
         TEST_CASE(simplifyArrayAccessSyntax);
-        TEST_CASE(simplify_condition);
 
         TEST_CASE(pointeralias1);
         TEST_CASE(pointeralias2);
         TEST_CASE(pointeralias3);
         TEST_CASE(pointeralias4);
-
-        // x = realloc(y,0);  =>  free(y);x=0;
-        TEST_CASE(simplifyRealloc);
 
         // while(fclose(f)); => r = fclose(f); while(r){r=fclose(f);}
         TEST_CASE(simplifyFuncInWhile);
@@ -222,7 +201,6 @@ private:
         TEST_CASE(simplifyKnownVariables32);    // const
         TEST_CASE(simplifyKnownVariables33);    // struct variable
         TEST_CASE(simplifyKnownVariables34);
-        TEST_CASE(simplifyKnownVariables35);    // ticket #2353 - False positive: Division by zero 'if (x == 0) return 0; return 10 / x;'
         TEST_CASE(simplifyKnownVariables36);    // ticket #2304 - known value for strcpy parameter
         TEST_CASE(simplifyKnownVariables39);
         TEST_CASE(simplifyKnownVariables41);    // p=&x; if (p) ..
@@ -1752,61 +1730,12 @@ private:
         // no simplification as the cast may be important here. see #2897 for example
         ASSERT_EQUALS("; * ( ( char * ) p + 1 ) = 0 ;", tok("; *((char *)p + 1) = 0;"));
 
-        ASSERT_EQUALS("{ if ( true ) }", tok("{ if ((unsigned char)1) }")); // #4164
+        ASSERT_EQUALS("{ if ( 1 ) }", tok("{ if ((unsigned char)1) }")); // #4164
         ASSERT_EQUALS("f ( 200 )", tok("f((unsigned char)200)"));
         ASSERT_EQUALS("f ( ( char ) 1234 )", tok("f((char)1234)")); // don't simplify downcast
     }
 
 
-    void iftruefalse() {
-        {
-            const char code1[] = " void f() { int a; bool use = false; if( use ) { a=0; } else {a=1;} }";
-            const char code2[] = " void f() { int a; bool use = false; {a=1;} }";
-            ASSERT_EQUALS(tok(code2), tok(code1));
-        }
-
-        {
-            const char code1[] = " void f() { int a; bool use = true; if( use ) { a=0; } else {a=1;} }";
-            const char code2[] = " void f() { int a; bool use = true; { a=0; } }";
-            ASSERT_EQUALS(tok(code2), tok(code1));
-        }
-
-        {
-            const char code1[] = " void f() { int a; int use = 5; if( use ) { a=0; } else {a=1;} }";
-            const char code2[] = " void f() { int a; int use = 5; { a=0; } }";
-            ASSERT_EQUALS(tok(code2), tok(code1));
-        }
-
-        {
-            const char code1[] = " void f() { int a; int use = 0; if( use ) { a=0; } else {a=1;} }";
-            const char code2[] = " void f() { int a; int use = 0; {a=1;} }";
-            ASSERT_EQUALS(tok(code2), tok(code1));
-        }
-
-        {
-            const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else a=1; int c=1; }";
-            const char code2[] = " void f() { int a; bool use = false; { a=1; } int c=1; }";
-            ASSERT_EQUALS(tok(code2), tok(code1));
-        }
-
-        {
-            const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else a=1; int c=1; }";
-            const char code2[] = " void f() { int a; bool use = true; { a=0; } int c=1; }";
-            ASSERT_EQUALS(tok(code2), tok(code1));
-        }
-
-        {
-            const char code1[] = " void f() { int a; bool use = false; if( use ) a=0; else if( bb ) a=1; int c=1; }";
-            const char code2[] = " void f ( ) { int a ; bool use ; use = false ; { if ( bb ) { a = 1 ; } } int c ; c = 1 ; }";
-            ASSERT_EQUALS(tok(code2), tok(code1));
-        }
-
-        {
-            const char code1[] = " void f() { int a; bool use = true; if( use ) a=0; else if( bb ) a=1; int c=1; }";
-            const char code2[] = " void f() { int a; bool use = true; { a=0;} int c=1; }";
-            ASSERT_EQUALS(tok(code2), tok(code1));
-        }
-    }
 
     void combine_strings() {
         const char code1[] =  "void foo()\n"
@@ -2115,41 +2044,6 @@ private:
         }
     }
 
-    void removePostIncrement() {
-        const char code[] = "void f(int &c)\n"
-                            "{\n"
-                            "    c = 0;\n"
-                            "    c++;\n"
-                            "    if (c>0) { c++; }\n"
-                            "    c++;\n"
-                            "}\n";
-        TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; { ; } ; }",
-                           "void f ( int & c ) { c = 1 ; { c ++ ; } c ++ ; }", tok(code));
-    }
-
-
-    void removePreIncrement() {
-        {
-            const char code[] = "void f(int &c)\n"
-                                "{\n"
-                                "    c = 0;\n"
-                                "    ++c;\n"
-                                "    if (c>0) { ++c; }\n"
-                                "    ++c;\n"
-                                "}\n";
-            TODO_ASSERT_EQUALS("void f ( int & c ) { c = 3 ; { ; } ; }",
-                               "void f ( int & c ) { c = 1 ; { ++ c ; } ++ c ; }", tok(code));
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                " char a[] = \"p\";\n"
-                                " ++a[0];\n"
-                                "}\n";
-            ASSERT_EQUALS("void f ( ) { char a [ 2 ] = \"p\" ; ++ a [ 0 ] ; }", tok(code));
-        }
-    }
 
     void elseif1() {
         const char code[] = "void f(){ if(x) {} else if(ab) { cd } else { ef }gh; }";
@@ -2583,7 +2477,7 @@ private:
                             "    sizeof 1;\n"
                             "    while (0);\n"
                             "}\n";
-        ASSERT_EQUALS("void f ( ) { sizeof ( 1 ) ; while ( false ) { ; } }", tok(code));
+        ASSERT_EQUALS("void f ( ) { sizeof ( 1 ) ; while ( 0 ) { ; } }", tok(code));
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -2879,130 +2773,6 @@ private:
 
             ASSERT_EQUALS(expected, tok(code));
         }
-    }
-
-#define simplifyIfAndWhileAssign(code) simplifyIfAndWhileAssign_(code, __FILE__, __LINE__)
-    std::string simplifyIfAndWhileAssign_(const char code[], const char* file, int line) {
-        // tokenize..
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-
-        (tokenizer.simplifyIfAndWhileAssign)();
-
-        return tokenizer.tokens()->stringifyList(nullptr, false);
-    }
-
-    void ifassign1() {
-        ASSERT_EQUALS("{ a = b ; if ( a ) { ; } }", simplifyIfAndWhileAssign("{if(a=b);}"));
-        ASSERT_EQUALS("{ a = b ( ) ; if ( a ) { ; } }", simplifyIfAndWhileAssign("{if((a=b()));}"));
-        ASSERT_EQUALS("{ a = b ( ) ; if ( ! ( a ) ) { ; } }", simplifyIfAndWhileAssign("{if(!(a=b()));}"));
-        ASSERT_EQUALS("{ a . x = b ( ) ; if ( ! ( a . x ) ) { ; } }", simplifyIfAndWhileAssign("{if(!(a->x=b()));}"));
-        ASSERT_EQUALS("void f ( ) { A ( ) a = b ; if ( a ) { ; } }", simplifyIfAndWhileAssign("void f() { A() if(a=b); }"));
-        ASSERT_EQUALS("void foo ( int a ) { a = b ( ) ; if ( a >= 0 ) { ; } }", tok("void foo(int a) {if((a=b())>=0);}"));
-        TODO_ASSERT_EQUALS("void foo ( A a ) { a . c = b ( ) ; if ( 0 <= a . c ) { ; } }",
-                           "void foo ( A a ) { a . c = b ( ) ; if ( a . c >= 0 ) { ; } }",
-                           tok("void foo(A a) {if((a.c=b())>=0);}"));
-    }
-
-    void ifAssignWithCast() {
-        const char *code =  "void foo()\n"
-                           "{\n"
-                           "FILE *f;\n"
-                           "if( (f = fopen(\"foo\", \"r\")) == ((FILE*)NULL) )\n"
-                           "return(-1);\n"
-                           "fclose(f);\n"
-                           "}\n";
-        const char *expected = "void foo ( ) "
-                               "{ "
-                               "FILE * f ; "
-                               "f = fopen ( \"foo\" , \"r\" ) ; "
-                               "if ( f == NULL ) "
-                               "{ "
-                               "return ( -1 ) ; "
-                               "} "
-                               "fclose ( f ) ; "
-                               "}";
-        ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void whileAssign1() {
-        ASSERT_EQUALS("{ a = b ; while ( a ) { b = 0 ; a = b ; } }", simplifyIfAndWhileAssign("{while(a=b) { b = 0; }}"));
-        ASSERT_EQUALS("{ a . b = c ; while ( a . b ) { c = 0 ; a . b = c ; } }", simplifyIfAndWhileAssign("{while(a.b=c) { c=0; }}"));
-        ASSERT_EQUALS("{ "
-                      "struct hfs_bnode * node ; "
-                      "struct hfs_btree * tree ; "
-                      "node = tree . node_hash [ i ++ ] ; "
-                      "while ( node ) { node = tree . node_hash [ i ++ ] ; } "
-                      "}",
-                      tok("{"
-                          "struct hfs_bnode *node;"
-                          "struct hfs_btree *tree;"
-                          "while ((node = tree->node_hash[i++])) { }"
-                          "}"));
-        ASSERT_EQUALS("{ char * s ; s = new char [ 10 ] ; while ( ! s ) { s = new char [ 10 ] ; } }",
-                      tok("{ char *s; while (0 == (s=new char[10])) { } }"));
-    }
-
-    void whileAssign2() {
-        // #1909 - Internal error
-        tok("void f()\n"
-            "{\n"
-            "  int b;\n"
-            "  while (b = sizeof (struct foo { int i0;}))\n"
-            "    ;\n"
-            "  if (!(0 <= b ))\n"
-            "    ;\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void whileAssign3() {
-        // #4254 - Variable id
-        const char code[] = "void f() {\n"
-                            "  int a;\n"
-                            "  while (a = x());\n"
-                            "}";
-        ASSERT_EQUALS("\n\n##file 0\n"
-                      "1: void f ( ) {\n"
-                      "2: int a@1 ;\n"
-                      "3: a@1 = x ( ) ; while ( a@1 ) { ; a@1 = x ( ) ; }\n"
-                      "4: }\n", tokenizeDebugListing(code, true, "test.c"));
-    }
-
-    void whileAssign4() {
-        errout.str("");
-
-        Tokenizer tokenizer(&settings0, this);
-        std::istringstream istr("{ while (!(m = q->push<Message>(x))) {} }");
-        ASSERT(tokenizer.tokenize(istr, "test.cpp"));
-        tokenizer.simplifyTokenList2();
-
-        ASSERT_EQUALS("{ m = q . push < Message > ( x ) ; while ( ! m ) { m = q . push < Message > ( x ) ; } }", tokenizer.tokens()->stringifyList(nullptr, false));
-        ASSERT(tokenizer.tokens()->tokAt(26) != nullptr);
-        if (tokenizer.tokens()->tokAt(26)) {
-            ASSERT(tokenizer.tokens()->linkAt(6) == tokenizer.tokens()->tokAt(8));
-            ASSERT(tokenizer.tokens()->linkAt(24) == tokenizer.tokens()->tokAt(26));
-        }
-    }
-
-    void doWhileAssign() {
-        ASSERT_EQUALS("{ do { a = b ; } while ( a ) ; }", simplifyIfAndWhileAssign("{ do { } while(a=b); }"));
-        ASSERT_EQUALS("{ do { a . a = 0 ; a . b = c ; } while ( a . b ) ; }", simplifyIfAndWhileAssign("{ do { a.a = 0; } while(a.b=c); }"));
-        ASSERT_EQUALS("{ "
-                      "struct hfs_bnode * node ; "
-                      "struct hfs_btree * tree ; "
-                      "do { node = tree . node_hash [ i ++ ] ; } while ( node ) ; "
-                      "}",
-                      tok("{"
-                          "struct hfs_bnode *node;"
-                          "struct hfs_btree *tree;"
-                          "do { } while((node = tree->node_hash[i++]));"
-                          "}"));
-        ASSERT_EQUALS("void foo ( ) { char * s ; do { s = new char [ 10 ] ; } while ( ! s ) ; }",
-                      tok("void foo() { char *s; do { } while (0 == (s=new char[10])); }"));
-        // #4911
-        ASSERT_EQUALS("void foo ( ) { do { current = f ( ) ; } while ( ( current ) != NULL ) ; }", simplifyIfAndWhileAssign("void foo() { do { } while((current=f()) != NULL); }"));
     }
 
     void not1() {
@@ -3316,7 +3086,7 @@ private:
 
         {
             const char code[] = "(1?(false?1:2):3);";
-            ASSERT_EQUALS("( 2 ) ;", tok(code));
+            ASSERT_EQUALS("( ( 2 ) ) ;", tok(code));
         }
 
         {
@@ -3419,7 +3189,7 @@ private:
         ASSERT_EQUALS("x = 1 + 2 * y ;", tok("x=1+2*y;"));
         ASSERT_EQUALS("x = 7 ;", tok("x=1+2*3;"));
         ASSERT_EQUALS("x = 47185 ;", tok("x=(65536*72/100);"));
-        ASSERT_EQUALS("x = 900 ;", tok("x = 1500000 / ((145000 - 55000) * 1000 / 54000);"));
+        ASSERT_EQUALS("x = 1500000 / ( ( 90000 ) * 1000 / 54000 ) ;", tok("x = 1500000 / ((145000 - 55000) * 1000 / 54000);"));
         ASSERT_EQUALS("int a [ 8 ] ;", tok("int a[5+6/2];"));
         ASSERT_EQUALS("int a [ 4 ] ;", tok("int a[(10)-1-5];"));
         ASSERT_EQUALS("int a [ i - 9 ] ;", tok("int a[i - 10 + 1];"));
@@ -3458,7 +3228,7 @@ private:
         ASSERT_EQUALS("x ( -2 << 6 | 1 ) ;", tok("x(1-3<<6|5/3);")); // #4931
         ASSERT_EQUALS("x ( 2 ) ;", tok("x(2|0*0&2>>1+0%2*1);")); // #4931
         ASSERT_EQUALS("x ( 0 & 4 != 1 ) ;", tok("x(4%1<<1&4!=1);")); // #4931 (can be simplified further but it's not a problem)
-        ASSERT_EQUALS("x ( true ) ;", tok("x(0&&4>0==2||4);")); // #4931
+        ASSERT_EQUALS("x ( 1 ) ;", tok("x(0&&4>0==2||4);")); // #4931
 
         // don't remove these spaces..
         ASSERT_EQUALS("new ( auto ) ( 4 ) ;", tok("new (auto)(4);"));
@@ -3466,13 +3236,13 @@ private:
 
     void comparisons() {
         ASSERT_EQUALS("( 1 ) ;", tok("( 1 < 2 );"));
-        ASSERT_EQUALS("( x && true ) ;", tok("( x && 1 < 2 );"));
+        ASSERT_EQUALS("( x && 1 ) ;", tok("( x && 1 < 2 );"));
         ASSERT_EQUALS("( 5 ) ;", tok("( 1 < 2 && 3 < 4 ? 5 : 6 );"));
         ASSERT_EQUALS("( 6 ) ;", tok("( 1 > 2 && 3 > 4 ? 5 : 6 );"));
     }
 
     void simplifyCalculations() {
-        ASSERT_EQUALS("void foo ( char str [ ] ) { char x ; x = * str ; }",
+        ASSERT_EQUALS("void foo ( char str [ ] ) { char x ; x = ( * str ) ; }",
                       tok("void foo ( char str [ ] ) { char x = 0 | ( * str ) ; }"));
         ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
                       tok("void foo ( ) { if (b + 0) { } }"));
@@ -3497,320 +3267,6 @@ private:
 
     }
 
-
-
-    void simplifyFlowControl() {
-        const char code1[] = "void f() {\n"
-                             "  return;\n"
-                             "  y();\n"
-                             "}";
-        ASSERT_EQUALS("void f ( ) { return ; }", tokWithStdLib(code1));
-
-        const char code2[] = "void f() {\n"
-                             "  exit(0);\n"
-                             "  y();\n"
-                             "}";
-        ASSERT_EQUALS("void f ( ) { exit ( 0 ) ; }", tokWithStdLib(code2));
-
-        const char code3[] = "void f() {\n"
-                             "  x.abort();\n"
-                             "  y();\n"
-                             "}";
-        ASSERT_EQUALS("void f ( ) { x . abort ( ) ; y ( ) ; }", tokWithStdLib(code3));
-    }
-
-    void flowControl() {
-        {
-            ASSERT_EQUALS("void f ( ) { exit ( 0 ) ; }", tokWithStdLib("void f() { exit(0); foo(); }"));
-            ASSERT_EQUALS("void f ( ) { exit ( 0 ) ; }", tokWithStdLib("void f() { exit(0); if (m) foo(); }"));
-            ASSERT_EQUALS("void f ( int n ) { if ( n ) { exit ( 0 ) ; } foo ( ) ; }", tokWithStdLib("void f(int n) { if (n) { exit(0); } foo(); }"));
-            ASSERT_EQUALS("void f ( ) { exit ( 0 ) ; }", tokWithStdLib("void f() { exit(0); dead(); switch (n) { case 1: deadcode () ; default: deadcode (); } }"));
-
-            ASSERT_EQUALS("int f ( int n ) { switch ( n ) { case 0 : ; exit ( 0 ) ; default : ; exit ( 0 ) ; } exit ( 0 ) ; }",
-                          tokWithStdLib("int f(int n) { switch (n) {case 0: exit(0); n*=2; default: exit(0); n*=6;} exit(0); foo();}"));
-            //ticket #3132
-            ASSERT_EQUALS("void f ( int i ) { goto label ; { label : ; exit ( 0 ) ; } }", tokWithStdLib("void f (int i) { goto label; switch(i) { label: exit(0); } }"));
-            //ticket #3148
-            ASSERT_EQUALS("void f ( ) { MACRO ( exit ( 0 ) ) }", tokWithStdLib("void f() { MACRO(exit(0)) }"));
-            ASSERT_EQUALS("void f ( ) { MACRO ( bar1 , exit ( 0 ) ) }", tokWithStdLib("void f() { MACRO(bar1, exit(0)) }"));
-        }
-
-        {
-            const char* code = "void f(){ "
-                               "   if (k>0) goto label; "
-                               "   exit(0); "
-                               "   if (tnt) "
-                               "   { "
-                               "       { "
-                               "           check(); "
-                               "           k=0; "
-                               "       } "
-                               "       label: "
-                               "       bar(); "
-                               "   } "
-                               "}";
-            ASSERT_EQUALS("void f ( ) { if ( k > 0 ) { goto label ; } exit ( 0 ) ; { label : ; bar ( ) ; } }", tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo () {"
-                               "    exit(0);"
-                               "    {"
-                               "        boo();"
-                               "        while (n) { --n; }"
-                               "        {"
-                               "            label:"
-                               "            ok();"
-                               "        }"
-                               "    }"
-                               "}";
-            ASSERT_EQUALS("void foo ( ) { exit ( 0 ) ; { label : ; ok ( ) ; } }", tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo () {"
-                               "    exit(0);"
-                               "    switch (n) {"
-                               "        case 1:"
-                               "            label:"
-                               "            foo(); break;"
-                               "        default:"
-                               "            break;"
-                               "    }"
-                               "}";
-            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; foo ( ) ; break ; } }";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo () {"
-                               "    exit(0);"
-                               "    switch (n) {"
-                               "        case 1:"
-                               "            {"
-                               "                foo();"
-                               "            }"
-                               "            label:"
-                               "            bar();"
-                               "    }"
-                               "}";
-            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; bar ( ) ; } }";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo () {"
-                               "    exit(0);"
-                               "    switch (n) {"
-                               "        case a:"
-                               "            {"
-                               "                foo();"
-                               "            }"
-                               "        case b|c:"
-                               "            bar();"
-                               "    }"
-                               "}";
-            const char* expected = "void foo ( ) { exit ( 0 ) ; }";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo () {"
-                               "    exit(0);"
-                               "    switch (n) {"
-                               "        case 1:"
-                               "            label:"
-                               "            foo(); break;"
-                               "        default:"
-                               "            break; break;"
-                               "    }"
-                               "}";
-            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; foo ( ) ; break ; } }";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo () {"
-                               "    exit(0);"
-                               "    switch (n) {"
-                               "        case 1:"
-                               "            label:"
-                               "            foo(); break; break;"
-                               "        default:"
-                               "            break;"
-                               "    }"
-                               "}";
-            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; foo ( ) ; break ; } }";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo () {"
-                               "    exit(0);"
-                               "    switch (n) {"
-                               "        case 1:"
-                               "            label:"
-                               "            foo(); break; break;"
-                               "        default:"
-                               "            break; break;"
-                               "    }"
-                               "}";
-            const char* expected = "void foo ( ) { exit ( 0 ) ; { label : ; foo ( ) ; break ; } }";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "int f() { "
-                               "switch (x) { case 1: exit(0); bar(); tack; { ticak(); exit(0) } exit(0);"
-                               "case 2: exit(0); { random(); } tack(); "
-                               "switch(y) { case 1: exit(0); case 2: exit(0); } "
-                               "exit(0); } exit(0); }";
-            ASSERT_EQUALS("int f ( ) { switch ( x ) { case 1 : ; exit ( 0 ) ; case 2 : ; exit ( 0 ) ; } exit ( 0 ) ; }",tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "int f() {"
-                               "switch (x) { case 1: exit(0); bar(); tack; { ticak(); exit(0); } exit(0);"
-                               "case 2: switch(y) { case 1: exit(0); bar2(); foo(); case 2: exit(0); }"
-                               "exit(0); } exit(0); }";
-            const char* expected = "int f ( ) {"
-                                   " switch ( x ) { case 1 : ; exit ( 0 ) ;"
-                                   " case 2 : ; switch ( y ) { case 1 : ; exit ( 0 ) ; case 2 : ; exit ( 0 ) ; }"
-                                   " exit ( 0 ) ; } exit ( 0 ) ; }";
-            ASSERT_EQUALS(expected,tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo () {"
-                               "    switch (i) { case 0: switch (j) { case 0: exit(0); }"
-                               "        case 1: switch (j) { case -1: exit(0); }"
-                               "        case 2: switch (j) { case -2: exit(0); }"
-                               "        case 3: if (blah6) {exit(0);} break; } }";
-            const char* expected = "void foo ( ) {"
-                                   " switch ( i ) { case 0 : ; switch ( j ) { case 0 : ; exit ( 0 ) ; }"
-                                   " case 1 : ; switch ( j ) { case -1 : ; exit ( 0 ) ; }"
-                                   " case 2 : ; switch ( j ) { case -2 : ; exit ( 0 ) ; }"
-                                   " case 3 : ; if ( blah6 ) { exit ( 0 ) ; } break ; } }";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo () {"
-                               "    exit(0);"
-                               "    switch (i) { case 0: switch (j) { case 0: foo(); }"
-                               "        case 1: switch (j) { case -1: bar(); label:; ok(); }"
-                               "        case 3: if (blah6) { boo(); break; } } }";
-            const char* expected = "void foo ( ) { exit ( 0 ) ; { { label : ; ok ( ) ; } case 3 : ; if ( blah6 ) { boo ( ) ; break ; } } }";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char* code = "void foo() {"
-                               "     switch ( t ) {"
-                               "     case 0:"
-                               "          if ( t ) switch ( b ) {}"
-                               "          break;"
-                               "     case 1:"
-                               "          exit(0);"
-                               "          return 0;"
-                               "     }"
-                               "     return 0;"
-                               "}";
-            const char* expected = "void foo ( ) {"
-                                   " switch ( t ) {"
-                                   " case 0 : ;"
-                                   " if ( t ) { switch ( b ) { } }"
-                                   " break ;"
-                                   " case 1 : ;"
-                                   " exit ( 0 ) ;"
-                                   " }"
-                                   " return 0 ; "
-                                   "}";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    A *a = 0;\n"
-                                "    if (!a) {\n"
-                                "        nondeadcode;\n"
-                                "        return;\n"
-                                "        dead;\n"
-                                "    }\n"
-                                "    stilldead;\n"
-                                "    a->_a;\n"
-                                "}\n";
-            const char expected[] = "void foo ( ) "
-                                    "{"
-                                    " A * a ; a = 0 ; {"
-                                    " nondeadcode ;"
-                                    " return ;"
-                                    " } "
-                                    "}";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char code[] = "class Fred\n"
-                                "{\n"
-                                "public:\n"
-                                "    bool foo() const { return f; }\n"
-                                "    bool exit();\n"
-                                "\n"
-                                "private:\n"
-                                "   bool f;\n"
-                                "};\n";
-            const char expected[] = "class Fred "
-                                    "{"
-                                    " public:"
-                                    " bool foo ( ) const { return f ; }"
-                                    " bool exit ( ) ;"
-                                    ""
-                                    " private:"
-                                    " bool f ; "
-                                    "} ;";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        {
-            const char code[] = "class abort { };\n"
-                                "\n"
-                                "class Fred\n"
-                                "{\n"
-                                "    public:\n"
-                                "    bool foo() const { return f; }\n"
-                                "    abort exit();\n"
-                                "\n"
-                                "    private:\n"
-                                "bool f;\n"
-                                "};\n";
-            const char expected[] = "class abort { } ; "
-                                    "class Fred "
-                                    "{"
-                                    " public:"
-                                    " bool foo ( ) const { return f ; }"
-                                    " abort exit ( ) ;"
-                                    ""
-                                    " private:"
-                                    " bool f ; "
-                                    "} ;";
-            ASSERT_EQUALS(expected, tokWithStdLib(code));
-        }
-
-        ASSERT_EQUALS("void foo ( ) { exit ( 0 ) ; }",
-                      tokWithStdLib("void foo() { do { exit(0); } while (true); }"));
-
-        // #6187
-        tokWithStdLib("void foo() {\n"
-                      "  goto label;\n"
-                      "  for (int i = 0; i < 0; ++i) {\n"
-                      "    ;\n"
-                      "label:\n"
-                      "    ;\n"
-                      "  }\n"
-                      "}");
-    }
 
     void strcat1() {
         const char code[] = "; strcat(strcat(strcat(strcat(strcat(strcat(dst, \"this \"), \"\"), \"is \"), \"a \"), \"test\"), \".\");";
@@ -3873,89 +3329,6 @@ private:
     void simplifyArrayAccessSyntax() {
         ASSERT_EQUALS("\n\n##file 0\n"
                       "1: int a@1 ; a@1 [ 13 ] ;\n", tokenizeDebugListing("int a; 13[a];"));
-    }
-
-    void simplify_condition() {
-        {
-            const char code[] =
-                "void f(int a)\n"
-                "{\n"
-                "if (a && false) g();\n"
-                "}";
-            ASSERT_EQUALS("void f ( int a ) { }", tok(code));
-        }
-
-        {
-            const char code[] =
-                "void f(int a)\n"
-                "{\n"
-                "if (false && a) g();\n"
-                "}";
-            ASSERT_EQUALS("void f ( int a ) { }", tok(code));
-        }
-
-        {
-            const char code[] =
-                "void f(int a)\n"
-                "{\n"
-                "if (true || a) g();\n"
-                "}";
-            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
-        }
-
-        {
-            const char code[] =
-                "void f(int a)\n"
-                "{\n"
-                "if (a || true) g();\n"
-                "}";
-            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
-        }
-
-        {
-            const char code[] =
-                "void f(int a)\n"
-                "{\n"
-                "if (a || true || b) g();\n"
-                "}";
-            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
-        }
-
-        {
-            const char code[] =
-                "void f(int a)\n"
-                "{\n"
-                "if (a && false && b) g();\n"
-                "}";
-            ASSERT_EQUALS("void f ( int a ) { }", tok(code));
-        }
-
-        {
-            const char code[] =
-                "void f(int a)\n"
-                "{\n"
-                "if (a || (b && false && c) || d) g();\n"
-                "}";
-            ASSERT_EQUALS("void f ( int a ) { if ( a || d ) { g ( ) ; } }", tok(code));
-        }
-
-        {
-            const char code[] =
-                "void f(int a)\n"
-                "{\n"
-                "if ((a && b) || true || (c && d)) g();\n"
-                "}";
-            ASSERT_EQUALS("void f ( int a ) { g ( ) ; }", tok(code));
-        }
-
-        {
-            // #4931
-            const char code[] =
-                "void f() {\n"
-                "if (12 && 7) g();\n"
-                "}";
-            ASSERT_EQUALS("void f ( ) { g ( ) ; }", tok(code));
-        }
     }
 
 
@@ -4033,17 +3406,6 @@ private:
                             "}\n";
         const char expected[] = "int f ( ) { int i ; int * p ; i = 5 ; return 5 ; }";
         ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void simplifyRealloc() {
-        ASSERT_EQUALS("; free ( p ) ; p = 0 ;", tok("; p = realloc(p, 0);"));
-        ASSERT_EQUALS("; p = malloc ( 100 ) ;", tok("; p = realloc(0, 100);"));
-        ASSERT_EQUALS("; p = malloc ( 0 ) ;", tok("; p = realloc(0, 0);"));
-        ASSERT_EQUALS("; free ( q ) ; p = 0 ;", tok("; p = realloc(q, 0);"));
-        ASSERT_EQUALS("; free ( * q ) ; p = 0 ;", tok("; p = realloc(*q, 0);"));
-        ASSERT_EQUALS("; free ( f ( z ) ) ; p = 0 ;", tok("; p = realloc(f(z), 0);"));
-        ASSERT_EQUALS("; p = malloc ( n * m ) ;", tok("; p = realloc(0, n*m);"));
-        ASSERT_EQUALS("; p = malloc ( f ( 1 ) ) ;", tok("; p = realloc(0, f(1));"));
     }
 
     void simplifyFuncInWhile() {
@@ -4571,19 +3933,6 @@ private:
         ASSERT_EQUALS("int * * * * x ;", tok("int * * x [][];"));
         ASSERT_EQUALS("void f ( int x [ ] , double y [ ] ) { }", tok("void f(int x[], double y[]) { }"));
         ASSERT_EQUALS("int x [ 13 ] = { [ 11 ] = 2 , [ 12 ] = 3 } ;", tok("int x[] = {[11]=2, [12]=3};"));
-    }
-
-    void test_4881() {
-        const char code[] = "int evallex() {\n"
-                            "  int c, t;\n"
-                            "again:\n"
-                            "   do {\n"
-                            "      if ((c = macroid(c)) == EOF_CHAR || c == '\\n') {\n"
-                            "      }\n"
-                            "   } while ((t = type[c]) == LET && catenate());\n"
-                            "}\n";
-        ASSERT_EQUALS("int evallex ( ) { int c ; int t ; again : ; do { c = macroid ( c ) ; if ( c == EOF_CHAR || c == '\\n' ) { } t = type [ c ] ; } while ( t == LET && catenate ( ) ) ; }",
-                      tok(code, true));
     }
 
     void simplifyOverride() { // ticket #5069
@@ -5562,19 +4911,6 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
-    void simplifyKnownVariables35() {
-        // Ticket #2353
-        const char code[] = "int f() {"
-                            "    int x = 0;"
-                            "    if (x == 0) {"
-                            "        return 0;"
-                            "    }"
-                            "    return 10 / x;"
-                            "}";
-        const char expected[] = "int f ( ) { int x ; x = 0 ; { return 0 ; } }";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-    }
-
     void simplifyKnownVariables36() {
         // Ticket #2304
         const char code[] = "void f() {"
@@ -6279,7 +5615,7 @@ private:
     // remove static_cast..
     void simplifyCasts2() {
         const char code[] = "t = (static_cast<std::vector<int> *>(&p));\n";
-        ASSERT_EQUALS("t = & p ;", tok(code));
+        ASSERT_EQUALS("t = ( & p ) ;", tok(code));
     }
 
     void simplifyCasts3() {
