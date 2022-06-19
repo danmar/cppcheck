@@ -3249,6 +3249,11 @@ std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok, bool inconc
 
 static bool hasUniqueOwnership(const Token* tok)
 {
+    if (!tok)
+        return false;
+    const Variable* var = tok->variable();
+    if (var && var->isArray() && !var->isArgument())
+        return true;
     if (astIsPointer(tok))
         return false;
     if (astIsUniqueSmartPointer(tok))
@@ -3263,11 +3268,10 @@ static bool derefShared(const Token* tok)
 {
     if (!tok)
         return false;
-    if (tok->str() == "." && tok->originalName() != "->") {
+    if (!tok->isUnaryOp("*") && tok->str() != "[" && tok->str() != ".")
         return false;
-    } else if (!tok->isUnaryOp("*") && tok->str() == "[") {
+    if (tok->str() == "." && tok->originalName() != "->")
         return false;
-    }
     const Token* ptrTok = tok->astOperand1();
     return !hasUniqueOwnership(ptrTok);
 }
@@ -3386,10 +3390,8 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
     } else if (Token::Match(tok, ".|::|[") || tok->isUnaryOp("*")) {
 
         const Token *vartok = tok;
-        if (tok->isUnaryOp("*"))
-            vartok = tok->astOperand1();
         while (vartok) {
-            if (vartok->str() == "[" || vartok->originalName() == "->")
+            if (vartok->str() == "[" || vartok->originalName() == "->" || vartok->isUnaryOp("*"))
                 vartok = vartok->astOperand1();
             else if (vartok->str() == "." || vartok->str() == "::")
                 vartok = vartok->astOperand2();
@@ -3399,10 +3401,7 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
 
         if (!vartok)
             return {{tok, std::move(errorPath)}};
-        const Variable *tokvar = vartok->variable();
-        const bool isContainer = astIsContainer(vartok) && !astIsPointer(vartok);
-        if (!astIsUniqueSmartPointer(vartok) && !isContainer && !(tokvar && tokvar->isArray() && !tokvar->isArgument()) &&
-            (Token::Match(vartok->astParent(), "[|*") || vartok->astParent()->originalName() == "->")) {
+        if (derefShared(vartok->astParent())) {
             for (const ValueFlow::Value &v : vartok->values()) {
                 if (!v.isLocalLifetimeValue())
                     continue;
