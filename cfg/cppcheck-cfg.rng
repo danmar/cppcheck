@@ -306,6 +306,9 @@
                       <attribute name="value">
                         <ref name="MINSIZE-VALUE"/>
                       </attribute>
+                      <optional>
+                        <attribute name="baseType"><text/></attribute>
+                      </optional>
                     </element>
                   </choice>
                 </zeroOrMore>
