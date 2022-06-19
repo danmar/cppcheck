@@ -384,47 +384,6 @@ void CheckOther::invalidPointerCastError(const Token* tok, const std::string& fr
         reportError(tok, Severity::portability, "invalidPointerCast", "Casting between " + from + " and " + to + " which have an incompatible binary data representation.", CWE704, Certainty::normal);
 }
 
-//---------------------------------------------------------------------------
-// This check detects errors on POSIX systems, when a pipe command called
-// with a wrong dimensioned file descriptor array. The pipe command requires
-// exactly an integer array of dimension two as parameter.
-//
-// References:
-//  - http://linux.die.net/man/2/pipe
-//  - ticket #3521
-//---------------------------------------------------------------------------
-void CheckOther::checkPipeParameterSize()
-{
-    if (!mSettings->posix())
-        return;
-
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (Token::Match(tok, "pipe ( %var% )") ||
-                Token::Match(tok, "pipe2 ( %var% ,")) {
-                const Token * const varTok = tok->tokAt(2);
-
-                const Variable *var = varTok->variable();
-                MathLib::bigint dim;
-                if (var && var->isArray() && !var->isArgument() && ((dim=var->dimension(0U)) < 2)) {
-                    const std::string strDim = MathLib::toString(dim);
-                    checkPipeParameterSizeError(varTok,varTok->str(), strDim);
-                }
-            }
-        }
-    }
-}
-
-void CheckOther::checkPipeParameterSizeError(const Token *tok, const std::string &strVarName, const std::string &strDim)
-{
-    reportError(tok, Severity::error,
-                "wrongPipeParameterSize",
-                "$symbol:" + strVarName + "\n"
-                "Buffer '$symbol' must have size of 2 integers if used as parameter of pipe().\n"
-                "The pipe()/pipe2() system command takes an argument, which is an array of exactly two integers.\n"
-                "The variable '$symbol' is an array of size " + strDim + ", which does not match.", CWE686, Certainty::safe);
-}
 
 //---------------------------------------------------------------------------
 // Detect redundant assignments: x = 0; x = 4;

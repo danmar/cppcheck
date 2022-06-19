@@ -208,8 +208,6 @@ private:
 
         TEST_CASE(varFuncNullUB);
 
-        TEST_CASE(checkPipeParameterSize); // ticket #3521
-
         TEST_CASE(checkCastIntToCharAndBack); // ticket #160
 
         TEST_CASE(checkCommaSeparatedReturn);
@@ -348,20 +346,6 @@ private:
         // Check..
         CheckOther checkOther(&tokenizer, settings, this);
         checkOther.runChecks(&tokenizer, settings, this);
-    }
-
-    void checkposix(const char code[]) {
-        static Settings settings;
-        settings.severity.enable(Severity::warning);
-        settings.libraries.emplace_back("posix");
-
-        check(code,
-              nullptr, // filename
-              false,   // experimental
-              false,   // inconclusive
-              true,    // runSimpleChecks
-              false,   // verbose
-              &settings);
     }
 
     void checkInterlockedDecrement(const char code[]) {
@@ -8624,99 +8608,6 @@ private:
 
         check("void a(char *p, ...);\n"
               "void b() { a(NULL, 2); }");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void checkPipeParameterSize() { // #3521
-
-        checkposix("void f(){\n"
-                   "int pipefd[1];\n" // <--  array of two integers is needed
-                   "if (pipe(pipefd) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer 'pipefd' must have size of 2 integers if used as parameter of pipe().\n", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[2];\n"
-                   "if (pipe(pipefd) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[20];\n"
-                   "if (pipe(pipefd) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[1];\n" // <--  array of two integers is needed
-                   "if (pipe2(pipefd,0) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer 'pipefd' must have size of 2 integers if used as parameter of pipe().\n", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[2];\n"
-                   "if (pipe2(pipefd,0) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[20];\n"
-                   "if (pipe2(pipefd,0) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // avoid crash with pointer variable
-        check("void foo (int* arrayPtr)\n"
-              "{\n"
-              "  if (pipe (arrayPtr) < 0)\n"
-              "  {}\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // avoid crash with pointer variable - for local variable on stack as well - see #4801
-        check("void foo() {\n"
-              "  int *cp;\n"
-              "  if ( pipe (cp) == -1 ) {\n"
-              "     return;\n"
-              "  }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // test with unknown variable
-        check("void foo() {\n"
-              "  if ( pipe (cp) == -1 ) {\n"
-              "     return;\n"
-              "  }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // avoid crash with pointer variable - for local variable on stack as well - see #4801
-        check("void foo() {\n"
-              "  int *cp;\n"
-              "  if ( pipe (cp) == -1 ) {\n"
-              "     return;\n"
-              "  }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // test with unknown variable
-        check("void foo() {\n"
-              "  if ( pipe (cp) == -1 ) {\n"
-              "     return;\n"
-              "  }\n"
-              "}");
         ASSERT_EQUALS("", errout.str());
     }
 

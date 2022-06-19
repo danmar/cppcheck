@@ -203,6 +203,19 @@ Tokenizer::~Tokenizer()
 // SizeOfType - gives the size of a type
 //---------------------------------------------------------------------------
 
+nonneg int Tokenizer::sizeOfType(const std::string& type) const
+{
+    const std::map<std::string, int>::const_iterator it = mTypeSize.find(type);
+    if (it == mTypeSize.end()) {
+        const Library::PodType* podtype = mSettings->library.podtype(type);
+        if (!podtype)
+            return 0;
+
+        return podtype->size;
+    }
+    return it->second;
+}
+
 nonneg int Tokenizer::sizeOfType(const Token *type) const
 {
     if (!type || type->str().empty())

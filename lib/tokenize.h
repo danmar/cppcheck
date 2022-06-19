@@ -181,7 +181,8 @@ public:
      * @param type Token which will contain e.g. "int", "*", or string.
      * @return sizeof for given type, or 0 if it can't be calculated.
      */
-    nonneg int sizeOfType(const Token *type) const;
+    nonneg int sizeOfType(const Token* type) const;
+    nonneg int sizeOfType(const std::string& type) const;
 
     void simplifyDebug();
     /**
