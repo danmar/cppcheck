@@ -271,12 +271,23 @@ static const Token* getContainerFunction(const Token* tok)
     return nullptr;
 }
 
-Library::Container::Action astContainerAction(const Token* tok)
+Library::Container::Action astContainerAction(const Token* tok, const Token** ftok)
 {
-    const Token* ftok = getContainerFunction(tok);
-    if (!ftok)
+    const Token* ftok2 = getContainerFunction(tok);
+    if (ftok)
+        *ftok = ftok2;
+    if (!ftok2)
         return Library::Container::Action::NO_ACTION;
-    return tok->valueType()->container->getAction(ftok->str());
+    return tok->valueType()->container->getAction(ftok2->str());
+}
+Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok)
+{
+    const Token* ftok2 = getContainerFunction(tok);
+    if (ftok)
+        *ftok = ftok2;
+    if (!ftok2)
+        return Library::Container::Yield::NO_YIELD;
+    return tok->valueType()->container->getYield(ftok2->str());
 }
 
 bool astIsRangeBasedForDecl(const Token* tok)

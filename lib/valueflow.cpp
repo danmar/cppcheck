@@ -7498,8 +7498,8 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
                 }))
                     return Action::Read | Action::Write | Action::Incremental;
             }
-        } else if (Token::Match(tok, "%name% . %name% (")) {
-            Library::Container::Action action = container->getAction(tok->strAt(2));
+        } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
+            Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
             if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP) {
                 std::vector<const Token*> args = getArguments(tok->tokAt(3));
                 if (args.size() < 2)
@@ -7535,8 +7535,8 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
                     }
                 }
             }
-        } else if (Token::Match(tok, "%name% . %name% (")) {
-            Library::Container::Action action = container->getAction(tok->strAt(2));
+        } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
+            Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
             if (action == Library::Container::Action::PUSH)
                 val->intvalue++;
             if (action == Library::Container::Action::POP)
@@ -7661,29 +7661,34 @@ bool isContainerSizeChanged(const Token* tok, const Settings* settings, int dept
         return false;
     if (!tok->valueType() || !tok->valueType()->container)
         return true;
-    if (Token::Match(tok, "%name% %assign%|<<"))
+    if (astIsLHS(tok) && Token::Match(tok->astParent(), "%assign%|<<"))
         return true;
-    if (Token::Match(tok, "%var% [") && tok->valueType()->container->stdAssociativeLike)
+    const Library::Container* container = tok->valueType()->container;
+    // Views cannot change container size
+    if (container->view)
+        return false;
+    if (astIsLHS(tok) && Token::simpleMatch(tok->astParent(), "["))
+        return container->stdAssociativeLike;
+    Library::Container::Action action = astContainerAction(tok);
+    Library::Container::Yield yield = astContainerYield(tok);
+    switch (action) {
+    case Library::Container::Action::RESIZE:
+    case Library::Container::Action::CLEAR:
+    case Library::Container::Action::PUSH:
+    case Library::Container::Action::POP:
+    case Library::Container::Action::CHANGE:
+    case Library::Container::Action::INSERT:
+    case Library::Container::Action::ERASE:
         return true;
-    if (Token::Match(tok, "%name% . %name% (")) {
-        Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
-        Library::Container::Yield yield = tok->valueType()->container->getYield(tok->strAt(2));
-        switch (action) {
-        case Library::Container::Action::RESIZE:
-        case Library::Container::Action::CLEAR:
-        case Library::Container::Action::PUSH:
-        case Library::Container::Action::POP:
-        case Library::Container::Action::CHANGE:
-        case Library::Container::Action::INSERT:
-        case Library::Container::Action::ERASE:
-            return true;
-        case Library::Container::Action::NO_ACTION: // might be unknown action
+    case Library::Container::Action::NO_ACTION:
+        // Is this an unknown member function call?
+        if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% ("))
             return yield == Library::Container::Yield::NO_YIELD;
-        case Library::Container::Action::FIND:
-        case Library::Container::Action::CHANGE_CONTENT:
-        case Library::Container::Action::CHANGE_INTERNAL:
-            break;
-        }
+        break;
+    case Library::Container::Action::FIND:
+    case Library::Container::Action::CHANGE_CONTENT:
+    case Library::Container::Action::CHANGE_INTERNAL:
+        break;
     }
     if (isContainerSizeChangedByFunction(tok, settings, depth))
         return true;
@@ -7795,16 +7800,17 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
             continue;
         if (!astIsContainer(tok))
             continue;
-        if (Token::Match(tok->astParent(), ". %name% (")) {
-            Library::Container::Yield yield = getLibraryContainer(tok)->getYield(tok->astParent()->strAt(1));
+        const Token* ftok = nullptr;
+        Library::Container::Yield yield = astContainerYield(tok, &ftok);
+        if (ftok) {
             ValueFlow::Value v(0);
             v.setKnown();
             if (yield == Library::Container::Yield::START_ITERATOR) {
                 v.valueType = ValueFlow::Value::ValueType::ITERATOR_START;
-                setTokenValue(tok->astParent()->tokAt(2), v, settings);
+                setTokenValue(ftok->next(), v, settings);
             } else if (yield == Library::Container::Yield::END_ITERATOR) {
                 v.valueType = ValueFlow::Value::ValueType::ITERATOR_END;
-                setTokenValue(tok->astParent()->tokAt(2), v, settings);
+                setTokenValue(ftok->next(), v, settings);
             }
         }
     }
