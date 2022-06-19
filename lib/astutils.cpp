@@ -865,7 +865,7 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
     return false;
 }
 
-bool isAliasOf(const Token *tok, const Token* expr, bool* inconclusive)
+bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive)
 {
     const bool pointer = astIsPointer(tok);
     const ValueFlow::Value* value = nullptr;
