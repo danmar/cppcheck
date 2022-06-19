@@ -181,7 +181,8 @@ public:
      * @param type Token which will contain e.g. "int", "*", or string.
      * @return sizeof for given type, or 0 if it can't be calculated.
      */
-    nonneg int sizeOfType(const Token *type) const;
+    nonneg int sizeOfType(const Token* type) const;
+    nonneg int sizeOfType(const std::string& type) const;
 
     void simplifyDebug();
     /**
@@ -232,13 +233,6 @@ public:
 
     /** Add parentheses for sizeof: sizeof x => sizeof(x) */
     void sizeofAddParentheses();
-
-    /**
-     * Replace sizeof() to appropriate size.
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifySizeof();
 
     /**
      * Simplify variable declarations (split up)
@@ -336,16 +330,6 @@ public:
     bool simplifyUsing();
 
     /**
-     * Simplify casts
-     */
-    void simplifyCasts();
-
-    /**
-     * Change (multiple) arrays to (multiple) pointers.
-     */
-    void simplifyUndefinedSizeArray();
-
-    /**
      * A simplify function that replaces a variable with its value in cases
      * when the value is known. e.g. "x=10; if(x)" => "x=10;if(10)"
      *
@@ -373,9 +357,6 @@ public:
      * 'return', 'throw', 'goto', 'break' and 'continue'
      */
     void simplifyFlowControl();
-
-    /** Expand nested strcat() calls. */
-    void simplifyNestedStrcat();
 
     /** Simplify "if else" */
     void elseif();
@@ -490,11 +471,6 @@ public:
     bool hasIfdef(const Token *start, const Token *end) const;
 
 private:
-
-    /**
-     * Simplify while(func(f))
-     */
-    void simplifyFuncInWhile();
 
     /** Simplify pointer to standard type (C only) */
     void simplifyPointerToStandardType();

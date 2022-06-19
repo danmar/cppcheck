@@ -139,7 +139,8 @@ bool astIsContainer(const Token *tok);
 bool astIsContainerView(const Token* tok);
 bool astIsContainerOwned(const Token* tok);
 
-Library::Container::Action astContainerAction(const Token* tok);
+Library::Container::Action astContainerAction(const Token* tok, const Token** ftok = nullptr);
+Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok = nullptr);
 
 /** Is given token a range-declaration in a range-based for loop */
 bool astIsRangeBasedForDecl(const Token* tok);

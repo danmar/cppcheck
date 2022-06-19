@@ -1,3 +1,4 @@
 release notes for cppcheck-2.9
 
 - restored check for negative allocation (new[]) and negative VLA sizes from cppcheck 1.87 (LCppC backport)
+- replaced hardcoded check for pipe() buffer size by library configuration option (LCppC backport)

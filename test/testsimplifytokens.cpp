@@ -52,8 +52,6 @@ private:
         settings_std.checkUnusedTemplates = true;
         settings_windows.checkUnusedTemplates = true;
 
-        TEST_CASE(cast);
-
         TEST_CASE(combine_strings);
         TEST_CASE(combine_wstrings);
         TEST_CASE(combine_ustrings);
@@ -72,28 +70,6 @@ private:
         TEST_CASE(dontRemoveIncrement);
 
         TEST_CASE(elseif1);
-
-        TEST_CASE(sizeof_array);
-        TEST_CASE(sizeof5);
-        TEST_CASE(sizeof6);
-        TEST_CASE(sizeof7);
-        TEST_CASE(sizeof8);
-        TEST_CASE(sizeof9);
-        TEST_CASE(sizeof10);
-        TEST_CASE(sizeof11);
-        TEST_CASE(sizeof12);
-        TEST_CASE(sizeof13);
-        TEST_CASE(sizeof14);
-        TEST_CASE(sizeof15);
-        TEST_CASE(sizeof16);
-        TEST_CASE(sizeof17);
-        TEST_CASE(sizeof18);
-        TEST_CASE(sizeof19);    // #1891 - sizeof 'x'
-        TEST_CASE(sizeof20);    // #2024 - sizeof a)
-        TEST_CASE(sizeof21);    // #2232 - sizeof...(Args)
-        TEST_CASE(sizeof22);
-        TEST_CASE(sizeofsizeof);
-        TEST_CASE(casting);
 
         TEST_CASE(namespaces);
 
@@ -119,10 +95,6 @@ private:
         TEST_CASE(comparisons);
         TEST_CASE(simplifyCalculations);
 
-        // Simplify nested strcat() calls
-        TEST_CASE(strcat1);
-        TEST_CASE(strcat2);
-
         TEST_CASE(simplifyOperator1);
         TEST_CASE(simplifyOperator2);
 
@@ -132,9 +104,6 @@ private:
         TEST_CASE(pointeralias2);
         TEST_CASE(pointeralias3);
         TEST_CASE(pointeralias4);
-
-        // while(fclose(f)); => r = fclose(f); while(r){r=fclose(f);}
-        TEST_CASE(simplifyFuncInWhile);
 
         // struct ABC { } abc; => struct ABC { }; ABC abc;
         TEST_CASE(simplifyStructDecl1);
@@ -162,8 +131,6 @@ private:
         TEST_CASE(simplifyFunctionReturn);
 
         TEST_CASE(consecutiveBraces);
-
-        TEST_CASE(undefinedSizeArray);
 
         TEST_CASE(simplifyOverride); // ticket #5069
         TEST_CASE(simplifyNestedNamespace);
@@ -227,7 +194,6 @@ private:
         TEST_CASE(simplifyKnownVariables63);    // #10798
         TEST_CASE(simplifyKnownVariablesBailOutAssign1);
         TEST_CASE(simplifyKnownVariablesBailOutAssign2);
-        TEST_CASE(simplifyKnownVariablesBailOutAssign3); // #4395 - nested assignments
         TEST_CASE(simplifyKnownVariablesBailOutFor1);
         TEST_CASE(simplifyKnownVariablesBailOutFor2);
         TEST_CASE(simplifyKnownVariablesBailOutFor3);
@@ -240,27 +206,8 @@ private:
         TEST_CASE(simplifyKnownVariablesPointerAliasFunctionCall); // #7440
         TEST_CASE(simplifyKnownVariablesNamespace); // #10059
 
-        TEST_CASE(simplifyCasts1);
-        TEST_CASE(simplifyCasts2);
-        TEST_CASE(simplifyCasts3);
-        TEST_CASE(simplifyCasts4);
-        TEST_CASE(simplifyCasts5);
-        TEST_CASE(simplifyCasts7);
-        TEST_CASE(simplifyCasts8);
-        TEST_CASE(simplifyCasts9);
-        TEST_CASE(simplifyCasts10);
-        TEST_CASE(simplifyCasts11);
-        TEST_CASE(simplifyCasts12);
-        TEST_CASE(simplifyCasts13);
-        TEST_CASE(simplifyCasts14);
-        TEST_CASE(simplifyCasts15); // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
-        TEST_CASE(simplifyCasts16); // #6278
-        TEST_CASE(simplifyCasts17); // #6110 - don't remove any parentheses in 'a(b)(c)'
-
         TEST_CASE(simplify_constants2);
-        TEST_CASE(simplify_constants3);
         TEST_CASE(simplify_constants4);
-        TEST_CASE(simplify_constants5);
         TEST_CASE(simplify_constants6);     // Ticket #5625: Ternary operator as template parameter
         TEST_CASE(simplifyVarDeclInitLists);
     }
@@ -271,22 +218,6 @@ private:
 
         settings0.platform(type);
         Tokenizer tokenizer(&settings0, this);
-
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-
-        if (simplify)
-            tokenizer.simplifyTokenList2();
-
-        return tokenizer.tokens()->stringifyList(nullptr, !simplify);
-    }
-
-#define tokWithWindows(...) tokWithWindows_(__FILE__, __LINE__, __VA_ARGS__)
-    std::string tokWithWindows_(const char* file, int line, const char code[], bool simplify = true, Settings::PlatformType type = Settings::Native) {
-        errout.str("");
-
-        settings_windows.platform(type);
-        Tokenizer tokenizer(&settings_windows, this);
 
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
@@ -321,19 +252,6 @@ private:
         tokenizer.simplifyTokenList2();
 
         return tokenizer.tokens()->stringifyList(false, false, false, true, false);
-    }
-
-#define tokWithStdLib(code) tokWithStdLib_(code, __FILE__, __LINE__)
-    std::string tokWithStdLib_(const char code[], const char* file, int line) {
-        errout.str("");
-
-        Tokenizer tokenizer(&settings_std, this);
-
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-        tokenizer.simplifyTokenList2();
-
-        return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
@@ -1715,27 +1633,6 @@ private:
     }
 
 
-    void cast() {
-        ASSERT_EQUALS("{ if ( p == 0 ) { ; } }", tok("{if (p == (char *)0);}"));
-        ASSERT_EQUALS("{ return str ; }", tok("{return (char *)str;}"));
-
-        ASSERT_EQUALS("{ if ( * a ) }", tok("{if ((char)*a)}"));
-        ASSERT_EQUALS("{ if ( & a ) }", tok("{if ((int)&a)}"));
-        ASSERT_EQUALS("{ if ( * a ) }", tok("{if ((unsigned int)(unsigned char)*a)}"));
-        ASSERT_EQUALS("class A { A operator* ( int ) ; } ;", tok("class A { A operator *(int); };"));
-        ASSERT_EQUALS("class A { A operator* ( int ) const ; } ;", tok("class A { A operator *(int) const; };"));
-        ASSERT_EQUALS("{ if ( p == 0 ) { ; } }", tok("{ if (p == (char *)(char *)0); }"));
-        ASSERT_EQUALS("{ if ( p == 0 ) { ; } }", tok("{ if (p == (char **)0); }"));
-
-        // no simplification as the cast may be important here. see #2897 for example
-        ASSERT_EQUALS("; * ( ( char * ) p + 1 ) = 0 ;", tok("; *((char *)p + 1) = 0;"));
-
-        ASSERT_EQUALS("{ if ( 1 ) }", tok("{ if ((unsigned char)1) }")); // #4164
-        ASSERT_EQUALS("f ( 200 )", tok("f((unsigned char)200)"));
-        ASSERT_EQUALS("f ( ( char ) 1234 )", tok("f((char)1234)")); // don't simplify downcast
-    }
-
-
 
     void combine_strings() {
         const char code1[] =  "void foo()\n"
@@ -2099,642 +1996,6 @@ private:
             ASSERT_EQUALS(expected, tokenizeDebugListing(src));
         }
     }
-
-
-    unsigned int sizeofFromTokenizer(const char type[]) {
-        Tokenizer tokenizer(&settings0, this);
-        tokenizer.fillTypeSizes();
-        Token tok1;
-        tok1.str(type);
-        return tokenizer.sizeOfType(&tok1);
-    }
-
-
-
-    void sizeof_array() {
-        const char *code;
-
-        code = "void foo()\n"
-               "{\n"
-               "    int i[4];\n"
-               "    sizeof(i);\n"
-               "    sizeof(*i);\n"
-               "}\n";
-        ASSERT_EQUALS("void foo ( ) { int i [ 4 ] ; 16 ; 4 ; }", tok(code));
-
-        code = "static int i[4];\n"
-               "void f()\n"
-               "{\n"
-               "    int i[10];\n"
-               "    sizeof(i);\n"
-               "}\n";
-        ASSERT_EQUALS("static int i [ 4 ] ; void f ( ) { int i [ 10 ] ; 40 ; }", tok(code));
-        {
-            code = "int i[10];\n"
-                   "sizeof(i[0]);\n";
-            ASSERT_EQUALS("int i [ 10 ] ; 4 ;", tok(code));
-
-            code = "int i[10];\n"
-                   "sizeof i[0];\n";
-            ASSERT_EQUALS("int i [ 10 ] ; 4 ;", tok(code));
-        }
-
-        code = "char i[2][20];\n"
-               "sizeof(i[1]);\n"
-               "sizeof(i);";
-        ASSERT_EQUALS("char i [ 2 ] [ 20 ] ; 20 ; 40 ;", tok(code));
-
-        code = "char i[2][20][30];\n"
-               "sizeof(i[1][4][2]);\n"
-               "sizeof(***i);\n"
-               "sizeof(i[1][4]);\n"
-               "sizeof(**i);\n"
-               "sizeof(i[1]);\n"
-               "sizeof(*i);\n"
-               "sizeof(i);";
-        ASSERT_EQUALS("char i [ 2 ] [ 20 ] [ 30 ] ; 1 ; 1 ; 30 ; 30 ; 600 ; 600 ; 1200 ;", tok(code));
-
-        code = "sizeof(char[20]);\n"
-               "sizeof(char[20][3]);\n"
-               "sizeof(char[unknown][3]);";
-        ASSERT_EQUALS("20 ; 60 ; sizeof ( char [ unknown ] [ 3 ] ) ;", tok(code));
-
-        code = "char(*Helper())[1];\n"
-               "sizeof(*Helper());\n";
-        TODO_ASSERT_EQUALS("char ( * Helper ( ) ) [ 1 ] ; 1 ;", "char ( * Helper ( ) ) [ 1 ] ; sizeof ( * Helper ( ) ) ;", tok(code));
-    }
-
-    void sizeof5() {
-        const char code[] =
-            "{"
-            "const char * names[2];"
-            "for (int i = 0; i != sizeof(names[0]); i++)"
-            "{}"
-            "}";
-        std::ostringstream expected;
-        expected << "{ const char * names [ 2 ] ; for ( int i = 0 ; i != " << sizeofFromTokenizer("*") << " ; i ++ ) { } }";
-        ASSERT_EQUALS(expected.str(), tok(code));
-    }
-
-    void sizeof6() {
-        const char code[] = ";int i;\n"
-                            "sizeof(i);\n";
-
-        std::ostringstream expected;
-        expected << "; int i ; " << sizeof(int) << " ;";
-
-        ASSERT_EQUALS(expected.str(), tok(code));
-    }
-
-    void sizeof7() {
-        const char code[] = ";INT32 i[10];\n"
-                            "sizeof(i[0]);\n";
-        ASSERT_EQUALS("; INT32 i [ 10 ] ; sizeof ( i [ 0 ] ) ;", tok(code, true, Settings::Native));
-        ASSERT_EQUALS("; int i [ 10 ] ; 4 ;", tokWithWindows(code, true, Settings::Win32A));
-    }
-
-    void sizeof8() {
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "  char* ptrs[2];\n"
-                                "  a = sizeof( ptrs );\n"
-                                "}\n";
-            std::ostringstream oss;
-            oss << (sizeofFromTokenizer("*") * 2);
-            ASSERT_EQUALS("void f ( ) { char * ptrs [ 2 ] ; a = " + oss.str() + " ; }", tok(code));
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "  char* ptrs[55];\n"
-                                "  a = sizeof( ptrs );\n"
-                                "}\n";
-            std::ostringstream oss;
-            oss << (sizeofFromTokenizer("*") * 55);
-            ASSERT_EQUALS("void f ( ) { char * ptrs [ 55 ] ; a = " + oss.str() + " ; }", tok(code));
-        }
-
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "  char* ptrs;\n"
-                                "  a = sizeof( ptrs );\n"
-                                "}\n";
-            std::ostringstream oss;
-            oss << sizeofFromTokenizer("*");
-            ASSERT_EQUALS("void f ( ) { char * ptrs ; a = " + oss.str() + " ; }", tok(code));
-        }
-    }
-
-    void sizeof9() {
-        // ticket #487
-        {
-            const char code[] = "; const char *str = \"1\"; sizeof(str);";
-
-            std::ostringstream expected;
-            expected << "; const char * str ; str = \"1\" ; " << sizeofFromTokenizer("*") << " ;";
-
-            ASSERT_EQUALS(expected.str(), tok(code));
-        }
-
-        {
-            const char code[] = "; const char str[] = \"1\"; sizeof(str);";
-
-            std::ostringstream expected;
-            expected << "; const char str [ 2 ] = \"1\" ; " << sizeofFromTokenizer("char")*2 << " ;";
-
-            ASSERT_EQUALS(expected.str(), tok(code));
-        }
-
-        {
-            // Ticket #799
-            const char code[] = "; const char str[] = {'1'}; sizeof(str);";
-            ASSERT_EQUALS("; const char str [ 1 ] = { '1' } ; 1 ;", tok(code));
-        }
-
-        {
-            // Ticket #2087
-            const char code[] = "; const char str[] = {\"abc\"}; sizeof(str);";
-            ASSERT_EQUALS("; const char str [ 4 ] = \"abc\" ; 4 ;", tok(code));
-        }
-
-        // ticket #716 - sizeof string
-        {
-            std::ostringstream expected;
-            expected << "; " << (sizeof "123") << " ;";
-
-            ASSERT_EQUALS(expected.str(), tok("; sizeof \"123\";"));
-            ASSERT_EQUALS(expected.str(), tok("; sizeof(\"123\");"));
-        }
-
-        {
-            const char code[] = "void f(char *a,char *b, char *c)"
-                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
-            std::ostringstream expected;
-            expected << "void f ( char * a , char * b , char * c ) { g ( " <<
-                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), tok(code));
-        }
-
-        {
-            const char code[] = "void f(char a,char b, char c)"
-                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
-            std::ostringstream expected;
-            expected << "void f ( char a , char b , char c ) { g ( " <<
-                sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " , " << sizeofFromTokenizer("char") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), tok(code));
-        }
-
-        {
-            const char code[] = "void f(const char *a,const char *b, const char *c)"
-                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
-            std::ostringstream expected;
-            expected << "void f ( const char * a , const char * b , const char * c ) { g ( " <<
-                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), tok(code));
-        }
-
-        {
-            const char code[] = "void f(char a[10],char b[10], char c[10])"
-                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
-            std::ostringstream expected;
-            expected << "void f ( char a [ 10 ] , char b [ 10 ] , char c [ 10 ] ) { g ( " <<
-                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), tok(code));
-        }
-
-        {
-            const char code[] = "void f(const char a[10],const char b[10], const char c[10])"
-                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
-            std::ostringstream expected;
-            expected << "void f ( const char a [ 10 ] , "
-                "const char b [ 10 ] , "
-                "const char c [ 10 ] ) { g ( " <<
-                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), tok(code));
-        }
-
-        {
-            const char code[] = "void f(const char *a[10],const char *b[10], const char *c[10])"
-                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
-            std::ostringstream expected;
-            expected << "void f ( const char * a [ 10 ] , "
-                "const char * b [ 10 ] , "
-                "const char * c [ 10 ] ) { g ( " <<
-                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), tok(code));
-        }
-
-        {
-            const char code[] = "void f(char *a[10],char *b[10], char *c[10])"
-                                "{g(sizeof(a),sizeof(b),sizeof(c));}";
-            std::ostringstream expected;
-            expected << "void f ( char * a [ 10 ] , char * b [ 10 ] , char * c [ 10 ] ) { g ( " <<
-                sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " , " << sizeofFromTokenizer("*") << " ) ; }";
-            ASSERT_EQUALS(expected.str(), tok(code));
-        }
-
-        {
-            std::ostringstream expected;
-            expected << "; " << sizeof("\"quote\"");
-            ASSERT_EQUALS(expected.str(), tok("; sizeof(\"\\\"quote\\\"\")"));
-        }
-
-        {
-            std::ostringstream expected;
-            expected << "void f ( ) { char str [ 100 ] = \"100\" ; " << sizeofFromTokenizer("char")*100 << " }";
-            ASSERT_EQUALS(expected.str(), tok("void f ( ) { char str [ 100 ] = \"100\" ; sizeof ( str ) }"));
-        }
-    }
-
-    void sizeof10() {
-        // ticket #809
-        const char code[] = "int m ; "
-                            "compat_ulong_t um ; "
-                            "long size ; size = sizeof ( m ) / sizeof ( um ) ;";
-
-        ASSERT_EQUALS(code, tok(code, true, Settings::Win32A));
-    }
-
-    void sizeof11() {
-        // ticket #827
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    char buf2[4];\n"
-                            "    sizeof buf2;\n"
-                            "}\n"
-                            "\n"
-                            "void g()\n"
-                            "{\n"
-                            "    struct A a[2];\n"
-                            "    char buf[32];\n"
-                            "    sizeof buf;\n"
-                            "}";
-
-        const char expected[] = "void f ( ) "
-                                "{"
-                                " char buf2 [ 4 ] ;"
-                                " 4 ; "
-                                "} "
-                                ""
-                                "void g ( ) "
-                                "{"
-                                " struct A a [ 2 ] ;"
-                                " char buf [ 32 ] ;"
-                                " 32 ; "
-                                "}";
-
-        ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void sizeof12() {
-        // ticket #827
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    int *p;\n"
-                            "    (sizeof *p);\n"
-                            "}";
-
-        const char expected[] = "void f ( ) "
-                                "{"
-                                " int * p ;"
-                                " 4 ; "
-                                "}";
-
-        ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void sizeof13() {
-        // ticket #851
-        const char code[] = "int main()\n"
-                            "{\n"
-                            "    char *a;\n"
-                            "    a = malloc(sizeof(*a));\n"
-                            "}\n"
-                            "\n"
-                            "struct B\n"
-                            "{\n"
-                            "    char * b[2];\n"
-                            "};";
-        const char expected[] = "int main ( ) "
-                                "{"
-                                " char * a ;"
-                                " a = malloc ( 1 ) ; "
-                                "} "
-                                "struct B "
-                                "{"
-                                " char * b [ 2 ] ; "
-                                "} ;";
-        ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void sizeof14() {
-        // ticket #954
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    A **a;\n"
-                            "    int aa = sizeof *(*a)->b;\n"
-                            "}\n";
-        const char expected[] = "void f ( ) "
-                                "{"
-                                " A * * a ;"
-                                " int aa ; aa = sizeof ( * ( * a ) . b ) ; "
-                                "}";
-        ASSERT_EQUALS(expected, tok(code));
-
-        // #5064 - sizeof !! (a == 1);
-        ASSERT_EQUALS("sizeof ( ! ! ( a == 1 ) ) ;", tok("sizeof !!(a==1);"));
-    }
-
-    void sizeof15() {
-        // ticket #1020
-        tok("void f()\n"
-            "{\n"
-            "    int *n;\n"
-            "    sizeof *(n);\n"
-            "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void sizeof16() {
-        // ticket #1027
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    int a;\n"
-                            "    printf(\"%i\", sizeof a++);\n"
-                            "}\n";
-        ASSERT_EQUALS("void f ( ) { int a ; printf ( \"%i\" , sizeof ( a ++ ) ) ; }", tok(code));
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void sizeof17() {
-        // ticket #1050
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    sizeof 1;\n"
-                            "    while (0);\n"
-                            "}\n";
-        ASSERT_EQUALS("void f ( ) { sizeof ( 1 ) ; while ( 0 ) { ; } }", tok(code));
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void sizeof18() {
-        {
-            std::ostringstream expected;
-            expected << sizeof(short int);
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(short int);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(unsigned short int);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(short unsigned int);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(signed short int);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-        }
-
-        {
-            std::ostringstream expected;
-            expected << sizeof(long long);
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(long long);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(signed long long);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(unsigned long long);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(long unsigned long);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(long long int);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(signed long long int);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(unsigned long long int);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-
-            {
-                const char code[] = "void f()\n"
-                                    "{\n"
-                                    "    sizeof(long unsigned long int);\n"
-                                    "}\n";
-                ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-                ASSERT_EQUALS("", errout.str());
-            }
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    sizeof(char*);\n"
-                                "}\n";
-            std::ostringstream expected;
-            expected << sizeof(int*);
-            ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-            ASSERT_EQUALS("", errout.str());
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    sizeof(unsigned int*);\n"
-                                "}\n";
-            std::ostringstream expected;
-            expected << sizeof(int*);
-            ASSERT_EQUALS("void f ( ) { " + expected.str() + " ; }", tok(code));
-            ASSERT_EQUALS("", errout.str());
-        }
-    }
-
-    void sizeof19() {
-        // ticket #1891 - sizeof 'x'
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    sizeof 'x';\n"
-                                "}\n";
-            std::ostringstream sz;
-            sz << sizeof('x');
-            ASSERT_EQUALS("void f ( ) { " + sz.str() + " ; }", tok(code));
-            ASSERT_EQUALS("", errout.str());
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    sizeof('x');\n"
-                                "}\n";
-            std::ostringstream sz;
-            sz << sizeof('x');
-            ASSERT_EQUALS("void f ( ) { " + sz.str() + " ; }", tok(code));
-            ASSERT_EQUALS("", errout.str());
-        }
-    }
-
-    void sizeof20() {
-        // ticket #2024 - sizeof a)
-        const char code[] = "struct struct_a {\n"
-                            "  char a[20];\n"
-                            "};\n"
-                            "\n"
-                            "void foo() {\n"
-                            "  struct_a a;\n"
-                            "  append(sizeof a).append();\n"
-                            "}\n";
-        ASSERT_EQUALS("struct struct_a { char a [ 20 ] ; } ; "
-                      "void foo ( ) {"
-                      " struct_a a ;"
-                      " append ( sizeof ( a ) ) . append ( ) ; "
-                      "}", tok(code));
-    }
-
-    void sizeof21() {
-        // ticket #2232 - sizeof...(Args)
-        const char code[] = "struct Internal {\n"
-                            "    int operator()(const Args&... args) const {\n"
-                            "        int n = sizeof...(Args);\n"
-                            "        return n;\n"
-                            "    }\n"
-                            "};\n"
-                            "\n"
-                            "int main() {\n"
-                            "    Internal internal;\n"
-                            "    int n = 0; n = internal(1);\n"
-                            "    return 0;\n"
-                            "}\n";
-
-        // don't segfault
-        tok(code);
-    }
-
-    void sizeof22() {
-        // sizeof from library
-        const char code[] = "foo(sizeof(uint32_t), sizeof(std::uint32_t));";
-        TODO_ASSERT_EQUALS("foo ( 4 , 4 ) ;", "foo ( 4 , sizeof ( std :: uint32_t ) ) ;", tokWithStdLib(code));
-    }
-
-    void sizeofsizeof() {
-        // ticket #1682
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    sizeof sizeof 1;\n"
-                            "}\n";
-        ASSERT_EQUALS("void f ( ) { sizeof ( sizeof ( 1 ) ) ; }", tok(code));
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void casting() {
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "for (int i = 0; i < static_cast<int>(3); ++i) {}\n"
-                                "}\n";
-
-            const char expected[] = "void f ( ) { for ( int i = 0 ; i < 3 ; ++ i ) { } }";
-
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    p = const_cast<char *> qtu ();\n"
-                                "}\n";
-
-            const char expected[] = "void f ( ) { p = const_cast < char * > qtu ( ) ; }";
-
-            ASSERT_EQUALS(expected, tok(code));
-        }
-
-        {
-            // ticket #645
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    return dynamic_cast<Foo *>((bar()));\n"
-                                "}\n";
-            const char expected[] = "void f ( ) { return ( bar ( ) ) ; }";
-
-            ASSERT_EQUALS(expected, tok(code));
-        }
-    }
-
 
 
     void namespaces() {
@@ -3264,30 +2525,8 @@ private:
                       tok("void foo ( int b ) { int a = b | 0 ; bar ( a ) ; }"));
         ASSERT_EQUALS("void foo ( int b ) { int a ; a = b ; bar ( a ) ; }",
                       tok("void foo ( int b ) { int a = 0 | b ; bar ( a ) ; }"));
-
     }
 
-
-    void strcat1() {
-        const char code[] = "; strcat(strcat(strcat(strcat(strcat(strcat(dst, \"this \"), \"\"), \"is \"), \"a \"), \"test\"), \".\");";
-        const char expect[] = "; "
-                              "strcat ( dst , \"this \" ) ; "
-                              "strcat ( dst , \"\" ) ; "
-                              "strcat ( dst , \"is \" ) ; "
-                              "strcat ( dst , \"a \" ) ; "
-                              "strcat ( dst , \"test\" ) ; "
-                              "strcat ( dst , \".\" ) ;";
-
-        ASSERT_EQUALS(expect, tok(code));
-    }
-    void strcat2() {
-        const char code[] = "; strcat(strcat(dst, foo[0]), \" \");";
-        const char expect[] = "; "
-                              "strcat ( dst , foo [ 0 ] ) ; "
-                              "strcat ( dst , \" \" ) ;";
-
-        ASSERT_EQUALS(expect, tok(code));
-    }
 
     void simplifyOperator1() {
         // #3237 - error merging namespaces with operators
@@ -3406,41 +2645,6 @@ private:
                             "}\n";
         const char expected[] = "int f ( ) { int i ; int * p ; i = 5 ; return 5 ; }";
         ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void simplifyFuncInWhile() {
-        ASSERT_EQUALS("{ "
-                      "int cppcheck:r1 = fclose ( f ) ; "
-                      "while ( cppcheck:r1 ) "
-                      "{ "
-                      "foo ( ) ; "
-                      "cppcheck:r1 = fclose ( f ) ; "
-                      "} "
-                      "}",
-                      tok("{while(fclose(f))foo();}"));
-
-        ASSERT_EQUALS("{ "
-                      "int cppcheck:r1 = fclose ( f ) ; "
-                      "while ( cppcheck:r1 ) "
-                      "{ "
-                      "; cppcheck:r1 = fclose ( f ) ; "
-                      "} "
-                      "}",
-                      tok("{while(fclose(f));}"));
-
-        ASSERT_EQUALS("{ "
-                      "int cppcheck:r1 = fclose ( f ) ; "
-                      "while ( cppcheck:r1 ) "
-                      "{ "
-                      "; cppcheck:r1 = fclose ( f ) ; "
-                      "} "
-                      "int cppcheck:r2 = fclose ( g ) ; "
-                      "while ( cppcheck:r2 ) "
-                      "{ "
-                      "; cppcheck:r2 = fclose ( g ) ; "
-                      "} "
-                      "}",
-                      tok("{while(fclose(f)); while(fclose(g));}"));
     }
 
     void simplifyStructDecl1() {
@@ -3925,22 +3129,12 @@ private:
         ASSERT_EQUALS("void f ( ) { { scope_lock lock ; foo ( ) ; } { scope_lock lock ; bar ( ) ; } }", tok("void f () { {scope_lock lock; foo();} {scope_lock lock; bar();} }", true));
     }
 
-    void undefinedSizeArray() {
-        ASSERT_EQUALS("int * x ;", tok("int x [];"));
-        ASSERT_EQUALS("int * * x ;", tok("int x [][];"));
-        ASSERT_EQUALS("int * * x ;", tok("int * x [];"));
-        ASSERT_EQUALS("int * * * x ;", tok("int * x [][];"));
-        ASSERT_EQUALS("int * * * * x ;", tok("int * * x [][];"));
-        ASSERT_EQUALS("void f ( int x [ ] , double y [ ] ) { }", tok("void f(int x[], double y[]) { }"));
-        ASSERT_EQUALS("int x [ 13 ] = { [ 11 ] = 2 , [ 12 ] = 3 } ;", tok("int x[] = {[11]=2, [12]=3};"));
-    }
-
     void simplifyOverride() { // ticket #5069
         const char code[] = "void fun() {\n"
                             "    unsigned char override[] = {0x01, 0x02};\n"
                             "    doSomething(override, sizeof(override));\n"
                             "}\n";
-        ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 0x01 , 0x02 } ; doSomething ( override , 2 ) ; }",
+        ASSERT_EQUALS("void fun ( ) { char override [ 2 ] = { 0x01 , 0x02 } ; doSomething ( override , sizeof ( override ) ) ; }",
                       tok(code, true));
     }
 
@@ -5363,20 +4557,6 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
-    void simplifyKnownVariablesBailOutAssign3() { // #4395 - nested assignments
-        const char code[] = "void f() {\n"
-                            "    int *p = 0;\n"
-                            "    a = p = (VdbeCursor*)pMem->z;\n"
-                            "    return p ;\n"
-                            "}\n";
-        const char expected[] = "void f ( ) {\n"
-                                "int * p ; p = 0 ;\n"
-                                "a = p = pMem . z ;\n"
-                                "return p ;\n"
-                                "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-    }
-
     void simplifyKnownVariablesBailOutFor1() {
         const char code[] = "void foo() {\n"
                             "    for (int i = 0; i < 10; ++i) { }\n"
@@ -5606,105 +4786,6 @@ private:
     }
 
 
-    // Don’t remove "(int *)"..
-    void simplifyCasts1() {
-        const char code[] = "int *f(int *);";
-        ASSERT_EQUALS("int * f ( int * ) ;", tok(code));
-    }
-
-    // remove static_cast..
-    void simplifyCasts2() {
-        const char code[] = "t = (static_cast<std::vector<int> *>(&p));\n";
-        ASSERT_EQUALS("t = ( & p ) ;", tok(code));
-    }
-
-    void simplifyCasts3() {
-        // ticket #961
-        const char code[] = "assert (iplen >= (unsigned) ipv4->ip_hl * 4 + 20);";
-        const char expected[] = "assert ( iplen >= ipv4 . ip_hl * 4 + 20 ) ;";
-        ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void simplifyCasts4() {
-        // ticket #970
-        const char code[] = "{if (a >= (unsigned)(b)) {}}";
-        const char expected[] = "{ if ( a >= ( int ) ( b ) ) { } }";
-        ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void simplifyCasts5() {
-        // ticket #1817
-        ASSERT_EQUALS("a . data = f ;", tok("a->data = reinterpret_cast<void*>(static_cast<intptr_t>(f));"));
-    }
-
-    void simplifyCasts7() {
-        ASSERT_EQUALS("str = malloc ( 3 )", tok("str=(char **)malloc(3)"));
-    }
-
-    void simplifyCasts8() {
-        ASSERT_EQUALS("ptr1 = ptr2", tok("ptr1=(int *   **)ptr2"));
-    }
-
-    void simplifyCasts9() {
-        ASSERT_EQUALS("f ( ( double ) ( v1 ) * v2 )", tok("f((double)(v1)*v2)"));
-        ASSERT_EQUALS("int v1 ; f ( ( double ) ( v1 ) * v2 )", tok("int v1; f((double)(v1)*v2)"));
-        ASSERT_EQUALS("f ( ( A ) ( B ) & x )", tok("f((A)(B)&x)")); // #4439
-    }
-
-    void simplifyCasts10() {
-        ASSERT_EQUALS("; ( * f ) ( p ) ;", tok("; (*(void (*)(char *))f)(p);"));
-    }
-
-    void simplifyCasts11() {
-        ASSERT_EQUALS("; x = 0 ;", tok("; *(int *)&x = 0;"));
-    }
-
-    void simplifyCasts12() {
-        // #3935 - don't remove this cast
-        ASSERT_EQUALS("; ( ( short * ) data ) [ 5 ] = 0 ;", tokenizeAndStringify("; ((short*)data)[5] = 0;", true));
-    }
-
-    void simplifyCasts13() {
-        // casting deref / address of
-        ASSERT_EQUALS("; int x ; x = * y ;", tok(";int x=(int)*y;"));
-        ASSERT_EQUALS("; int x ; x = & y ;", tok(";int x=(int)&y;"));
-        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) * y ;",
-                           "; int x ; x = * y ;",
-                           tok(";int x=(INT)*y;")); // INT might be a variable
-        TODO_ASSERT_EQUALS("; int x ; x = ( INT ) & y ;",
-                           "; int x ; x = & y ;",
-                           tok(";int x=(INT)&y;")); // INT might be a variable
-
-        // #4899 - False positive on unused variable
-        ASSERT_EQUALS("; float angle ; angle = tilt ;", tok("; float angle = (float) tilt;")); // status quo
-        ASSERT_EQUALS("; float angle ; angle = ( float ) - tilt ;", tok("; float angle = (float) -tilt;"));
-        ASSERT_EQUALS("; float angle ; angle = ( float ) + tilt ;", tok("; float angle = (float) +tilt;"));
-        ASSERT_EQUALS("; int a ; a = ( int ) ~ c ;", tok("; int a = (int)~c;"));
-    }
-
-    void simplifyCasts14() { // const
-        // #5081
-        ASSERT_EQUALS("( ! ( & s ) . a ) ;", tok("(! ( (struct S const *) &s)->a);"));
-        // #5244
-        ASSERT_EQUALS("bar ( & ptr ) ;", tok("bar((const X**)&ptr);"));
-    }
-
-    void simplifyCasts15() { // #5996 - don't remove cast in 'a+static_cast<int>(b?60:0)'
-        ASSERT_EQUALS("a + ( b ? 60 : 0 ) ;",
-                      tok("a + static_cast<int>(b ? 60 : 0);"));
-    }
-
-    void simplifyCasts16() { // #6278
-        ASSERT_EQUALS("Get ( pArray ) ;",
-                      tok("Get((CObject*&)pArray);"));
-    }
-
-    void simplifyCasts17() { // #6110 - don't remove any parentheses in 'a(b)(c)'
-        ASSERT_EQUALS("{ if ( a ( b ) ( c ) >= 3 ) { } }",
-                      tok("{ if (a(b)(c) >= 3) { } }"));
-    }
-
-
     void simplify_constants2() {
         const char code[] =
             "void f( Foo &foo, Foo *foo2 ) {\n"
@@ -5715,33 +4796,12 @@ private:
         ASSERT_EQUALS("void f ( Foo & foo , Foo * foo2 ) { foo . a = 90 ; foo2 . a = 45 ; }", tok(code));
     }
 
-    void simplify_constants3() {
-        const char code[] =
-            "static const char str[] = \"abcd\";\n"
-            "static const unsigned int SZ = sizeof(str);\n"
-            "void f() {\n"
-            "a = SZ;\n"
-            "}\n";
-        const char expected[] =
-            "static const char str [ 5 ] = \"abcd\" ; void f ( ) { a = 5 ; }";
-        ASSERT_EQUALS(expected, tok(code));
-    }
-
     void simplify_constants4() {
         const char code[] = "static const int bSize = 4;\n"
                             "static const int aSize = 50;\n"
                             "x = bSize;\n"
                             "y = aSize;\n";
         ASSERT_EQUALS("x = 4 ; y = 50 ;", tok(code));
-    }
-
-    void simplify_constants5() {
-        const char code[] = "int buffer[10];\n"
-                            "static const int NELEMS = sizeof(buffer)/sizeof(int);\n"
-                            "static const int NELEMS2(sizeof(buffer)/sizeof(int));\n"
-                            "x = NELEMS;\n"
-                            "y = NELEMS2;\n";
-        ASSERT_EQUALS("int buffer [ 10 ] ; x = 10 ; y = 10 ;", tok(code));
     }
 
     void simplify_constants6() { // Ticket #5625
