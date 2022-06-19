@@ -118,7 +118,7 @@ if (BUILD_TESTS)
             if(PARSE_INCONCLUSIVE)
                 set(INCONCLUSIVE "--inconclusive")
             endif()
-            if (${TEST_NAME} IN_LIST SKIP_TESTS)
+            if ("cfg-${TEST_NAME}" IN_LIST SKIP_TESTS)
             else()
                 # TODO: add syntax check
                 add_test(NAME cfg-${TEST_NAME}
