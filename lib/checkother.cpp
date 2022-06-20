@@ -2778,10 +2778,16 @@ void CheckOther::checkRedundantCopy()
 
         const Function* func = tok->previous()->function();
         if (func && func->tokenDef->strAt(-1) == "&") {
-            redundantCopyError(startTok, startTok->str());
+            const Scope* fScope = func->functionScope;
+            if (fScope && fScope->bodyEnd && Token::Match(fScope->bodyEnd->tokAt(-3), "return %var% ;")) {
+                const Token* varTok = fScope->bodyEnd->tokAt(-2);
+                if (varTok->variable() && !varTok->variable()->isGlobal())
+                    redundantCopyError(startTok, startTok->str());
+            }
         }
     }
 }
+
 void CheckOther::redundantCopyError(const Token *tok,const std::string& varname)
 {
     reportError(tok, Severity::performance, "redundantCopyLocalConst",

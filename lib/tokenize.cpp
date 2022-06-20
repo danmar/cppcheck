@@ -11819,8 +11819,7 @@ void Tokenizer::simplifyOperatorName()
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%op% %str% %name%")) {
-            // cppcheck-suppress redundantCopyLocalConst
-            std::string name = tok->strAt(2);
+            const std::string name = tok->strAt(2);
             Token * const str = tok->next();
             str->deleteNext();
             tok->insertToken("operator\"\"" + name);
