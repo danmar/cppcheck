@@ -1019,9 +1019,9 @@ static const std::uint32_t crc32Table[] = {
 
 static void crc32(const std::string &data, uint32_t& crc)
 {
-  crc = std::accumulate(data.begin(), data.end(), crc, [](uint32_t v, char c) {
-      return crc32Table[(v ^ (unsigned char)c) & 0xFF] ^ (v >> 8);
-  });
+    crc = std::accumulate(data.begin(), data.end(), crc, [](uint32_t v, char c) {
+        return crc32Table[(v ^ (unsigned char)c) & 0xFF] ^ (v >> 8);
+    });
 }
 
 uint32_t Preprocessor::calculateChecksum(const simplecpp::TokenList &tokens1, const std::string &toolinfo) const

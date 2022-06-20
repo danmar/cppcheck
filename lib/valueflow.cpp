@@ -6840,7 +6840,7 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
             continue;
         // Make sure all arguments are the same path
         const MathLib::bigint path = arg.begin()->second.path;
-        if (std::any_of(arg.begin(), arg.end(), [&](const std::pair<Key, ValueFlow::Value >& p) {
+        if (std::any_of(arg.begin(), arg.end(), [&](const std::pair<Key, ValueFlow::Value>& p) {
             return p.second.path != path;
         }))
             continue;
