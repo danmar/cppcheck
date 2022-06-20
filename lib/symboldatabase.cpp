@@ -5553,11 +5553,10 @@ Scope *Scope::findInNestedListRecursive(const std::string & name)
 
 const Function *Scope::getDestructor() const
 {
-    for (const Function &f: functionList) {
-        if (f.type == Function::eDestructor)
-            return &f;
-    }
-    return nullptr;
+    auto it = std::find_if(functionList.begin(), functionList.end(), [](const Function& f) {
+        return f.type == Function::eDestructor;
+    });
+    return it == functionList.end() ? nullptr : &*it;
 }
 
 //---------------------------------------------------------------------------
