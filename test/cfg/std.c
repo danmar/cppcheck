@@ -3908,10 +3908,11 @@ void bufferAccessOutOfBounds_strxfrm(void)
 {
     const char src[3] = "abc";
     char dest[1] = "a";
+    // cppcheck-suppress invalidFunctionArgStr
     (void)strxfrm(dest,src,1);
-    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress [bufferAccessOutOfBounds,invalidFunctionArgStr]
     (void)strxfrm(dest,src,2);
-    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress [bufferAccessOutOfBounds,invalidFunctionArgStr]
     (void)strxfrm(dest,src,3);
 }
 
