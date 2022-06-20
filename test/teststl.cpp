@@ -4679,6 +4679,14 @@ private:
               "    return r;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(std::vector<std::string> v) {\n"
+              "    std::string ret;\n"
+              "    for (const std::string& s : v)\n"
+              "        ret += s + '\\n';\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void loopAlgoContainerInsert() {

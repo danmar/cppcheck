@@ -2634,6 +2634,8 @@ void CheckStl::useStlAlgorithm()
             bool useLoopVarInAssign;
             const Token *assignTok = singleAssignInScope(bodyTok, loopVar->varId(), useLoopVarInAssign);
             if (assignTok) {
+                if (astIsContainer(assignTok)) // don't warn for containers, where overloaded operators can be costly
+                    continue;
                 int assignVarId = assignTok->astOperand1()->varId();
                 std::string algo;
                 if (assignVarId == loopVar->varId()) {
