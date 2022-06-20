@@ -356,16 +356,6 @@ public:
      **/
     static nonneg int getStrSize(const Token *tok, const Settings *const settings);
 
-    /**
-     * @return char of C-string at index (possible escaped "\\n")
-     *
-     * Should be called for %%str%% tokens only.
-     *
-     * @param tok token with C-string
-     * @param index position of character
-     **/
-    static std::string getCharAt(const Token *tok, MathLib::bigint index);
-
     const ValueType *valueType() const {
         return mImpl->mValueType;
     }

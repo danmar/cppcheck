@@ -36,6 +36,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <numeric>
 
 class TestSuppressions : public TestFixture {
 public:
@@ -201,10 +202,10 @@ private:
             EXPECT_EQ("", r);
         }
 
-        unsigned int exitCode = 0;
-        for (std::map<std::string, std::string>::const_iterator file = files.begin(); file != files.end(); ++file) {
-            exitCode |= cppCheck.check(file->first, file->second);
-        }
+        unsigned int exitCode = std::accumulate(files.begin(), files.end(), 0U, [&](unsigned int v, const std::pair<std::string, std::string>& f) {
+            return v | cppCheck.check(f.first, f.second);
+        });
+
         if (cppCheck.analyseWholeProgram())
             exitCode |= settings.exitCode;
 

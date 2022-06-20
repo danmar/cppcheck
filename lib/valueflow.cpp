@@ -93,6 +93,7 @@
 #include "programmemory.h"
 #include "reverseanalyzer.h"
 #include "settings.h"
+#include "sourcelocation.h"
 #include "standards.h"
 #include "symboldatabase.h"
 #include "token.h"
@@ -136,6 +137,38 @@ static void bailoutInternal(const std::string& type, TokenList *tokenlist, Error
 #define bailout(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailout", tokenlist, errorLogger, tok, what)
 
 #define bailoutIncompleteVar(tokenlist, errorLogger, tok, what) bailout2("valueFlowBailoutIncompleteVar", tokenlist, errorLogger, tok, what)
+
+static std::string debugString(const ValueFlow::Value& v)
+{
+    std::string kind;
+    switch (v.valueKind) {
+
+    case ValueFlow::Value::ValueKind::Impossible:
+    case ValueFlow::Value::ValueKind::Known:
+        kind = "always";
+        break;
+    case ValueFlow::Value::ValueKind::Inconclusive:
+        kind = "inconclusive";
+        break;
+    case ValueFlow::Value::ValueKind::Possible:
+        kind = "possible";
+        break;
+    }
+    return kind + " " + v.toString();
+}
+
+static void setSourceLocation(ValueFlow::Value& v,
+                              SourceLocation ctx,
+                              const Token* tok,
+                              SourceLocation local = SourceLocation::current())
+{
+    std::string file = ctx.file_name();
+    if (file.empty())
+        return;
+    std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
+                    " => " + local.function_name() + ": " + debugString(v);
+    v.debugPath.emplace_back(tok, s);
+}
 
 static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indirect=-1)
 {
@@ -619,7 +652,10 @@ static ValueFlow::Value truncateImplicitConversion(Token* parent, const ValueFlo
 }
 
 /** set ValueFlow value and perform calculations if possible */
-static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* settings)
+static void setTokenValue(Token* tok,
+                          ValueFlow::Value value,
+                          const Settings* settings,
+                          SourceLocation loc = SourceLocation::current())
 {
     // Skip setting values that are too big since its ambiguous
     if (!value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
@@ -628,6 +664,9 @@ static void setTokenValue(Token* tok, ValueFlow::Value value, const Settings* se
 
     if (!value.isImpossible() && value.isIntValue())
         value = truncateImplicitConversion(tok->astParent(), value, settings);
+
+    if (settings->debugnormal)
+        setSourceLocation(value, loc, tok);
 
     if (!tok->addValue(value))
         return;
@@ -1907,43 +1946,58 @@ ValuePtr<Analyzer> makeReverseAnalyzer(const Token* exprTok, const ValueFlow::Va
 static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
-                                         const ValueFlow::Value& value,
-                                         TokenList* const tokenlist)
+                                         ValueFlow::Value value,
+                                         TokenList* const tokenlist,
+                                         SourceLocation loc = SourceLocation::current())
 {
-    return valueFlowGenericForward(startToken, endToken, makeAnalyzer(exprTok, value, tokenlist), tokenlist->getSettings());
+    if (tokenlist->getSettings()->debugnormal)
+        setSourceLocation(value, loc, startToken);
+    return valueFlowGenericForward(startToken,
+                                   endToken,
+                                   makeAnalyzer(exprTok, std::move(value), tokenlist),
+                                   tokenlist->getSettings());
 }
 
 static Analyzer::Result valueFlowForward(Token* startToken,
                                          const Token* endToken,
                                          const Token* exprTok,
-                                         const std::list<ValueFlow::Value>& values,
-                                         TokenList* const tokenlist)
+                                         std::list<ValueFlow::Value> values,
+                                         TokenList* const tokenlist,
+                                         SourceLocation loc = SourceLocation::current())
 {
     Analyzer::Result result{};
-    for (const ValueFlow::Value& v : values) {
-        result.update(valueFlowForward(startToken, endToken, exprTok, v, tokenlist));
+    for (ValueFlow::Value& v : values) {
+        result.update(valueFlowForward(startToken, endToken, exprTok, std::move(v), tokenlist, loc));
     }
     return result;
 }
 
 template<class ValueOrValues>
-static Analyzer::Result valueFlowForward(Token* startToken, const Token* exprTok, const ValueOrValues& v, TokenList* tokenlist)
+static Analyzer::Result valueFlowForward(Token* startToken,
+                                         const Token* exprTok,
+                                         ValueOrValues v,
+                                         TokenList* tokenlist,
+                                         SourceLocation loc = SourceLocation::current())
 {
     const Token* endToken = nullptr;
     const Function* f = Scope::nestedInFunction(startToken->scope());
     if (f && f->functionScope)
         endToken = f->functionScope->bodyEnd;
-    return valueFlowForward(startToken, endToken, exprTok, v, tokenlist);
+    return valueFlowForward(startToken, endToken, exprTok, std::move(v), tokenlist, loc);
 }
 
 static Analyzer::Result valueFlowForwardRecursive(Token* top,
                                                   const Token* exprTok,
-                                                  const std::list<ValueFlow::Value>& values,
-                                                  TokenList* const tokenlist)
+                                                  std::list<ValueFlow::Value> values,
+                                                  TokenList* const tokenlist,
+                                                  SourceLocation loc = SourceLocation::current())
 {
     Analyzer::Result result{};
-    for (const ValueFlow::Value& v : values) {
-        result.update(valueFlowGenericForward(top, makeAnalyzer(exprTok, v, tokenlist), tokenlist->getSettings()));
+    for (ValueFlow::Value& v : values) {
+        if (tokenlist->getSettings()->debugnormal)
+            setSourceLocation(v, loc, top);
+        result.update(
+            valueFlowGenericForward(top, makeAnalyzer(exprTok, std::move(v), tokenlist), tokenlist->getSettings()));
     }
     return result;
 }
@@ -1951,10 +2005,13 @@ static Analyzer::Result valueFlowForwardRecursive(Token* top,
 static void valueFlowReverse(Token* tok,
                              const Token* const endToken,
                              const Token* const varToken,
-                             const std::list<ValueFlow::Value>& values,
-                             TokenList* tokenlist)
+                             std::list<ValueFlow::Value> values,
+                             TokenList* tokenlist,
+                             SourceLocation loc = SourceLocation::current())
 {
-    for (const ValueFlow::Value& v : values) {
+    for (ValueFlow::Value& v : values) {
+        if (tokenlist->getSettings()->debugnormal)
+            setSourceLocation(v, loc, tok);
         valueFlowGenericReverse(tok, endToken, makeReverseAnalyzer(varToken, v, tokenlist), tokenlist->getSettings());
     }
 }
@@ -1966,12 +2023,13 @@ static void valueFlowReverse(TokenList* tokenlist,
                              ValueFlow::Value val,
                              const ValueFlow::Value& val2,
                              ErrorLogger* /*errorLogger*/,
-                             const Settings* = nullptr)
+                             const Settings* = nullptr,
+                             SourceLocation loc = SourceLocation::current())
 {
     std::list<ValueFlow::Value> values = {val};
     if (val2.varId != 0)
         values.push_back(val2);
-    valueFlowReverse(tok, nullptr, varToken, values, tokenlist);
+    valueFlowReverse(tok, nullptr, varToken, values, tokenlist, loc);
 }
 
 static bool isConditionKnown(const Token* tok, bool then)
@@ -3296,10 +3354,11 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                !Token::simpleMatch(getArgumentStart(tok), ",") && getArgumentStart(tok)->valueType()) {
         const Token* vartok = getArgumentStart(tok);
         auto vts = getParentValueTypes(tok);
-        for (const ValueType& vt : vts) {
-            if (vt.isTypeEqual(vartok->valueType()))
-                return getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1);
-        }
+        auto it = std::find_if(vts.begin(), vts.end(), [&](const ValueType& vt) {
+            return vt.isTypeEqual(vartok->valueType());
+        });
+        if (it != vts.end())
+            return getLifetimeTokens(vartok, escape, std::move(errorPath), pred, depth - 1);
     }
     return {{tok, std::move(errorPath)}};
 }
@@ -4740,7 +4799,11 @@ static const Token* findIncompleteVar(const Token* start, const Token* end)
     return nullptr;
 }
 
-static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, bool assume)
+static ValueFlow::Value makeConditionValue(long long val,
+                                           const Token* condTok,
+                                           bool assume,
+                                           const Settings* settings = nullptr,
+                                           SourceLocation loc = SourceLocation::current())
 {
     ValueFlow::Value v(val);
     v.setKnown();
@@ -4749,6 +4812,8 @@ static ValueFlow::Value makeConditionValue(long long val, const Token* condTok, 
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is true");
     else
         v.errorPath.emplace_back(condTok, "Assuming condition '" + condTok->expressionString() + "' is false");
+    if (settings && settings->debugnormal)
+        setSourceLocation(v, loc, condTok);
     return v;
 }
 
@@ -5131,16 +5196,17 @@ static void valueFlowForwardConst(Token* start,
             [&] {
                 // Follow references
                 std::vector<ReferenceToken> refs = followAllReferences(tok);
-                for (const ReferenceToken& ref : refs) {
-                    if (ref.token->varId() == var->declarationId()) {
-                        for (ValueFlow::Value value : values) {
-                            if (refs.size() > 1)
-                                value.setInconclusive();
-                            value.errorPath.insert(value.errorPath.end(), ref.errors.begin(), ref.errors.end());
-                            setTokenValue(tok, value, settings);
-                        }
-                        return;
+                auto it = std::find_if(refs.begin(), refs.end(), [&](const ReferenceToken& ref) {
+                    return ref.token->varId() == var->declarationId();
+                });
+                if (it != refs.end()) {
+                    for (ValueFlow::Value value : values) {
+                        if (refs.size() > 1)
+                            value.setInconclusive();
+                        value.errorPath.insert(value.errorPath.end(), it->errors.begin(), it->errors.end());
+                        setTokenValue(tok, value, settings);
                     }
+                    return;
                 }
                 // Follow symbolic vaues
                 for (const ValueFlow::Value& v : tok->values()) {
@@ -5559,26 +5625,29 @@ struct ConditionHandler {
                                      const Token* stop,
                                      const Token* exprTok,
                                      const std::list<ValueFlow::Value>& values,
-                                     TokenList* tokenlist) const
+                                     TokenList* tokenlist,
+                                     SourceLocation loc = SourceLocation::current()) const
     {
-        return valueFlowForward(start->next(), stop, exprTok, values, tokenlist);
+        return valueFlowForward(start->next(), stop, exprTok, values, tokenlist, loc);
     }
 
     virtual Analyzer::Result forward(Token* top,
                                      const Token* exprTok,
                                      const std::list<ValueFlow::Value>& values,
-                                     TokenList* tokenlist) const
+                                     TokenList* tokenlist,
+                                     SourceLocation loc = SourceLocation::current()) const
     {
-        return valueFlowForwardRecursive(top, exprTok, values, tokenlist);
+        return valueFlowForwardRecursive(top, exprTok, values, tokenlist, loc);
     }
 
     virtual void reverse(Token* start,
                          const Token* endToken,
                          const Token* exprTok,
                          const std::list<ValueFlow::Value>& values,
-                         TokenList* tokenlist) const
+                         TokenList* tokenlist,
+                         SourceLocation loc = SourceLocation::current()) const
     {
-        return valueFlowReverse(start, endToken, exprTok, values, tokenlist);
+        return valueFlowReverse(start, endToken, exprTok, values, tokenlist, loc);
     }
 
     void traverseCondition(TokenList* tokenlist,
@@ -6687,11 +6756,9 @@ struct MultiValueFlowAnalyzer : ValueFlowAnalyzer {
         if (!scope)
             return false;
         if (scope->type == Scope::eLambda) {
-            for (const auto& p:values) {
-                if (!p.second.isLifetimeValue())
-                    return false;
-            }
-            return true;
+            return std::all_of(values.begin(), values.end(), [](const std::pair<nonneg int, ValueFlow::Value>& p) {
+                return p.second.isLifetimeValue();
+            });
         } else if (scope->type == Scope::eIf || scope->type == Scope::eElse || scope->type == Scope::eWhile ||
                    scope->type == Scope::eFor) {
             auto pred = [](const ValueFlow::Value& value) {
@@ -6753,6 +6820,8 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
             for (auto arg:args) {
                 if (value.path != 0) {
                     for (const auto& q:arg) {
+                        if (q.first == p.first)
+                            continue;
                         if (q.second.path == 0)
                             continue;
                         if (q.second.path != value.path)
@@ -6769,16 +6838,11 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
     for (const auto& arg:args) {
         if (arg.empty())
             continue;
-        bool skip = false;
         // Make sure all arguments are the same path
-        MathLib::bigint path = arg.begin()->second.path;
-        for (const auto& p:arg) {
-            if (p.second.path != path) {
-                skip = true;
-                break;
-            }
-        }
-        if (skip)
+        const MathLib::bigint path = arg.begin()->second.path;
+        if (std::any_of(arg.begin(), arg.end(), [&](const std::pair<Key, ValueFlow::Value>& p) {
+            return p.second.path != path;
+        }))
             continue;
         f(arg);
     }
@@ -8353,23 +8417,12 @@ static void valueFlowDebug(TokenList* tokenlist, ErrorLogger* errorLogger)
     for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
         if (tok->getTokenDebug() != TokenDebug::ValueFlow)
             continue;
+        if (tok->astParent() && tok->astParent()->getTokenDebug() == TokenDebug::ValueFlow)
+            continue;
         for (const ValueFlow::Value& v : tok->values()) {
-            std::string kind;
-            switch (v.valueKind) {
-
-            case ValueFlow::Value::ValueKind::Impossible:
-            case ValueFlow::Value::ValueKind::Known:
-                kind = "always";
-                break;
-            case ValueFlow::Value::ValueKind::Inconclusive:
-                kind = "inconclusive";
-                break;
-            case ValueFlow::Value::ValueKind::Possible:
-                kind = "possible";
-                break;
-            }
-            std::string msg = "The value is " + kind + " " + v.toString();
+            std::string msg = "The value is " + debugString(v);
             ErrorPath errorPath = v.errorPath;
+            errorPath.insert(errorPath.end(), v.debugPath.begin(), v.debugPath.end());
             errorPath.emplace_back(tok, "");
             errorLogger->reportErr({errorPath, tokenlist, Severity::debug, "valueFlow", msg, CWE{0}, Certainty::normal});
         }

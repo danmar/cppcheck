@@ -28,6 +28,7 @@
 #include <limits>
 #include <locale>
 #include <stdexcept>
+#include <numeric>
 
 #include <simplecpp.h>
 
@@ -341,11 +342,9 @@ MathLib::biguint MathLib::toULongNumber(const std::string & str)
 
 unsigned int MathLib::encodeMultiChar(const std::string& str)
 {
-    unsigned int retval = 0;
-    for (char it : str) {
-        retval = (retval << 8) | it;
-    }
-    return retval;
+    return std::accumulate(str.begin(), str.end(), uint32_t(), [](uint32_t v, char c) {
+        return (v << 8) | c;
+    });
 }
 
 MathLib::bigint MathLib::toLongNumber(const std::string & str)

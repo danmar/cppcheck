@@ -1852,11 +1852,9 @@ namespace {
         }
 
         bool hasChild(const std::string &childName) const {
-            for (const auto & child : children) {
-                if (child.name == childName)
-                    return true;
-            }
-            return false;
+            return std::any_of(children.begin(), children.end(), [&](const ScopeInfo3& c) {
+                return c.name == childName;
+            });
         }
 
         const ScopeInfo3 * findInChildren(const std::string & scope) const {
@@ -5349,8 +5347,6 @@ bool Tokenizer::simplifyTokenList2()
         tok->clearValueFlow();
     }
 
-    simplifyCharAt();
-
     // simplify references
     simplifyReference();
 
@@ -7995,15 +7991,11 @@ bool Tokenizer::simplifyKnownVariables()
         }
 
         for (auto constantVar = constantVars.rbegin(); constantVar != constantVars.rend(); constantVar++) {
-            bool referenceFound = false;
             std::list<Token*> usageList = constantValueUsages[constantVar->first];
-            for (Token* usage : usageList) {
+            const bool referenceFound = std::any_of(usageList.begin(), usageList.end(), [&](const Token* usage) {
                 // check if any usages of each known variable are a reference
-                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first)) {
-                    referenceFound = true;
-                    break;
-                }
-            }
+                return Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first);
+            });
 
             if (!referenceFound) {
                 // replace all usages of non-referenced known variables with their value
@@ -8990,21 +8982,6 @@ void Tokenizer::simplifyTypeIntrinsics()
         end->insertToken("}");
         end->insertToken("{");
         Token::createMutualLinks(end->tokAt(1), end->tokAt(2));
-    }
-}
-
-void Tokenizer::simplifyCharAt()
-{
-    // Replace "string"[0] with 's'
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "%str% [ %num% ]")) {
-            const MathLib::bigint index = MathLib::toLongNumber(tok->strAt(2));
-            // Check within range
-            if (index >= 0 && index <= Token::getStrLength(tok)) {
-                tok->str("'" + Token::getCharAt(tok, index) + "'");
-                tok->deleteNext(3);
-            }
-        }
     }
 }
 
@@ -10940,6 +10917,7 @@ void Tokenizer::simplifyKeyword()
 
     const bool c99 = isC() && mSettings->standards.c >= Standards::C99;
     const bool cpp11 = isCPP() && mSettings->standards.cpp >= Standards::CPP11;
+    const bool cpp20 = isCPP() && mSettings->standards.cpp >= Standards::CPP20;
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (keywords.find(tok->str()) != keywords.end()) {
@@ -10984,6 +10962,13 @@ void Tokenizer::simplifyKeyword()
         }
 
         else if (cpp11) {
+            if (cpp20 && tok->str() == "consteval") {
+                tok->originalName(tok->str());
+                tok->str("constexpr");
+            } else if (cpp20 && tok->str() == "constinit") {
+                tok->deleteThis();
+            }
+
             // final:
             // 1) struct name final { };   <- struct is final
             if (Token::Match(tok->previous(), "struct|class|union %type% final [:{]")) {

@@ -36,6 +36,7 @@
 #include <utility>
 #include <set>
 #include <stack>
+#include <numeric>
 
 #include <simplecpp.h>
 
@@ -451,8 +452,9 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
     }
 
     if (mSettings && mSettings->relativePaths) {
-        for (std::string & mFile : mFiles)
-            mFile = Path::getRelativePath(mFile, mSettings->basePaths);
+        std::transform(mFiles.begin(), mFiles.end(), mFiles.begin(), [&](const std::string& f) {
+            return Path::getRelativePath(f, mSettings->basePaths);
+        });
     }
 
     Token::assignProgressValues(mTokensFrontBack.front);
@@ -465,13 +467,12 @@ uint64_t TokenList::calculateChecksum() const
     uint64_t checksum = 0;
     for (const Token* tok = front(); tok; tok = tok->next()) {
         const uint32_t subchecksum1 = tok->flags() + tok->varId() + tok->tokType();
-        uint32_t subchecksum2 = 0;
-        for (char i : tok->str())
-            subchecksum2 += (uint32_t)i;
-        if (!tok->originalName().empty()) {
-            for (char i : tok->originalName())
-                subchecksum2 += (uint32_t)i;
-        }
+        uint32_t subchecksum2 = std::accumulate(tok->str().begin(), tok->str().end(), uint32_t(0), [](uint32_t v, char c) {
+            return v + c;
+        });
+        subchecksum2 = std::accumulate(tok->originalName().begin(), tok->originalName().end(), subchecksum2, [](uint32_t v, char c) {
+            return v + c;
+        });
 
         checksum ^= ((static_cast<uint64_t>(subchecksum1) << 32) | subchecksum2);
 

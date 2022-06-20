@@ -5978,8 +5978,8 @@ private:
                       errout.str());
     }
 
-    void duplicateExpression16() { //#10569
-        check("void f(const std::string& a) {\n"
+    void duplicateExpression16() {
+        check("void f(const std::string& a) {\n" //#10569
               "    if ((a == \"x\") ||\n"
               "        (a == \"42\") ||\n"
               "        (a == \"y\") ||\n"
@@ -6001,6 +6001,14 @@ private:
                       "[test.cpp:7] -> [test.cpp:9]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n"
                       "[test.cpp:13] -> [test.cpp:16]: (style) Same expression 'a==\"42\"' found multiple times in chain of '||' operators.\n",
                       errout.str());
+
+        check("void f(const char* s) {\n" // #6371
+              "    if (*s == '\x0F') {\n"
+              "        if (!s[1] || !s[2] || !s[1])\n"
+              "            break;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Same expression '!s[1]' found multiple times in chain of '||' operators.\n", errout.str());
     }
 
     void duplicateExpressionLoop() {
@@ -7509,6 +7517,14 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("class A {};\n"
+              "class B { B(const A& a); };\n"
+              "const A& getA();\n"
+              "void f() {\n"
+              "    const B b{ getA() };\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
         // #5618
         const char* code5618 = "class Token {\n"
                                "public:\n"
@@ -7556,6 +7572,24 @@ private:
               "        return old;\n"
               "    return {};\n"
               "}", nullptr, /*experimental*/ false, /*inconclusive*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct X { int x; };\n" // #10191
+              "struct S {\n"
+              "    X _x;\n"
+              "    X& get() { return _x; }\n"
+              "    void modify() { _x.x += 42; }\n"
+              "    int copy() {\n"
+              "        const X x = get();\n"
+              "        modify();\n"
+              "        return x.x;\n"
+              "    }\n"
+              "    int constref() {\n"
+              "        const X& x = get();\n"
+              "        modify();\n"
+              "        return x.x;\n"
+              "    }\n"
+              "};\n", nullptr, /*experimental*/ false, /*inconclusive*/ true);
         ASSERT_EQUALS("", errout.str());
     }
 
