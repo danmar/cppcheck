@@ -31,6 +31,7 @@
 #include <functional>
 #include <iostream>
 #include <utility>
+#include <numeric>
 
 #ifdef __SVR4  // Solaris
 #include <sys/loadavg.h>
@@ -57,7 +58,6 @@ using std::memset;
 
 #ifdef THREADING_MODEL_THREAD
 #include <future>
-#include <numeric>
 #endif
 
 ThreadExecutor::ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
@@ -225,10 +225,9 @@ unsigned int ThreadExecutor::check()
     unsigned int fileCount = 0;
     unsigned int result = 0;
 
-    std::size_t totalfilesize = 0;
-    for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
-        totalfilesize += i->second;
-    }
+    const std::size_t totalfilesize = std::acumulate(mFiles.begin(); mFiles.end(), std::size_t(0), [](std::size_t v, const std::pair<std::string, std::size_t>& p) {
+        return v + p.second;
+    });
 
     std::list<int> rpipes;
     std::map<pid_t, std::string> childFile;

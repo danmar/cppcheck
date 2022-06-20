@@ -1852,11 +1852,9 @@ namespace {
         }
 
         bool hasChild(const std::string &childName) const {
-            for (const auto & child : children) {
-                if (child.name == childName)
-                    return true;
-            }
-            return false;
+            return std::any_of(children.begin(), children.end(), [&](const ScopeInfo3& c) {
+                return c.name == childName;
+            });
         }
 
         const ScopeInfo3 * findInChildren(const std::string & scope) const {
@@ -7992,16 +7990,12 @@ bool Tokenizer::simplifyKnownVariables()
             }
         }
 
-        for (auto constantVar = constantVars.rbegin(); constantVar != constantVars.rend(); constantVar++) {
-            bool referenceFound = false;
+        for (auto constantVar = constantVars.rbegin(); constantVar != constantVars.rend(); constantVar++) {            
             std::list<Token*> usageList = constantValueUsages[constantVar->first];
-            for (Token* usage : usageList) {
+            const bool referenceFound = std::any_of(usageList.begin(), usageList.end(), [&](const Token* usage) {
                 // check if any usages of each known variable are a reference
-                if (Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first)) {
-                    referenceFound = true;
-                    break;
-                }
-            }
+                return Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first);             
+            });
 
             if (!referenceFound) {
                 // replace all usages of non-referenced known variables with their value
