@@ -203,7 +203,7 @@ private:
         }
 
         unsigned int exitCode = std::accumulate(files.begin(), files.end(), 0U, [&](unsigned int v, const std::pair<std::string, std::string>& f) {
-          return v | cppCheck.check(f.first, f.second);
+            return v | cppCheck.check(f.first, f.second);
         });
 
         if (cppCheck.analyseWholeProgram())
