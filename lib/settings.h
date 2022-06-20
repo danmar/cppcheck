@@ -257,7 +257,7 @@ public:
     class CPPCHECKLIB Rule {
     public:
         Rule()
-            : tokenlist("simple")         // use simple tokenlist
+            : tokenlist("normal")         // use normal tokenlist
             , id("rule")                  // default id
             , severity(Severity::style) { // default severity
         }
