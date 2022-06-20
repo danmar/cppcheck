@@ -7990,11 +7990,11 @@ bool Tokenizer::simplifyKnownVariables()
             }
         }
 
-        for (auto constantVar = constantVars.rbegin(); constantVar != constantVars.rend(); constantVar++) {            
+        for (auto constantVar = constantVars.rbegin(); constantVar != constantVars.rend(); constantVar++) {
             std::list<Token*> usageList = constantValueUsages[constantVar->first];
             const bool referenceFound = std::any_of(usageList.begin(), usageList.end(), [&](const Token* usage) {
                 // check if any usages of each known variable are a reference
-                return Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first);             
+                return Token::Match(usage->tokAt(-2), "(|[|,|{|return|%op% & %varid%", constantVar->first);
             });
 
             if (!referenceFound) {
