@@ -410,11 +410,9 @@ void CheckThread::parseClangErrors(const QString &tool, const QString &file0, QS
 
 bool CheckThread::isSuppressed(const Suppressions::ErrorMessage &errorMessage) const
 {
-    for (const Suppressions::Suppression &suppression : mSuppressions) {
-        if (suppression.isSuppressed(errorMessage))
-            return true;
-    }
-    return false;
+    return std::any_of(mSuppressions.begin(), mSuppressions.end(), [](const Suppressions::Suppression& s) {
+        return s.isSuppressed(errorMessage);
+    });
 }
 
 QString CheckThread::clangCmd()
