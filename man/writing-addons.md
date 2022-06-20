@@ -45,6 +45,14 @@ Output:
     b
     ;
 
+The `cfg.tokenlist` does not always match the raw input code exactly. For instance:
+ * The `cfg.tokenlist` is preprocessed.
+ * There is no typedefs in `cfg.tokenlist`.
+ * C++ templates are instantiated when possible in `cfg.tokenlist`.
+ * Variable declarations are sometimes splitted up.
+ * If you don't write {} around the body for a if/else/while/for etc then those are inserted in the `cfg.tokenlist`.
+ * ...
+
 There are various properties in the `Token` class and some of those will be discussed below.
 
 
@@ -249,8 +257,8 @@ Output:
     
 ### Special tokenlist tweaks and else if
 
-The cfg.tokenlist has some tweaks. In C/C++ code it is optional to use `{` and `}` around the conditional code,
-if the conditional code is only a single statement. However Cppcheck adds "{" and "}" tokens if those are missing.
+The `cfg.tokenlist` has some tweaks. In C/C++ code it is optional to use `{` and `}` around the if/else/for/while body,
+if the body is only a single statement. However Cppcheck adds "{" and "}" tokens if those are missing.
 
 One more tweak is that in cfg.tokenlist there is no "else if" scope.
 
@@ -264,7 +272,7 @@ Example C code:
             ++x;
     }
 
-The tokens in the cfg.tokenlist will look like this:
+The tokens in the `cfg.tokenlist` will look like this:
 
     void foo(int x)
     {
