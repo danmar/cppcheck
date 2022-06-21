@@ -123,29 +123,6 @@ static bool isVclTypeInit(const Type *type)
     }
     return false;
 }
-
-// Plain old C struct?
-static bool isPodStruct(const Scope *scope) {
-    if (scope->type != Scope::ScopeType::eStruct && scope->type != Scope::ScopeType::eUnion)
-        return false;
-    if (!scope->functionList.empty())
-        return false;
-    for (const Variable& var: scope->varlist) {
-        if (!var.valueType())
-            return false;
-        if (var.valueType()->isIntegral() || var.valueType()->pointer || var.valueType()->isFloat())
-            continue;
-        if (var.valueType()->typeScope && isPodStruct(var.valueType()->typeScope))
-            continue;
-        return false;
-    }
-    for (const Scope* childScope: scope->nestedList) {
-        if (!isPodStruct(childScope))
-            return false;
-    }
-    return true;
-}
-
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -242,18 +219,42 @@ void CheckClass::constructors()
             // Mark all variables not used
             clearAllVar(usageList);
 
-            std::list<const Function *> callstack;
-            initializeVarList(func, callstack, scope, usageList);
-
-            // Check if any variables are uninitialized
+            // Variables with default initializers
             for (Usage &usage : usageList) {
                 const Variable& var = *usage.var;
 
                 // check for C++11 initializer
                 if (var.hasDefault() && func.type != Function::eOperatorEqual && func.type != Function::eCopyConstructor) { // variable still needs to be copied
                     usage.init = true;
-                    continue;
                 }
+            }
+
+            std::list<const Function *> callstack;
+            initializeVarList(func, callstack, scope, usageList);
+
+            // Assign 1 union member => assign all union members
+            for (const Usage &usage : usageList) {
+                const Variable& var = *usage.var;
+                if (!usage.assign && !usage.init)
+                    continue;
+                const Scope* varScope1 = var.nameToken()->scope();
+                if (varScope1->type == Scope::ScopeType::eUnion) {
+                    for (Usage &usage2 : usageList) {
+                        const Variable& var2 = *usage2.var;
+                        if (usage2.assign || usage2.init || var2.isStatic())
+                            continue;
+                        const Scope* varScope2 = var2.nameToken()->scope();
+                        if (varScope2->type == Scope::ScopeType::eStruct)
+                            varScope2 = varScope2->nestedIn;
+                        if (varScope1 == varScope2)
+                            usage2.assign = true;
+                    }
+                }
+            }
+
+            // Check if any variables are uninitialized
+            for (const Usage &usage : usageList) {
+                const Variable& var = *usage.var;
 
                 if (usage.assign || usage.init || var.isStatic())
                     continue;
@@ -320,30 +321,17 @@ void CheckClass::constructors()
                     const Scope *varType = var.typeScope();
                     if (!varType || varType->type != Scope::eUnion) {
                         const bool derived = scope != var.scope();
-                        // is the derived variable declared in a plain old C struct
-                        bool varScopeIsPodStruct = false;
-                        if (derived && scope->definedType && scope->definedType->derivedFrom.size() > 0) {
-                            for (const Scope* s = var.scope(); s; s = s ? s->nestedIn : nullptr) {
-                                for (const Type::BaseInfo& baseInfo: scope->definedType->derivedFrom) {
-                                    if (s->definedType == baseInfo.type) {
-                                        varScopeIsPodStruct = isPodStruct(s);
-                                        s = nullptr;
-                                        break;
-                                    }
-                                }
-                            }
-                        }
                         if (func.type == Function::eConstructor &&
                             func.nestedIn && (func.nestedIn->numConstructors - func.nestedIn->numCopyOrMoveConstructors) > 1 &&
                             func.argCount() == 0 && func.functionScope &&
                             func.arg && func.arg->link()->next() == func.functionScope->bodyStart &&
                             func.functionScope->bodyStart->link() == func.functionScope->bodyStart->next()) {
                             // don't warn about user defined default constructor when there are other constructors
-                            if (printInconclusive && (!derived || !varScopeIsPodStruct))
+                            if (printInconclusive)
                                 uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, true);
                         } else if (missingCopy)
                             missingMemberCopyError(func.token, func.type, var.scope()->className, var.name());
-                        else if (!derived || !varScopeIsPodStruct)
+                        else
                             uninitVarError(func.token, func.access == AccessControl::Private, func.type, var.scope()->className, var.name(), derived, false);
                     }
                 }
@@ -678,6 +666,21 @@ void CheckClass::assignVar(std::vector<Usage> &usageList, nonneg int varid)
     }
 }
 
+void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
+{
+    if (vartok->varId() > 0) {
+        assignVar(usageList, vartok->varId());
+        return;
+    }
+    for (Usage& usage: usageList) {
+        // FIXME: This is a workaround when varid is not set for a derived member
+        if (usage.var->name() == vartok->str()) {
+            usage.assign = true;
+            return;
+        }
+    }
+}
+
 void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
 {
     for (Usage& usage: usageList) {
@@ -952,7 +955,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                             tok2 = tok2->next();
                             if (tok2->str() == "&")
                                 tok2 = tok2->next();
-                            assignVar(usage, tok2->varId());
+                            if (isVariableChangedByFunctionCall(tok2, tok2->previous()->str() == "&", tok2->varId(), mSettings, nullptr))
+                                assignVar(usage, tok2->varId());
                         }
                     }
                 }
@@ -991,7 +995,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
         // Assignment of member variable?
         else if (Token::Match(ftok, "%name% =")) {
-            assignVar(usage, ftok->varId());
+            assignVar(usage, ftok);
             bool bailout = ftok->variable() && ftok->variable()->isReference();
             const Token* tok2 = ftok->tokAt(2);
             if (tok2->str() == "&") {
