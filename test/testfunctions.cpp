@@ -723,6 +723,12 @@ private:
               "    return wcslen(c);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (error) Invalid wcslen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("int f() {\n"
+              "    const char c[3] = \"ab\\0\";\n"
+              "    return strlen(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mathfunctionCall_sqrt() {
