@@ -80,7 +80,7 @@ static bool isAutoDealloc(const Variable *var)
 static bool isVarTokComparison(const Token * tok, const Token ** vartok,
                                const std::vector<std::pair<std::string, std::string>>& ops)
 {
-    return std::any_of(ops.begin(), ops.end(), [&](const auto& op) {
+    return std::any_of(ops.begin(), ops.end(), [&](const std::pair<std::string, std::string>& op) {
         return astIsVariableComparison(tok, op.first, op.second, vartok);
     });
 }
