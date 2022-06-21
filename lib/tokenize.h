@@ -432,11 +432,6 @@ public:
     void findComplicatedSyntaxErrorsInTemplates();
 
     /**
-     * Simplify e.g. 'sin(0)' into '0'
-     */
-    void simplifyMathExpressions();
-
-    /**
      * Modify strings in the token list by replacing hex and oct
      * values. E.g. "\x61" -> "a" and "\000" -> "\0"
      * @param source The string to be modified, e.g. "\x61"
@@ -756,13 +751,6 @@ public:
      * @return true in case is is one and false otherwise.
      */
     static bool isOneNumber(const std::string &s);
-
-    /**
-     * Helper function to check whether number is two (2 or 0.2E+1 or 2E+0) or not?
-     * @param s the string to check
-     * @return true in case is is two and false otherwise.
-     */
-    static bool isTwoNumber(const std::string &s);
 
     /**
      * Helper function to check for start of function execution scope.

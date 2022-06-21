@@ -4825,9 +4825,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Combine tokens..
     combineOperators();
 
-    // replace 'sin(0)' to '0' and other similar math expressions
-    simplifyMathExpressions();
-
     // combine "- %num%"
     concatenateNegativeNumberAndAnyPositive();
 
@@ -8518,18 +8515,6 @@ bool Tokenizer::isOneNumber(const std::string &s)
     return isNumberOneOf(s, 1L, "1.0");
 }
 
-// ------------------------------------------------------------------------
-// Helper function to check whether number is two (2 or 0.2E+1 or 2E+0) or not?
-// @param s the string to check
-// @return true in case s is two and false otherwise.
-// ------------------------------------------------------------------------
-bool Tokenizer::isTwoNumber(const std::string &s)
-{
-    if (!MathLib::isPositive(s))
-        return false;
-    return isNumberOneOf(s, 2L, "2.0");
-}
-
 void Tokenizer::simplifyComma()
 {
     bool inReturn = false;
@@ -10906,96 +10891,6 @@ void Tokenizer::printUnknownTypes() const
                     if (count < 3) // limit same type to 3
                         reportError(it->second, Severity::debug, "debug", "Unknown type \'" + it->first + "\'.");
                     count++;
-                }
-            }
-        }
-    }
-}
-
-void Tokenizer::simplifyMathExpressions()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-
-        //simplify Pythagorean trigonometric identity: pow(sin(x),2)+pow(cos(x),2) = 1
-        //                                             pow(cos(x),2)+pow(sin(x),2) = 1
-        // @todo: sin(x) * sin(x) + cos(x) * cos(x) = 1
-        //        cos(x) * cos(x) + sin(x) * sin(x) = 1
-        //simplify Hyperbolic identity: pow(sinh(x),2)-pow(cosh(x),2) = -1
-        //                              pow(cosh(x),2)-pow(sinh(x),2) = -1
-        // @todo: sinh(x) * sinh(x) - cosh(x) * cosh(x) = -1
-        //        cosh(x) * cosh(x) - sinh(x) * sinh(x) = -1
-        if (Token::Match(tok, "pow|powf|powl (")) {
-            if (Token::Match(tok->tokAt(2), "sin|sinf|sinl (")) {
-                Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) + pow|powf|powl ( cos|cosf|cosl ("))
-                    continue;
-                const std::string& leftExponent = tok2->strAt(2);
-                if (!isTwoNumber(leftExponent))
-                    continue; // left exponent is not 2
-                const Token * const tok3 = tok2->tokAt(8);
-                Token * const tok4 = tok3->link();
-                if (!Token::Match(tok4, ") , %num% )"))
-                    continue;
-                const std::string& rightExponent = tok4->strAt(2);
-                if (!isTwoNumber(rightExponent))
-                    continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
-                    Token::eraseTokens(tok, tok4->tokAt(4));
-                    tok->str("1");
-                }
-            } else if (Token::Match(tok->tokAt(2), "cos|cosf|cosl (")) {
-                Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) + pow|powf|powl ( sin|sinf|sinl ("))
-                    continue;
-                const std::string& leftExponent = tok2->strAt(2);
-                if (!isTwoNumber(leftExponent))
-                    continue; // left exponent is not 2
-                const Token * const tok3 = tok2->tokAt(8);
-                Token * const tok4 = tok3->link();
-                if (!Token::Match(tok4, ") , %num% )"))
-                    continue;
-                const std::string& rightExponent = tok4->strAt(2);
-                if (!isTwoNumber(rightExponent))
-                    continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
-                    Token::eraseTokens(tok, tok4->tokAt(4));
-                    tok->str("1");
-                }
-            } else if (Token::Match(tok->tokAt(2), "sinh|sinhf|sinhl (")) {
-                Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) - pow|powf|powl ( cosh|coshf|coshl ("))
-                    continue;
-                const std::string& leftExponent = tok2->strAt(2);
-                if (!isTwoNumber(leftExponent))
-                    continue; // left exponent is not 2
-                const Token * const tok3 = tok2->tokAt(8);
-                Token * const tok4 = tok3->link();
-                if (!Token::Match(tok4, ") , %num% )"))
-                    continue;
-                const std::string& rightExponent = tok4->strAt(2);
-                if (!isTwoNumber(rightExponent))
-                    continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
-                    Token::eraseTokens(tok, tok4->tokAt(4));
-                    tok->str("-1");
-                }
-            } else if (Token::Match(tok->tokAt(2), "cosh|coshf|coshl (")) {
-                Token * const tok2 = tok->linkAt(3);
-                if (!Token::Match(tok2, ") , %num% ) - pow|powf|powl ( sinh|sinhf|sinhl ("))
-                    continue;
-                const std::string& leftExponent = tok2->strAt(2);
-                if (!isTwoNumber(leftExponent))
-                    continue; // left exponent is not 2
-                const Token * const tok3 = tok2->tokAt(8);
-                Token * const tok4 = tok3->link();
-                if (!Token::Match(tok4, ") , %num% )"))
-                    continue;
-                const std::string& rightExponent = tok4->strAt(2);
-                if (!isTwoNumber(rightExponent))
-                    continue; // right exponent is not 2
-                if (tok->tokAt(3)->stringifyList(tok2->next()) == tok3->stringifyList(tok4->next())) {
-                    Token::eraseTokens(tok, tok4->tokAt(4));
-                    tok->str("-1");
                 }
             }
         }
