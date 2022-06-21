@@ -747,13 +747,9 @@ void CheckCondition::multiCondition2()
                         // Incomplete code
                         break;
                     }
-                    bool changed = false;
-                    for (int varid : vars) {
-                        if (isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP())) {
-                            changed = true;
-                            break;
-                        }
-                    }
+                    const bool changed = std::any_of(vars.begin(), vars.end(), [&](int varid) {
+                        return isVariableChanged(tok1, tok2, varid, nonlocal, mSettings, mTokenizer->isCPP());
+                    });
                     if (changed)
                         break;
                 }

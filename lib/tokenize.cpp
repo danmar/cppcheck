@@ -2159,10 +2159,11 @@ namespace {
                     if (tempScope->usingNamespaces.find(scope) != tempScope->usingNamespaces.end())
                         return true;
                 } else {
-                    for (const auto &ns : tempScope->usingNamespaces) {
-                        if (scope == ns + " :: " + qualification)
-                            return true;
-                    }
+                    const std::string suffix = " :: " + qualification;
+                    if (std::any_of(tempScope->usingNamespaces.begin(), tempScope->usingNamespaces.end(), [&](const std::string& ns) {
+                        return scope == ns + suffix;
+                    }))
+                        return true;
                 }
             }
             tempScope = tempScope->parent;
