@@ -503,7 +503,7 @@ int main(int argc, char **argv)
     fout << "\t$(PYTHON_INTERPRETER) tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
     fout << ".PHONY: validateRules\n";
     fout << "validateRules:\n";
-    fout << "\txmllint --noout rules/*.xml\n";
+    fout << "\t#xmllint --noout rules/*.xml\n";
 
     fout << "\n###### Build\n\n";
 
