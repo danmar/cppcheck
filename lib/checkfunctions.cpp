@@ -174,7 +174,7 @@ void CheckFunctions::invalidFunctionUsage()
                             const Token* strTok = varTok->getValueTokenMinStrSize(mSettings);
                             if (strTok) {
                                 const int strSize = Token::getStrArraySize(strTok);
-                                if (strSize > count)
+                                if (strSize > count && strTok->str().find('\0') == std::string::npos)
                                     invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
                             }
                         }

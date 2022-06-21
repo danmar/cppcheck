@@ -729,6 +729,12 @@ private:
               "    strcat(dest, if_name);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    const char c[3] = \"ab\\0\";\n"
+              "    return strlen(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mathfunctionCall_sqrt() {
