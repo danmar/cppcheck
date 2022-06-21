@@ -3440,7 +3440,7 @@ void CheckOther::checkShadowVariables()
                     return arg.nameToken() && var.name() == arg.name();
                 });
                 if (it != argList.end()) {
-                    shadowError(it->nameToken(), it->nameToken(), "argument");
+                    shadowError(var.nameToken(), it->nameToken(), "argument");
                     continue;
                 }
             }
