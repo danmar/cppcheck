@@ -144,9 +144,9 @@ void CheckFunctions::invalidFunctionUsage()
                         && valueType && (valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T)) {
                         const Token* varTok = variable->declEndToken();
                         auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
-                        if (varTok && Token::simpleMatch(varTok->previous(), "]"))
+                        if (varTok && Token::simpleMatch(varTok->astOperand1(), "["))
                         {
-                            const Token* const countTok = varTok->tokAt(-2);
+                            const Token* const countTok = varTok->astOperand1()->astOperand2();
                             if (countTok && countTok->hasKnownIntValue())
                                 count = countTok->getKnownIntValue();
                         }
