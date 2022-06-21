@@ -8515,18 +8515,6 @@ bool Tokenizer::isOneNumber(const std::string &s)
     return isNumberOneOf(s, 1L, "1.0");
 }
 
-// ------------------------------------------------------------------------
-// Helper function to check whether number is two (2 or 0.2E+1 or 2E+0) or not?
-// @param s the string to check
-// @return true in case s is two and false otherwise.
-// ------------------------------------------------------------------------
-bool Tokenizer::isTwoNumber(const std::string &s)
-{
-    if (!MathLib::isPositive(s))
-        return false;
-    return isNumberOneOf(s, 2L, "2.0");
-}
-
 void Tokenizer::simplifyComma()
 {
     bool inReturn = false;

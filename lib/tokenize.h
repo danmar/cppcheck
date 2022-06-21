@@ -753,13 +753,6 @@ public:
     static bool isOneNumber(const std::string &s);
 
     /**
-     * Helper function to check whether number is two (2 or 0.2E+1 or 2E+0) or not?
-     * @param s the string to check
-     * @return true in case is is two and false otherwise.
-     */
-    static bool isTwoNumber(const std::string &s);
-
-    /**
      * Helper function to check for start of function execution scope.
      * Do not use this in checks.  Use the symbol database.
      * @param tok pointer to end parentheses of parameter list
