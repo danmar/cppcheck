@@ -3376,22 +3376,17 @@ void TemplateSimplifier::getSpecializations()
     // try to locate a matching declaration for each user defined specialization
     for (const auto& spec : mTemplateDeclarations) {
         if (spec.isSpecialization()) {
-            bool found = false;
-            for (const auto& decl : mTemplateDeclarations) {
-                if (specMatch(spec, decl)) {
-                    mTemplateSpecializationMap[spec.token()] = decl.token();
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                for (const auto& decl : mTemplateForwardDeclarations) {
-                    if (specMatch(spec, decl)) {
-                        mTemplateSpecializationMap[spec.token()] = decl.token();
-                        break;
-                    }
-                }
+            auto it = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), [&](const TokenAndName& decl) {
+                return specMatch(spec, decl);
+            });
+            if (it != mTemplateDeclarations.end())
+                mTemplateSpecializationMap[spec.token()] = it->token();
+            else {
+                it = std::find_if(mTemplateForwardDeclarations.begin(), mTemplateForwardDeclarations.end(), [&](const TokenAndName& decl) {
+                    return specMatch(spec, decl);
+                });
+                if (it != mTemplateForwardDeclarations.end())
+                    mTemplateSpecializationMap[spec.token()] = it->token();
             }
         }
     }
@@ -3402,22 +3397,17 @@ void TemplateSimplifier::getPartialSpecializations()
     // try to locate a matching declaration for each user defined partial specialization
     for (const auto& spec : mTemplateDeclarations) {
         if (spec.isPartialSpecialization()) {
-            bool found = false;
-            for (const auto& decl : mTemplateDeclarations) {
-                if (specMatch(spec, decl)) {
-                    mTemplatePartialSpecializationMap[spec.token()] = decl.token();
-                    found = true;
-                    break;
-                }
-            }
-
-            if (!found) {
-                for (const auto& decl : mTemplateForwardDeclarations) {
-                    if (specMatch(spec, decl)) {
-                        mTemplatePartialSpecializationMap[spec.token()] = decl.token();
-                        break;
-                    }
-                }
+            auto it = std::find_if(mTemplateDeclarations.begin(), mTemplateDeclarations.end(), [&](const TokenAndName& decl) {
+                return specMatch(spec, decl);
+            });
+            if (it != mTemplateDeclarations.end())
+                mTemplatePartialSpecializationMap[spec.token()] = it->token();
+            else {
+                it = std::find_if(mTemplateForwardDeclarations.begin(), mTemplateForwardDeclarations.end(), [&](const TokenAndName& decl) {
+                    return specMatch(spec, decl);
+                });
+                if (it != mTemplateForwardDeclarations.end())
+                    mTemplatePartialSpecializationMap[spec.token()] = it->token();
             }
         }
     }

@@ -2625,7 +2625,7 @@ void CheckStl::useStlAlgorithm()
                     continue;
                 if (!Token::simpleMatch(initTok, "=") || !Token::Match(initTok->astOperand1(), "%varid%", loopVar->varId()))
                     continue;
-                if (!Token::Match(stepTok, "%op% %varid%", loopVar->varId()) && !Token::Match(stepTok->previous(), "%varid% %op%", loopVar->varId()))
+                if (!stepTok->isIncDecOp())
                     continue;
                 isIteratorLoop = true;
             }

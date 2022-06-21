@@ -4687,6 +4687,14 @@ private:
               "    return ret;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(const std::vector<int>& v) {\n"
+              "    int sum = 0;\n"
+              "    for (auto it = v.begin(); it != v.end(); it += 2)\n"
+              "        sum += *it;\n"
+              "    return sum;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void loopAlgoContainerInsert() {

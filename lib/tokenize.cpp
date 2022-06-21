@@ -1874,10 +1874,11 @@ namespace {
             const ScopeInfo3 * tempScope = this;
             while (tempScope) {
                 // check children
-                for (const auto & child : tempScope->children) {
-                    if (&child != this && child.type == Record && (child.name == scope || child.fullName == scope))
-                        return &child;
-                }
+                auto it = std::find_if(tempScope->children.begin(), tempScope->children.end(), [&](const ScopeInfo3& c) {
+                    return &c != this && c.type == Record && (c.name == scope || c.fullName == scope);
+                });
+                if (it != tempScope->children.end())
+                    return &*it;
                 // check siblings for same name
                 if (tempScope->parent) {
                     for (const auto &sibling : tempScope->parent->children) {
