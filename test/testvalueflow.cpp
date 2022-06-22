@@ -4531,11 +4531,10 @@ private:
     }
 
     bool isNotKnownValues(const char code[], const char str[]) {
-        for (const ValueFlow::Value &v : tokenValues(code, str)) {
-            if (v.isKnown())
-                return false;
-        }
-        return true;
+        const auto& values = tokenValues(code, str);
+        return std::none_of(values.begin(), values.end(), [](const ValueFlow::Value& v) {
+            return v.isKnown();
+        });
     }
 
     void knownValue() {

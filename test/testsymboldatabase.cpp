@@ -108,10 +108,11 @@ private:
                 currScope = currScope->nestedIn;
         }
         while (currScope) {
-            for (const Function & i : currScope->functionList) {
-                if (i.tokenDef->str() == str)
-                    return &i;
-            }
+            auto it = std::find_if(currScope->functionList.begin(), currScope->functionList.end(), [&](const Function& f) {
+                return f.tokenDef->str() == str;
+            });
+            if (it != currScope->functionList.end())
+                return &*it;
             currScope = currScope->nestedIn;
         }
         return nullptr;
@@ -2923,12 +2924,11 @@ private:
         // Global scope, Fred, Fred::Fred, Fred::~Fred
         ASSERT_EQUALS(4U, db->scopeList.size());
 
-        // Find the scope for the Fred struct..
-        const Scope *fredScope = nullptr;
-        for (const Scope & scope : db->scopeList) {
-            if (scope.isClassOrStruct() && scope.className == "Fred")
-                fredScope = &scope;
-        }
+        // Find the scope for the Fred struct..        
+        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [&](const Scope& scope) {
+            return scope.isClassOrStruct() && scope.className == "Fred";
+        });
+        const Scope* fredScope = (it == db->scopeList.end()) ? nullptr : &*it;
         ASSERT(fredScope != nullptr);
 
         // The struct Fred has two functions, a constructor and a destructor
@@ -2937,11 +2937,11 @@ private:
         // Get linenumbers where the bodies for the constructor and destructor are..
         unsigned int constructor = 0;
         unsigned int destructor = 0;
-        for (const Function & it : fredScope->functionList) {
-            if (it.type == Function::eConstructor)
-                constructor = it.token->linenr();  // line number for constructor body
-            if (it.type == Function::eDestructor)
-                destructor = it.token->linenr();  // line number for destructor body
+        for (const Function& f : fredScope->functionList) {
+            if (f.type == Function::eConstructor)
+                constructor = f.token->linenr();  // line number for constructor body
+            if (f.type == Function::eDestructor)
+                destructor = f.token->linenr();  // line number for destructor body
         }
 
         // The body for the constructor is located at line 5..
@@ -5007,9 +5007,9 @@ private:
         ASSERT_EQUALS(1, db->scopeList.front().varlist.size());
         auto list = db->scopeList;
         list.pop_front();
-        for (const auto &scope : list) {
-            ASSERT_EQUALS(0, scope.varlist.size());
-        }
+        ASSERT_EQUALS(true, std::all_of(list.begin(), list.end(), [](const auto& scope) {
+            return scope.varlist.empty();
+        }));
     }
 
     void createSymbolDatabaseFindAllScopes4()
