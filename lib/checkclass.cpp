@@ -185,13 +185,9 @@ void CheckClass::constructors()
         // #3196 => bailout if there are nested unions
         // TODO: handle union variables better
         {
-            bool bailout = false;
-            for (const Scope * const nestedScope : scope->nestedList) {
-                if (nestedScope->type == Scope::eUnion) {
-                    bailout = true;
-                    break;
-                }
-            }
+            const bool bailout = std::any_of(scope->nestedList.begin(), scope->nestedList.end(), [](const Scope* nestedScope) {
+                return nestedScope->type == Scope::eUnion;
+            });
             if (bailout)
                 continue;
         }
