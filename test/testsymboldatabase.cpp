@@ -2924,7 +2924,7 @@ private:
         // Global scope, Fred, Fred::Fred, Fred::~Fred
         ASSERT_EQUALS(4U, db->scopeList.size());
 
-        // Find the scope for the Fred struct..        
+        // Find the scope for the Fred struct..
         auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [&](const Scope& scope) {
             return scope.isClassOrStruct() && scope.className == "Fred";
         });
@@ -5007,7 +5007,7 @@ private:
         ASSERT_EQUALS(1, db->scopeList.front().varlist.size());
         auto list = db->scopeList;
         list.pop_front();
-        ASSERT_EQUALS(true, std::all_of(list.begin(), list.end(), [](const auto& scope) {
+        ASSERT_EQUALS(true, std::all_of(list.begin(), list.end(), [](const Scope& scope) {
             return scope.varlist.empty();
         }));
     }
