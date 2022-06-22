@@ -104,11 +104,9 @@ static bool isVariableCopyNeeded(const Variable &var, Function::Type type)
 
 static bool isVcl(const Settings *settings)
 {
-    for (const std::string &library: settings->libraries) {
-        if (library == "vcl")
-            return true;
-    }
-    return false;
+    return std::any_of(settings->libraries.begin(), settings->libraries.end(), [](const std::string& library) {
+        return library == "vcl";
+    });
 }
 
 static bool isVclTypeInit(const Type *type)
@@ -149,17 +147,13 @@ void CheckClass::constructors()
 
         const bool unusedTemplate = Token::simpleMatch(scope->classDef->previous(), ">");
 
-        bool usedInUnion = false;
-        for (const Scope &unionScope : mSymbolDatabase->scopeList) {
+        const bool usedInUnion = std::any_of(mSymbolDatabase->scopeList.begin(), mSymbolDatabase->scopeList.end(), [&](const Scope& unionScope) {
             if (unionScope.type != Scope::eUnion)
-                continue;
-            for (const Variable &var : unionScope.varlist) {
-                if (var.type() && var.type()->classScope == scope) {
-                    usedInUnion = true;
-                    break;
-                }
-            }
-        }
+                return false;
+            return std::any_of(unionScope.varlist.begin(), unionScope.varlist.end(), [&](const Variable& var) {
+                return var.type() && var.type()->classScope == scope;
+            });
+        });
 
         // There are no constructors.
         if (scope->numConstructors == 0 && printStyle && !usedInUnion) {
@@ -329,13 +323,9 @@ void CheckClass::checkExplicitConstructors()
 
         // Is class abstract? Maybe this test is over-simplification, but it will suffice for simple cases,
         // and it will avoid false positives.
-        bool isAbstractClass = false;
-        for (const Function &func : scope->functionList) {
-            if (func.isPure()) {
-                isAbstractClass = true;
-                break;
-            }
-        }
+        const bool isAbstractClass = std::any_of(scope->functionList.begin(), scope->functionList.end(), [](const Function& func) {
+            return func.isPure();
+        });
 
         // Abstract classes can't be instantiated. But if there is C++11
         // "misuse" by derived classes then these constructors must be explicit.
@@ -609,8 +599,9 @@ bool CheckClass::canNotMove(const Scope *scope)
 
 static void getAllVariableMembers(const Scope *scope, std::vector<const Variable *>& varList)
 {
-    for (const Variable& var: scope->varlist)
-        varList.push_back(&var);
+    std::transform(scope->varlist.begin(), scope->varlist.end(), std::back_inserter(varList), [](const Variable& var) {
+        return &var;
+    });
     if (scope->definedType) {
         for (const Type::BaseInfo& baseInfo: scope->definedType->derivedFrom) {
             if (scope->definedType == baseInfo.type)
@@ -677,10 +668,11 @@ bool CheckClass::isBaseClassFunc(const Token *tok, const Scope *scope)
         if (derivedFrom && derivedFrom->classScope) {
             const std::list<Function>& functionList = derivedFrom->classScope->functionList;
 
-            for (const Function &func : functionList) {
-                if (func.tokenDef->str() == tok->str())
-                    return true;
-            }
+            if (std::any_of(functionList.begin(), functionList.end(), [&](const Function& func) {
+                return func.tokenDef->str() == tok->str();
+            }))
+                return true;
+
             if (isBaseClassFunc(tok, derivedFrom->classScope))
                 return true;
         }
@@ -782,13 +774,11 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
         // Calling member variable function?
         if (Token::Match(ftok->next(), "%var% . %name% (") && !(ftok->next()->valueType() && ftok->next()->valueType()->pointer)) {
-            for (const Variable &var : scope->varlist) {
-                if (var.declarationId() == ftok->next()->varId()) {
-                    /** @todo false negative: we assume function changes variable state */
-                    assignVar(usage, ftok->next()->varId());
-                    break;
-                }
-            }
+            if (std::any_of(scope->varlist.begin(), scope->varlist.end(), [&](const Variable& var) {
+                return var.declarationId() == ftok->next()->varId();
+            }))
+                /** @todo false negative: we assume function changes variable state */
+                assignVar(usage, ftok->next()->varId());
 
             ftok = ftok->tokAt(2);
         }
@@ -1807,12 +1797,10 @@ void CheckClass::virtualDestructor()
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
                 if (destructor && !destructor->hasVirtualSpecifier() && destructor->access == AccessControl::Public) {
-                    for (const Function &func : scope->functionList) {
-                        if (func.hasVirtualSpecifier()) {
-                            inconclusiveErrors.push_back(destructor);
-                            break;
-                        }
-                    }
+                  if (std::any_of(scope->functionList.begin(), scope->functionList.end(), [](const Function& func) {
+                      return func.hasVirtualSpecifier();
+                  }))
+                      inconclusiveErrors.push_back(destructor);
                 }
             }
             continue;

@@ -2607,13 +2607,10 @@ private:
                       "namespace barney { X::X(int) { } }");
 
         // Locate the scope for the class..
-        const Scope *scope = nullptr;
-        for (const Scope & it : db->scopeList) {
-            if (it.isClassOrStruct()) {
-                scope = &it;
-                break;
-            }
-        }
+        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+            return s.isClassOrStruct();
+        });
+        const Scope *scope = (it == db->scopeList.end()) ? nullptr : &*it;
 
         ASSERT(scope != nullptr);
         if (!scope)
@@ -2641,13 +2638,10 @@ private:
                       "}");
 
         // Locate the scope for the class..
-        const Scope *scope = nullptr;
-        for (const Scope & it : db->scopeList) {
-            if (it.isClassOrStruct()) {
-                scope = &it;
-                break;
-            }
-        }
+        auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
+          return s.isClassOrStruct();
+          });
+        const Scope* scope = (it == db->scopeList.end()) ? nullptr : &*it;
 
         ASSERT(scope != nullptr);
         if (!scope)

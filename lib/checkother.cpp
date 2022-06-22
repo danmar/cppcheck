@@ -3410,7 +3410,7 @@ static const Token *findShadowed(const Scope *scope, const std::string &varname,
     });
     if (it != scope->functionList.end())
         return it->tokenDef;
-    
+
     if (scope->type == Scope::eLambda)
         return nullptr;
     const Token* shadowed = findShadowed(scope->nestedIn, varname, linenr);
