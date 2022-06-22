@@ -1797,10 +1797,10 @@ void CheckClass::virtualDestructor()
             if (printInconclusive) {
                 const Function *destructor = scope->getDestructor();
                 if (destructor && !destructor->hasVirtualSpecifier() && destructor->access == AccessControl::Public) {
-                  if (std::any_of(scope->functionList.begin(), scope->functionList.end(), [](const Function& func) {
-                      return func.hasVirtualSpecifier();
-                  }))
-                      inconclusiveErrors.push_back(destructor);
+                    if (std::any_of(scope->functionList.begin(), scope->functionList.end(), [](const Function& func) {
+                        return func.hasVirtualSpecifier();
+                    }))
+                        inconclusiveErrors.push_back(destructor);
                 }
             }
             continue;

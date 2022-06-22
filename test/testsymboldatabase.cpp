@@ -2639,8 +2639,8 @@ private:
 
         // Locate the scope for the class..
         auto it = std::find_if(db->scopeList.begin(), db->scopeList.end(), [](const Scope& s) {
-          return s.isClassOrStruct();
-          });
+            return s.isClassOrStruct();
+        });
         const Scope* scope = (it == db->scopeList.end()) ? nullptr : &*it;
 
         ASSERT(scope != nullptr);
