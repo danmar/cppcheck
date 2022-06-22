@@ -727,12 +727,9 @@ static bool areAllParamsTypes(const std::vector<const Token *> &params)
     if (params.empty())
         return false;
 
-    for (const auto *param : params) {
-        if (!Token::Match(param->previous(), "typename|class %name% ,|>"))
-            return false;
-    }
-
-    return true;
+    return std::all_of(params.begin(), params.end(), [](const Token* param) {
+        return Token::Match(param->previous(), "typename|class %name% ,|>");
+    });
 }
 
 void TemplateSimplifier::getTemplateInstantiations()
@@ -1771,15 +1768,14 @@ void TemplateSimplifier::expandTemplate(
                                 type = type->next();
                             }
                             // check if type is instantiated
-                            for (const auto & inst : mTemplateInstantiations) {
-                                if (Token::simpleMatch(inst.token(), name.c_str(), name.size())) {
-                                    // use the instantiated name
-                                    dst->insertToken(name, "", true);
-                                    dst->previous()->linenr(start->linenr());
-                                    dst->previous()->column(start->column());
-                                    start = closing;
-                                    break;
-                                }
+                            if (std::any_of(mTemplateInstantiations.begin(), mTemplateInstantiations.end(), [&](const TokenAndName& inst) {
+                                return Token::simpleMatch(inst.token(), name.c_str(), name.size());
+                            })) {
+                                // use the instantiated name
+                                dst->insertToken(name, "", true);
+                                dst->previous()->linenr(start->linenr());
+                                dst->previous()->column(start->column());
+                                start = closing;
                             }
                         }
                         // just copy the token if it wasn't instantiated
