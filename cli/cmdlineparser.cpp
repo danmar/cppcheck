@@ -714,7 +714,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (doc.LoadFile(12+argv[i]) == tinyxml2::XML_SUCCESS) {
                     tinyxml2::XMLElement *node = doc.FirstChildElement();
                     if (node && strcmp(node->Value(), "rules") == 0)
-                        node = node->NextSiblingElement("rules");
+                        node = node->FirstChildElement("rule");
                     for (; node && strcmp(node->Value(), "rule") == 0; node = node->NextSiblingElement()) {
                         Settings::Rule rule;
 
