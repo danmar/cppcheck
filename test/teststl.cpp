@@ -4688,6 +4688,15 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("std::string f(const std::string& s) {\n"
+              "    std::string ret;\n"
+              "    for (char c : s)\n"
+              "        if (c != ' ')\n"
+              "            ret += i;\n"
+              "    return ret;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("int f(const std::vector<int>& v) {\n"
               "    int sum = 0;\n"
               "    for (auto it = v.begin(); it != v.end(); it += 2)\n"
