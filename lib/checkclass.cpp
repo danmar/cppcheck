@@ -615,8 +615,9 @@ std::vector<CheckClass::Usage> CheckClass::createUsageList(const Scope *scope)
     std::vector<const Variable *> varlist;
     getAllVariableMembers(scope, varlist);
     ret.reserve(varlist.size());
-    for (const Variable *var: varlist)
-        ret.emplace_back(var);
+    std::transform(varlist.begin(), varlist.end(), std::back_inserter(ret), [](const Variable* var) {
+        return Usage(var);
+    });
     return ret;
 }
 
@@ -2626,9 +2627,10 @@ void CheckClass::virtualFunctionCallInConstructorError(
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
+    std::transform(tokStack.begin(), tokStack.end(), std::back_inserter(errorPath), [](const Token* tok) {
+        return ErrorPathItem(tok, "Calling " + tok->str());
+    });
     int lineNumber = 1;
-    for (const Token *tok : tokStack)
-        errorPath.emplace_back(tok, "Calling " + tok->str());
     if (!errorPath.empty()) {
         lineNumber = errorPath.front().first->linenr();
         errorPath.back().second = funcname + " is a virtual function";
@@ -2660,8 +2662,9 @@ void CheckClass::pureVirtualFunctionCallInConstructorError(
     const char * scopeFunctionTypeName = scopeFunction ? getFunctionTypeName(scopeFunction->type) : "constructor";
 
     ErrorPath errorPath;
-    for (const Token *tok : tokStack)
-        errorPath.emplace_back(tok, "Calling " + tok->str());
+    std::transform(tokStack.begin(), tokStack.end(), std::back_inserter(errorPath), [](const Token* tok) {
+        return ErrorPathItem(tok, "Calling " + tok->str());
+    });
     if (!errorPath.empty())
         errorPath.back().second = purefuncname + " is a pure virtual function without body";
 

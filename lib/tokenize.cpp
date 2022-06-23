@@ -4397,8 +4397,9 @@ void Tokenizer::setVarIdPass2()
             continue;
 
         // What member variables are there in this class?
-        for (const Token *it : classnameTokens)
-            scopeInfo.emplace_back(it->str(), tokStart->link());
+        std::transform(classnameTokens.begin(), classnameTokens.end(), std::back_inserter(scopeInfo), [&](const Token* it) {
+            return ScopeInfo2(it->str(), tokStart->link());
+        });
 
         for (Token *tok2 = tokStart->next(); tok2 && tok2 != tokStart->link(); tok2 = tok2->next()) {
             // skip parentheses..

@@ -4611,7 +4611,7 @@ private:
               "        b &= f(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool f(int);\n"
               "void foo() {\n"
@@ -4620,7 +4620,7 @@ private:
               "        b |= f(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool f(int);\n"
               "void foo() {\n"
@@ -4629,7 +4629,7 @@ private:
               "        b = b && f(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("bool f(int);\n"
               "void foo() {\n"
@@ -4638,7 +4638,7 @@ private:
               "        b = b || f(x);\n"
               "}\n",
               true);
-        ASSERT_EQUALS("[test.cpp:5]: (style) Consider using std::any_of, std::all_of, std::none_of, or std::accumulate algorithm instead of a raw loop.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void foo() {\n"
               "    int n = 0;\n"
