@@ -12480,13 +12480,11 @@ bool Tokenizer::hasIfdef(const Token *start, const Token *end) const
 {
     if (!mPreprocessor)
         return false;
-    for (const Directive &d: mPreprocessor->getDirectives()) {
-        if (d.str.compare(0,3,"#if") == 0 &&
-            d.linenr >= start->linenr() &&
-            d.linenr <= end->linenr() &&
-            start->fileIndex() < list.getFiles().size() &&
-            d.file == list.getFiles()[start->fileIndex()])
-            return true;
-    }
-    return false;
+    return std::any_of(mPreprocessor->getDirectives().begin(), mPreprocessor->getDirectives().end(), [&](const Directive& d) {
+        return d.str.compare(0, 3, "#if") == 0 &&
+               d.linenr >= start->linenr() &&
+               d.linenr <= end->linenr() &&
+               start->fileIndex() < list.getFiles().size() &&
+               d.file == list.getFiles()[start->fileIndex()];
+    });
 }
