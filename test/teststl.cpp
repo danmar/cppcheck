@@ -854,6 +854,12 @@ private:
                     "    return d;\n"
                     "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkNormal("std::string f() {\n"
+                    "    std::map<int, std::string> m = { { 1, \"1\" } };\n"
+                    "    return m.at(1);\n"
+                    "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void outOfBoundsSymbolic()
