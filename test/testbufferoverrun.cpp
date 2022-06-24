@@ -1842,12 +1842,12 @@ private:
     void array_index_66()
     {
         check("void foo(int j) {\n"
-            "    int offsets[256];\n"
-            "    while (x) {\n"
-            "        if (j >= 256) break;\n"
-            "        offsets[++j] = -1;\n"
-            "    }\n"
-            "}\n");
+              "    int offsets[256];\n"
+              "    while (x) {\n"
+              "        if (j >= 256) break;\n"
+              "        offsets[++j] = -1;\n"
+              "    }\n"
+              "}\n");
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:5]: (warning) Either the condition 'j>=256' is redundant or the array 'offsets[256]' is accessed at index 256, which is out of bounds.\n",
             errout.str());
