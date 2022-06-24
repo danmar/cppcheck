@@ -126,7 +126,7 @@ private:
         TEST_CASE(initvar_delegate);       // ticket #4302
         TEST_CASE(initvar_delegate2);
         TEST_CASE(initvar_derived_class);
-        TEST_CASE(initvar_derived_pod_struct); // #11101
+        TEST_CASE(initvar_derived_pod_struct_with_union); // #11101
 
         TEST_CASE(initvar_private_constructor);     // BUG 2354171 - private constructor
         TEST_CASE(initvar_copy_constructor); // ticket #1611
@@ -1417,7 +1417,7 @@ private:
 
     }
 
-    void initvar_derived_pod_struct() {
+    void initvar_derived_pod_struct_with_union() {
         check("struct S {\n"
               "    union {\n"
               "        unsigned short       all;\n"
@@ -1433,6 +1433,24 @@ private:
               "    C() { all = 0; tick = 0; }\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    union {\n"
+              "        unsigned short       all;\n"
+              "        struct {\n"
+              "            unsigned char    flag1;\n"
+              "            unsigned char    flag2;\n"
+              "        };\n"
+              "    };\n"
+              "};\n"
+              "\n"
+              "class C : public S {\n"
+              "public:\n"
+              "    C() {}\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:13]: (warning) Member variable 'S::all' is not initialized in the constructor. Maybe it should be initialized directly in the class S?\n"
+                      "[test.cpp:13]: (warning) Member variable 'S::flag1' is not initialized in the constructor. Maybe it should be initialized directly in the class S?\n"
+                      "[test.cpp:13]: (warning) Member variable 'S::flag2' is not initialized in the constructor. Maybe it should be initialized directly in the class S?\n", errout.str());
     }
 
     void initvar_private_constructor() {
@@ -3634,6 +3652,18 @@ private:
               "    void Init( Structure& S ) { S.C = 0; };\n"
               "};");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct Structure {\n"
+              "    int C;\n"
+              "};\n"
+              "\n"
+              "class A {\n"
+              "    Structure B;\n"
+              "public:\n"
+              "    A() { Init( B ); };\n"
+              "    void Init(const Structure& S) { }\n"
+              "};");
+        ASSERT_EQUALS("[test.cpp:8]: (warning) Member variable 'A::B' is not initialized in the constructor.\n", errout.str());
     }
 
     void uninitSameClassName() {

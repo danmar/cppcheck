@@ -3230,6 +3230,14 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
                       "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n",
                       errout.str());
+
+        check("void f() {\n"
+              "    char a[1][1];\n"
+              "    char* b[1];\n"
+              "    b[0] = a[0];\n"
+              "    **b = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void switchRedundantAssignmentTest() {
@@ -9383,7 +9391,7 @@ private:
               "    int local_argc = 0;\n"
               "    local_argv[local_argc++] = argv[0];\n"
               "}\n", "test.c");
-        ASSERT_EQUALS("[test.c:1]: (style) Parameter 'argv' can be declared as const array\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  int x = 0;\n"

@@ -6189,6 +6189,15 @@ private:
                            "[test.cpp:8] -> [test.cpp:3]: (error) Uninitialized variable: abc->c\n",
                            "[test.cpp:8] -> [test.cpp:3]: (error) Uninitialized variable: abc->b\n",
                            errout.str());
+
+        valueFlowUninit("struct S { int* p; };\n" // #10463
+                        "void f(S* in) {\n"
+                        "    S* s;\n"
+                        "    memcpy(in, s, sizeof(S));\n"
+                        "    s->p = NULL;\n"
+                        "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Uninitialized variable: s\n",
+                      errout.str());
     }
 
     void uninitvar_memberfunction() {
