@@ -6190,7 +6190,7 @@ private:
                            "[test.cpp:8] -> [test.cpp:3]: (error) Uninitialized variable: abc->b\n",
                            errout.str());
 
-        valueFlowUninit("struct S { int* p; };\n"
+        valueFlowUninit("struct S { int* p; };\n" // #10643
                         "void f(S* in) {\n"
                         "    S* s;\n"
                         "    memcpy(in, s, sizeof(S));\n"
