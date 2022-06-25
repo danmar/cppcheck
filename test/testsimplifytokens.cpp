@@ -101,9 +101,7 @@ private:
         TEST_CASE(simplifyArrayAccessSyntax);
 
         TEST_CASE(pointeralias1);
-        TEST_CASE(pointeralias2);
         TEST_CASE(pointeralias3);
-        TEST_CASE(pointeralias4);
 
         // struct ABC { } abc; => struct ABC { }; ABC abc;
         TEST_CASE(simplifyStructDecl1);
@@ -137,58 +135,36 @@ private:
         TEST_CASE(simplifyNamespaceAliases1);
         TEST_CASE(simplifyNamespaceAliases2); // ticket #10281
 
-        TEST_CASE(simplifyKnownVariables1);
         TEST_CASE(simplifyKnownVariables2);
         TEST_CASE(simplifyKnownVariables3);
         TEST_CASE(simplifyKnownVariables4);
         TEST_CASE(simplifyKnownVariables5);
-        TEST_CASE(simplifyKnownVariables6);
-        TEST_CASE(simplifyKnownVariables7);
-        TEST_CASE(simplifyKnownVariables8);
-        TEST_CASE(simplifyKnownVariables9);
-        TEST_CASE(simplifyKnownVariables10);
-        TEST_CASE(simplifyKnownVariables11);
         TEST_CASE(simplifyKnownVariables13);
         TEST_CASE(simplifyKnownVariables14);
-        TEST_CASE(simplifyKnownVariables15);
         TEST_CASE(simplifyKnownVariables16);
         TEST_CASE(simplifyKnownVariables17);
         TEST_CASE(simplifyKnownVariables18);
         TEST_CASE(simplifyKnownVariables19);
-        TEST_CASE(simplifyKnownVariables20);
         TEST_CASE(simplifyKnownVariables21);
-        TEST_CASE(simplifyKnownVariables22);
-        TEST_CASE(simplifyKnownVariables23);
         TEST_CASE(simplifyKnownVariables25);
-        TEST_CASE(simplifyKnownVariables27);
-        TEST_CASE(simplifyKnownVariables28);
         // FIXME Does expression id handle these? TEST_CASE(simplifyKnownVariables29);    // ticket #1811
         TEST_CASE(simplifyKnownVariables30);
-        TEST_CASE(simplifyKnownVariables31);
-        TEST_CASE(simplifyKnownVariables32);    // const
-        TEST_CASE(simplifyKnownVariables33);    // struct variable
         TEST_CASE(simplifyKnownVariables34);
         TEST_CASE(simplifyKnownVariables36);    // ticket #2304 - known value for strcpy parameter
-        TEST_CASE(simplifyKnownVariables39);
-        TEST_CASE(simplifyKnownVariables41);    // p=&x; if (p) ..
         TEST_CASE(simplifyKnownVariables42);    // ticket #2031 - known string value after strcpy
         TEST_CASE(simplifyKnownVariables43);
         TEST_CASE(simplifyKnownVariables44);    // ticket #3117 - don't simplify static variables
-        TEST_CASE(simplifyKnownVariables45);    // ticket #3281 - static constant variable not simplified
         TEST_CASE(simplifyKnownVariables46);    // ticket #3587 - >>
         TEST_CASE(simplifyKnownVariables47);    // ticket #3627 - >>
         TEST_CASE(simplifyKnownVariables48);    // ticket #3754 - wrong simplification in for loop header
         TEST_CASE(simplifyKnownVariables49);    // #3691 - continue in switch
         TEST_CASE(simplifyKnownVariables50);    // #4066 sprintf changes
         TEST_CASE(simplifyKnownVariables51);    // #4409 hang
-        TEST_CASE(simplifyKnownVariables53);    // references
         TEST_CASE(simplifyKnownVariables54);    // #4913 'x' is not 0 after *--x=0;
-        TEST_CASE(simplifyKnownVariables55);    // pointer alias
         TEST_CASE(simplifyKnownVariables56);    // ticket #5301 - >>
         TEST_CASE(simplifyKnownVariables57);    // ticket #4724
         TEST_CASE(simplifyKnownVariables58);    // ticket #5268
         TEST_CASE(simplifyKnownVariables59);    // skip for header
-        TEST_CASE(simplifyKnownVariables60);    // #6829
         TEST_CASE(simplifyKnownVariables61);    // #7805
         TEST_CASE(simplifyKnownVariables62);    // #5666 - p=&str[0]
         TEST_CASE(simplifyKnownVariables63);    // #10798
@@ -203,11 +179,8 @@ private:
         TEST_CASE(simplifyKnownVariablesClassMember);  // #2815 - value of class member may be changed by function call
         TEST_CASE(simplifyKnownVariablesFunctionCalls); // Function calls (don't assume pass by reference)
         TEST_CASE(simplifyKnownVariablesGlobalVars);
-        TEST_CASE(simplifyKnownVariablesPointerAliasFunctionCall); // #7440
         TEST_CASE(simplifyKnownVariablesNamespace); // #10059
 
-        TEST_CASE(simplify_constants2);
-        TEST_CASE(simplify_constants4);
         TEST_CASE(simplify_constants6);     // Ticket #5625: Ternary operator as template parameter
         TEST_CASE(simplifyVarDeclInitLists);
     }
@@ -2607,16 +2580,6 @@ private:
         }
     }
 
-    void pointeralias2() {
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    int i;\n"
-                            "    int *p = &i;\n"
-                            "    return *p;\n"
-                            "}\n";
-        ASSERT_EQUALS("void f ( ) { int i ; int * p ; return i ; }", tok(code));
-    }
-
     void pointeralias3() {
         const char code[] = "void f()\n"
                             "{\n"
@@ -2632,18 +2595,6 @@ private:
                                 " else { p = & j ; }"
                                 " * p = 0 ; "
                                 "}";
-        ASSERT_EQUALS(expected, tok(code));
-    }
-
-    void pointeralias4() {
-        const char code[] = "int f()\n"
-                            "{\n"
-                            "    int i;\n"
-                            "    int *p = &i;\n"
-                            "    *p = 5;\n"
-                            "    return i;\n"
-                            "}\n";
-        const char expected[] = "int f ( ) { int i ; int * p ; i = 5 ; return 5 ; }";
         ASSERT_EQUALS(expected, tok(code));
     }
 
@@ -3228,35 +3179,7 @@ private:
         std::istringstream istr(code);
         ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
 
-        (tokenizer.simplifyKnownVariables)();
-
         return tokenizer.tokens()->stringifyList(nullptr, false);
-    }
-
-    void simplifyKnownVariables1() {
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    int a = 10;\n"
-                                "    if (a);\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "void f ( ) { int a ; a = 10 ; if ( 10 ) { ; } }",
-                simplifyKnownVariables(code));
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "    int a = 10;\n"
-                                "    if (!a);\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "void f ( ) { int a ; a = 10 ; if ( ! 10 ) { ; } }",
-                simplifyKnownVariables(code));
-        }
     }
 
     void simplifyKnownVariables2() {
@@ -3313,136 +3236,6 @@ private:
             simplifyKnownVariables(code));
     }
 
-    void simplifyKnownVariables6() {
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    char str[2];"
-                            "    int a = 4;\n"
-                            "    str[a] = 0;\n"
-                            "}\n";
-
-        ASSERT_EQUALS(
-            "void f ( ) { char str [ 2 ] ; int a ; a = 4 ; str [ 4 ] = 0 ; }",
-            simplifyKnownVariables(code));
-    }
-
-    void simplifyKnownVariables7() {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int i = 22;\n"
-                            "    abc[i++] = 1;\n"
-                            "    abc[++i] = 2;\n"
-                            "}\n";
-
-        ASSERT_EQUALS(
-            "void foo ( ) { int i ; i = 24 ; abc [ 22 ] = 1 ; abc [ 24 ] = 2 ; }",
-            simplifyKnownVariables(code));
-    }
-
-    void simplifyKnownVariables8() {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int i = 22;\n"
-                            "    i++;\n"
-                            "    abc[i] = 0;\n"
-                            "}\n";
-
-        ASSERT_EQUALS(
-            "void foo ( ) { int i ; i = 23 ; abc [ 23 ] = 0 ; }",
-            simplifyKnownVariables(code));
-    }
-
-    void simplifyKnownVariables9() {
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int a = 1, b = 2;\n"
-                            "    if (a < b)\n"
-                            "        ;\n"
-                            "}\n";
-
-        ASSERT_EQUALS(
-            "void foo ( ) { int a ; a = 1 ; int b ; b = 2 ; if ( 1 < 2 ) { ; } }",
-            simplifyKnownVariables(code));
-    }
-
-    void simplifyKnownVariables10() {
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "  bool b=false;\n"
-                                "\n"
-                                "  {\n"
-                                "    b = true;\n"
-                                "  }\n"
-                                "\n"
-                                "  if( b )\n"
-                                "  {\n"
-                                "    a();\n"
-                                "  }\n"
-                                "}\n";
-
-            const std::string expected1("void f ( ) {"
-                                        " bool b ; b = false ;"
-                                        " { b = true ; }");
-
-            TODO_ASSERT_EQUALS(
-                expected1 + " if ( true ) { a ( ) ; } }",
-                expected1 + " if ( b ) { a ( ) ; } }",
-                simplifyKnownVariables(code));
-
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "  bool b=false;\n"
-                                "  { b = false; }\n"
-                                "  {\n"
-                                "    b = true;\n"
-                                "  }\n"
-                                "\n"
-                                "  if( b )\n"
-                                "  {\n"
-                                "    a();\n"
-                                "  }\n"
-                                "}\n";
-
-            TODO_ASSERT_EQUALS(
-                "void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( true ) { a ( ) ; } }",
-                "void f ( ) { bool b ; b = false ; { b = false ; } { b = true ; } if ( b ) { a ( ) ; } }",
-                simplifyKnownVariables(code));
-        }
-
-        {
-            const char code[] = "void f()\n"
-                                "{\n"
-                                "  int b=0;\n"
-                                "  b = 1;\n"
-                                "  for( int i = 0; i < 10; i++ )"
-                                "  {\n"
-                                "  }\n"
-                                "\n"
-                                "  return b;\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "void f ( ) { int b ; b = 0 ; b = 1 ; for ( int i = 0 ; i < 10 ; i ++ ) { } return 1 ; }",
-                simplifyKnownVariables(code));
-        }
-    }
-
-    void simplifyKnownVariables11() {
-        const char code[] = "const int foo = 0;\n"
-                            "int main()\n"
-                            "{\n"
-                            "  int foo=0;\n"
-                            "}\n";
-
-        ASSERT_EQUALS(
-            "int main ( ) { int foo ; foo = 0 ; }",
-            simplifyKnownVariables(code));
-    }
-
     void simplifyKnownVariables13() {
         const char code[] = "void f()\n"
                             "{\n"
@@ -3459,32 +3252,6 @@ private:
         // ticket #753
         const char code[] = "void f ( ) { int n ; n = 1 ; do { ++ n ; } while ( n < 10 ) ; }";
         ASSERT_EQUALS(code, simplifyKnownVariables(code));
-    }
-
-    void simplifyKnownVariables15() {
-        {
-            const char code[] = "int main()\n"
-                                "{\n"
-                                "  int x=5;\n"
-                                "  std::cout << 10 / x << std::endl;\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "int main ( ) { int x ; x = 5 ; std :: cout << 10 / 5 << std :: endl ; }",
-                simplifyKnownVariables(code));
-        }
-
-        {
-            const char code[] = "int main()\n"
-                                "{\n"
-                                "  int x=5;\n"
-                                "  std::cout << x / ( x == 1 ) << std::endl;\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "int main ( ) { int x ; x = 5 ; std :: cout << 5 / ( 5 == 1 ) << std :: endl ; }",
-                simplifyKnownVariables(code));
-        }
     }
 
     void simplifyKnownVariables16() {
@@ -3515,109 +3282,10 @@ private:
             simplifyKnownVariables(code));
     }
 
-    void simplifyKnownVariables20() {
-        const char code[] = "void f()\n"
-                            "{\n"
-                            "    int i = 0;\n"
-                            "    if (x) {\n"
-                            "        if (i) i=0;\n"
-                            "    }\n"
-                            "}\n";
-
-        ASSERT_EQUALS(
-            "void f ( ) { int i ; i = 0 ; if ( x ) { if ( 0 ) { i = 0 ; } } }",
-            simplifyKnownVariables(code));
-    }
-
     void simplifyKnownVariables21() {
-        const char code[] = "void foo() { int n = 10; for (int i = 0; i < n; ++i) { } }";
-
-        ASSERT_EQUALS(
-            "void foo ( ) { int n ; n = 10 ; for ( int i = 0 ; i < 10 ; ++ i ) { } }",
-            simplifyKnownVariables(code));
-
         ASSERT_EQUALS(
             "void foo ( int i ) { int n ; n = i ; for ( i = 0 ; i < n ; ++ i ) { } }",
             simplifyKnownVariables("void foo(int i) { int n = i; for (i = 0; i < n; ++i) { } }"));
-    }
-
-    void simplifyKnownVariables22() {
-        // This testcase is related to ticket #1169
-        {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    int n = 10;\n"
-                                "    i = (n >> 1);\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "void foo ( ) { int n ; n = 10 ; i = 10 >> 1 ; }",
-                simplifyKnownVariables(code));
-        }
-        {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    int n = 10;\n"
-                                "    i = (n << 1);\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "void foo ( ) { int n ; n = 10 ; i = 10 << 1 ; }",
-                simplifyKnownVariables(code));
-        }
-        {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    int n = 10;\n"
-                                "    i = (1 << n);\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "void foo ( ) { int n ; n = 10 ; i = 1 << 10 ; }",
-                simplifyKnownVariables(code));
-        }
-        {
-            const char code[] = "void foo()\n"
-                                "{\n"
-                                "    int n = 10;\n"
-                                "    i = (1 >> n);\n"
-                                "}\n";
-
-            ASSERT_EQUALS(
-                "void foo ( ) { int n ; n = 10 ; i = 1 >> 10 ; }",
-                simplifyKnownVariables(code));
-        }
-    }
-
-    void simplifyKnownVariables23() {
-        // This testcase is related to ticket #1596
-        const char code[] = "void foo(int x)\n"
-                            "{\n"
-                            "    int a[10], c = 0;\n"
-                            "    if (x) {\n"
-                            "        a[c] = 0;\n"
-                            "        c++;\n"
-                            "    } else {\n"
-                            "        a[c] = 0;\n"
-                            "    }\n"
-                            "}\n";
-
-        TODO_ASSERT_EQUALS(
-            "void foo ( int x ) "
-            "{"
-            " int a [ 10 ] ; int c ; c = 0 ;"
-            " if ( x ) { a [ 0 ] = 0 ; c = 1 ; }"
-            " else { a [ 0 ] = 0 ; } "
-            "}",
-
-            "void foo ( int x ) "
-            "{"
-            " int a [ 10 ] ; int c ; c = 0 ;"
-            " if ( x ) { a [ 0 ] = 0 ; c ++ ; }"
-            " else { a [ c ] = 0 ; } "
-            "}",
-
-            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables25() {
@@ -3670,43 +3338,6 @@ private:
                 "}",
                 simplifyKnownVariables(code));
         }
-    }
-
-    void simplifyKnownVariables27() {
-        // This testcase is related to ticket #1633
-        const char code[] = "void foo()\n"
-                            "{\n"
-                            "    int i1 = 1;\n"
-                            "    int i2 = 2;\n"
-                            "    int i3 = (i1 + i2) * 3;\n"
-                            "}\n";
-        ASSERT_EQUALS(
-            "void foo ( ) "
-            "{"
-            " int i1 ; i1 = 1 ;"
-            " int i2 ; i2 = 2 ;"
-            " int i3 ; i3 = ( 1 + 2 ) * 3 ; "
-            "}",
-            simplifyKnownVariables(code));
-    }
-
-    void simplifyKnownVariables28() {
-        const char code[] = "void foo(int g)\n"
-                            "{\n"
-                            "  int i = 2;\n"
-                            "  if (g) {\n"
-                            "  }\n"
-                            "  if (i > 0) {\n"
-                            "  }\n"
-                            "}\n";
-        ASSERT_EQUALS(
-            "void foo ( int g ) "
-            "{"
-            " int i ; i = 2 ;"
-            " if ( g ) { }"
-            " if ( 2 > 0 ) { } "
-            "}",
-            simplifyKnownVariables(code));
     }
 
     void simplifyKnownVariables29() { // ticket #1811
@@ -4049,48 +3680,6 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
-    void simplifyKnownVariables31() {
-        const char code[] = "void foo(const char str[]) {\n"
-                            "    const char *p = str;\n"
-                            "    if (p[0] == 0) {\n"
-                            "    }\n"
-                            "}\n";
-        const char expected[] = "void foo ( const char str [ ] ) {\n"
-                                "const char * p ; p = str ;\n"
-                                "if ( str [ 0 ] == 0 ) {\n"
-                                "}\n"
-                                "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-    }
-
-    void simplifyKnownVariables32() {
-        {
-            const char code[] = "void foo() {\n"
-                                "    const int x = 0;\n"
-                                "    bar(0,x);\n"
-                                "}\n";
-            const char expected[] = "void foo ( ) {\n\nbar ( 0 , 0 ) ;\n}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        }
-
-        {
-            const char code[] = "static int const SZ = 22; char str[SZ];\n";
-            ASSERT_EQUALS("char str [ 22 ] ;", tokenizeAndStringify(code,true));
-        }
-    }
-
-    void simplifyKnownVariables33() {
-        const char code[] = "static void foo(struct Foo *foo) {\n"
-                            "    foo->a = 23;\n"
-                            "    x[foo->a] = 0;\n"
-                            "}\n";
-        const char expected[] = "static void foo ( struct Foo * foo ) {\n"
-                                "foo . a = 23 ;\n"
-                                "x [ 23 ] = 0 ;\n"
-                                "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-    }
-
     void simplifyKnownVariables34() {
         const char code[] = "void f() {\n"
                             "    int x = 10;\n"
@@ -4106,13 +3695,6 @@ private:
     }
 
     void simplifyKnownVariables36() {
-        // Ticket #2304
-        const char code[] = "void f() {"
-                            "    const char *q = \"hello\";"
-                            "    strcpy(p, q);"
-                            "}";
-        const char expected[] = "void f ( ) { const char * q ; q = \"hello\" ; strcpy ( p , \"hello\" ) ; }";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
 
         // Ticket #5972
         const char code2[] = "void f() {"
@@ -4123,50 +3705,7 @@ private:
         ASSERT_EQUALS(expected2, tokenizeAndStringify(code2, true));
     }
 
-    void simplifyKnownVariables39() {
-        // Ticket #2296 - simplify pointer alias 'delete p;'
-        {
-            const char code[] = "void f() {\n"
-                                "    int *x;\n"
-                                "    int *y = x;\n"
-                                "    delete y;\n"
-                                "}";
-            ASSERT_EQUALS("void f ( ) {\nint * x ;\nint * y ; y = x ;\ndelete x ;\n}", tokenizeAndStringify(code, true));
-        }
-        {
-            const char code[] = "void f() {\n"
-                                "    int *x;\n"
-                                "    int *y = x;\n"
-                                "    delete [] y;\n"
-                                "}";
-            ASSERT_EQUALS("void f ( ) {\nint * x ;\nint * y ; y = x ;\ndelete [ ] x ;\n}", tokenizeAndStringify(code, true));
-        }
-    }
-
-    void simplifyKnownVariables41() {
-        const char code[] = "void f() {\n"
-                            "    int x = 0;\n"
-                            "    const int *p; p = &x;\n"
-                            "    if (p) { return 0; }\n"
-                            "}";
-        ASSERT_EQUALS("void f ( ) {\nint x ; x = 0 ;\nconst int * p ; p = & x ;\nif ( & x ) { return 0 ; }\n}", tokenizeAndStringify(code, true));
-    }
-
     void simplifyKnownVariables42() {
-        {
-            const char code[] = "void f() {\n"
-                                "    char str1[10], str2[10];\n"
-                                "    strcpy(str1, \"abc\");\n"
-                                "    strcpy(str2, str1);\n"
-                                "}";
-            const char expected[] = "void f ( ) {\n"
-                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
-                                    "strcpy ( str1 , \"abc\" ) ;\n"
-                                    "strcpy ( str2 , \"abc\" ) ;\n"
-                                    "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        }
-
         {
             const char code[] = "void f() {\n"
                                 "   char a[10];\n"
@@ -4261,20 +3800,6 @@ private:
         ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
     }
 
-    void simplifyKnownVariables45() {
-        const char code[] = "class Fred {\n"
-                            "private:\n"
-                            "    const static int NUM = 2;\n"
-                            "    int array[NUM];\n"
-                            "}";
-        const char expected[] = "class Fred {\n"
-                                "private:\n"
-                                "\n"
-                                "int array [ 2 ] ;\n"
-                                "}";
-        ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-    }
-
     void simplifyKnownVariables46() {
         const char code[] = "void f() {\n"
                             "    int x = 0;\n"
@@ -4336,45 +3861,6 @@ private:
 
     void simplifyKnownVariables50() { // #4066
         {
-            const char code[] = "void f() {\n"
-                                "    char str1[10], str2[10];\n"
-                                "    sprintf(str1, \"%%\");\n"
-                                "    strcpy(str2, str1);\n"
-                                "}";
-            const char expected[] = "void f ( ) {\n"
-                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
-                                    "sprintf ( str1 , \"%%\" ) ;\n"
-                                    "strcpy ( str2 , \"%\" ) ;\n"
-                                    "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        }
-        {
-            const char code[] = "void f() {\n"
-                                "    char str1[25], str2[25];\n"
-                                "    sprintf(str1, \"abcdef%%%% and %% and %\");\n"
-                                "    strcpy(str2, str1);\n"
-                                "}";
-            const char expected[] = "void f ( ) {\n"
-                                    "char str1 [ 25 ] ; char str2 [ 25 ] ;\n"
-                                    "sprintf ( str1 , \"abcdef%%%% and %% and %\" ) ;\n"
-                                    "strcpy ( str2 , \"abcdef%% and % and %\" ) ;\n"
-                                    "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        }
-        {
-            const char code[] = "void f() {\n"
-                                "    char str1[10], str2[10];\n"
-                                "    sprintf(str1, \"abc\");\n"
-                                "    strcpy(str2, str1);\n"
-                                "}";
-            const char expected[] = "void f ( ) {\n"
-                                    "char str1 [ 10 ] ; char str2 [ 10 ] ;\n"
-                                    "sprintf ( str1 , \"abc\" ) ;\n"
-                                    "strcpy ( str2 , \"abc\" ) ;\n"
-                                    "}";
-            ASSERT_EQUALS(expected, tokenizeAndStringify(code, true));
-        }
-        {
             //don't simplify '&x'!
             const char code[] = "const char * foo ( ) {\n"
                                 "const char x1 = 'b' ;\n"
@@ -4425,19 +3911,8 @@ private:
         ASSERT_THROW(tokenizeAndStringify(code, true), InternalError);
     }
 
-    void simplifyKnownVariables53() { // references
-        ASSERT_EQUALS("void f ( ) { int x ; x = abc ( ) ; }", tokenizeAndStringify("void f() { int x; int &ref=x; ref=abc(); }", true));
-        ASSERT_EQUALS("void f ( ) { int * p ; p = abc ( ) ; }", tokenizeAndStringify("void f() { int *p; int *&ref=p; ref=abc(); }", true));
-    }
-
     void simplifyKnownVariables54() { // #4913
         ASSERT_EQUALS("void f ( int * p ) { * -- p = 0 ; * p = 0 ; }", tokenizeAndStringify("void f(int*p) { *--p=0; *p=0; }", true));
-    }
-
-    void simplifyKnownVariables55() { // pointer alias
-        ASSERT_EQUALS("void f ( ) { int a ; int * p ; if ( a > 0 ) { } }", tokenizeAndStringify("void f() { int a; int *p=&a; if (*p>0) {} }", true));
-        ASSERT_EQUALS("void f ( ) { int a ; struct AB ab ; ab . a = & a ; if ( a > 0 ) { } }", tokenizeAndStringify("void f() { int a; struct AB ab; ab.a = &a; if (*ab.a>0) {} }", true));
-        ASSERT_EQUALS("void f ( ) { int a ; int * p ; if ( x > a ) { } }", tokenizeAndStringify("void f() { int a; int *p=&a; if (x>*p) {} }", true));
     }
 
     void simplifyKnownVariables56() { // ticket #5301 - >>
@@ -4482,21 +3957,6 @@ private:
                       "for ( i = 0 , j = 1 ; i < 3 , j < 12 ; i ++ , j ++ ) {\n"
                       "a [ i ] = 0 ;\n"
                       "}\n"
-                      "}", tokenizeAndStringify(code, true));
-    }
-
-    void simplifyKnownVariables60() { // #6829
-        const char code[] = "void f() {\n"
-                            "  int i = 1;\n"
-                            "  const int * const constPtrToConst = &i;\n"
-                            "  std::cout << *constPtrToConst << std::endl;\n"
-                            "  std::cout << constPtrToConst << std::endl;\n"
-                            "}";
-        ASSERT_EQUALS("void f ( ) {\n"
-                      "int i ; i = 1 ;\n"
-                      "const int * const constPtrToConst ; constPtrToConst = & i ;\n"
-                      "std :: cout << i << std :: endl ;\n"
-                      "std :: cout << & i << std :: endl ;\n"
                       "}", tokenizeAndStringify(code, true));
     }
 
@@ -4679,22 +4139,6 @@ private:
         ASSERT_EQUALS("static int x ; void f ( ) { x = 123 ; while ( ! x ) { dostuff ( ) ; } }", tokenizeAndStringify(code,true));
     }
 
-    void simplifyKnownVariablesPointerAliasFunctionCall() { // #7440
-        const char code[] = "int main() {\n"
-                            "  char* data = new char[100];\n"
-                            "  char** dataPtr = &data;\n"
-                            "  printf(\"test\");\n"
-                            "  delete [] *dataPtr;\n"
-                            "}";
-        const char exp[]  = "int main ( ) {\n"
-                            "char * data ; data = new char [ 100 ] ;\n"
-                            "char * * dataPtr ; dataPtr = & data ;\n"
-                            "printf ( \"test\" ) ;\n"
-                            "delete [ ] data ;\n"
-                            "}";
-        ASSERT_EQUALS(exp, tokenizeAndStringify(code, /*simplify=*/ true));
-    }
-
     void simplifyKnownVariablesNamespace() {
         { // #10059
             const char code[] = "namespace N {\n"
@@ -4783,25 +4227,6 @@ private:
             const std::string s(tokenizeAndStringify(code, true));
             TODO_ASSERT_EQUALS(true, false, s.find("memcpy ( 0 , s , 10 ) ;") != std::string::npos);
         }
-    }
-
-
-    void simplify_constants2() {
-        const char code[] =
-            "void f( Foo &foo, Foo *foo2 ) {\n"
-            "const int a = 45;\n"
-            "foo.a=a+a;\n"
-            "foo2->a=a;\n"
-            "}";
-        ASSERT_EQUALS("void f ( Foo & foo , Foo * foo2 ) { foo . a = 90 ; foo2 . a = 45 ; }", tok(code));
-    }
-
-    void simplify_constants4() {
-        const char code[] = "static const int bSize = 4;\n"
-                            "static const int aSize = 50;\n"
-                            "x = bSize;\n"
-                            "y = aSize;\n";
-        ASSERT_EQUALS("x = 4 ; y = 50 ;", tok(code));
     }
 
     void simplify_constants6() { // Ticket #5625
