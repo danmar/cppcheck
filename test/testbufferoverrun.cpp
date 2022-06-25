@@ -191,6 +191,7 @@ private:
         TEST_CASE(array_index_64); // #10878
         TEST_CASE(array_index_65); // #11066
         TEST_CASE(array_index_66); // #10740
+        TEST_CASE(array_index_67); // #1596
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1850,6 +1851,25 @@ private:
         ASSERT_EQUALS(
             "[test.cpp:4] -> [test.cpp:5]: (warning) Either the condition 'j>=256' is redundant or the array 'offsets[256]' is accessed at index 256, which is out of bounds.\n",
             errout.str());
+    }
+
+    void array_index_67() {
+        check("void func(int i) {\n" // #1596
+              "    int types[3];\n"
+              "    int type_cnt = 0;\n"
+              "    if (i == 0) {\n"
+              "        types[type_cnt] = 0;\n"
+              "        type_cnt++;\n"
+              "        types[type_cnt] = 0;\n"
+              "        type_cnt++;\n"
+              "        types[type_cnt] = 0;\n"
+              "        type_cnt++;\n"
+              "    } else {\n"
+              "        types[type_cnt] = 1;\n"
+              "        type_cnt++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_multidim() {

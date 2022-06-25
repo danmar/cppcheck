@@ -329,27 +329,6 @@ public:
      */
     bool simplifyUsing();
 
-    /**
-     * A simplify function that replaces a variable with its value in cases
-     * when the value is known. e.g. "x=10; if(x)" => "x=10;if(10)"
-     *
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifyKnownVariables();
-
-    /**
-     * Utility function for simplifyKnownVariables. Get data about an
-     * assigned variable.
-     */
-    static bool simplifyKnownVariablesGetData(nonneg int varid, Token **_tok2, Token **_tok3, std::string &value, nonneg int &valueVarId, bool &valueIsPointer, bool floatvar);
-
-    /**
-     * utility function for simplifyKnownVariables. Perform simplification
-     * of a given variable
-     */
-    bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, nonneg int varid, const std::string &structname, std::string &value, nonneg int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const;
-
     /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
     void simplifyEmptyNamespaces();
 
