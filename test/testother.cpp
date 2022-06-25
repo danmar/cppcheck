@@ -3250,6 +3250,13 @@ private:
               "    **b = 0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("ptrdiff_t f(int *p0, int *p1) {\n" // #11148
+              "    return p0 - p1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p0' can be declared as pointer to const\n"
+                      "[test.cpp:1]: (style) Parameter 'p1' can be declared as pointer to const\n",
+                      errout.str());
     }
 
     void switchRedundantAssignmentTest() {
