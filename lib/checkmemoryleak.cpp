@@ -1070,9 +1070,14 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
             if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%") && (!isNew && precedes(tok, closingBrace->link())))
                 continue;
             returnValueNotUsedError(tok, tok->str());
-        } else if (Token::Match(parent, "%comp%|!|,|%oror%|&&")) {
-            if (!(parent->astParent() && parent->str() == ","))
-                returnValueNotUsedError(tok, tok->str());
+        } else if (Token::Match(parent, "%comp%|!|,|%oror%|&&|:")) {
+            if (parent->astParent() && parent->str() == ",")
+                continue;
+            if (parent->str() == ":") {
+                if (!(Token::simpleMatch(parent->astParent(), "?") && !parent->astParent()->astParent()))
+                    continue;
+            }
+            returnValueNotUsedError(tok, tok->str());
         }
     }
 }

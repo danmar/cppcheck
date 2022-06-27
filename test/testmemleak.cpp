@@ -2607,6 +2607,14 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'malloc' is not stored.\n"
                       "[test.cpp:2]: (error) Return value of allocation function 'malloc' is not stored.\n",
                       errout.str());
+
+        check("void f0(const bool b) { b ? new int : nullptr; }\n" // #11155
+              "void f1(const bool b) { b ? nullptr : new int; }\n"
+              "int* g0(const bool b) { return b ? new int : nullptr; }\n"
+              "void g1(const bool b) { h(b, b ? nullptr : new int); }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n",
+                      errout.str());
     }
 
     void smartPointerFunctionParam() {
