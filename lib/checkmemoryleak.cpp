@@ -1016,8 +1016,10 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
         for (const Token* arg : args) {
             if (arg->isOp())
                 continue;
-            while (arg->astOperand1())
-                arg = arg->astOperand1();
+            if (!(mTokenizer->isCPP() && Token::simpleMatch(arg, "new"))) {
+                while (arg->astOperand1())
+                    arg = arg->astOperand1();
+            }
             if (getAllocationType(arg, 0) == No)
                 continue;
             if (isReopenStandardStream(arg))
