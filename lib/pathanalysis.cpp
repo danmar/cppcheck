@@ -166,8 +166,8 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
             if (f(info) == Progress::Break)
                 return Progress::Break;
         }
-        // Prevent infinite recursion
-        if (tok->next() == start)
+        // Try to prevent range overflow and infinite recursion
+        if (tok == endToken || tok->next() == start)
             break;
     }
     return Progress::Continue;
