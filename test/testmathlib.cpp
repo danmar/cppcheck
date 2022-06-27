@@ -57,7 +57,6 @@ private:
         TEST_CASE(toDoubleNumber);
         TEST_CASE(naninf);
         TEST_CASE(isNullValue);
-        TEST_CASE(incdec);
         TEST_CASE(sin);
         TEST_CASE(cos);
         TEST_CASE(tan);
@@ -1190,27 +1189,6 @@ private:
         ASSERT_EQUALS(false, MathLib::isNullValue("garbage"));
         ASSERT_EQUALS(false, MathLib::isNullValue("UL"));
         ASSERT_EQUALS(false, MathLib::isNullValue("-ENOMEM"));
-    }
-
-    void incdec() const {
-        // increment
-        {
-            const MathLib::biguint num = ~10U;
-            const std::string op = "++";
-            const std::string strNum = MathLib::incdec(MathLib::toString(num), op);
-            const MathLib::biguint incrementedNum = MathLib::toULongNumber(strNum);
-            ASSERT_EQUALS(num + 1U, incrementedNum);
-        }
-        // decrement
-        {
-            const MathLib::biguint num = ~10U;
-            const std::string op = "--";
-            const std::string strNum = MathLib::incdec(MathLib::toString(num), op);
-            const MathLib::biguint decrementedNum = MathLib::toULongNumber(strNum);
-            ASSERT_EQUALS(num - 1U, decrementedNum);
-        }
-        // invalid operation
-        ASSERT_THROW(MathLib::incdec("1", "x"), InternalError); // throw
     }
 
     void sin() const {

@@ -1556,6 +1556,8 @@ void CheckOther::checkConstPointer()
             deref = true;
         else if (Token::simpleMatch(parent, "[") && parent->astOperand1() == tok && tok != nameTok)
             deref = true;
+        else if (Token::Match(parent, "%op%") && Token::simpleMatch(parent->astParent(), "."))
+            deref = true;
         else if (astIsRangeBasedForDecl(tok))
             continue;
         if (deref) {
@@ -1565,16 +1567,19 @@ void CheckOther::checkConstPointer()
             if (Token::simpleMatch(gparent, "return"))
                 continue;
             else if (Token::Match(gparent, "%assign%") && parent == gparent->astOperand2()) {
-                bool takingRef = false;
+                bool takingRef = false, nonConstPtrAssignment = false;
                 const Token *lhs = gparent->astOperand1();
                 if (lhs && lhs->variable() && lhs->variable()->isReference() && lhs->variable()->nameToken() == lhs)
                     takingRef = true;
-                if (!takingRef)
+                if (lhs && lhs->valueType() && lhs->valueType()->pointer && (lhs->valueType()->constness & 1) == 0 &&
+                    parent->valueType() && parent->valueType()->pointer)
+                    nonConstPtrAssignment = true;
+                if (!takingRef && !nonConstPtrAssignment)
                     continue;
             } else if (Token::simpleMatch(gparent, "[") && gparent->astOperand2() == parent)
                 continue;
         } else {
-            if (Token::Match(parent, "%oror%|%comp%|&&|?|!"))
+            if (Token::Match(parent, "%oror%|%comp%|&&|?|!|-"))
                 continue;
             else if (Token::simpleMatch(parent, "(") && Token::Match(parent->astOperand1(), "if|while"))
                 continue;
