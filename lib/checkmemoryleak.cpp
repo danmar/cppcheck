@@ -1016,8 +1016,10 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
         for (const Token* arg : args) {
             if (arg->isOp())
                 continue;
-            while (arg->astOperand1())
-                arg = arg->astOperand1();
+            if (!(mTokenizer->isCPP() && Token::simpleMatch(arg, "new"))) {
+                while (arg->astOperand1())
+                    arg = arg->astOperand1();
+            }
             if (getAllocationType(arg, 0) == No)
                 continue;
             if (isReopenStandardStream(arg))
@@ -1068,8 +1070,9 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
             if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%") && (!isNew && precedes(tok, closingBrace->link())))
                 continue;
             returnValueNotUsedError(tok, tok->str());
-        } else if (Token::Match(parent, "%comp%|!")) {
-            returnValueNotUsedError(tok, tok->str());
+        } else if (Token::Match(parent, "%comp%|!|,")) {
+            if (!(parent->astParent() && parent->str() == ","))
+                returnValueNotUsedError(tok, tok->str());
         }
     }
 }

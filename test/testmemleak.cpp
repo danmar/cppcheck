@@ -2401,6 +2401,12 @@ private:
               "    return static_cast<int*>(malloc(size));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if (new int[42]) {} }\n" // #10857
+              "void g() { if (malloc(42)) {} }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Allocation with new, if doesn't release it.\n"
+                      "[test.cpp:2]: (error) Allocation with malloc, if doesn't release it.\n",
+                      errout.str());
     }
 
     void missingAssignment() {
@@ -2452,7 +2458,7 @@ private:
               "{\n"
               "    42,malloc(42);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", errout.str());
 
         check("void *f()\n"
               "{\n"
