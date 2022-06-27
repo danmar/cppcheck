@@ -2601,6 +2601,12 @@ private:
               "    C{ new QWidget, 1 };\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) { if (b && malloc(42)) {} }\n" //  // #10858
+              "void g(bool b) { if (b || malloc(42)) {} }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'malloc' is not stored.\n"
+                      "[test.cpp:2]: (error) Return value of allocation function 'malloc' is not stored.\n",
+                      errout.str());
     }
 
     void smartPointerFunctionParam() {
