@@ -2458,7 +2458,7 @@ private:
               "{\n"
               "    42,malloc(42);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", errout.str());
 
         check("void *f()\n"
               "{\n"
