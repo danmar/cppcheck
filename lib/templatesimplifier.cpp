@@ -3794,7 +3794,6 @@ void TemplateSimplifier::simplifyTemplates(
             if (instantiated) {
                 mInstantiatedTemplates.push_back(*iter1);
                 mTemplateNamePos.clear(); // positions might be invalid after instantiations
-                getTemplateDeclarations();
             }
         }
 
