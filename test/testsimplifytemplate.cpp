@@ -218,6 +218,7 @@ private:
         TEST_CASE(template173); // #10332 crash
         TEST_CASE(template174); // #10506 hang
         TEST_CASE(template175); // #10908
+        TEST_CASE(template176); // #11146
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4458,13 +4459,34 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
-    void template175()
+    void template175() // #10908
     {
         const char code[] = "template <typename T, int value> T Get() {return value;}\n"
                             "char f() { Get<int,10>(); }\n";
         const char exp[] = "int Get<int,10> ( ) ; "
                            "char f ( ) { Get<int,10> ( ) ; } "
                            "int Get<int,10> ( ) { return 10 ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template176() // #11146 don't crash
+    {
+        const char code[] = "struct a {\n"
+                            "    template <typename> class b {};\n"
+                            "};\n"
+                            "struct c {\n"
+                            "    template <typename> a::b<int> d();\n"
+                            "    ;\n"
+                            "};\n"
+                            "template <typename> a::b<int> c::d() {}\n"
+                            "template <> class a::b<int> c::d<int>() { return {}; };\n";
+        const char exp[] = "struct a { "
+                           "class b<int> c :: d<int> ( ) ; "
+                           "template < typename > class b { } ; "
+                           "} ; "
+                           "struct c { a :: b<int> d<int> ( ) ; } ; "
+                           "class a :: b<int> c :: d<int> ( ) { return { } ; } ; "
+                           "a :: b<int> c :: d<int> ( ) { }";
         ASSERT_EQUALS(exp, tok(code));
     }
 
