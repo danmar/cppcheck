@@ -1014,11 +1014,12 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 
         const std::vector<const Token *> args = getArguments(tok);
         for (const Token* arg : args) {
-            if (arg->isOp())
+            if (arg->isOp() && !(tok->isKeyword() && arg->str() == "*")) // e.g. switch (*new int)
                 continue;
-            if (!(mTokenizer->isCPP() && Token::simpleMatch(arg, "new"))) {
-                while (arg->astOperand1())
-                    arg = arg->astOperand1();
+            while (arg->astOperand1()) {
+                if (mTokenizer->isCPP() && Token::simpleMatch(arg, "new"))
+                    break;
+                arg = arg->astOperand1();
             }
             if (getAllocationType(arg, 0) == No)
                 continue;
