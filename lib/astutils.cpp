@@ -865,6 +865,34 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
     return false;
 }
 
+bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive)
+{
+    const bool pointer = astIsPointer(tok);
+    const ValueFlow::Value* value = nullptr;
+    const Token* r = findAstNode(expr, [&](const Token* childTok) {
+        for (const ValueFlow::Value& val : tok->values()) {
+            if (val.isImpossible())
+                continue;
+            if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
+                if (findAstNode(val.tokvalue,
+                                [&](const Token* aliasTok) {
+                    return aliasTok->exprId() == childTok->exprId();
+                })) {
+                    if (val.isInconclusive() && inconclusive) { // NOLINT
+                        value = &val;
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    });
+    if (!r && value && inconclusive)
+        *inconclusive = true;
+    return r || value;
+}
+
 static bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
 {
     if (!precedes(startTok, endTok))
@@ -2452,27 +2480,12 @@ static bool isExpressionChangedAt(const F& getExprTok,
         if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
             // TODO: Is global variable really changed by function call?
             return true;
-        const bool pointer = astIsPointer(tok);
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
         if (!getExprTok())
             aliased = true;
-        if (!aliased) {
-            aliased = findAstNode(getExprTok(), [&](const Token* childTok) {
-                for (const ValueFlow::Value& val : tok->values()) {
-                    if (val.isImpossible())
-                        continue;
-                    if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
-                        if (findAstNode(val.tokvalue,
-                                        [&](const Token* aliasTok) {
-                            return aliasTok->exprId() == childTok->exprId();
-                        }))
-                            return true;
-                    }
-                }
-                return false;
-            });
-        }
+        if (!aliased)
+            aliased = isAliasOf(tok, getExprTok());
         if (!aliased)
             return false;
         if (isVariableChanged(tok, 1, settings, cpp, depth))
