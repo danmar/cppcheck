@@ -991,7 +991,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
     // parse the executable scope until tok is reached...
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
         // allocating memory in parameter for function call..
-        if (!Token::Match(tok, "%name% ("))
+        if (tok->varId() || !Token::Match(tok, "%name% ("))
             continue;
 
         // check if the output of the function is assigned

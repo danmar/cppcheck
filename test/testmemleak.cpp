@@ -2623,6 +2623,11 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with new, switch doesn't release it.\n"
                       "[test.cpp:3]: (error) Allocation with malloc, switch doesn't release it.\n",
                       errout.str());
+
+        check("void f() {\n"
+              "    Ref<StringBuffer> remove(new StringBuffer());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerFunctionParam() {
