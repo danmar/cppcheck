@@ -3525,7 +3525,7 @@ private:
                         "    if (!x) i = 0;\n"
                         "    if (!x || i>0) {}\n" // <- error
                         "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (error) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (warning) Uninitialized variable: i\n", errout.str());
 
         valueFlowUninit("void f(int x) {\n"
                         "    int i;\n"
@@ -3540,7 +3540,7 @@ private:
                         "    else i = 0;\n"
                         "    if (x || i>0) {}\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (error) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Uninitialized variable: i\n", errout.str());
 
         valueFlowUninit("void f(int x) {\n"
                         "    int i;\n"
@@ -3573,7 +3573,7 @@ private:
                         "        a = y;\n"
                         "    return y ? 2*a : 3*a;\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (error) Uninitialized variable: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:5]: (warning) Uninitialized variable: a\n", errout.str());
 
         valueFlowUninit("void f() {\n" // Don't crash
                         "    int a;\n"
@@ -4675,7 +4675,7 @@ private:
                         "    s.x = 42;\n"
                         "    bar(&s);\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (error) Uninitialized variable: s->flag\n",
+        ASSERT_EQUALS("[test.cpp:18] -> [test.cpp:12] -> [test.cpp:8]: (warning) Uninitialized variable: s->flag\n",
                       errout.str());
 
         // Ticket #2207 - False negative
@@ -4820,7 +4820,7 @@ private:
                         "        p = new S(io);\n"
                         "    p->Write();\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (error) Uninitialized variable: p.rIo\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:10]: (warning) Uninitialized variable: p.rIo\n", errout.str());
 
         // Unknown types
         {
@@ -5140,7 +5140,7 @@ private:
                         "    }\n"
                         "    printf(\"\", value);\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:9]: (error) Uninitialized variable: value\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:9]: (warning) Uninitialized variable: value\n", errout.str());
 
         valueFlowUninit("void f(int x)\n"
                         "{\n"
@@ -5242,7 +5242,7 @@ private:
                         "    else\n"
                         "        return -1;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (error) Uninitialized variable: a\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:6]: (warning) Uninitialized variable: a\n", errout.str());
 
         // #9772
         valueFlowUninit("int func(void) {\n"
@@ -5366,7 +5366,7 @@ private:
                         "    increment(n);\n"
                         "    return n;\n"
                         "}\n");
-        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Uninitialized variable: i\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (warning) Uninitialized variable: i\n", errout.str());
     }
 
     void valueFlowUninitBreak() { // Do not show duplicate warnings about the same uninitialized value
@@ -5418,7 +5418,7 @@ private:
                         "    someType_t gVar;\n"
                         "    bar(&gVar);\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (error) Uninitialized variable: p->flags\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:9] -> [test.cpp:5]: (warning) Uninitialized variable: p->flags\n", errout.str());
 
         valueFlowUninit("typedef struct\n"
                         "{\n"
@@ -5619,7 +5619,7 @@ private:
                         "  bool copied_all = true;\n"
                         "  g(&copied_all, 5, 6, &bytesCopied);\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (error) Uninitialized variable: *buflen\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:7] -> [test.cpp:2]: (warning) Uninitialized variable: *buflen\n", errout.str());
 
         // # 9953
         valueFlowUninit("uint32_t f(uint8_t *mem) {\n"
@@ -5657,7 +5657,7 @@ private:
                         "    ab.a = 0;\n"
                         "    do_something(ab);\n"
                         "}");
-        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (error) Uninitialized variable: ab.b\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:6] -> [test.cpp:2]: (warning) Uninitialized variable: ab.b\n", errout.str());
 
         valueFlowUninit("struct AB { int a; int b; };\n"
                         "void f(void) {\n"
@@ -6187,7 +6187,7 @@ private:
                         "}\n");
         TODO_ASSERT_EQUALS("[test.cpp:8] -> [test.cpp:3]: (error) Uninitialized variable: abc->b\n"
                            "[test.cpp:8] -> [test.cpp:3]: (error) Uninitialized variable: abc->c\n",
-                           "[test.cpp:8] -> [test.cpp:3]: (error) Uninitialized variable: abc->b\n",
+                           "[test.cpp:8] -> [test.cpp:3]: (warning) Uninitialized variable: abc->b\n",
                            errout.str());
 
         valueFlowUninit("struct S { int* p; };\n" // #10463
