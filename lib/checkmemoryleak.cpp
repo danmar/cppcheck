@@ -1001,7 +1001,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
         if (Token::Match(tok2, "%assign%"))
             continue;
         if (Token::simpleMatch(tok->astTop(), "return"))
-          continue;
+            continue;
 
         const std::string& functionName = tok->str();
         if ((mTokenizer->isCPP() && functionName == "delete") ||
