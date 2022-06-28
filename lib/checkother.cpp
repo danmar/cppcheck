@@ -1722,7 +1722,7 @@ void CheckOther::charBitOpError(const Token *tok)
 
 static bool isType(const Token * tok, bool unknown)
 {
-    if (Token::Match(tok, "%type%"))
+    if (tok && (tok->isStandardType() || (!tok->isKeyword() && Token::Match(tok, "%type%"))))
         return true;
     if (Token::simpleMatch(tok, "::"))
         return isType(tok->astOperand2(), unknown);

@@ -991,7 +991,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
     // parse the executable scope until tok is reached...
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
         // allocating memory in parameter for function call..
-        if (!Token::Match(tok, "%name% ("))
+        if (tok->varId() || !Token::Match(tok, "%name% ("))
             continue;
 
         // check if the output of the function is assigned
@@ -1014,11 +1014,12 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 
         const std::vector<const Token *> args = getArguments(tok);
         for (const Token* arg : args) {
-            if (arg->isOp())
+            if (arg->isOp() && !(tok->isKeyword() && arg->str() == "*")) // e.g. switch (*new int)
                 continue;
-            if (!(mTokenizer->isCPP() && Token::simpleMatch(arg, "new"))) {
-                while (arg->astOperand1())
-                    arg = arg->astOperand1();
+            while (arg->astOperand1()) {
+                if (mTokenizer->isCPP() && Token::simpleMatch(arg, "new"))
+                    break;
+                arg = arg->astOperand1();
             }
             if (getAllocationType(arg, 0) == No)
                 continue;
@@ -1070,9 +1071,14 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
             if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%") && (!isNew && precedes(tok, closingBrace->link())))
                 continue;
             returnValueNotUsedError(tok, tok->str());
-        } else if (Token::Match(parent, "%comp%|!|,|%oror%|&&")) {
-            if (!(parent->astParent() && parent->str() == ","))
-                returnValueNotUsedError(tok, tok->str());
+        } else if (Token::Match(parent, "%comp%|!|,|%oror%|&&|:")) {
+            if (parent->astParent() && parent->str() == ",")
+                continue;
+            if (parent->str() == ":") {
+                if (!(Token::simpleMatch(parent->astParent(), "?") && !parent->astParent()->astParent()))
+                    continue;
+            }
+            returnValueNotUsedError(tok, tok->str());
         }
     }
 }
