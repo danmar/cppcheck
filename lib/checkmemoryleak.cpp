@@ -991,7 +991,7 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
     // parse the executable scope until tok is reached...
     for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
         // allocating memory in parameter for function call..
-        if (!Token::Match(tok, "%name% ("))
+        if (tok->varId() || !Token::Match(tok, "%name% ("))
             continue;
 
         // check if the output of the function is assigned
@@ -1014,11 +1014,12 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
 
         const std::vector<const Token *> args = getArguments(tok);
         for (const Token* arg : args) {
-            if (arg->isOp())
+            if (arg->isOp() && !(tok->isKeyword() && arg->str() == "*")) // e.g. switch (*new int)
                 continue;
-            if (!(mTokenizer->isCPP() && Token::simpleMatch(arg, "new"))) {
-                while (arg->astOperand1())
-                    arg = arg->astOperand1();
+            while (arg->astOperand1()) {
+                if (mTokenizer->isCPP() && Token::simpleMatch(arg, "new"))
+                    break;
+                arg = arg->astOperand1();
             }
             if (getAllocationType(arg, 0) == No)
                 continue;

@@ -2615,6 +2615,19 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'new' is not stored.\n"
                       "[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n",
                       errout.str());
+
+        check("void f() {\n" // #11157
+              "    switch (*new int) { case 42: break; }\n"
+              "    switch (*malloc(42)) { case 42: break; }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with new, switch doesn't release it.\n"
+                      "[test.cpp:3]: (error) Allocation with malloc, switch doesn't release it.\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    Ref<StringBuffer> remove(new StringBuffer());\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void smartPointerFunctionParam() {
