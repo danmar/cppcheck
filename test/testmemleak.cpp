@@ -2407,6 +2407,14 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (error) Allocation with new, if doesn't release it.\n"
                       "[test.cpp:2]: (error) Allocation with malloc, if doesn't release it.\n",
                       errout.str());
+
+        check("const char* string(const char* s) {\n"
+              "    StringSet::iterator it = strings_.find(s);\n"
+              "    if (it != strings_.end())\n"
+              "        return *it;\n"
+              "    return *strings_.insert(it, std::strcpy(new char[std::strlen(s) + 1], s));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {
