@@ -2415,6 +2415,18 @@ private:
               "    return *strings_.insert(it, std::strcpy(new char[std::strlen(s) + 1], s));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    static void load(const QString & projPath) {\n"
+              "        if (proj_)\n"
+              "            return;\n"
+              "        proj_ = new ProjectT(projPath);\n"
+              "        proj_->open(new OpenCallback());\n"
+              "    }\n"
+              "private:\n"
+              "    static Core::ProjectBase* proj_;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {
