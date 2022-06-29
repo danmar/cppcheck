@@ -335,6 +335,8 @@ bool isExpressionChangedAt(const Token* expr,
 /// If token is an alias if another variable
 bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive = nullptr);
 
+bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive = nullptr);
+
 bool isAliased(const Variable *var);
 
 const Token* getArgumentStart(const Token* ftok);
