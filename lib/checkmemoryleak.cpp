@@ -998,7 +998,9 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
         const Token* tok2 = tok->next()->astParent();
         while (tok2 && tok2->isCast())
             tok2 = tok2->astParent();
-        if (Token::Match(tok2, "%assign%|return"))
+        if (Token::Match(tok2, "%assign%"))
+            continue;
+        if (Token::simpleMatch(tok->astTop(), "return"))
             continue;
 
         const std::string& functionName = tok->str();
@@ -1009,6 +1011,8 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
             functionName == "return")
             continue;
 
+        if (!tok->isKeyword() && mSettings->library.isNotLibraryFunction(tok))
+            continue;
         if (!CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP()))
             continue;
 

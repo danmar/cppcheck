@@ -1518,6 +1518,8 @@ void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname
 
 void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
 {
+    if (!mSettings->isEnabled(&v))
+        return;
     if (diag(tok))
         return;
     const Token* ltok = tok;
@@ -1526,13 +1528,15 @@ void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
     const std::string& varname = ltok ? ltok->expressionString() : "x";
     ErrorPath errorPath = v.errorPath;
     errorPath.emplace_back(tok, "");
+    auto severity = v.isKnown() ? Severity::error : Severity::warning;
+    auto certainty = v.isInconclusive() ? Certainty::inconclusive : Certainty::normal;
     if (v.subexpressions.empty()) {
         reportError(errorPath,
-                    Severity::error,
+                    severity,
                     "uninitvar",
                     "$symbol:" + varname + "\nUninitialized variable: $symbol",
                     CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                    Certainty::normal);
+                    certainty);
         return;
     }
     std::string vars = v.subexpressions.size() == 1 ? "variable: " : "variables: ";
@@ -1542,11 +1546,11 @@ void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
         prefix = ", ";
     }
     reportError(errorPath,
-                Severity::error,
+                severity,
                 "uninitvar",
                 "$symbol:" + varname + "\nUninitialized " + vars,
                 CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                Certainty::normal);
+                certainty);
 }
 
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
