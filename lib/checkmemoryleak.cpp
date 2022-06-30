@@ -1011,6 +1011,8 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
             functionName == "return")
             continue;
 
+        if (Token::simpleMatch(tok->next()->astParent(), "(")) // passed to another function
+            continue;
         if (!tok->isKeyword() && mSettings->library.isNotLibraryFunction(tok))
             continue;
         if (!CheckMemoryLeakInFunction::test_white_list(functionName, mSettings, mTokenizer->isCPP()))
