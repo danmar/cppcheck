@@ -1731,6 +1731,18 @@ private:
         check("struct A{} a; A f1() { return std::move(a); }\n"
               "A f2() { volatile A var; return std::move(var); }");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { std::string msg{ \"abc\" }; };\n"
+              "std::unique_ptr<S> get(std::vector<std::unique_ptr<S>>& v) {\n"
+              "    return std::move(v.front());\n"
+              "}\n"
+              "int main() {\n"
+              "    std::vector<std::unique_ptr<S>> v;\n"
+              "    v.emplace_back(std::make_unique<S>());\n"
+              "    auto p = get(v);\n"
+              "    std::cout << p->msg;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void negativeMemoryAllocationSizeError() { // #389
