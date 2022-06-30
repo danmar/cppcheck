@@ -2417,7 +2417,7 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         check("struct S {\n"
-              "    static void load(const QString & projPath) {\n"
+              "    static void load(const QString& projPath) {\n"
               "        if (proj_)\n"
               "            return;\n"
               "        proj_ = new ProjectT(projPath);\n"
@@ -2425,6 +2425,12 @@ private:
               "    }\n"
               "private:\n"
               "    static Core::ProjectBase* proj_;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& s, int n) {\n"
+              "    std::unique_ptr<char[]> u;\n"
+              "    u.reset(strcpy(new char[n], s.c_str()));\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
     }
