@@ -1803,6 +1803,8 @@ void CheckCondition::checkCompareValueOutOfTypeRange()
                     continue;
                 if (valueTok->getKnownIntValue() < 0 && valueTok->valueType() && valueTok->valueType()->sign != ValueType::Sign::SIGNED)
                     continue;
+                if (valueTok->valueType() && valueTok->valueType()->isTypeEqual(typeTok->valueType()))
+                    continue;
                 int bits = 0;
                 switch (typeTok->valueType()->type) {
                 case ValueType::Type::BOOL:
