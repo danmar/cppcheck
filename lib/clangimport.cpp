@@ -505,9 +505,8 @@ void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line
             if (ext.find(", col:") != std::string::npos)
                 col = std::atoi(ext.c_str() + ext.find(", col:") + 6);
         } else if (ext[0] == '<' && (colon = ext.find(":")) != std::string::npos) {
-            //const bool windowsPath = colon == 2 && ext.size() > 4 && ext[3] == '\\';
-            //std::string::size_type sep1 = windowsPath ? ext.find(":", 4) : colon;
-            std::string::size_type sep1 = ext.find(":");
+            const bool windowsPath = colon == 2 && ext.size() > 4 && ext[3] == '\\';
+            std::string::size_type sep1 = windowsPath ? ext.find(":", 4) : colon;
             std::string::size_type sep2 = ext.find(":", sep1+1);
             file = tokenList->appendFileIfNew(ext.substr(1, sep1 - 1));
             line = MathLib::toLongNumber(ext.substr(sep1+1, sep2-sep1));
