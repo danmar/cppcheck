@@ -497,17 +497,21 @@ void clangimport::AstNode::dumpAst(int num, int indent) const
 void clangimport::AstNode::setLocations(TokenList *tokenList, int file, int line, int col)
 {
     for (const std::string &ext: mExtTokens) {
-        if (ext.compare(0,5,"<col:") == 0)
+        if (ext.compare(0, 5, "<col:") == 0)
             col = std::atoi(ext.substr(5).c_str());
-        else if (ext.compare(0,6,"<line:") == 0) {
+        else if (ext.compare(0, 6, "<line:") == 0) {
             line = std::atoi(ext.substr(6).c_str());
             if (ext.find(", col:") != std::string::npos)
                 col = std::atoi(ext.c_str() + ext.find(", col:") + 6);
-        } else if (ext[0] == '<' && ext.find(":") != std::string::npos) {
-            std::string::size_type sep1 = ext.find(":");
-            std::string::size_type sep2 = ext.find(":", sep1+1);
-            file = tokenList->appendFileIfNew(ext.substr(1, sep1 - 1));
-            line = MathLib::toLongNumber(ext.substr(sep1+1, sep2-sep1));
+        } else if (ext[0] == '<') {
+            const std::string::size_type colon = ext.find(':');
+            if (colon != std::string::npos) {
+                const bool windowsPath = colon == 2 && ext.size() > 4 && ext[3] == '\\';
+                std::string::size_type sep1 = windowsPath ? ext.find(':', 4) : colon;
+                std::string::size_type sep2 = ext.find(':', sep1 + 1);
+                file = tokenList->appendFileIfNew(ext.substr(1, sep1 - 1));
+                line = MathLib::toLongNumber(ext.substr(sep1 + 1, sep2 - sep1 - 1));
+            }
         }
     }
     mFile = file;
