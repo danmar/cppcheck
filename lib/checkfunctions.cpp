@@ -658,7 +658,7 @@ void CheckFunctions::returnLocalStdMove()
             if (retval->variable() && retval->variable()->isLocal() && !retval->variable()->isVolatile())
                 copyElisionError(retval);
             // RVO
-            if (Token::Match(retval, "(|{") && !retval->isCast())
+            if (Token::Match(retval, "(|{") && !retval->isCast() && !(retval->valueType() && retval->valueType()->reference != Reference::None))
                 copyElisionError(retval);
         }
     }
