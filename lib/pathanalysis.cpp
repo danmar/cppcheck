@@ -85,7 +85,7 @@ PathAnalysis::Progress PathAnalysis::forwardRecursive(const Token* tok, Info inf
 
 PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
 {
-    for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
+    for (const Token *tok = startToken; precedes(tok, endToken); tok = tok->next()) {
         if (Token::Match(tok, "asm|goto|break|continue"))
             return Progress::Break;
         else if (Token::Match(tok, "return|throw")) {
@@ -166,8 +166,8 @@ PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const
             if (f(info) == Progress::Break)
                 return Progress::Break;
         }
-        // Try to prevent range overflow and infinite recursion
-        if (tok == endToken || tok->next() == start)
+        // Prevent infinite recursion
+        if (tok->next() == start)
             break;
     }
     return Progress::Continue;
