@@ -562,10 +562,10 @@ void TestCppcheckLibraryData::containerValid()
     QCOMPARE(libraryData.containers.size(), 1);
 
     QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList.size(), 2);
-    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[0].name, "first");
-    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[0].templateParameter, "0");
-    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[1].name, "second");
-    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[1].templateParameter, "1");
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[0].name, QString("first"));
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[0].templateParameter, QString("0"));
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[1].name, QString("second"));
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[1].templateParameter, QString("1"));
 
     // Save library data to file
     saveCfgFile(TempCfgFile, libraryData);
