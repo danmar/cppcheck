@@ -5168,9 +5168,6 @@ bool Tokenizer::simplifyTokenList2()
     if (Settings::terminated())
         return false;
 
-    // Simplify simple calculations before replace constants, this allows the replacement of constants that are calculated
-    // e.g. const static int value = sizeof(X)/sizeof(Y);
-    simplifyCalculations();
 
     bool modified = true;
     while (modified) {
@@ -5179,7 +5176,6 @@ bool Tokenizer::simplifyTokenList2()
 
         modified = false;
         modified |= simplifyConstTernaryOp();
-        modified |= simplifyCalculations();
         validate();
     }
 
@@ -7246,11 +7242,6 @@ void Tokenizer::simplifyTypeIntrinsics()
         end->insertToken("{");
         Token::createMutualLinks(end->tokAt(1), end->tokAt(2));
     }
-}
-
-bool Tokenizer::simplifyCalculations()
-{
-    return mTemplateSimplifier->simplifyCalculations(nullptr, nullptr, false);
 }
 
 //---------------------------------------------------------------------------

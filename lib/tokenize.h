@@ -179,13 +179,6 @@ public:
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
     void simplifyAssignmentBlock();
 
-    /**
-     * Simplify constant calculations such as "1+2" => "3"
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifyCalculations();
-
     /** Insert array size where it isn't given */
     void arraySize();
 

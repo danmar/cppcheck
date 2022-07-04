@@ -62,7 +62,6 @@ private:
         TEST_CASE(double_plus);
         TEST_CASE(redundant_plus);
         TEST_CASE(redundant_plus_numbers);
-        TEST_CASE(parentheses1);
         TEST_CASE(declareVar);
 
         TEST_CASE(declareArray);
@@ -89,11 +88,6 @@ private:
 
         // Simplify "?:"
         TEST_CASE(simplifyConditionOperator);
-
-        // Simplify calculations
-        TEST_CASE(calculations);
-        TEST_CASE(comparisons);
-        TEST_CASE(simplifyCalculations);
 
         TEST_CASE(simplifyOperator1);
         TEST_CASE(simplifyOperator2);
@@ -162,7 +156,6 @@ private:
         TEST_CASE(simplifyKnownVariables51);    // #4409 hang
         TEST_CASE(simplifyKnownVariables54);    // #4913 'x' is not 0 after *--x=0;
         TEST_CASE(simplifyKnownVariables56);    // ticket #5301 - >>
-        TEST_CASE(simplifyKnownVariables57);    // ticket #4724
         TEST_CASE(simplifyKnownVariables58);    // ticket #5268
         TEST_CASE(simplifyKnownVariables59);    // skip for header
         TEST_CASE(simplifyKnownVariables61);    // #7805
@@ -1860,11 +1853,6 @@ private:
     }
 
 
-    void parentheses1() {
-        ASSERT_EQUALS("a <= 110 ;", tok("a <= (10+100);"));
-        ASSERT_EQUALS("{ while ( x ( ) == -1 ) { } }", tok("{while((x()) == -1){ }}"));
-    }
-
     void declareVar() {
         const char code[] = "void f ( ) { char str [ 100 ] = \"100\" ; }";
         ASSERT_EQUALS(code, tok(code));
@@ -2307,7 +2295,7 @@ private:
 
         {
             const char code[]     = "tr = (struct reg){ .a = (1), .c = (2) };";
-            const char expected[] = "tr = ( struct reg ) { . a = 1 , . c = 2 } ;";
+            const char expected[] = "tr = ( struct reg ) { . a = 1 , . c = ( 2 ) } ;";
             ASSERT_EQUALS(expected, tok(code));
         }
     }
@@ -2386,120 +2374,6 @@ private:
             TODO_ASSERT_THROW(tok("; type = decay_t<decltype(false ? declval<T>() : declval<U>())>;"), InternalError);
         }
     }
-
-    void calculations() {
-        {
-            const char code[] = "a[i+8+2];";
-            ASSERT_EQUALS("a [ i + 10 ] ;", tok(code));
-        }
-        {
-            const char code[] = "a[8+2+i];";
-            ASSERT_EQUALS("a [ 10 + i ] ;", tok(code));
-        }
-        {
-            const char code[] = "a[i + 2 * (2 * 4)];";
-            ASSERT_EQUALS("a [ i + 16 ] ;", tok(code));
-        }
-        {
-            const char code[] = "a[i + 100 - 90];";
-            ASSERT_EQUALS("a [ i + 10 ] ;", tok(code));
-        }
-        {
-            const char code[] = "a[1+1+1+1+1+1+1+1+1+1-2+5-3];";
-            ASSERT_EQUALS("a [ 10 ] ;", tok(code));
-        }
-        {
-            const char code[] = "a[10+10-10-10];";
-            ASSERT_EQUALS("a [ 0 ] ;", tok(code));
-        }
-
-        ASSERT_EQUALS("a [ 4 ] ;", tok("a[1+3|4];"));
-        ASSERT_EQUALS("a [ 4U ] ;", tok("a[1+3|4U];"));
-        ASSERT_EQUALS("a [ 3 ] ;", tok("a[1+2&3];"));
-        ASSERT_EQUALS("a [ 3U ] ;", tok("a[1+2&3U];"));
-        ASSERT_EQUALS("a [ 5 ] ;", tok("a[1-0^4];"));
-        ASSERT_EQUALS("a [ 5U ] ;", tok("a[1-0^4U];"));
-
-        ASSERT_EQUALS("x = 1 + 2 * y ;", tok("x=1+2*y;"));
-        ASSERT_EQUALS("x = 7 ;", tok("x=1+2*3;"));
-        ASSERT_EQUALS("x = 47185 ;", tok("x=(65536*72/100);"));
-        ASSERT_EQUALS("x = 1500000 / ( ( 90000 ) * 1000 / 54000 ) ;", tok("x = 1500000 / ((145000 - 55000) * 1000 / 54000);"));
-        ASSERT_EQUALS("int a [ 8 ] ;", tok("int a[5+6/2];"));
-        ASSERT_EQUALS("int a [ 4 ] ;", tok("int a[(10)-1-5];"));
-        ASSERT_EQUALS("int a [ i - 9 ] ;", tok("int a[i - 10 + 1];"));
-        ASSERT_EQUALS("int a [ i - 11 ] ;", tok("int a[i - 10 - 1];"));
-
-        ASSERT_EQUALS("x = y ;", tok("x=0+y+0-0;"));
-        ASSERT_EQUALS("x = 0 ;", tok("x=0*y;"));
-
-        ASSERT_EQUALS("x = 501 ;", tok("x = 1000 + 2 >> 1;"));
-        ASSERT_EQUALS("x = 125 ;", tok("x = 1000 / 2 >> 2;"));
-
-        {
-            // Ticket #1997
-            const char code[] = "void * operator new[](size_t);";
-            ASSERT_EQUALS("void * operatornew[] ( long ) ;", tok(code, true, Settings::Win32A));
-        }
-
-        ASSERT_EQUALS("; a [ 0 ] ;", tok(";a[0*(*p)];"));
-
-        ASSERT_EQUALS(";", tok("; x = x + 0;"));
-
-        ASSERT_EQUALS("{ if ( a == 2 ) { } }", tok("{if (a==1+1){}}"));
-        ASSERT_EQUALS("{ if ( a + 2 != 6 ) { } }", tok("{if (a+1+1!=1+2+3){}}"));
-        ASSERT_EQUALS("{ if ( 4 < a ) { } }", tok("{if (14-2*5<a*4/(2*2)){}}"));
-
-        ASSERT_EQUALS("( y / 2 - 2 ) ;", tok("(y / 2 - 2);"));
-        ASSERT_EQUALS("( y % 2 - 2 ) ;", tok("(y % 2 - 2);"));
-
-        ASSERT_EQUALS("( 4 ) ;", tok("(1 * 2 / 1 * 2);")); // #3722
-
-        ASSERT_EQUALS("x ( 60129542144 ) ;", tok("x(14<<4+17<<300%17);")); // #4931
-        ASSERT_EQUALS("x ( 1 ) ;", tok("x(8|5&6+0 && 7);")); // #6104
-        ASSERT_EQUALS("x ( 1 ) ;", tok("x(2 && 4<<4<<5 && 4);")); // #4933
-        ASSERT_EQUALS("x ( 1 ) ;", tok("x(9&&8%5%4/3);")); // #4931
-        ASSERT_EQUALS("x ( 1 ) ;", tok("x(2 && 2|5<<2%4);")); // #4931
-        ASSERT_EQUALS("x ( -2 << 6 | 1 ) ;", tok("x(1-3<<6|5/3);")); // #4931
-        ASSERT_EQUALS("x ( 2 ) ;", tok("x(2|0*0&2>>1+0%2*1);")); // #4931
-        ASSERT_EQUALS("x ( 0 & 4 != 1 ) ;", tok("x(4%1<<1&4!=1);")); // #4931 (can be simplified further but it's not a problem)
-        ASSERT_EQUALS("x ( 1 ) ;", tok("x(0&&4>0==2||4);")); // #4931
-
-        // don't remove these spaces..
-        ASSERT_EQUALS("new ( auto ) ( 4 ) ;", tok("new (auto)(4);"));
-    }
-
-    void comparisons() {
-        ASSERT_EQUALS("( 1 ) ;", tok("( 1 < 2 );"));
-        ASSERT_EQUALS("( x && 1 ) ;", tok("( x && 1 < 2 );"));
-        ASSERT_EQUALS("( 5 ) ;", tok("( 1 < 2 && 3 < 4 ? 5 : 6 );"));
-        ASSERT_EQUALS("( 6 ) ;", tok("( 1 > 2 && 3 > 4 ? 5 : 6 );"));
-    }
-
-    void simplifyCalculations() {
-        ASSERT_EQUALS("void foo ( char str [ ] ) { char x ; x = ( * str ) ; }",
-                      tok("void foo ( char str [ ] ) { char x = 0 | ( * str ) ; }"));
-        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
-                      tok("void foo ( ) { if (b + 0) { } }"));
-        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
-                      tok("void foo ( ) { if (0 + b) { } }"));
-        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
-                      tok("void foo ( ) { if (b - 0) { } }"));
-        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
-                      tok("void foo ( ) { if (b * 1) { } }"));
-        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
-                      tok("void foo ( ) { if (1 * b) { } }"));
-        //ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
-        //              tok("void foo ( ) { if (b / 1) { } }"));
-        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
-                      tok("void foo ( ) { if (b | 0) { } }"));
-        ASSERT_EQUALS("void foo ( ) { if ( b ) { } }",
-                      tok("void foo ( ) { if (0 | b) { } }"));
-        ASSERT_EQUALS("void foo ( int b ) { int a ; a = b ; bar ( a ) ; }",
-                      tok("void foo ( int b ) { int a = b | 0 ; bar ( a ) ; }"));
-        ASSERT_EQUALS("void foo ( int b ) { int a ; a = b ; bar ( a ) ; }",
-                      tok("void foo ( int b ) { int a = 0 | b ; bar ( a ) ; }"));
-    }
-
 
     void simplifyOperator1() {
         // #3237 - error merging namespaces with operators
@@ -3918,11 +3792,6 @@ private:
     void simplifyKnownVariables56() { // ticket #5301 - >>
         ASSERT_EQUALS("void f ( ) { int a ; a = 0 ; int b ; b = 0 ; * p >> a >> b ; return a / b ; }",
                       tokenizeAndStringify("void f() { int a=0,b=0; *p>>a>>b; return a/b; }", true));
-    }
-
-    void simplifyKnownVariables57() { // #4724
-        ASSERT_EQUALS("unsigned long long x ; x = 9223372036854775808UL ;", tokenizeAndStringify("unsigned long long x = 1UL << 63 ;", true));
-        ASSERT_EQUALS("long long x ; x = -9223372036854775808L ;", tokenizeAndStringify("long long x = 1L << 63 ;", true));
     }
 
     void simplifyKnownVariables58() { // #5268
