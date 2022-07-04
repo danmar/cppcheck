@@ -63,6 +63,7 @@ public:
 
         checkFunctions.checkIgnoredReturnValue();
         checkFunctions.checkMissingReturn();  // Missing "return" in exit path
+        checkFunctions.checkIteratorTypeMismatch();
 
         // --check-library : functions with nonmatching configuration
         checkFunctions.checkLibraryMatchFunctions();
@@ -91,6 +92,8 @@ public:
     /** @brief %Check for ignored return values. */
     void checkIgnoredReturnValue();
 
+    void checkIteratorTypeMismatch();
+
     /** @brief %Check for parameters given to math function that do not make sense*/
     void checkMathFunctions();
 
@@ -114,6 +117,7 @@ private:
     void invalidFunctionArgBoolError(const Token *tok, const std::string &functionName, int argnr);
     void invalidFunctionArgStrError(const Token *tok, const std::string &functionName, nonneg int argnr);
     void ignoredReturnValueError(const Token* tok, const std::string& function);
+    void mismatchingForAssignmentType(const Token* tok, const std::string& var_type, const std::string& assigned_type);
     void ignoredReturnErrorCode(const Token* tok, const std::string& function);
     void mathfunctionCallWarning(const Token *tok, const nonneg int numParam = 1);
     void mathfunctionCallWarning(const Token *tok, const std::string& oldexp, const std::string& newexp);

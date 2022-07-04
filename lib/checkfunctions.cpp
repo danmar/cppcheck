@@ -32,6 +32,7 @@
 
 #include <iomanip>
 #include <ostream>
+#include <iostream>
 #include <unordered_map>
 #include <vector>
 
@@ -50,6 +51,7 @@ static const CWE CWE628(628U);  // Function Call with Incorrectly Specified Argu
 static const CWE CWE686(686U);  // Function Call With Incorrect Argument Type
 static const CWE CWE687(687U);  // Function Call With Incorrectly Specified Argument Value
 static const CWE CWE688(688U);  // Function Call With Incorrect Variable or Reference as Argument
+static const CWE CWE689(689U);  // For Assignment of Wrong Type
 
 void CheckFunctions::checkProhibitedFunctions()
 {
@@ -277,6 +279,62 @@ void CheckFunctions::checkIgnoredReturnValue()
             }
         }
     }
+}
+
+void CheckFunctions::checkIteratorTypeMismatch()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "%name% ( !!)"))
+                continue;
+
+            if (tok->str() != "for") {
+                continue;
+            }
+
+            if (!Token::simpleMatch(tok->next()->link(), ") {"))
+                continue;
+
+
+            const Token *splitTok = tok->next()->astOperand2();
+            if (Token::simpleMatch(splitTok, ":"))
+            {
+                printf("Currently no supporting : notation\n");
+                continue;
+            }
+
+            // For using regular assignment
+            if (!tok->next() || !tok->next()->astOperand2())
+                continue;
+                
+            const Token* assginment_token = tok->next()->astOperand2()->astOperand1();
+            if (!assginment_token)
+                continue;
+            
+            if (!Token::simpleMatch(assginment_token, "="))
+                continue;
+
+            printf("type: %s\n", assginment_token->astOperand1()->valueType()->str().c_str());    
+            printf("type: %s\n", assginment_token->astOperand2()->valueType()->str().c_str());
+            printf("equal: %d\n", assginment_token->astOperand1()->valueType()->isTypeEqual(
+                assginment_token->astOperand2()->valueType()
+            ));
+
+            // TODO: Maybe only do to iterators
+
+            if (!assginment_token->astOperand1()->valueType()->isTypeEqual(
+                assginment_token->astOperand2()->valueType()
+            ))
+                mismatchingForAssignmentType(tok, assginment_token->astOperand1()->valueType()->str(), assginment_token->astOperand2()->valueType()->str());
+        }
+    }
+}
+
+void CheckFunctions::mismatchingForAssignmentType(const Token* tok, const std::string& var_type, const std::string& assigned_type)
+{
+    reportError(tok, Severity::warning, "mismatchTypeForAssignment",
+                "For loop assigns wrong type " + assigned_type + " to variable of type " + var_type, CWE689, Certainty::normal);
 }
 
 void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string& function)
