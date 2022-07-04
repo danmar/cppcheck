@@ -61,7 +61,7 @@ static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
         if (elementName == "type") {
             container.type.templateParameter = xmlReader.attributes().value("templateParameter").toString();
             container.type.string            = xmlReader.attributes().value("string").toString();
-        } else if (elementName == "size" || elementName == "access" || elementName == "other") {
+        } else if (elementName == "size" || elementName == "access" || elementName == "other" || elementName == "rangeItemRecordType") {
             const QString indexOperator = xmlReader.attributes().value("indexOperator").toString();
             if (elementName == "access" && indexOperator == "array-like")
                 container.access_arrayLike = true;
@@ -82,7 +82,12 @@ static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
                     container.sizeFunctions.append(function);
                 else if (elementName == "access")
                     container.accessFunctions.append(function);
-                else
+                else if (elementName == "rangeItemRecordType") {
+                    struct CppcheckLibraryData::Container::RangeItemRecordType rangeItemRecordType;
+                    rangeItemRecordType.name = xmlReader.attributes().value("name").toString();
+                    rangeItemRecordType.templateParameter = xmlReader.attributes().value("templateParameter").toString();
+                    container.rangeItemRecordTypeList.append(rangeItemRecordType);
+                } else
                     container.otherFunctions.append(function);
             }
         } else {
@@ -105,9 +110,23 @@ static QString loadUndefine(const QXmlStreamReader &xmlReader)
     return xmlReader.attributes().value("name").toString();
 }
 
-static QString loadSmartPointer(const QXmlStreamReader &xmlReader)
+static CppcheckLibraryData::SmartPointer loadSmartPointer(QXmlStreamReader &xmlReader)
 {
-    return xmlReader.attributes().value("class-name").toString();
+    CppcheckLibraryData::SmartPointer smartPointer;
+    smartPointer.name = xmlReader.attributes().value("class-name").toString();
+    QXmlStreamReader::TokenType type;
+    while ((type = xmlReader.readNext()) != QXmlStreamReader::EndElement ||
+           xmlReader.name().toString() != "smart-pointer") {
+        if (type != QXmlStreamReader::StartElement)
+            continue;
+        const QString elementName = xmlReader.name().toString();
+        if (elementName == "unique") {
+            smartPointer.unique = true;
+        } else {
+            unhandledElement(xmlReader);
+        }
+    }
+    return smartPointer;
 }
 
 static CppcheckLibraryData::TypeChecks loadTypeChecks(QXmlStreamReader &xmlReader)
@@ -210,6 +229,20 @@ static CppcheckLibraryData::Function loadFunction(QXmlStreamReader &xmlReader, c
             function.warn.reason       = xmlReader.attributes().value("reason").toString();
             function.warn.alternatives = xmlReader.attributes().value("alternatives").toString();
             function.warn.msg          = xmlReader.readElementText();
+        } else if (elementName == "not-overlapping-data") {
+            const QStringList attributeList {"ptr1-arg", "ptr2-arg", "size-arg", "strlen-arg"};
+            for (const QString &attr : attributeList) {
+                if (xmlReader.attributes().hasAttribute(attr)) {
+                    function.notOverlappingDataArgs[attr] = xmlReader.attributes().value(attr).toString();
+                }
+            }
+        } else if (elementName == "container") {
+            const QStringList attributeList {"action", "yields"};
+            for (const QString &attr : attributeList) {
+                if (xmlReader.attributes().hasAttribute(attr)) {
+                    function.containerAttributes[attr] = xmlReader.attributes().value(attr).toString();
+                }
+            }
         } else {
             unhandledElement(xmlReader);
         }
@@ -493,6 +526,20 @@ static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &
     xmlWriter.writeEndElement();
 }
 
+static void writeContainerRangeItemRecords(QXmlStreamWriter &xmlWriter, const QList<struct CppcheckLibraryData::Container::RangeItemRecordType> &rangeItemRecords)
+{
+    if (rangeItemRecords.isEmpty())
+        return;
+    xmlWriter.writeStartElement("rangeItemRecordType");
+    for (const CppcheckLibraryData::Container::RangeItemRecordType &item : rangeItemRecords) {
+        xmlWriter.writeStartElement("member");
+        xmlWriter.writeAttribute("name", item.name);
+        xmlWriter.writeAttribute("templateParameter", item.templateParameter);
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
+}
+
 static void writeContainer(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Container &container)
 {
     xmlWriter.writeStartElement("container");
@@ -519,6 +566,7 @@ static void writeContainer(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDat
     writeContainerFunctions(xmlWriter, "size", container.size_templateParameter, container.sizeFunctions);
     writeContainerFunctions(xmlWriter, "access", container.access_arrayLike?1:-1, container.accessFunctions);
     writeContainerFunctions(xmlWriter, "other", -1, container.otherFunctions);
+    writeContainerRangeItemRecords(xmlWriter, container.rangeItemRecordTypeList);
     xmlWriter.writeEndElement();
 }
 
@@ -632,7 +680,20 @@ static void writeFunction(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData
 
         xmlWriter.writeEndElement();
     }
-
+    if (!function.notOverlappingDataArgs.isEmpty()) {
+        xmlWriter.writeStartElement("not-overlapping-data");
+        foreach (const QString value, function.notOverlappingDataArgs) {
+            xmlWriter.writeAttribute(function.notOverlappingDataArgs.key(value), value);
+        }
+        xmlWriter.writeEndElement();
+    }
+    if (!function.containerAttributes.isEmpty()) {
+        xmlWriter.writeStartElement("container");
+        foreach (const QString value, function.containerAttributes) {
+            xmlWriter.writeAttribute(function.containerAttributes.key(value), value);
+        }
+        xmlWriter.writeEndElement();
+    }
     xmlWriter.writeEndElement();
 }
 
@@ -835,9 +896,12 @@ QString CppcheckLibraryData::toString() const
         writeTypeChecks(xmlWriter, check);
     }
 
-    for (const QString &smartPtr : smartPointers) {
+    for (const SmartPointer &smartPtr : smartPointers) {
         xmlWriter.writeStartElement("smart-pointer");
-        xmlWriter.writeAttribute("class-name", smartPtr);
+        xmlWriter.writeAttribute("class-name", smartPtr.name);
+        if (smartPtr.unique) {
+            xmlWriter.writeEmptyElement("unique");
+        }
         xmlWriter.writeEndElement();
     }
 
