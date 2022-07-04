@@ -86,6 +86,7 @@ static CppcheckLibraryData::Container loadContainer(QXmlStreamReader &xmlReader)
                     struct CppcheckLibraryData::Container::RangeItemRecordType rangeItemRecordType;
                     rangeItemRecordType.name = xmlReader.attributes().value("name").toString();
                     rangeItemRecordType.templateParameter = xmlReader.attributes().value("templateParameter").toString();
+                    container.rangeItemRecordTypeList.append(rangeItemRecordType);
                 } else
                     container.otherFunctions.append(function);
             }
@@ -525,6 +526,20 @@ static void writeContainerFunctions(QXmlStreamWriter &xmlWriter, const QString &
     xmlWriter.writeEndElement();
 }
 
+static void writeContainerRangeItemRecords(QXmlStreamWriter &xmlWriter, const QList<struct CppcheckLibraryData::Container::RangeItemRecordType> &rangeItemRecords)
+{
+    if (rangeItemRecords.isEmpty())
+        return;
+    xmlWriter.writeStartElement("rangeItemRecordType");
+    for (const CppcheckLibraryData::Container::RangeItemRecordType &item : rangeItemRecords) {
+        xmlWriter.writeStartElement("member");
+        xmlWriter.writeAttribute("name", item.name);
+        xmlWriter.writeAttribute("templateParameter", item.templateParameter);
+        xmlWriter.writeEndElement();
+    }
+    xmlWriter.writeEndElement();
+}
+
 static void writeContainer(QXmlStreamWriter &xmlWriter, const CppcheckLibraryData::Container &container)
 {
     xmlWriter.writeStartElement("container");
@@ -551,6 +566,7 @@ static void writeContainer(QXmlStreamWriter &xmlWriter, const CppcheckLibraryDat
     writeContainerFunctions(xmlWriter, "size", container.size_templateParameter, container.sizeFunctions);
     writeContainerFunctions(xmlWriter, "access", container.access_arrayLike?1:-1, container.accessFunctions);
     writeContainerFunctions(xmlWriter, "other", -1, container.otherFunctions);
+    writeContainerRangeItemRecords(xmlWriter, container.rangeItemRecordTypeList);
     xmlWriter.writeEndElement();
 }
 
