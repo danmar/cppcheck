@@ -549,6 +549,46 @@ void TestCppcheckLibraryData::markupValid()
     }
 }
 
+void TestCppcheckLibraryData::containerValid()
+{
+    // Load library data from file
+    loadCfgFile(":/files/container_valid.cfg", fileLibraryData, result);
+    QCOMPARE(result.isNull(), true);
+
+    // Swap library data read from file to other object
+    libraryData.swap(fileLibraryData);
+
+    // Do size and content checks against swapped data.
+    QCOMPARE(libraryData.containers.size(), 1);
+
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList.size(), 2);
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[0].name, "first");
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[0].templateParameter, "0");
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[1].name, "second");
+    QCOMPARE(libraryData.containers[0].rangeItemRecordTypeList[1].templateParameter, "1");
+
+    // Save library data to file
+    saveCfgFile(TempCfgFile, libraryData);
+
+    fileLibraryData.clear();
+    QCOMPARE(fileLibraryData.containers.size(), 0);
+
+    // Reload library data from file
+    loadCfgFile(TempCfgFile, fileLibraryData, result, true);
+    QCOMPARE(result.isNull(), true);
+
+    // Verify no data got lost or modified
+    QCOMPARE(libraryData.containers.size(), fileLibraryData.containers.size());
+    for (int idx=0; idx < libraryData.containers.size(); idx++) {
+        CppcheckLibraryData::Container lhs = libraryData.containers[idx];
+        CppcheckLibraryData::Container rhs = fileLibraryData.containers[idx];
+        for (int num=0; num < lhs.rangeItemRecordTypeList.size(); num++) {
+            QCOMPARE(lhs.rangeItemRecordTypeList[num].name, rhs.rangeItemRecordTypeList[num].name);
+            QCOMPARE(lhs.rangeItemRecordTypeList[num].templateParameter, rhs.rangeItemRecordTypeList[num].templateParameter);
+        }
+    }
+}
+
 void TestCppcheckLibraryData::loadCfgFile(QString filename, CppcheckLibraryData &data, QString &res, bool removeFile)
 {
     QFile file(filename);
