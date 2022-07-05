@@ -296,37 +296,37 @@ void CheckFunctions::checkIteratorTypeMismatch()
             if (!Token::simpleMatch(tok->next()->link(), ") {"))
                 continue;
 
-
-            const Token *splitTok = tok->next()->astOperand2();
-            if (Token::simpleMatch(splitTok, ":"))
+            const Token *splitToken = tok->next()->astOperand2();
+            if (Token::simpleMatch(splitToken, ":"))
             {
                 printf("Currently no supporting : notation\n");
                 continue;
             }
-
-            // For using regular assignment
-            if (!tok->next() || !tok->next()->astOperand2())
-                continue;
                 
-            const Token* assginment_token = tok->next()->astOperand2()->astOperand1();
-            if (!assginment_token)
+            const Token* assignmentToken = splitToken->astOperand1();
+            if (!assignmentToken)
                 continue;
             
-            if (!Token::simpleMatch(assginment_token, "="))
+            if (!Token::simpleMatch(assignmentToken, "="))
                 continue;
 
-            printf("type: %s\n", assginment_token->astOperand1()->valueType()->str().c_str());    
-            printf("type: %s\n", assginment_token->astOperand2()->valueType()->str().c_str());
-            printf("equal: %d\n", assginment_token->astOperand1()->valueType()->isTypeEqual(
-                assginment_token->astOperand2()->valueType()
+            const Token* assignee = assignmentToken->astOperand1();
+            const Token* assigned = assignmentToken->astOperand2();
+
+            if (!astIsIterator(assignee) || !astIsIterator(assigned))
+                continue;
+
+            printf("type: %s\n", assignmentToken->astOperand1()->valueType()->str().c_str());    
+            printf("type: %s\n", assignmentToken->astOperand2()->valueType()->str().c_str());
+            printf("equal: %d\n", assignmentToken->astOperand1()->valueType()->isTypeEqual(
+                assignmentToken->astOperand2()->valueType()
             ));
 
-            // TODO: Maybe only do to iterators
-
-            if (!assginment_token->astOperand1()->valueType()->isTypeEqual(
-                assginment_token->astOperand2()->valueType()
-            ))
-                mismatchingForAssignmentType(tok, assginment_token->astOperand1()->valueType()->str(), assginment_token->astOperand2()->valueType()->str());
+            if (!assignee->valueType()->isTypeEqual(assigned->valueType()))
+                mismatchingForAssignmentType(
+                    tok,
+                    assignee->valueType()->str(),
+                    assigned->valueType()->str());
         }
     }
 }
