@@ -986,8 +986,7 @@ static void setTokenValue(Token* tok,
             ValueFlow::Value v(val);
             v.intvalue = ~v.intvalue;
             int bits = 0;
-            if (settings &&
-                tok->valueType() &&
+            if (tok->valueType() &&
                 tok->valueType()->sign == ValueType::Sign::UNSIGNED &&
                 tok->valueType()->pointer == 0) {
                 if (tok->valueType()->type == ValueType::Type::INT)
