@@ -48,7 +48,7 @@ ThreadExecutor::~ThreadExecutor()
 class ThreadExecutor::SyncLogForwarder : public ErrorLogger
 {
 public:
-    SyncLogForwarder(ThreadExecutor &threadExecutor)
+    explicit SyncLogForwarder(ThreadExecutor &threadExecutor)
         : mThreadExecutor(threadExecutor), mProcessedFiles(0), mTotalFiles(0), mProcessedSize(0), mTotalFileSize(0) {
 
         mItNextFile = mThreadExecutor.mFiles.begin();

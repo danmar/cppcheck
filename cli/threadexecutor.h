@@ -48,7 +48,7 @@ public:
 
 private:
     class SyncLogForwarder;
-    static unsigned int STDCALL threadProc(SyncLogForwarder *logforwarder);
+    static unsigned int STDCALL threadProc(SyncLogForwarder *logForwarder);
 };
 
 /// @}

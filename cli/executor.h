@@ -38,7 +38,7 @@ class Executor {
 public:
     Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
     Executor(const Executor &) = delete;
-    ~Executor();
+    virtual ~Executor();
     void operator=(const Executor &) = delete;
 
     virtual unsigned int check() = 0;
