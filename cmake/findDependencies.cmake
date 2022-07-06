@@ -68,9 +68,7 @@ if (NOT USE_BUNDLED_TINYXML2)
     endif()
 endif()
 
-if (USE_THREADS)
-    find_package(Threads REQUIRED)
-endif()
+find_package(Threads REQUIRED)
 
 if (USE_BOOST)
     find_package(Boost COMPONENTS container QUIET)
