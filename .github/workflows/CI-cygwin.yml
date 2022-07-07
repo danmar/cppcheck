@@ -19,7 +19,7 @@ jobs:
         include:
           - platform: 'x86_64'
             packages: >-
-              gcc-g++-11.3.0-1
+              gcc-g++
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
