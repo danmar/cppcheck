@@ -267,46 +267,6 @@ void CheckStl::outOfBoundsError(const Token *tok, const std::string &containerNa
                 (containerSize && containerSize->isInconclusive()) || (indexValue && indexValue->isInconclusive()) ? Certainty::inconclusive : Certainty::normal);
 }
 
-bool CheckStl::isContainerSize(const Token *containerToken, const Token *expr) const
-{
-    if (!Token::simpleMatch(expr, "( )"))
-        return false;
-    if (!Token::Match(expr->astOperand1(), ". %name% ("))
-        return false;
-    if (!isSameExpression(mTokenizer->isCPP(), false, containerToken, expr->astOperand1()->astOperand1(), mSettings->library, false, false))
-        return false;
-    return containerToken->valueType()->container->getYield(expr->previous()->str()) == Library::Container::Yield::SIZE;
-}
-
-bool CheckStl::isContainerSizeGE(const Token * containerToken, const Token *expr) const
-{
-    if (!expr)
-        return false;
-    if (isContainerSize(containerToken, expr))
-        return true;
-    if (expr->str() == "*") {
-        const Token *mul;
-        if (isContainerSize(containerToken, expr->astOperand1()))
-            mul = expr->astOperand2();
-        else if (isContainerSize(containerToken, expr->astOperand2()))
-            mul = expr->astOperand1();
-        else
-            return false;
-        return mul && (!mul->hasKnownIntValue() || mul->values().front().intvalue != 0);
-    }
-    if (expr->str() == "+") {
-        const Token *op;
-        if (isContainerSize(containerToken, expr->astOperand1()))
-            op = expr->astOperand2();
-        else if (isContainerSize(containerToken, expr->astOperand2()))
-            op = expr->astOperand1();
-        else
-            return false;
-        return op && op->getValueGE(0, mSettings);
-    }
-    return false;
-}
-
 void CheckStl::outOfBoundsIndexExpression()
 {
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
@@ -320,7 +280,7 @@ void CheckStl::outOfBoundsIndexExpression()
                 continue;
             if (!Token::Match(tok, "%name% ["))
                 continue;
-            if (isContainerSizeGE(tok, tok->next()->astOperand2()))
+            if (isContainerSizeGE(tok, tok->next()->astOperand2(), mTokenizer->isCPP(), mSettings))
                 outOfBoundsIndexExpressionError(tok, tok->next()->astOperand2());
         }
     }
