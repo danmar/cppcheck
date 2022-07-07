@@ -489,7 +489,7 @@ static std::string readCode(const std::string &file, int linenr, int column, con
     std::string::size_type pos = 0;
     while ((pos = line.find('\t', pos)) != std::string::npos)
         line[pos] = ' ';
-    return line + endl + std::string((column>0 ? column-1 : column), ' ') + '^';
+    return line + endl + std::string((column>0 ? column-1 : 0), ' ') + '^';
 }
 
 static void replaceColors(std::string& source)
