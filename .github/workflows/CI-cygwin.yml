@@ -16,7 +16,7 @@ jobs:
       matrix:
         os: [windows-2019]
         arch: [x64, x86]
-        packages: |
+        packages: >-
           moreutils
       fail-fast: false
 
