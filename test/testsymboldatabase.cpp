@@ -8614,7 +8614,6 @@ private:
         ASSERT_EQUALS(5, db->variableList().size());
     }
 
-
     void unionWithConstructor() {
         GET_SYMBOL_DB("union Fred {\n"
                       "    Fred(int x) : i(x) { }\n"
