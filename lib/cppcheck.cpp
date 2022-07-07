@@ -707,10 +707,10 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             toolinfo << mSettings.userDefines;
             mSettings.nomsg.dump(toolinfo);
 
-            // Calculate checksum so it can be compared with old checksum / future checksums
-            const unsigned int checksum = preprocessor.calculateChecksum(tokens1, toolinfo.str());
+            // Calculate hash so it can be compared with old hash / future hashes
+            const std::size_t hash = preprocessor.calculateHash(tokens1, toolinfo.str());
             std::list<ErrorMessage> errors;
-            if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, checksum, &errors)) {
+            if (!mAnalyzerInformation.analyzeFile(mSettings.buildDir, filename, cfgname, hash, &errors)) {
                 while (!errors.empty()) {
                     reportErr(errors.front());
                     errors.pop_front();
@@ -775,7 +775,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             }
         }
 
-        std::set<unsigned long long> checksums;
+        std::set<unsigned long long> hashes;
         int checkCount = 0;
         bool hasValidConfig = false;
         std::list<std::string> configurationError;
@@ -871,18 +871,18 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     fdump << "</dump>" << std::endl;
                 }
 
-                // Need to call this even if the checksum will skip this configuration
+                // Need to call this even if the hash will skip this configuration
                 mSettings.nomsg.markUnmatchedInlineSuppressionsAsChecked(tokenizer);
 
                 // Skip if we already met the same simplified token list
                 if (mSettings.force || mSettings.maxConfigs > 1) {
-                    const unsigned long long checksum = tokenizer.list.calculateChecksum();
-                    if (checksums.find(checksum) != checksums.end()) {
+                    const std::size_t hash = tokenizer.list.calculateHash();
+                    if (hashes.find(hash) != hashes.end()) {
                         if (mSettings.debugwarnings)
                             purgedConfigurationMessage(filename, mCurrentConfig);
                         continue;
                     }
-                    checksums.insert(checksum);
+                    hashes.insert(hash);
                 }
 
                 // Check normal tokens
