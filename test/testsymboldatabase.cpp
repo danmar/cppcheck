@@ -8592,7 +8592,17 @@ private:
         ASSERT_EQUALS(ValueType::Type::DOUBLE, var2->valueType()->type);
     }
 
-    void auto16() { // #11163 don't hang
+    void auto16() {
+        GET_SYMBOL_DB("void foo(std::map<std::string, bool> x) {\n"
+                      "    for (const auto& i: x) {}\n"
+                      "}\n");
+        ASSERT_EQUALS(3, db->variableList().size());
+        const Variable *i = db->variableList().back();
+        ASSERT(i->valueType());
+        ASSERT_EQUALS(ValueType::Type::RECORD, i->valueType()->type);
+    }
+
+    void auto17() { // #11163 don't hang
         GET_SYMBOL_DB("void f() {\n"
                       "    std::shared_ptr<int> s1;\n"
                       "    auto s2 = std::shared_ptr(s1);\n"
@@ -8604,15 +8614,6 @@ private:
         ASSERT_EQUALS(5, db->variableList().size());
     }
 
-    void auto17() { // #11163
-        GET_SYMBOL_DB("void foo(std::map<std::string, bool> x) {\n"
-                      "    for (const auto& i: x) {}\n"
-                      "}\n");
-        ASSERT_EQUALS(3, db->variableList().size());
-        const Variable *i = db->variableList().back();
-        ASSERT(i->valueType());
-        ASSERT_EQUALS(ValueType::Type::RECORD, i->valueType()->type);
-    }
 
     void unionWithConstructor() {
         GET_SYMBOL_DB("union Fred {\n"
