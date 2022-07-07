@@ -4352,6 +4352,13 @@ private:
               "    strncpy(v, buf.c_str(), sizeof(v));\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& buf) {\n"
+              "    char v[255];\n"
+              "    if (buf.size() >= sizeof(v))\n"
+              "    strncpy(v, buf.c_str(), sizeof(v));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'v' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
     // extracttests.enable
 

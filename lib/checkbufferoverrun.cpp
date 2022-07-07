@@ -740,8 +740,11 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             if (bufferSize.intvalue < 0 || sizeToken->getKnownIntValue() < bufferSize.intvalue)
                 continue;
             if (Token::simpleMatch(args[1], "(") && Token::simpleMatch(args[1]->astOperand1(), ". c_str") && args[1]->astOperand1()->astOperand1()) {
-                const Token* contTok = args[1]->astOperand1()->astOperand1();
-                if (!isContainerSizeGE(contTok, sizeToken, mTokenizer->isCPP(), mSettings))
+                const std::list<ValueFlow::Value>& contValues = args[1]->astOperand1()->astOperand1()->values();
+                auto it = std::find_if(contValues.begin(), contValues.end(), [](const ValueFlow::Value& value) {
+                    return value.isContainerSizeValue() && !value.isImpossible();
+                });
+                if (it != contValues.end() && it->intvalue < sizeToken->getKnownIntValue())
                     continue;
             } else {
                 const Token* srcValue = args[1]->getValueTokenMaxStrLength();
