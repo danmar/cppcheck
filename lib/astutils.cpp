@@ -290,46 +290,6 @@ Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok
     return tok->valueType()->container->getYield(ftok2->str());
 }
 
-bool isContainerSize(const Token* containerToken, const Token* expr, bool isCPP, const Settings* settings)
-{
-    if (!Token::simpleMatch(expr, "( )"))
-        return false;
-    if (!Token::Match(expr->astOperand1(), ". %name% ("))
-        return false;
-    if (!isSameExpression(isCPP, false, containerToken, expr->astOperand1()->astOperand1(), settings->library, false, false))
-        return false;
-    return containerToken->valueType()->container->getYield(expr->previous()->str()) == Library::Container::Yield::SIZE;
-}
-
-bool isContainerSizeGE(const Token* containerToken, const Token* expr, bool isCPP, const Settings* settings)
-{
-    if (!expr)
-        return false;
-    if (isContainerSize(containerToken, expr, isCPP, settings))
-        return true;
-    if (expr->str() == "*") {
-        const Token* mul;
-        if (isContainerSize(containerToken, expr->astOperand1(), isCPP, settings))
-            mul = expr->astOperand2();
-        else if (isContainerSize(containerToken, expr->astOperand2(), isCPP, settings))
-            mul = expr->astOperand1();
-        else
-            return false;
-        return mul && (!mul->hasKnownIntValue() || mul->values().front().intvalue != 0);
-    }
-    if (expr->str() == "+") {
-        const Token* op;
-        if (isContainerSize(containerToken, expr->astOperand1(), isCPP, settings))
-            op = expr->astOperand2();
-        else if (isContainerSize(containerToken, expr->astOperand2(), isCPP, settings))
-            op = expr->astOperand1();
-        else
-            return false;
-        return op && op->getValueGE(0, settings);
-    }
-    return false;
-}
-
 bool astIsRangeBasedForDecl(const Token* tok)
 {
     return Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "(");

@@ -142,9 +142,6 @@ bool astIsContainerOwned(const Token* tok);
 Library::Container::Action astContainerAction(const Token* tok, const Token** ftok = nullptr);
 Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok = nullptr);
 
-bool isContainerSize(const Token* containerToken, const Token* expr, bool isCPP, const Settings* settings);
-bool isContainerSizeGE(const Token* containerToken, const Token* expr, bool isCPP, const Settings* settings);
-
 /** Is given token a range-declaration in a range-based for loop */
 bool astIsRangeBasedForDecl(const Token* tok);
 

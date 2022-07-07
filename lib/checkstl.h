@@ -185,6 +185,9 @@ public:
     void checkMutexes();
 
 private:
+    bool isContainerSize(const Token *containerToken, const Token *expr) const;
+    bool isContainerSizeGE(const Token * containerToken, const Token *expr) const;
+
     void missingComparisonError(const Token* incrementToken1, const Token* incrementToken2);
     void string_c_strThrowError(const Token* tok);
     void string_c_strError(const Token* tok);
