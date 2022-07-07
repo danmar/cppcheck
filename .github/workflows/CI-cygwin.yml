@@ -24,13 +24,9 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Cygwin
-        uses: egor-tensin/setup-cygwin@v3
+        uses: cygwin/cygwin-install-action@master
         with:
-          platform: ${{ matrix.arch }}          
-
-      - name: Defines
-        run: |
-          C:\tools\cygwin\bin\bash.exe -l -c "gcc -xc++ -dM -E - < /dev/null | egrep '(cplus|WIN32|CYGWIN|MINGW|VERSION)'"
+          platform: ${{ matrix.arch }}
 
       - name: Build cppcheck
         run: |
