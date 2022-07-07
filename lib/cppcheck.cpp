@@ -1437,8 +1437,8 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
 
     try {
         executeAddons(ctuInfoFiles);
-    catch (const InternalError& e) {
-        internalError("", "Internal error during whole program analysis: " + std::string(e.what()));
+    } catch (const InternalError& e) {
+        internalError("", "Internal error during whole program analysis: " + e.errorMessage);
         mExitCode = 1;
     }
 
