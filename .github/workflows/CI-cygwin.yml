@@ -4,8 +4,7 @@
 
 name: CI-cygwin
 
-#on: [push,pull_request]
-on: workflow_dispatch
+on: [push,pull_request]
 
 defaults:
   run:
@@ -27,7 +26,11 @@ jobs:
       - name: Set up Cygwin
         uses: egor-tensin/setup-cygwin@v3
         with:
-          platform: ${{ matrix.arch }}
+          platform: ${{ matrix.arch }}          
+
+      - name: Defines
+        run: |
+          C:\tools\cygwin\bin\bash.exe -l -c gcc -xc++ -dM -E - < /dev/null | egrep '(cplus|WIN32|CYGWIN|MINGW|VERSION)'
 
       - name: Build cppcheck
         run: |
