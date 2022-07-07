@@ -368,7 +368,7 @@ bool ErrorMessage::deserialize(const std::string &data)
     return true;
 }
 
-std::string ErrorMessage::getXMLHeader()
+std::string ErrorMessage::getXMLHeader(const std::string& productName)
 {
     tinyxml2::XMLPrinter printer;
 
@@ -380,6 +380,8 @@ std::string ErrorMessage::getXMLHeader()
 
     printer.PushAttribute("version", 2);
     printer.OpenElement("cppcheck", false);
+    if (!productName.empty())
+        printer.PushAttribute("product-name", productName.c_str());
     printer.PushAttribute("version", CppCheck::version());
     printer.CloseElement(false);
     printer.OpenElement("errors", false);

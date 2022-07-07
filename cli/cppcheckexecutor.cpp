@@ -122,7 +122,7 @@ bool CppCheckExecutor::parseFromArgs(CppCheck *cppcheck, int argc, const char* c
 
         if (parser.getShowErrorMessages()) {
             mShowAllErrors = true;
-            std::cout << ErrorMessage::getXMLHeader();
+            std::cout << ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName);
             cppcheck->getErrorMessages();
             std::cout << ErrorMessage::getXMLFooter() << std::endl;
         }
@@ -908,7 +908,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     }
 
     if (settings.xml) {
-        reportErr(ErrorMessage::getXMLHeader());
+        reportErr(ErrorMessage::getXMLHeader(settings.cppcheckCfgProductName));
     }
 
     if (!settings.buildDir.empty()) {
