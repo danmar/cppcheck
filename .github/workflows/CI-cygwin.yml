@@ -16,8 +16,10 @@ jobs:
       matrix:
         os: [windows-2019]
         arch: [x64, x86]
-        packages: >-
-          moreutils
+        include:
+          - platform: 'amd64'
+            packages: >-
+              moreutils
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
