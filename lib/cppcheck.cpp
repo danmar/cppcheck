@@ -1432,7 +1432,12 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
         ctuInfoFiles.push_back(getCtuInfoFileName(dumpFileName));
     }
 
-    executeAddons(ctuInfoFiles);
+    try {
+        executeAddons(ctuInfoFiles);
+    catch (const InternalError& e) {
+        internalError("", "Internal error during whole program analysis: " + std::string(e.what()));
+        mExitCode = 1;
+    }
 
     for (const std::string &f: ctuInfoFiles) {
         std::remove(f.c_str());
