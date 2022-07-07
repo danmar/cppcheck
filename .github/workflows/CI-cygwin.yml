@@ -30,7 +30,7 @@ jobs:
 
       - name: Defines
         run: |
-          C:\tools\cygwin\bin\bash.exe -l -c gcc -xc++ -dM -E - < /dev/null | egrep '(cplus|WIN32|CYGWIN|MINGW|VERSION)'
+          C:\tools\cygwin\bin\bash.exe -l -c "gcc -xc++ -dM -E - < /dev/null | egrep '(cplus|WIN32|CYGWIN|MINGW|VERSION)'"
 
       - name: Build cppcheck
         run: |
