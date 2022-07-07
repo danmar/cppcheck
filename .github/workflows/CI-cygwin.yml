@@ -19,7 +19,7 @@ jobs:
         include:
           - platform: 'amd64'
             packages: >-
-              moreutils
+              gcc-g++-11.3.0-1
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
