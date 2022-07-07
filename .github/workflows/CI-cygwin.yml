@@ -28,6 +28,10 @@ jobs:
         with:
           platform: ${{ matrix.arch }}
 
+      - name: Defines
+        run: |
+          C:\cygwin\bin\bash.exe -l -c "gcc -xc++ -dM -E - < /dev/null | egrep '(cplus|WIN32|CYGWIN|MINGW|VERSION)'"
+
       - name: Build cppcheck
         run: |
           C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2
