@@ -25,7 +25,6 @@
 #include "symboldatabase.h"
 #include "tokenlist.h"
 #include "utils.h"
-#include "tokenrange.h"
 #include "valueflow.h"
 
 #include <algorithm>
@@ -62,15 +61,6 @@ Token::~Token()
     delete mImpl;
 }
 
-/*
- * Get a TokenRange which starts at this token and contains every token following it in order up to but not including 't'
- * e.g. for the sequence of tokens A B C D E, C.until(E) would yield the Range C D
- * note t can be nullptr to iterate all the way to the end.
- */
-ConstTokenRange Token::until(const Token* t) const
-{
-    return ConstTokenRange(this, t);
-}
 
 static const std::unordered_set<std::string> controlFlowKeywords = {
     "goto",
