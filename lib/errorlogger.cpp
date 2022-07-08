@@ -368,7 +368,7 @@ bool ErrorMessage::deserialize(const std::string &data)
     return true;
 }
 
-std::string ErrorMessage::getXMLHeader()
+std::string ErrorMessage::getXMLHeader(const std::string& productName)
 {
     tinyxml2::XMLPrinter printer;
 
@@ -380,6 +380,8 @@ std::string ErrorMessage::getXMLHeader()
 
     printer.PushAttribute("version", 2);
     printer.OpenElement("cppcheck", false);
+    if (!productName.empty())
+        printer.PushAttribute("product-name", productName.c_str());
     printer.PushAttribute("version", CppCheck::version());
     printer.CloseElement(false);
     printer.OpenElement("errors", false);
@@ -489,7 +491,7 @@ static std::string readCode(const std::string &file, int linenr, int column, con
     std::string::size_type pos = 0;
     while ((pos = line.find('\t', pos)) != std::string::npos)
         line[pos] = ' ';
-    return line + endl + std::string((column>0 ? column-1 : column), ' ') + '^';
+    return line + endl + std::string((column>0 ? column-1 : 0), ' ') + '^';
 }
 
 static void replaceColors(std::string& source)

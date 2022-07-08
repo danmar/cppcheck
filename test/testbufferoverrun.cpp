@@ -289,6 +289,7 @@ private:
         TEST_CASE(terminateStrncpy2);
         TEST_CASE(terminateStrncpy3);
         TEST_CASE(terminateStrncpy4);
+        TEST_CASE(terminateStrncpy5); // #9944
         TEST_CASE(recursive_long_time);
 
         TEST_CASE(crash1);  // Ticket #1587 - crash
@@ -4341,6 +4342,23 @@ private:
               "    strncpy(buf, \"abcde\", 4);\n"
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' may not be null-terminated after the call to strncpy().\n", errout.str());
+    }
+
+    void terminateStrncpy5() { // #9944
+        check("void f(const std::string& buf) {\n"
+              "    char v[255];\n"
+              "    if (buf.size() >= sizeof(v))\n"
+              "        return;\n"
+              "    strncpy(v, buf.c_str(), sizeof(v));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& buf) {\n"
+              "    char v[255];\n"
+              "    if (buf.size() >= sizeof(v))\n"
+              "        strncpy(v, buf.c_str(), sizeof(v));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'v' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
     // extracttests.enable
 

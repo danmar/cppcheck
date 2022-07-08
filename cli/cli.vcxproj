@@ -407,7 +407,9 @@
     <ClInclude Include="..\lib\config.h" />
     <ClInclude Include="cmdlineparser.h" />
     <ClInclude Include="cppcheckexecutor.h" />
+    <ClInclude Include="executor.h" />
     <ClInclude Include="filelister.h" />
+    <ClInclude Include="processexecutor.h" />
     <ClInclude Include="threadexecutor.h" />
   </ItemGroup>
   <ItemGroup>
@@ -418,8 +420,10 @@
   <ItemGroup>
     <ClCompile Include="cmdlineparser.cpp" />
     <ClCompile Include="cppcheckexecutor.cpp" />
+    <ClCompile Include="executor.cpp" />
     <ClCompile Include="filelister.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="processexecutor.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -461,27 +461,17 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 
 //---------------------------------------------------------------------------
 
-uint64_t TokenList::calculateChecksum() const
+std::size_t TokenList::calculateHash() const
 {
-    uint64_t checksum = 0;
+    std::string hashData;
     for (const Token* tok = front(); tok; tok = tok->next()) {
-        const uint32_t subchecksum1 = tok->flags() + tok->varId() + tok->tokType();
-        uint32_t subchecksum2 = 0;
-        for (char i : tok->str())
-            subchecksum2 += (uint32_t)i;
-        if (!tok->originalName().empty()) {
-            for (char i : tok->originalName())
-                subchecksum2 += (uint32_t)i;
-        }
-
-        checksum ^= ((static_cast<uint64_t>(subchecksum1) << 32) | subchecksum2);
-
-        const bool bit1 = (checksum & 1) != 0;
-        checksum >>= 1;
-        if (bit1)
-            checksum |= (1ULL << 63);
+        hashData += MathLib::toString(tok->flags());
+        hashData += MathLib::toString(tok->varId());
+        hashData += MathLib::toString(tok->tokType());
+        hashData += tok->str();
+        hashData += tok->originalName();
     }
-    return checksum;
+    return (std::hash<std::string>{})(hashData);
 }
 
 

@@ -3623,6 +3623,17 @@ private:
                         "        if (a[i]) {}\n"
                         "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        valueFlowUninit("void f(void) {\n"
+                        "    char *c;\n"
+                        "    char x;\n"
+                        "    while (true) {\n"
+                        "        c = &x;\n"
+                        "        break;\n"
+                        "    }\n"
+                        "    ++c;\n"
+                        "}", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uninitStructMember() { // struct members

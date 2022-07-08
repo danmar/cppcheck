@@ -28,6 +28,7 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
+#include "utils.h"
 #include "valueflow.h"
 
 #include "checkuninitvar.h" // CheckUninitVar::isVariableUsage
