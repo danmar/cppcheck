@@ -217,7 +217,7 @@
     <ClCompile Include="testsummaries.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="testtokenrange.cpp">
+    <ClCompile Include="testtokeniterators.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
