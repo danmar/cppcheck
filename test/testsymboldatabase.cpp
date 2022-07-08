@@ -490,6 +490,7 @@ private:
         TEST_CASE(auto14);
         TEST_CASE(auto15); // C++17 auto deduction from braced-init-list
         TEST_CASE(auto16);
+        TEST_CASE(auto17); // #11163
 
         TEST_CASE(unionWithConstructor);
 
@@ -8599,6 +8600,18 @@ private:
         const Variable *i = db->variableList().back();
         ASSERT(i->valueType());
         ASSERT_EQUALS(ValueType::Type::RECORD, i->valueType()->type);
+    }
+
+    void auto17() { // #11163 don't hang
+        GET_SYMBOL_DB("void f() {\n"
+                      "    std::shared_ptr<int> s1;\n"
+                      "    auto s2 = std::shared_ptr(s1);\n"
+                      "}\n"
+                      "void g() {\n"
+                      "    std::shared_ptr<int> s;\n"
+                      "    auto w = std::weak_ptr(s);\n"
+                      "}\n");
+        ASSERT_EQUALS(5, db->variableList().size());
     }
 
     void unionWithConstructor() {
