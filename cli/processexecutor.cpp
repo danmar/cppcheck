@@ -18,7 +18,7 @@
 
 #include "processexecutor.h"
 
-#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
+#if !defined(WIN32) && !defined(__MINGW32__)
 
 #include "color.h"
 #include "config.h"
