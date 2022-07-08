@@ -21,8 +21,6 @@
 #include "path.h"
 #include "utils.h"
 
-#include <algorithm>
-#include <cctype>
 #include <cstddef>
 
 PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSensitive)

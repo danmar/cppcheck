@@ -36,6 +36,12 @@
 #include "utils.h"
 #include "checkunusedfunctions.h"
 
+#if defined(THREADING_MODEL_THREAD)
+#include "threadexecutor.h"
+#elif defined(THREADING_MODEL_FORK)
+#include "processexecutor.h"
+#endif
+
 #include <algorithm>
 #include <atomic>
 #include <csignal>
@@ -972,8 +978,11 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     } else if (!ThreadExecutor::isEnabled()) {
         std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {
-        // Multiple processes
+#if defined(THREADING_MODEL_THREAD)
         ThreadExecutor executor(mFiles, settings, *this);
+#elif defined(THREADING_MODEL_FORK)
+        ProcessExecutor executor(mFiles, settings, *this);
+#endif
         returnValue = executor.check();
     }
 

@@ -16,14 +16,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef THREADEXECUTOR_H
-#define THREADEXECUTOR_H
-
-#include "config.h"
-
-#include "executor.h"
+#ifndef EXECUTOR_H
+#define EXECUTOR_H
 
 #include <cstddef>
+#include <list>
 #include <map>
 #include <string>
 
@@ -37,20 +34,27 @@ class ErrorLogger;
  * This class will take a list of filenames and settings and check then
  * all files using threads.
  */
-class ThreadExecutor : public Executor {
+class Executor {
 public:
-    ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
-    ThreadExecutor(const ThreadExecutor &) = delete;
-    ~ThreadExecutor();
-    void operator=(const ThreadExecutor &) = delete;
+    Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
+    Executor(const Executor &) = delete;
+    virtual ~Executor();
+    void operator=(const Executor &) = delete;
 
-    unsigned int check() override;
+    virtual unsigned int check() = 0;
 
-private:
-    class SyncLogForwarder;
-    static unsigned int STDCALL threadProc(SyncLogForwarder *logForwarder);
+    /**
+     * @return true if support for threads exist.
+     */
+    static bool isEnabled();
+
+protected:
+    const std::map<std::string, std::size_t> &mFiles;
+    Settings &mSettings;
+    ErrorLogger &mErrorLogger;
+    std::list<std::string> mErrorList;
 };
 
 /// @}
 
-#endif // THREADEXECUTOR_H
+#endif // EXECUTOR_H

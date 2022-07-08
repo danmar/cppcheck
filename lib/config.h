@@ -112,6 +112,7 @@ static const std::string emptyString;
 #define STDCALL
 #elif ((defined(__GNUC__) || defined(__sun)) && !defined(__MINGW32__) && !defined(__CYGWIN__)) || defined(__CPPCHECK__)
 #define THREADING_MODEL_FORK
+#define STDCALL
 #else
 #error "No threading model defined"
 #endif
