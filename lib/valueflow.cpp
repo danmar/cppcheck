@@ -684,7 +684,7 @@ static void setTokenValue(Token* tok,
         return;
     }
 
-    if (value.isContainerSizeValue()) {
+    if (value.isContainerSizeValue() && astIsContainer(tok)) {
         // .empty, .size, +"abc", +'a'
         if (Token::Match(parent, "+|==|!=") && parent->astOperand1() && parent->astOperand2()) {
             for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
