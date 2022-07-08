@@ -27,6 +27,8 @@
     <ClCompile Include="..\cli\cmdlineparser.cpp" />
     <ClCompile Include="..\cli\cppcheckexecutor.cpp" />
     <ClCompile Include="..\cli\filelister.cpp" />
+    <ClCompile Include="..\cli\executor.cpp" />
+    <ClCompile Include="..\cli\processexecutor.cpp" />
     <ClCompile Include="..\cli\threadexecutor.cpp" />
     <ClCompile Include="..\lib\astutils.cpp" />
     <ClCompile Include="options.cpp" />
@@ -64,6 +66,7 @@
     <ClCompile Include="testplatform.cpp" />
     <ClCompile Include="testpostfixoperator.cpp" />
     <ClCompile Include="testpreprocessor.cpp" />
+    <ClCompile Include="testprocessexecutor.cpp" />
     <ClCompile Include="testrunner.cpp" />
     <ClCompile Include="testsimplifytemplate.cpp" />
     <ClCompile Include="testsimplifytokens.cpp" />

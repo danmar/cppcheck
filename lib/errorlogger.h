@@ -160,7 +160,7 @@ public:
      */
     std::string toXML() const;
 
-    static std::string getXMLHeader();
+    static std::string getXMLHeader(const std::string& productName);
     static std::string getXMLFooter();
 
     /**

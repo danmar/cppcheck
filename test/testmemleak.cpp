@@ -2401,6 +2401,38 @@ private:
               "    return static_cast<int*>(malloc(size));\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() { if (new int[42]) {} }\n" // #10857
+              "void g() { if (malloc(42)) {} }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Allocation with new, if doesn't release it.\n"
+                      "[test.cpp:2]: (error) Allocation with malloc, if doesn't release it.\n",
+                      errout.str());
+
+        check("const char* string(const char* s) {\n"
+              "    StringSet::iterator it = strings_.find(s);\n"
+              "    if (it != strings_.end())\n"
+              "        return *it;\n"
+              "    return *strings_.insert(it, std::strcpy(new char[std::strlen(s) + 1], s));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    static void load(const QString& projPath) {\n"
+              "        if (proj_)\n"
+              "            return;\n"
+              "        proj_ = new ProjectT(projPath);\n"
+              "        proj_->open(new OpenCallback());\n"
+              "    }\n"
+              "private:\n"
+              "    static Core::ProjectBase* proj_;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& s, int n) {\n"
+              "    std::unique_ptr<char[]> u;\n"
+              "    u.reset(strcpy(new char[n], s.c_str()));\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void missingAssignment() {
@@ -2452,7 +2484,7 @@ private:
               "{\n"
               "    42,malloc(42);\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (error) Return value of allocation function 'malloc' is not stored.\n", errout.str());
 
         check("void *f()\n"
               "{\n"
@@ -2594,6 +2626,33 @@ private:
               "    C{ new(p) int, 1 };\n"
               "    C{ new QWidget, 1 };\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(bool b) { if (b && malloc(42)) {} }\n" //  // #10858
+              "void g(bool b) { if (b || malloc(42)) {} }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'malloc' is not stored.\n"
+                      "[test.cpp:2]: (error) Return value of allocation function 'malloc' is not stored.\n",
+                      errout.str());
+
+        check("void f0(const bool b) { b ? new int : nullptr; }\n" // #11155
+              "void f1(const bool b) { b ? nullptr : new int; }\n"
+              "int* g0(const bool b) { return b ? new int : nullptr; }\n"
+              "void g1(const bool b) { h(b, b ? nullptr : new int); }\n");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Return value of allocation function 'new' is not stored.\n"
+                      "[test.cpp:2]: (error) Return value of allocation function 'new' is not stored.\n",
+                      errout.str());
+
+        check("void f() {\n" // #11157
+              "    switch (*new int) { case 42: break; }\n"
+              "    switch (*malloc(42)) { case 42: break; }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (error) Allocation with new, switch doesn't release it.\n"
+                      "[test.cpp:3]: (error) Allocation with malloc, switch doesn't release it.\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    Ref<StringBuffer> remove(new StringBuffer());\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

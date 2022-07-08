@@ -662,6 +662,11 @@ private:
               "    +\" y = \" + b;\n"
               "}\n", /*inconclusive*/ true);
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n", errout.str());
+
+        check("void f() {\n"
+              "    *new int;\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n", errout.str());
     }
 
     void vardecl() {

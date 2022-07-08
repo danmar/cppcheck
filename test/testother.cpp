@@ -64,6 +64,7 @@ private:
         TEST_CASE(zeroDiv11);
         TEST_CASE(zeroDiv12);
         TEST_CASE(zeroDiv13);
+        TEST_CASE(zeroDiv14); // #1169
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -585,6 +586,17 @@ private:
               "    return dividend;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout.str());
+    }
+
+    void zeroDiv14() {
+        check("void f() {\n" // #1169
+              "    double dx = 1.;\n"
+              "    int ix = 1;\n"
+              "    int i = 1;\n"
+              "    std::cout << ix / (i >> 1) << std::endl;\n"
+              "    std::cout << dx / (i >> 1) << std::endl;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {
@@ -3229,6 +3241,21 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
                       "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    char a[1][1];\n"
+              "    char* b[1];\n"
+              "    b[0] = a[0];\n"
+              "    **b = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("ptrdiff_t f(int *p0, int *p1) {\n" // #11148
+              "    return p0 - p1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p0' can be declared as pointer to const\n"
+                      "[test.cpp:1]: (style) Parameter 'p1' can be declared as pointer to const\n",
                       errout.str());
     }
 
@@ -9383,7 +9410,7 @@ private:
               "    int local_argc = 0;\n"
               "    local_argv[local_argc++] = argv[0];\n"
               "}\n", "test.c");
-        ASSERT_EQUALS("[test.c:1]: (style) Parameter 'argv' can be declared as const array\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  int x = 0;\n"

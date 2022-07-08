@@ -160,23 +160,6 @@ public:
 
 
     /**
-     * Deletes dead code between 'begin' and 'end'.
-     * In general not everything can be erased, such as:
-     * - code after labels;
-     * - code outside the scope where the function is called;
-     * - code after a change of scope caused by 'switch(...);'
-     *   instructions, like 'case %any%;' or 'default;'
-     * Also, if the dead code contains a 'switch' block
-     * and inside it there's a label, the function removes all
-     * the 'switch(..)' tokens and every occurrence of 'case %any%; | default;'
-     * expression, such as the 'switch' block is reduced to a simple block.
-     *
-     * @param begin Tokens after this have a possibility to be erased.
-     * @param end Tokens before this have a possibility to be erased.
-     */
-    static void eraseDeadCode(Token *begin, const Token *end);
-
-    /**
      * Calculates sizeof value for given type.
      * @param type Token which will contain e.g. "int", "*", or string.
      * @return sizeof for given type, or 0 if it can't be calculated.
@@ -195,13 +178,6 @@ public:
 
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
     void simplifyAssignmentBlock();
-
-    /**
-     * Simplify constant calculations such as "1+2" => "3"
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifyCalculations();
 
     /** Insert array size where it isn't given */
     void arraySize();
@@ -329,34 +305,8 @@ public:
      */
     bool simplifyUsing();
 
-    /**
-     * A simplify function that replaces a variable with its value in cases
-     * when the value is known. e.g. "x=10; if(x)" => "x=10;if(10)"
-     *
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifyKnownVariables();
-
-    /**
-     * Utility function for simplifyKnownVariables. Get data about an
-     * assigned variable.
-     */
-    static bool simplifyKnownVariablesGetData(nonneg int varid, Token **_tok2, Token **_tok3, std::string &value, nonneg int &valueVarId, bool &valueIsPointer, bool floatvar);
-
-    /**
-     * utility function for simplifyKnownVariables. Perform simplification
-     * of a given variable
-     */
-    bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, nonneg int varid, const std::string &structname, std::string &value, nonneg int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const;
-
     /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
     void simplifyEmptyNamespaces();
-
-    /** Simplify redundant code placed after control flow statements :
-     * 'return', 'throw', 'goto', 'break' and 'continue'
-     */
-    void simplifyFlowControl();
 
     /** Simplify "if else" */
     void elseif();

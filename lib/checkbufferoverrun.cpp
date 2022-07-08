@@ -739,9 +739,18 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             const ValueFlow::Value &bufferSize = getBufferSize(args[0]);
             if (bufferSize.intvalue < 0 || sizeToken->getKnownIntValue() < bufferSize.intvalue)
                 continue;
-            const Token *srcValue = args[1]->getValueTokenMaxStrLength();
-            if (srcValue && Token::getStrLength(srcValue) < sizeToken->getKnownIntValue())
-                continue;
+            if (Token::simpleMatch(args[1], "(") && Token::simpleMatch(args[1]->astOperand1(), ". c_str") && args[1]->astOperand1()->astOperand1()) {
+                const std::list<ValueFlow::Value>& contValues = args[1]->astOperand1()->astOperand1()->values();
+                auto it = std::find_if(contValues.begin(), contValues.end(), [](const ValueFlow::Value& value) {
+                    return value.isContainerSizeValue() && !value.isImpossible();
+                });
+                if (it != contValues.end() && it->intvalue < sizeToken->getKnownIntValue())
+                    continue;
+            } else {
+                const Token* srcValue = args[1]->getValueTokenMaxStrLength();
+                if (srcValue && Token::getStrLength(srcValue) < sizeToken->getKnownIntValue())
+                    continue;
+            }
             // Is the buffer zero terminated after the call?
             bool isZeroTerminated = false;
             for (const Token *tok2 = tok->next()->link(); tok2 != scope->bodyEnd; tok2 = tok2->next()) {

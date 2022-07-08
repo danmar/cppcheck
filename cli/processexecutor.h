@@ -16,10 +16,8 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef THREADEXECUTOR_H
-#define THREADEXECUTOR_H
-
-#include "config.h"
+#ifndef PROCESSEXECUTOR_H
+#define PROCESSEXECUTOR_H
 
 #include "executor.h"
 
@@ -37,20 +35,38 @@ class ErrorLogger;
  * This class will take a list of filenames and settings and check then
  * all files using threads.
  */
-class ThreadExecutor : public Executor {
+class ProcessExecutor : public Executor {
 public:
-    ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
-    ThreadExecutor(const ThreadExecutor &) = delete;
-    ~ThreadExecutor();
-    void operator=(const ThreadExecutor &) = delete;
+    ProcessExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
+    ProcessExecutor(const ProcessExecutor &) = delete;
+    ~ProcessExecutor();
+    void operator=(const ProcessExecutor &) = delete;
 
     unsigned int check() override;
 
 private:
-    class SyncLogForwarder;
-    static unsigned int STDCALL threadProc(SyncLogForwarder *logForwarder);
+    /**
+     * Read from the pipe, parse and handle what ever is in there.
+     *@return -1 in case of error
+     *         0 if there is nothing in the pipe to be read
+     *         1 if we did read something
+     */
+    int handleRead(int rpipe, unsigned int &result);
+
+    /**
+     * @brief Check load average condition
+     * @param nchildren - count of currently ran children
+     * @return true - if new process can be started
+     */
+    bool checkLoadAverage(size_t nchildren);
+
+    /**
+     * @brief Reports internal errors related to child processes
+     * @param msg The error message
+     */
+    void reportInternalChildErr(const std::string &childname, const std::string &msg);
 };
 
 /// @}
 
-#endif // THREADEXECUTOR_H
+#endif // PROCESSEXECUTOR_H

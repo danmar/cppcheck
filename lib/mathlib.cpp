@@ -1037,23 +1037,6 @@ std::string MathLib::subtract(const std::string &first, const std::string &secon
 #endif
 }
 
-std::string MathLib::incdec(const std::string & var, const std::string & op)
-{
-#ifdef TEST_MATHLIB_VALUE
-    if (op == "++")
-        return value(var).add(1).str();
-    else if (op == "--")
-        return value(var).add(-1).str();
-#else
-    if (op == "++")
-        return MathLib::add(var, "1");
-    else if (op == "--")
-        return MathLib::subtract(var, "1");
-#endif
-
-    throw InternalError(nullptr, std::string("Unexpected operation '") + op + "' in MathLib::incdec(). Please report this to Cppcheck developers.");
-}
-
 std::string MathLib::divide(const std::string &first, const std::string &second)
 {
 #ifdef TEST_MATHLIB_VALUE

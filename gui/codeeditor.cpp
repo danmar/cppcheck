@@ -45,26 +45,26 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "case"
                     << "catch"
                     << "char"
-                    << "char8_­t"
-                    << "char16_­t"
-                    << "char32_­t"
+                    << "char8_t"
+                    << "char16_t"
+                    << "char32_t"
                     << "class"
                     << "concept"
                     << "const"
                     << "consteval"
                     << "constexpr"
                     << "constinit"
-                    << "const_­cast"
+                    << "const_cast"
                     << "continue"
-                    << "co_­await"
-                    << "co_­return"
-                    << "co_­yield"
+                    << "co_await"
+                    << "co_return"
+                    << "co_yield"
                     << "decltype"
                     << "default"
                     << "delete"
                     << "do"
                     << "double"
-                    << "dynamic_­cast"
+                    << "dynamic_cast"
                     << "else"
                     << "enum"
                     << "explicit"
@@ -92,19 +92,19 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "private"
                     << "protected"
                     << "public"
-                    << "reinterpret_­cast"
+                    << "reinterpret_cast"
                     << "requires"
                     << "return"
                     << "short"
                     << "signed"
                     << "static"
-                    << "static_­assert"
-                    << "static_­cast"
+                    << "static_assert"
+                    << "static_cast"
                     << "struct"
                     << "switch"
                     << "template"
                     << "this"
-                    << "thread_­local"
+                    << "thread_local"
                     << "throw"
                     << "true"
                     << "try"
@@ -116,7 +116,7 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "virtual"
                     << "void"
                     << "volatile"
-                    << "wchar_­t"
+                    << "wchar_t"
                     << "while";
     for (const QString &pattern : keywordPatterns) {
         rule.pattern = QRegularExpression("\\b" + pattern + "\\b");
@@ -157,7 +157,9 @@ Highlighter::Highlighter(QTextDocument *parent,
     mSymbolFormat.setBackground(mWidgetStyle->symbolBGColor);
     mSymbolFormat.setFontWeight(mWidgetStyle->symbolWeight);
 
-    mCommentStartExpression = QRegularExpression("/\\*");
+    // We use negative lookbehind assertion `(?<!/)`
+    // to ignore case: single line comment and line of asterisk
+    mCommentStartExpression = QRegularExpression("(?<!/)/\\*");
     mCommentEndExpression = QRegularExpression("\\*/");
 }
 
