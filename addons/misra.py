@@ -4063,8 +4063,9 @@ class MisraChecker:
                 errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
                 if self.path_premium_addon:
                     for line in cppcheckdata.cmd_output([self.path_premium_addon, '--cli', '--get-rule-text=' + errorId]).split('\n'):
-                        if not line.startswith('{'):
+                        if len(line) > 1 and not line.startswith('{'):
                             errmsg = line
+                            break
             else:
                 errmsg = 'misra violation %s with no text in the supplied rule-texts-file' % (ruleNum)
 
