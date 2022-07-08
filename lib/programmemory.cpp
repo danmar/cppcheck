@@ -632,6 +632,8 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
         if (MathLib::isFloat(expr->str()))
             return unknown;
         return ValueFlow::Value{MathLib::toLongNumber(expr->str())};
+    } else if (expr->isBoolean()) {
+        return ValueFlow::Value{ expr->str() == "true" };
     } else if (Token::Match(expr->tokAt(-2), ". %name% (") && astIsContainer(expr->tokAt(-2)->astOperand1())) {
         const Token* containerTok = expr->tokAt(-2)->astOperand1();
         Library::Container::Yield yield = containerTok->valueType()->container->getYield(expr->strAt(-1));
