@@ -1,0 +1,39 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: format
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache uncrustify
+        uses: actions/cache@v2
+        id: cache-uncrustify
+        with:
+          path: |
+            ~/uncrustify
+          key: ${{ runner.os }}-uncrustify
+
+      - name: build uncrustify
+        if: steps.cache-uncrustify.outputs.cache-hit != 'true'
+        run: |
+          wget https://github.com/uncrustify/uncrustify/archive/refs/tags/uncrustify-0.72.0.tar.gz
+          tar xzvf uncrustify-0.72.0.tar.gz && cd uncrustify-uncrustify-0.72.0 
+          mkdir build 
+          cd build 
+          cmake -DCMAKE_BUILD_TYPE=Release ..
+          cmake --build . -- -j$(nproc) -s
+          mkdir ~/uncrustify 
+          cp uncrustify ~/uncrustify/
+
+      - name: Uncrustify check
+        run: |
+          ~/uncrustify/uncrustify -c .uncrustify.cfg -l CPP --no-backup --replace */*.cpp */*.h
+          git diff
+          git diff | diff - /dev/null &> /dev/null

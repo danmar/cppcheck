@@ -1,0 +1,61 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: clang-tidy
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    container:
+      image: "ubuntu:22.04"
+
+    env:
+      QT_VERSION: 5.15.2
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install missing software
+        run: |
+          apt-get update
+          apt-get install -y cmake clang-14 make
+          apt-get install -y libpcre3-dev
+          apt-get install -y libffi7 # work around missing dependency for Qt install step
+          apt-get install -y clang-tidy-14
+
+      - name: Cache Qt ${{ env.QT_VERSION }}
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Linux-QtCache-${{ env.QT_VERSION }}-qtcharts
+
+      - name: Install Qt ${{ env.QT_VERSION }}
+        uses: jurplel/install-qt-action@v2
+        with:
+          install-deps: 'nosudo'
+          version: ${{ env.QT_VERSION }}
+          modules: 'qtcharts'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+
+      - name: Prepare CMake
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off
+        env:
+          CC: clang-14
+          CXX: clang++-14
+
+      - name: Prepare CMake dependencies
+        run: |
+          # make sure the precompiled headers exist
+          make -C cmake.output/lib cmake_pch.hxx.pch
+          make -C cmake.output/test cmake_pch.hxx.pch
+          # make sure the auto-generated GUI sources exist
+          make -C cmake.output autogen
+
+      - name: Clang-Tidy
+        run: |
+          cmake --build cmake.output --target run-clang-tidy 2> /dev/null

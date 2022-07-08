@@ -1,0 +1,79 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: CI-unixish-docker
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04"]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ubuntu-22.04
+
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install missing software on CentOS 7
+        if: matrix.image == 'centos:7'
+        run: |
+          yum install -y cmake gcc-c++ make which python3
+          yum install -y pcre-devel
+
+      - name: Install missing software on ubuntu
+        if: matrix.image != 'centos:7'
+        run: |
+          apt-get update
+          apt-get install -y cmake g++ make python3 libxml2-utils
+          apt-get install -y libpcre3-dev
+
+      # tests require CMake 3.4
+      - name: Test CMake build (no tests)
+        if: matrix.image != 'ubuntu:22.10'
+        run: |
+          mkdir cmake.output
+          cd cmake.output
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On ..
+          cmake --build . -- -j$(nproc)
+          cd ..
+
+      - name: Test CMake build
+        if: matrix.image == 'ubuntu:22.10'
+        run: |
+          mkdir cmake.output
+          cd cmake.output
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On ..
+          cmake --build . --target check -- -j$(nproc)
+          cd ..
+
+      - name: Build cppcheck
+        run: |
+          make clean
+          make -j$(nproc) HAVE_RULES=yes
+
+      - name: Build test
+        run: |
+          make -j$(nproc) testrunner HAVE_RULES=yes
+
+      - name: Run test
+        run: |
+          make -j$(nproc) check HAVE_RULES=yes
+
+      - name: Run extra tests
+        run: |
+          tools/generate_and_run_more_tests.sh
+
+      - name: Validate
+        run: |
+          make -j$(nproc) checkCWEEntries validateXML
+
+      - name: Test addons
+        run: |
+          ./cppcheck --addon=threadsafety addons/test/threadsafety
+          ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety

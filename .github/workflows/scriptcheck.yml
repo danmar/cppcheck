@@ -1,0 +1,139 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: scriptcheck
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    # 'ubuntu-22.04' removes Python 2.7, 3.6 and 3.6 so keep the previous LTS version
+    runs-on: ubuntu-20.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache Cppcheck
+        uses: actions/cache@v2
+        with:
+          path: cppcheck
+          key: ${{ runner.os }}-scriptcheck-cppcheck-${{ github.sha }}
+
+      - name: build cppcheck
+        run: |
+          make -j$(nproc) -s
+          strip -s ./cppcheck
+
+  scriptcheck:
+
+    needs: build
+    # 'ubuntu-22.04' removes Python 2.7, 3.5 and 3.6 so keep the previous LTS version
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9, '3.10']
+      fail-fast: false
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Restore Cppcheck
+        uses: actions/cache@v2
+        with:
+          path: cppcheck
+          key: ${{ runner.os }}-scriptcheck-cppcheck-${{ github.sha }}
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install missing software on ubuntu
+        run: |
+          sudo apt-get update
+          sudo apt-get install tidy libxml2-utils
+
+      - name: Install missing software on ubuntu (Python 2)
+        if: matrix.python-version == '2.7'
+        run: |
+          python -m pip install pip --upgrade
+          python -m pip install pathlib
+          python -m pip install pytest
+          python -m pip install pygments
+
+      - name: Install missing software on ubuntu (Python 3)
+        if: matrix.python-version != '2.7'
+        run: |
+          sudo apt-get install shellcheck
+          python -m pip install pip --upgrade
+          python -m pip install natsort
+          python -m pip install pexpect
+          python -m pip install pylint
+          python -m pip install unittest2
+          python -m pip install pytest
+          python -m pip install pygments
+          python -m pip install requests
+          python -m pip install psutil
+
+      - name: run Shellcheck
+        if: matrix.python-version == '3.10'
+        run: |
+          find . -name "*.sh" | xargs shellcheck --exclude SC2002,SC2013,SC2034,SC2035,SC2043,SC2046,SC2086,SC2089,SC2090,SC2129,SC2211,SC2231
+
+      - name: run pylint
+        if: matrix.python-version == '3.10'
+        run: |
+          echo "FIXME pylint is disabled for now because it fails to import files:"
+          echo "FIXME addons/runaddon.py:1:0: E0401: Unable to import 'cppcheckdata' (import-error)"
+          echo "FIXME addons/runaddon.py:1:0: E0401: Unable to import 'cppcheck' (import-error)"
+          # pylint --rcfile=pylintrc_travis --jobs $(nproc) addons/*.py htmlreport/cppcheck-htmlreport htmlreport/*.py tools/*.py
+
+      - name: check .json files
+        if: matrix.python-version == '3.10'
+        run: |
+          find . -name '*.json' | xargs -n 1 python -m json.tool > /dev/null
+
+      - name: Validate
+        if: matrix.python-version == '3.10'
+        run: |
+          make -j$(nproc) validateCFG validatePlatforms validateRules
+
+      - name: check python syntax
+        if: matrix.python-version != '2.7'
+        run: |
+          python -m py_compile addons/*.py
+          python -m py_compile htmlreport/cppcheck-htmlreport
+          python -m py_compile htmlreport/*.py
+          python -m py_compile tools/*.py
+
+      - name: compile addons
+        run: |
+          python -m compileall ./addons
+
+      - name: test matchcompiler
+        run: |
+          python tools/test_matchcompiler.py
+
+      - name: test addons
+        run: |
+          python -m pytest addons/test/test-*.py
+        env:
+          PYTHONPATH: ./addons
+
+      - name: test htmlreport
+        run: |
+          htmlreport/test_htmlreport.py
+          cd htmlreport
+          ./check.sh
+
+      - name: test reduce
+        run: |
+          python -m pytest tools/test_reduce.py
+        env:
+          PYTHONPATH: ./tools
+
+      - name: dmake
+        if: matrix.python-version == '3.10'
+        run: |
+          make -j$(nproc) run-dmake
+          git diff --exit-code

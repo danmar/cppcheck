@@ -1,0 +1,49 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: Coverage
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install missing software on ubuntu
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          sudo apt-get install lcov
+          sudo apt-get install libcppunit-dev
+          python -m pip install pip --upgrade
+          python -m pip install lcov_cobertura
+
+      - name: Compile instrumented
+        run: |
+          make -j$(nproc) test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes
+          
+      - name: Generate coverage report
+        run: |
+          rm -rf coverage_report
+          ./testrunner
+          test/cfg/runtests.sh
+          gcov lib/*.cpp -o lib/
+          lcov --directory ./ --capture --output-file lcov_tmp.info -b ./
+          lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
+          genhtml lcov.info -o coverage_report --frame --legend --demangle-cpp
+          
+      - uses: actions/upload-artifact@v2
+        with:
+         name: Coverage results
+         path: coverage_report
+         
+      - uses: codecov/codecov-action@v1.2.1
+        with:
+          # token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          # file: ./coverage.xml # optional
+          flags: unittests # optional
+          name: ${{ github.repository }} # optional
+          fail_ci_if_error: true # optional (default = false):  

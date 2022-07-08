@@ -1,0 +1,287 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: CI-unixish
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    strategy:
+      matrix:
+        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-10.15, macos-11, macos-12]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install missing software on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          sudo apt-get update
+          sudo apt-get install libxml2-utils
+          sudo apt-get install libtinyxml2-dev
+          sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
+
+      # required so a default Qt installation is configured
+      - name: Install missing software on ubuntu 18.04
+        if: matrix.os == 'ubuntu-18.04'
+        run: |
+          sudo apt-get install qt5-default
+
+      # packages for strict cfg checks
+      - name: Install missing software on ubuntu 22.04
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get install libcairo2-dev libcurl4-openssl-dev liblua5.3-dev libssl-dev libsqlite3-dev libcppunit-dev libsigc++-2.0-dev libgtk-3-dev libboost-all-dev libwxgtk3.0-gtk3-dev xmlstarlet
+
+      - name: Install missing software on macos
+        if: contains(matrix.os, 'macos')
+        run: |
+          brew install coreutils python3 qt@5
+
+      - name: Install missing Python packages
+        run: |
+          python3 -m pip install pip --upgrade
+          python3 -m pip install pytest
+
+      - name: CMake build on ubuntu (with GUI / system tinyxml2)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          mkdir cmake.output.tinyxml2
+          cd cmake.output.tinyxml2
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off ..
+          cmake --build . -- -j$(nproc)
+          cd ..
+
+      - name: Run CMake test (system tinyxml2)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          cmake --build cmake.output.tinyxml2 --target check -- -j$(nproc)
+
+      - name: CMake build on ubuntu (with GUI)
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          mkdir cmake.output
+          pushd cmake.output
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On ..
+          cmake --build . -- -j$(nproc)
+
+      - name: CMake build on macos (with GUI)
+        if: contains(matrix.os, 'macos')
+        run: |
+          mkdir cmake.output
+          pushd cmake.output
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5 ..
+          cmake --build . -- -j$(nproc)
+
+      - name: Run CMake test
+        run: |
+          cmake --build cmake.output --target check -- -j$(nproc)
+
+      - name: Run CTest
+        run: |
+          pushd cmake.output
+          ctest -j$(nproc)
+
+      - name: Build with Unsigned char
+        run: |
+          make clean
+          make -j$(nproc) CXXFLAGS=-funsigned-char testrunner
+
+      - name: Test with Unsigned char
+        run: |
+          ./testrunner TestSymbolDatabase
+
+      - name: Build with TEST_MATHLIB_VALUE
+        run: |
+          make clean
+          touch lib/mathlib.cpp test/testmathlib.cpp
+          make -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE all
+
+      - name: Test with TEST_MATHLIB_VALUE
+        run: |
+          make -j$(nproc) CPPFLAGS=-DTEST_MATHLIB_VALUE check
+
+      - name: Check syntax with NONNEG
+        run: |
+          ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
+
+      - name: Build cppcheck
+        run: |
+          make clean
+          make -j$(nproc) HAVE_RULES=yes
+
+      - name: Build test
+        run: |
+          make -j$(nproc) testrunner HAVE_RULES=yes
+
+      - name: Run test
+        run: |
+          make -j$(nproc) check HAVE_RULES=yes
+
+      # the script uses sed parameters not supported by MacOS
+      - name: Run extra tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          tools/generate_and_run_more_tests.sh
+
+      # do not use pushd in this step since we go below the working directory
+      - name: Run test/cli
+        run: |
+          cd test/cli
+          python3 -m pytest test-*.py
+          cd ../../..
+          ln -s cppcheck 'cpp check'
+          cd 'cpp check/test/cli'
+          python3 -m pytest test-*.py
+
+      # fails on macos since some includes (e.g. sys/epoll.h) are not available
+      - name: Run cfg tests
+        if: contains(matrix.os, 'ubuntu') && matrix.os != 'ubuntu-22.04'
+        run: |
+          make -j$(nproc) checkcfg
+
+      - name: Run cfg tests (strict)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          make -j$(nproc) checkcfg
+        env:
+          STRICT: 1
+
+      # it seems macos has no "wc" command
+      - name: Run showtimetop5 tests
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          ./tools/test_showtimetop5.sh
+
+      - name: Run --dump test
+        run: |
+          ./cppcheck test/testpreprocessor.cpp --dump
+          xmllint --noout test/testpreprocessor.cpp.dump
+
+      - name: Validate
+        run: |
+          make -j$(nproc) checkCWEEntries validateXML
+
+      # TODO: move to scriptcheck.yml so these are tested with all Python versions?
+      - name: Test addons
+        run: |
+          ./cppcheck --addon=threadsafety addons/test/threadsafety
+          ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
+          ./cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons/test/misra/misra-ctu-*-test.c
+          pushd addons/test
+          # We'll force C89 standard to enable an additional verification for
+          # rules 5.4 and 5.5 which have standard-dependent options.
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra/misra-test.c --std=c89 --platform=unix64 
+          python3 ../misra.py -verify misra/misra-test.c.dump
+          # TODO: do we need to verify something here?
+          ../../cppcheck --dump -DDUMMY --suppress=uninitvar --suppress=uninitStructMember --std=c89 misra/misra-test.h
+          ../../cppcheck --dump misra/misra-test.cpp 
+          python3 ../misra.py -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_ascii.txt -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_utf8.txt -verify misra/misra-test.cpp.dump
+          python3 ../misra.py --rule-texts=misra/misra2012_rules_dummy_windows1250.txt -verify misra/misra-test.cpp.dump
+          ../../cppcheck --addon=misra --platform=avr8 --error-exitcode=1 misra/misra-test-avr8.c
+          ../../cppcheck --dump misc-test.cpp 
+          python3 ../misc.py -verify misc-test.cpp.dump
+          ../../cppcheck --dump naming_test.c 
+          python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.c.dump
+          ../../cppcheck --dump naming_test.cpp 
+          python3 ../naming.py --var='[a-z].*' --function='[a-z].*' naming_test.cpp.dump
+          ../../cppcheck --dump namingng_test.c 
+          python3 ../namingng.py --configfile ../naming.json --verify namingng_test.c.dump
+
+      - name: Ensure misra addon does not crash
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+            ./cppcheck --addon=misra addons/test/misra/crash1.c | ( ! grep 'Bailing out from checking' )
+
+      - name: Build GUI on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          pushd gui
+          qmake CONFIG+=debug HAVE_QCHART=yes
+          make -j$(nproc)
+
+      - name: Run GUI tests on ubuntu
+        if: contains(matrix.os, 'ubuntu')
+        run: |
+          pushd gui/test/cppchecklibrarydata
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          ./test-cppchecklibrarydata
+          popd
+          pushd gui/test/filelist
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-filelist
+          popd
+          pushd gui/test/projectfile
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          ./test-projectfile
+          popd
+          pushd gui/test/translationhandler
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-translationhandler
+          popd
+          pushd gui/test/xmlreportv2
+          qmake CONFIG+=debug
+          make -j$(nproc)
+          # TODO: requires X session
+          #./test-xmlreportv2
+
+      - name: Generate Qt help file on ubuntu 18.04
+        if: matrix.os == 'ubuntu-18.04'
+        run: |
+          pushd gui/help
+          qcollectiongenerator online-help.qhcp -o online-help.qhc
+
+      - name: Generate Qt help file on ubuntu 20.04
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          pushd gui/help
+          qhelpgenerator online-help.qhcp -o online-help.qhc
+
+      - name: Build triage on ubuntu
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          pushd tools/triage
+          qmake CONFIG+=debug
+          make -j$(nproc)
+
+      - name: Build Fuzzer
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          pushd oss-fuzz
+          make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
+
+      - name: Self check (build)
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          # compile with verification and ast matchers
+          make clean
+          make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
+
+      # Run self check after "Build GUI" to include generated headers in analysis
+      - name: Self check
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          ec=0
+          # self check lib/cli
+          mkdir b1
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings cli lib || ec=1
+          # check gui with qt settings
+          mkdir b2
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings gui/*.cpp gui/temp/*.cpp || ec=1
+          # self check test and tools
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings test/*.cpp tools/*.cpp || ec=1
+          # triage
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --library=qt -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings tools/triage || ec=1
+          exit $ec

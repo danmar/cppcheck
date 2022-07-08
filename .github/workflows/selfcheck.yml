@@ -1,0 +1,81 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: selfcheck
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    env:
+      QT_VERSION: 5.15.2
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Cache Qt ${{ env.QT_VERSION }}
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Linux-QtCache-${{ env.QT_VERSION }}-qtcharts
+
+      - name: Install Qt ${{ env.QT_VERSION }}
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{ env.QT_VERSION }}
+          modules: 'qtcharts'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+
+      # TODO: cache this - perform same build as for the other self check
+      - name: Self check (build)
+        run: |
+          make clean
+          make -j$(nproc) -s CXXFLAGS="-O2 -w" MATCHCOMPILER=yes
+
+      - name: CMake
+        run: |
+          mkdir cmake.output
+          pushd cmake.output
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
+
+      - name: Generate dependencies
+        run: |
+          # make sure the precompiled headers exist
+          make -C cmake.output lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
+          make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
+          # make sure auto-generated GUI files exist
+          make -C cmake.output autogen
+          make -C cmake.output gui-build-deps
+
+      # TODO: find a way to report unmatched suppressions without need to add information checks
+      - name: Self check (unusedFunction)
+        if: false # TODO: fails with preprocessorErrorDirective - see #10667
+        run: |
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --inconclusive --enable=unusedFunction --exception-handling -rp=. --project=cmake.output/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+        env:
+          DISABLE_VALUEFLOW: 1
+
+      # the following steps are duplicated from above since setting up the build node in a parallel step takes longer than the actual steps
+      - name: CMake (no test)
+        run: |
+          mkdir cmake.output.notest
+          pushd cmake.output.notest
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=0 -DBUILD_GUI=ON -DWITH_QCHART=ON -DCMAKE_GLOBAL_AUTOGEN_TARGET=On ..
+
+      - name: Generate dependencies (no test)
+        run: |
+          # make sure the precompiled headers exist
+          make -C cmake.output.notest lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
+          # make sure auto-generated GUI files exist
+          make -C cmake.output.notest autogen
+          make -C cmake.output.notest gui-build-deps
+
+      # TODO: find a way to report unmatched suppressions without need to add information checks
+      - name: Self check (unusedFunction / no test)
+        run: |
+          ./cppcheck -q --template=selfcheck --error-exitcode=1 --library=cppcheck-lib --library=qt -D__CPPCHECK__ -D__GNUC__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --inconclusive --enable=unusedFunction --exception-handling -rp=. --project=cmake.output.notest/compile_commands.json --suppressions-list=.selfcheck_unused_suppressions --inline-suppr
+        env:
+          DISABLE_VALUEFLOW: 1
