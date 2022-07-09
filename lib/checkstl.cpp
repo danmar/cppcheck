@@ -128,7 +128,7 @@ void CheckStl::outOfBounds()
     for (const Scope *function : mTokenizer->getSymbolDatabase()->functionScopes) {
         for (const Token *tok = function->bodyStart; tok != function->bodyEnd; tok = tok->next()) {
             const Library::Container *container = getLibraryContainer(tok);
-            if (!container)
+            if (!container || container->stdAssociativeLike)
                 continue;
             const Token * parent = astParentSkipParens(tok);
             const Token* accessTok = parent;

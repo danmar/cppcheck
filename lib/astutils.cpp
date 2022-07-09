@@ -260,6 +260,36 @@ bool astIsContainerOwned(const Token* tok) {
     return astIsContainer(tok) && !astIsContainerView(tok);
 }
 
+static const Token* getContainerFunction(const Token* tok)
+{
+    if (!tok || !tok->valueType() || !tok->valueType()->container)
+        return nullptr;
+    const Token* parent = tok->astParent();
+    if (Token::Match(parent, ". %name% (") && astIsLHS(tok)) {
+        return parent->next();
+    }
+    return nullptr;
+}
+
+Library::Container::Action astContainerAction(const Token* tok, const Token** ftok)
+{
+    const Token* ftok2 = getContainerFunction(tok);
+    if (ftok)
+        *ftok = ftok2;
+    if (!ftok2)
+        return Library::Container::Action::NO_ACTION;
+    return tok->valueType()->container->getAction(ftok2->str());
+}
+Library::Container::Yield astContainerYield(const Token* tok, const Token** ftok)
+{
+    const Token* ftok2 = getContainerFunction(tok);
+    if (ftok)
+        *ftok = ftok2;
+    if (!ftok2)
+        return Library::Container::Yield::NO_YIELD;
+    return tok->valueType()->container->getYield(ftok2->str());
+}
+
 bool astIsRangeBasedForDecl(const Token* tok)
 {
     return Token::simpleMatch(tok->astParent(), ":") && Token::simpleMatch(tok->astParent()->astParent(), "(");
@@ -833,6 +863,34 @@ bool isAliasOf(const Token *tok, nonneg int varid, bool* inconclusive)
         }
     }
     return false;
+}
+
+bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive)
+{
+    const bool pointer = astIsPointer(tok);
+    const ValueFlow::Value* value = nullptr;
+    const Token* r = findAstNode(expr, [&](const Token* childTok) {
+        for (const ValueFlow::Value& val : tok->values()) {
+            if (val.isImpossible())
+                continue;
+            if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
+                if (findAstNode(val.tokvalue,
+                                [&](const Token* aliasTok) {
+                    return aliasTok->exprId() == childTok->exprId();
+                })) {
+                    if (val.isInconclusive() && inconclusive) { // NOLINT
+                        value = &val;
+                    } else {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    });
+    if (!r && value && inconclusive)
+        *inconclusive = true;
+    return r || value;
 }
 
 static bool isAliased(const Token *startTok, const Token *endTok, nonneg int varid)
@@ -2422,27 +2480,12 @@ static bool isExpressionChangedAt(const F& getExprTok,
         if (globalvar && !tok->isKeyword() && Token::Match(tok, "%name% (") && !(tok->function() && tok->function()->isAttributePure()))
             // TODO: Is global variable really changed by function call?
             return true;
-        const bool pointer = astIsPointer(tok);
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
         if (!getExprTok())
             aliased = true;
-        if (!aliased) {
-            aliased = findAstNode(getExprTok(), [&](const Token* childTok) {
-                for (const ValueFlow::Value& val : tok->values()) {
-                    if (val.isImpossible())
-                        continue;
-                    if (val.isLocalLifetimeValue() || (pointer && val.isSymbolicValue() && val.intvalue == 0)) {
-                        if (findAstNode(val.tokvalue,
-                                        [&](const Token* aliasTok) {
-                            return aliasTok->exprId() == childTok->exprId();
-                        }))
-                            return true;
-                    }
-                }
-                return false;
-            });
-        }
+        if (!aliased)
+            aliased = isAliasOf(tok, getExprTok());
         if (!aliased)
             return false;
         if (isVariableChanged(tok, 1, settings, cpp, depth))

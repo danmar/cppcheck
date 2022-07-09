@@ -563,7 +563,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
 }
 //---------------------------------------------------------------------------
 
-static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::MinSize &minsize, const std::vector<const Token *> &args, const MathLib::bigint bufferSize, const Settings *settings)
+static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::MinSize &minsize, const std::vector<const Token *> &args, const MathLib::bigint bufferSize, const Settings *settings, const Tokenizer* tokenizer)
 {
     const Token * const arg = (minsize.arg > 0 && minsize.arg - 1 < args.size()) ? args[minsize.arg - 1] : nullptr;
     const Token * const arg2 = (minsize.arg2 > 0 && minsize.arg2 - 1 < args.size()) ? args[minsize.arg2 - 1] : nullptr;
@@ -589,8 +589,13 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
         if (arg && arg2 && arg->hasKnownIntValue() && arg2->hasKnownIntValue())
             return (arg->getKnownIntValue() * arg2->getKnownIntValue()) <= bufferSize;
         break;
-    case Library::ArgumentChecks::MinSize::Type::VALUE:
-        return minsize.value <= bufferSize;
+    case Library::ArgumentChecks::MinSize::Type::VALUE: {
+        MathLib::bigint myMinsize = minsize.value;
+        unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
+        if (baseSize != 0)
+            myMinsize *= baseSize;
+        return myMinsize <= bufferSize;
+    }
     case Library::ArgumentChecks::MinSize::Type::NONE:
         break;
     }
@@ -644,7 +649,7 @@ void CheckBufferOverrun::bufferOverflow()
                     }
                 }
                 const bool error = std::none_of(minsizes->begin(), minsizes->end(), [=](const Library::ArgumentChecks::MinSize &minsize) {
-                    return checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings);
+                    return checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings, mTokenizer);
                 });
                 if (error)
                     bufferOverflowError(args[argnr], &bufferSize, (bufferSize.intvalue == 1) ? Certainty::inconclusive : Certainty::normal);
@@ -734,9 +739,18 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             const ValueFlow::Value &bufferSize = getBufferSize(args[0]);
             if (bufferSize.intvalue < 0 || sizeToken->getKnownIntValue() < bufferSize.intvalue)
                 continue;
-            const Token *srcValue = args[1]->getValueTokenMaxStrLength();
-            if (srcValue && Token::getStrLength(srcValue) < sizeToken->getKnownIntValue())
-                continue;
+            if (Token::simpleMatch(args[1], "(") && Token::simpleMatch(args[1]->astOperand1(), ". c_str") && args[1]->astOperand1()->astOperand1()) {
+                const std::list<ValueFlow::Value>& contValues = args[1]->astOperand1()->astOperand1()->values();
+                auto it = std::find_if(contValues.begin(), contValues.end(), [](const ValueFlow::Value& value) {
+                    return value.isContainerSizeValue() && !value.isImpossible();
+                });
+                if (it != contValues.end() && it->intvalue < sizeToken->getKnownIntValue())
+                    continue;
+            } else {
+                const Token* srcValue = args[1]->getValueTokenMaxStrLength();
+                if (srcValue && Token::getStrLength(srcValue) < sizeToken->getKnownIntValue())
+                    continue;
+            }
             // Is the buffer zero terminated after the call?
             bool isZeroTerminated = false;
             for (const Token *tok2 = tok->next()->link(); tok2 != scope->bodyEnd; tok2 = tok2->next()) {

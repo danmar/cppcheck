@@ -5258,6 +5258,12 @@ private:
               "}", &settingsUnix64);
         ASSERT_EQUALS("", errout.str());
 
+        check("int f(int x) {\n"
+              "    const int i = 0xFFFFFFFF;\n"
+              "    if (x == i) {}\n"
+              "}", &settingsUnix64);
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() {\n"
               "  char c;\n"
               "  if ((c = foo()) != -1) {}\n"

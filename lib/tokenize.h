@@ -160,28 +160,12 @@ public:
 
 
     /**
-     * Deletes dead code between 'begin' and 'end'.
-     * In general not everything can be erased, such as:
-     * - code after labels;
-     * - code outside the scope where the function is called;
-     * - code after a change of scope caused by 'switch(...);'
-     *   instructions, like 'case %any%;' or 'default;'
-     * Also, if the dead code contains a 'switch' block
-     * and inside it there's a label, the function removes all
-     * the 'switch(..)' tokens and every occurrence of 'case %any%; | default;'
-     * expression, such as the 'switch' block is reduced to a simple block.
-     *
-     * @param begin Tokens after this have a possibility to be erased.
-     * @param end Tokens before this have a possibility to be erased.
-     */
-    static void eraseDeadCode(Token *begin, const Token *end);
-
-    /**
      * Calculates sizeof value for given type.
      * @param type Token which will contain e.g. "int", "*", or string.
      * @return sizeof for given type, or 0 if it can't be calculated.
      */
-    nonneg int sizeOfType(const Token *type) const;
+    nonneg int sizeOfType(const Token* type) const;
+    nonneg int sizeOfType(const std::string& type) const;
 
     void simplifyDebug();
     /**
@@ -194,26 +178,6 @@ public:
 
     /** Simplify assignment where rhs is a block : "x=({123;});" => "{x=123;}" */
     void simplifyAssignmentBlock();
-
-    /**
-     * Simplify constant calculations such as "1+2" => "3"
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifyCalculations();
-
-    /**
-     * Simplify dereferencing a pointer offset by a number:
-     *     "*(ptr + num)" => "ptr[num]"
-     *     "*(ptr - num)" => "ptr[-num]"
-     */
-    void simplifyOffsetPointerDereference();
-
-    /**
-     * Simplify referencing a pointer offset:
-     *     "Replace "&str[num]" => "(str + num)"
-     */
-    void simplifyOffsetPointerReference();
 
     /** Insert array size where it isn't given */
     void arraySize();
@@ -243,21 +207,8 @@ public:
     /** Remove unknown macro in variable declarations: PROGMEM char x; */
     void removeMacroInVarDecl();
 
-    /** Simplifies some realloc usage like
-     * 'x = realloc (0, n);' => 'x = malloc(n);'
-     * 'x = realloc (y, 0);' => 'x = 0; free(y);'
-     */
-    void simplifyRealloc();
-
     /** Add parentheses for sizeof: sizeof x => sizeof(x) */
     void sizeofAddParentheses();
-
-    /**
-     * Replace sizeof() to appropriate size.
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifySizeof();
 
     /**
      * Simplify variable declarations (split up)
@@ -288,14 +239,6 @@ public:
      * Example: "long long const static b;" => "static const long long b;"
      */
     void simplifyStaticConst();
-
-    /**
-     * Simplify assignments in "if" and "while" conditions
-     * Example: "if(a=b);" => "a=b;if(a);"
-     * Example: "while(a=b) { f(a); }" => "a = b; while(a){ f(a); a = b; }"
-     * Example: "do { f(a); } while(a=b);" => "do { f(a); a = b; } while(a);"
-     */
-    void simplifyIfAndWhileAssign();
 
     /**
      * Simplify multiple assignments.
@@ -362,47 +305,8 @@ public:
      */
     bool simplifyUsing();
 
-    /**
-     * Simplify casts
-     */
-    void simplifyCasts();
-
-    /**
-     * Change (multiple) arrays to (multiple) pointers.
-     */
-    void simplifyUndefinedSizeArray();
-
-    /**
-     * A simplify function that replaces a variable with its value in cases
-     * when the value is known. e.g. "x=10; if(x)" => "x=10;if(10)"
-     *
-     * @return true if modifications to token-list are done.
-     *         false if no modifications are done.
-     */
-    bool simplifyKnownVariables();
-
-    /**
-     * Utility function for simplifyKnownVariables. Get data about an
-     * assigned variable.
-     */
-    static bool simplifyKnownVariablesGetData(nonneg int varid, Token **_tok2, Token **_tok3, std::string &value, nonneg int &valueVarId, bool &valueIsPointer, bool floatvar);
-
-    /**
-     * utility function for simplifyKnownVariables. Perform simplification
-     * of a given variable
-     */
-    bool simplifyKnownVariablesSimplify(Token **tok2, Token *tok3, nonneg int varid, const std::string &structname, std::string &value, nonneg int valueVarId, bool valueIsPointer, const Token * const valueToken, int indentlevel) const;
-
     /** Simplify useless C++ empty namespaces, like: 'namespace %name% { }'*/
     void simplifyEmptyNamespaces();
-
-    /** Simplify redundant code placed after control flow statements :
-     * 'return', 'throw', 'goto', 'break' and 'continue'
-     */
-    void simplifyFlowControl();
-
-    /** Expand nested strcat() calls. */
-    void simplifyNestedStrcat();
 
     /** Simplify "if else" */
     void elseif();
@@ -410,36 +314,10 @@ public:
     /** Simplify C++17/C++20 if/switch/for initialization expression */
     void simplifyIfSwitchForInit();
 
-    /** Simplify conditions
-     * @return true if something is modified
-     *         false if nothing is done.
-     */
-    bool simplifyConditions();
-
-    /** Remove redundant code, e.g. if( false ) { int a; } should be
-     * removed, because it is never executed.
-     * @return true if something is modified
-     *         false if nothing is done.
-     */
-    bool removeRedundantConditions();
-
-    /**
-     * Remove redundant for:
-     * "for (x=0;x<1;x++) { }" => "{ x = 1; }"
-     */
-    void removeRedundantFor();
-
-
     /**
      * Reduces "; ;" to ";", except in "( ; ; )"
      */
     void removeRedundantSemicolons();
-
-    /** Simplify function calls - constant return value
-     * @return true if something is modified
-     *         false if nothing is done.
-     */
-    bool simplifyFunctionReturn();
 
     /** Struct simplification
      * "struct S { } s;" => "struct S { }; S s;"
@@ -457,9 +335,6 @@ public:
      *         false if no modifications are done.
      */
     bool simplifyRedundantParentheses();
-
-    /** Simplify references */
-    void simplifyReference();
 
     /**
      * Simplify functions like "void f(x) int x; {"
@@ -507,11 +382,6 @@ public:
     void findComplicatedSyntaxErrorsInTemplates();
 
     /**
-     * Simplify e.g. 'sin(0)' into '0'
-     */
-    void simplifyMathExpressions();
-
-    /**
      * Modify strings in the token list by replacing hex and oct
      * values. E.g. "\x61" -> "a" and "\000" -> "\0"
      * @param source The string to be modified, e.g. "\x61"
@@ -546,21 +416,6 @@ public:
     bool hasIfdef(const Token *start, const Token *end) const;
 
 private:
-
-    /**
-     * simplify "while (0)"
-     */
-    void simplifyWhile0();
-
-    /**
-     * Simplify while(func(f))
-     */
-    void simplifyFuncInWhile();
-
-    /**
-     * Remove "std::" before some function names
-     */
-    void simplifyStd();
 
     /** Simplify pointer to standard type (C only) */
     void simplifyPointerToStandardType();
@@ -784,12 +639,6 @@ private:
                                nonneg int *varId_);
 
     /**
-     * Simplify e.g. 'return(strncat(temp,"a",1));' into
-     * strncat(temp,"a",1); return temp;
-     */
-    void simplifyReturnStrncat();
-
-    /**
      * Output list of unknown types.
      */
     void printUnknownTypes() const;
@@ -852,13 +701,6 @@ public:
      * @return true in case is is one and false otherwise.
      */
     static bool isOneNumber(const std::string &s);
-
-    /**
-     * Helper function to check whether number is two (2 or 0.2E+1 or 2E+0) or not?
-     * @param s the string to check
-     * @return true in case is is two and false otherwise.
-     */
-    static bool isTwoNumber(const std::string &s);
 
     /**
      * Helper function to check for start of function execution scope.

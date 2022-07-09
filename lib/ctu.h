@@ -28,7 +28,6 @@
 #include "mathlib.h"
 #include "valueflow.h"
 
-#include <algorithm>
 #include <list>
 #include <map>
 #include <string>

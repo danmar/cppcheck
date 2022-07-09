@@ -93,6 +93,7 @@ private:
         TEST_CASE(assign21); // #10186
         TEST_CASE(assign22); // #9139
         TEST_CASE(assign23);
+        TEST_CASE(assign24); // #7440
 
         TEST_CASE(isAutoDealloc);
 
@@ -502,6 +503,23 @@ private:
                       "[test.cpp:17]: (error) Resource leak: n14\n",
                       errout.str());
         settings = s;
+    }
+
+    void assign24() { // #7440
+        check("void f() {\n"
+              "    char* data = new char[100];\n"
+              "    char** dataPtr = &data;\n"
+              "    delete[] *dataPtr;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    char* data = new char[100];\n"
+              "    char** dataPtr = &data;\n"
+              "    printf(\"test\");\n"
+              "    delete[] *dataPtr;\n"
+              "}\n", true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void isAutoDealloc() {

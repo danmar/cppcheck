@@ -191,6 +191,7 @@ private:
         TEST_CASE(array_index_64); // #10878
         TEST_CASE(array_index_65); // #11066
         TEST_CASE(array_index_66); // #10740
+        TEST_CASE(array_index_67); // #1596
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -288,6 +289,7 @@ private:
         TEST_CASE(terminateStrncpy2);
         TEST_CASE(terminateStrncpy3);
         TEST_CASE(terminateStrncpy4);
+        TEST_CASE(terminateStrncpy5); // #9944
         TEST_CASE(recursive_long_time);
 
         TEST_CASE(crash1);  // Ticket #1587 - crash
@@ -322,6 +324,8 @@ private:
         TEST_CASE(ctu_arithmetic);
 
         TEST_CASE(objectIndex);
+
+        TEST_CASE(checkPipeParameterSize); // ticket #3521
     }
 
 
@@ -867,7 +871,7 @@ private:
               "        i=4;\n"
               "    }\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:6]: (error) Array 'a[5]' accessed at index 5, which is out of bounds.\n", errout.str());
 
         check("void f()\n"
               "{\n"
@@ -1850,6 +1854,25 @@ private:
             errout.str());
     }
 
+    void array_index_67() {
+        check("void func(int i) {\n" // #1596
+              "    int types[3];\n"
+              "    int type_cnt = 0;\n"
+              "    if (i == 0) {\n"
+              "        types[type_cnt] = 0;\n"
+              "        type_cnt++;\n"
+              "        types[type_cnt] = 0;\n"
+              "        type_cnt++;\n"
+              "        types[type_cnt] = 0;\n"
+              "        type_cnt++;\n"
+              "    } else {\n"
+              "        types[type_cnt] = 1;\n"
+              "        type_cnt++;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void array_index_multidim() {
         check("void f()\n"
               "{\n"
@@ -2380,7 +2403,8 @@ private:
               "        some_condition ? 0 : a[i-1];\n"
               "    }\n"
               "}");
-        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Array index -1 is out of bounds.\n", "", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n",
+                      errout.str());
 
         check("void f() {\n"
               "    int a[10];\n"
@@ -4319,6 +4343,23 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) The buffer 'buf' may not be null-terminated after the call to strncpy().\n", errout.str());
     }
+
+    void terminateStrncpy5() { // #9944
+        check("void f(const std::string& buf) {\n"
+              "    char v[255];\n"
+              "    if (buf.size() >= sizeof(v))\n"
+              "        return;\n"
+              "    strncpy(v, buf.c_str(), sizeof(v));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(const std::string& buf) {\n"
+              "    char v[255];\n"
+              "    if (buf.size() >= sizeof(v))\n"
+              "        strncpy(v, buf.c_str(), sizeof(v));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning, inconclusive) The buffer 'v' may not be null-terminated after the call to strncpy().\n", errout.str());
+    }
     // extracttests.enable
 
     void recursive_long_time() {
@@ -5224,6 +5265,44 @@ private:
               "    uint8_t* p = (uint8_t*)&s;\n"
               "    return p[10];\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkPipeParameterSize() { // #3521
+
+        Settings settings;
+        LOAD_LIB_2(settings.library, "posix.cfg");
+
+        check("void f(){\n"
+              "int pipefd[1];\n" // <--  array of two integers is needed
+              "if (pipe(pipefd) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: pipefd\n", errout.str());
+
+        check("void f(){\n"
+              "int pipefd[2];\n"
+              "if (pipe(pipefd) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}", settings);
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(){\n"
+              "char pipefd[2];\n"
+              "if (pipe((int*)pipefd) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}", settings);
+        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer is accessed out of bounds: (int*)pipefd\n", errout.str());
+
+        check("void f(){\n"
+              "char pipefd[20];\n" // Strange, but large enough
+              "if (pipe((int*)pipefd) == -1) {\n"
+              "    return;\n"
+              "  }\n"
+              "}", settings);
         ASSERT_EQUALS("", errout.str());
     }
 };

@@ -3777,8 +3777,10 @@ void TemplateSimplifier::simplifyTemplates(
                 specializations,
                 maxtime,
                 expandedtemplates);
-            if (instantiated)
+            if (instantiated) {
                 mInstantiatedTemplates.push_back(*iter1);
+                mTemplateNamePos.clear(); // positions might be invalid after instantiations
+            }
         }
 
         for (std::list<TokenAndName>::const_iterator it = mInstantiatedTemplates.begin(); it != mInstantiatedTemplates.end(); ++it) {

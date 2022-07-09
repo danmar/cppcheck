@@ -24,6 +24,7 @@
 #include "config.h"
 #include "library.h"
 #include "mathlib.h"
+#include "sourcelocation.h"
 #include "token.h"
 
 #include <cctype>
@@ -1250,6 +1251,7 @@ public:
     ///< container element type.
     std::string originalTypeName;    ///< original type name as written in the source code. eg. this might be "uint8_t"
     ///< when type is CHAR.
+    ErrorPath debugPath; ///< debug path to the type
 
     ValueType()
         : sign(UNKNOWN_SIGN),
@@ -1262,7 +1264,8 @@ public:
         smartPointerTypeToken(nullptr),
         smartPointer(nullptr),
         container(nullptr),
-        containerTypeToken(nullptr)
+        containerTypeToken(nullptr),
+        debugPath()
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p)
         : sign(s),
@@ -1275,7 +1278,8 @@ public:
         smartPointerTypeToken(nullptr),
         smartPointer(nullptr),
         container(nullptr),
-        containerTypeToken(nullptr)
+        containerTypeToken(nullptr),
+        debugPath()
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
         : sign(s),
@@ -1288,7 +1292,8 @@ public:
         smartPointerTypeToken(nullptr),
         smartPointer(nullptr),
         container(nullptr),
-        containerTypeToken(nullptr)
+        containerTypeToken(nullptr),
+        debugPath()
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string& otn)
         : sign(s),
@@ -1302,7 +1307,8 @@ public:
         smartPointer(nullptr),
         container(nullptr),
         containerTypeToken(nullptr),
-        originalTypeName(otn)
+        originalTypeName(otn),
+        debugPath()
     {}
 
     static ValueType parseDecl(const Token *type, const Settings *settings);
@@ -1338,6 +1344,8 @@ public:
 
     std::string str() const;
     std::string dump() const;
+
+    void setDebugPath(const Token* tok, SourceLocation ctx, SourceLocation local = SourceLocation::current());
 };
 
 
@@ -1462,6 +1470,8 @@ private:
     // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
 
+    void debugSymbolDatabase() const;
+
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
     Function *addGlobalFunction(Scope*& scope, const Token*& tok, const Token *argStart, const Token* funcStart);
@@ -1482,9 +1492,9 @@ private:
 
     const Enumerator * findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const;
 
-    void setValueType(Token *tok, const ValueType &valuetype);
-    void setValueType(Token *tok, const Variable &var);
-    void setValueType(Token *tok, const Enumerator &enumerator);
+    void setValueType(Token* tok, const ValueType& valuetype, SourceLocation loc = SourceLocation::current());
+    void setValueType(Token* tok, const Variable& var, SourceLocation loc = SourceLocation::current());
+    void setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc = SourceLocation::current());
 
     const Tokenizer *mTokenizer;
     const Settings *mSettings;

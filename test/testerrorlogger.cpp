@@ -192,7 +192,7 @@ private:
         header += "    <cppcheck version=\"";
         header += CppCheck::version();
         header += "\"/>\n    <errors>";
-        ASSERT_EQUALS(header, ErrorMessage::getXMLHeader());
+        ASSERT_EQUALS(header, ErrorMessage::getXMLHeader(""));
         ASSERT_EQUALS("    </errors>\n</results>", ErrorMessage::getXMLFooter());
         std::string message("        <error id=\"errorId\" severity=\"error\"");
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";
@@ -208,7 +208,7 @@ private:
         header += "    <cppcheck version=\"";
         header += CppCheck::version();
         header += "\"/>\n    <errors>";
-        ASSERT_EQUALS(header, ErrorMessage::getXMLHeader());
+        ASSERT_EQUALS(header, ErrorMessage::getXMLHeader(""));
         ASSERT_EQUALS("    </errors>\n</results>", ErrorMessage::getXMLFooter());
         std::string message("        <error id=\"errorId\" severity=\"error\"");
         message += " msg=\"Programming error.\" verbose=\"Verbose error\">\n";

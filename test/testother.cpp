@@ -64,6 +64,7 @@ private:
         TEST_CASE(zeroDiv11);
         TEST_CASE(zeroDiv12);
         TEST_CASE(zeroDiv13);
+        TEST_CASE(zeroDiv14); // #1169
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -208,8 +209,6 @@ private:
 
         TEST_CASE(varFuncNullUB);
 
-        TEST_CASE(checkPipeParameterSize); // ticket #3521
-
         TEST_CASE(checkCastIntToCharAndBack); // ticket #160
 
         TEST_CASE(checkCommaSeparatedReturn);
@@ -254,6 +253,7 @@ private:
         TEST_CASE(moveAndAddressOf);
         TEST_CASE(partiallyMoved);
         TEST_CASE(moveAndLambda);
+        TEST_CASE(moveInLoop);
         TEST_CASE(forwardAndUsed);
 
         TEST_CASE(funcArgNamesDifferent);
@@ -347,20 +347,6 @@ private:
         // Check..
         CheckOther checkOther(&tokenizer, settings, this);
         checkOther.runChecks(&tokenizer, settings, this);
-    }
-
-    void checkposix(const char code[]) {
-        static Settings settings;
-        settings.severity.enable(Severity::warning);
-        settings.libraries.emplace_back("posix");
-
-        check(code,
-              nullptr, // filename
-              false,   // experimental
-              false,   // inconclusive
-              true,    // runSimpleChecks
-              false,   // verbose
-              &settings);
     }
 
     void checkInterlockedDecrement(const char code[]) {
@@ -600,6 +586,17 @@ private:
               "    return dividend;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout.str());
+    }
+
+    void zeroDiv14() {
+        check("void f() {\n" // #1169
+              "    double dx = 1.;\n"
+              "    int ix = 1;\n"
+              "    int i = 1;\n"
+              "    std::cout << ix / (i >> 1) << std::endl;\n"
+              "    std::cout << dx / (i >> 1) << std::endl;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {
@@ -3244,6 +3241,21 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 'p' can be declared as pointer to const\n"
                       "[test.cpp:5]: (style) Variable 'p' can be declared as pointer to const\n",
+                      errout.str());
+
+        check("void f() {\n"
+              "    char a[1][1];\n"
+              "    char* b[1];\n"
+              "    b[0] = a[0];\n"
+              "    **b = 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("ptrdiff_t f(int *p0, int *p1) {\n" // #11148
+              "    return p0 - p1;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:1]: (style) Parameter 'p0' can be declared as pointer to const\n"
+                      "[test.cpp:1]: (style) Parameter 'p1' can be declared as pointer to const\n",
                       errout.str());
     }
 
@@ -8626,99 +8638,6 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    void checkPipeParameterSize() { // #3521
-
-        checkposix("void f(){\n"
-                   "int pipefd[1];\n" // <--  array of two integers is needed
-                   "if (pipe(pipefd) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer 'pipefd' must have size of 2 integers if used as parameter of pipe().\n", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[2];\n"
-                   "if (pipe(pipefd) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[20];\n"
-                   "if (pipe(pipefd) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[1];\n" // <--  array of two integers is needed
-                   "if (pipe2(pipefd,0) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("[test.cpp:3]: (error) Buffer 'pipefd' must have size of 2 integers if used as parameter of pipe().\n", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[2];\n"
-                   "if (pipe2(pipefd,0) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        checkposix("void f(){\n"
-                   "int pipefd[20];\n"
-                   "if (pipe2(pipefd,0) == -1) {\n"
-                   "    return;\n"
-                   "  }\n"
-                   "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // avoid crash with pointer variable
-        check("void foo (int* arrayPtr)\n"
-              "{\n"
-              "  if (pipe (arrayPtr) < 0)\n"
-              "  {}\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // avoid crash with pointer variable - for local variable on stack as well - see #4801
-        check("void foo() {\n"
-              "  int *cp;\n"
-              "  if ( pipe (cp) == -1 ) {\n"
-              "     return;\n"
-              "  }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // test with unknown variable
-        check("void foo() {\n"
-              "  if ( pipe (cp) == -1 ) {\n"
-              "     return;\n"
-              "  }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // avoid crash with pointer variable - for local variable on stack as well - see #4801
-        check("void foo() {\n"
-              "  int *cp;\n"
-              "  if ( pipe (cp) == -1 ) {\n"
-              "     return;\n"
-              "  }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-
-        // test with unknown variable
-        check("void foo() {\n"
-              "  if ( pipe (cp) == -1 ) {\n"
-              "     return;\n"
-              "  }\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
     void checkCastIntToCharAndBack() { // #160
 
         // check getchar
@@ -9491,7 +9410,7 @@ private:
               "    int local_argc = 0;\n"
               "    local_argv[local_argc++] = argv[0];\n"
               "}\n", "test.c");
-        ASSERT_EQUALS("[test.c:1]: (style) Parameter 'argv' can be declared as const array\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
 
         check("void f() {\n"
               "  int x = 0;\n"
@@ -9835,6 +9754,25 @@ private:
               "    b = a;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void moveInLoop()
+    {
+        check("void g(std::string&& s);\n"
+              "void f() {\n"
+              "    std::string p;\n"
+              "    while(true)\n"
+              "        g(std::move(p));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (warning) Access of moved variable 'p'.\n", errout.str());
+
+        check("std::list<int> g(std::list<int>&&);\n"
+              "void f(std::list<int>l) {\n"
+              "    for(int i = 0; i < 10; ++i) {\n"
+              "        for (auto &j : g(std::move(l))) { (void)j; }\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'l'.\n", errout.str());
     }
 
     void forwardAndUsed() {

@@ -36,7 +36,6 @@
 #include <utility>
 #include <set>
 #include <stack>
-#include <numeric>
 
 #include <simplecpp.h>
 
@@ -53,6 +52,7 @@ TokenList::TokenList(const Settings* settings) :
     mIsCpp(false)
 {
     mTokensFrontBack.list = this;
+    mKeywords.insert("asm");
     mKeywords.insert("auto");
     mKeywords.insert("break");
     mKeywords.insert("case");
@@ -452,9 +452,8 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
     }
 
     if (mSettings && mSettings->relativePaths) {
-        std::transform(mFiles.begin(), mFiles.end(), mFiles.begin(), [&](const std::string& f) {
-            return Path::getRelativePath(f, mSettings->basePaths);
-        });
+        for (std::string & mFile : mFiles)
+            mFile = Path::getRelativePath(mFile, mSettings->basePaths);
     }
 
     Token::assignProgressValues(mTokensFrontBack.front);
@@ -462,26 +461,17 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 
 //---------------------------------------------------------------------------
 
-uint64_t TokenList::calculateChecksum() const
+std::size_t TokenList::calculateHash() const
 {
-    uint64_t checksum = 0;
+    std::string hashData;
     for (const Token* tok = front(); tok; tok = tok->next()) {
-        const uint32_t subchecksum1 = tok->flags() + tok->varId() + tok->tokType();
-        uint32_t subchecksum2 = std::accumulate(tok->str().begin(), tok->str().end(), uint32_t(0), [](uint32_t v, char c) {
-            return v + c;
-        });
-        subchecksum2 = std::accumulate(tok->originalName().begin(), tok->originalName().end(), subchecksum2, [](uint32_t v, char c) {
-            return v + c;
-        });
-
-        checksum ^= ((static_cast<uint64_t>(subchecksum1) << 32) | subchecksum2);
-
-        const bool bit1 = (checksum & 1) != 0;
-        checksum >>= 1;
-        if (bit1)
-            checksum |= (1ULL << 63);
+        hashData += MathLib::toString(tok->flags());
+        hashData += MathLib::toString(tok->varId());
+        hashData += MathLib::toString(tok->tokType());
+        hashData += tok->str();
+        hashData += tok->originalName();
     }
-    return checksum;
+    return (std::hash<std::string>{})(hashData);
 }
 
 

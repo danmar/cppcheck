@@ -29,6 +29,7 @@
 #include "tokenlist.h"
 #include "utils.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <iterator>  // back_inserter

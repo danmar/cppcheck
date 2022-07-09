@@ -23,7 +23,6 @@
 #include "utils.h"
 
 #include <algorithm>
-#include <cctype>
 #include <cstdlib>
 #include <fstream>
 

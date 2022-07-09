@@ -711,6 +711,30 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    const char c[3] = \"abc\";\n"
+              "    return strlen(c);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid strlen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("int f() {\n"
+              "    const wchar_t c[3] = L\"abc\";\n"
+              "    return wcslen(c);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Invalid wcslen() argument nr 1. A nul-terminated string is required.\n", errout.str());
+
+        check("void f(char* dest) {\n"
+              "    char if_name[(IF_NAMESIZE > 21 ? IF_NAMESIZE : 21) + 1] = \"%\";\n"
+              "    strcat(dest, if_name);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f() {\n"
+              "    const char c[3] = \"ab\\0\";\n"
+              "    return strlen(c);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mathfunctionCall_sqrt() {
@@ -1706,6 +1730,18 @@ private:
     void returnLocalStdMove5() {
         check("struct A{} a; A f1() { return std::move(a); }\n"
               "A f2() { volatile A var; return std::move(var); }");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S { std::string msg{ \"abc\" }; };\n"
+              "std::unique_ptr<S> get(std::vector<std::unique_ptr<S>>& v) {\n"
+              "    return std::move(v.front());\n"
+              "}\n"
+              "int main() {\n"
+              "    std::vector<std::unique_ptr<S>> v;\n"
+              "    v.emplace_back(std::make_unique<S>());\n"
+              "    auto p = get(v);\n"
+              "    std::cout << p->msg;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

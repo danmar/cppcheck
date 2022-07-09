@@ -121,7 +121,6 @@ static bool isVclTypeInit(const Type *type)
     }
     return false;
 }
-
 //---------------------------------------------------------------------------
 
 CheckClass::CheckClass(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
@@ -210,18 +209,42 @@ void CheckClass::constructors()
             // Mark all variables not used
             clearAllVar(usageList);
 
-            std::list<const Function *> callstack;
-            initializeVarList(func, callstack, scope, usageList);
-
-            // Check if any variables are uninitialized
+            // Variables with default initializers
             for (Usage &usage : usageList) {
                 const Variable& var = *usage.var;
 
                 // check for C++11 initializer
                 if (var.hasDefault() && func.type != Function::eOperatorEqual && func.type != Function::eCopyConstructor) { // variable still needs to be copied
                     usage.init = true;
-                    continue;
                 }
+            }
+
+            std::list<const Function *> callstack;
+            initializeVarList(func, callstack, scope, usageList);
+
+            // Assign 1 union member => assign all union members
+            for (const Usage &usage : usageList) {
+                const Variable& var = *usage.var;
+                if (!usage.assign && !usage.init)
+                    continue;
+                const Scope* varScope1 = var.nameToken()->scope();
+                if (varScope1->type == Scope::ScopeType::eUnion) {
+                    for (Usage &usage2 : usageList) {
+                        const Variable& var2 = *usage2.var;
+                        if (usage2.assign || usage2.init || var2.isStatic())
+                            continue;
+                        const Scope* varScope2 = var2.nameToken()->scope();
+                        if (varScope2->type == Scope::ScopeType::eStruct)
+                            varScope2 = varScope2->nestedIn;
+                        if (varScope1 == varScope2)
+                            usage2.assign = true;
+                    }
+                }
+            }
+
+            // Check if any variables are uninitialized
+            for (const Usage &usage : usageList) {
+                const Variable& var = *usage.var;
 
                 if (usage.assign || usage.init || var.isStatic())
                     continue;
@@ -631,6 +654,21 @@ void CheckClass::assignVar(std::vector<Usage> &usageList, nonneg int varid)
     }
 }
 
+void CheckClass::assignVar(std::vector<Usage> &usageList, const Token* vartok)
+{
+    if (vartok->varId() > 0) {
+        assignVar(usageList, vartok->varId());
+        return;
+    }
+    for (Usage& usage: usageList) {
+        // FIXME: This is a workaround when varid is not set for a derived member
+        if (usage.var->name() == vartok->str()) {
+            usage.assign = true;
+            return;
+        }
+    }
+}
+
 void CheckClass::initVar(std::vector<Usage> &usageList, nonneg int varid)
 {
     for (Usage& usage: usageList) {
@@ -904,7 +942,8 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                             tok2 = tok2->next();
                             if (tok2->str() == "&")
                                 tok2 = tok2->next();
-                            assignVar(usage, tok2->varId());
+                            if (isVariableChangedByFunctionCall(tok2, tok2->previous()->str() == "&", tok2->varId(), mSettings, nullptr))
+                                assignVar(usage, tok2->varId());
                         }
                     }
                 }
@@ -943,7 +982,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
 
         // Assignment of member variable?
         else if (Token::Match(ftok, "%name% =")) {
-            assignVar(usage, ftok->varId());
+            assignVar(usage, ftok);
             bool bailout = ftok->variable() && ftok->variable()->isReference();
             const Token* tok2 = ftok->tokAt(2);
             if (tok2->str() == "&") {

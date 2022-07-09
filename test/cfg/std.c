@@ -29,6 +29,17 @@
 #include <inttypes.h>
 #include <float.h>
 
+size_t invalidFunctionArgStr_wcslen(void)
+{
+    const wchar_t terminated0[] = L"ABCDEF49620910";
+    const wchar_t terminated1[3] = { L'a', L'b', L'\0' };
+    const wchar_t notTerminated[3] = { L'a', L'b', L'c' };
+    // cppcheck-suppress invalidFunctionArgStr
+    (void) wcslen(notTerminated);
+    (void) wcslen(terminated0);
+    return wcslen(terminated1);
+}
+
 int invalidFunctionArgStr_strcpn(void)
 {
     const char str1[] = "ABCDEF49620910";
@@ -3897,10 +3908,11 @@ void bufferAccessOutOfBounds_strxfrm(void)
 {
     const char src[3] = "abc";
     char dest[1] = "a";
+    // cppcheck-suppress invalidFunctionArgStr
     (void)strxfrm(dest,src,1);
-    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress [bufferAccessOutOfBounds,invalidFunctionArgStr]
     (void)strxfrm(dest,src,2);
-    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress [bufferAccessOutOfBounds,invalidFunctionArgStr]
     (void)strxfrm(dest,src,3);
 }
 

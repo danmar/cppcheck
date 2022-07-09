@@ -153,10 +153,10 @@ public:
     std::string fileLine(const Token *tok) const;
 
     /**
-     * Calculates a 64-bit checksum of the token list used to compare
-     * multiple token lists with each other as quickly as possible.
+     * Calculates a hash of the token list used to compare multiple
+     * token lists with each other as quickly as possible.
      */
-    uint64_t calculateChecksum() const;
+    std::size_t calculateHash() const;
 
     /**
      * Create abstract syntax tree.

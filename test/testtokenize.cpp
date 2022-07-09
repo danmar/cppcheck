@@ -146,7 +146,6 @@ private:
         TEST_CASE(simplifyKeyword); // #5842 - remove C99 static keyword between []
 
         TEST_CASE(isOneNumber);
-        TEST_CASE(isTwoNumber);
 
         TEST_CASE(simplifyFunctionParameters);
         TEST_CASE(simplifyFunctionParameters1); // #3721
@@ -5641,22 +5640,6 @@ private:
         ASSERT_EQUALS(false, Tokenizer::isOneNumber("-0"));
         ASSERT_EQUALS(false, Tokenizer::isOneNumber(""));
         ASSERT_EQUALS(false, Tokenizer::isOneNumber("garbage"));
-    }
-
-    void isTwoNumber() const {
-        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("2.0"));
-        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("+2.0"));
-        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("2.0e+0"));
-        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("+2L"));
-        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("+2"));
-        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("2"));
-        ASSERT_EQUALS(true, Tokenizer::isTwoNumber("+2E+0"));
-
-        ASSERT_EQUALS(false, Tokenizer::isTwoNumber("0.0"));
-        ASSERT_EQUALS(false, Tokenizer::isTwoNumber("+0.0"));
-        ASSERT_EQUALS(false, Tokenizer::isTwoNumber("-0"));
-        ASSERT_EQUALS(false, Tokenizer::isTwoNumber(""));
-        ASSERT_EQUALS(false, Tokenizer::isTwoNumber("garbage"));
     }
 
     void simplifyStaticConst() {

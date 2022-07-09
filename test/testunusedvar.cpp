@@ -134,6 +134,7 @@ private:
         TEST_CASE(localvar63); // #6928
         TEST_CASE(localvar64); // #9997
         TEST_CASE(localvar65); // #9876, #10006
+        TEST_CASE(localvar66); // #11143
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -3558,6 +3559,14 @@ private:
                               "    catch (...) {}\n"
                               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Variable 's' is assigned a value that is never used.\n", errout.str());
+    }
+
+    void localvar66() { // #11143
+        functionVariableUsage("void f() {\n"
+                              "    double phi = 42.0;\n"
+                              "    std::cout << pow(sin(phi), 2) + pow(cos(phi), 2) << std::endl;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvarloops() {

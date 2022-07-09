@@ -105,6 +105,7 @@
 #include <array>
 #include <cassert>
 #include <climits>
+#include <cmath>
 #include <cstdlib>
 #include <cstring>
 #include <exception>
@@ -918,9 +919,9 @@ static void setTokenValue(Token* tok,
                 const double floatValue1 = value1.isFloatValue() ? value1.floatValue : value1.intvalue;
                 const double floatValue2 = value2.isFloatValue() ? value2.floatValue : value2.intvalue;
                 const MathLib::bigint intValue1 =
-                    value1.isFloatValue() ? static_cast<MathLib::bigint>(value1.floatValue) : value1.intvalue;
+                    value1.isFloatValue() ? std::llround(value1.floatValue) : value1.intvalue;
                 const MathLib::bigint intValue2 =
-                    value2.isFloatValue() ? static_cast<MathLib::bigint>(value2.floatValue) : value2.intvalue;
+                    value2.isFloatValue() ? std::llround(value2.floatValue) : value2.intvalue;
                 if ((value1.isFloatValue() || value2.isFloatValue()) && Token::Match(parent, "&|^|%|<<|>>|==|!=|%or%"))
                     continue;
                 if (Token::Match(parent, "==|!=")) {
@@ -985,8 +986,7 @@ static void setTokenValue(Token* tok,
             ValueFlow::Value v(val);
             v.intvalue = ~v.intvalue;
             int bits = 0;
-            if (settings &&
-                tok->valueType() &&
+            if (tok->valueType() &&
                 tok->valueType()->sign == ValueType::Sign::UNSIGNED &&
                 tok->valueType()->pointer == 0) {
                 if (tok->valueType()->type == ValueType::Type::INT)
@@ -2108,6 +2108,24 @@ static bool evalAssignment(Value& lhsValue, const std::string& assign, const Val
     return !error;
 }
 
+static ValueFlow::Value::MoveKind isMoveOrForward(const Token* tok)
+{
+    if (!tok)
+        return ValueFlow::Value::MoveKind::NonMovedVariable;
+    const Token* parent = tok->astParent();
+    if (!Token::simpleMatch(parent, "("))
+        return ValueFlow::Value::MoveKind::NonMovedVariable;
+    const Token* ftok = parent->astOperand1();
+    if (!ftok)
+        return ValueFlow::Value::MoveKind::NonMovedVariable;
+    if (Token::simpleMatch(ftok->astOperand1(), "std :: move"))
+        return ValueFlow::Value::MoveKind::MovedVariable;
+    if (Token::simpleMatch(ftok->astOperand1(), "std :: forward"))
+        return ValueFlow::Value::MoveKind::ForwardedVariable;
+    // TODO: Check for cast
+    return ValueFlow::Value::MoveKind::NonMovedVariable;
+}
+
 template<class T>
 struct SingleRange {
     T* x;
@@ -2416,6 +2434,19 @@ struct ValueFlowAnalyzer : Analyzer {
 
     virtual Action isModified(const Token* tok) const {
         Action read = Action::Read;
+        const ValueFlow::Value* value = getValue(tok);
+        if (value) {
+            // Moving a moved value wont change the moved value
+            if (value->isMovedValue() && isMoveOrForward(tok) != ValueFlow::Value::MoveKind::NonMovedVariable)
+                return read;
+            // Inserting elements to container wont change the lifetime
+            if (astIsContainer(tok) && value->isLifetimeValue() &&
+                contains({Library::Container::Action::PUSH,
+                          Library::Container::Action::INSERT,
+                          Library::Container::Action::CHANGE_INTERNAL},
+                         astContainerAction(tok)))
+                return read;
+        }
         bool inconclusive = false;
         if (isVariableChangedByFunctionCall(tok, getIndirect(tok), getSettings(), &inconclusive))
             return read | Action::Invalid;
@@ -2424,7 +2455,6 @@ struct ValueFlowAnalyzer : Analyzer {
         if (isVariableChanged(tok, getIndirect(tok), getSettings(), isCPP())) {
             if (Token::Match(tok->astParent(), "*|[|.|++|--"))
                 return read | Action::Invalid;
-            const ValueFlow::Value* value = getValue(tok);
             // Check if its assigned to the same value
             if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {
@@ -3216,6 +3246,35 @@ std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok, bool inconc
     return result;
 }
 
+static bool hasUniqueOwnership(const Token* tok)
+{
+    if (!tok)
+        return false;
+    const Variable* var = tok->variable();
+    if (var && var->isArray() && !var->isArgument())
+        return true;
+    if (astIsPointer(tok))
+        return false;
+    if (astIsUniqueSmartPointer(tok))
+        return true;
+    if (astIsContainerOwned(tok))
+        return true;
+    return false;
+}
+
+// Check if dereferencing an object that doesn't have unique ownership
+static bool derefShared(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!tok->isUnaryOp("*") && tok->str() != "[" && tok->str() != ".")
+        return false;
+    if (tok->str() == "." && tok->originalName() != "->")
+        return false;
+    const Token* ptrTok = tok->astOperand1();
+    return !hasUniqueOwnership(ptrTok);
+}
+
 ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclusive)
 {
     std::vector<ValueFlow::Value> values = getLifetimeObjValues(tok, inconclusive);
@@ -3289,6 +3348,7 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                     const Variable* argvar = argvarTok->variable();
                     if (!argvar)
                         continue;
+                    const Token* argTok = nullptr;
                     if (argvar->isArgument() && (argvar->isReference() || argvar->isRValueReference())) {
                         int n = getArgumentPos(argvar, f);
                         if (n < 0)
@@ -3297,9 +3357,17 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                         // TODO: Track lifetimes of default parameters
                         if (n >= args.size())
                             return std::vector<LifetimeToken> {};
-                        const Token* argTok = args[n];
+                        argTok = args[n];
                         lt.errorPath.emplace_back(returnTok, "Return reference.");
                         lt.errorPath.emplace_back(tok->previous(), "Called function passing '" + argTok->expressionString() + "'.");
+                    } else if (Token::Match(tok->tokAt(-2), ". %name% (") && !derefShared(tok->tokAt(-2)) &&
+                               exprDependsOnThis(argvarTok)) {
+                        argTok = tok->tokAt(-2)->astOperand1();
+                        lt.errorPath.emplace_back(returnTok, "Return reference that depends on 'this'.");
+                        lt.errorPath.emplace_back(tok->previous(),
+                                                  "Calling member function on '" + argTok->expressionString() + "'.");
+                    }
+                    if (argTok) {
                         std::vector<LifetimeToken> arglts = LifetimeToken::setInconclusive(
                             getLifetimeTokens(argTok, escape, std::move(lt.errorPath), pred, depth - returns.size()),
                             returns.size() > 1);
@@ -3321,10 +3389,8 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
     } else if (Token::Match(tok, ".|::|[") || tok->isUnaryOp("*")) {
 
         const Token *vartok = tok;
-        if (tok->isUnaryOp("*"))
-            vartok = tok->astOperand1();
         while (vartok) {
-            if (vartok->str() == "[" || vartok->originalName() == "->")
+            if (vartok->str() == "[" || vartok->originalName() == "->" || vartok->isUnaryOp("*"))
                 vartok = vartok->astOperand1();
             else if (vartok->str() == "." || vartok->str() == "::")
                 vartok = vartok->astOperand2();
@@ -3334,10 +3400,7 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
 
         if (!vartok)
             return {{tok, std::move(errorPath)}};
-        const Variable *tokvar = vartok->variable();
-        const bool isContainer = astIsContainer(vartok) && !astIsPointer(vartok);
-        if (!astIsUniqueSmartPointer(vartok) && !isContainer && !(tokvar && tokvar->isArray() && !tokvar->isArgument()) &&
-            (Token::Match(vartok->astParent(), "[|*") || vartok->astParent()->originalName() == "->")) {
+        if (derefShared(vartok->astParent())) {
             for (const ValueFlow::Value &v : vartok->values()) {
                 if (!v.isLocalLifetimeValue())
                     continue;
@@ -5416,7 +5479,10 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
         std::unordered_map<nonneg int, std::unordered_set<nonneg int>> backAssigns;
         for (Token* tok = const_cast<Token*>(scope->bodyStart); tok != scope->bodyEnd; tok = tok->next()) {
             // Assignment
-            if ((tok->str() != "=" && !isVariableInit(tok)) || (tok->astParent()))
+            if (tok->str() != "=" && !isVariableInit(tok))
+                continue;
+
+            if (tok->astParent() && !(tok->astParent()->str() == ";" && astIsLHS(tok)))
                 continue;
 
             // Lhs should be a variable
@@ -7426,8 +7492,8 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
                 }))
                     return Action::Read | Action::Write | Action::Incremental;
             }
-        } else if (Token::Match(tok, "%name% . %name% (")) {
-            Library::Container::Action action = container->getAction(tok->strAt(2));
+        } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
+            Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
             if (action == Library::Container::Action::PUSH || action == Library::Container::Action::POP) {
                 std::vector<const Token*> args = getArguments(tok->tokAt(3));
                 if (args.size() < 2)
@@ -7463,8 +7529,8 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
                     }
                 }
             }
-        } else if (Token::Match(tok, "%name% . %name% (")) {
-            Library::Container::Action action = container->getAction(tok->strAt(2));
+        } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
+            Library::Container::Action action = container->getAction(tok->astParent()->strAt(1));
             if (action == Library::Container::Action::PUSH)
                 val->intvalue++;
             if (action == Library::Container::Action::POP)
@@ -7589,29 +7655,34 @@ bool isContainerSizeChanged(const Token* tok, const Settings* settings, int dept
         return false;
     if (!tok->valueType() || !tok->valueType()->container)
         return true;
-    if (Token::Match(tok, "%name% %assign%|<<"))
+    if (astIsLHS(tok) && Token::Match(tok->astParent(), "%assign%|<<"))
         return true;
-    if (Token::Match(tok, "%var% [") && tok->valueType()->container->stdAssociativeLike)
+    const Library::Container* container = tok->valueType()->container;
+    // Views cannot change container size
+    if (container->view)
+        return false;
+    if (astIsLHS(tok) && Token::simpleMatch(tok->astParent(), "["))
+        return container->stdAssociativeLike;
+    Library::Container::Action action = astContainerAction(tok);
+    Library::Container::Yield yield = astContainerYield(tok);
+    switch (action) {
+    case Library::Container::Action::RESIZE:
+    case Library::Container::Action::CLEAR:
+    case Library::Container::Action::PUSH:
+    case Library::Container::Action::POP:
+    case Library::Container::Action::CHANGE:
+    case Library::Container::Action::INSERT:
+    case Library::Container::Action::ERASE:
         return true;
-    if (Token::Match(tok, "%name% . %name% (")) {
-        Library::Container::Action action = tok->valueType()->container->getAction(tok->strAt(2));
-        Library::Container::Yield yield = tok->valueType()->container->getYield(tok->strAt(2));
-        switch (action) {
-        case Library::Container::Action::RESIZE:
-        case Library::Container::Action::CLEAR:
-        case Library::Container::Action::PUSH:
-        case Library::Container::Action::POP:
-        case Library::Container::Action::CHANGE:
-        case Library::Container::Action::INSERT:
-        case Library::Container::Action::ERASE:
-            return true;
-        case Library::Container::Action::NO_ACTION: // might be unknown action
+    case Library::Container::Action::NO_ACTION:
+        // Is this an unknown member function call?
+        if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% ("))
             return yield == Library::Container::Yield::NO_YIELD;
-        case Library::Container::Action::FIND:
-        case Library::Container::Action::CHANGE_CONTENT:
-        case Library::Container::Action::CHANGE_INTERNAL:
-            break;
-        }
+        break;
+    case Library::Container::Action::FIND:
+    case Library::Container::Action::CHANGE_CONTENT:
+    case Library::Container::Action::CHANGE_INTERNAL:
+        break;
     }
     if (isContainerSizeChangedByFunction(tok, settings, depth))
         return true;
@@ -7723,16 +7794,17 @@ static void valueFlowIterators(TokenList *tokenlist, const Settings *settings)
             continue;
         if (!astIsContainer(tok))
             continue;
-        if (Token::Match(tok->astParent(), ". %name% (")) {
-            Library::Container::Yield yield = getLibraryContainer(tok)->getYield(tok->astParent()->strAt(1));
+        const Token* ftok = nullptr;
+        Library::Container::Yield yield = astContainerYield(tok, &ftok);
+        if (ftok) {
             ValueFlow::Value v(0);
             v.setKnown();
             if (yield == Library::Container::Yield::START_ITERATOR) {
                 v.valueType = ValueFlow::Value::ValueType::ITERATOR_START;
-                setTokenValue(tok->astParent()->tokAt(2), v, settings);
+                setTokenValue(ftok->next(), v, settings);
             } else if (yield == Library::Container::Yield::END_ITERATOR) {
                 v.valueType = ValueFlow::Value::ValueType::ITERATOR_END;
-                setTokenValue(tok->astParent()->tokAt(2), v, settings);
+                setTokenValue(ftok->next(), v, settings);
             }
         }
     }
