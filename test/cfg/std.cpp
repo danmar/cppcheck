@@ -36,6 +36,41 @@
 #include <iterator>
 #include <vector>
 
+int zerodiv_sqrt()
+{
+    int i = std::sqrt(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_sin()
+{
+    int i = std::sin(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int moduloofone_cos()
+{
+    int i = std::cos(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
+int moduloofone_exp()
+{
+    int i = std::exp(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
+int moduloofone_pow()
+{
+    int i = std::pow(2, 0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
 char* invalidFunctionArgStr_strncpy(char * destination)
 {
     // Copies the first num characters of source to destination.
