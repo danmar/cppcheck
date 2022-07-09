@@ -36,6 +36,13 @@
 #include <iterator>
 #include <vector>
 
+int zerodiv_ceil()
+{
+    int i = std::ceil(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
 int zerodiv_sqrt()
 {
     int i = std::sqrt(0);
