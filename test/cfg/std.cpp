@@ -57,6 +57,13 @@ int zerodiv_cbrt()
     return 42 / i;
 }
 
+int zerodiv_erf()
+{
+    int i = std::erf(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
 int zerodiv_asin()
 {
     int i = std::asin(0);

@@ -719,6 +719,17 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
+    functions["erf"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 1)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::erf(value);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
     functions["sqrt"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
