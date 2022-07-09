@@ -35,14 +35,17 @@
 #include <csignal>
 #include <cstdlib>
 #include <cstring>
-#include <fcntl.h>
 #include <functional>
 #include <iostream>
 #include <list>
+#include <utility>
+#include <numeric>
+
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
-#include <utility>
+#include <fcntl.h>
+
 
 #ifdef __SVR4  // Solaris
 #include <sys/loadavg.h>
