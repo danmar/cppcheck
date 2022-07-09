@@ -19,6 +19,7 @@
 #include "config.h"
 #include "cppcheck.h"
 #include "errortypes.h"
+#include "processexecutor.h"
 #include "settings.h"
 #include "suppressions.h"
 #include "testsuite.h"
@@ -50,6 +51,8 @@ private:
         TEST_CASE(suppressionsGlob);
         TEST_CASE(suppressionsFileNameWithExtraPath);
         TEST_CASE(suppressionsSettings);
+        TEST_CASE(suppressionsSettingsThreads);
+        TEST_CASE(suppressionsSettingsProcesses);
         TEST_CASE(suppressionsMultiFile);
         TEST_CASE(suppressionsPathSeparator);
         TEST_CASE(suppressionsLine0);
@@ -228,6 +231,37 @@ private:
             EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
         }
         ThreadExecutor executor(files, settings, *this);
+        std::vector<ScopedFile> scopedfiles;
+        scopedfiles.reserve(files.size());
+        for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
+            scopedfiles.emplace_back(i->first, code);
+
+        const unsigned int exitCode = executor.check();
+
+        std::map<std::string, std::string> files_for_report;
+        for (std::map<std::string, std::size_t>::const_iterator file = files.begin(); file != files.end(); ++file)
+            files_for_report[file->first] = "";
+
+        reportSuppressions(settings, files_for_report);
+
+        return exitCode;
+    }
+
+    unsigned int checkSuppressionProcesses(const char code[], const std::string &suppression = emptyString) {
+        errout.str("");
+        output.str("");
+
+        std::map<std::string, std::size_t> files;
+        files["test.cpp"] = strlen(code);
+
+        Settings settings;
+        settings.jobs = 1;
+        settings.inlineSuppressions = true;
+        settings.severity.enable(Severity::information);
+        if (!suppression.empty()) {
+            EXPECT_EQ("", settings.nomsg.addSuppressionLine(suppression));
+        }
+        ProcessExecutor executor(files, settings, *this);
         std::vector<ScopedFile> scopedfiles;
         scopedfiles.reserve(files.size());
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i)
@@ -462,7 +496,14 @@ private:
 
     void suppressionsSettings() {
         runChecks(&TestSuppressions::checkSuppression);
+    }
+
+    void suppressionsSettingsThreads() {
         runChecks(&TestSuppressions::checkSuppressionThreads);
+    }
+
+    void suppressionsSettingsProcesses() {
+        runChecks(&TestSuppressions::checkSuppressionProcesses);
     }
 
     void suppressionsMultiFile() {
