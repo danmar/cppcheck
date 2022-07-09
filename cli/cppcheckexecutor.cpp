@@ -975,8 +975,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         }
         if (cppcheck.analyseWholeProgram())
             returnValue++;
-    } else if (!ThreadExecutor::isEnabled()) {
-        std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {
 #if defined(THREADING_MODEL_THREAD)
         ThreadExecutor executor(mFiles, settings, *this);
