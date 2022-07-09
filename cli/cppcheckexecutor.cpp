@@ -1018,9 +1018,16 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
                              "files are found. Please check your project's include directories and add all of them "
                              "as include directories for Cppcheck. To see what files Cppcheck cannot find use "
                              "--check-config.",
-                             Preprocessor::missingIncludeFlag ? "missingInclude" : "missingIncludeSystem",
+                             "",
                              Certainty::normal);
-            reportInfo(msg);
+            if (Preprocessor::missingIncludeFlag) {
+                msg.id = "missingInclude";
+                reportInfo(msg);
+            }
+            if (Preprocessor::missingSystemIncludeFlag) {
+                msg.id = "missingIncludeSystem";
+                reportInfo(msg);
+            }
         }
     }
 
