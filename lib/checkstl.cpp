@@ -1991,9 +1991,9 @@ void CheckStl::string_c_str()
                 }
             } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( )") && tok->variable()->isStlStringType() && tok->tokAt(2)->variable()->isStlStringType()) {
                 string_c_strConstructor(tok);
-            } else if (printPerformance && tok->next() && tok->next()->variable() && tok->next()->variable()->isStlStringType() &&
-                ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable()->isStlStringType()) ||
-                (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable()->isStlStringType()))) {
+            } else if (printPerformance && tok->next() && tok->next()->variable() && tok->next()->variable()->isStlStringType() && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER &&
+                       ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable()->isStlStringType()) ||
+                        (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable()->isStlStringType()))) {
                 string_c_strConcat(tok);
             }
 
