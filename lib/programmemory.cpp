@@ -642,6 +642,17 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
+    functions["lgamma"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 1)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::lgamma(value);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
     functions["cos"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 1)
             return ValueFlow::Value::unknown();
@@ -708,6 +719,17 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
+    functions["hypot"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 2)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::hypot(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
     functions["fdim"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 2)
             return ValueFlow::Value::unknown();
@@ -761,6 +783,28 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         v.floatValue = std::pow(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
+    functions["ldexp"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 2)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::ldexp(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
+    functions["ilogb"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 1)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.intvalue = std::ilogb(value);
+        v.valueType = ValueFlow::Value::ValueType::INT;
         return v;
     };
     functions["erf"] = [](const std::vector<ValueFlow::Value>& args) {

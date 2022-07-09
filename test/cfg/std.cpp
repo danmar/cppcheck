@@ -36,6 +36,27 @@
 #include <iterator>
 #include <vector>
 
+int zerodiv_ldexp()
+{
+    int i = std::ldexp(0.0, 42.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_ilogb()
+{
+    int i = std::ilogb(1.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_hypot()
+{
+    int i = std::hypot(0.0, 0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
 int zerodiv_fmod()
 {
     int i = std::fmod(0.0, 42.0);
