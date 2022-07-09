@@ -43,6 +43,13 @@ int zerodiv_sqrt()
     return 42 / i;
 }
 
+int zerodiv_asinh()
+{
+    int i = std::asinh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
 int zerodiv_sin()
 {
     int i = std::sin(0)+std::sin(M_PI)+std::sin(2*M_PI);
