@@ -115,6 +115,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 SettingsDialog::~SettingsDialog()
 {
     saveSettings();
+    delete mCurrentStyle;
     delete mUI;
 }
 
