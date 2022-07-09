@@ -53,7 +53,9 @@ private:
         TEST_CASE(suppressionsFileNameWithExtraPath);
         TEST_CASE(suppressionsSettings);
         TEST_CASE(suppressionsSettingsThreads);
+#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
         TEST_CASE(suppressionsSettingsProcesses);
+#endif
         TEST_CASE(suppressionsMultiFile);
         TEST_CASE(suppressionsPathSeparator);
         TEST_CASE(suppressionsLine0);
@@ -235,6 +237,7 @@ private:
         return exitCode;
     }
 
+#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
     unsigned int checkSuppressionProcesses(const char code[], const std::string &suppression = emptyString) {
         errout.str("");
         output.str("");
@@ -261,6 +264,7 @@ private:
 
         return exitCode;
     }
+#endif
 
     void runChecks(unsigned int (TestSuppressions::*check)(const char[], const std::string &)) {
         // check to make sure the appropriate error is present
@@ -486,9 +490,11 @@ private:
         runChecks(&TestSuppressions::checkSuppressionThreads);
     }
 
+#if !defined(WIN32) && !defined(__MINGW32__) && !defined(__CYGWIN__)
     void suppressionsSettingsProcesses() {
         runChecks(&TestSuppressions::checkSuppressionProcesses);
     }
+#endif
 
     void suppressionsMultiFile() {
         std::map<std::string, std::string> files;
