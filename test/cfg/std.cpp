@@ -141,6 +141,13 @@ int moduloofone_cos()
     return 42 % i;
 }
 
+int moduloofone_expm1()
+{
+    int i = std::expm1(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
 int moduloofone_exp()
 {
     int i = std::exp(0);
