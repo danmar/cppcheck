@@ -36,6 +36,48 @@
 #include <iterator>
 #include <vector>
 
+int zerodiv_fmod()
+{
+    int i = std::fmod(0.0, 42.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fmin()
+{
+    int i = std::fmin(0.0, 0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fmax()
+{
+    int i = std::fmax(0.0, 0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_floor()
+{
+    int i = std::floor(0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fabs()
+{
+    int i = std::fabs(-0.0) + std::fabs(+0.0) + std::fabs(0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fdim()
+{
+    int i = std::fdim(1.0, 1.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
 int zerodiv_ceil()
 {
     int i = std::ceil(0);
@@ -134,16 +176,16 @@ int zerodiv_sin()
     return 42 / i;
 }
 
+int zerodiv_expm1()
+{
+    int i = std::expm1(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
 int moduloofone_cos()
 {
     int i = std::cos(0);
-    // cppcheck-suppress moduloofone
-    return 42 % i;
-}
-
-int moduloofone_expm1()
-{
-    int i = std::expm1(0);
     // cppcheck-suppress moduloofone
     return 42 % i;
 }

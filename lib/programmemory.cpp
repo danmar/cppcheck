@@ -708,6 +708,50 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
+    functions["fdim"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 2)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::fdim(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
+    functions["fmax"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 2)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::fmax(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
+    functions["fmin"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 2)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::fmin(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
+    functions["fmod"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 2)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::fmod(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
     functions["pow"] = [](const std::vector<ValueFlow::Value>& args) {
         if (args.size() != 2)
             return ValueFlow::Value::unknown();
@@ -738,6 +782,17 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         v.floatValue = std::erfc(value);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
+    functions["floor"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 1)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::floor(value);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
@@ -803,7 +858,18 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         if (!v.isFloatValue() && !v.isIntValue())
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
-        v.floatValue = std::exp2(value);
+        v.floatValue = std::expm1(value);
+        v.valueType = ValueFlow::Value::ValueType::FLOAT;
+        return v;
+    };
+    functions["fabs"] = [](const std::vector<ValueFlow::Value>& args) {
+        if (args.size() != 1)
+            return ValueFlow::Value::unknown();
+        ValueFlow::Value v = args[0];
+        if (!v.isFloatValue() && !v.isIntValue())
+            return ValueFlow::Value::unknown();
+        double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        v.floatValue = std::fabs(value);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
