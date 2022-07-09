@@ -43,6 +43,20 @@ int zerodiv_sqrt()
     return 42 / i;
 }
 
+int zerodiv_cbrt()
+{
+    int i = std::cbrt(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_asin()
+{
+    int i = std::asin(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
 int zerodiv_acos()
 {
     int i = std::acos(1);
@@ -74,6 +88,20 @@ int zerodiv_sinh()
 int zerodiv_tanh()
 {
     int i = std::tanh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_atanh()
+{
+    int i = std::atanh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_atan()
+{
+    int i = std::atan(0);
     // cppcheck-suppress zerodiv
     return 42 / i;
 }
