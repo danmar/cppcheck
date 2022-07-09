@@ -413,19 +413,19 @@ void uninitvar_std_next(const std::vector<int> &v, int count)
     if (std::next(v.begin(), count) != v.end()) {}
 
     std::vector<int>::iterator it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(it) != v.end()) {}
 
     std::vector<int>::const_iterator const_it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(const_it) != v.end()) {}
 
     std::vector<int>::reverse_iterator rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(rit) != v.rend()) {}
 
     std::vector<int>::const_reverse_iterator const_rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(const_rit) != v.rend()) {}
 }
 
@@ -436,19 +436,19 @@ void uninitvar_std_prev(const std::vector<int> &v, int count)
     if (std::prev(v.begin(), count) != v.end()) {}
 
     std::vector<int>::iterator it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(it) != v.end()) {}
 
     std::vector<int>::const_iterator const_it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(const_it) != v.end()) {}
 
     std::vector<int>::reverse_iterator rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(rit) != v.rend()) {}
 
     std::vector<int>::const_reverse_iterator const_rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(const_rit) != v.rend()) {}
 }
 
@@ -4095,7 +4095,7 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     // #9455
     std::list<int>::const_iterator uninitItBegin;
     std::list<int>::const_iterator uninitItEnd;
-    // @todo cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::find(uninitItBegin, uninitItEnd, 123) == uninitItEnd) {}
 
     // <!-- InputIterator std::find_if(InputIterator first, InputIterator last, UnaryPredicate val) -->
