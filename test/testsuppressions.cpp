@@ -18,6 +18,7 @@
 
 #include "config.h"
 #include "cppcheck.h"
+#include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "processexecutor.h"
 #include "settings.h"
@@ -165,19 +166,6 @@ private:
         ASSERT_EQUALS(true, suppressions.isSuppressed(errorMessage("errorid", "x/../a.c", 123)));
     }
 
-    void reportSuppressions(const Settings &settings, const std::map<std::string, std::string> &files) {
-        // make it verbose that this check is disabled
-        const bool unusedFunctionCheck = false;
-
-        if (settings.jointSuppressionReport) {
-            for (std::map<std::string, std::string>::const_iterator i = files.begin(); i != files.end(); ++i) {
-                reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheck));
-            }
-        }
-
-        reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(unusedFunctionCheck));
-    }
-
     // Check the suppression
     unsigned int checkSuppression(const char code[], const std::string &suppression = emptyString) {
         std::map<std::string, std::string> files;
@@ -211,7 +199,11 @@ private:
         if (cppCheck.analyseWholeProgram())
             exitCode |= settings.exitCode;
 
-        reportSuppressions(settings, files);
+        std::map<std::string, std::size_t> files_for_report;
+        for (std::map<std::string, std::string>::const_iterator file = files.begin(); file != files.end(); ++file)
+            files_for_report[file->first] = file->second.size();
+
+        CppCheckExecutor::reportSuppressions(settings, false, files_for_report, *this);
 
         return exitCode;
     }
@@ -238,11 +230,7 @@ private:
 
         const unsigned int exitCode = executor.check();
 
-        std::map<std::string, std::string> files_for_report;
-        for (std::map<std::string, std::size_t>::const_iterator file = files.begin(); file != files.end(); ++file)
-            files_for_report[file->first] = "";
-
-        reportSuppressions(settings, files_for_report);
+        CppCheckExecutor::reportSuppressions(settings, false, files, *this);
 
         return exitCode;
     }
@@ -269,11 +257,7 @@ private:
 
         const unsigned int exitCode = executor.check();
 
-        std::map<std::string, std::string> files_for_report;
-        for (std::map<std::string, std::size_t>::const_iterator file = files.begin(); file != files.end(); ++file)
-            files_for_report[file->first] = "";
-
-        reportSuppressions(settings, files_for_report);
+        CppCheckExecutor::reportSuppressions(settings, false, files, *this);
 
         return exitCode;
     }
