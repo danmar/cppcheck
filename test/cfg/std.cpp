@@ -45,7 +45,7 @@ int zerodiv_sqrt()
 
 int zerodiv_sin()
 {
-    int i = std::sin(0);
+    int i = std::sin(0)+std::sin(M_PI)+std::sin(2*M_PI);
     // cppcheck-suppress zerodiv
     return 42 / i;
 }
