@@ -148,6 +148,13 @@ int moduloofone_exp()
     return 42 % i;
 }
 
+int moduloofone_exp2()
+{
+    int i = std::exp2(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
 int moduloofone_pow()
 {
     int i = std::pow(2, 0);
