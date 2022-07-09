@@ -684,7 +684,7 @@ static void setTokenValue(Token* tok,
         return;
     }
 
-    if (value.isContainerSizeValue()) {
+    if (value.isContainerSizeValue() && astIsContainer(tok)) {
         // .empty, .size, +"abc", +'a'
         if (Token::Match(parent, "+|==|!=") && parent->astOperand1() && parent->astOperand2()) {
             for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
@@ -7305,8 +7305,14 @@ static bool needsInitialization(const Variable* var, bool cpp)
         return true;
     if (var->type() && var->type()->needInitialization == Type::NeedInitialization::True)
         return true;
-    if (var->valueType() && (var->valueType()->isPrimitive() || var->valueType()->type == ValueType::Type::POD))
-        return true;
+    if (var->valueType()) {
+        if (var->valueType()->isPrimitive())
+            return true;
+        if (var->valueType()->type == ValueType::Type::POD)
+            return true;
+        if (var->valueType()->type == ValueType::Type::ITERATOR)
+            return true;
+    }
     return false;
 }
 
