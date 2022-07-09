@@ -43,9 +43,37 @@ int zerodiv_sqrt()
     return 42 / i;
 }
 
+int zerodiv_acos()
+{
+    int i = std::acos(1);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
 int zerodiv_asinh()
 {
     int i = std::asinh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_acosh()
+{
+    int i = std::acosh(1);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_sinh()
+{
+    int i = std::sinh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_tanh()
+{
+    int i = std::tanh(0);
     // cppcheck-suppress zerodiv
     return 42 / i;
 }
