@@ -175,6 +175,10 @@ private:
 
         TEST_CASE(checkKnownEmptyContainer);
         TEST_CASE(checkMutexes);
+        TEST_CASE(checkUseMemcpy1);
+        TEST_CASE(checkUseMemcpy2);
+        TEST_CASE(checkUseMemcpy3);
+        TEST_CASE(checkUseMemcpy4);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -6151,6 +6155,45 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void checkUseMemcpy1() {
+        check("void f(void* dest, void const* src, const size_t count) {\n"
+              "    size_t i;\n"
+              "    for (i = 0; i < count; ++i)\n"
+              "        (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Concider using std::memcpy instead of for-loop. "
+                      "Library implementation should work faster in general cases.\n", errout.str());
+    }
+    void checkUseMemcpy2() {
+        check("void f(void* dest, void const* src, const size_t count) {\n"
+              "    for (size_t i = 0; i < count; ++i) {\n"
+              "        (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];\n"
+              "}}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Concider using std::memcpy instead of for-loop. "
+                      "Library implementation should work faster in general cases.\n", errout.str());
+    }
+    void checkUseMemcpy3() {
+        check("void f(void* dst, const void* src, size_t size) {\n"
+              "    size_t i;\n"
+              "    for (i = 0; i < size; ++i)\n"
+              "        ((char*)dst)[i] = ((const char*)src)[i];\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Concider using std::memcpy instead of for-loop. "
+                      "Library implementation should work faster in general cases.\n", errout.str());
+    }
+    void checkUseMemcpy4() {
+        check("void f(void* dst, void* src, size_t size) {\n"
+              "    for (size_t i = 0; i < size; ++i) {\n"
+              "        ((int8_t*)dst)[i] = ((int8_t*)src)[i];\n"
+              "}}\n",
+              true);
+        ASSERT_EQUALS("[test.cpp:3]: (performance) Concider using std::memcpy instead of for-loop. "
+                      "Library implementation should work faster in general cases.\n", errout.str());
     }
 };
 
