@@ -6266,6 +6266,14 @@ private:
                "  v.size();\n"
                "}";
         ASSERT_EQUALS("", isKnownContainerSizeValue(tokenValues(code, "v . size"), 3));
+
+        code = "int f() {\n"
+               "    std::vector<std::vector<int>> v;\n"
+               "    auto it = v.begin();\n"
+               "    auto x = it->size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
 
     void valueFlowDynamicBufferSize() {

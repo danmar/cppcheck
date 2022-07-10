@@ -684,7 +684,7 @@ static void setTokenValue(Token* tok,
         return;
     }
 
-    if (value.isContainerSizeValue()) {
+    if (value.isContainerSizeValue() && astIsContainer(tok)) {
         // .empty, .size, +"abc", +'a'
         if (Token::Match(parent, "+|==|!=") && parent->astOperand1() && parent->astOperand2()) {
             for (const ValueFlow::Value &value1 : parent->astOperand1()->values()) {
@@ -2436,10 +2436,10 @@ struct ValueFlowAnalyzer : Analyzer {
         Action read = Action::Read;
         const ValueFlow::Value* value = getValue(tok);
         if (value) {
-            // Moving a moved value wont change the moved value
+            // Moving a moved value won't change the moved value
             if (value->isMovedValue() && isMoveOrForward(tok) != ValueFlow::Value::MoveKind::NonMovedVariable)
                 return read;
-            // Inserting elements to container wont change the lifetime
+            // Inserting elements to container won't change the lifetime
             if (astIsContainer(tok) && value->isLifetimeValue() &&
                 contains({Library::Container::Action::PUSH,
                           Library::Container::Action::INSERT,
@@ -5596,7 +5596,7 @@ static void valueFlowAfterSwap(TokenList* tokenlist,
                 continue;
             for (int i = 0; i < 2; i++) {
                 std::vector<const Variable*> vars = getVariables(args[0]);
-                std::list<ValueFlow::Value> values = args[0]->values();
+                const std::list<ValueFlow::Value>& values = args[0]->values();
                 valueFlowForwardAssign(args[0], args[1], vars, values, false, tokenlist, errorLogger, settings);
                 std::swap(args[0], args[1]);
             }
@@ -6190,7 +6190,7 @@ struct ConditionHandler {
                         parent = parent->astParent();
                     bool possible = false;
                     if (Token::Match(parent, "&&|%oror%")) {
-                        std::string op = parent->str();
+                        const std::string& op(parent->str());
                         while (parent && parent->str() == op)
                             parent = parent->astParent();
                         if (Token::simpleMatch(parent, "!") || Token::simpleMatch(parent, "== false"))
@@ -6526,7 +6526,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                                      ErrorLogger* errorLogger,
                                      const Settings* settings)
 {
-    // TODO: Refactor this to use arbitary expressions
+    // TODO: Refactor this to use arbitrary expressions
     assert(expr->varId() > 0);
     const Token * const bodyEnd = bodyStart->link();
 
@@ -7305,8 +7305,14 @@ static bool needsInitialization(const Variable* var, bool cpp)
         return true;
     if (var->type() && var->type()->needInitialization == Type::NeedInitialization::True)
         return true;
-    if (var->valueType() && (var->valueType()->isPrimitive() || var->valueType()->type == ValueType::Type::POD))
-        return true;
+    if (var->valueType()) {
+        if (var->valueType()->isPrimitive())
+            return true;
+        if (var->valueType()->type == ValueType::Type::POD)
+            return true;
+        if (var->valueType()->type == ValueType::Type::ITERATOR)
+            return true;
+    }
     return false;
 }
 
@@ -7726,7 +7732,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                 if (Token::Match(tok, "%var% (|{") && tok->next()->astOperand2() &&
                     tok->next()->astOperand2()->str() != ",") {
                     Token* inTok = tok->next()->astOperand2();
-                    std::list<ValueFlow::Value> values = inTok->values();
+                    const std::list<ValueFlow::Value>& values = inTok->values();
                     const bool constValue = inTok->isNumber();
                     valueFlowForwardAssign(inTok, var, values, constValue, true, tokenlist, errorLogger, settings);
 
@@ -7754,7 +7760,7 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                     Token* inTok = ftok->astOperand2();
                     if (!inTok)
                         continue;
-                    std::list<ValueFlow::Value> values = inTok->values();
+                    const std::list<ValueFlow::Value>& values = inTok->values();
                     valueFlowForwardAssign(inTok, tok, vars, values, false, tokenlist, errorLogger, settings);
                 }
             } else if (Token::simpleMatch(tok->astParent(), ". release ( )")) {

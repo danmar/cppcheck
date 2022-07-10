@@ -550,7 +550,7 @@ public:
      */
     std::string getFunctionName(const Token *ftok) const;
 
-    static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback="");
+    static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback=emptyString);
 
     /** Suppress/check a type */
     enum class TypeCheck { def, check, suppress };

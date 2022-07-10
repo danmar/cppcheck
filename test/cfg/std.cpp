@@ -36,6 +36,230 @@
 #include <iterator>
 #include <vector>
 
+int zerodiv_ldexp()
+{
+    int i = std::ldexp(0.0, 42.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_ilogb()
+{
+    int i = std::ilogb(1.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_hypot()
+{
+    int i = std::hypot(0.0, 0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fmod()
+{
+    int i = std::fmod(0.0, 42.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fmin()
+{
+    int i = std::fmin(0.0, 0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fmax()
+{
+    int i = std::fmax(0.0, 0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_floor()
+{
+    int i = std::floor(0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fabs()
+{
+    int i = std::fabs(-0.0) + std::fabs(+0.0) + std::fabs(0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fdim()
+{
+    int i = std::fdim(1.0, 1.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_trunc()
+{
+    int i = std::trunc(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_ceil()
+{
+    int i = std::ceil(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_sqrt()
+{
+    int i = std::sqrt(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_cbrt()
+{
+    int i = std::cbrt(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_erf()
+{
+    int i = std::erf(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_erfc()
+{
+    int i = std::erfc(42);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_asin()
+{
+    int i = std::asin(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_acos()
+{
+    int i = std::acos(1);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_asinh()
+{
+    int i = std::asinh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_acosh()
+{
+    int i = std::acosh(1);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_log1p()
+{
+    int i = std::log1p(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_nearbyint()
+{
+    int i = std::nearbyint(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_round()
+{
+    int i = std::round(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_sinh()
+{
+    int i = std::sinh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_tanh()
+{
+    int i = std::tanh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_atanh()
+{
+    int i = std::atanh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_atan()
+{
+    int i = std::atan(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_sin()
+{
+    int i = std::sin(0)+std::sin(M_PI)+std::sin(2*M_PI);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_expm1()
+{
+    int i = std::expm1(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int moduloofone_cos()
+{
+    int i = std::cos(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
+int moduloofone_exp()
+{
+    int i = std::exp(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
+int moduloofone_exp2()
+{
+    int i = std::exp2(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
+int moduloofone_pow()
+{
+    int i = std::pow(2, 0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
 char* invalidFunctionArgStr_strncpy(char * destination)
 {
     // Copies the first num characters of source to destination.
@@ -413,19 +637,19 @@ void uninitvar_std_next(const std::vector<int> &v, int count)
     if (std::next(v.begin(), count) != v.end()) {}
 
     std::vector<int>::iterator it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(it) != v.end()) {}
 
     std::vector<int>::const_iterator const_it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(const_it) != v.end()) {}
 
     std::vector<int>::reverse_iterator rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(rit) != v.rend()) {}
 
     std::vector<int>::const_reverse_iterator const_rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(const_rit) != v.rend()) {}
 }
 
@@ -436,19 +660,19 @@ void uninitvar_std_prev(const std::vector<int> &v, int count)
     if (std::prev(v.begin(), count) != v.end()) {}
 
     std::vector<int>::iterator it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(it) != v.end()) {}
 
     std::vector<int>::const_iterator const_it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(const_it) != v.end()) {}
 
     std::vector<int>::reverse_iterator rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(rit) != v.rend()) {}
 
     std::vector<int>::const_reverse_iterator const_rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(const_rit) != v.rend()) {}
 }
 
@@ -4095,7 +4319,7 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     // #9455
     std::list<int>::const_iterator uninitItBegin;
     std::list<int>::const_iterator uninitItEnd;
-    // @todo cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::find(uninitItBegin, uninitItEnd, 123) == uninitItEnd) {}
 
     // <!-- InputIterator std::find_if(InputIterator first, InputIterator last, UnaryPredicate val) -->

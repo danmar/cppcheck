@@ -316,7 +316,19 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
         list[0]->setIcon(QIcon(icon));
     }
 
-    //TODO Does this leak memory? Should items from list be deleted?
+    /* TODO: the list items leak memory
+        Indirect leak of 80624 byte(s) in 5039 object(s) allocated from:
+     #0 0xa15a2d in operator new(unsigned long) (/mnt/s/GitHub/cppcheck-fw/cmake-build-debug-wsl-kali-clang-asan-ubsan/bin/cppcheck-gui+0xa15a2d)
+     #1 0xdda276 in ResultsTree::createNormalItem(QString const&) /mnt/s/GitHub/cppcheck-fw/gui/resultstree.cpp:122:27
+     #2 0xde4290 in ResultsTree::addBacktraceFiles(QStandardItem*, ErrorLine const&, bool, QString const&, bool) /mnt/s/GitHub/cppcheck-fw/gui/resultstree.cpp:289:13
+     #3 0xddd754 in ResultsTree::addErrorItem(ErrorItem const&) /mnt/s/GitHub/cppcheck-fw/gui/resultstree.cpp:199:30
+     #4 0xe37046 in ResultsView::error(ErrorItem const&) /mnt/s/GitHub/cppcheck-fw/gui/resultsview.cpp:129:21
+     #5 0xd2448d in QtPrivate::FunctorCall<QtPrivate::IndexesList<0>, QtPrivate::List<ErrorItem const&>, void, void (ResultsView::*)(ErrorItem const&)>::call(void (ResultsView::*)(ErrorItem const&), ResultsView*, void**) /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h:152:13
+     #6 0xd2402c in void QtPrivate::FunctionPointer<void (ResultsView::*)(ErrorItem const&)>::call<QtPrivate::List<ErrorItem const&>, void>(void (ResultsView::*)(ErrorItem const&), ResultsView*, void**) /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h:185:13
+     #7 0xd23b45 in QtPrivate::QSlotObject<void (ResultsView::*)(ErrorItem const&), QtPrivate::List<ErrorItem const&>, void>::impl(int, QtPrivate::QSlotObjectBase*, QObject*, void**, bool*) /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h:418:17
+     #8 0x7fd2536cc0dd in QObject::event(QEvent*) (/usr/lib/x86_64-linux-gnu/libQt5Core.so.5+0x2dc0dd)
+     #9 0x7fd2541836be in QApplicationPrivate::notify_helper(QObject*, QEvent*) (/usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5+0x1636be)
+     */
 
     return list[0];
 }

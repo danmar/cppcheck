@@ -485,7 +485,7 @@ private:
     void printOut(
         const TokenAndName &tokenAndName,
         const std::string &indent = "    ") const;
-    void printOut(const std::string &text = "") const;
+    void printOut(const std::string &text = emptyString) const;
 
     Tokenizer *mTokenizer;
     TokenList &mTokenList;

@@ -232,7 +232,7 @@ static std::string getDumpFileName(const Settings& settings, const std::string& 
     if (!settings.dumpFile.empty())
         return settings.dumpFile;
     if (!settings.dump && !settings.buildDir.empty())
-        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, "") + ".dump";
+        return AnalyzerInformation::getAnalyzerInfoFile(settings.buildDir, filename, emptyString) + ".dump";
     return filename + ".dump";
 }
 
@@ -432,7 +432,7 @@ unsigned int CppCheck::check(const std::string &path)
             mErrorLogger.reportOut(std::string("Checking ") + path + "...", Color::FgGreen);
 
         const std::string lang = Path::isCPP(path) ? "-x c++" : "-x c";
-        const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, "");
+        const std::string analyzerInfo = mSettings.buildDir.empty() ? std::string() : AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, path, emptyString);
         const std::string clangcmd = analyzerInfo + ".clang-cmd";
         const std::string clangStderr = analyzerInfo + ".clang-stderr";
         const std::string clangAst = analyzerInfo + ".clang-ast";
@@ -1586,10 +1586,10 @@ void CppCheck::getErrorMessages()
     s.severity.enable(Severity::performance);
     s.severity.enable(Severity::information);
 
-    purgedConfigurationMessage("","");
+    purgedConfigurationMessage(emptyString,emptyString);
 
     mTooManyConfigs = true;
-    tooManyConfigsError("",0U);
+    tooManyConfigsError(emptyString,0U);
 
     // call all "getErrorMessages" in all registered Check classes
     for (std::list<Check *>::const_iterator it = Check::instances().begin(); it != Check::instances().end(); ++it)
@@ -1615,7 +1615,7 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
 
     const std::string args = "-quiet -checks=*,-clang-analyzer-*,-llvm* \"" + fileSettings.filename + "\" -- " + allIncludes + allDefines;
     std::string output;
-    if (!mExecuteCommand(exe, split(args), "", &output)) {
+    if (!mExecuteCommand(exe, split(args), emptyString, &output)) {
         std::cerr << "Failed to execute '" << exe << "'" << std::endl;
         return;
     }
@@ -1625,7 +1625,7 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
     std::string line;
 
     if (!mSettings.buildDir.empty()) {
-        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename, "");
+        const std::string analyzerInfoFile = AnalyzerInformation::getAnalyzerInfoFile(mSettings.buildDir, fileSettings.filename, emptyString);
         std::ofstream fcmd(analyzerInfoFile + ".clang-tidy-cmd");
         fcmd << istr.str();
     }

@@ -512,7 +512,7 @@ int main(int argc, char **argv)
     compilefiles(fout, libfiles, "${INCLUDE_FOR_LIB}");
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
-    compilefiles(fout, extfiles, "");
+    compilefiles(fout, extfiles, emptyString);
     compilefiles(fout, toolsfiles, "${INCLUDE_FOR_LIB}");
 
     return 0;

@@ -2091,6 +2091,10 @@ Variable& Variable::operator=(const Variable &var)
     return *this;
 }
 
+bool Variable::isMember() const {
+    return mScope && mScope->isClassOrStructOrUnion();
+}
+
 bool Variable::isPointerArray() const
 {
     return isArray() && nameToken() && nameToken()->previous() && (nameToken()->previous()->str() == "*");
@@ -5548,7 +5552,7 @@ const Type* Scope::findType(const std::string & name) const
         return (*it).second;
 
     // is type defined in anonymous namespace..
-    it = definedTypesMap.find("");
+    it = definedTypesMap.find(emptyString);
     if (it != definedTypesMap.end()) {
         for (const Scope *scope : nestedList) {
             if (scope->className.empty() && (scope->type == eNamespace || scope->isClassOrStructOrUnion())) {
