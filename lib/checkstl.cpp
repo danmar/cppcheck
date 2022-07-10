@@ -1954,7 +1954,7 @@ void CheckStl::string_c_str()
                     if (var->isPointer())
                         string_c_strError(tok);
                 } else if (printPerformance && Token::Match(tok->tokAt(2), "%var% . c_str|data ( ) ;")) {
-                    if (tok->variable()->isStlStringType() && tok->tokAt(2)->variable()->isStlStringType())
+                    if (tok->variable() && tok->variable()->isStlStringType() && tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType())
                         string_c_strAssignment(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
@@ -1989,11 +1989,12 @@ void CheckStl::string_c_str()
 
                     }
                 }
-            } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( )") && tok->variable()->isStlStringType() && tok->tokAt(2)->variable()->isStlStringType()) {
+            } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( )") &&
+                       tok->variable() && tok->variable()->isStlStringType() && tok->tokAt(2)->variable() && tok->tokAt(2)->variable()->isStlStringType()) {
                 string_c_strConstructor(tok);
             } else if (printPerformance && tok->next() && tok->next()->variable() && tok->next()->variable()->isStlStringType() && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER &&
-                       ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable()->isStlStringType()) ||
-                        (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable()->isStlStringType()))) {
+                       ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable() && tok->previous()->variable()->isStlStringType()) ||
+                        (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable() && tok->tokAt(-5)->variable()->isStlStringType()))) {
                 string_c_strConcat(tok);
             }
 
