@@ -3009,16 +3009,16 @@ void CheckStl::useMemcpy()
             // technically using void* here is not correct but some compilers could allow it
 
             // (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];
-            if(Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %var% ] = "
-                            "(| reinterpret_cast < const| uint8_t|int8_t|char|void * > ( %var% ) )| [ %var% ] ; }")) {
-                                useMemcpyError(tok->next(), true);
-                            }
+            if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %var% ] = "
+                             "(| reinterpret_cast < const| uint8_t|int8_t|char|void * > ( %var% ) )| [ %var% ] ; }")) {
+                useMemcpyError(tok->next(), true);
+            }
 
             // ((char*)dst)[i] = ((const char*)src)[i];
-            if(Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %var% ] = "
-                            "( ( const| uint8_t|int8_t|char|void * ) (| %var% ) )| [ %var% ] ; }")) {
-                                useMemcpyError(tok->next(), mTokenizer->isCPP());
-                            }
+            if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %var% ] = "
+                             "( ( const| uint8_t|int8_t|char|void * ) (| %var% ) )| [ %var% ] ; }")) {
+                useMemcpyError(tok->next(), mTokenizer->isCPP());
+            }
         }
     }
 }
