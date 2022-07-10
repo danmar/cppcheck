@@ -298,10 +298,7 @@ void CheckFunctions::checkIteratorTypeMismatch()
 
             const Token *splitToken = tok->next()->astOperand2();
             if (Token::simpleMatch(splitToken, ":"))
-            {
-                printf("Currently no supporting : notation\n");
                 continue;
-            }
                 
             const Token* assignmentToken = splitToken->astOperand1();
             if (!assignmentToken)
@@ -315,12 +312,6 @@ void CheckFunctions::checkIteratorTypeMismatch()
 
             if (!astIsIterator(assignee) || !astIsIterator(assigned))
                 continue;
-
-            printf("type: %s\n", assignmentToken->astOperand1()->valueType()->str().c_str());    
-            printf("type: %s\n", assignmentToken->astOperand2()->valueType()->str().c_str());
-            printf("equal: %d\n", assignmentToken->astOperand1()->valueType()->isTypeEqual(
-                assignmentToken->astOperand2()->valueType()
-            ));
 
             if (!assignee->valueType()->isTypeEqual(assigned->valueType()))
                 mismatchingForAssignmentType(
