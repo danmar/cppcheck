@@ -179,7 +179,7 @@ struct Analyzer {
     /// The condition that will be assumed during analysis
     virtual void assume(const Token* tok, bool state, unsigned int flags = 0) = 0;
     /// Return analyzer for expression at token
-    virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg = "") const = 0;
+    virtual ValuePtr<Analyzer> reanalyze(Token* tok, const std::string& msg = emptyString) const = 0;
     virtual ~Analyzer() {}
 };
 

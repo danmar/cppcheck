@@ -489,7 +489,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
         } else if (cmdtok->str() == "error") {
             if (!configs_ifndef.empty() && !configs_ifndef.back().empty()) {
                 if (configs_ifndef.size() == 1U)
-                    ret.erase("");
+                    ret.erase(emptyString);
                 std::vector<std::string> configs(configs_if);
                 configs.push_back(configs_ifndef.back());
                 ret.erase(cfg(configs, userDefines));

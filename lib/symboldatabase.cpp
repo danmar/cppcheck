@@ -5548,7 +5548,7 @@ const Type* Scope::findType(const std::string & name) const
         return (*it).second;
 
     // is type defined in anonymous namespace..
-    it = definedTypesMap.find("");
+    it = definedTypesMap.find(emptyString);
     if (it != definedTypesMap.end()) {
         for (const Scope *scope : nestedList) {
             if (scope->className.empty() && (scope->type == eNamespace || scope->isClassOrStructOrUnion())) {

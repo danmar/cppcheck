@@ -442,7 +442,7 @@ private:
 public:
 
     /** Syntax error */
-    NORETURN void syntaxError(const Token *tok, const std::string &code = "") const;
+    NORETURN void syntaxError(const Token *tok, const std::string &code = emptyString) const;
 
     /** Syntax error. Unmatched character. */
     NORETURN void unmatchedToken(const Token *tok) const;

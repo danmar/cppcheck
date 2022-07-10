@@ -3756,6 +3756,6 @@ void CheckOther::overlappingWriteUnion(const Token *tok)
 
 void CheckOther::overlappingWriteFunction(const Token *tok)
 {
-    const std::string funcname = tok ? tok->str() : "";
+    const std::string &funcname = tok ? tok->str() : emptyString;
     reportError(tok, Severity::error, "overlappingWriteFunction", "Overlapping read/write in " + funcname + "() is undefined behavior");
 }

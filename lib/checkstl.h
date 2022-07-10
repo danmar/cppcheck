@@ -268,8 +268,8 @@ private:
         c.uselessCallsRemoveError(nullptr, "remove");
         c.dereferenceInvalidIteratorError(nullptr, "i");
         c.readingEmptyStlContainerError(nullptr);
-        c.useStlAlgorithmError(nullptr, "");
-        c.knownEmptyContainerError(nullptr, "");
+        c.useStlAlgorithmError(nullptr, emptyString);
+        c.knownEmptyContainerError(nullptr, emptyString);
         c.globalLockGuardError(nullptr);
         c.localMutexError(nullptr);
     }

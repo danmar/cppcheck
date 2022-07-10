@@ -1005,7 +1005,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     }
 
     if (!settings.checkConfiguration) {
-        cppcheck.tooManyConfigsError("",0U);
+        cppcheck.tooManyConfigsError(emptyString,0U);
 
         if (settings.checks.isEnabled(Checks::missingInclude) && (Preprocessor::missingIncludeFlag || Preprocessor::missingSystemIncludeFlag)) {
             const std::list<ErrorMessage::FileLocation> callStack;
