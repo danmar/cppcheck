@@ -2091,6 +2091,10 @@ Variable& Variable::operator=(const Variable &var)
     return *this;
 }
 
+bool Variable::isMember() const {
+    return mScope && mScope->isClassOrStructOrUnion();
+}
+
 bool Variable::isPointerArray() const
 {
     return isArray() && nameToken() && nameToken()->previous() && (nameToken()->previous()->str() == "*");

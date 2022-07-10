@@ -2334,7 +2334,7 @@ bool Tokenizer::simplifyUsing()
                 Token::Match(tok->linkAt(2), "] ] = ::| %name%")))))
             continue;
 
-        std::string name = tok->strAt(1);
+        const std::string& name = tok->strAt(1);
         const Token *nameToken = tok->next();
         std::string scope = currentScope->fullName;
         Token *usingStart = tok;
@@ -9518,7 +9518,7 @@ void Tokenizer::simplifyOperatorName()
 
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "%op% %str% %name%")) {
-            std::string name = tok->strAt(2);
+            const std::string name = tok->strAt(2);
             Token * const str = tok->next();
             str->deleteNext();
             tok->insertToken("operator\"\"" + name);
