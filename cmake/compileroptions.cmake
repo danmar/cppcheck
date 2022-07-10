@@ -20,8 +20,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Weverything)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
         # "Release" uses -O3 by default
         add_compile_options(-O2)
     endif()
@@ -45,14 +45,14 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     add_compile_options(-Wno-multichar)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
     add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
     add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     if (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14)
-        if (CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+        if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
             # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
             add_compile_options(-mllvm -inline-deferral)
         endif()
@@ -124,7 +124,7 @@ if (MSVC)
     # No Whole Program Optimization
 
     # C/C++ - Optimization
-    if(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         add_compile_options(/O2) # Optimization - Maximum Optimization (Favor Speed)
         add_compile_options(/Ob2) # Inline Function Expansion - Any Suitable
         add_compile_options(/Oi) # Enable Intrinsic Functions
@@ -135,7 +135,7 @@ if (MSVC)
     endif()
 
     # C/C++ - Code Generation
-    if(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         add_compile_options(/GF) # Enable String Pooling
         add_compile_options(/MD) # Runtime Library - Multi-threaded DLL
         add_compile_options(/GS-) # Disable Security Check
@@ -172,7 +172,7 @@ if (MSVC)
     add_compile_options(/Zc:throwingNew /Zc:__cplusplus) # Additional Options
 
     # Linker - General
-    if(CMAKE_BUILD_TYPE MATCHES "Debug")
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         add_link_options(/INCREMENTAL) # Enable Incremental Linking - Yes
     endif()
     add_link_options(/NOLOGO) # SUppress Startup Banner - Yes
@@ -191,13 +191,13 @@ if (MSVC)
     add_link_options(/OPT:ICF) # Enable COMDAT Folding - Yes
 
     # Linker - Advanced
-    if(CMAKE_BUILD_TYPE MATCHES "Release" OR CMAKE_BUILD_TYPE MATCHES "RelWithDebInfo")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
         add_link_options(/RELEASE) # Set Checksum - Yes
     endif()
 endif()
 
 # TODO: check if this can be enabled again - also done in Makefile
-if (CMAKE_SYSTEM_NAME MATCHES "Linux" AND
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
     CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     add_compile_options(-U_GLIBCXX_DEBUG)

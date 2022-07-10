@@ -1,6 +1,6 @@
 if (BUILD_GUI)
 
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
         add_definitions(-DQT_NO_WARNING_OUTPUT)
