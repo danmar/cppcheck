@@ -380,6 +380,12 @@ public:
     }
 
     /**
+     * Is variable a member of a user-defined type.
+     * @return true if member, false if not or unknown
+     */
+    bool isMember() const;
+
+    /**
      * Is variable mutable.
      * @return true if mutable, false if not
      */

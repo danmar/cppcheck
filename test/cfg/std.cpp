@@ -99,6 +99,13 @@ int zerodiv_fdim()
     return 42 / i;
 }
 
+int zerodiv_trunc()
+{
+    int i = std::trunc(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
 int zerodiv_ceil()
 {
     int i = std::ceil(0);
@@ -158,6 +165,27 @@ int zerodiv_asinh()
 int zerodiv_acosh()
 {
     int i = std::acosh(1);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_log1p()
+{
+    int i = std::log1p(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_nearbyint()
+{
+    int i = std::nearbyint(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_round()
+{
+    int i = std::round(0);
     // cppcheck-suppress zerodiv
     return 42 / i;
 }

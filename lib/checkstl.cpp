@@ -191,7 +191,7 @@ void CheckStl::outOfBounds()
     }
 }
 
-static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string& containerName = "")
+static std::string indexValueString(const ValueFlow::Value& indexValue, const std::string& containerName = emptyString)
 {
     if (indexValue.isIteratorStartValue())
         return "at position " + MathLib::toString(indexValue.intvalue) + " from the beginning";
@@ -1953,6 +1953,9 @@ void CheckStl::string_c_str()
                     const Variable* var = tok->variable();
                     if (var->isPointer())
                         string_c_strError(tok);
+                } else if (printPerformance && Token::Match(tok->tokAt(2), "%var% . c_str|data ( ) ;")) {
+                    if (tok->variable()->isStlStringType() && tok->tokAt(2)->variable()->isStlStringType())
+                        string_c_strAssignment(tok);
                 }
             } else if (printPerformance && tok->function() && Token::Match(tok, "%name% ( !!)") && tok->str() != scope.className) {
                 const std::pair<std::multimap<const Function*, int>::const_iterator, std::multimap<const Function*, int>::const_iterator> range = c_strFuncParam.equal_range(tok->function());
@@ -1986,6 +1989,12 @@ void CheckStl::string_c_str()
 
                     }
                 }
+            } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( )") && tok->variable()->isStlStringType() && tok->tokAt(2)->variable()->isStlStringType()) {
+                string_c_strConstructor(tok);
+            } else if (printPerformance && tok->next() && tok->next()->variable() && tok->next()->variable()->isStlStringType() && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER &&
+                       ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable()->isStlStringType()) ||
+                        (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable()->isStlStringType()))) {
+                string_c_strConcat(tok);
             }
 
             // Using c_str() to get the return value is only dangerous if the function returns a char*
@@ -2091,6 +2100,24 @@ void CheckStl::string_c_strParam(const Token* tok, nonneg int number)
     oss << "Passing the result of c_str() to a function that takes std::string as argument no. " << number << " is slow and redundant.\n"
         "The conversion from const char* as returned by c_str() to std::string creates an unnecessary string copy. Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrParam", oss.str(), CWE704, Certainty::normal);
+}
+
+void CheckStl::string_c_strConstructor(const Token* tok)
+{
+    std::string msg = "Constructing a std::string from the result of c_str() is slow and redundant.\nSolve that by directly passing the string.";
+    reportError(tok, Severity::performance, "stlcstrConstructor", msg, CWE704, Certainty::normal);
+}
+
+void CheckStl::string_c_strAssignment(const Token* tok)
+{
+    std::string msg = "Assigning the result of c_str() to a std::string is slow and redundant.\nSolve that by directly assigning the string.";
+    reportError(tok, Severity::performance, "stlcstrAssignment", msg, CWE704, Certainty::normal);
+}
+
+void CheckStl::string_c_strConcat(const Token* tok)
+{
+    std::string msg = "Concatenating the result of c_str() and a std::string is slow and redundant.\nSolve that by directly concatenating the strings.";
+    reportError(tok, Severity::performance, "stlcstrConcat", msg, CWE704, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
@@ -2342,7 +2369,7 @@ void CheckStl::checkDereferenceInvalidIterator2()
                     outOfBoundsError(emptyAdvance,
                                      lValue.tokvalue->expressionString(),
                                      cValue,
-                                     advanceIndex ? advanceIndex->expressionString() : "",
+                                     advanceIndex ? advanceIndex->expressionString() : emptyString,
                                      nullptr);
                 else
                     outOfBoundsError(tok, lValue.tokvalue->expressionString(), cValue, tok->expressionString(), &value);
@@ -2797,7 +2824,7 @@ void CheckStl::knownEmptyContainer()
                 const Token* contTok = splitTok->astOperand2();
                 if (!isKnownEmptyContainer(contTok))
                     continue;
-                knownEmptyContainerError(contTok, "");
+                knownEmptyContainerError(contTok, emptyString);
             } else {
                 const std::vector<const Token *> args = getArguments(tok);
                 if (args.empty())
