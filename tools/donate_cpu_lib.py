@@ -590,25 +590,34 @@ class LibraryIncludes:
             re_obj = re.compile(re_expr, re.MULTILINE)
             self.__library_includes_re[library] = re_obj
 
-    def __has_include(self, path, re_expr):
+    def __iterate_files(self, path, has_include_cb):
         for root, _, files in os.walk(path):
             for name in files:
                 filename = os.path.join(root, name)
                 try:
                     with open(filename, 'rt', errors='ignore') as f:
                         filedata = f.read()
-                    if re_expr.search(filedata):
-                        return True
+                    has_include_cb(filedata)
                 except IOError:
                     pass
-        return False
 
     def get_libraries(self, folder):
         print('Detecting library usage...')
         libraries = ['posix', 'gnu']
-        for library, includes_re in self.__library_includes_re.items():
-            if self.__has_include(folder, includes_re):
-                libraries.append(library)
+
+        library_includes_re = self.__library_includes_re
+
+        def has_include(filedata):
+            lib_del = []
+            for library, includes_re in library_includes_re.items():
+                if includes_re.search(filedata):
+                    libraries.append(library)
+                    lib_del.append(library)
+
+            for lib_d in lib_del:
+                del library_includes_re[lib_d]
+
+        self.__iterate_files(folder, has_include)
         print('Found libraries: {}'.format(libraries))
         return libraries
 
