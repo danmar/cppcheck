@@ -74,7 +74,7 @@ def test_combinelines_chunk():
 
     reduce = ReduceTestFail()
 
-    # need to have at least 11 lines ending with comma to enter chunked mode and twice as much for second interation
+    # need to have at least 11 lines ending with comma to enter chunked mode and twice as much for second iteration
     filedata = [
         'int i,\n',
         'j,\n',
@@ -106,7 +106,7 @@ def test_combinelines_chunk():
 
 
 def test_combinelines_chunk_2():
-    """'filedata' is not changed by the funtion since the data is assigned to a local variable"""
+    """'filedata' is not changed by the function since the data is assigned to a local variable"""
 
     reduce = ReduceTest()
 
