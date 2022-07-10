@@ -2436,10 +2436,10 @@ struct ValueFlowAnalyzer : Analyzer {
         Action read = Action::Read;
         const ValueFlow::Value* value = getValue(tok);
         if (value) {
-            // Moving a moved value wont change the moved value
+            // Moving a moved value won't change the moved value
             if (value->isMovedValue() && isMoveOrForward(tok) != ValueFlow::Value::MoveKind::NonMovedVariable)
                 return read;
-            // Inserting elements to container wont change the lifetime
+            // Inserting elements to container won't change the lifetime
             if (astIsContainer(tok) && value->isLifetimeValue() &&
                 contains({Library::Container::Action::PUSH,
                           Library::Container::Action::INSERT,
@@ -6526,7 +6526,7 @@ static void valueFlowForLoopSimplify(Token* const bodyStart,
                                      ErrorLogger* errorLogger,
                                      const Settings* settings)
 {
-    // TODO: Refactor this to use arbitary expressions
+    // TODO: Refactor this to use arbitrary expressions
     assert(expr->varId() > 0);
     const Token * const bodyEnd = bodyStart->link();
 
