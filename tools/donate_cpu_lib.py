@@ -127,8 +127,8 @@ def compile_cppcheck(cppcheck_path, jobs):
     try:
         os.chdir(cppcheck_path)
         if sys.platform == 'win32':
-            subprocess.call(['MSBuild.exe', cppcheck_path + '/cppcheck.sln', '/property:Configuration=Release', '/property:Platform=x64'])
-            subprocess.call([cppcheck_path + '/bin/cppcheck.exe', '--version'])
+            subprocess.call(['MSBuild.exe', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release', '/property:Platform=x64'])
+            subprocess.call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'])
         else:
             subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
             subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
@@ -340,7 +340,7 @@ def scan_package(work_path, cppcheck_path, source_path, jobs, libraries, capture
     options += ' -D__GNUC__ --platform=unix64'
     options += ' -rp={}'.format(dir_to_scan)
     if sys.platform == 'win32':
-        cppcheck_cmd = cppcheck_path + '/bin/cppcheck.exe ' + options
+        cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options
         cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     else:
         cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options
@@ -594,7 +594,7 @@ def get_compiler_version():
 my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 jobs = '-j1'
 stop_time = None
-work_path = os.path.expanduser('~/cppcheck-' + my_script_name + '-workfolder')
+work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + my_script_name + '-workfolder'))
 package_url = None
 server_address = ('cppcheck1.osuosl.org', 8000)
 bandwidth_limit = None
