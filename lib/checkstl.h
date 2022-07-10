@@ -193,6 +193,9 @@ private:
     void string_c_strError(const Token* tok);
     void string_c_strReturn(const Token* tok);
     void string_c_strParam(const Token* tok, nonneg int number);
+    void string_c_strConstructor(const Token* tok);
+    void string_c_strAssignment(const Token* tok);
+    void string_c_strConcat(const Token* tok);
 
     void outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue);
     void outOfBoundsIndexExpressionError(const Token *tok, const Token *index);

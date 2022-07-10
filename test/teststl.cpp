@@ -4015,6 +4015,34 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("std::string f(const std::string& a) {\n"
+              "    std::string b(a.c_str());\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Constructing a std::string from the result of c_str() is slow and redundant.\n", errout.str());
+
+        check("std::string f(const std::string& a) {\n"
+              "    std::string b{ a.c_str() };\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Constructing a std::string from the result of c_str() is slow and redundant.\n", errout.str());
+
+        check("std::string f(const std::string& a) {\n"
+              "    std::string b = a.c_str();\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Assigning the result of c_str() to a std::string is slow and redundant.\n", errout.str());
+
+        check("std::string g(const std::string& a, const std::string& b) {\n"
+              "    return a + b.c_str();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Concatenating the result of c_str() and a std::string is slow and redundant.\n", errout.str());
+
+        check("std::string g(const std::string& a, const std::string& b) {\n"
+              "    return a.c_str() + b;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Concatenating the result of c_str() and a std::string is slow and redundant.\n", errout.str());
     }
 
     void uselessCalls() {
