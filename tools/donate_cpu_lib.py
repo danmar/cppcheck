@@ -106,8 +106,7 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
 
 def get_cppcheck_info(cppcheck_path):
     try:
-        os.chdir(cppcheck_path)
-        return subprocess.check_output(['git', 'show', "--pretty=%h (%ci)", 'HEAD', '--no-patch', '--no-notes']).decode('utf-8').strip()
+        return subprocess.check_output(['git', 'show', "--pretty=%h (%ci)", 'HEAD', '--no-patch', '--no-notes'], cwd=cppcheck_path).decode('utf-8').strip()
     except:
         return ''
 
@@ -125,10 +124,9 @@ def compile_version(cppcheck_path, jobs):
 def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
-        os.chdir(cppcheck_path)
         if sys.platform == 'win32':
-            subprocess.call(['MSBuild.exe', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release', '/property:Platform=x64'])
-            subprocess.call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'])
+            subprocess.call(['MSBuild.exe', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release', '/property:Platform=x64'], cwd=cppcheck_path)
+            subprocess.call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'], cwd=cppcheck_path)
         else:
             subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
             subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
@@ -325,15 +323,14 @@ def __run_command(cmd, print_cmd=True):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, source_path, jobs, libraries, capture_callstack=True):
+def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=True):
     print('Analyze..')
-    os.chdir(work_path)
     libs = ''
     for library in libraries:
         if os.path.exists(os.path.join(cppcheck_path, 'cfg', library + '.cfg')):
             libs += '--library=' + library + ' '
 
-    dir_to_scan = os.path.basename(source_path)
+    dir_to_scan = source_path
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --template=daca2'
