@@ -588,7 +588,7 @@ static ValueFlow::Value evaluate(const std::string& op, const ValueFlow::Value& 
     // Only add, subtract, and compare for non-integers
     if (!compareOp && !contains({"+", "-"}, op) && !lhs.isIntValue() && !rhs.isIntValue())
         return ValueFlow::Value::unknown();
-    // Both cant be iterators for non-compare
+    // Both can't be iterators for non-compare
     if (!compareOp && lhs.isIteratorValue() && rhs.isIteratorValue())
         return ValueFlow::Value::unknown();
     // Symbolic values must be in the same ring
@@ -1332,7 +1332,7 @@ static ValueFlow::Value executeImpl(const Token* expr, ProgramMemory& pm, const 
                 }
             }
         }
-        // Check if functon modifies argument
+        // Check if function modifies argument
         visitAstNodes(expr->astOperand2(), [&](const Token* child) {
             if (child->exprId() > 0 && pm.hasValue(child->exprId())) {
                 ValueFlow::Value& v = pm.at(child->exprId());

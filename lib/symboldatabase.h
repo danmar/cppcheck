@@ -1362,7 +1362,7 @@ public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();
 
-    /** @brief Information about all namespaces/classes/structrues */
+    /** @brief Information about all namespaces/classes/structures */
     std::list<Scope> scopeList;
 
     /** @brief Fast access to function scopes */
