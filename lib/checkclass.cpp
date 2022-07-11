@@ -41,6 +41,7 @@
 #include <unordered_map>
 
 #include <tinyxml2.h>
+#include "tokeniterators.h"
 
 namespace CTU {
     class FileInfo;
@@ -305,7 +306,7 @@ void CheckClass::constructors()
                     const Token *operStart = func.arg;
 
                     bool classNameUsed = false;
-                    for (const Token *operTok = operStart; operTok != operStart->link(); operTok = operTok->next()) {
+                    for (const auto& operTok : IterateTokens::UntilLinked(operStart)) {
                         if (operTok->str() == scope->className) {
                             classNameUsed = true;
                             break;
@@ -985,7 +986,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                 // the function is external and it's neither friend nor inherited virtual function.
                 // assume all variables that are passed to it are initialized..
                 else {
-                    for (const Token *tok = ftok->tokAt(2); tok && tok != ftok->next()->link(); tok = tok->next()) {
+                    for (const auto& tok : IterateTokens(ftok->tokAt(2), ftok->next()->link())) {
                         if (tok->isName()) {
                             assignVar(usage, tok->varId());
                         }
@@ -1112,7 +1113,7 @@ void CheckClass::initializationListUsage()
         }
 
         const Scope* owner = scope->functionOf;
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (Token::Match(tok, "%name% (")) // Assignments might depend on this function call or if/for/while/switch statement from now on.
                 break;
             if (Token::Match(tok, "try|do {"))
@@ -1199,7 +1200,7 @@ static bool checkFunctionUsage(const Function *privfunc, const Scope* scope)
                         ftok = ftok->link();
                 }
             }
-            for (const Token *ftok = func->functionScope->classDef->linkAt(1); ftok != func->functionScope->bodyEnd; ftok = ftok->next()) {
+            for (const auto& ftok : IterateTokens(func->functionScope->classDef->linkAt(1), func->functionScope->bodyEnd)) {
                 if (ftok->function() == privfunc)
                     return true;
                 if (ftok->varId() == 0U && ftok->str() == privfunc->name()) // TODO: This condition should be redundant
@@ -1306,7 +1307,7 @@ void CheckClass::checkMemset()
 {
     const bool printWarnings = mSettings->severity.isEnabled(Severity::warning);
     for (const Scope *scope : mSymbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (Token::Match(tok, "memset|memcpy|memmove (")) {
                 const Token* arg1 = tok->tokAt(2);
                 const Token* arg3 = arg1->nextArgument();
@@ -1697,7 +1698,7 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
 {
     if (!end)
         end = func->functionScope->bodyEnd;
-    for (const Token *tok = start; tok && (tok != end); tok = tok->next()) {
+    for (const auto& tok : IterateTokens(start, end)) {
         if (Token::Match(tok, "%var% = malloc|realloc|calloc|new") && isMemberVar(scope, tok))
             return true;
 
@@ -1713,7 +1714,7 @@ bool CheckClass::hasAllocation(const Function *func, const Scope* scope, const T
             continue;
         // Check for assignment to the deleted pointer (only if its a member of the class)
         if (isMemberVar(scope, var)) {
-            for (const Token *tok1 = var->next(); tok1 && (tok1 != end); tok1 = tok1->next()) {
+            for (const auto &tok1 : IterateTokens(var->next(), end)) {
                 if (Token::Match(tok1, "%varid% =", var->varId()))
                     return true;
             }
@@ -1786,8 +1787,7 @@ bool CheckClass::hasAssignSelf(const Function *func, const Token *rhs, const Tok
 {
     if (!rhs)
         return false;
-    const Token *last = func->functionScope->bodyEnd;
-    for (const Token *tok = func->functionScope->bodyStart; tok && tok != last; tok = tok->next()) {
+    for (const auto& tok : IterateTokens(func->functionScope)) {
         if (!Token::simpleMatch(tok, "if ("))
             continue;
 
@@ -1903,8 +1903,7 @@ void CheckClass::virtualDestructor()
 
                     // No deletion of derived class instance through base class pointer found => the code is ok
                     bool ok = true;
-
-                    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+                    for (const auto& tok : IterateTokens(mTokenizer)) {
                         if (Token::Match(tok, "[;{}] %var% =") &&
                             baseClassPointers.find(tok->next()->varId()) != baseClassPointers.end()) {
                             // new derived class..
@@ -2032,7 +2031,7 @@ void CheckClass::checkConst()
             // don't suggest const when returning non-const pointer/reference, but still suggest static
             auto isPointerOrReference = [this](const Token* start, const Token* end) -> bool {
                 bool inTemplArgList = false, isConstTemplArg = false;
-                for (const Token* tok = start; tok != end; tok = tok->next()) {
+                for (const auto& tok : IterateTokens(start, end)) {
                     if (tok->str() == "{") // end of trailing return type
                         return false;
                     if (tok->str() == "<") {
@@ -2697,7 +2696,7 @@ void CheckClass::virtualFunctionCallInConstructorError(
         const Token *endToken = scopeFunction->argDef->link()->next();
         if (scopeFunction->type == Function::Type::eDestructor)
             constructorName = "~";
-        for (const Token *tok = scopeFunction->tokenDef; tok != endToken; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scopeFunction->tokenDef, endToken)) {
             if (!constructorName.empty() && Token::Match(tok->previous(), "%name%|%num% %name%|%num%"))
                 constructorName += ' ';
             constructorName += tok->str();
@@ -2923,7 +2922,7 @@ void CheckClass::checkThisUseAfterFree()
                 for (const Function &func : classScope->functionList) {
                     if (func.type != Function::Type::eFunction || !func.hasBody())
                         continue;
-                    for (const Token *tok = func.functionScope->bodyStart; tok != func.functionScope->bodyEnd; tok = tok->next()) {
+                    for (const auto &tok : IterateTokens(func.functionScope)) {
                         if (Token::Match(tok, "%varid% = this|shared_from_this", var.declarationId())) {
                             hasAssign = true;
                             break;
@@ -3077,11 +3076,11 @@ Check::FileInfo *CheckClass::getFileInfo(const Tokenizer *tokenizer, const Setti
 
         // Calculate hash from the full class/struct definition
         std::string def;
-        for (const Token *tok = classScope->classDef; tok != classScope->bodyEnd; tok = tok->next())
+        for (const auto& tok : IterateTokens(classScope->classDef, classScope->bodyEnd))
             def += tok->str();
         for (const Function &f: classScope->functionList) {
             if (f.functionScope && f.functionScope->nestedIn != classScope) {
-                for (const Token *tok = f.functionScope->bodyStart; tok != f.functionScope->bodyEnd; tok = tok->next())
+                for (const auto& tok : IterateTokens::ScopeIncludeBraces(f.functionScope))
                     def += tok->str();
             }
         }

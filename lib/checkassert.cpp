@@ -28,6 +28,7 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -66,7 +67,7 @@ void CheckAssert::assertWithSideEffects()
             const Scope* scope = f->functionScope;
             if (!scope) continue;
 
-            for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
+            for (const auto& tok2 : IterateTokens(scope)) {
                 if (!tok2->isAssignmentOp() && tok2->tokType() != Token::eIncDecOp)
                     continue;
 
@@ -77,7 +78,7 @@ void CheckAssert::assertWithSideEffects()
                     continue; // Pointers need to be dereferenced, otherwise there is no error
 
                 bool noReturnInScope = true;
-                for (const Token *rt = scope->bodyStart; rt != scope->bodyEnd; rt = rt->next()) {
+                for (const auto& rt : IterateTokens(scope)) {
                     if (rt->str() != "return") continue; // find all return statements
                     if (inSameScope(rt, tok2)) {
                         noReturnInScope = false;

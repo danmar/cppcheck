@@ -29,6 +29,7 @@
 #include "tokenize.h"
 
 #include <vector>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -88,7 +89,7 @@ void Check64BitPortability::pointerassignment()
 
     // Check assignments
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (tok->str() != "=")
                 continue;
 

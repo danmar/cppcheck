@@ -34,6 +34,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -189,7 +190,7 @@ static bool variableIsUsedInScope(const Token* start, nonneg int varId, const Sc
     if (!start) // Ticket #5024
         return false;
 
-    for (const Token *tok = start; tok && tok != scope->bodyEnd; tok = tok->next()) {
+    for (const auto& tok : IterateTokens(start, scope->bodyEnd)) {
         if (tok->varId() == varId)
             return true;
         const Scope::ScopeType scopeType = tok->scope()->type;
@@ -210,7 +211,7 @@ void CheckAutoVariables::assignFunctionArg()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             // TODO: What happens if this is removed?
             if (tok->astParent())
                 continue;
@@ -441,7 +442,7 @@ static int getPointerDepth(const Token *tok)
         return tok->valueType()->pointer;
     int n = 0;
     std::pair<const Token*, const Token*> decl = Token::typeDecl(tok);
-    for (const Token* tok2 = decl.first; tok2 != decl.second; tok2 = tok2->next())
+    for (const auto &tok2 : IterateTokens(decl))
         if (Token::simpleMatch(tok2, "*"))
             n++;
     return n;

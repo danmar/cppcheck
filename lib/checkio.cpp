@@ -38,6 +38,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -66,7 +67,7 @@ void CheckIO::checkCoutCerrMisusage()
 
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (Token::Match(tok, "std :: cout|cerr !!.") && tok->next()->astParent() && tok->next()->astParent()->astOperand1() == tok->next()) {
                 const Token* tok2 = tok->next();
                 while (tok2->astParent() && tok2->astParent()->str() == "<<") {
@@ -144,7 +145,7 @@ void CheckIO::checkFileUsage()
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
         int indent = 0;
-        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens::ScopeIncludeBraces(scope)) {
             if (tok->str() == "{")
                 indent++;
             else if (tok->str() == "}") {
@@ -254,7 +255,7 @@ void CheckIO::checkFileUsage()
                             continue;
                         }
                     }
-                    for (const Token* tok2 = tok->tokAt(2); tok2 != end2; tok2 = tok2->next()) {
+                    for (const auto& tok2 : IterateTokens(tok->tokAt(2), end2)) {
                         if (tok2->varId() && filepointers.find(tok2->varId()) != filepointers.end()) {
                             fileTok = tok2;
                             operation = Filepointer::Operation::UNKNOWN_OP; // Assume that repositioning was last operation and that the file is opened now
@@ -404,7 +405,7 @@ void CheckIO::invalidScanf()
 
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             const Token *formatToken = nullptr;
             if (Token::Match(tok, "scanf|vscanf ( %str% ,"))
                 formatToken = tok->tokAt(2);
@@ -519,7 +520,7 @@ void CheckIO::checkWrongPrintfScanfArguments()
     const bool isWindows = mSettings->isWindowsPlatform();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!tok->isName()) continue;
 
             const Token* argListTok = nullptr; // Points to first va_list argument
