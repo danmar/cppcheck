@@ -147,7 +147,7 @@ if (MSVC)
 
     # C/C++ - Language
     add_compile_options(/Zc:rvalueCast) # Enforce type conversion rules
-    add_compile_options(/std:c++14) # C++ Langage Standard - ISO C++14 Standard
+    add_compile_options(/std:c++14) # C++ Language Standard - ISO C++14 Standard
 
     # C/C++ - Browse Information
     # Enable Browse Information - No
@@ -184,7 +184,7 @@ if (MSVC)
     # Linker - System
     # Stack Reserve Size - 8000000
     # Stack Commit Size - 8000000
-    add_link_options(/LARGEADDRESSAWARE) # Enbale Large Addresses - Yes
+    add_link_options(/LARGEADDRESSAWARE) # Enable Large Addresses - Yes
 
     # Linker - Optimization
     add_link_options(/OPT:REF) # References - Yes

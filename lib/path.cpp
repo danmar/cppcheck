@@ -128,7 +128,7 @@ std::string Path::getCurrentPath()
 #endif
         return std::string(currentPath);
 
-    return emptyString;
+    return "";
 }
 
 bool Path::isAbsolute(const std::string& path)

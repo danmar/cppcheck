@@ -488,7 +488,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
         } else if (cmdtok->str() == "error") {
             if (!configs_ifndef.empty() && !configs_ifndef.back().empty()) {
                 if (configs_ifndef.size() == 1U)
-                    ret.erase("");
+                    ret.erase(emptyString);
                 std::vector<std::string> configs(configs_if);
                 configs.push_back(configs_ifndef.back());
                 ret.erase(cfg(configs, userDefines));
@@ -839,6 +839,9 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
 // Report that include is missing
 void Preprocessor::missingInclude(const std::string &filename, unsigned int linenr, const std::string &header, HeaderTypes headerType)
 {
+    if (!mSettings.checks.isEnabled(Checks::missingInclude) && !mSettings.checkConfiguration)
+        return;
+
     const std::string fname = Path::fromNativeSeparators(filename);
     Suppressions::ErrorMessage errorMessage;
     errorMessage.errorId = "missingInclude";
@@ -854,6 +857,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
         missingSystemIncludeFlag = true;
     else
         missingIncludeFlag = true;
+
     if (mErrorLogger && mSettings.checkConfiguration) {
 
         std::list<ErrorMessage::FileLocation> locationList;

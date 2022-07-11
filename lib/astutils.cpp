@@ -2615,7 +2615,8 @@ bool isExpressionChanged(const Token* expr, const Token* start, const Token* end
         if (tok->variable()) {
             if (tok->variable()->isConst())
                 return false;
-            global = !tok->variable()->isLocal() && !tok->variable()->isArgument();
+            global = !tok->variable()->isLocal() && !tok->variable()->isArgument() &&
+                     !(tok->variable()->isMember() && !tok->variable()->isStatic());
         } else if (tok->isIncompleteVar() && !tok->isIncompleteConstant()) {
             global = true;
         }

@@ -380,6 +380,12 @@ public:
     }
 
     /**
+     * Is variable a member of a user-defined type.
+     * @return true if member, false if not or unknown
+     */
+    bool isMember() const;
+
+    /**
      * Is variable mutable.
      * @return true if mutable, false if not
      */
@@ -1355,7 +1361,7 @@ public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();
 
-    /** @brief Information about all namespaces/classes/structrues */
+    /** @brief Information about all namespaces/classes/structures */
     std::list<Scope> scopeList;
 
     /** @brief Fast access to function scopes */
