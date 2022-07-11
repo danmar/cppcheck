@@ -131,7 +131,7 @@ void CheckBool::bitwiseOnBooleanError(const Token* tok, const std::string& expre
 {
     std::string msg = "Boolean expression '" + expression + "' is used in bitwise operation.";
     if (!isCompound)
-      msg += " Did you mean '" + op + "'?";
+        msg += " Did you mean '" + op + "'?";
     reportError(tok,
                 Severity::style,
                 "bitwiseOnBoolean",
