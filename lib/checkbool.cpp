@@ -99,30 +99,43 @@ void CheckBool::checkBitwiseOnBoolean()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (tok->isBinaryOp() && (tok->str() == "&" || tok->str() == "|")) {
-                if (!(astIsBool(tok->astOperand1()) || astIsBool(tok->astOperand2())))
+            if (tok->isBinaryOp()) {
+                bool isCompound{};
+                if (tok->str() == "&" || tok->str() == "|")
+                    isCompound = false;
+                else if (tok->str() == "&=" || tok->str() == "|=")
+                    isCompound = true;
+                else
                     continue;
-                if (tok->str() == "|" && !isConvertedToBool(tok) && !(astIsBool(tok->astOperand1()) && astIsBool(tok->astOperand2())))
+                const bool isBoolOp1 = astIsBool(tok->astOperand1());
+                const bool isBoolOp2 = astIsBool(tok->astOperand2());
+                if (!(isBoolOp1 || isBoolOp2))
+                    continue;
+                if (isCompound && !isBoolOp1)
+                    continue;
+                if (tok->str() == "|" && !isConvertedToBool(tok) && !(isBoolOp1 && isBoolOp2))
                     continue;
                 // first operand will always be evaluated
                 if (!isConstExpression(tok->astOperand2(), mSettings->library, true, mTokenizer->isCPP()))
                     continue;
                 if (tok->astOperand2()->variable() && tok->astOperand2()->variable()->nameToken() == tok->astOperand2())
                     continue;
-                const std::string expression = astIsBool(tok->astOperand1()) ? tok->astOperand1()->expressionString()
-                                                                             : tok->astOperand2()->expressionString();
-                bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||");
+                const std::string expression = (isBoolOp1 ? tok->astOperand1() : tok->astOperand2())->expressionString();
+                bitwiseOnBooleanError(tok, expression, tok->str() == "&" ? "&&" : "||", isCompound);
             }
         }
     }
 }
 
-void CheckBool::bitwiseOnBooleanError(const Token* tok, const std::string& expression, const std::string& op)
+void CheckBool::bitwiseOnBooleanError(const Token* tok, const std::string& expression, const std::string& op, bool isCompound)
 {
+    std::string msg = "Boolean expression '" + expression + "' is used in bitwise operation.";
+    if (!isCompound)
+        msg += " Did you mean '" + op + "'?";
     reportError(tok,
                 Severity::style,
                 "bitwiseOnBoolean",
-                "Boolean expression '" + expression + "' is used in bitwise operation. Did you mean '" + op + "'?",
+                msg,
                 CWE398,
                 Certainty::inconclusive);
 }
