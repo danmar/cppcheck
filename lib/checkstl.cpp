@@ -2157,10 +2157,11 @@ void CheckStl::uselessCalls()
                     continue;
                 uselessCallsSwapError(tok, tok->str());
             } else if (printPerformance && Token::Match(tok, "%var% . substr (") && tok->variable() && tok->variable()->isStlStringType()) {
-                const std::vector<const Token*> args = getArguments(tok->tokAt(3));
+                const Token* funcTok = tok->tokAt(3);
+                const std::vector<const Token*> args = getArguments(funcTok);
                 if (Token::Match(tok->tokAt(-2), "%var% =") && tok->varId() == tok->tokAt(-2)->varId() &&
                     !args.empty() && args[0]->hasKnownIntValue() && args[0]->getKnownIntValue() == 0) {
-                    uselessCallsSubstrError(tok, SubstrErrorType::PREFIX);
+                    uselessCallsSubstrError(tok, Token::simpleMatch(funcTok->astParent(), "=") ? SubstrErrorType::PREFIX : SubstrErrorType::PREFIX_CONCAT);
                 } else if (args.empty() || (args[0]->hasKnownIntValue() && args[0]->getKnownIntValue() == 0 &&
                                             (args.size() == 1 || (args.size() == 2 && tok->linkAt(3)->strAt(-1) == "npos" && !tok->linkAt(3)->previous()->variable())))) {
                     uselessCallsSubstrError(tok, SubstrErrorType::COPY);
@@ -2213,6 +2214,9 @@ void CheckStl::uselessCallsSubstrError(const Token *tok, SubstrErrorType type)
         break;
     case SubstrErrorType::PREFIX:
         msg += "a prefix of the string is assigned to itself. Use resize() or pop_back() instead.";
+        break;
+    case SubstrErrorType::PREFIX_CONCAT:
+        msg += "a prefix of the string is assigned to itself. Use replace() instead.";
         break;
     }
     reportError(tok, Severity::performance, "uselessCallsSubstr", msg, CWE398, Certainty::normal);
