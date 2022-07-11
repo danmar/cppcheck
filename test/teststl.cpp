@@ -4043,6 +4043,13 @@ private:
               "    return a.c_str() + b;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (performance) Concatenating the result of c_str() and a std::string is slow and redundant.\n", errout.str());
+
+        check("std::vector<double> v;\n" // don't crash
+              "int i;\n"
+              "void f() {\n"
+              "    const double* const QM_R__ buf(v.data() + i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void uselessCalls() {
