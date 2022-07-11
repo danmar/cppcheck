@@ -735,6 +735,14 @@ private:
               "    return strlen(c);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int n) {\n" // #11179
+              "    char s[8] = \"        \";\n"
+              "    n = (n + 1) % 100;\n"
+              "    sprintf(s, \"lwip%02d\", n);\n"
+              "    s[strlen(s)] = ' ';\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void mathfunctionCall_sqrt() {
