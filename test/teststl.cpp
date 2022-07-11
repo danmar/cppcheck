@@ -4165,7 +4165,7 @@ private:
         // #11166
         check("std::string f(std::string s) {\n"
               "    s = s.substr(0, s.size() - 1);\n"
-              "return s;\n"
+              "    return s;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use resize() or pop_back() instead.\n",
                       errout.str());
