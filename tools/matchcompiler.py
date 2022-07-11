@@ -280,7 +280,7 @@ class MatchCompiler:
 
         return ret
 
-    def _compileFindPattern(self, pattern, findmatchnr, endToken, varId):
+    def _compileFindPattern(self, pattern, findmatchnr, endToken, varId, tokenType):
         more_args = ''
         endCondition = ''
         if endToken:
@@ -290,12 +290,15 @@ class MatchCompiler:
             more_args += ', int varid'
 
         ret = '// pattern: ' + pattern + '\n'
-        ret += 'template<class T> static T * findmatch' + \
-            str(findmatchnr) + '(T * start_tok' + more_args + ') {\n'
+        ret += 'inline static {tokenType} * findmatch{findmatchnr}({tokenType} * start_tok{more_args}) {{\n'.format(
+            tokenType=tokenType,
+            findmatchnr=findmatchnr,
+            more_args=more_args
+        )
         ret += '    for (; start_tok' + endCondition + \
             '; start_tok = start_tok->next()) {\n'
 
-        ret += self._compilePattern(pattern, -1, varId, True, 'T')
+        ret += self._compilePattern(pattern, -1, varId, True, tokenType)
         ret += '    }\n'
         ret += '    return nullptr;\n}\n'
 
@@ -502,30 +505,35 @@ class MatchCompiler:
 
     @staticmethod
     def _compileVerifyTokenFindMatch(
-            is_findsimplematch, verifyNumber, pattern, patternNumber, endToken, varId):
+            is_findsimplematch, verifyNumber, pattern, patternNumber, endToken, varId, tokenType):
         more_args = ''
         if endToken:
             more_args += ', const Token * endToken'
         if varId:
             more_args += ', const int varid'
 
-        ret = 'template < class T > static T * findmatch_verify' + \
-            str(verifyNumber) + '(T * tok' + more_args + ') {\n'
+        ret = 'inline static {tokenType} * findmatch_verify{verifyNumber}({tokenType} * tok{more_args}) {{\n'.format(
+            tokenType=tokenType,
+            verifyNumber=verifyNumber,
+            more_args=more_args
+        )
 
         origFindMatchName = 'findmatch'
         if is_findsimplematch:
             origFindMatchName = 'findsimplematch'
             assert(varId is None)
 
-        ret += '    T * res_compiled_findmatch = findmatch' + \
-            str(patternNumber) + '(tok'
+        ret += '    {tokenType} * res_compiled_findmatch = findmatch{patternNumber}(tok'.format(
+            patternNumber=patternNumber,
+            tokenType=tokenType
+        )
         if endToken:
             ret += ', endToken'
         if varId:
             ret += ', varid'
         ret += ');\n'
 
-        ret += '    T * res_parsed_findmatch = Token::' + \
+        ret += '    {tokenType} * res_parsed_findmatch = Token::'.format(tokenType=tokenType) + \
             origFindMatchName + '(tok, "' + pattern + '"'
         if endToken:
             ret += ', endToken'
@@ -565,24 +573,32 @@ class MatchCompiler:
                 endToken,
                 varId,
                 True)
-            self._rawMatchFunctions.append(
-                self._compileFindPattern(
-                    pattern,
-                    findMatchNumber,
-                    endToken,
-                    varId))
+            function_src = ""
+            for tokenType in ["const Token", "Token"]:
+                function_src += self._compileFindPattern(
+                        pattern,
+                        findMatchNumber,
+                        endToken,
+                        varId,
+                        tokenType
+                )
+            self._rawMatchFunctions.append(function_src)
 
         functionName = "findmatch"
         if self._verifyMode:
             verifyNumber = len(self._rawMatchFunctions) + 1
-            self._rawMatchFunctions.append(
-                self._compileVerifyTokenFindMatch(
-                    is_findsimplematch,
-                    verifyNumber,
-                    pattern,
-                    findMatchNumber,
-                    endToken,
-                    varId))
+            function_src = ""
+            for tokenType in ["const Token", "Token"]:
+                function_src += self._compileVerifyTokenFindMatch(
+                        is_findsimplematch,
+                        verifyNumber,
+                        pattern,
+                        findMatchNumber,
+                        endToken,
+                        varId,
+                        tokenType=tokenType
+                    )
+            self._rawMatchFunctions.append(function_src)
 
             # inject verify function
             functionName = "findmatch_verify"
