@@ -4184,6 +4184,13 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (performance) Container 's' is assigned a copy of itself. Use resize() instead.\n",
                       errout.str());
 
+        check("std::list<int> f(std::list<int> l, std::size_t end) {\n"
+              "    l = { l.begin(), l.begin() + end };\n"
+              "    return l;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Container 'l' is assigned a copy of itself. Use resize() instead.\n",
+                      errout.str());
+
         check("std::string f(std::string s, std::size_t end) {\n"
               "    s = std::string{ s.begin(), s.begin() + end };\n"
               "    return s;\n"

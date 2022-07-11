@@ -2144,8 +2144,13 @@ void CheckStl::uselessCalls()
     auto hasResize = [](const Variable* var) -> bool {
         if (!var)
             return false;
-        const std::string& typeEnd = var->typeEndToken()->str();
-        return var->isStlStringType() || typeEnd == "vector" || typeEnd == "deque" || typeEnd == "forward_list" || typeEnd == "forward_list";
+        const Token* typeTok = var->typeEndToken();
+        if (Token::simpleMatch(typeTok, ">"))
+            typeTok = typeTok->link()->previous();
+        if (!typeTok)
+            return false;
+        const std::string& type = typeTok->str();
+        return var->isStlStringType() || type == "vector" || type == "deque" || type == "list" || type == "forward_list";
     };
 
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
