@@ -2157,12 +2157,12 @@ void CheckStl::uselessCalls()
                     continue;
                 uselessCallsSwapError(tok, tok->str());
             } else if (printPerformance && Token::Match(tok, "%var% . substr (") && tok->variable() && tok->variable()->isStlStringType()) {
-                const std::vector<const Token*> args = getArguments(tok->tokAt(3));                
+                const std::vector<const Token*> args = getArguments(tok->tokAt(3));
                 if (Token::Match(tok->tokAt(-2), "%var% =") && tok->varId() == tok->tokAt(-2)->varId() &&
                     !args.empty() && args[0]->hasKnownIntValue() && args[0]->getKnownIntValue() == 0) {
-                        uselessCallsSubstrError(tok, SubstrErrorType::PREFIX);
+                    uselessCallsSubstrError(tok, SubstrErrorType::PREFIX);
                 } else if (args.empty() || (args[0]->hasKnownIntValue() && args[0]->getKnownIntValue() == 0 &&
-                           (args.size() == 1 || (args.size() == 2 && tok->linkAt(3)->strAt(-1) == "npos" && !tok->linkAt(3)->previous()->variable())))) {
+                                            (args.size() == 1 || (args.size() == 2 && tok->linkAt(3)->strAt(-1) == "npos" && !tok->linkAt(3)->previous()->variable())))) {
                     uselessCallsSubstrError(tok, SubstrErrorType::COPY);
                 } else if (args.size() == 2 && args[1]->hasKnownIntValue() && args[1]->getKnownIntValue() == 0) {
                     uselessCallsSubstrError(tok, SubstrErrorType::EMPTY);
