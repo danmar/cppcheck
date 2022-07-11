@@ -843,7 +843,7 @@ std::string replaceStr(std::string s, const std::string &from, const std::string
             pos1++;
             continue;
         }
-        s = s.substr(0,pos1) + to + s.substr(pos2);
+        s.replace(pos1, from.size(), to);
         pos1 += to.size();
     }
     return s;

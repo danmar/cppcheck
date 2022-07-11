@@ -4168,6 +4168,21 @@ private:
               "    for (;s.empty();) {}\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #11166
+        check("std::string f(std::string s) {\n"
+              "    s = s.substr(0, s.size() - 1);\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use resize() or pop_back() instead.\n",
+                      errout.str());
+
+        check("std::string f(std::string s, std::size_t start, std::size_t end, const std::string& i) {\n"
+              "    s = s.substr(0, start) + i + s.substr(end + 1);\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use replace() instead.\n",
+                      errout.str());
     }
 
     void stabilityOfChecks() {

@@ -2157,15 +2157,18 @@ void CheckStl::uselessCalls()
                 if (!var || !var->isStlType())
                     continue;
                 uselessCallsSwapError(tok, tok->str());
-            } else if (printPerformance && Token::Match(tok, "%var% . substr (") &&
-                       tok->variable() && tok->variable()->isStlStringType()) {
-                if (Token::Match(tok->tokAt(4), "0| )")) {
-                    uselessCallsSubstrError(tok, false);
-                } else if (tok->strAt(4) == "0" && tok->linkAt(3)->strAt(-1) == "npos") {
-                    if (!tok->linkAt(3)->previous()->variable()) // Make sure that its no variable
-                        uselessCallsSubstrError(tok, false);
-                } else if (Token::simpleMatch(tok->linkAt(3)->tokAt(-2), ", 0 )"))
-                    uselessCallsSubstrError(tok, true);
+            } else if (printPerformance && Token::Match(tok, "%var% . substr (") && tok->variable() && tok->variable()->isStlStringType()) {
+                const Token* funcTok = tok->tokAt(3);
+                const std::vector<const Token*> args = getArguments(funcTok);
+                if (Token::Match(tok->tokAt(-2), "%var% =") && tok->varId() == tok->tokAt(-2)->varId() &&
+                    !args.empty() && args[0]->hasKnownIntValue() && args[0]->getKnownIntValue() == 0) {
+                    uselessCallsSubstrError(tok, Token::simpleMatch(funcTok->astParent(), "=") ? SubstrErrorType::PREFIX : SubstrErrorType::PREFIX_CONCAT);
+                } else if (args.empty() || (args[0]->hasKnownIntValue() && args[0]->getKnownIntValue() == 0 &&
+                                            (args.size() == 1 || (args.size() == 2 && tok->linkAt(3)->strAt(-1) == "npos" && !tok->linkAt(3)->previous()->variable())))) {
+                    uselessCallsSubstrError(tok, SubstrErrorType::COPY);
+                } else if (args.size() == 2 && args[1]->hasKnownIntValue() && args[1]->getKnownIntValue() == 0) {
+                    uselessCallsSubstrError(tok, SubstrErrorType::EMPTY);
+                }
             } else if (printWarning && Token::Match(tok, "[{};] %var% . empty ( ) ;") &&
                        !tok->tokAt(4)->astParent() &&
                        tok->next()->variable() && tok->next()->variable()->isStlType(stl_containers_with_empty_and_clear))
@@ -2200,12 +2203,24 @@ void CheckStl::uselessCallsSwapError(const Token *tok, const std::string &varnam
                 "code is inefficient. Is the object or the parameter wrong here?", CWE628, Certainty::normal);
 }
 
-void CheckStl::uselessCallsSubstrError(const Token *tok, bool empty)
+void CheckStl::uselessCallsSubstrError(const Token *tok, SubstrErrorType type)
 {
-    if (empty)
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns an empty string.", CWE398, Certainty::normal);
-    else
-        reportError(tok, Severity::performance, "uselessCallsSubstr", "Ineffective call of function 'substr' because it returns a copy of the object. Use operator= instead.", CWE398, Certainty::normal);
+    std::string msg = "Ineffective call of function 'substr' because ";
+    switch (type) {
+    case SubstrErrorType::EMPTY:
+        msg += "it returns an empty string.";
+        break;
+    case SubstrErrorType::COPY:
+        msg += "it returns a copy of the object. Use operator= instead.";
+        break;
+    case SubstrErrorType::PREFIX:
+        msg += "a prefix of the string is assigned to itself. Use resize() or pop_back() instead.";
+        break;
+    case SubstrErrorType::PREFIX_CONCAT:
+        msg += "a prefix of the string is assigned to itself. Use replace() instead.";
+        break;
+    }
+    reportError(tok, Severity::performance, "uselessCallsSubstr", msg, CWE398, Certainty::normal);
 }
 
 void CheckStl::uselessCallsEmptyError(const Token *tok)

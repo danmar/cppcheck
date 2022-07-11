@@ -1113,7 +1113,8 @@ Token* Token::insertToken(const std::string& tokenStr, const std::string& origin
                             nextScopeNameAddition.append(nameTok->str());
                             nextScopeNameAddition.append(" ");
                         }
-                        if (nextScopeNameAddition.length() > 0) nextScopeNameAddition = nextScopeNameAddition.substr(0, nextScopeNameAddition.length() - 1);
+                        if (!nextScopeNameAddition.empty())
+                            nextScopeNameAddition.pop_back();
                     }
                 }
 

@@ -82,7 +82,7 @@ void CheckString::stringLiteralWriteError(const Token *tok, const Token *strValu
         std::string s = strValue->str();
         // 20 is an arbitrary value, the max string length shown in a warning message
         if (s.size() > 20U)
-            s = s.substr(0,17) + "..\"";
+            s.replace(17, std::string::npos, "..\"");
         errmsg += " " + s;
     }
     errmsg += " directly or indirectly is undefined behaviour.";
