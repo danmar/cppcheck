@@ -1787,6 +1787,22 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (information) --check-library: There is no matching configuration for function lib_func()\n", errout.str());
 
+        // #10105
+        check("class TestFixture {\n"
+              "protected:\n"
+              "        bool prepareTest(const char testname[]);\n"
+              "};\n"
+              "\n"
+              "class TestMemleak : private TestFixture {\n"
+              "        void run() {\n"
+              "                do { prepareTest(\"testFunctionReturnType\"); } while (false);\n"
+              "        }\n"
+              "\n"
+              "        void testFunctionReturnType() {\n"
+              "        }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
         settings.severity = severity_old;
         settings.checkLibrary = false;
     }
