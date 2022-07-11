@@ -2141,6 +2141,13 @@ void CheckStl::uselessCalls()
     if (!printPerformance && !printWarning)
         return;
 
+    auto hasResize = [](const Variable* var) -> bool {
+        if (!var)
+            return false;
+        const std::string& typeEnd = var->typeEndToken()->str();
+        return var->isStlStringType() || typeEnd == "vector" || typeEnd == "deque" || typeEnd == "forward_list" || typeEnd == "forward_list";
+    };
+
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -2174,6 +2181,11 @@ void CheckStl::uselessCalls()
                 uselessCallsEmptyError(tok->next());
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())
                 uselessCallsRemoveError(tok->next(), tok->strAt(3));
+            else if (printPerformance && Token::Match(tok, "%var% = { %var% . begin ( ) ,") &&
+                     tok->valueType() && tok->valueType()->type == ValueType::CONTAINER && tok->varId() == tok->tokAt(3)->varId() &&
+                     hasResize(tok->variable())) {
+                uselessCallsConstructorError(tok);
+            }
         }
     }
 }
@@ -2220,6 +2232,12 @@ void CheckStl::uselessCallsSubstrError(const Token *tok, SubstrErrorType type)
         break;
     }
     reportError(tok, Severity::performance, "uselessCallsSubstr", msg, CWE398, Certainty::normal);
+}
+
+void CheckStl::uselessCallsConstructorError(const Token *tok)
+{
+    const std::string msg = "Container '" + tok->str() + "' is assigned a copy of itself. Use resize() instead.";
+    reportError(tok, Severity::performance, "uselessCallsConstructor", msg, CWE398, Certainty::normal);
 }
 
 void CheckStl::uselessCallsEmptyError(const Token *tok)
