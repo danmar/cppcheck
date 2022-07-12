@@ -217,6 +217,7 @@ CLIOBJ =      cli/cmdlineparser.o \
 
 TESTOBJ =     test/options.o \
               test/test64bit.o \
+              test/testanalyzerinformation.o \
               test/testassert.o \
               test/testastutils.o \
               test/testautovariables.o \
@@ -595,6 +596,9 @@ test/options.o: test/options.cpp test/options.h
 
 test/test64bit.o: test/test64bit.cpp lib/check.h lib/check64bit.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/test64bit.o test/test64bit.cpp
+
+test/testanalyzerinformation.o: test/testanalyzerinformation.cpp lib/analyzerinfo.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/platform.h lib/suppressions.h lib/utils.h test/testsuite.h
+	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testanalyzerinformation.o test/testanalyzerinformation.cpp
 
 test/testassert.o: test/testassert.cpp lib/check.h lib/checkassert.h lib/color.h lib/config.h lib/errorlogger.h lib/errortypes.h lib/importproject.h lib/library.h lib/mathlib.h lib/platform.h lib/settings.h lib/standards.h lib/suppressions.h lib/templatesimplifier.h lib/timer.h lib/token.h lib/tokenize.h lib/tokenlist.h lib/utils.h lib/valueflow.h test/testsuite.h
 	$(CXX) ${INCLUDE_FOR_TEST} $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS) $(UNDEF_STRICT_ANSI) -c -o test/testassert.o test/testassert.cpp

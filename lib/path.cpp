@@ -241,3 +241,11 @@ bool Path::fileExists(const std::string &file)
     std::ifstream f(file.c_str());
     return f.is_open();
 }
+
+std::string Path::join(std::string path1, std::string path2) {
+    if (path1.empty() || path2.empty())
+        return path1 + path2;
+    if (path2.front() == '/')
+        return path2;
+    return ((path1.back() == '/') ? path1 : (path1 + "/")) + path2;
+}
