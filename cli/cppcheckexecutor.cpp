@@ -870,6 +870,11 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
 }
 
 bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger) {
+    for (const Suppressions::Suppression& suppression: settings.nomsg.getSuppressions()) {
+        if (suppression.errorId == "unmatchedSuppression" && suppression.fileName.empty() && suppression.lineNumber == Suppressions::Suppression::NO_LINE)
+            return false;
+    }
+
     bool err = false;
     if (settings.jointSuppressionReport) {
         for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i) {
