@@ -299,11 +299,11 @@ void CheckFunctions::checkIteratorTypeMismatch()
             const Token *splitToken = tok->next()->astOperand2();
             if (Token::simpleMatch(splitToken, ":"))
                 continue;
-                
+
             const Token* assignmentToken = splitToken->astOperand1();
             if (!assignmentToken)
                 continue;
-            
+
             if (!Token::simpleMatch(assignmentToken, "="))
                 continue;
 
