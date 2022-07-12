@@ -1027,7 +1027,10 @@ void CheckMemoryLeakNoVar::checkForUnreleasedInputArgument(const Scope *scope)
                     break;
                 arg = arg->astOperand1();
             }
-            if (getAllocationType(arg, 0) == No)
+            const AllocType alloc = getAllocationType(arg, 0);
+            if (alloc == No)
+                continue;
+            if ((alloc == New || alloc == NewArray) && arg->next() && !(arg->next()->isStandardType() || mSettings->library.detectContainerOrIterator(arg)))
                 continue;
             if (isReopenStandardStream(arg))
                 continue;
