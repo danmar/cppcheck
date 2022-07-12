@@ -470,3 +470,12 @@ void nullPointer(int * pIntPtr)
         *pIntPtr = 3;
     }
 }
+
+void leakNoVarFunctionCall() {
+  struct S : public QObject {
+    S() {
+      connect(new QShortcut(QKeySequence::Refresh, this), &QShortcut::activated, this, &S::f);
+    }
+    void f() {};
+  };
+}
