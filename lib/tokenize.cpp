@@ -2190,7 +2190,7 @@ namespace {
         while (!newScope1.empty()) {
             std::string::size_type separator = newScope1.rfind(" :: ", index - 1);
             if (separator != std::string::npos)
-                newScope1 = newScope1.substr(0, separator);
+                newScope1.resize(separator);
             else
                 newScope1.clear();
 
@@ -3352,8 +3352,8 @@ void Tokenizer::calculateScopes()
                     usingNamespaceName += namespaceNameToken->str();
                     usingNamespaceName += " ";
                 }
-                if (usingNamespaceName.length() > 0)
-                    usingNamespaceName = usingNamespaceName.substr(0, usingNamespaceName.length() - 1);
+                if (!usingNamespaceName.empty())
+                    usingNamespaceName.pop_back();
                 tok->scopeInfo()->usingNamespaces.insert(usingNamespaceName);
             } else if (Token::Match(tok, "namespace|class|struct|union %name% {|::|:|<")) {
                 for (Token* nameTok = tok->next(); nameTok && !Token::Match(nameTok, "{|:"); nameTok = nameTok->next()) {
@@ -3364,8 +3364,8 @@ void Tokenizer::calculateScopes()
                     nextScopeNameAddition.append(nameTok->str());
                     nextScopeNameAddition.append(" ");
                 }
-                if (nextScopeNameAddition.length() > 0)
-                    nextScopeNameAddition = nextScopeNameAddition.substr(0, nextScopeNameAddition.length() - 1);
+                if (!nextScopeNameAddition.empty())
+                    nextScopeNameAddition.pop_back();
             }
 
             if (Token::simpleMatch(tok, "{")) {
@@ -8106,7 +8106,7 @@ std::string Tokenizer::simplifyString(const std::string &source)
                 sz++;
             std::istringstream istr(str.substr(i+1, sz-1));
             istr >> std::oct >> c;
-            str = str.substr(0,i) + (char)c + str.substr(i+sz);
+            str = str.replace(i, sz, std::string(1U, (char)c));
             continue;
         }
 

@@ -316,7 +316,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
         std::string message("Failed to execute addon (command: '" + pythonExe + " " + args + "'). Exitcode is nonzero.");
         if (result.size() > 2) {
             message = message + "\n" + message + "\nOutput:\n" + result;
-            message = message.substr(0,message.find_last_not_of("\n\r"));
+            message.resize(message.find_last_not_of("\n\r"));
         }
         throw InternalError(nullptr, message);
     }
@@ -1439,8 +1439,9 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
         mExitCode = 1;
     }
 
-    for (const std::string &f: ctuInfoFiles) {
-        std::remove(f.c_str());
+    if (mSettings.buildDir.empty()) {
+        for (const std::string &f: ctuInfoFiles)
+            std::remove(f.c_str());
     }
 }
 

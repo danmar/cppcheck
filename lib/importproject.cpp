@@ -139,7 +139,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
             variables[var] = std::string(envValue);
             it1 = variables.find(var);
         }
-        s = s.substr(0, start) + it1->second + s.substr(end + 1);
+        s.replace(start, end - start + 1, it1->second);
     }
     if (s.find("$(") != std::string::npos)
         return false;
@@ -644,7 +644,7 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
             std::string path(text);
             const std::string::size_type pos = path.find("$(IncludePath)");
             if (pos != std::string::npos)
-                path = path.substr(0,pos) + *includePath + path.substr(pos+14U);
+                path.replace(pos, 14U, *includePath);
             *includePath = path;
         }
     }

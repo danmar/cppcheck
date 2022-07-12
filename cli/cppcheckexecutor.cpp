@@ -869,6 +869,18 @@ int CppCheckExecutor::check_wrapper(CppCheck& cppcheck)
 #endif
 }
 
+bool CppCheckExecutor::reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger) {
+    bool err = false;
+    if (settings.jointSuppressionReport) {
+        for (std::map<std::string, std::size_t>::const_iterator i = files.begin(); i != files.end(); ++i) {
+            err |= errorLogger.reportUnmatchedSuppressions(
+                settings.nomsg.getUnmatchedLocalSuppressions(i->first, unusedFunctionCheckEnabled));
+        }
+    }
+    err |= errorLogger.reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(unusedFunctionCheckEnabled));
+    return err;
+}
+
 /*
  * That is a method which gets called from check_wrapper
  * */
@@ -975,8 +987,6 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
         }
         if (cppcheck.analyseWholeProgram())
             returnValue++;
-    } else if (!ThreadExecutor::isEnabled()) {
-        std::cout << "No thread support yet implemented for this platform." << std::endl;
     } else {
 #if defined(THREADING_MODEL_THREAD)
         ThreadExecutor executor(mFiles, settings, *this);
@@ -989,17 +999,7 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
     cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
 
     if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
-        const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
-
-        if (settings.jointSuppressionReport) {
-            for (std::map<std::string, std::size_t>::const_iterator i = mFiles.begin(); i != mFiles.end(); ++i) {
-                const bool err = reportUnmatchedSuppressions(settings.nomsg.getUnmatchedLocalSuppressions(i->first, enableUnusedFunctionCheck));
-                if (err && returnValue == 0)
-                    returnValue = settings.exitCode;
-            }
-        }
-
-        const bool err = reportUnmatchedSuppressions(settings.nomsg.getUnmatchedGlobalSuppressions(enableUnusedFunctionCheck));
+        const bool err = reportSuppressions(settings, cppcheck.isUnusedFunctionCheckEnabled(), mFiles, *this);
         if (err && returnValue == 0)
             returnValue = settings.exitCode;
     }

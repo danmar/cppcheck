@@ -220,9 +220,11 @@ private:
 
     void uselessCallsReturnValueError(const Token* tok, const std::string& varname, const std::string& function);
     void uselessCallsSwapError(const Token* tok, const std::string& varname);
-    void uselessCallsSubstrError(const Token* tok, bool empty);
+    enum class SubstrErrorType { EMPTY, COPY, PREFIX, PREFIX_CONCAT };
+    void uselessCallsSubstrError(const Token* tok, SubstrErrorType type);
     void uselessCallsEmptyError(const Token* tok);
     void uselessCallsRemoveError(const Token* tok, const std::string& function);
+    void uselessCallsConstructorError(const Token* tok);
 
     void dereferenceInvalidIteratorError(const Token* deref, const std::string& iterName);
     void dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value *value, bool inconclusive);
@@ -266,7 +268,7 @@ private:
         c.redundantIfRemoveError(nullptr);
         c.uselessCallsReturnValueError(nullptr, "str", "find");
         c.uselessCallsSwapError(nullptr, "str");
-        c.uselessCallsSubstrError(nullptr, false);
+        c.uselessCallsSubstrError(nullptr, SubstrErrorType::COPY);
         c.uselessCallsEmptyError(nullptr);
         c.uselessCallsRemoveError(nullptr, "remove");
         c.dereferenceInvalidIteratorError(nullptr, "i");
