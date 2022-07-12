@@ -58,6 +58,8 @@ public:
     void reportErr(const ErrorMessage &msg, bool verbose);
     void setFileInfo(const std::string &check, const std::string &fileInfo);
     static std::string getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg);
+protected:
+    static std::string getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg);
 private:
     std::ofstream mOutputStream;
     std::string mAnalyzerInfoFile;
