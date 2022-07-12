@@ -112,4 +112,5 @@ HelpDialog::HelpDialog(QWidget *parent) :
 HelpDialog::~HelpDialog()
 {
     delete mUi;
+    delete mHelpEngine;
 }
