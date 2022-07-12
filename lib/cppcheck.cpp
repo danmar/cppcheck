@@ -1439,8 +1439,9 @@ void CppCheck::executeAddonsWholeProgram(const std::map<std::string, std::size_t
         mExitCode = 1;
     }
 
-    for (const std::string &f: ctuInfoFiles) {
-        std::remove(f.c_str());
+    if (mSettings.buildDir.empty()) {
+        for (const std::string &f: ctuInfoFiles)
+            std::remove(f.c_str());
     }
 }
 
