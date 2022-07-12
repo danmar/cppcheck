@@ -21,10 +21,10 @@ from donate_cpu_lib import *
 def _test_library_includes(tmpdir, libs, content):
     library_includes = LibraryIncludes()
 
-    src_file = os.path.join(tmpdir, "file.cpp")
+    src_file = os.path.join(str(tmpdir), "file.cpp")
     with open(src_file, 'w') as f:
         f.write(content)
-    assert libs == library_includes.get_libraries(tmpdir)
+    assert libs == library_includes.get_libraries(str(tmpdir))
 
 def test_library_includes(tmpdir):
     _test_library_includes(tmpdir, ['posix', 'gnu'], '')
