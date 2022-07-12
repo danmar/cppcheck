@@ -99,6 +99,8 @@ private:
         TEST_CASE(returnLocalStdMove5);
 
         TEST_CASE(negativeMemoryAllocationSizeError); // #389
+
+        TEST_CASE(checkLibraryMatchFunctions);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -1768,6 +1770,51 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Obsolete function 'alloca' called.\n"
                       "[test.cpp:3]: (error) Invalid alloca() argument nr 1. The value is -10 but the valid values are '0:'.\n", errout.str());
+    }
+
+    void checkLibraryMatchFunctions() {
+        settings.checkLibrary = true;
+        auto severity_old = settings.severity;
+        settings.severity.enable(Severity::information);
+
+        check("void f() {\n"
+              "    lib_func();"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(void* v) {\n"
+              "    lib_func(v);"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (information) --check-library: There is no matching configuration for function lib_func()\n", errout.str());
+
+        // #10105
+        check("class TestFixture {\n"
+              "protected:\n"
+              "        bool prepareTest(const char testname[]);\n"
+              "};\n"
+              "\n"
+              "class TestMemleak : private TestFixture {\n"
+              "        void run() {\n"
+              "                do { prepareTest(\"testFunctionReturnType\"); } while (false);\n"
+              "        }\n"
+              "\n"
+              "        void testFunctionReturnType() {\n"
+              "        }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11183
+        check("#include <string>\n"
+              "\n"
+              "extern void cb(const std::string&);\n"
+              "\n"
+              "void f() {\n"
+              "    cb(std::string(\"\"));\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (information) --check-library: There is no matching configuration for function cb()\n", errout.str());
+
+        settings.severity = severity_old;
+        settings.checkLibrary = false;
     }
 };
 
