@@ -43,10 +43,6 @@ private:
     void check(unsigned int jobs, int files, int result, const std::string &data) {
         errout.str("");
         output.str("");
-        if (!ThreadExecutor::isEnabled()) {
-            // Skip this check on systems which don't use this feature
-            return;
-        }
 
         std::map<std::string, std::size_t> filemap;
         for (int i = 1; i <= files; ++i) {
