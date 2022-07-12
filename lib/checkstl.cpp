@@ -2141,18 +2141,6 @@ void CheckStl::uselessCalls()
     if (!printPerformance && !printWarning)
         return;
 
-    auto hasResize = [](const Variable* var) -> bool {
-        if (!var)
-            return false;
-        const Token* typeTok = var->typeEndToken();
-        if (Token::simpleMatch(typeTok, ">"))
-            typeTok = typeTok->link()->previous();
-        if (!typeTok)
-            return false;
-        const std::string& type = typeTok->str();
-        return var->isStlStringType() || type == "vector" || type == "deque" || type == "list" || type == "forward_list";
-    };
-
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
@@ -2187,8 +2175,7 @@ void CheckStl::uselessCalls()
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())
                 uselessCallsRemoveError(tok->next(), tok->strAt(3));
             else if (printPerformance && Token::Match(tok, "%var% = { %var% . begin ( ) ,") &&
-                     tok->valueType() && tok->valueType()->type == ValueType::CONTAINER && tok->varId() == tok->tokAt(3)->varId() &&
-                     hasResize(tok->variable())) {
+                     tok->valueType() && tok->valueType()->type == ValueType::CONTAINER && tok->varId() == tok->tokAt(3)->varId()) {
                 uselessCallsConstructorError(tok);
             }
         }
@@ -2241,7 +2228,7 @@ void CheckStl::uselessCallsSubstrError(const Token *tok, SubstrErrorType type)
 
 void CheckStl::uselessCallsConstructorError(const Token *tok)
 {
-    const std::string msg = "Container '" + tok->str() + "' is assigned a copy of itself. Use resize() instead.";
+    const std::string msg = "Inefficient constructor call: container '" + tok->str() + "' is assigned a partial copy of itself. Use erase() or resize() instead.";
     reportError(tok, Severity::performance, "uselessCallsConstructor", msg, CWE398, Certainty::normal);
 }
 
