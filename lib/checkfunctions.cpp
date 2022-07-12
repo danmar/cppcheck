@@ -624,7 +624,19 @@ void CheckFunctions::checkLibraryMatchFunctions()
             continue;
 
         const std::string &functionName = mSettings->library.getFunctionName(tok);
-        if (functionName.empty() || mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
+        if (functionName.empty())
+            continue;
+
+        if (mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
+            continue;
+
+        if (mSettings->library.smartPointers.find(functionName) != mSettings->library.smartPointers.end())
+            continue;
+
+        const Token* start = tok;
+        while (Token::Match(start->tokAt(-2), "%name% ::"))
+            start = start->tokAt(-2);
+        if (mSettings->library.detectContainerOrIterator(start))
             continue;
 
         reportError(tok,

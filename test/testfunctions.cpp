@@ -1803,6 +1803,16 @@ private:
               "};");
         ASSERT_EQUALS("", errout.str());
 
+        // #11183
+        check("#include <string>\n"
+              "\n"
+              "extern void cb(const std::string&);\n"
+              "\n"
+              "void f() {\n"
+              "    cb(std::string(\"\"));\n"
+              "}");
+        TODO_ASSERT_EQUALS("", "[test.cpp:6]: (information) --check-library: There is no matching configuration for function cb()\n", errout.str());
+
         settings.severity = severity_old;
         settings.checkLibrary = false;
     }
