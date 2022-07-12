@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.25"
+CLIENT_VERSION = "1.3.26"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -268,7 +268,7 @@ def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
                         pass
                     except AttributeError:
                         pass
-    return found
+    return temp_path, found
 
 
 def __has_include(path, includes):
@@ -325,7 +325,7 @@ def __run_command(cmd, print_cmd=True):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack=True):
+def scan_package(work_path, cppcheck_path, source_path, jobs, libraries, capture_callstack=True):
     print('Analyze..')
     os.chdir(work_path)
     libs = ''
@@ -333,7 +333,7 @@ def scan_package(work_path, cppcheck_path, jobs, libraries, capture_callstack=Tr
         if os.path.exists(os.path.join(cppcheck_path, 'cfg', library + '.cfg')):
             libs += '--library=' + library + ' '
 
-    dir_to_scan = 'temp'
+    dir_to_scan = os.path.basename(source_path)
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --template=daca2'
@@ -542,7 +542,7 @@ def upload_info(package, info_output, server_address):
     return False
 
 
-def get_libraries():
+def get_libraries(folder):
     libraries = ['posix', 'gnu']
     library_includes = {'boost': ['<boost/'],
                        'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<sys/uio.h>', '<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
@@ -578,9 +578,11 @@ def get_libraries():
                        'wxwidgets': ['<wx/', '"wx/'],
                        'zlib': ['<zlib.h>'],
                       }
+    print('Detecting library usage...')
     for library, includes in library_includes.items():
-        if __has_include('temp', includes):
+        if __has_include(folder, includes):
             libraries.append(library)
+    print('Found libraries: {}'.format(libraries))
     return libraries
 
 
