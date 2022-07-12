@@ -979,7 +979,12 @@ int CppCheckExecutor::check_internal(CppCheck& cppcheck)
 
     cppcheck.analyseWholeProgram(mSettings->buildDir, mFiles);
 
-    if (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration) {
+    bool suppressUnmatchedSuppressions = false;
+    for (const Suppressions::Suppression& suppression: settings.nomsg.getSuppressions()) {
+        if (suppression.errorId == "unmatchedSuppression" && suppression.fileName.empty() && suppression.lineNumber == Suppressions::Suppression::NO_LINE)
+            suppressUnmatchedSuppressions = true;
+    }
+    if (!suppressUnmatchedSuppressions && (settings.severity.isEnabled(Severity::information) || settings.checkConfiguration)) {
         const bool enableUnusedFunctionCheck = cppcheck.isUnusedFunctionCheckEnabled();
 
         if (settings.jointSuppressionReport) {
