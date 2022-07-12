@@ -1311,6 +1311,84 @@ def simpleMatch(token, pattern):
         token = token.next
     return True
 
+patterns = {
+    '%any%': lambda tok: tok,
+    '%assign%': lambda tok: tok if tok.isAssignmentOp else None,
+    '%comp%': lambda tok: tok if tok.isComparisonOp else None,
+    '%name%': lambda tok: tok if tok.isName else None,
+    '%op%': lambda tok: tok if tok.isOp else None,
+    '%or%': lambda tok: tok if tok.str == '|' else None,
+    '%oror%': lambda tok: tok if tok.str == '||' else None,
+    '%var%': lambda tok: tok if tok.variable else None,
+    '(*)': lambda tok: tok.link if tok.str == '(' else None,
+    '[*]': lambda tok: tok.link if tok.str == '[' else None,
+    '{*}': lambda tok: tok.link if tok.str == '{' else None,
+    '<*>': lambda tok: tok.link if tok.str == '<' and tok.link else None,
+}
+
+def match_atom(token, p):
+    if not token:
+        return None
+    if not p:
+        return None
+    if token.str == p:
+        return token
+    if p in ['!', '|', '||', '%', '!=', '*']:
+        return None
+    if p in patterns:
+        return patterns[p](token)
+    if '|' in p:
+        for x in p.split('|'):
+            t = match_atom(token, x)
+            if t:
+                return t
+    elif p.startswith('!!'):
+        t = match_atom(token, p[1:])
+        if not t:
+            return token
+    return None
+
+class MatchResult:
+    def __init__(self, matches, bindings=None, keys=None):
+        self.__dict__.update(bindings or {})
+        self._matches = matches
+        self._keys = keys or []
+
+    def __bool__(self):
+        return self._matches
+
+    def __nonzero__(self):
+        return self._matches
+
+    def __getattr__(self, k):
+        if k in self._keys:
+            return None
+        else:
+            raise AttributeError
+
+def bind_split(s):
+    if '@' in s:
+        p = s.partition('@')
+        return (p[0], p[2])
+    return (s, None)
+
+def match(token, pattern):
+    if not pattern:
+        return MatchResult(False)
+    end = None
+    bindings = {}
+    words = [bind_split(word) for word in pattern.split()]
+    for p, b in words:
+        t = match_atom(token, p)
+        if b:
+            bindings[b] = token
+        if not t:
+            return MatchResult(False, keys=[xx for pp, xx in words]+['end'])
+        end = t
+        token = t.next
+    bindings['end'] = end
+    return MatchResult(True, bindings=bindings)
+
 def get_function_call_name_args(token):
     """Get function name and arguments for function call
     name, args = get_function_call_name_args(tok)
