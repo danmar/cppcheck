@@ -472,10 +472,10 @@ void nullPointer(int * pIntPtr)
 }
 
 void leakNoVarFunctionCall() {
-  struct S : public QObject {
-      S() {
-          connect(new QShortcut(QKeySequence::Refresh, this), &QShortcut::activated, this, &S::f);
-      }
-      void f() {};
-  };
+    struct S : public QObject {
+        S() {
+            connect(new QShortcut(QKeySequence::Refresh, this), &QShortcut::activated, this, &S::f);
+        }
+        void f() {};
+    };
 }
