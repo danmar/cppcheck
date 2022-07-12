@@ -2175,6 +2175,10 @@ void CheckStl::uselessCalls()
                 uselessCallsEmptyError(tok->next());
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())
                 uselessCallsRemoveError(tok->next(), tok->strAt(3));
+            else if (printPerformance && Token::Match(tok, "%var% = { %var% . begin ( ) ,") &&
+                     tok->valueType() && tok->valueType()->type == ValueType::CONTAINER && tok->varId() == tok->tokAt(3)->varId()) {
+                uselessCallsConstructorError(tok);
+            }
         }
     }
 }
@@ -2221,6 +2225,12 @@ void CheckStl::uselessCallsSubstrError(const Token *tok, SubstrErrorType type)
         break;
     }
     reportError(tok, Severity::performance, "uselessCallsSubstr", msg, CWE398, Certainty::normal);
+}
+
+void CheckStl::uselessCallsConstructorError(const Token *tok)
+{
+    const std::string msg = "Inefficient constructor call: container '" + tok->str() + "' is assigned a partial copy of itself. Use erase() or resize() instead.";
+    reportError(tok, Severity::performance, "uselessCallsConstructor", msg, CWE398, Certainty::normal);
 }
 
 void CheckStl::uselessCallsEmptyError(const Token *tok)

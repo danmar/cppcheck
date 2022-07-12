@@ -4183,6 +4183,36 @@ private:
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use replace() instead.\n",
                       errout.str());
+
+        check("std::string f(std::string s, std::size_t end) {\n"
+              "    s = { s.begin(), s.begin() + end };\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
+
+        check("std::list<int> f(std::list<int> l, std::size_t end) {\n"
+              "    l = { l.begin(), l.begin() + end };\n"
+              "    return l;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 'l' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
+
+        check("std::string f(std::string s, std::size_t end) {\n"
+              "    s = std::string{ s.begin(), s.begin() + end };\n"
+              "    return s;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                           "",
+                           errout.str());
+
+        check("std::string f(std::string s, std::size_t end) {\n"
+              "    s = std::string(s.begin(), s.begin() + end);\n"
+              "    return s;\n"
+              "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                           "",
+                           errout.str());
     }
 
     void stabilityOfChecks() {

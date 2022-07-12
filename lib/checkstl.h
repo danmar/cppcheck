@@ -224,6 +224,7 @@ private:
     void uselessCallsSubstrError(const Token* tok, SubstrErrorType type);
     void uselessCallsEmptyError(const Token* tok);
     void uselessCallsRemoveError(const Token* tok, const std::string& function);
+    void uselessCallsConstructorError(const Token* tok);
 
     void dereferenceInvalidIteratorError(const Token* deref, const std::string& iterName);
     void dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value *value, bool inconclusive);
