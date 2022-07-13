@@ -4742,9 +4742,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Is there C++ code in C file?
     validateC();
 
-    // remove MACRO in variable declaration: MACRO int x;
-    removeMacroInVarDecl();
-
     // Combine strings and character literals, e.g. L"string", L'c', "string1" "string2"
     combineStringAndCharLiterals();
 
