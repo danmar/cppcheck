@@ -630,9 +630,6 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
             continue;
 
-        if (mSettings->library.smartPointers.find(functionName) != mSettings->library.smartPointers.end())
-            continue;
-
         const Token* start = tok;
         while (Token::Match(start->tokAt(-2), "%name% ::"))
             start = start->tokAt(-2);
