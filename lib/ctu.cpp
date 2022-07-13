@@ -439,7 +439,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
 {
     std::list<std::pair<const Token *, MathLib::bigint>> ret;
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
-    if (!argvar->isPointer() && !argvar->isReference())
+    if (!argvar->isArrayOrPointer() && !argvar->isReference())
         return ret;
     for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
         if (Token::Match(tok2, ")|else {")) {

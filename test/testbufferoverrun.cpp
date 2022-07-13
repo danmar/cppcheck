@@ -5058,6 +5058,18 @@ private:
             "    get_mac_address(macstrbuf);\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #9788
+        ctu("void f1(char *s) { s[2] = 'B'; }\n"
+            "void f2(char s[]) { s[2] = 'B'; }\n"
+            "void g() {\n"
+            "    char str[2];\n"
+            "    f1(str);\n"
+            "    f2(str);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n"
+                      "[test.cpp:6] -> [test.cpp:2]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n",
+                      errout.str());
     }
 
     void ctu_variable() {
