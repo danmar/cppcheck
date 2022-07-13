@@ -473,19 +473,15 @@ void nullPointer(int * pIntPtr)
 
 void leakNoVarFunctionCall() {
     class C : public QObject {
-        Q_OBJECT
     public:
         explicit C(QObject* parent = nullptr) : QObject(parent) {}
-    signals:
         void signal() {}
     };
     class D : public QObject {
-        Q_OBJECT
     public:
         D() {
-            connect(new C(this), &C::signal, this, &S::slot);
+            connect(new C(this), &C::signal, this, &C::slot);
         }
-    slots:
         void slot() {};
     };
 }
