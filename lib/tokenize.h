@@ -204,9 +204,6 @@ public:
      */
     void removeMacroInClassDef();
 
-    /** Remove unknown macro in variable declarations: PROGMEM char x; */
-    void removeMacroInVarDecl();
-
     /** Add parentheses for sizeof: sizeof x => sizeof(x) */
     void sizeofAddParentheses();
 

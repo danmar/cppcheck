@@ -5649,35 +5649,6 @@ void Tokenizer::removeMacroInClassDef()
 
 //---------------------------------------------------------------------------
 
-void Tokenizer::removeMacroInVarDecl()
-{
-    for (Token *tok = list.front(); tok; tok = tok->next()) {
-        if (Token::Match(tok, "[;{}] %name% (") && tok->next()->isUpperCaseName()) {
-            // goto ')' parentheses
-            const Token *tok2 = tok;
-            int parlevel = 0;
-            while (tok2) {
-                if (tok2->str() == "(")
-                    ++parlevel;
-                else if (tok2->str() == ")") {
-                    if (--parlevel <= 0)
-                        break;
-                }
-                tok2 = tok2->next();
-            }
-            tok2 = tok2 ? tok2->next() : nullptr;
-
-            // check if this is a variable declaration..
-            const Token *tok3 = tok2;
-            while (tok3 && tok3->isUpperCaseName())
-                tok3 = tok3->next();
-            if (tok3 && (tok3->isStandardType() || Token::Match(tok3,"const|static|struct|union|class")))
-                Token::eraseTokens(tok,tok2);
-        }
-    }
-}
-//---------------------------------------------------------------------------
-
 void Tokenizer::addSemicolonAfterUnknownMacro()
 {
     if (!isCPP())
