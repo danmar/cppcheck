@@ -480,7 +480,7 @@ void leakNoVarFunctionCall() {
     class D : public QObject {
     public:
         D() {
-            connect(new C(this), &C::signal, this, &C::slot);
+            connect(new C(this), &C::signal, this, &D::slot);
         }
         void slot() {};
     };
