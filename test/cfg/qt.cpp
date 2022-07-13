@@ -19,7 +19,6 @@
 #include <cstdio>
 #include <QCoreApplication>
 #include <QLoggingCategory>
-#include <QShortcut>
 
 
 void QString1(QString s)
@@ -473,10 +472,20 @@ void nullPointer(int * pIntPtr)
 }
 
 void leakNoVarFunctionCall() {
-    struct S : public QObject {
-        S() {
-            connect(new QShortcut(QKeySequence::Refresh, this), &QShortcut::activated, this, &S::f);
+    class C : public QObject {
+        Q_OBJECT
+    public:
+        C(QObject* parent = nullptr) : QObject(parent) {}
+    signals:
+        void signal() {}
+    };
+    class D : public QObject {
+        Q_OBJECT
+    public:
+        D() {
+            connect(new C(this), &C::signal, this, &S::slot);
         }
-        void f() {};
+    slots:
+        void slot() {};
     };
 }
