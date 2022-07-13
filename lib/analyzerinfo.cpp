@@ -95,34 +95,36 @@ static bool skipAnalysis(const std::string &analyzerInfoFile, std::size_t hash, 
     return true;
 }
 
+std::string AnalyzerInformation::getAnalyzerInfoFileFromFilesTxt(std::istream& filesTxt, const std::string &sourcefile, const std::string &cfg)
+{
+    std::string line;
+    const std::string end(':' + cfg + ':' + Path::simplifyPath(sourcefile));
+    while (std::getline(filesTxt,line)) {
+        if (line.size() <= end.size() + 2U)
+            continue;
+        if (!endsWith(line, end.c_str(), end.size()))
+            continue;
+        return line.substr(0,line.find(':'));
+    }
+    return "";
+}
+
 std::string AnalyzerInformation::getAnalyzerInfoFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg)
 {
-    const std::string files(buildDir + "/files.txt");
-    std::ifstream fin(files);
+    std::ifstream fin(Path::join(buildDir, "files.txt"));
     if (fin.is_open()) {
-        std::string line;
-        const std::string end(':' + cfg + ':' + sourcefile);
-        while (std::getline(fin,line)) {
-            if (line.size() <= end.size() + 2U)
-                continue;
-            if (!endsWith(line, end.c_str(), end.size()))
-                continue;
-            std::ostringstream ostr;
-            ostr << buildDir << '/' << line.substr(0,line.find(':'));
-            return ostr.str();
-        }
+        const std::string& ret = getAnalyzerInfoFileFromFilesTxt(fin, sourcefile, cfg);
+        if (!ret.empty())
+            return Path::join(buildDir, ret);
     }
 
-    std::string filename = Path::fromNativeSeparators(buildDir);
-    if (!endsWith(filename, '/'))
-        filename += '/';
     const std::string::size_type pos = sourcefile.rfind('/');
-    if (pos == std::string::npos)
-        filename += sourcefile;
+    std::string filename;
+    if (pos != std::string::npos)
+        filename = sourcefile;
     else
-        filename += sourcefile.substr(pos+1);
-    filename += ".analyzerinfo";
-    return filename;
+        filename = sourcefile.substr(pos + 1);
+    return Path::join(buildDir, filename) + ".analyzerinfo";
 }
 
 bool AnalyzerInformation::analyzeFile(const std::string &buildDir, const std::string &sourcefile, const std::string &cfg, std::size_t hash, std::list<ErrorMessage> *errors)

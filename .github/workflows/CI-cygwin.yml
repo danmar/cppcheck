@@ -16,6 +16,10 @@ jobs:
       matrix:
         os: [windows-2019]
         arch: [x64, x86]
+        include:
+          - platform: 'x86_64'
+            packages: |
+              gcc-g++
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -24,26 +28,27 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Set up Cygwin
-        uses: egor-tensin/setup-cygwin@v3
+        uses: cygwin/cygwin-install-action@master
         with:
           platform: ${{ matrix.arch }}
+          packages: ${{ matrix.packages }}
 
       - name: Build cppcheck
         run: |
-          C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2
+          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2
 
       - name: Build test
         run: |
-          C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2 testrunner
+          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2 testrunner
 
       - name: Run test
         run: |
-          C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2 check
+          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2 check
 
       - name: Extra test for misra
         run: |
-          C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE%\addons\test
-          ..\..\cppcheck --dump -DDUMMY --suppress=uninitvar --inline-suppr misra\misra-test.c --std=c89 --platform=unix64 && python3 ..\misra.py -verify misra\misra-test.c.dump
-          C:\tools\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE%
-          .\cppcheck --addon=misra --inline-suppr --enable=information --error-exitcode=1 addons\test\misra\misra-ctu-*-test.c
+          cd %GITHUB_WORKSPACE%\addons\test
+          ..\..\cppcheck.exe --dump -DDUMMY --suppress=uninitvar --inline-suppr misra\misra-test.c --std=c89 --platform=unix64
+          python3 ..\misra.py -verify misra\misra-test.c.dump
+          ..\..\cppcheck.exe --addon=misra --inline-suppr --enable=information --error-exitcode=1 misra\misra-ctu-1-test.c misra\misra-ctu-2-test.c
 
