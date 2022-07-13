@@ -192,6 +192,7 @@ private:
         TEST_CASE(array_index_65); // #11066
         TEST_CASE(array_index_66); // #10740
         TEST_CASE(array_index_67); // #1596
+        TEST_CASE(array_index_68); // #6655
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1871,6 +1872,19 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_68() { // #6655
+        check("int ia[10];\n"
+              "void f(int len) {\n"
+              "    for (int i = 0; i < len; i++)\n"
+              "        ia[i] = 0;\n"
+              "}\n"
+              "int g() {\n"
+              "    f(20);\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'ia[10]' accessed at index 19, which is out of bounds.\n", errout.str());
     }
 
     void array_index_multidim() {
