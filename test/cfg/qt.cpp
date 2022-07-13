@@ -473,11 +473,13 @@ void nullPointer(int * pIntPtr)
 
 namespace {
     class C : public QObject {
+        Q_OBJECT
     public:
         explicit C(QObject* parent = nullptr) : QObject(parent) {}
         void signal() {}
     };
     class D : public QObject {
+        Q_OBJECT
     public:
         D() {
             connect(new C(this), &C::signal, this, &D::slot);
