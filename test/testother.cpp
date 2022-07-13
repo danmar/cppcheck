@@ -4419,6 +4419,23 @@ private:
               "    enum : uint8_t { A, B } var = A;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkP("#define INB(x) __extension__ ({ u_int tmp = (x); inb(tmp); })\n" // #4739
+               "static unsigned char cmos_hal_read(unsigned index) {\n"
+               "    unsigned short port_0, port_1;\n"
+               "    assert(!verify_cmos_byte_index(index));\n"
+               "    if (index < 128) {\n"
+               "      port_0 = 0x70;\n"
+               "      port_1 = 0x71;\n"
+               "    }\n"
+               "    else {\n"
+               "      port_0 = 0x72;\n"
+               "      port_1 = 0x73;\n"
+               "    }\n"
+               "    OUTB(index, port_0);\n"
+               "    return INB(port_1);\n"
+               "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -4900,6 +4917,17 @@ private:
               "    stat(\"file.txt\", &st);\n"
               "    do_something();\n"
               "}");
+        ASSERT_EQUALS("",errout.str());
+
+        check("struct AMethodObject {\n" // #4336
+              "    AMethodObject(double, double, double);\n"
+              "};\n"
+              "struct S {\n"
+              "    static void A(double, double, double);\n"
+              "};\n"
+              "void S::A(double const a1, double const a2, double const a3) {\n"
+              "    AMethodObject(a1, a2, a3);\n"
+              "}\n");
         ASSERT_EQUALS("",errout.str());
     }
 
