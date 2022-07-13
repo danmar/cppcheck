@@ -471,7 +471,7 @@ void nullPointer(int * pIntPtr)
     }
 }
 
-void leakNoVarFunctionCall() {
+namespace {
     class C : public QObject {
     public:
         explicit C(QObject* parent = nullptr) : QObject(parent) {}
