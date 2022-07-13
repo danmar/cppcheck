@@ -608,10 +608,10 @@ void CheckFunctions::checkLibraryMatchFunctions()
         else if (insideNew)
             continue;
 
-        if (!Token::Match(tok, "%name% (") || Token::Match(tok, "asm|sizeof|catch"))
+        if (tok->isKeyword() || !Token::Match(tok, "%name% ("))
             continue;
 
-        if (tok->varId() != 0 || tok->type() || tok->isStandardType() || tok->isControlFlowKeyword())
+        if (tok->varId() != 0 || tok->type() || tok->isStandardType())
             continue;
 
         if (tok->linkAt(1)->strAt(1) == "(")
