@@ -25,20 +25,48 @@ CPPCHECK_REPO_URL = "https://github.com/danmar/cppcheck.git"
 # Return code that is used to mark a timed out analysis
 RETURN_CODE_TIMEOUT = -999
 
+__make_cmd = None
+
+def detect_make():
+    make_cmds = ['make', 'mingw32-make']
+    if sys.platform == 'win32':
+        make_cmds.append('msbuild.exe')
+
+    for m in make_cmds:
+        try:
+            subprocess.call([m, '--version'])
+        except OSError as e:
+            print("'{}' not found ({})".format(m, e))
+            continue
+
+        print("using '{}'".format(m))
+        return m
+
+    print("Error: a make command ({}) is required".format(','.join(make_cmds)))
+    return None
+
 
 def check_requirements():
     result = True
-    for app in ['g++', 'git', 'make', 'wget', 'gdb']:
+
+    for app in ['g++', 'git', 'wget', 'gdb']:
         try:
             subprocess.call([app, '--version'])
         except OSError:
             print("Error: '{}' is required".format(app))
             result = False
+
     try:
         import psutil
     except ImportError as e:
         print("Error: {}. Module is required.".format(e))
         result = False
+
+    global __make_cmd
+    __make_cmd = detect_make()
+    if not __make_cmd:
+        result = False
+
     return result
 
 
@@ -124,11 +152,11 @@ def compile_version(cppcheck_path, jobs):
 def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
-        if sys.platform == 'win32':
-            subprocess.check_call(['MSBuild.exe', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release', '/property:Platform=x64'], cwd=cppcheck_path)
+        if __make_cmd == 'msbuild.exe':
+            subprocess.check_call([__make_cmd, os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release', '/property:Platform=x64'], cwd=cppcheck_path)
             subprocess.check_call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'], cwd=cppcheck_path)
         else:
-            subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
+            subprocess.check_call([__make_cmd, jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
             subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
     except:
         return False
