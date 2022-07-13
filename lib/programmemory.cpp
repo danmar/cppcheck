@@ -1367,8 +1367,8 @@ ValueFlow::Value evaluateLibraryFunction(const std::unordered_map<nonneg int, Va
                                          const std::string& returnValue,
                                          const Settings* settings)
 {
-    static std::unordered_map<std::string,
-                              std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>>
+    thread_local static std::unordered_map<std::string,
+                                           std::function<ValueFlow::Value(const std::unordered_map<nonneg int, ValueFlow::Value>& arg)>>
     functions = {};
     if (functions.count(returnValue) == 0) {
 
