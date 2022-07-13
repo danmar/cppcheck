@@ -24,7 +24,7 @@ def _test_library_includes(tmpdir, libs, content):
     src_file = os.path.join(str(tmpdir), "file.cpp")
     with open(src_file, 'w') as f:
         f.write(content)
-    assert libs == library_includes.get_libraries(str(tmpdir))
+    assert libs.sort() == library_includes.get_libraries(str(tmpdir)).sort()
 
 def test_library_includes(tmpdir):
     _test_library_includes(tmpdir, ['posix', 'gnu'], '')
