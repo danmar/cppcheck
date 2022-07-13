@@ -475,7 +475,7 @@ void leakNoVarFunctionCall() {
     class C : public QObject {
         Q_OBJECT
     public:
-        C(QObject* parent = nullptr) : QObject(parent) {}
+        explicit C(QObject* parent = nullptr) : QObject(parent) {}
     signals:
         void signal() {}
     };
