@@ -65,6 +65,7 @@ private:
         TEST_CASE(zeroDiv12);
         TEST_CASE(zeroDiv13);
         TEST_CASE(zeroDiv14); // #1169
+        TEST_CASE(zeroDiv15); // #8319
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -597,6 +598,16 @@ private:
               "    std::cout << dx / (i >> 1) << std::endl;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Division by zero.\n", errout.str());
+    }
+
+    void zeroDiv15() { // #8319
+        check("int f(int i) { return i - 1; }\n"
+              "int f() {\n"
+              "    const int d = 1;\n"
+              "    const int r = 1 / f(d);\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {
