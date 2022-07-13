@@ -14,7 +14,7 @@ jobs:
   build_cygwin:
     strategy:
       matrix:
-        os: [windows-2019]
+        os: [windows-2022]
         arch: [x64, x86]
         include:
           - platform: 'x86_64'
@@ -33,15 +33,8 @@ jobs:
           platform: ${{ matrix.arch }}
           packages: ${{ matrix.packages }}
 
-      - name: Build cppcheck
-        run: |
-          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2
-
-      - name: Build test
-        run: |
-          C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2 testrunner
-
-      - name: Run test
+      # Cygwin will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
+      - name: Build all and run test
         run: |
           C:\cygwin\bin\bash.exe -l -c cd %GITHUB_WORKSPACE% && make -j2 check
 
