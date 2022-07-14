@@ -2451,7 +2451,7 @@ const Token *Function::setFlags(const Token *tok1, const Scope *scope)
             isInlineKeyword(true);
 
         // extern function
-        if (tok1->str() == "extern") {
+        if (tok1->isExternC() || tok1->str() == "extern") {
             isExtern(true);
         }
 
