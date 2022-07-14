@@ -132,8 +132,8 @@ if __name__ == "__main__":
         main_timeout = False
         your_timeout = False
 
-        libraries = lib.get_libraries(source_path)
-        c, errout, info, time_main, cppcheck_options, timing_info = lib.scan_package(work_path, main_dir, source_path, jobs, libraries)
+        libraries = lib.library_includes.get_libraries(source_path)
+        c, errout, info, time_main, cppcheck_options, timing_info = lib.scan_package(main_dir, source_path, jobs, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -146,7 +146,7 @@ if __name__ == "__main__":
                 main_crashed = True
         results_to_diff.append(errout)
 
-        c, errout, info, time_your, cppcheck_options, timing_info = lib.scan_package(work_path, your_repo_dir, source_path, jobs, libraries)
+        c, errout, info, time_your, cppcheck_options, timing_info = lib.scan_package(your_repo_dir, source_path, jobs, libraries)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)

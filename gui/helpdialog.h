@@ -33,6 +33,10 @@ namespace Ui {
 class HelpBrowser : public QTextBrowser {
 public:
     explicit HelpBrowser(QWidget* parent = nullptr) : QTextBrowser(parent), mHelpEngine(nullptr) {}
+    HelpBrowser(const HelpBrowser&) = delete;
+    HelpBrowser(HelpBrowser&&) = delete;
+    HelpBrowser& operator=(const HelpBrowser&) = delete;
+    HelpBrowser& operator=(HelpBrowser&&) = delete;
     void setHelpEngine(QHelpEngine *helpEngine);
     QVariant loadResource(int type, const QUrl& name) override;
 private:

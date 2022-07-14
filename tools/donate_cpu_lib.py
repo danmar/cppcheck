@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.26"
+CLIENT_VERSION = "1.3.27"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -106,8 +106,7 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
 
 def get_cppcheck_info(cppcheck_path):
     try:
-        os.chdir(cppcheck_path)
-        return subprocess.check_output(['git', 'show', "--pretty=%h (%ci)", 'HEAD', '--no-patch', '--no-notes']).decode('utf-8').strip()
+        return subprocess.check_output(['git', 'show', "--pretty=%h (%ci)", 'HEAD', '--no-patch', '--no-notes'], cwd=cppcheck_path).decode('utf-8').strip()
     except:
         return ''
 
@@ -125,10 +124,9 @@ def compile_version(cppcheck_path, jobs):
 def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
-        os.chdir(cppcheck_path)
         if sys.platform == 'win32':
-            subprocess.call(['MSBuild.exe', cppcheck_path + '/cppcheck.sln', '/property:Configuration=Release', '/property:Platform=x64'])
-            subprocess.call([cppcheck_path + '/bin/cppcheck.exe', '--version'])
+            subprocess.check_call(['MSBuild.exe', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release', '/property:Platform=x64'], cwd=cppcheck_path)
+            subprocess.check_call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'], cwd=cppcheck_path)
         else:
             subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
             subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
@@ -239,52 +237,51 @@ def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
     temp_path = os.path.join(work_path, 'temp')
     __remove_tree(temp_path)
     os.mkdir(temp_path)
-    found = False
+
+    header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
+    source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
+    c_source_endings = ('.c',)
+
+    if not cpp_only:
+        source_endings = source_endings + c_source_endings
+
+    source_found = False
     if tarfile.is_tarfile(tgz):
         with tarfile.open(tgz) as tf:
+            total = 0
+            extracted = 0
+            skipped = 0
             for member in tf:
-                header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
-                source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
-                c_source_endings = ('.c',)
-                if not cpp_only:
-                    source_endings = source_endings + c_source_endings
+                total += 1
                 if member.name.startswith(('/', '..')):
                     # Skip dangerous file names
+                    # print('skipping dangerous file: ' + member.name)
+                    skipped += 1
                     continue
-                elif member.name.lower().endswith(header_endings + source_endings):
+
+                is_source = member.name.lower().endswith(source_endings)
+                if is_source or member.name.lower().endswith(header_endings):
                     if skip_files is not None:
                         skip = False
                         for skip_file in skip_files:
                             if member.name.endswith('/' + skip_file):
+                                # print('found file to skip: ' + member.name)
                                 skip = True
                                 break
                         if skip:
+                            skipped += 1
                             continue
                     try:
                         tf.extract(member.name, temp_path)
-                        if member.name.lower().endswith(source_endings):
-                            found = True
+                        if is_source:
+                            source_found = True
+                        extracted += 1
                     except OSError:
                         pass
                     except AttributeError:
                         pass
-    return temp_path, found
-
-
-def __has_include(path, includes):
-    re_includes = [re.escape(inc) for inc in includes]
-    re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
-    for root, _, files in os.walk(path):
-        for name in files:
-            filename = os.path.join(root, name)
-            try:
-                with open(filename, 'rt', errors='ignore') as f:
-                    filedata = f.read()
-                if re.search(re_expr, filedata, re.MULTILINE):
-                    return True
-            except IOError:
-                pass
-    return False
+            print('extracted {} of {} files (skipped {}{})'.format(extracted, total, skipped, (' / only headers' if (extracted and not source_found) else '')))
+    return temp_path, source_found
 
 
 def __run_command(cmd, print_cmd=True):
@@ -325,22 +322,21 @@ def __run_command(cmd, print_cmd=True):
     return return_code, stdout, stderr, elapsed_time
 
 
-def scan_package(work_path, cppcheck_path, source_path, jobs, libraries, capture_callstack=True):
+def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=True):
     print('Analyze..')
-    os.chdir(work_path)
     libs = ''
     for library in libraries:
         if os.path.exists(os.path.join(cppcheck_path, 'cfg', library + '.cfg')):
             libs += '--library=' + library + ' '
 
-    dir_to_scan = os.path.basename(source_path)
+    dir_to_scan = source_path
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --template=daca2'
     options += ' -D__GNUC__ --platform=unix64'
     options += ' -rp={}'.format(dir_to_scan)
     if sys.platform == 'win32':
-        cppcheck_cmd = cppcheck_path + '/bin/cppcheck.exe ' + options
+        cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options
         cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     else:
         cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options
@@ -352,12 +348,15 @@ def scan_package(work_path, cppcheck_path, source_path, jobs, libraries, capture
     issue_messages_list = []
     internal_error_messages_list = []
     count = 0
+    re_obj = None
     for line in stderr.split('\n'):
         if ': information: ' in line:
             information_messages_list.append(line + '\n')
         elif line:
             issue_messages_list.append(line + '\n')
-            if re.match(r'.*:[0-9]+:.*\]$', line):
+            if re_obj is None:
+                re_obj = re.compile(r'.*:[0-9]+:.*\]$')
+            if re_obj.match(line):
                 count += 1
             if ': error: Internal error: ' in line:
                 internal_error_messages_list.append(line + '\n')
@@ -454,11 +453,15 @@ def scan_package(work_path, cppcheck_path, source_path, jobs, libraries, capture
 def __split_results(results):
     ret = []
     w = None
+    re_obj = None
     for line in results.split('\n'):
-        if line.endswith(']') and re.search(r': (error|warning|style|performance|portability|information|debug):', line):
-            if w is not None:
-                ret.append(w.strip())
-            w = ''
+        if line.endswith(']'):
+            if re_obj is None:
+                re_obj = re.compile(r': (error|warning|style|performance|portability|information|debug):')
+            if re_obj.search(line):
+                if w is not None:
+                    ret.append(w.strip())
+                w = ''
         if w is not None:
             w += ' ' * 5 + line + '\n'
     if w is not None:
@@ -542,48 +545,81 @@ def upload_info(package, info_output, server_address):
     return False
 
 
-def get_libraries(folder):
-    libraries = ['posix', 'gnu']
-    library_includes = {'boost': ['<boost/'],
-                       'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<sys/uio.h>', '<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
-                       'cairo': ['<cairo.h>'],
-                       'cppunit': ['<cppunit/'],
-                       'icu': ['<unicode/', '"unicode/'],
-                       'ginac': ['<ginac/', '"ginac/'],
-                       'googletest': ['<gtest/gtest.h>'],
-                       'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gnome'],
-                       'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
-                       'libcerror': ['<libcerror.h>'],
-                       'libcurl': ['<curl/curl.h>'],
-                       'libsigc++': ['<sigc++/'],
-                       'lua': ['<lua.h>', '"lua.h"'],
-                       'mfc': ['<afx.h>', '<afxwin.h>', '<afxext.h>'],
-                       'microsoft_atl': ['<atlbase.h>'],
-                       'microsoft_sal': ['<sal.h>'],
-                       'motif': ['<X11/', '<Xm/'],
-                       'nspr': ['<prtypes.h>', '"prtypes.h"'],
-                       'ntl': ['<ntl/', '"ntl/'],
-                       'opencv2': ['<opencv2/', '"opencv2/'],
-                       'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
-                       'openmp': ['<omp.h>'],
-                       'openssl': ['<openssl/'],
-                       'pcre': ['<pcre.h>', '"pcre.h"'],
-                       'python': ['<Python.h>', '"Python.h"'],
-                       'qt': ['<QApplication>', '<QList>', '<QKeyEvent>', '<qlist.h>', '<QObject>', '<QFlags>', '<QFileDialog>', '<QTest>', '<QMessageBox>', '<QMetaType>', '<QString>', '<qobjectdefs.h>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
-                       'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
-                       'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
-                       'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
-                       'tinyxml2': ['<tinyxml2', '"tinyxml2'],
-                       'wxsqlite3': ['<wx/wxsqlite3', '"wx/wxsqlite3'],
-                       'wxwidgets': ['<wx/', '"wx/'],
-                       'zlib': ['<zlib.h>'],
-                      }
-    print('Detecting library usage...')
-    for library, includes in library_includes.items():
-        if __has_include(folder, includes):
-            libraries.append(library)
-    print('Found libraries: {}'.format(libraries))
-    return libraries
+class LibraryIncludes:
+    def __init__(self):
+        include_mappings = {'boost': ['<boost/'],
+                            'bsd': ['<sys/queue.h>', '<sys/tree.h>', '<sys/uio.h>','<bsd/', '<fts.h>', '<db.h>', '<err.h>', '<vis.h>'],
+                            'cairo': ['<cairo.h>'],
+                            'cppunit': ['<cppunit/'],
+                            'icu': ['<unicode/', '"unicode/'],
+                            'ginac': ['<ginac/', '"ginac/'],
+                            'googletest': ['<gtest/gtest.h>'],
+                            'gtk': ['<gtk', '<glib.h>', '<glib-', '<glib/', '<gnome'],
+                            'kde': ['<KGlobal>', '<KApplication>', '<KDE/'],
+                            'libcerror': ['<libcerror.h>'],
+                            'libcurl': ['<curl/curl.h>'],
+                            'libsigc++': ['<sigc++/'],
+                            'lua': ['<lua.h>', '"lua.h"'],
+                            'mfc': ['<afx.h>', '<afxwin.h>', '<afxext.h>'],
+                            'microsoft_atl': ['<atlbase.h>'],
+                            'microsoft_sal': ['<sal.h>'],
+                            'motif': ['<X11/', '<Xm/'],
+                            'nspr': ['<prtypes.h>', '"prtypes.h"'],
+                            'ntl': ['<ntl/', '"ntl/'],
+                            'opencv2': ['<opencv2/', '"opencv2/'],
+                            'opengl': ['<GL/gl.h>', '<GL/glu.h>', '<GL/glut.h>'],
+                            'openmp': ['<omp.h>'],
+                            'openssl': ['<openssl/'],
+                            'pcre': ['<pcre.h>', '"pcre.h"'],
+                            'python': ['<Python.h>', '"Python.h"'],
+                            'qt': ['<QApplication>', '<QList>', '<QKeyEvent>', '<qlist.h>', '<QObject>', '<QFlags>', '<QFileDialog>', '<QTest>', '<QMessageBox>', '<QMetaType>', '<QString>', '<qobjectdefs.h>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                            'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
+                            'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
+                            'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],
+                            'tinyxml2': ['<tinyxml2', '"tinyxml2'],
+                            'wxsqlite3': ['<wx/wxsqlite3', '"wx/wxsqlite3'],
+                            'wxwidgets': ['<wx/', '"wx/'],
+                            'zlib': ['<zlib.h>'],
+                            }
+
+        self.__library_includes_re = {}
+
+        for library, includes in include_mappings.items():
+            re_includes = [re.escape(inc) for inc in includes]
+            re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
+            re_obj = re.compile(re_expr, re.MULTILINE)
+            self.__library_includes_re[library] = re_obj
+
+    def __iterate_files(self, path, has_include_cb):
+        for root, _, files in os.walk(path):
+            for name in files:
+                filename = os.path.join(root, name)
+                try:
+                    with open(filename, 'rt', errors='ignore') as f:
+                        filedata = f.read()
+                    has_include_cb(filedata)
+                except IOError:
+                    pass
+
+    def get_libraries(self, folder):
+        print('Detecting library usage...')
+        libraries = ['posix', 'gnu']
+
+        library_includes_re = self.__library_includes_re
+
+        def has_include(filedata):
+            lib_del = []
+            for library, includes_re in library_includes_re.items():
+                if includes_re.search(filedata):
+                    libraries.append(library)
+                    lib_del.append(library)
+
+            for lib_d in lib_del:
+                del library_includes_re[lib_d]
+
+        self.__iterate_files(folder, has_include)
+        print('Found libraries: {}'.format(libraries))
+        return libraries
 
 
 def get_compiler_version():
@@ -594,9 +630,10 @@ def get_compiler_version():
 my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 jobs = '-j1'
 stop_time = None
-work_path = os.path.expanduser('~/cppcheck-' + my_script_name + '-workfolder')
+work_path = os.path.expanduser(os.path.join('~', 'cppcheck-' + my_script_name + '-workfolder'))
 package_url = None
 server_address = ('cppcheck1.osuosl.org', 8000)
 bandwidth_limit = None
 max_packages = None
 do_upload = True
+library_includes = LibraryIncludes()

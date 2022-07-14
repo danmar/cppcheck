@@ -192,6 +192,7 @@ private:
         TEST_CASE(array_index_65); // #11066
         TEST_CASE(array_index_66); // #10740
         TEST_CASE(array_index_67); // #1596
+        TEST_CASE(array_index_68); // #6655
         TEST_CASE(array_index_multidim);
         TEST_CASE(array_index_switch_in_for);
         TEST_CASE(array_index_for_in_for);   // FP: #2634
@@ -1871,6 +1872,19 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void array_index_68() { // #6655
+        check("int ia[10];\n"
+              "void f(int len) {\n"
+              "    for (int i = 0; i < len; i++)\n"
+              "        ia[i] = 0;\n"
+              "}\n"
+              "int g() {\n"
+              "    f(20);\n"
+              "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Array 'ia[10]' accessed at index 19, which is out of bounds.\n", errout.str());
     }
 
     void array_index_multidim() {
@@ -5044,6 +5058,18 @@ private:
             "    get_mac_address(macstrbuf);\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #9788
+        ctu("void f1(char *s) { s[2] = 'B'; }\n"
+            "void f2(char s[]) { s[2] = 'B'; }\n"
+            "void g() {\n"
+            "    char str[2];\n"
+            "    f1(str);\n"
+            "    f2(str);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n"
+                      "[test.cpp:6] -> [test.cpp:2]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n",
+                      errout.str());
     }
 
     void ctu_variable() {

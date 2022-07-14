@@ -1813,6 +1813,20 @@ private:
               "}");
         TODO_ASSERT_EQUALS("", "[test.cpp:6]: (information) --check-library: There is no matching configuration for function cb()\n", errout.str());
 
+        // #7375
+        check("void f() {\n"
+              "    struct S { int i; char c; };\n"
+              "    size_t s = sizeof(S);\n"
+              "    static_assert(s == 9);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char) {}\n"
+              "void g() {\n"
+              "    f(int8_t(1));\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings.severity = severity_old;
         settings.checkLibrary = false;
     }
