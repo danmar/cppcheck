@@ -75,6 +75,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction || func->isOperator())
             continue;
 
+        if (func->isExtern())
+            continue;
+
         // Don't care about templates
         if (tokenizer.isCPP() && func->templateDef != nullptr)
             continue;
