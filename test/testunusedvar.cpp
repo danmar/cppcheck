@@ -3218,8 +3218,7 @@ private:
                               "}");
         ASSERT_EQUALS("", errout.str());
 
-        functionVariableUsage("std::vector<int> g();\n" // #9877
-                              "int f() {\n"
+        functionVariableUsage("int f() {\n" // #9877
                               "    const std::vector<int> x = get();\n"
                               "    MACRO(2U, x.size())\n"
                               "    int i = 0;\n"
