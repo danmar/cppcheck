@@ -53,13 +53,11 @@ public:
 
     /** run checks, the token list is not simplified */
     void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
-        CheckStl checkStl(tokenizer, settings, errorLogger);
-        checkStl.useMemcpy();
-
         if (!tokenizer->isCPP()) {
             return;
         }
 
+        CheckStl checkStl(tokenizer, settings, errorLogger);
         checkStl.erase();
         checkStl.if_find();
         checkStl.checkFindInsert();
@@ -186,8 +184,6 @@ public:
 
     void checkMutexes();
 
-    void useMemcpy();
-
 private:
     bool isContainerSize(const Token *containerToken, const Token *expr) const;
     bool isContainerSizeGE(const Token * containerToken, const Token *expr) const;
@@ -242,8 +238,6 @@ private:
 
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);
-
-    void useMemcpyError(const Token *tok, const bool cpp);
 
     void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         ErrorPath errorPath;
