@@ -4581,6 +4581,10 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11098
+        check("void f(unsigned int x) { if (x == -1u) {} }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueContainer() {

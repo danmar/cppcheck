@@ -1150,12 +1150,22 @@ size_t ValueFlow::getSizeOf(const ValueType &vt, const Settings *settings)
     return 0;
 }
 
+
+static bool getMinMaxValues(const ValueType* vt, const cppcheck::Platform& platform, MathLib::bigint* minValue, MathLib::bigint* maxValue);
+
 // Handle various constants..
 static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, bool cpp)
 {
     if ((tok->isNumber() && MathLib::isInt(tok->str())) || (tok->tokType() == Token::eChar)) {
         try {
-            ValueFlow::Value value(MathLib::toLongNumber(tok->str()));
+            MathLib::bigint signedValue = MathLib::toLongNumber(tok->str());
+            const ValueType* vt = tok->valueType();
+            if (vt && vt->sign == ValueType::UNSIGNED && signedValue < 0 && ValueFlow::getSizeOf(*vt, settings) < sizeof(MathLib::bigint)) {
+                MathLib::bigint minValue{}, maxValue{};
+                if (getMinMaxValues(tok->valueType(), *settings, &minValue, &maxValue))
+                    signedValue += maxValue + 1;
+            }
+            ValueFlow::Value value(signedValue);
             if (!tok->isTemplateArg())
                 value.setKnown();
             setTokenValue(tok, value, settings);
@@ -8303,7 +8313,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
     }
 }
 
-static bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint *minValue, MathLib::bigint *maxValue)
+bool getMinMaxValues(const ValueType *vt, const cppcheck::Platform &platform, MathLib::bigint *minValue, MathLib::bigint *maxValue)
 {
     if (!vt || !vt->isIntegral() || vt->pointer)
         return false;
