@@ -75,6 +75,11 @@ char * invalidFunctionArgStr_strpbrk( const char *p )
 
 int invalidFunctionArgStr_strncmp( const char *p )
 {
+    const char string[] = "foo";
+    char other[5] = { 0 };
+    memcpy(other, "foo", 4);
+    if (strncmp(other, string, 5) != 0) {}
+
     // No warning is expected for:
     const char emdash[3] = { -42, -43, -44 };
     return strncmp( p, emdash, 3 );
@@ -3921,9 +3926,7 @@ void bufferAccessOutOfBounds_strncmp(void)
     const char src[3] = "abc";
     char dest[1] = "a";
     (void)strncmp(dest,src,1);
-    // cppcheck-suppress bufferAccessOutOfBounds
     (void)strncmp(dest,src,2);
-    // cppcheck-suppress bufferAccessOutOfBounds
     (void)strncmp(dest,src,3);
 }
 
