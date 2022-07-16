@@ -117,6 +117,7 @@ private:
         TEST_CASE(switchRedundantOperationTest);
         TEST_CASE(switchRedundantBitwiseOperationTest);
         TEST_CASE(unreachableCode);
+        TEST_CASE(redundantContinue);
 
         TEST_CASE(suspiciousCase);
         TEST_CASE(suspiciousEqualityComparison);
@@ -4447,6 +4448,26 @@ private:
                "    return INB(port_1);\n"
                "}\n", "test.c");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantContinue() {
+        check("void f() {\n" // #11195
+              "    for (int i = 0; i < 10; ++i) {\n"
+              "        printf(\"i = %d\\n\", i);\n"
+              "        continue;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'continue' is redundant since it is the last statement in a loop.\n", errout.str());
+
+        check("void f() {\n"
+              "    int i = 0;"
+              "    do {\n"
+              "        ++i;\n"
+              "        printf(\"i = %d\\n\", i);\n"
+              "        continue;\n"
+              "    } while (i < 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) 'continue' is redundant since it is the last statement in a loop.\n", errout.str());
     }
 
 
