@@ -6013,7 +6013,8 @@ private:
                               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        functionVariableUsage("void f(std::unique_ptr<S> p) {\n" // #11108
+        functionVariableUsage("struct S { S(); };\n" // #11108
+                              "void f(std::unique_ptr<S> p) {\n"
                               "    p = nullptr;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
