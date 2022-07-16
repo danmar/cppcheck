@@ -745,6 +745,9 @@ private:
               "    s[strlen(s)] = ' ';\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("size_t f() { wchar_t x = L'x'; return wcslen(&x); }");
+        ASSERT_EQUALS("[test.cpp:1]: (error) Invalid wcslen() argument nr 1. A nul-terminated string is required.\n", errout.str());
     }
 
     void mathfunctionCall_sqrt() {
