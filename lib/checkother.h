@@ -260,6 +260,7 @@ private:
     void duplicateExpressionTernaryError(const Token *tok, ErrorPath errors);
     void duplicateBreakError(const Token *tok, bool inconclusive);
     void unreachableCodeError(const Token* tok, bool inconclusive);
+    void redundantContinueError(const Token* tok);
     void unsignedLessThanZeroError(const Token *tok, const ValueFlow::Value *v, const std::string &varname);
     void pointerLessThanZeroError(const Token *tok, const ValueFlow::Value *v);
     void unsignedPositiveError(const Token *tok, const ValueFlow::Value *v, const std::string &varname);

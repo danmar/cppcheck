@@ -829,6 +829,9 @@ void CheckOther::checkUnreachableCode()
                     if (!labelInFollowingLoop && !silencedCompilerWarningOnly)
                         unreachableCodeError(secondBreak, inconclusive);
                     tok = Token::findmatch(secondBreak, "[}:]");
+                } else if (secondBreak->scope() && secondBreak->scope()->isLoopScope() && secondBreak->str() == "}" && tok->str() == "continue") {
+                    redundantContinueError(tok);
+                    tok = secondBreak;
                 } else
                     tok = secondBreak;
 
@@ -852,6 +855,12 @@ void CheckOther::unreachableCodeError(const Token *tok, bool inconclusive)
 {
     reportError(tok, Severity::style, "unreachableCode",
                 "Statements following return, break, continue, goto or throw will never be executed.", CWE561, inconclusive ? Certainty::inconclusive : Certainty::normal);
+}
+
+void CheckOther::redundantContinueError(const Token *tok)
+{
+    reportError(tok, Severity::style, "redundantContinue",
+                "'continue' is redundant since it is the last statement in a loop.", CWE561, Certainty::normal);
 }
 
 //---------------------------------------------------------------------------
