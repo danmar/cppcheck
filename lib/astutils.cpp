@@ -3538,7 +3538,7 @@ std::string formatTypeName(const Token *start, const Token *end)
 {
     if (!start || !end)
         return "";
-    
+
     std::string name;
 
     // single token type?
