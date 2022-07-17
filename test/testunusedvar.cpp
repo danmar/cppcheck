@@ -3217,6 +3217,14 @@ private:
                               "    delete [] piArray;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int f() {\n" // #9877
+                              "    const std::vector<int> x = get();\n"
+                              "    MACRO(2U, x.size())\n"
+                              "    int i = 0;\n"
+                              "    return i;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar44() { // #4020 - FP
