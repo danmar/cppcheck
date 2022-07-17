@@ -315,12 +315,12 @@ void CheckFunctions::checkIteratorTypeMismatch()
             // Check the actual mismatch
             if (assignee->valueType()->isTypeEqual(assigned->valueType()))
                 continue;
-            
+
             // Get the representations of the variables
             const Token* separator = assigned->astOperand1();
             if (!separator || !separator->astOperand2())
                 continue;
-            
+
             const Token* container_token = separator->astOperand1();
             const Library::Container* container = getLibraryContainer(container_token);
             if (!container)
@@ -328,7 +328,7 @@ void CheckFunctions::checkIteratorTypeMismatch()
 
             if (container->getYield(separator->astOperand2()->str()) != Library::Container::Yield::START_ITERATOR)
                 continue;
-                
+
             mismatchingForAssignmentType(
                 tok,
                 extractVariableName(assignee->variable()),
