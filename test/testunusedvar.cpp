@@ -6012,6 +6012,12 @@ private:
                               "    return *p;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct S { S(); };\n" // #11108
+                              "void f(std::unique_ptr<S> p) {\n"
+                              "    p = nullptr;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // ticket #3104 - false positive when variable is read with "if (NOT var)"
