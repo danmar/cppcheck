@@ -3525,3 +3525,51 @@ bool isSizeOfEtc(const Token *tok)
 {
     return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
 }
+
+std::string extractVariableName(const Variable *var)
+{
+    if (!var)
+        return "";
+
+    return formatTypeName(var->typeStartToken(), var->typeEndToken()->next());
+}
+
+std::string formatTypeName(const Token *start, const Token *end)
+{
+    if (!start || !end)
+        return "";
+    
+    std::string name;
+
+    // single token type?
+    if (start->next() == end) {
+        name = start->str();
+    }
+
+    // complicated type
+    else {
+        const Token *tok = start;
+        int level = 0;
+
+        while (tok && tok != end) {
+            // skip pointer and reference part of type
+            if (level == 0 && Token::Match(tok, "*|&"))
+                break;
+
+            name += tok->str();
+
+            if (Token::Match(tok, "struct|union|enum"))
+                name += " ";
+
+            // pointers and references are OK in template
+            else if (tok->str() == "<")
+                ++level;
+            else if (tok->str() == ">")
+                --level;
+
+            tok = tok->next();
+        }
+    }
+
+    return name;
+}

@@ -313,11 +313,27 @@ void CheckFunctions::checkIteratorTypeMismatch()
             if (!astIsIterator(assignee) || !astIsIterator(assigned))
                 continue;
 
-            if (!assignee->valueType()->isTypeEqual(assigned->valueType()))
-                mismatchingForAssignmentType(
-                    tok,
-                    assignee->valueType()->str(),
-                    assigned->valueType()->str());
+            // Check the actual mismatch
+            if (assignee->valueType()->isTypeEqual(assigned->valueType()))
+                continue;
+            
+            // Get the representations of the variables
+            const Token* separator = assigned->astOperand1();
+            if (!separator || !separator->astOperand2())
+                continue;
+            
+            const Token* container_token = separator->astOperand1();
+            const Library::Container* container = getLibraryContainer(container_token);
+            if (!container)
+                continue;
+
+            if (container->getYield(separator->astOperand2()->str()) != Library::Container::Yield::START_ITERATOR)
+                continue;
+                
+            mismatchingForAssignmentType(
+                tok,
+                extractVariableName(assignee->variable()),
+                extractVariableName(container_token->variable()) + "::iterator");
         }
     }
 }
@@ -325,7 +341,8 @@ void CheckFunctions::checkIteratorTypeMismatch()
 void CheckFunctions::mismatchingForAssignmentType(const Token* tok, const std::string& var_type, const std::string& assigned_type)
 {
     reportError(tok, Severity::warning, "mismatchTypeForAssignment",
-                "For loop assigns wrong type " + assigned_type + " to variable of type " + var_type, CWE689, Certainty::normal);
+                "For loop assigns wrong type " + assigned_type + " to variable of type " + var_type,
+                CWE689, Certainty::normal);
 }
 
 void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string& function)

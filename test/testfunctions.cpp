@@ -1244,7 +1244,7 @@ private:
               "    for (std::map<int, double>::iterator it=mm.begin(); it!=mm.end(); ++it)\n"
               "        ;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) For loop assigns wrong type iterator(std :: multimap|unordered_multimap <) to variable of type iterator(std :: map|unordered_map <)\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) For loop assigns wrong type std::multimap<int,double>::iterator to variable of type std::map<int,double>::iterator\n", errout.str());
 
         check("template<typename A>\n"
               "using MyIterator = typename std::multimap<A, double>::iterator;\n"
