@@ -4974,7 +4974,7 @@ private:
             ASSERT(function->hasBody());
         }
     }
-    
+
     void symboldatabase101() {
         GET_SYMBOL_DB("struct A { bool b; };\n"
                       "void f(const std::vector<A>&v) {\n"
