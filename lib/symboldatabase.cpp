@@ -1208,7 +1208,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
     auto setMemberVar = [&](const Variable* membervar, Token* membertok, const Token* vartok) -> void {
         if (membervar) {
             membertok->variable(membervar);
-            if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
+            if (vartok && (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr))
                 fixVarId(varIds, vartok, membertok, membervar);
         }
     };
