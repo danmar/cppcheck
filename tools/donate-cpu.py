@@ -233,7 +233,7 @@ while True:
                 p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
                 try:
                     comm = p.communicate()
-                    return comm[1]
+                    return comm[0].decode(encoding='utf-8', errors='ignore').strip()
                 except:
                     return None
 
@@ -288,6 +288,6 @@ while True:
         upload_info(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
-        if (client_version_head is not None) and (StrictVersion(client_version_head) >= StrictVersion(get_client_version())):
+        if (client_version_head is not None) and (StrictVersion(client_version_head) > StrictVersion(get_client_version())):
             print("ATTENTION: A newer client version ({}) is available - please update!".format(client_version_head))
         time.sleep(5)
