@@ -100,6 +100,7 @@ for arg in sys.argv[1:]:
         print('                                 --bandwidth-limit=2m => max. 2 megabytes per second')
         print('  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.')
         print('  --no-upload          Do not upload anything. Defaults to False.')
+        print('  --packages           Process a list of given packages.')
         print('')
         print('Quick start: just run this script without any arguments')
         sys.exit(0)
