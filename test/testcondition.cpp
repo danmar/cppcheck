@@ -4219,6 +4219,15 @@ private:
               "    if (i == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:20]: (style) Condition 'i==1' is always true\n", errout.str());
+
+        check("typedef struct { bool x; } s_t;\n" // #8446
+              "unsigned f(bool a, bool b) {\n"
+              "    s_t s;\n"
+              "    const unsigned col = a ? (s.x = false) : (b = true);\n"
+              "    if (!s.x) {}\n"
+              "    return col;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
