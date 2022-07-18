@@ -32,6 +32,7 @@
 
 import platform
 
+from distutils.version import StrictVersion
 from donate_cpu_lib import *
 
 max_packages = None
@@ -216,6 +217,7 @@ while True:
     head_timing_info = ''
     old_timing_info = ''
     cppcheck_head_info = ''
+    client_version_head = ''
     libraries = library_includes.get_libraries(source_path)
 
     for ver in cppcheck_versions:
@@ -225,6 +227,17 @@ while True:
             tree_path = os.path.join(work_path, 'tree-main')
             cppcheck_head_info = get_cppcheck_info(tree_path)
             capture_callstack = True
+
+            def get_client_version_head():
+                cmd = os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
+                p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                try:
+                    comm = p.communicate()
+                    return comm[1]
+                except:
+                    return None
+
+            client_version_head = get_client_version_head()
         c, errout, info, t, cppcheck_options, timing_info = scan_package(tree_path, source_path, jobs, libraries, capture_callstack)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
@@ -275,4 +288,6 @@ while True:
         upload_info(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
+        if (client_version_head is not None) and (StrictVersion(client_version_head) >= StrictVersion(get_client_version())):
+            print("ATTENTION: A newer client version ({}) is available - please update!".format(client_version_head))
         time.sleep(5)
