@@ -1556,7 +1556,7 @@ private:
     void returnReference25()
     {
         check("int& f();\n" // #10983
-              "    auto g() -> decltype(f()) {\n"
+              "auto g() -> decltype(f()) {\n"
               "    return f();\n"
               "}\n"
               "int& h() {\n"
