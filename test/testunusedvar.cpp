@@ -3284,6 +3284,16 @@ private:
                               "    auto b { RAII() };\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct RAIIWrapper {\n" // #10894
+                              "    RAIIWrapper();\n"
+                              "    ~RAIIWrapper();\n"
+                              "};\n"
+                              "static void foo() {\n"
+                              "    auto const guard = RAIIWrapper();\n"
+                              "    auto const& guard2 = RAIIWrapper();\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar47() { // #6603

@@ -3947,6 +3947,22 @@ private:
               "  f(bar);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:11]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        check("class Foo {};\n" // #10750
+              "struct Bar {\n"
+              "  Foo *_foo;\n"
+              "};\n"
+              "int f(Bar *bar);\n"
+              "void g(Bar *bar) {\n"
+              "  {\n"
+              "    Foo foo;\n"
+              "    {\n"
+              "      bar->_foo = &foo;\n"
+              "    }\n"
+              "  }\n"
+              "  f(bar);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void deadPointer() {
