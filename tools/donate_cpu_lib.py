@@ -334,12 +334,12 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --template=daca2'
     options += ' -D__GNUC__ --platform=unix64'
-    options += ' -rp={}'.format(dir_to_scan)
+    options_rp = options + ' -rp={}'.format(dir_to_scan)
     if sys.platform == 'win32':
-        cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options
+        cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options_rp
         cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     else:
-        cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options
+        cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options_rp
         cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
