@@ -1799,7 +1799,7 @@ private:
 
     void structmember22() { // #11016
         checkStructMemberUsage("struct A { bool b; };\n"
-                               "void f(const std::vector<A>&v) {\n"
+                               "void f(const std::vector<A>& v) {\n"
                                "    std::vector<A>::const_iterator it = b.begin();\n"
                                "    if (it->b) {}\n"
                                "}\n");

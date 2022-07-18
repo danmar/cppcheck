@@ -4977,7 +4977,7 @@ private:
 
     void symboldatabase101() {
         GET_SYMBOL_DB("struct A { bool b; };\n"
-                      "void f(const std::vector<A>&v) {\n"
+                      "void f(const std::vector<A>& v) {\n"
                       "    std::vector<A>::const_iterator it = b.begin();\n"
                       "    if (it->b) {}\n"
                       "}\n");
