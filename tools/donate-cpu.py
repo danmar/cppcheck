@@ -17,6 +17,7 @@
 #  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.
 #  --no-upload          Do not upload anything. Defaults to False.
 #  --packages           Process a list of given packages.
+#  --version            Returns the version (of the underlying donate_cpu_lib.py).
 #
 # What this script does:
 # 1. Check requirements
@@ -30,6 +31,7 @@
 # Quick start: just run this script without any arguments
 
 import platform
+
 from donate_cpu_lib import *
 
 max_packages = None
@@ -86,6 +88,9 @@ for arg in sys.argv[1:]:
             max_packages = None
     elif arg.startswith('--no-upload'):
         do_upload = False
+    elif arg == '--version':
+        print(get_client_version())
+        sys.exit(0)
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -101,6 +106,7 @@ for arg in sys.argv[1:]:
         print('  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.')
         print('  --no-upload          Do not upload anything. Defaults to False.')
         print('  --packages           Process a list of given packages.')
+        print('  --version            Returns the version (of the underlying donate_cpu_lib.py).')
         print('')
         print('Quick start: just run this script without any arguments')
         sys.exit(0)

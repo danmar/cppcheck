@@ -627,6 +627,10 @@ def get_compiler_version():
     return stdout.split('\n')[0]
 
 
+def get_client_version():
+    return CLIENT_VERSION
+
+
 my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]
 jobs = '-j1'
 stop_time = None
