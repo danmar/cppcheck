@@ -2411,10 +2411,11 @@ TokenImpl::~TokenImpl()
     delete mValueType;
     delete mValues;
 
-    if (mTemplateSimplifierPointers)
+    if (mTemplateSimplifierPointers) {
         for (auto *templateSimplifierPointer : *mTemplateSimplifierPointers) {
             templateSimplifierPointer->token(nullptr);
         }
+    }
     delete mTemplateSimplifierPointers;
 
     while (mCppcheckAttributes) {

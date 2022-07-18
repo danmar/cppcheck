@@ -893,11 +893,8 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     checkUnusedFunctions.parseTokens(tokenizer, filename.c_str(), &mSettings);
 
                 // handling of "simple" rules has been removed.
-                if (mSimplify && hasRule("simple")) {
-                    // FIXME Remove this function
-                    tokenizer.simplifyTokenList2();
+                if (mSimplify && hasRule("simple"))
                     throw InternalError(nullptr, "Handling of \"simple\" rules has been removed in Cppcheck. Use --addon instead.");
-                }
 
             } catch (const simplecpp::Output &o) {
                 // #error etc during preprocessing
