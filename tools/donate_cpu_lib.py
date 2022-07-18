@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.27"
+CLIENT_VERSION = "1.3.28"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -625,6 +625,10 @@ class LibraryIncludes:
 def get_compiler_version():
     _, stdout, _, _ = __run_command('g++ --version', False)
     return stdout.split('\n')[0]
+
+
+def get_client_version():
+    return CLIENT_VERSION
 
 
 my_script_name = os.path.splitext(os.path.basename(sys.argv[0]))[0]

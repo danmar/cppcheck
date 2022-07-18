@@ -1395,10 +1395,6 @@ public:
      */
     bool isCalculation() const;
 
-    void clearAst() {
-        mImpl->mAstOperand1 = mImpl->mAstOperand2 = mImpl->mAstParent = nullptr;
-    }
-
     void clearValueFlow() {
         delete mImpl->mValues;
         mImpl->mValues = nullptr;
