@@ -1205,14 +1205,23 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
 {
     VarIdMap varIds;
 
+    auto setMemberVar = [&](const Variable* membervar, Token* membertok, const Token* vartok) -> void {
+        if (membervar) {
+            membertok->variable(membervar);
+            if (vartok && (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr))
+                fixVarId(varIds, vartok, membertok, membervar);
+        }
+    };
+
     // Set variable pointers
     for (const Token* tok = mTokenizer->list.front(); tok != mTokenizer->list.back(); tok = tok->next()) {
         if (tok->varId())
-            const_cast<Token *>(tok)->variable(getVariableFromVarId(tok->varId()));
+            const_cast<Token*>(tok)->variable(getVariableFromVarId(tok->varId()));
 
         // Set Token::variable pointer for array member variable
         // Since it doesn't point at a fixed location it doesn't have varid
-        const bool isVar = tok->variable() && (tok->variable()->typeScope() || tok->variable()->isSmartPointer() || (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER));
+        const bool isVar = tok->variable() && (tok->variable()->typeScope() || tok->variable()->isSmartPointer() ||
+                                               (tok->valueType() && (tok->valueType()->type == ValueType::CONTAINER || tok->valueType()->type == ValueType::ITERATOR)));
         const bool isArrayAccess = isVar && Token::simpleMatch(tok->astParent(), "[");
         const bool isDirectAccess = isVar && !isArrayAccess && Token::simpleMatch(tok->astParent(), ".");
         const bool isDerefAccess = isVar && !isDirectAccess && Token::simpleMatch(tok->astParent(), "*") && Token::simpleMatch(tok->astParent()->astParent(), ".");
@@ -1247,19 +1256,11 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                 const Variable *var = tok->variable();
                 if (var->typeScope()) {
                     const Variable *membervar = var->typeScope()->getVariable(membertok->str());
-                    if (membervar) {
-                        membertok->variable(membervar);
-                        if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
-                            fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
-                    }
+                    setMemberVar(membervar, membertok, tok);
                 } else if (const ::Type *type = var->smartPointerType()) {
                     const Scope *classScope = type->classScope;
                     const Variable *membervar = classScope ? classScope->getVariable(membertok->str()) : nullptr;
-                    if (membervar) {
-                        membertok->variable(membervar);
-                        if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
-                            fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
-                    }
+                    setMemberVar(membervar, membertok, tok);
                 } else if (tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
                     if (Token::Match(var->typeStartToken(), "std :: %type% < %name%")) {
                         const Token* type2tok = var->typeStartToken()->tokAt(4);
@@ -1268,12 +1269,13 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                         const Type* type2 = type2tok ? type2tok->type() : nullptr;
                         if (type2 && type2->classScope && type2->classScope->definedType) {
                             const Variable *membervar = type2->classScope->getVariable(membertok->str());
-                            if (membervar) {
-                                membertok->variable(membervar);
-                                if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr)
-                                    fixVarId(varIds, tok, const_cast<Token *>(membertok), membervar);
-                            }
+                            setMemberVar(membervar, membertok, tok);
                         }
+                    }
+                } else if (const Type* iterType = var->iteratorType()) {
+                    if (iterType->classScope && iterType->classScope->definedType) {
+                        const Variable *membervar = iterType->classScope->getVariable(membertok->str());
+                        setMemberVar(membervar, membertok, tok);
                     }
                 }
             }
@@ -1296,13 +1298,7 @@ void SymbolDatabase::createSymbolDatabaseSetVariablePointers()
                 if (!membervar) {
                     if (type->classScope) {
                         membervar = type->classScope->getVariable(membertok->str());
-                        if (membervar) {
-                            membertok->variable(membervar);
-                            if (membertok->varId() == 0 || mVariableList[membertok->varId()] == nullptr) {
-                                if (tok->function()->retDef)
-                                    fixVarId(varIds, tok->function()->retDef, const_cast<Token *>(membertok), membervar);
-                            }
-                        }
+                        setMemberVar(membervar, membertok, tok->function()->retDef);
                     }
                 }
             }
@@ -2259,6 +2255,17 @@ const Type *Variable::smartPointerType() const
         ptrType = ptrType->next();
     if (Token::Match(ptrType, "< %name% >"))
         return ptrType->scope()->findType(ptrType->next()->str());
+    return nullptr;
+}
+
+const Type* Variable::iteratorType() const
+{
+    if (!mValueType || mValueType->type != ValueType::ITERATOR)
+        return nullptr;
+
+    if (mValueType->containerTypeToken)
+        return mValueType->containerTypeToken->type();
+
     return nullptr;
 }
 
