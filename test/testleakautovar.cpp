@@ -127,6 +127,7 @@ private:
         TEST_CASE(doublefree10); // #8706
         TEST_CASE(doublefree11);
         TEST_CASE(doublefree12); // #10502
+        TEST_CASE(doublefree13); // #11008
 
         // exit
         TEST_CASE(exit1);
@@ -1392,6 +1393,20 @@ private:
               "        return fclose(fp);\n"
               "    fclose(fp);\n"
               "    return 0;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void doublefree13() { // #11008
+        check("struct buf_t { void* ptr; };\n"
+              "void f() {\n"
+              "    struct buf_t buf;\n"
+              "    if ((buf.ptr = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    free(buf.ptr);\n"
+              "    if ((buf.ptr = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    free(buf.ptr);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
