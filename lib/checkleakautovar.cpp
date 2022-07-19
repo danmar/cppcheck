@@ -268,7 +268,7 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
 
 static const Token * isFunctionCall(const Token * nameToken)
 {
-    if (nameToken->isName()) {
+    if (!nameToken->isStandardType() && nameToken->isName()) {
         nameToken = nameToken->next();
         // check if function is a template
         if (nameToken && nameToken->link() && nameToken->str() == "<") {
