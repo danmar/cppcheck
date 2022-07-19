@@ -207,6 +207,7 @@ private:
         TEST_CASE(configuration2);
         TEST_CASE(configuration3);
         TEST_CASE(configuration4);
+        TEST_CASE(configuration5);
 
         TEST_CASE(ptrptr);
 
@@ -2354,6 +2355,13 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n", errout.str());
+    }
+
+    void configuration5() {
+        check("void f() {\n"
+              "    int(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ptrptr() {
