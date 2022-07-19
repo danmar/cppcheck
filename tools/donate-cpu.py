@@ -32,7 +32,7 @@
 
 import platform
 
-from distutils.version import StrictVersion
+from packaging.version import Version
 from donate_cpu_lib import *
 
 max_packages = None
@@ -263,7 +263,7 @@ while True:
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
     output += 'platform: ' + platform.platform() + '\n'
     output += 'python: ' + platform.python_version() + '\n'
-    output += 'client-version: ' + CLIENT_VERSION + '\n'
+    output += 'client-version: ' + get_client_version() + '\n'
     output += 'compiler: ' + get_compiler_version() + '\n'
     output += 'cppcheck: ' + ' '.join(cppcheck_versions) + '\n'
     output += 'head-info: ' + cppcheck_head_info + '\n'
@@ -288,6 +288,6 @@ while True:
         upload_info(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
-        if (client_version_head is not None) and (StrictVersion(client_version_head) > StrictVersion(get_client_version())):
+        if (client_version_head is not None) and (Version(client_version_head) > Version(get_client_version())):
             print("ATTENTION: A newer client version ({}) is available - please update!".format(client_version_head))
         time.sleep(5)
