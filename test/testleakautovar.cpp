@@ -1398,6 +1398,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree13() { // #11008
+        check("struct buf_t { void* ptr; };\n"
+              "void f() {\n"
+              "    struct buf_t buf;\n"
+              "    if ((buf.ptr = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    free(buf.ptr);\n"
+              "    if ((buf.ptr = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    free(buf.ptr);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
