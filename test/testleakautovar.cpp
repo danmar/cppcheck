@@ -127,6 +127,7 @@ private:
         TEST_CASE(doublefree10); // #8706
         TEST_CASE(doublefree11);
         TEST_CASE(doublefree12); // #10502
+        TEST_CASE(doublefree13); // #11008
 
         // exit
         TEST_CASE(exit1);
