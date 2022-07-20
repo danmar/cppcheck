@@ -650,7 +650,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC, ftok);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
-            if (af && Token::simpleMatch(ftok->astParent(), "(") && Token::simpleMatch(ftok->astParent()->astOperand2(), "."))
+            if (Token::simpleMatch(ftok->astParent(), "(") && Token::simpleMatch(ftok->astParent()->astOperand2(), "."))
                 continue;
             functionCall(ftok, openingPar, varInfo, allocation, af);
 
