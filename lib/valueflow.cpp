@@ -2583,11 +2583,11 @@ struct ValueFlowAnalyzer : Analyzer {
                 tok->astParent()->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT);
             assert(rhsValue);
             if (evalAssignment(*value, getAssign(tok->astParent(), d), *rhsValue)) {
-                const std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
-                                       value->infoString());
+                std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
+                                 value->infoString());
                 if (tok->astParent()->str() == "=")
                     value->errorPath.clear();
-                value->errorPath.emplace_back(tok, info);
+                value->errorPath.emplace_back(tok, std::move(info));
             } else {
                 assert(false && "Writable value cannot be evaluated");
                 // TODO: Don't set to zero
@@ -2595,12 +2595,11 @@ struct ValueFlowAnalyzer : Analyzer {
             }
         } else if (tok->astParent()->tokType() == Token::eIncDecOp) {
             bool inc = tok->astParent()->str() == "++";
-            std::string opName(inc ? "incremented" : "decremented");
+            const std::string opName(inc ? "incremented" : "decremented");
             if (d == Direction::Reverse)
                 inc = !inc;
             value->intvalue += (inc ? 1 : -1);
-            const std::string info(tok->str() + " is " + opName + "', new value is " + value->infoString());
-            value->errorPath.emplace_back(tok, info);
+            value->errorPath.emplace_back(tok, tok->str() + " is " + opName + "', new value is " + value->infoString());
         }
     }
 
@@ -3985,6 +3984,7 @@ struct LifetimeStore {
             const Token *tok2 = v.tokvalue;
             ErrorPath er = v.errorPath;
             const Variable *var = getLifetimeVariable(tok2, er);
+            // TODO: the inserted data is never used
             er.insert(er.end(), errorPath.begin(), errorPath.end());
             if (!var)
                 continue;
@@ -4532,7 +4532,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
                 else if (c == LifetimeCapture::ByValue)
                     value.lifetimeScope = ValueFlow::Value::LifetimeScope::ThisValue;
                 value.tokvalue = tok2;
-                value.errorPath.push_back({tok2, "Lambda captures the 'this' variable here."});
+                value.errorPath.emplace_back(tok2, "Lambda captures the 'this' variable here.");
                 value.lifetimeKind = ValueFlow::Value::LifetimeKind::Lambda;
                 capturedThis = true;
                 // Don't add the value a second time
@@ -7000,8 +7000,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                 std::list<ValueFlow::Value> values;
                 values.emplace_back(MathLib::toLongNumber(tok->next()->str()));
                 values.back().condition = tok;
-                const std::string info("case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
-                values.back().errorPath.emplace_back(tok, info);
+                values.back().errorPath.emplace_back(tok, "case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
                 bool known = false;
                 if ((Token::simpleMatch(tok->previous(), "{") || Token::simpleMatch(tok->tokAt(-2), "break ;")) && !Token::Match(tok->tokAt(3), ";| case"))
                     known = true;
@@ -7012,8 +7011,7 @@ static void valueFlowSwitchVariable(TokenList *tokenlist, SymbolDatabase* symbol
                         tok = tok->next();
                     values.emplace_back(MathLib::toLongNumber(tok->next()->str()));
                     values.back().condition = tok;
-                    const std::string info2("case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
-                    values.back().errorPath.emplace_back(tok, info2);
+                    values.back().errorPath.emplace_back(tok, "case " + tok->next()->str() + ": " + vartok->str() + " is " + tok->next()->str() + " here.");
                 }
                 for (std::list<ValueFlow::Value>::const_iterator val = values.begin(); val != values.end(); ++val) {
                     valueFlowReverse(tokenlist,
