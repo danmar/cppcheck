@@ -800,8 +800,7 @@ static void setTokenValue(Token* tok,
 
     // cast..
     if (const Token *castType = getCastTypeStartToken(parent)) {
-        if (((tok->valueType() == nullptr && value.isImpossible()) || astIsPointer(tok)) &&
-            contains({ValueFlow::Value::ValueType::INT, ValueFlow::Value::ValueType::SYMBOLIC}, value.valueType) &&
+        if (contains({ValueFlow::Value::ValueType::INT, ValueFlow::Value::ValueType::SYMBOLIC}, value.valueType) &&
             Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
             return;
         const ValueType &valueType = ValueType::parseDecl(castType, settings);
