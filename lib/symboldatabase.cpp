@@ -3892,6 +3892,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
             out << " nestedIn=\"" << scope->nestedIn << "\"";
         if (scope->function)
             out << " function=\"" << scope->function << "\"";
+        if (scope->definedType)
+            out << " definedType=\"" << scope->definedType << "\"";
         if (scope->functionList.empty() && scope->varlist.empty())
             out << "/>" << std::endl;
         else {
@@ -3921,6 +3923,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         out << " isInlineKeyword=\"true\"";
                     if (function->isStatic())
                         out << " isStatic=\"true\"";
+                    if (const Function* overriddenFunction = function->getOverriddenFunction())
+                        out << " overriddenFunction=\"" << overriddenFunction << "\"";
                     if (function->argCount() == 0U)
                         out << "/>" << std::endl;
                     else {
@@ -3945,6 +3949,27 @@ void SymbolDatabase::printXml(std::ostream &out) const
         }
     }
     out << "  </scopes>" << std::endl;
+
+    if (!typeList.empty()) {
+        out << "  <types>\n";
+        for (const Type& type:typeList) {
+            out << "    <type id=\"" << &type << "\" classScope=\"" << type.classScope << "\"";
+            if (type.derivedFrom.empty()) {
+                out << "/>\n";
+                continue;
+            }
+            out << ">\n";
+            for (const Type::BaseInfo& baseInfo: type.derivedFrom) {
+                out << "      <derivedFrom"
+                    << " access=\"" << accessControlToString(baseInfo.access) << "\""
+                    << " type=\""   << baseInfo.type << "\""
+                    << " isVirtual=\"" << (baseInfo.isVirtual ? "true" : "false") << "\""
+                    << "/>\n";
+            }
+            out << "    </type>\n";
+        }
+        out << "  </types>\n";
+    }
 
     // Variables..
     for (const Variable *var : mVariableList)
