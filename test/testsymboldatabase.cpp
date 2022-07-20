@@ -361,6 +361,7 @@ private:
         TEST_CASE(symboldatabase98); // #10451
         TEST_CASE(symboldatabase99); // #10864
         TEST_CASE(symboldatabase100); // #10174
+        TEST_CASE(symboldatabase101);
 
         TEST_CASE(createSymbolDatabaseFindAllScopes1);
         TEST_CASE(createSymbolDatabaseFindAllScopes2);
@@ -4972,6 +4973,19 @@ private:
             ASSERT(function && function->token->str() == "f");
             ASSERT(function->hasBody());
         }
+    }
+
+    void symboldatabase101() {
+        GET_SYMBOL_DB("struct A { bool b; };\n"
+                      "void f(const std::vector<A>& v) {\n"
+                      "    std::vector<A>::const_iterator it = b.begin();\n"
+                      "    if (it->b) {}\n"
+                      "}\n");
+        ASSERT(db);
+        const Token* it = Token::findsimplematch(tokenizer.tokens(), "it . b");
+        ASSERT(it);
+        ASSERT(it->tokAt(2));
+        ASSERT(it->tokAt(2)->variable());
     }
 
     void createSymbolDatabaseFindAllScopes1() {

@@ -356,8 +356,11 @@ const Token * astIsVariableComparison(const Token *tok, const std::string &comp,
     }
     while (ret && ret->str() == ".")
         ret = ret->astOperand2();
-    if (ret && ret->str() == "=" && ret->astOperand1() && ret->astOperand1()->varId())
-        ret = ret->astOperand1();
+    const Token* varTok = ret ? ret->astOperand1() : nullptr;
+    while (varTok && varTok->str() == ".")
+        varTok = varTok->astOperand2();
+    if (ret && ret->str() == "=" && varTok && varTok->varId())
+        ret = varTok;
     else if (ret && ret->varId() == 0U)
         ret = nullptr;
     if (vartok)

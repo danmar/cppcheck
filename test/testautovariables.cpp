@@ -1556,7 +1556,7 @@ private:
     void returnReference25()
     {
         check("int& f();\n" // #10983
-              "    auto g() -> decltype(f()) {\n"
+              "auto g() -> decltype(f()) {\n"
               "    return f();\n"
               "}\n"
               "int& h() {\n"
@@ -2252,7 +2252,7 @@ private:
               "    return &it->foo;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning pointer to local variable 'v' that will be invalid when returning.\n",
             errout.str());
 
         check("auto f(std::vector<int> x) {\n"
