@@ -593,7 +593,8 @@ public:
         return getFlag(fIsSmartPointer);
     }
 
-    const Type *smartPointerType() const;
+    const Type* smartPointerType() const;
+    const Type* iteratorType() const;
 
     /**
      * Checks if the variable is of any of the STL types passed as arguments ('std::')

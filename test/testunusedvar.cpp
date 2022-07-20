@@ -69,6 +69,7 @@ private:
         TEST_CASE(structmember19); // #10826, #10848, #10852
         TEST_CASE(structmember20); // #10737
         TEST_CASE(structmember21); // #4759
+        TEST_CASE(structmember22); // #11016
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -1794,6 +1795,15 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n"
                       "[test.cpp:2]: (style) struct member 'B::pA' is never used.\n",
                       errout.str());
+    }
+
+    void structmember22() { // #11016
+        checkStructMemberUsage("struct A { bool b; };\n"
+                               "void f(const std::vector<A>& v) {\n"
+                               "    std::vector<A>::const_iterator it = b.begin();\n"
+                               "    if (it->b) {}\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {

@@ -127,6 +127,7 @@ private:
         TEST_CASE(doublefree10); // #8706
         TEST_CASE(doublefree11);
         TEST_CASE(doublefree12); // #10502
+        TEST_CASE(doublefree13); // #11008
 
         // exit
         TEST_CASE(exit1);
@@ -207,6 +208,7 @@ private:
         TEST_CASE(configuration2);
         TEST_CASE(configuration3);
         TEST_CASE(configuration4);
+        TEST_CASE(configuration5);
 
         TEST_CASE(ptrptr);
 
@@ -1396,6 +1398,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree13() { // #11008
+        check("struct buf_t { void* ptr; };\n"
+              "void f() {\n"
+              "    struct buf_t buf;\n"
+              "    if ((buf.ptr = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    free(buf.ptr);\n"
+              "    if ((buf.ptr = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    free(buf.ptr);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -2354,6 +2370,13 @@ private:
               "    return ret;\n"
               "}");
         ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n", errout.str());
+    }
+
+    void configuration5() {
+        check("void f() {\n"
+              "    int(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ptrptr() {

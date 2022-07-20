@@ -17,38 +17,38 @@
 #   lupdate gui.pro
 #
 # Update copyright year
-# git diff 2.6 -- */*.cpp */*.h | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-20[12]./Copyright (C) 2007-2022/'
+# git diff 2.8 -- */*.cpp */*.h | grep '^diff --git a/' | sed 's|.* b/||' | xargs sed -i 's/Copyright (C) 2007-20[12]./Copyright (C) 2007-2022/'
 # git diff | grep '^diff --git a/'
 #
 # Make sure "cppcheck --errorlist" works:
 # make clean && make -j4 && ./cppcheck --errorlist > errlist.xml && xmllint --noout errlist.xml
 #
 # Update AUTHORS using output from:
-# git log --format='%aN' 1.81..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
+# git log --format='%aN' 2.7..HEAD | sort -u > AUTHORS2 && diff -y AUTHORS AUTHORS2 | less
 #
-# Create 2.6.x branch
-# git checkout -b 2.6.x ; git push -u origin 2.6.x
+# Create 2.8.x branch
+# git checkout -b 2.8.x ; git push -u origin 2.8.x
 #
 # Update version numbers in:
-# sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.7/" cli/main.cpp
-# sed -i -r "s|2[.][0-9]+([.]99)*|2.7|" cmake/versions.cmake
-# sed -i -r "s/MINOR [0-9]+/MINOR 7/" lib/version.h
-# sed -i -r "s/2[.][0-9]+([.]99)*/2.7/" win_installer/productInfo.wxi
-# sed -i -r "s/subtitle: Version 2\.[0-9]+/subtitle: Version 2.7/" man/*.md
+# sed -i -r "s/version 2[.][0-9]+([.]99)*/version 2.9/" cli/main.cpp
+# sed -i -r "s|2[.][0-9]+([.]99)*|2.9|" cmake/versions.cmake
+# sed -i -r "s/MINOR [0-9]+/MINOR 9/" lib/version.h
+# sed -i -r "s/2[.][0-9]+([.]99)*/2.9/" win_installer/productInfo.wxi
+# sed -i -r "s/subtitle: Version 2\.[0-9]+/subtitle: Version 2.9/" man/*.md
 # Ensure that "-rc1" is added in productInfo.wxi and lib/version.h
 # Verify:
 # grep '\.99' */*.[ch]* && grep '[0-9][0-9] dev' */*.[ch]*
 # egrep "2\.[0-9]+" */*.h */*.cpp man/*.md | grep -v "test/test" | less
-# git commit -a -m "1.43: Set versions"
+# git commit -a -m "2.8: Set versions"
 #
 # Build and test the windows installer
 #
 # Update the Makefile:
 # make dmake && ./dmake --release
-# git commit -a -m "1.43: Updated Makefile"
+# git commit -a -m "2.8: Updated Makefile"
 #
 # Tag:
-# git tag 2.6-rc1
+# git tag 2.8-rc1
 # git push --tags
 #
 # Release
@@ -58,8 +58,8 @@
 #
 # Remove "-rc1" from versions. Test: git grep "\-rc[0-9]"
 #
-# git tag 2.6 ; git push --tags
-# ./createrelease 2.6
+# git tag 2.8 ; git push --tags
+# ./createrelease 2.8
 #
 # Create a release folder on sourceforge:
 # https://sourceforge.net/projects/cppcheck/files/cppcheck/
@@ -75,7 +75,7 @@
 #
 # compile new democlient:
 # ssh -t danielmarjamaki,cppcheck@shell.sourceforge.net create
-# ./build-cppcheck.sh 1.43
+# ./build-cppcheck.sh 2.8
 #
 # run daca with new release
 # 1. edit tools/donate-cpu-server.py. Update OLD_VERSION and VERSION
