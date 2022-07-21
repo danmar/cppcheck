@@ -4203,7 +4203,7 @@ private:
               "    return s;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
-                           errout.str());
+                      errout.str());
 
         check("std::string f(std::string s, std::size_t end) {\n"
               "    s = std::string(s.begin(), s.begin() + end);\n"
