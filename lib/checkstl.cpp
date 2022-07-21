@@ -2175,9 +2175,19 @@ void CheckStl::uselessCalls()
                 uselessCallsEmptyError(tok->next());
             else if (Token::Match(tok, "[{};] std :: remove|remove_if|unique (") && tok->tokAt(5)->nextArgument())
                 uselessCallsRemoveError(tok->next(), tok->strAt(3));
-            else if (printPerformance && Token::Match(tok, "%var% = { %var% . begin ( ) ,") &&
-                     tok->valueType() && tok->valueType()->type == ValueType::CONTAINER && tok->varId() == tok->tokAt(3)->varId()) {
-                uselessCallsConstructorError(tok);
+            else if (printPerformance && tok->valueType() && tok->valueType()->type == ValueType::CONTAINER) {
+                if (Token::Match(tok, "%var% = { %var% . begin ( ) ,") && tok->varId() == tok->tokAt(3)->varId())
+                    uselessCallsConstructorError(tok);
+                else if (const Variable* var = tok->variable()) {
+                    std::string pattern = "%var% = ";
+                    for (const Token* t = var->typeStartToken(); t != var->typeEndToken()->next(); t = t->next()) {
+                        pattern += t->str();
+                        pattern += ' ';
+                    }
+                    pattern += "{|( %varid% . begin ( ) ,";
+                    if (Token::Match(tok, pattern.c_str(), tok->varId()))
+                        uselessCallsConstructorError(tok);
+                }
             }
         }
     }
