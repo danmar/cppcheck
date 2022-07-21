@@ -322,7 +322,8 @@ void CheckBufferOverrun::arrayIndex()
         if (var && var->isArgument() && var->scope()) {
             const Token* changeTok = var->scope()->bodyStart;
             bool isChanged = false;
-            while (changeTok = findVariableChanged(changeTok->next(), var->scope()->bodyEnd, /*indirect*/ 0, var->declarationId(), /*globalvar*/ false, mSettings, mTokenizer->isCPP())) {
+            while ((changeTok = findVariableChanged(changeTok->next(), var->scope()->bodyEnd, /*indirect*/ 0, var->declarationId(),
+                                                    /*globalvar*/ false, mSettings, mTokenizer->isCPP()))) {
                 if (!Token::simpleMatch(changeTok->astParent(), "[")) {
                     isChanged = true;
                     break;
