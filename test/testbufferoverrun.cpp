@@ -2641,7 +2641,13 @@ private:
               "  a += 4;\n"
               "  a[-1] = 0;\n"
               "}");
-        TODO_ASSERT_EQUALS("", "[test.cpp:3]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(char a[10]) {\n"
+              "  a[0] = 0;\n"
+              "  a[-1] = 0;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Array 'a[10]' accessed at index -1, which is out of bounds.\n", errout.str());
     }
 
     void array_index_enum_array() { // #8439
