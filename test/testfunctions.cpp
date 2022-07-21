@@ -1967,7 +1967,7 @@ private:
     void checkUseStandardLibrary12() {
         check("void f(void* dst, const size_t size) {\n"
               "    for (size_t i = 0; i < size; i += 1) {\n"
-              "        ((int8_t*)dst)[i] = 0;\n"
+              "        ((int8_t*)dst)[i] = 42;\n"
               "}}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
                       "Also library function could work faster in general cases.\n", errout.str());
@@ -1976,7 +1976,7 @@ private:
     void checkUseStandardLibrary13() {
         check("void f(void* dest, const size_t count) {\n"
               "    for (size_t i = 0; i < count; i++) {\n"
-              "        reinterpret_cast<unsigned char*>(dest)[i] = 0;\n"
+              "        reinterpret_cast<unsigned char*>(dest)[i] = '0';\n"
               "}}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
                       "Also library function could work faster in general cases.\n", errout.str());

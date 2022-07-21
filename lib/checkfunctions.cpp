@@ -754,28 +754,28 @@ void CheckFunctions::useStandardLibrary()
 
         const static std::string memsetName = mTokenizer->isCPP() ? "std::memset" : "memset";
         // ((char*)dst)[i] = 0;
-        if (Token::Match(tok, "{ ( ( unsigned| uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = 0 ; }", idxVarId)) {
+        if (Token::Match(tok, "{ ( ( unsigned| uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = %char%|%num% ; }", idxVarId)) {
             useStandardLibraryError(tok->next(), memsetName);
             continue;
         }
 
         // ((char*)dst)[i] = (const char*)0;
         if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = "
-                         "( const| uint8_t|int8_t|char ) (| 0 )| ; }", idxVarId)) {
+                         "( const| uint8_t|int8_t|char ) (| %char%|%num% )| ; }", idxVarId)) {
             useStandardLibraryError(tok->next(), memsetName);
             continue;
         }
 
         // (reinterpret_cast<uint8_t*>(dest))[i] = static_cast<const uint8_t>(0);
         if (Token::Match(tok, "{ (| reinterpret_cast < unsigned| uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
-                         "(| static_cast < const| unsigned| uint8_t|int8_t|char > ( 0 ) )| ; }", idxVarId)) {
+                         "(| static_cast < const| unsigned| uint8_t|int8_t|char > ( %char%|%num% ) )| ; }", idxVarId)) {
             useStandardLibraryError(tok->next(), memsetName);
             continue;
         }
 
         // (reinterpret_cast<int8_t*>(dest))[i] = 0;
         if (Token::Match(tok, "{ (| reinterpret_cast < unsigned| uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
-                         "0 ; }", idxVarId)) {
+                         "%char%|%num% ; }", idxVarId)) {
             useStandardLibraryError(tok->next(), memsetName);
             continue;
         }
