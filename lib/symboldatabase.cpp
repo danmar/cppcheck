@@ -3964,6 +3964,7 @@ void SymbolDatabase::printXml(std::ostream &out) const
                     << " access=\"" << accessControlToString(baseInfo.access) << "\""
                     << " type=\""   << baseInfo.type << "\""
                     << " isVirtual=\"" << (baseInfo.isVirtual ? "true" : "false") << "\""
+                    << " nameTok=\"" << baseInfo.nameTok << "\""
                     << "/>\n";
             }
             out << "    </type>\n";
