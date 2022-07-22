@@ -1078,7 +1078,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
         // function
         else if (Token::Match(tok, "%name% (")) {
-            if (tok->varId() && !tok->function())
+            if (tok->varId() && !tok->function()) // operator()
                 variables.use(tok->varId(), tok);
             else
                 variables.read(tok->varId(), tok);
