@@ -3919,6 +3919,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         else if (function->isImplicitlyVirtual())
                             out << " isImplicitlyVirtual=\"true\"";
                     }
+                    if (function->access == AccessControl::Public || function->access == AccessControl::Protected || function->access == AccessControl::Private)
+                        out << " access=\"" << accessControlToString(function->access) << "\"";
                     if (function->isInlineKeyword())
                         out << " isInlineKeyword=\"true\"";
                     if (function->isStatic())

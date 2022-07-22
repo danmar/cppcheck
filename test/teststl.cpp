@@ -4202,17 +4202,22 @@ private:
               "    s = std::string{ s.begin(), s.begin() + end };\n"
               "    return s;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
 
         check("std::string f(std::string s, std::size_t end) {\n"
               "    s = std::string(s.begin(), s.begin() + end);\n"
               "    return s;\n"
               "}\n");
-        TODO_ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
-                           "",
-                           errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 's' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
+
+        check("std::vector<int> f(std::vector<int> v, std::size_t end) {\n"
+              "    v = std::vector<int>(v.begin(), v.begin() + end);\n"
+              "    return v;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Inefficient constructor call: container 'v' is assigned a partial copy of itself. Use erase() or resize() instead.\n",
+                      errout.str());
     }
 
     void stabilityOfChecks() {

@@ -318,6 +318,21 @@ void CheckBufferOverrun::arrayIndex()
         if (!getDimensionsEtc(tok->astOperand1(), mSettings, &dimensions, &errorPath, &mightBeLarger, &path))
             continue;
 
+        const Variable* const var = array->variable();
+        if (var && var->isArgument() && var->scope()) {
+            const Token* changeTok = var->scope()->bodyStart;
+            bool isChanged = false;
+            while ((changeTok = findVariableChanged(changeTok->next(), var->scope()->bodyEnd, /*indirect*/ 0, var->declarationId(),
+                                                    /*globalvar*/ false, mSettings, mTokenizer->isCPP()))) {
+                if (!Token::simpleMatch(changeTok->astParent(), "[")) {
+                    isChanged = true;
+                    break;
+                }
+            }
+            if (isChanged)
+                continue;
+        }
+
         // Positive index
         if (!mightBeLarger) { // TODO check arrays with dim 1 also
             const std::vector<ValueFlow::Value>& indexValues =
