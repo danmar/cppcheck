@@ -380,7 +380,7 @@ void CheckClass::checkExplicitConstructors()
                 func.type != Function::eCopyConstructor &&
                 func.type != Function::eMoveConstructor &&
                 !(func.templateDef && Token::simpleMatch(func.argumentList.front().typeEndToken(), "...")) &&
-                func.argumentList.front().getTypeName() != "std::initializer_list"&&) {
+                func.argumentList.front().getTypeName() != "std::initializer_list") {
                 noExplicitConstructorError(func.tokenDef, scope->className, scope->type == Scope::eStruct);
             }
         }
