@@ -494,7 +494,7 @@ private:
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
 
-        checkExplicitConstructors("template<class T>\n"
+        checkExplicitConstructors("template<class T>\n" // #10977
                                   "struct A {\n"
                                   "    template<class... Ts>\n"
                                   "    A(Ts&&... ts) {}\n"
