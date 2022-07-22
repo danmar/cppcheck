@@ -493,6 +493,13 @@ private:
                                   "    std::vector<int> v;\n"
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("template<class T>\n"
+                                  "struct A {\n"
+                                  "    template<class... Ts>\n"
+                                  "    A(Ts&&... ts) {}\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
