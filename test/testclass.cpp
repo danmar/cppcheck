@@ -501,7 +501,7 @@ private:
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
 
-        checkExplicitConstructors("class Color {\n" // 7176
+        checkExplicitConstructors("class Color {\n" // #7176
                                   "public:\n"
                                   "    Color(unsigned int rgba);\n"
                                   "    Color(std::uint8_t r = 0, std::uint8_t g = 0, std::uint8_t b = 0, std::uint8_t a = 255);\n"
