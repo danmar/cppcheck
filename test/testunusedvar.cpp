@@ -550,6 +550,21 @@ private:
             "    S s;\n"
             "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage( // #11109
+            "class D { public: D(); };\n"
+            "class E { public: ~E(); };\n"
+            "class F {\n"
+            "public:\n"
+            "    F();\n"
+            "    ~F();\n"
+            "};\n"
+            "void f() {\n"
+            "    D d;\n"
+            "    E e;\n"
+            "    F f;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void cleanFunction() {
