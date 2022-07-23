@@ -937,7 +937,7 @@ The .cfg file format is documented in the `Reference: Cppcheck .cfg format` (htt
 
 # HTML Report
 
-You can convert the XML output from Cppcheck into a HTML report. You'll need Python and the pygments module (<http://pygments.org/)> for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.
+You can convert the XML output from Cppcheck into a HTML report. You'll need Python and the pygments module (<http://pygments.org/>) for this to work. In the Cppcheck source tree there is a folder htmlreport that contains a script that transforms a Cppcheck XML file into HTML output.
 
 This command generates the help screen:
 
