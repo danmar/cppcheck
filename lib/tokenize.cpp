@@ -7615,7 +7615,13 @@ void Tokenizer::findGarbageCode() const
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() == "{")
             tok = tok->link();
-        else if (tok->isKeyword() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
+        else if (tok->isKeyword() && Token::simpleMatch(tok->previous(), ") try")) { // function-try-block
+            const Token* endTok = tok->findsimplematch(tok->next(), "catch (");
+            if (endTok)
+                endTok = endTok->next()->link();
+            if (Token::simpleMatch(endTok, ") {"))
+                tok = endTok->next()->link();
+        } else if (tok->isKeyword() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
             syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
     }
 
