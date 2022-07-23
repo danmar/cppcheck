@@ -7616,7 +7616,7 @@ void Tokenizer::findGarbageCode() const
         if (tok->str() == "{")
             tok = tok->link();
         else if (tok->isKeyword() && Token::simpleMatch(tok->previous(), ") try")) { // function-try-block
-            const Token* endTok = tok->findsimplematch(tok->next(), "catch (");
+            const Token* endTok = Token::findsimplematch(tok->next(), "catch (");
             if (endTok)
                 endTok = endTok->next()->link();
             if (Token::simpleMatch(endTok, ") {"))
