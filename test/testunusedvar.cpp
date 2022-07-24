@@ -136,6 +136,7 @@ private:
         TEST_CASE(localvar64); // #9997
         TEST_CASE(localvar65); // #9876, #10006
         TEST_CASE(localvar66); // #11143
+        TEST_CASE(localvar67); // #9946
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -3608,6 +3609,28 @@ private:
         functionVariableUsage("void f() {\n"
                               "    double phi = 42.0;\n"
                               "    std::cout << pow(sin(phi), 2) + pow(cos(phi), 2) << std::endl;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar67() { // #9946
+        functionVariableUsage("struct B {\n"
+                              "    virtual ~B() {}\n"
+                              "    bool operator() () const { return true; }\n"
+                              "    virtual bool f() const = 0;\n"
+                              "};\n"
+                              "class D : B {\n"
+                              "public:\n"
+                              "    bool f() const override { return false; }\n"
+                              "};\n"
+                              "void f1() {\n"
+                              "    const D d1;\n"
+                              "    d1.f();\n"
+                              "}\n"
+                              "void f2() {\n"
+                              "    const D d2;\n"
+                              "    d2();\n"
+                              "        B() {}\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
