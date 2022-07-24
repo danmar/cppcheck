@@ -493,6 +493,22 @@ private:
                                   "    std::vector<int> v;\n"
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("template<class T>\n" // #10977
+                                  "struct A {\n"
+                                  "    template<class... Ts>\n"
+                                  "    A(Ts&&... ts) {}\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("class Color {\n" // #7176
+                                  "public:\n"
+                                  "    Color(unsigned int rgba);\n"
+                                  "    Color(std::uint8_t r = 0, std::uint8_t g = 0, std::uint8_t b = 0, std::uint8_t a = 255);\n"
+                                  "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Class 'Color' has a constructor with 1 argument that is not explicit.\n"
+                      "[test.cpp:4]: (style) Class 'Color' has a constructor with 1 argument that is not explicit.\n",
+                      errout.str());
     }
 
 #define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
