@@ -7617,42 +7617,21 @@ void Tokenizer::findGarbageCode() const
             tok = tok->link();
         else if (tok->isKeyword() && Token::simpleMatch(tok->previous(), ") try")) { // function-try-block
             const Token* endTry = tok->next();
-            if (Token::simpleMatch(endTry, ":"))
-                endTry = endTry->next();
-            while (Token::Match(endTry, "%name% (|{")) {
-                endTry = endTry->linkAt(1);
-                if (Token::Match(endTry, ")|} ,"))
-                    endTry = endTry->tokAt(2);
-                else if (Token::Match(endTry, ")|} {")) {
-                    endTry = endTry->next()->link();
-                    break;
-                }
-            }
-            if (!Token::simpleMatch(endTry, "}")) {
+            // skip initializer list :
+            while (Token::Match(endTry, "[:,] %name% (|{"))
+                endTry = endTry->linkAt(2)->next();
+            if (!Token::simpleMatch(endTry, "{")) {
                 if (endTry)
                     syntaxError(endTry, "Unexpected token '" + endTry->str() + "'");
                 else
                     syntaxError(nullptr);
             }
-            const Token* catchTok = endTry->next();
-            bool hasCatch = false;
-            while (Token::simpleMatch(catchTok, "catch (")) {
-                hasCatch = true;
-                catchTok = catchTok->linkAt(1);
-                if (Token::simpleMatch(catchTok, ") {"))
-                    catchTok = catchTok->linkAt(1);
-                if (catchTok)
-                    catchTok = catchTok->next();
-            }
-            if (!hasCatch) {
-                if (catchTok)
-                    syntaxError(catchTok, "Unexpected token '" + catchTok->str() + "'");
-                else
-                    syntaxError(nullptr);
-            }
-            if (!catchTok)
-                break;
-            tok = catchTok;
+            // skip try body
+            endTry = endTry->link();
+            // skip catch
+            while (Token::simpleMatch(endTry, "} catch (") && Token::simpleMatch(endTry->linkAt(2), ") {"))
+                endTry = endTry->linkAt(2)->linkAt(1);
+            tok = endTry;
         } else if (tok->isKeyword() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
             syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
     }
