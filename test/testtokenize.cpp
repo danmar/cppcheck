@@ -6565,9 +6565,13 @@ private:
                                              "    int x, y;\n"
                                              "};\n"
                                              "S::S()\n"
-                                             "    try : x(1), y{ 2 } { foo(); }\n"
-                                             "    catch (const std::exception& e) { bar(); }\n"
-                                             "    catch (...) { baz(); }\n"));
+                                             "    try : x(1), y{ 2 } { f(); }\n"
+                                             "    catch (const std::exception& e) { g(); }\n"
+                                             "    catch (...) { g(); }\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("void f()\n"
+                                             "    try { g(); }\n"
+                                             "    catch (const std::exception& e) { h(); }\n"
+                                             "    catch (...) { h(); }\n"));
 
         // before if|for|while|switch
         ASSERT_NO_THROW(tokenizeAndStringify("void f() { do switch (a) {} while (1); }"));
