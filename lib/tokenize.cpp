@@ -609,7 +609,7 @@ void Tokenizer::simplifyTypedef()
     bool goback = false;
 
     // add global namespace
-    spaceInfo.emplace_back(Space{});
+    spaceInfo.emplace_back(/*Space{}*/);
 
     // Convert "using a::b;" to corresponding typedef statements
     simplifyUsingToTypedef();
@@ -9466,7 +9466,7 @@ void Tokenizer::printUnknownTypes() const
             }
         }
 
-        unknowns.emplace_back(std::make_pair(name, nameTok));
+        unknowns.emplace_back(name, nameTok);
     }
 
     if (!unknowns.empty()) {

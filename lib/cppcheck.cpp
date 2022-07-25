@@ -1389,7 +1389,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
                 const std::string fileName = obj["file"].get<std::string>();
                 const int64_t lineNumber = obj["linenr"].get<int64_t>();
                 const int64_t column = obj["column"].get<int64_t>();
-                errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, lineNumber, column));
+                errmsg.callStack.emplace_back(fileName, lineNumber, column);
             } else if (obj.count("loc") > 0) {
                 for (const picojson::value &locvalue: obj["loc"].get<picojson::array>()) {
                     picojson::object loc = locvalue.get<picojson::object>();
@@ -1397,7 +1397,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
                     const int64_t lineNumber = loc["linenr"].get<int64_t>();
                     const int64_t column = loc["column"].get<int64_t>();
                     const std::string info = loc["info"].get<std::string>();
-                    errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fileName, info, lineNumber, column));
+                    errmsg.callStack.emplace_back(fileName, info, lineNumber, column);
                 }
             }
 
@@ -1655,7 +1655,7 @@ void CppCheck::analyseClangTidy(const ImportProject::FileSettings &fileSettings)
         fixedpath = Path::toNativeSeparators(fixedpath);
 
         ErrorMessage errmsg;
-        errmsg.callStack.emplace_back(ErrorMessage::FileLocation(fixedpath, lineNumber, column));
+        errmsg.callStack.emplace_back(fixedpath, lineNumber, column);
 
         errmsg.id = "clang-tidy-" + errorString.substr(1, errorString.length() - 2);
         if (errmsg.id.find("performance") != std::string::npos)
