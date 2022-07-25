@@ -4559,6 +4559,17 @@ private:
               "    return s.end();\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11065
+        check("void ThrowError();\n"
+              "const std::string& f(const std::map<std::string, std::string>& m) {\n"
+              "    auto it = m.find(a);\n"
+              "    if (it == m.end()) {\n"
+              "        ThrowError();\n"
+              "    }\n"
+              "    return it->second;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void dereferenceInvalidIterator2() {
