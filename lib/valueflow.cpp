@@ -6257,11 +6257,11 @@ struct SimpleConditionHandler : ConditionHandler {
 
         std::vector<Condition> conds;
         parseCompareEachInt(tok, [&](const Token* vartok, ValueFlow::Value true_value, ValueFlow::Value false_value) {
-            Condition cond;
             if (vartok->hasKnownIntValue())
                 return;
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();
+            Condition cond;
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
@@ -6270,7 +6270,6 @@ struct SimpleConditionHandler : ConditionHandler {
         if (!conds.empty())
             return conds;
 
-        Condition cond;
         const Token* vartok = nullptr;
 
         if (tok->str() == "!") {
@@ -6286,6 +6285,7 @@ struct SimpleConditionHandler : ConditionHandler {
 
         if (!vartok)
             return {};
+        Condition cond;
         cond.true_values.emplace_back(tok, 0LL);
         cond.false_values.emplace_back(tok, 0LL);
         cond.vartok = vartok;
@@ -7677,7 +7677,6 @@ bool isContainerSizeChanged(const Token* tok, const Settings* settings, int dept
     if (astIsLHS(tok) && Token::simpleMatch(tok->astParent(), "["))
         return container->stdAssociativeLike;
     Library::Container::Action action = astContainerAction(tok);
-    Library::Container::Yield yield = astContainerYield(tok);
     switch (action) {
     case Library::Container::Action::RESIZE:
     case Library::Container::Action::CLEAR:
@@ -7689,8 +7688,10 @@ bool isContainerSizeChanged(const Token* tok, const Settings* settings, int dept
         return true;
     case Library::Container::Action::NO_ACTION:
         // Is this an unknown member function call?
-        if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% ("))
+        if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (")) {
+            Library::Container::Yield yield = astContainerYield(tok);
             return yield == Library::Container::Yield::NO_YIELD;
+        }
         break;
     case Library::Container::Action::FIND:
     case Library::Container::Action::CHANGE_CONTENT:
@@ -8133,12 +8134,12 @@ struct ContainerConditionHandler : ConditionHandler {
     {
         std::vector<Condition> conds;
         parseCompareEachInt(tok, [&](const Token* vartok, ValueFlow::Value true_value, ValueFlow::Value false_value) {
-            Condition cond;
             vartok = settings->library.getContainerFromYield(vartok, Library::Container::Yield::SIZE);
             if (!vartok)
                 return;
             true_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             false_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+            Condition cond;
             cond.true_values.push_back(true_value);
             cond.false_values.push_back(false_value);
             cond.vartok = vartok;
@@ -8147,7 +8148,6 @@ struct ContainerConditionHandler : ConditionHandler {
         if (!conds.empty())
             return conds;
 
-        Condition cond;
         const Token* vartok = nullptr;
 
         // Empty check
@@ -8164,6 +8164,7 @@ struct ContainerConditionHandler : ConditionHandler {
             }
             ValueFlow::Value value(tok, 0LL);
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+            Condition cond;
             cond.true_values.emplace_back(value);
             cond.false_values.emplace_back(std::move(value));
             cond.vartok = vartok;
@@ -8186,6 +8187,7 @@ struct ContainerConditionHandler : ConditionHandler {
                 return {};
             ValueFlow::Value value(tok, Token::getStrLength(strtok));
             value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
+            Condition cond;
             cond.false_values.emplace_back(value);
             cond.true_values.emplace_back(std::move(value));
             cond.vartok = vartok;
