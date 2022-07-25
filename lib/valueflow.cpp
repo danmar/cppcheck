@@ -417,7 +417,6 @@ static std::vector<ValueType> getParentValueTypes(const Token* tok,
         if (ftok && argn >= 0) {
             if (ftok->function()) {
                 std::vector<ValueType> result;
-                std::vector<const Variable*> argsVars = getArgumentVars(ftok, argn);
                 const Token* nameTok = nullptr;
                 for (const Variable* var : getArgumentVars(ftok, argn)) {
                     if (!var)
@@ -4507,7 +4506,6 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             auto captureVariable = [&](const Token* tok2, LifetimeCapture c, std::function<bool(const Token*)> pred) {
                 if (varids.count(tok->varId()) > 0)
                     return;
-                ErrorPath errorPath;
                 if (c == LifetimeCapture::ByReference) {
                     LifetimeStore ls{
                         tok2, "Lambda captures variable by reference here.", ValueFlow::Value::LifetimeKind::Lambda};
@@ -6273,8 +6271,6 @@ struct SimpleConditionHandler : ConditionHandler {
             return conds;
 
         Condition cond;
-        ValueFlow::Value true_value;
-        ValueFlow::Value false_value;
         const Token* vartok = nullptr;
 
         if (tok->str() == "!") {
@@ -7840,9 +7836,6 @@ static std::list<ValueFlow::Value> getIteratorValues(std::list<ValueFlow::Value>
 struct IteratorConditionHandler : SimpleConditionHandler {
     std::vector<Condition> parse(const Token* tok, const Settings*) const override {
         Condition cond;
-
-        ValueFlow::Value true_value;
-        ValueFlow::Value false_value;
 
         if (Token::Match(tok, "==|!=")) {
             if (!tok->astOperand1() || !tok->astOperand2())
