@@ -2064,8 +2064,7 @@ static const std::string& invertAssign(const std::string& assign)
         {"^=", "^="}};
     auto it = lookup.find(assign);
     if (it == lookup.end()) {
-        static std::string empty;
-        return empty;
+        return emptyString;
     }
     else
         return it->second;
