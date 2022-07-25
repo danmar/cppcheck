@@ -1973,7 +1973,7 @@ namespace {
                     nameSpace += tok1->str();
                     tok1 = tok1->next();
                 }
-                (*scopeInfo)->usingNamespaces.insert(nameSpace);
+                (*scopeInfo)->usingNamespaces.insert(std::move(nameSpace));
             }
             // check for member function
             else if (tok->str() == "{") {
@@ -2066,7 +2066,7 @@ namespace {
                         }
                     }
                 }
-                baseTypes.insert(base);
+                baseTypes.insert(std::move(base));
             } while (tok && !Token::Match(tok, ";|{"));
         }
 
@@ -3354,7 +3354,7 @@ void Tokenizer::calculateScopes()
                 }
                 if (!usingNamespaceName.empty())
                     usingNamespaceName.pop_back();
-                tok->scopeInfo()->usingNamespaces.insert(usingNamespaceName);
+                tok->scopeInfo()->usingNamespaces.insert(std::move(usingNamespaceName));
             } else if (Token::Match(tok, "namespace|class|struct|union %name% {|::|:|<")) {
                 for (Token* nameTok = tok->next(); nameTok && !Token::Match(nameTok, "{|:"); nameTok = nameTok->next()) {
                     if (Token::Match(nameTok, ";|<")) {
