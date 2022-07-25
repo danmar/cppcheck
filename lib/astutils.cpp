@@ -1937,7 +1937,7 @@ static bool hasNoreturnFunction(const Token* tok, const Library* library, const 
             if (function->isAttributeNoreturn())
                 return true;
             if (!function->functionScope && unknownFunc)
-                *unknownFunc = ftok;;
+                *unknownFunc = ftok;
         } else if (library && library->isnoreturn(ftok)) {
             return true;
         } else if (Token::Match(ftok, "exit|abort")) {
