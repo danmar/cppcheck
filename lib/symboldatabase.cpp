@@ -2303,11 +2303,11 @@ Function::Function(const Tokenizer *mTokenizer,
     nestedIn(scope),
     initArgCount(0),
     type(eFunction),
-    access(AccessControl::Public),
     noexceptArg(nullptr),
     throwArg(nullptr),
     templateDef(nullptr),
     functionPointerUsage(nullptr),
+    access(AccessControl::Public),
     mFlags(0)
 {
     // operator function
@@ -2423,11 +2423,11 @@ Function::Function(const Token *tokenDef, const std::string &clangType)
     nestedIn(nullptr),
     initArgCount(0),
     type(eFunction),
-    access(AccessControl::Public),
     noexceptArg(nullptr),
     throwArg(nullptr),
     templateDef(nullptr),
     functionPointerUsage(nullptr),
+    access(AccessControl::Public),
     mFlags(0)
 {
     // operator function

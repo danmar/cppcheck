@@ -93,7 +93,6 @@ namespace ValueFlow {
             intvalue(val),
             tokvalue(nullptr),
             floatValue(0.0),
-            moveKind(MoveKind::NonMovedVariable),
             varvalue(val),
             condition(nullptr),
             varId(0U),
@@ -102,6 +101,7 @@ namespace ValueFlow {
             macro(false),
             defaultArg(false),
             indirect(0),
+            moveKind(MoveKind::NonMovedVariable),
             path(0),
             wideintvalue(val),
             subexpressions(),
@@ -331,9 +331,6 @@ namespace ValueFlow {
         /** float value */
         double floatValue;
 
-        /** kind of moved  */
-        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
-
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;
 
@@ -360,6 +357,9 @@ namespace ValueFlow {
         bool defaultArg;
 
         int indirect;
+
+        /** kind of moved  */
+        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
 
         /** Path id */
         MathLib::bigint path;
@@ -472,18 +472,18 @@ bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr
 
 struct LifetimeToken {
     const Token* token;
-    bool addressOf;
     ValueFlow::Value::ErrorPath errorPath;
+    bool addressOf;
     bool inconclusive;
 
-    LifetimeToken() : token(nullptr), addressOf(false), errorPath(), inconclusive(false) {}
+    LifetimeToken() : token(nullptr), errorPath(), addressOf(false), inconclusive(false) {}
 
     LifetimeToken(const Token* token, ValueFlow::Value::ErrorPath errorPath)
-        : token(token), addressOf(false), errorPath(std::move(errorPath)), inconclusive(false)
+        : token(token), errorPath(std::move(errorPath)), addressOf(false), inconclusive(false)
     {}
 
     LifetimeToken(const Token* token, bool addressOf, ValueFlow::Value::ErrorPath errorPath)
-        : token(token), addressOf(addressOf), errorPath(std::move(errorPath)), inconclusive(false)
+        : token(token), errorPath(std::move(errorPath)), addressOf(addressOf), inconclusive(false)
     {}
 
     static std::vector<LifetimeToken> setAddressOf(std::vector<LifetimeToken> v, bool b) {

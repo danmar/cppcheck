@@ -364,6 +364,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         // assignment..
         if (const Token* const tokAssignOp = isAssignment(varTok)) {
 
+            if (Token::simpleMatch(tokAssignOp->astOperand1(), "."))
+                continue;
             // taking address of another variable..
             if (Token::Match(tokAssignOp, "= %var% [+;]")) {
                 if (varTok->tokAt(2)->varId() != varTok->varId()) {
@@ -442,36 +444,33 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     continue;
 
                 // Check assignments in the if-statement. Skip multiple assignments since we don't track those
-                const Token* const eqTok = innerTok->astParent();
-                if (Token::Match(innerTok, ".| %var% =") && Token::simpleMatch(eqTok, "=") &&
-                    !(eqTok->astParent() && eqTok->astParent()->isAssignmentOp())) {
+                if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next() &&
+                    !(innerTok->next()->astParent() && innerTok->next()->astParent()->isAssignmentOp())) {
                     // allocation?
                     // right ast part (after `=` operator)
-                    const Token* tokRightAstOperand = eqTok->astOperand2();
+                    const Token* tokRightAstOperand = innerTok->next()->astOperand2();
                     while (tokRightAstOperand && tokRightAstOperand->isCast())
                         tokRightAstOperand = tokRightAstOperand->astOperand2() ? tokRightAstOperand->astOperand2() : tokRightAstOperand->astOperand1();
-                    const Token* const allocTok = Token::simpleMatch(eqTok->astOperand2(), "(") ? eqTok->astOperand2()->astOperand1() : eqTok->astOperand2();
-                    const Token* const ptrTok = innerTok->astOperand2() ? innerTok->astOperand2() : innerTok;
                     if (tokRightAstOperand && Token::Match(tokRightAstOperand->previous(), "%type% (")) {
                         const Library::AllocFunc* f = mSettings->library.getAllocFuncInfo(tokRightAstOperand->previous());
                         if (f && f->arg == -1) {
-                            VarInfo::AllocInfo& varAlloc = alloctype[ptrTok->varId()];
+                            VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
                             varAlloc.type = f->groupId;
                             varAlloc.status = VarInfo::ALLOC;
                             varAlloc.allocTok = tokRightAstOperand->previous();
                         } else {
                             // Fixme: warn about leak
-                            alloctype.erase(ptrTok->varId());
+                            alloctype.erase(innerTok->varId());
                         }
 
-                        changeAllocStatusIfRealloc(alloctype, allocTok, varTok);
-                    } else if (mTokenizer->isCPP() && Token::Match(allocTok, "new !!(")) {
-                        const Token* tok2 = allocTok->astOperand1();
+                        changeAllocStatusIfRealloc(alloctype, innerTok->tokAt(2), varTok);
+                    } else if (mTokenizer->isCPP() && Token::Match(innerTok->tokAt(2), "new !!(")) {
+                        const Token* tok2 = innerTok->tokAt(2)->astOperand1();
                         const bool arrayNew = (tok2 && (tok2->str() == "[" || (tok2->str() == "(" && tok2->astOperand1() && tok2->astOperand1()->str() == "[")));
-                        VarInfo::AllocInfo& varAlloc = alloctype[ptrTok->varId()];
+                        VarInfo::AllocInfo& varAlloc = alloctype[innerTok->varId()];
                         varAlloc.type = arrayNew ? NEW_ARRAY : NEW;
                         varAlloc.status = VarInfo::ALLOC;
-                        varAlloc.allocTok = allocTok;
+                        varAlloc.allocTok = innerTok->tokAt(2);
                     }
                 }
 
@@ -626,6 +625,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         // delete
         else if (mTokenizer->isCPP() && tok->str() == "delete") {
             const Token * delTok = tok;
+            if (Token::simpleMatch(delTok->astOperand1(), "."))
+                continue;
             const bool arrayDelete = Token::simpleMatch(tok->next(), "[ ]");
             if (arrayDelete)
                 tok = tok->tokAt(3);
@@ -649,6 +650,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC, ftok);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
+            if (Token::simpleMatch(ftok->astParent(), "(") && Token::simpleMatch(ftok->astParent()->astOperand2(), "."))
+                continue;
             functionCall(ftok, openingPar, varInfo, allocation, af);
 
             tok = ftok->next()->link();

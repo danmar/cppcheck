@@ -74,6 +74,20 @@ struct TokenImpl {
     nonneg int mColumn;
     nonneg int mExprId;
 
+    /**
+     * A value from 0-100 that provides a rough idea about where in the token
+     * list this token is located.
+     */
+    nonneg int mProgressValue;
+
+    /**
+     * Token index. Position in token list
+     */
+    nonneg int mIndex;
+
+    /** Bitfield bit count. */
+    unsigned char mBits;
+
     // AST..
     Token *mAstOperand1;
     Token *mAstOperand2;
@@ -87,17 +101,6 @@ struct TokenImpl {
         const ::Type* mType;
         const Enumerator *mEnumerator;
     };
-
-    /**
-     * A value from 0-100 that provides a rough idea about where in the token
-     * list this token is located.
-     */
-    nonneg int mProgressValue;
-
-    /**
-     * Token index. Position in token list
-     */
-    nonneg int mIndex;
 
     // original name like size_t
     std::string* mOriginalName;
@@ -126,9 +129,6 @@ struct TokenImpl {
     // For memoization, to speed up parsing of huge arrays #8897
     enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
 
-    /** Bitfield bit count. */
-    unsigned char mBits;
-
     TokenDebug mDebug;
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
@@ -140,14 +140,14 @@ struct TokenImpl {
         mLineNumber(0),
         mColumn(0),
         mExprId(0),
+        mProgressValue(0),
+        mIndex(0),
+        mBits(0),
         mAstOperand1(nullptr),
         mAstOperand2(nullptr),
         mAstParent(nullptr),
         mScope(nullptr),
-        mFunction(nullptr)   // Initialize whole union
-        ,
-        mProgressValue(0),
-        mIndex(0),
+        mFunction(nullptr),   // Initialize whole union
         mOriginalName(nullptr),
         mValueType(nullptr),
         mValues(nullptr),
@@ -155,7 +155,6 @@ struct TokenImpl {
         mScopeInfo(nullptr),
         mCppcheckAttributes(nullptr),
         mCpp11init(Cpp11init::UNKNOWN),
-        mBits(0),
         mDebug(TokenDebug::None)
     {}
 
