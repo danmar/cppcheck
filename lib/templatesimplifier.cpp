@@ -1069,7 +1069,7 @@ void TemplateSimplifier::useDefaultArgumentValues(TokenAndName &declaration)
         // default parameter value?
         else if (Token::Match(tok, "= !!>")) {
             if (defaultedArgPos.insert(templatepar).second) {
-                eq.push_back(Default{tok, nullptr});
+                eq.emplace_back(Default{tok, nullptr});
             } else {
                 // Ticket #5605: Syntax error (two equal signs for the same parameter), bail out
                 eq.clear();
