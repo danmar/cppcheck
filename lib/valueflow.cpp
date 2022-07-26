@@ -3143,7 +3143,7 @@ struct SubExpressionAnalyzer : ExpressionAnalyzer {
     }
     void internalUpdate(Token* tok, const ValueFlow::Value& v, Direction) override
     {
-        partialReads->emplace_back(std::make_pair(tok, v));
+        partialReads->emplace_back(tok, v);
     }
 
     // No reanalysis for subexression
