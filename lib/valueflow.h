@@ -83,8 +83,8 @@ namespace ValueFlow {
     };
     class CPPCHECKLIB Value {
     public:
-        typedef std::pair<const Token *, std::string> ErrorPathItem;
-        typedef std::list<ErrorPathItem> ErrorPath;
+        using ErrorPathItem = std::pair<const Token *, std::string>;
+        using ErrorPath = std::list<ErrorPathItem>;
         enum class Bound { Upper, Lower, Point };
 
         explicit Value(long long val = 0, Bound b = Bound::Point)

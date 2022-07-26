@@ -1490,8 +1490,8 @@ private:
     Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
 
-    typedef std::map<unsigned int, unsigned int> MemberIdMap;
-    typedef std::map<unsigned int, MemberIdMap> VarIdMap;
+    using MemberIdMap = std::map<unsigned int, unsigned int>;
+    using VarIdMap = std::map<unsigned int, MemberIdMap>;
 
     void fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar);
 
