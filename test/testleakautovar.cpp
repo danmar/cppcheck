@@ -1460,6 +1460,13 @@ private:
               "  p->x = 0;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(s_t s) {\n" // #11061
+              "    s->p = (char*)malloc(10);\n"
+              "    free((void*)s->p);\n"
+              "    s->p = NULL;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void goto1() {

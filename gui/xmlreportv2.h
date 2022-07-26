@@ -45,33 +45,33 @@ public:
      * @brief Create the report (file).
      * @return true if succeeded, false if file could not be created.
      */
-    virtual bool create() override;
+    bool create() override;
 
     /**
      * @brief Open existing report file.
      */
-    virtual bool open() override;
+    bool open() override;
 
     /**
      * @brief Write report header.
      */
-    virtual void writeHeader() override;
+    void writeHeader() override;
 
     /**
      * @brief Write report footer.
      */
-    virtual void writeFooter() override;
+    void writeFooter() override;
 
     /**
      * @brief Write error to report.
      * @param error Error data.
      */
-    virtual void writeError(const ErrorItem &error) override;
+    void writeError(const ErrorItem &error) override;
 
     /**
      * @brief Read contents of the report file.
      */
-    virtual QList<ErrorItem> read() override;
+    QList<ErrorItem> read() override;
 
 protected:
     /**

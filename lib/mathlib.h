@@ -66,8 +66,8 @@ public:
         value shiftRight(const value &v) const;
     };
 
-    typedef long long bigint;
-    typedef unsigned long long biguint;
+    using bigint = long long;
+    using biguint = unsigned long long;
     static const int bigint_bits;
 
     static bigint toLongNumber(const std::string & str);
