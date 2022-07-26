@@ -7615,24 +7615,7 @@ void Tokenizer::findGarbageCode() const
     for (const Token *tok = tokens(); tok; tok = tok->next()) {
         if (tok->str() == "{")
             tok = tok->link();
-        else if (tok->isKeyword() && Token::simpleMatch(tok->previous(), ") try")) { // function-try-block
-            const Token* endTry = tok->next();
-            // skip initializer list :
-            while (Token::Match(endTry, "[:,] %name% (|{"))
-                endTry = endTry->linkAt(2)->next();
-            if (!Token::simpleMatch(endTry, "{")) {
-                if (endTry)
-                    syntaxError(endTry, "Unexpected token '" + endTry->str() + "'");
-                else
-                    syntaxError(nullptr);
-            }
-            // skip try body
-            endTry = endTry->link();
-            // skip catch
-            while (Token::simpleMatch(endTry, "} catch (") && Token::simpleMatch(endTry->linkAt(2), ") {"))
-                endTry = endTry->linkAt(2)->linkAt(1);
-            tok = endTry;
-        } else if (tok->isKeyword() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
+        else if (tok->isKeyword() && nonGlobalKeywords.count(tok->str()) && !Token::Match(tok->tokAt(-2), "operator %str%"))
             syntaxError(tok, "keyword '" + tok->str() + "' is not allowed in global scope");
     }
 
@@ -7873,13 +7856,20 @@ void Tokenizer::simplifyFunctionTryCatch()
         return;
 
     for (Token * tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "try {"))
+        if (!Token::Match(tok, "try {|:"))
             continue;
         if (!isFunctionHead(tok->previous(), "try"))
             continue;
 
+        Token* tryStartToken = tok->next();
+        while (Token::Match(tryStartToken, "[:,] %name% (|{")) // skip init list
+            tryStartToken = tryStartToken->linkAt(2)->next();
+
+        if (!Token::simpleMatch(tryStartToken, "{"))
+            syntaxError(tryStartToken, "Invalid function-try-catch block code. Did not find '{' for try body.");
+
         // find the end of the last catch block
-        Token * const tryEndToken = tok->linkAt(1);
+        Token * const tryEndToken = tryStartToken->link();
         Token * endToken = tryEndToken;
         while (Token::simpleMatch(endToken, "} catch (")) {
             endToken = endToken->linkAt(2)->next();
