@@ -6245,6 +6245,14 @@ private:
                    "    void nextA() { return a--; }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+
+        checkConst("struct S {\n" // #10077
+                   "    int i{};\n"
+                   "    S& operator ++() { ++i; return *this; }\n"
+                   "    S operator ++(int) { S s = *this; ++(*this); return s; }\n"
+                   "    void f() { (*this)--; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constassign1() {
