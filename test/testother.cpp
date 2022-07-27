@@ -65,6 +65,7 @@ private:
         TEST_CASE(zeroDiv12);
         TEST_CASE(zeroDiv13);
         TEST_CASE(zeroDiv14); // #1169
+        TEST_CASE(zeroDiv15); // #8319
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -116,6 +117,7 @@ private:
         TEST_CASE(switchRedundantOperationTest);
         TEST_CASE(switchRedundantBitwiseOperationTest);
         TEST_CASE(unreachableCode);
+        TEST_CASE(redundantContinue);
 
         TEST_CASE(suspiciousCase);
         TEST_CASE(suspiciousEqualityComparison);
@@ -597,6 +599,16 @@ private:
               "    std::cout << dx / (i >> 1) << std::endl;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:5]: (error) Division by zero.\n", errout.str());
+    }
+
+    void zeroDiv15() { // #8319
+        check("int f(int i) { return i - 1; }\n"
+              "int f() {\n"
+              "    const int d = 1;\n"
+              "    const int r = 1 / f(d);\n"
+              "    return r;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout.str());
     }
 
     void zeroDivCond() {
@@ -4419,6 +4431,43 @@ private:
               "    enum : uint8_t { A, B } var = A;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkP("#define INB(x) __extension__ ({ u_int tmp = (x); inb(tmp); })\n" // #4739
+               "static unsigned char cmos_hal_read(unsigned index) {\n"
+               "    unsigned short port_0, port_1;\n"
+               "    assert(!verify_cmos_byte_index(index));\n"
+               "    if (index < 128) {\n"
+               "      port_0 = 0x70;\n"
+               "      port_1 = 0x71;\n"
+               "    }\n"
+               "    else {\n"
+               "      port_0 = 0x72;\n"
+               "      port_1 = 0x73;\n"
+               "    }\n"
+               "    OUTB(index, port_0);\n"
+               "    return INB(port_1);\n"
+               "}\n", "test.c");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void redundantContinue() {
+        check("void f() {\n" // #11195
+              "    for (int i = 0; i < 10; ++i) {\n"
+              "        printf(\"i = %d\\n\", i);\n"
+              "        continue;\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (style) 'continue' is redundant since it is the last statement in a loop.\n", errout.str());
+
+        check("void f() {\n"
+              "    int i = 0;"
+              "    do {\n"
+              "        ++i;\n"
+              "        printf(\"i = %d\\n\", i);\n"
+              "        continue;\n"
+              "    } while (i < 10);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:5]: (style) 'continue' is redundant since it is the last statement in a loop.\n", errout.str());
     }
 
 
@@ -4900,6 +4949,17 @@ private:
               "    stat(\"file.txt\", &st);\n"
               "    do_something();\n"
               "}");
+        ASSERT_EQUALS("",errout.str());
+
+        check("struct AMethodObject {\n" // #4336
+              "    AMethodObject(double, double, double);\n"
+              "};\n"
+              "struct S {\n"
+              "    static void A(double, double, double);\n"
+              "};\n"
+              "void S::A(double const a1, double const a2, double const a3) {\n"
+              "    AMethodObject(a1, a2, a3);\n"
+              "}\n");
         ASSERT_EQUALS("",errout.str());
     }
 

@@ -1556,7 +1556,7 @@ private:
     void returnReference25()
     {
         check("int& f();\n" // #10983
-              "    auto g() -> decltype(f()) {\n"
+              "auto g() -> decltype(f()) {\n"
               "    return f();\n"
               "}\n"
               "int& h() {\n"
@@ -2252,7 +2252,7 @@ private:
               "    return &it->foo;\n"
               "}");
         ASSERT_EQUALS(
-            "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning object that points to local variable 'v' that will be invalid when returning.\n",
+            "[test.cpp:3] -> [test.cpp:4] -> [test.cpp:2] -> [test.cpp:4]: (error) Returning pointer to local variable 'v' that will be invalid when returning.\n",
             errout.str());
 
         check("auto f(std::vector<int> x) {\n"
@@ -3947,6 +3947,22 @@ private:
               "  f(bar);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:11]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
+
+        check("class Foo {};\n" // #10750
+              "struct Bar {\n"
+              "  Foo *_foo;\n"
+              "};\n"
+              "int f(Bar *bar);\n"
+              "void g(Bar *bar) {\n"
+              "  {\n"
+              "    Foo foo;\n"
+              "    {\n"
+              "      bar->_foo = &foo;\n"
+              "    }\n"
+              "  }\n"
+              "  f(bar);\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:10]: (error) Address of local auto-variable assigned to a function parameter.\n", errout.str());
     }
 
     void deadPointer() {

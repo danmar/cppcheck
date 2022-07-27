@@ -133,14 +133,6 @@ public:
     bool simplifyTokenList1(const char FileName[]);
 
     /**
-     * Most aggressive simplification of tokenlist
-     *
-     * @return false if there is an error that requires aborting
-     * the checking of this file.
-     */
-    bool simplifyTokenList2();
-
-    /**
      * If --check-headers=no has been given; then remove unneeded code in headers.
      * - All executable code.
      * - Unused types/variables/etc
@@ -204,9 +196,6 @@ public:
      */
     void removeMacroInClassDef();
 
-    /** Remove unknown macro in variable declarations: PROGMEM char x; */
-    void removeMacroInVarDecl();
-
     /** Add parentheses for sizeof: sizeof x => sizeof(x) */
     void sizeofAddParentheses();
 
@@ -223,14 +212,6 @@ public:
      */
     void simplifyInitVar();
     static Token* initVar(Token* tok);
-
-    /**
-     * Simplify easy constant '?:' operation
-     * Example: 0 ? (2/0) : 0 => 0
-     * @return true if something is modified
-     *         false if nothing is done.
-     */
-    bool simplifyConstTernaryOp();
 
     /**
      * Simplify the location of "static" and "const" qualifiers in
@@ -254,14 +235,6 @@ public:
      * "a and_eq b;" => "a &= b;"
      */
     bool simplifyCAlternativeTokens();
-
-    /**
-     * Simplify comma into a semicolon when possible:
-     * - "delete a, delete b" => "delete a; delete b;"
-     * - "a = 0, b = 0;" => "a = 0; b = 0;"
-     * - "return a(), b;" => "a(); return b;"
-     */
-    void simplifyComma();
 
     /** Add braces to an if-block, for-block, etc.
      * @return true if no syntax errors
@@ -665,7 +638,6 @@ public:
         return mSymbolDatabase;
     }
     void createSymbolDatabase();
-    void deleteSymbolDatabase();
 
     /** print --debug output if debug flags match the simplification:
      * 0=unknown/both simplifications

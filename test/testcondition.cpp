@@ -667,6 +667,17 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("class B { virtual void v() {} };\n" // #11037
+              "class D1 : public B {};\n"
+              "class D2 : public B {};\n"
+              "void f(const std::shared_ptr<B>&p) {\n"
+              "    const auto d1 = dynamic_cast<D1*>(p.get());\n"
+              "    const auto d2 = dynamic_cast<D2*>(p.get());\n"
+              "    if (d1) {}\n"
+              "    else if (d2) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f(int x) {\n" // #6482
               "  if (x & 1) {}\n"
               "  else if (x == 0) {}\n"
@@ -4219,6 +4230,15 @@ private:
               "    if (i == 1) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:20]: (style) Condition 'i==1' is always true\n", errout.str());
+
+        check("typedef struct { bool x; } s_t;\n" // #8446
+              "unsigned f(bool a, bool b) {\n"
+              "    s_t s;\n"
+              "    const unsigned col = a ? (s.x = false) : (b = true);\n"
+              "    if (!s.x) {}\n"
+              "    return col;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4580,6 +4600,10 @@ private:
               "            N = test();\n"
               "    }\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        // #11098
+        check("void f(unsigned int x) { if (x == -1u) {} }\n");
         ASSERT_EQUALS("", errout.str());
     }
 

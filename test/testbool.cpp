@@ -949,6 +949,12 @@ private:
               "    if (b || c) {}\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(bool b, int i) {\n"
+              "    b &= (i == 5);\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void incrementBoolean() {

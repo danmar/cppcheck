@@ -593,7 +593,8 @@ public:
         return getFlag(fIsSmartPointer);
     }
 
-    const Type *smartPointerType() const;
+    const Type* smartPointerType() const;
+    const Type* iteratorType() const;
 
     /**
      * Checks if the variable is of any of the STL types passed as arguments ('std::')
@@ -917,11 +918,11 @@ public:
     std::list<Variable> argumentList; ///< argument list
     nonneg int initArgCount;        ///< number of args with default values
     Type type;                        ///< constructor, destructor, ...
-    AccessControl access;             ///< public/protected/private
     const Token *noexceptArg;         ///< noexcept token
     const Token *throwArg;            ///< throw token
     const Token *templateDef;         ///< points to 'template <' before function
     const Token *functionPointerUsage; ///< function pointer usage
+    AccessControl access;             ///< public/protected/private
 
     bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
 
@@ -1489,8 +1490,8 @@ private:
     Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
 
-    typedef std::map<unsigned int, unsigned int> MemberIdMap;
-    typedef std::map<unsigned int, MemberIdMap> VarIdMap;
+    using MemberIdMap = std::map<unsigned int, unsigned int>;
+    using VarIdMap = std::map<unsigned int, MemberIdMap>;
 
     void fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar);
 

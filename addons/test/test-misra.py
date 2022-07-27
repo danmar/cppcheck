@@ -138,18 +138,25 @@ def test_arguments_regression():
 
     from addons.misra import get_args_parser
 
-    for arg in args_exit:
-        sys.argv.append(arg)
-        with pytest.raises(SystemExit):
-            parser = get_args_parser()
-            parser.parse_args()
-        sys.argv.remove(arg)
+    # sys.argv contains all pytest arguments - so clear all existing arguments first and restore afterwards
+    sys_argv_old = sys.argv
+    sys.argv = [sys.argv[0]]
 
-    for arg in args_ok:
-        sys.argv.append(arg)
-        try:
-            parser = get_args_parser()
-            parser.parse_args()
-        except SystemExit:
-            pytest.fail("Unexpected SystemExit with '%s'" % arg)
-        sys.argv.remove(arg)
+    try:
+        for arg in args_exit:
+            sys.argv.append(arg)
+            with pytest.raises(SystemExit):
+                parser = get_args_parser()
+                parser.parse_args()
+            sys.argv.remove(arg)
+
+        for arg in args_ok:
+            sys.argv.append(arg)
+            try:
+                parser = get_args_parser()
+                parser.parse_args()
+            except SystemExit:
+                pytest.fail("Unexpected SystemExit with '%s'" % arg)
+            sys.argv.remove(arg)
+    finally:
+        sys.argv = sys_argv_old

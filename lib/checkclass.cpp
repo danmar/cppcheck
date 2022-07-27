@@ -377,9 +377,10 @@ void CheckClass::checkExplicitConstructors()
 
             if (!func.isExplicit() &&
                 func.argCount() > 0 && func.minArgCount() < 2 &&
-                func.argumentList.front().getTypeName() != "std::initializer_list" &&
                 func.type != Function::eCopyConstructor &&
-                func.type != Function::eMoveConstructor) {
+                func.type != Function::eMoveConstructor &&
+                !(func.templateDef && Token::simpleMatch(func.argumentList.front().typeEndToken(), "...")) &&
+                func.argumentList.front().getTypeName() != "std::initializer_list") {
                 noExplicitConstructorError(func.tokenDef, scope->className, scope->type == Scope::eStruct);
             }
         }
@@ -2264,6 +2265,8 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
                 if (tok1->previous()->isAssignmentOp())
                     return false;
                 if (Token::Match(tok1->previous(), "( this . * %var% )")) // call using ptr to member function TODO: check constness
+                    return false;
+                if (Token::simpleMatch(tok1->astParent(), "*") && tok1->astParent()->astParent() && tok1->astParent()->astParent()->isIncDecOp())
                     return false;
             }
 

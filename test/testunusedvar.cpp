@@ -69,6 +69,7 @@ private:
         TEST_CASE(structmember19); // #10826, #10848, #10852
         TEST_CASE(structmember20); // #10737
         TEST_CASE(structmember21); // #4759
+        TEST_CASE(structmember22); // #11016
 
         TEST_CASE(localvar1);
         TEST_CASE(localvar2);
@@ -135,6 +136,7 @@ private:
         TEST_CASE(localvar64); // #9997
         TEST_CASE(localvar65); // #9876, #10006
         TEST_CASE(localvar66); // #11143
+        TEST_CASE(localvar67); // #9946
         TEST_CASE(localvarloops); // loops
         TEST_CASE(localvaralias1);
         TEST_CASE(localvaralias2); // ticket #1637
@@ -547,6 +549,21 @@ private:
             "};\n"
             "void g() {\n"
             "    S s;\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage( // #11109
+            "class D { public: D(); };\n"
+            "class E { public: ~E(); };\n"
+            "class F {\n"
+            "public:\n"
+            "    F();\n"
+            "    ~F();\n"
+            "};\n"
+            "void f() {\n"
+            "    D d;\n"
+            "    E e;\n"
+            "    F f;\n"
             "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1794,6 +1811,15 @@ private:
         ASSERT_EQUALS("[test.cpp:1]: (style) struct member 'A::i' is never used.\n"
                       "[test.cpp:2]: (style) struct member 'B::pA' is never used.\n",
                       errout.str());
+    }
+
+    void structmember22() { // #11016
+        checkStructMemberUsage("struct A { bool b; };\n"
+                               "void f(const std::vector<A>& v) {\n"
+                               "    std::vector<A>::const_iterator it = b.begin();\n"
+                               "    if (it->b) {}\n"
+                               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void functionVariableUsage_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
@@ -3217,6 +3243,14 @@ private:
                               "    delete [] piArray;\n"
                               "}");
         ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("int f() {\n" // #9877
+                              "    const std::vector<int> x = get();\n"
+                              "    MACRO(2U, x.size())\n"
+                              "    int i = 0;\n"
+                              "    return i;\n"
+                              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void localvar44() { // #4020 - FP
@@ -3282,6 +3316,16 @@ private:
         functionVariableUsage("void f() {\n"
                               "    auto a = RAII();\n"
                               "    auto b { RAII() };\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct RAIIWrapper {\n" // #10894
+                              "    RAIIWrapper();\n"
+                              "    ~RAIIWrapper();\n"
+                              "};\n"
+                              "static void foo() {\n"
+                              "    auto const guard = RAIIWrapper();\n"
+                              "    auto const& guard2 = RAIIWrapper();\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -3565,6 +3609,28 @@ private:
         functionVariableUsage("void f() {\n"
                               "    double phi = 42.0;\n"
                               "    std::cout << pow(sin(phi), 2) + pow(cos(phi), 2) << std::endl;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void localvar67() { // #9946
+        functionVariableUsage("struct B {\n"
+                              "    virtual ~B() {}\n"
+                              "    bool operator() () const { return true; }\n"
+                              "    virtual bool f() const = 0;\n"
+                              "};\n"
+                              "class D : B {\n"
+                              "public:\n"
+                              "    bool f() const override { return false; }\n"
+                              "};\n"
+                              "void f1() {\n"
+                              "    const D d1;\n"
+                              "    d1.f();\n"
+                              "}\n"
+                              "void f2() {\n"
+                              "    const D d2;\n"
+                              "    d2();\n"
+                              "        B() {}\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -6010,6 +6076,12 @@ private:
                               "int g(int* p) {\n"
                               "    auto up = std::unique_ptr<int>(p);\n"
                               "    return *p;\n"
+                              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        functionVariableUsage("struct S { S(); };\n" // #11108
+                              "void f(std::unique_ptr<S> p) {\n"
+                              "    p = nullptr;\n"
                               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

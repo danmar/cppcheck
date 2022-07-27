@@ -127,6 +127,7 @@ private:
         TEST_CASE(doublefree10); // #8706
         TEST_CASE(doublefree11);
         TEST_CASE(doublefree12); // #10502
+        TEST_CASE(doublefree13); // #11008
 
         // exit
         TEST_CASE(exit1);
@@ -167,6 +168,7 @@ private:
         TEST_CASE(ifelse24); // #1733
         TEST_CASE(ifelse25); // #9966
         TEST_CASE(ifelse26);
+        TEST_CASE(ifelse27);
 
         // switch
         TEST_CASE(switch1);
@@ -207,6 +209,7 @@ private:
         TEST_CASE(configuration2);
         TEST_CASE(configuration3);
         TEST_CASE(configuration4);
+        TEST_CASE(configuration5);
 
         TEST_CASE(ptrptr);
 
@@ -731,7 +734,7 @@ private:
               "    delete foo->ptr;\n"
               "    x = *foo->ptr;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", errout.str());
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Dereferencing 'ptr' after it is deallocated / released\n", "", errout.str());
 
         check("void parse() {\n"
               "    struct Buf {\n"
@@ -1396,6 +1399,20 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void doublefree13() { // #11008
+        check("struct buf_t { void* ptr; };\n"
+              "void f() {\n"
+              "    struct buf_t buf;\n"
+              "    if ((buf.ptr = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    free(buf.ptr);\n"
+              "    if ((buf.ptr = malloc(10)) == NULL)\n"
+              "        return;\n"
+              "    free(buf.ptr);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void exit1() {
         check("void f() {\n"
               "    char *p = malloc(10);\n"
@@ -1442,6 +1459,13 @@ private:
               "  free(p->x);\n"
               "  p->x = 0;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(s_t s) {\n" // #11061
+              "    s->p = (char*)malloc(10);\n"
+              "    free((void*)s->p);\n"
+              "    s->p = NULL;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -1865,6 +1889,22 @@ private:
               "};\n"
               "void f(long long val) {\n"
               "    if (val == ({ union tidi d = {.di = {0x0, 0x80000000}}; d.ti; })) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void ifelse27() {
+        check("struct key { void* p; };\n"
+              "int f(struct key** handle) {\n"
+              "    struct key* key;\n"
+              "    if (!(key = calloc(1, sizeof(*key))))\n"
+              "        return 0;\n"
+              "    if (!(key->p = malloc(4))) {\n"
+              "        free(key);\n"
+              "        return 0;\n"
+              "    }\n"
+              "    *handle = key;\n"
+              "    return 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }

@@ -394,6 +394,10 @@ private:
         // Don't crash on wrong syntax
         check("int x __attribute__((constructor));\n"
               "int y __attribute__((destructor));");
+
+        // #10661
+        check("extern \"C\" int LLVMFuzzerTestOneInput(const uint8_t *data, size_t dataSize) { return 0; }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void initializer_list() {

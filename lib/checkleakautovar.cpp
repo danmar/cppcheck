@@ -268,7 +268,7 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
 
 static const Token * isFunctionCall(const Token * nameToken)
 {
-    if (nameToken->isName()) {
+    if (!nameToken->isStandardType() && nameToken->isName()) {
         nameToken = nameToken->next();
         // check if function is a template
         if (nameToken && nameToken->link() && nameToken->str() == "<") {
@@ -364,6 +364,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         // assignment..
         if (const Token* const tokAssignOp = isAssignment(varTok)) {
 
+            if (Token::simpleMatch(tokAssignOp->astOperand1(), "."))
+                continue;
             // taking address of another variable..
             if (Token::Match(tokAssignOp, "= %var% [+;]")) {
                 if (varTok->tokAt(2)->varId() != varTok->varId()) {
@@ -623,6 +625,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         // delete
         else if (mTokenizer->isCPP() && tok->str() == "delete") {
             const Token * delTok = tok;
+            if (Token::simpleMatch(delTok->astOperand1(), "."))
+                continue;
             const bool arrayDelete = Token::simpleMatch(tok->next(), "[ ]");
             if (arrayDelete)
                 tok = tok->tokAt(3);
@@ -646,6 +650,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
             VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC, ftok);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
+            if (Token::simpleMatch(ftok->astParent(), "(") && Token::simpleMatch(ftok->astParent()->astOperand2(), "."))
+                continue;
             functionCall(ftok, openingPar, varInfo, allocation, af);
 
             tok = ftok->next()->link();

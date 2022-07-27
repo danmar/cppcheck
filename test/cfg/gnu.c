@@ -23,7 +23,15 @@
 #include <sys/epoll.h>
 #endif
 #include <strings.h>
+#include <error.h>
 
+void unreachableCode_error(void) // #11197
+{
+    error(1, 0, ""); // will call exit() if the first parameter is non-zero
+    // cppcheck-suppress unusedVariable
+    // TODO cppcheck-suppress unreachableCode
+    int i;
+}
 
 int nullPointer_getservent_r(struct servent *restrict result_buf, char *restrict buf, size_t buflen, struct servent **restrict result)
 {
