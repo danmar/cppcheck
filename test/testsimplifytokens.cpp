@@ -202,18 +202,6 @@ private:
         return tokenizer.tokens()->stringifyList(nullptr, false);
     }
 
-#define tokWithNewlines(code) tokWithNewlines_(code, __FILE__, __LINE__)
-    std::string tokWithNewlines_(const char code[], const char* file, int line) {
-        errout.str("");
-
-        Tokenizer tokenizer(&settings0, this);
-
-        std::istringstream istr(code);
-        ASSERT_LOC(tokenizer.tokenize(istr, "test.cpp"), file, line);
-
-        return tokenizer.tokens()->stringifyList(false, false, false, true, false);
-    }
-
 #define tokenizeAndStringify(...) tokenizeAndStringify_(__FILE__, __LINE__, __VA_ARGS__)
     std::string tokenizeAndStringify_(const char* file, int linenr, const char code[], bool simplify = false, bool expand = true, Settings::PlatformType platform = Settings::Native, const char* filename = "test.cpp", bool cpp11 = true) {
         errout.str("");
