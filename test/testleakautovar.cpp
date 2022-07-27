@@ -2356,6 +2356,18 @@ private:
         ASSERT_EQUALS("[test.c:4]: (information) --check-library: Function set_data() should have <use>/<leak-ignore> configuration\n", errout.str());
     }
 
+    void configuration5() {
+        check("void f() {\n"
+              "    int(i);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static_assert(1 == sizeof(char), \"test\");\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+    }
+
     void ptrptr() {
         check("void f() {\n"
               "    char **p = malloc(10);\n"
