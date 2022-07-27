@@ -535,4 +535,6 @@ CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok,
 
 const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope = nullptr, bool smallest = true);
 
+void combineValueProperties(const ValueFlow::Value& value1, const ValueFlow::Value& value2, ValueFlow::Value* result);
+
 #endif // valueflowH

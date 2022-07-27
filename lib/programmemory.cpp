@@ -715,6 +715,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::atan2(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -726,6 +727,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::remainder(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -737,6 +739,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::nextafter(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -748,6 +751,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::nexttoward(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -759,6 +763,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::hypot(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -770,6 +775,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::fdim(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -781,6 +787,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::fmax(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -792,6 +799,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::fmin(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -803,6 +811,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::fmod(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -814,6 +823,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::pow(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -825,6 +835,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::scalbln(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
@@ -836,6 +847,7 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
         ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::ldexp(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
