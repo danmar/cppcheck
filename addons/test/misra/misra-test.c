@@ -1171,7 +1171,7 @@ static void misra_14_2_fn1(bool b) {
     if (i2 == 2) {
       g += g_arr[i2];
     }
-    misra_14_2_init_value(&i2); // TODO: Fix false negative in function call
+    misra_14_2_init_value(&i2); // 14.2
   }
 
   for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491

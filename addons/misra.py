@@ -2756,6 +2756,8 @@ class MisraChecker:
                             # TODO: Check modifications in function calls
                             if countSideEffectsRecursive(tn.next) > 0:
                                 self.reportError(tn, 14, 2)
+                        if tn.astParent and tn.astParent.isOp and tn.astParent.valueType and tn.astParent.valueType.pointer > 0 and tn.astParent.astOperand1 == tn:
+                            self.reportError(tn, 14, 2)
                     tn = tn.next
 
     def misra_14_4(self, data):
