@@ -1158,7 +1158,8 @@ static void misra_14_2_init_value(int32_t *var) {
 }
 static void misra_14_2_fn1(bool b) {
   for (;i++<10;) {} // 14.2
-  for (;i<10;dostuff()) {} // TODO
+  // no loop counter, should be for(;;)
+  for (;i<10;dostuff()) {} // 14.2
   int32_t g = 0;
   int g_arr[42];
   g += 2; // no-warning
@@ -1176,7 +1177,13 @@ static void misra_14_2_fn1(bool b) {
   for (misra_14_2_init_value(&i); i < 10; ++i) {} // no-warning FIXME: False positive for 14.2 Trac #9491
 
   bool abort = false;
-  for (i = 0; (i < 10) && !abort; ++i) { // no-warning
+  for (int i = 0; (i < 10) && !abort; ++i) {
+      if (b) {
+        abort = true;
+      }
+  }
+  // no loop counter, 'i' is not considered a variable (not declared)
+  for (i = 0; (i < 10) && !abort; ++i) { // 14.2
       if (b) {
         abort = true;
       }
@@ -1231,16 +1238,16 @@ static void misra_14_2_fn2(void)
     for (int i = 0, j = 19; y < 10, --j > 10; y++, j--) { // 14.2 12.3
         i++; // no warning
     }
-    for (int i = 0; y < 10; y++) { // TODO: 14.2
+    for (int i = 0; y < 10; y++) { // 14.2
         i++; // no warning
     }
-    for (int i = 0; i < 10; y++) { // TODO: 14.2
+    for (int i = 0; i < 10; y++) { // 14.2
         i++; // no warning
     }
-    for (int i = 0; y < 10; i++) { // TODO: 14.2
+    for (int i = 0; y < 10; i++) { // 14.2
         i++; // no warning
     }
-    for (int i = 0; i < 10; (y+=i)) {
+    for (int i = 0; i < 10; (y+=i)) { // 14.2
         i++; // no warning
     }
 
@@ -1336,7 +1343,7 @@ static void misra_15_4(void) {
       if (y==2) {
         break;
       }
-      for (z = 0; y < 42; ++z) {
+      for (z = 0; y < 42; ++z) { // 14.2
         if (z==1) {
           break;
         }

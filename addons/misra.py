@@ -2737,6 +2737,11 @@ class MisraChecker:
                 outer_scope = token.scope
                 body_scope = None
                 tn = token.next
+                if len(counter_vars) == 0:
+                    for idx in range(len(expressions)):
+                        if expressions[idx] != None:
+                            self.reportError(token, 14, 2)
+                            break
                 while tn and tn.next != outer_scope.bodyEnd:
                     if tn.scope and tn.scope.nestedIn == outer_scope:
                         body_scope = tn.scope
