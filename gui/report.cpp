@@ -18,9 +18,9 @@
 
 #include "report.h"
 
-Report::Report(const QString &filename) :
+Report::Report(QString filename) :
     QObject(),
-    mFilename(filename)
+    mFilename(std::move(filename))
 {}
 
 Report::~Report()

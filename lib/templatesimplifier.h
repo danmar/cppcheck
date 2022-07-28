@@ -138,7 +138,7 @@ public:
          * \param token template instantiation name token "name<...>"
          * \param scope full qualification of template(scope)
          */
-        TokenAndName(Token *token, const std::string &scope);
+        TokenAndName(Token *token, std::string scope);
         /**
          * Constructor used for declarations.
          * \param token template declaration token "template < ... >"
@@ -146,7 +146,7 @@ public:
          * \param nameToken template name token "template < ... > class name"
          * \param paramEnd template parameter end token ">"
          */
-        TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd);
+        TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
         ~TokenAndName();
 

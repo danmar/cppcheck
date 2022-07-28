@@ -317,8 +317,8 @@ namespace clangimport {
 
     class AstNode {
     public:
-        AstNode(const std::string &nodeType, const std::string &ext, Data *data)
-            : nodeType(nodeType), mExtTokens(splitString(ext)), mData(data)
+        AstNode(std::string nodeType, const std::string &ext, Data *data)
+            : nodeType(std::move(nodeType)), mExtTokens(splitString(ext)), mData(data)
         {}
         std::string nodeType;
         std::vector<AstNodePtr> children;

@@ -2880,7 +2880,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
 
     SingleValueFlowAnalyzer() : ValueFlowAnalyzer() {}
 
-    SingleValueFlowAnalyzer(const ValueFlow::Value& v, const TokenList* t) : ValueFlowAnalyzer(t), value(v) {}
+    SingleValueFlowAnalyzer(ValueFlow::Value v, const TokenList* t) : ValueFlowAnalyzer(t), value(std::move(v)) {}
 
     const std::unordered_map<nonneg int, const Variable*>& getVars() const {
         return varids;
@@ -3798,11 +3798,11 @@ struct LifetimeStore {
     {}
 
     LifetimeStore(const Token* argtok,
-                  const std::string& message,
+                  std::string message,
                   ValueFlow::Value::LifetimeKind type = ValueFlow::Value::LifetimeKind::Object,
                   bool inconclusive = false)
         : argtok(argtok),
-        message(message),
+        message(std::move(message)),
         type(type),
         errorPath(),
         inconclusive(inconclusive),

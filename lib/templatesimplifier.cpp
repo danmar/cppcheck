@@ -74,7 +74,7 @@ namespace {
 
     class FindName {
     public:
-        explicit FindName(const std::string &name) : mName(name) {}
+        explicit FindName(std::string name) : mName(std::move(name)) {}
         bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
             return tokenAndName.name() == mName;
         }
@@ -84,7 +84,7 @@ namespace {
 
     class FindFullName {
     public:
-        explicit FindFullName(const std::string &fullName) : mFullName(fullName) {}
+        explicit FindFullName(std::string fullName) : mFullName(std::move(fullName)) {}
         bool operator()(const TemplateSimplifier::TokenAndName &tokenAndName) const {
             return tokenAndName.fullName() == mFullName;
         }
@@ -93,8 +93,8 @@ namespace {
     };
 }
 
-TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &scope) :
-    mToken(token), mScope(scope), mName(mToken ? mToken->str() : ""),
+TemplateSimplifier::TokenAndName::TokenAndName(Token *token, std::string scope) :
+    mToken(token), mScope(std::move(scope)), mName(mToken ? mToken->str() : ""),
     mFullName(mScope.empty() ? mName : (mScope + " :: " + mName)),
     mNameToken(nullptr), mParamEnd(nullptr), mFlags(0)
 {
@@ -109,8 +109,8 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &
     }
 }
 
-TemplateSimplifier::TokenAndName::TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd) :
-    mToken(token), mScope(scope), mName(nameToken->str()),
+TemplateSimplifier::TokenAndName::TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd) :
+    mToken(token), mScope(std::move(scope)), mName(nameToken->str()),
     mFullName(mScope.empty() ? mName : (mScope + " :: " + mName)),
     mNameToken(nameToken), mParamEnd(paramEnd), mFlags(0)
 {
@@ -1588,7 +1588,7 @@ void TemplateSimplifier::expandTemplate(
     const bool isSpecialization = templateDeclaration.isSpecialization();
     const bool isVariable = templateDeclaration.isVariable();
     struct newInstantiation {
-        newInstantiation(Token *t, const std::string &s) : token(t), scope(s) {}
+        newInstantiation(Token *t, std::string s) : token(t), scope(std::move(s)) {}
         Token *token;
         std::string scope;
     };

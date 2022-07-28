@@ -23,8 +23,8 @@
 
 #include <cstddef>
 
-PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSensitive)
-    : mExcludedPaths(excludedPaths), mCaseSensitive(caseSensitive)
+PathMatch::PathMatch(std::vector<std::string> excludedPaths, bool caseSensitive)
+    : mExcludedPaths(std::move(excludedPaths)), mCaseSensitive(caseSensitive)
 {
     if (!mCaseSensitive)
         for (std::string& excludedPath : mExcludedPaths)

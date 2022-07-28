@@ -38,9 +38,9 @@ ProjectFile::ProjectFile(QObject *parent) :
     clear();
 }
 
-ProjectFile::ProjectFile(const QString &filename, QObject *parent) :
+ProjectFile::ProjectFile(QString filename, QObject *parent) :
     QObject(parent),
-    mFilename(filename)
+    mFilename(std::move(filename))
 {
     clear();
     read();

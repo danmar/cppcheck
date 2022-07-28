@@ -71,8 +71,8 @@ void TimerResults::addResults(const std::string& str, std::clock_t clocks)
     mResults[str].mNumberOfResults++;
 }
 
-Timer::Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
-    : mStr(str)
+Timer::Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults)
+    : mStr(std::move(str))
     , mTimerResults(timerResults)
     , mStart(0)
     , mShowTimeMode(showtimeMode)

@@ -393,7 +393,7 @@ std::string CheckUnusedFunctions::analyzerInfo() const
 namespace {
     struct Location {
         Location() : lineNumber(0) {}
-        Location(const std::string &f, const int l) : fileName(f), lineNumber(l) {}
+        Location(std::string f, const int l) : fileName(std::move(f)), lineNumber(l) {}
         std::string fileName;
         int lineNumber;
     };

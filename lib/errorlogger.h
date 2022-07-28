@@ -76,7 +76,7 @@ public:
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {}
 
         FileLocation(const Token* tok, const TokenList* tokenList);
-        FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
+        FileLocation(const Token* tok, std::string info, const TokenList* tokenList);
 
         /**
          * Return the filename.
@@ -120,28 +120,28 @@ public:
         std::string mInfo;
     };
 
-    ErrorMessage(const std::list<FileLocation> &callStack,
-                 const std::string& file1,
+    ErrorMessage(std::list<FileLocation> callStack,
+                 std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 const std::string &id, Certainty::CertaintyLevel certainty);
-    ErrorMessage(const std::list<FileLocation> &callStack,
-                 const std::string& file1,
+                 std::string id, Certainty::CertaintyLevel certainty);
+    ErrorMessage(std::list<FileLocation> callStack,
+                 std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 const std::string &id,
+                 std::string id,
                  const CWE &cwe,
                  Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
-                 const std::string& id,
+                 std::string id,
                  const std::string& msg,
                  Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
-                 const std::string& id,
+                 std::string id,
                  const std::string& msg,
                  const CWE &cwe,
                  Certainty::CertaintyLevel certainty);
