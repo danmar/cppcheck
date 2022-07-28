@@ -894,7 +894,8 @@ void misra_12_3(int a, int b, int c) {
 
   f((1,2),3); // TODO
 
-  for (i=0; i<10; i++, j++){} // 12.3
+  // third clause: 2 persistent side effects instead of 1 (14.2)
+  for (i=0; i<10; i++, j++){} // 12.3 14.2
   for (int i = 0, p = &a1;  // 12.3 14.2
           i < 42;
           ++i, ++p ) // 12.3
@@ -1190,6 +1191,14 @@ static void misra_14_2_fn1(bool b) {
   for(x = 0; x < 10; x++) {
     x++; // 14.2
   }
+  // third clause: 2 persistent side effects instead of 1 (14.2)
+  for (int i = 0; i < 10; i++, x++) { // 12.3 14.2
+  }
+
+  // 2 loop counters, there shall be only 1
+  for(int i=0, j=0; (i<10) && (j<10); i++, j++) { // 12.3 14.2
+  }
+
   for (int i = (x - 3); i < 42; i++) {
       x ^= 3; // no warning
   }
