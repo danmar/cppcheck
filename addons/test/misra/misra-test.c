@@ -1186,6 +1186,10 @@ static void misra_14_2_fn1(bool b) {
   for (int i = x; i < 42; i++) {
       x++; // no warning
   }
+  // 1st clause item 2 + loop counter modification
+  for(x = 0; x < 10; x++) {
+    x++; // 14.2
+  }
   for (int i = (x - 3); i < 42; i++) {
       x ^= 3; // no warning
   }

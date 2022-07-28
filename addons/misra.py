@@ -711,6 +711,7 @@ def getForLoopCounterVariables(forToken):
     if not tn or tn.str != '(':
         return None
     vars_defined = set()
+    vars_initialized = set()
     vars_exit = set()
     vars_modified = set()
     cur_clause = 1
@@ -726,10 +727,12 @@ def getForLoopCounterVariables(forToken):
                     vars_modified.add(tn.variable)
                 elif tn.previous and tn.previous.str in ('++', '--'):
                     vars_modified.add(tn.variable)
+        if cur_clause == 1 and tn.isAssignmentOp and tn.astOperand1.variable:
+            vars_initialized.add(tn.astOperand1.variable)
         if tn.str == ';':
             cur_clause += 1
         tn = tn.next
-    return vars_defined & vars_exit & vars_modified
+    return (vars_defined | vars_initialized) & vars_exit & vars_modified
 
 
 def findCounterTokens(cond):
