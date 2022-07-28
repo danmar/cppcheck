@@ -3658,7 +3658,8 @@ static const Token* getEndOfVarScope(const Variable* var)
     // If the variable is defined in a for/while initializer then we want to
     // pick one token after the end so forward analysis can analyze the exit
     // conditions
-    if (innerScope != outerScope && outerScope->isExecutable() && innerScope->isLoopScope() && !isRangeForScope(innerScope))
+    if (innerScope != outerScope && outerScope->isExecutable() && innerScope->isLoopScope() &&
+        !isRangeForScope(innerScope))
         return innerScope->bodyEnd->next();
     return innerScope->bodyEnd;
 }
