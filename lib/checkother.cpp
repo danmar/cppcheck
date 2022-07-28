@@ -1635,9 +1635,9 @@ void CheckOther::constVariableError(const Variable *var, const Function *functio
     ErrorPath errorPath;
     std::string id = "const" + vartype;
     std::string message = "$symbol:" + varname + "\n" + vartype + " '$symbol' can be declared as " + ptrRefArray;
-    errorPath.push_back(ErrorPathItem(var ? var->nameToken() : nullptr, message));
+    errorPath.emplace_back(var ? var->nameToken() : nullptr, message);
     if (var && var->isArgument() && function && function->functionPointerUsage) {
-        errorPath.push_front(ErrorPathItem(function->functionPointerUsage, "You might need to cast the function pointer here"));
+        errorPath.emplace_front(function->functionPointerUsage, "You might need to cast the function pointer here");
         id += "Callback";
         message += ". However it seems that '" + function->name() + "' is a callback function, if '$symbol' is declared with const you might also need to cast function pointer(s).";
     }
@@ -3467,8 +3467,8 @@ void CheckOther::checkShadowVariables()
 void CheckOther::shadowError(const Token *var, const Token *shadowed, std::string type)
 {
     ErrorPath errorPath;
-    errorPath.push_back(ErrorPathItem(shadowed, "Shadowed declaration"));
-    errorPath.push_back(ErrorPathItem(var, "Shadow variable"));
+    errorPath.emplace_back(shadowed, "Shadowed declaration");
+    errorPath.emplace_back(var, "Shadow variable");
     const std::string &varname = var ? var->str() : type;
     const std::string Type = char(std::toupper(type[0])) + type.substr(1);
     const std::string id = "shadow" + Type;

@@ -110,7 +110,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         std::vector<Suppressions::Suppression> suppressions = Suppressions::parseMultiSuppressComment(comment, &errmsg);
 
         if (!errmsg.empty())
-            bad->push_back(BadInlineSuppression(tok->location, errmsg));
+            bad->emplace_back(tok->location, errmsg);
 
         for (const Suppressions::Suppression &s : suppressions) {
             if (!s.errorId.empty())
@@ -127,7 +127,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             inlineSuppressions.push_back(s);
 
         if (!errmsg.empty())
-            bad->push_back(BadInlineSuppression(tok->location, errmsg));
+            bad->emplace_back(tok->location, errmsg);
     }
 
     return true;

@@ -2737,7 +2737,7 @@ struct ValueFlowAnalyzer : Analyzer {
         if (std::none_of(refs.begin(), refs.end(), [&](const ReferenceToken& ref) {
             return tok == ref.token;
         }))
-            refs.push_back(ReferenceToken{tok, {}});
+            refs.emplace_back(ReferenceToken{tok, {}});
         for (const ReferenceToken& ref:refs) {
             Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs && ref.token != tok);
             if (internalMatch(ref.token))
@@ -3143,7 +3143,7 @@ struct SubExpressionAnalyzer : ExpressionAnalyzer {
     }
     void internalUpdate(Token* tok, const ValueFlow::Value& v, Direction) override
     {
-        partialReads->push_back(std::make_pair(tok, v));
+        partialReads->emplace_back(tok, v);
     }
 
     // No reanalysis for subexression

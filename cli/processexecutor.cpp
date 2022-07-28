@@ -237,8 +237,8 @@ unsigned int ProcessExecutor::check()
                 std::exit(EXIT_FAILURE);
             }
 
-            int flags = 0;
-            if ((flags = fcntl(pipes[0], F_GETFL, 0)) < 0) {
+            int flags = fcntl(pipes[0], F_GETFL, 0);
+            if (flags < 0) {
                 std::cerr << "#### ThreadExecutor::check, fcntl(F_GETFL) failed: "<< std::strerror(errno) << std::endl;
                 std::exit(EXIT_FAILURE);
             }

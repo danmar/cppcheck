@@ -821,8 +821,8 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
     const std::string innerSmt = innerSmtString(tok2);
-    errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
-    errorPath.emplace_back(ErrorPathItem(tok2, "opposite inner condition: " + s2));
+    errorPath.emplace_back(tok1, "outer condition: " + s1);
+    errorPath.emplace_back(tok2, "opposite inner condition: " + s2);
 
     const std::string msg("Opposite inner '" + innerSmt + "' condition leads to a dead code block.\n"
                           "Opposite inner '" + innerSmt + "' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
@@ -836,8 +836,8 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
     const std::string innerSmt = innerSmtString(tok2);
-    errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
-    errorPath.emplace_back(ErrorPathItem(tok2, "identical inner condition: " + s2));
+    errorPath.emplace_back(tok1, "outer condition: " + s1);
+    errorPath.emplace_back(tok2, "identical inner condition: " + s2);
 
     const std::string msg("Identical inner '" + innerSmt + "' condition is always true.\n"
                           "Identical inner '" + innerSmt + "' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
@@ -854,8 +854,8 @@ void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, c
     const std::string cond(cond1 ? cond1->expressionString() : "x");
     const std::string value = (cond2 && cond2->valueType() && cond2->valueType()->type == ValueType::Type::BOOL) ? "false" : "0";
 
-    errorPath.emplace_back(ErrorPathItem(cond1, "If condition '" + cond + "' is true, the function will return/exit"));
-    errorPath.emplace_back(ErrorPathItem(cond2, (isReturnValue ? "Returning identical expression '" : "Testing identical condition '") + cond + "'"));
+    errorPath.emplace_back(cond1, "If condition '" + cond + "' is true, the function will return/exit");
+    errorPath.emplace_back(cond2, (isReturnValue ? "Returning identical expression '" : "Testing identical condition '") + cond + "'");
 
     reportError(errorPath,
                 Severity::warning,

@@ -3492,13 +3492,13 @@ void VariableMap::addVariable(const std::string& varname, bool globalNamespace)
     }
     std::map<std::string, nonneg int>::iterator it = mVariableId.find(varname);
     if (it == mVariableId.end()) {
-        mScopeInfo.top().push_back(std::pair<std::string, nonneg int>(varname, 0));
+        mScopeInfo.top().emplace_back(varname, 0);
         mVariableId[varname] = ++mVarId;
         if (globalNamespace)
             mVariableId_global[varname] = mVariableId[varname];
         return;
     }
-    mScopeInfo.top().push_back(std::pair<std::string, nonneg int>(varname, it->second));
+    mScopeInfo.top().emplace_back(varname, it->second);
     it->second = ++mVarId;
 }
 
