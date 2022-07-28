@@ -903,7 +903,7 @@ private:
               "    int j = 0;\n"
               "    if (i | j) {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Operator '|' with one operand equal to zero is redundant.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Operator '|' with one operand equal to zero is redundant.\n", errout.str());
 
         check("#define EIGHTTOIS(x) (((x) << 8) | (x))\n"
               "int f() {\n"
@@ -915,6 +915,16 @@ private:
               "void f(const char* s, int* pFd) {\n"
               "    *pFd = open(s, O_RDONLY | O_BINARY, 0);\n"
               "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("const int FEATURE_BITS = x |\n"
+              "#if FOO_ENABLED\n"
+              "    FEATURE_FOO |\n"
+              "#endif\n"
+              "#if BAR_ENABLED\n"
+              "    FEATURE_BAR |\n"
+              "#endif\n"
+              "    0;");
         ASSERT_EQUALS("", errout.str());
     }
 

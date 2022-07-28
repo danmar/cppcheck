@@ -293,7 +293,7 @@ static bool inBooleanFunction(const Token *tok)
 
 void CheckCondition::checkBadBitmaskCheck()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -311,6 +311,11 @@ void CheckCondition::checkBadBitmaskCheck()
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
 
+            // If there are #ifdef in the expression don't warn about redundant | to avoid FP
+            const auto& startStop = tok->findExpressionStartEndTokens();
+            if (mTokenizer->hasIfdef(startStop.first, startStop.second))
+                continue;
+
             const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0);
             const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
 
@@ -323,7 +328,7 @@ void CheckCondition::checkBadBitmaskCheck()
 void CheckCondition::badBitmaskCheckError(const Token *tok, bool isNoOp)
 {
     if (isNoOp)
-        reportError(tok, Severity::warning, "badBitmaskCheck", "Operator '|' with one operand equal to zero is redundant.", CWE571, Certainty::normal);
+        reportError(tok, Severity::style, "badBitmaskCheck", "Operator '|' with one operand equal to zero is redundant.", CWE571, Certainty::normal);
     else
         reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, Certainty::normal);
 }
