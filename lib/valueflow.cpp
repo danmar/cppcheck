@@ -500,7 +500,7 @@ static bool isNumeric(const ValueFlow::Value& value) {
     return value.isIntValue() || value.isFloatValue();
 }
 
-static void combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Value &value2, ValueFlow::Value *result)
+void combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Value &value2, ValueFlow::Value *result)
 {
     if (value1.isKnown() && value2.isKnown())
         result->setKnown();
