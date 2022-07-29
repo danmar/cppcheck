@@ -260,6 +260,7 @@ void validCode()
     void *pMem1 = _malloca(1);
     _freea(pMem1);
     // Memory from _alloca must not be freed
+    // cppcheck-suppress _allocaCalled
     void *pMem2 = _alloca(10);
     memset(pMem2, 0, 10);
 
@@ -683,6 +684,7 @@ void ignoredReturnValue()
     // cppcheck-suppress leakReturnValNotUsed
     _malloca(10);
     // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress _allocaCalled
     _alloca(5);
 
     // cppcheck-suppress ignoredReturnValue
@@ -745,6 +747,7 @@ void invalidFunctionArg()
     _freea(pMem);
     // FIXME cppcheck-suppress unreadVariable
     // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress _allocaCalled
     pMem = _alloca(-5);
 }
 
