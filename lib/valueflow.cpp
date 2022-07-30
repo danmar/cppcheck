@@ -4824,12 +4824,12 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
                 value.errorPath.emplace_back(tok, "Calling " + tok->next()->expressionString() + " makes " + tok->str() + " 'non-moved'");
                 value.setKnown();
 
-                const Variable *var = varTok->variable();
+                const Variable *var = tok->variable();
                 if (!var || (!var->isLocal() && !var->isArgument()))
                     continue;
                 const Token * const endOfVarScope = var->scope()->bodyEnd;
-                setTokenValue(varTok, value, settings);
-                valueFlowForward(varTok->next(), endOfVarScope, varTok, {std::move(value)}, tokenlist);
+                setTokenValue(tok, value, settings);
+                valueFlowForward(tok->next(), endOfVarScope, tok, {std::move(value)}, tokenlist);
                 continue;
             }
             ValueFlow::Value::MoveKind moveKind;
