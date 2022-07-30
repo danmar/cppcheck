@@ -192,7 +192,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
 
 bool ProcessExecutor::checkLoadAverage(size_t nchildren)
 {
-#if defined(__CYGWIN__) || defined(__QNX__) || defined(__HAIKU__)  // getloadavg() is unsupported on Cygwin, Qnx, Haiku.
+#if defined(__QNX__) || defined(__HAIKU__)  // getloadavg() is unsupported on Qnx, Haiku.
     (void)nchildren;
     return true;
 #else
