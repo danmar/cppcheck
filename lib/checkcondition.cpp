@@ -293,7 +293,7 @@ static bool inBooleanFunction(const Token *tok)
 
 void CheckCondition::checkBadBitmaskCheck()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -311,6 +311,11 @@ void CheckCondition::checkBadBitmaskCheck()
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
 
+            // If there are #ifdef in the expression don't warn about redundant | to avoid FP
+            const auto& startStop = tok->findExpressionStartEndTokens();
+            if (mTokenizer->hasIfdef(startStop.first, startStop.second))
+                continue;
+
             const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0);
             const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
 
@@ -323,7 +328,7 @@ void CheckCondition::checkBadBitmaskCheck()
 void CheckCondition::badBitmaskCheckError(const Token *tok, bool isNoOp)
 {
     if (isNoOp)
-        reportError(tok, Severity::warning, "badBitmaskCheck", "Operator '|' with one operand equal to zero is redundant.", CWE571, Certainty::normal);
+        reportError(tok, Severity::style, "badBitmaskCheck", "Operator '|' with one operand equal to zero is redundant.", CWE571, Certainty::normal);
     else
         reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, Certainty::normal);
 }
@@ -816,8 +821,8 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
     const std::string innerSmt = innerSmtString(tok2);
-    errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
-    errorPath.emplace_back(ErrorPathItem(tok2, "opposite inner condition: " + s2));
+    errorPath.emplace_back(tok1, "outer condition: " + s1);
+    errorPath.emplace_back(tok2, "opposite inner condition: " + s2);
 
     const std::string msg("Opposite inner '" + innerSmt + "' condition leads to a dead code block.\n"
                           "Opposite inner '" + innerSmt + "' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
@@ -831,8 +836,8 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
     const std::string innerSmt = innerSmtString(tok2);
-    errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
-    errorPath.emplace_back(ErrorPathItem(tok2, "identical inner condition: " + s2));
+    errorPath.emplace_back(tok1, "outer condition: " + s1);
+    errorPath.emplace_back(tok2, "identical inner condition: " + s2);
 
     const std::string msg("Identical inner '" + innerSmt + "' condition is always true.\n"
                           "Identical inner '" + innerSmt + "' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
@@ -849,8 +854,8 @@ void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, c
     const std::string cond(cond1 ? cond1->expressionString() : "x");
     const std::string value = (cond2 && cond2->valueType() && cond2->valueType()->type == ValueType::Type::BOOL) ? "false" : "0";
 
-    errorPath.emplace_back(ErrorPathItem(cond1, "If condition '" + cond + "' is true, the function will return/exit"));
-    errorPath.emplace_back(ErrorPathItem(cond2, (isReturnValue ? "Returning identical expression '" : "Testing identical condition '") + cond + "'"));
+    errorPath.emplace_back(cond1, "If condition '" + cond + "' is true, the function will return/exit");
+    errorPath.emplace_back(cond2, (isReturnValue ? "Returning identical expression '" : "Testing identical condition '") + cond + "'");
 
     reportError(errorPath,
                 Severity::warning,

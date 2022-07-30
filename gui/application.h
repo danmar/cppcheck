@@ -43,7 +43,7 @@
 class Application {
 public:
     Application() {}
-    Application(const QString &name, const QString &path, const QString &params);
+    Application(QString name, QString path, QString params);
 
     /**
      * @brief Get application name.

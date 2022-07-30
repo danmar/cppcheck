@@ -1471,11 +1471,15 @@ namespace simplecpp {
             }
 
             static inline invalidHashHash cannotCombine(const Location &loc, const std::string &macroName, const Token *tokenA, const Token *tokenB) {
-                return invalidHashHash(loc, macroName, "Pasting '"+ tokenA->str()+ "' and '"+ tokenB->str() + "' yields an invalid token.");
+                return invalidHashHash(loc, macroName, "Combining '"+ tokenA->str()+ "' and '"+ tokenB->str() + "' yields an invalid token.");
             }
 
             static inline invalidHashHash unexpectedNewline(const Location &loc, const std::string &macroName) {
                 return invalidHashHash(loc, macroName, "Unexpected newline");
+            }
+
+            static inline invalidHashHash universalCharacterUB(const Location &loc, const std::string &macroName, const Token* tokenA, const std::string& strAB) {
+                return invalidHashHash(loc, macroName, "Combining '\\"+ tokenA->str()+ "' and '"+ strAB.substr(tokenA->str().size()) + "' yields universal character '\\" + strAB + "'. This is undefined behavior according to C standard chapter 5.1.1.2, paragraph 4.");
             }
         };
     private:
@@ -1998,6 +2002,14 @@ namespace simplecpp {
                     }
                 } else {
                     strAB = A->str() + B->str();
+                }
+
+                // producing universal character is undefined behavior
+                if (A->previous && A->previous->str() == "\\") {
+                    if (strAB[0] == 'u' && strAB.size() == 5)
+                        throw invalidHashHash::universalCharacterUB(tok->location, name(), A, strAB);
+                    else if (strAB[0] == 'U' && strAB.size() == 9)
+                        throw invalidHashHash::universalCharacterUB(tok->location, name(), A, strAB);
                 }
 
                 if (varargs && tokensB.empty() && tok->previous->str() == ",")
@@ -2671,8 +2683,19 @@ static void simplifyNumbers(simplecpp::TokenList &expr)
     }
 }
 
+static void simplifyComments(simplecpp::TokenList &expr)
+{
+    for (simplecpp::Token *tok = expr.front(); tok;) {
+        simplecpp::Token *d = tok;
+        tok = tok->next;
+        if (d->comment)
+            expr.deleteToken(d);
+    }
+}
+
 static long long evaluate(simplecpp::TokenList &expr, const std::map<std::string, std::size_t> &sizeOfType)
 {
+    simplifyComments(expr);
     simplifySizeof(expr, sizeOfType);
     simplifyName(expr);
     simplifyNumbers(expr);
@@ -2917,7 +2940,8 @@ static bool preprocessToken(simplecpp::TokenList &output, const simplecpp::Token
     return true;
 }
 
-static void getLocaltime(struct tm &ltime) {
+static void getLocaltime(struct tm &ltime)
+{
     time_t t;
     time(&t);
 #ifndef _WIN32
@@ -2927,13 +2951,15 @@ static void getLocaltime(struct tm &ltime) {
 #endif
 }
 
-static std::string getDateDefine(struct tm *timep) {
+static std::string getDateDefine(struct tm *timep)
+{
     char buf[] = "??? ?? ????";
     strftime(buf, sizeof(buf), "%b %d %Y", timep);
     return std::string("\"").append(buf).append("\"");
 }
 
-static std::string getTimeDefine(struct tm *timep) {
+static std::string getTimeDefine(struct tm *timep)
+{
     char buf[] = "??:??:??";
     strftime(buf, sizeof(buf), "%T", timep);
     return std::string("\"").append(buf).append("\"");

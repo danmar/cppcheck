@@ -18,9 +18,9 @@
 
 #include "application.h"
 
-Application::Application(const QString &name, const QString &path,
-                         const QString &params)
-    : mName(name)
-    , mPath(path)
-    , mParameters(params)
+Application::Application(QString name, QString path,
+                         QString params)
+    : mName(std::move(name))
+    , mPath(std::move(path))
+    , mParameters(std::move(params))
 {}

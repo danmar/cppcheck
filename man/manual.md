@@ -873,10 +873,6 @@ Cppcheck is distributed with a few addons which are listed below.
 
 ## Supported addons
 
-### cert.py
-
-[cert.py](https://github.com/danmar/cppcheck/blob/main/addons/cert.py) checks for compliance with the safe programming standard [SEI CERT](http://www.cert.org/secure-coding/).
-
 ### misra.py
 
 [misra.py](https://github.com/danmar/cppcheck/blob/main/addons/misra.py) is used to verify compliance with MISRA C 2012, a proprietary set of guidelines to avoid questionable code, developed for embedded systems.

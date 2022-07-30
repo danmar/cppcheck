@@ -5724,10 +5724,9 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
             }
         } else {
             const Type * type = scope->findType(tok->str());
-            const Scope *scope1;
             if (type)
                 return type;
-            else if ((scope1 = scope->findRecordInBase(tok->str()))) {
+            else if (const Scope *scope1 = scope->findRecordInBase(tok->str())) {
                 type = scope1->definedType;
                 if (type)
                     return type;
@@ -5764,10 +5763,9 @@ const Type* SymbolDatabase::findType(const Token *startTok, const Scope *startSc
                     }
                 } else {
                     const Type * type = scope->findType(tok->str());
-                    const Scope *scope1;
                     if (type)
                         return type;
-                    else if ((scope1 = scope->findRecordInBase(tok->str()))) {
+                    else if (const Scope *scope1 = scope->findRecordInBase(tok->str())) {
                         type = scope1->definedType;
                         if (type)
                             return type;

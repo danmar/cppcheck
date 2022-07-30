@@ -39,7 +39,7 @@ public:
      * @param caseSensitive Match the case of the characters when
      *   matching paths?
      */
-    explicit PathMatch(const std::vector<std::string> &excludedPaths, bool caseSensitive = true);
+    explicit PathMatch(std::vector<std::string> excludedPaths, bool caseSensitive = true);
 
     /**
      * @brief Match path against list of masks.

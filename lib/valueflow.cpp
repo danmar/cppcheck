@@ -500,7 +500,7 @@ static bool isNumeric(const ValueFlow::Value& value) {
     return value.isIntValue() || value.isFloatValue();
 }
 
-static void combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Value &value2, ValueFlow::Value *result)
+void combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Value &value2, ValueFlow::Value *result)
 {
     if (value1.isKnown() && value2.isKnown())
         result->setKnown();
@@ -2737,7 +2737,7 @@ struct ValueFlowAnalyzer : Analyzer {
         if (std::none_of(refs.begin(), refs.end(), [&](const ReferenceToken& ref) {
             return tok == ref.token;
         }))
-            refs.push_back(ReferenceToken{tok, {}});
+            refs.emplace_back(ReferenceToken{tok, {}});
         for (const ReferenceToken& ref:refs) {
             Action a = analyzeToken(ref.token, tok, d, inconclusiveRefs && ref.token != tok);
             if (internalMatch(ref.token))
@@ -2880,7 +2880,7 @@ struct SingleValueFlowAnalyzer : ValueFlowAnalyzer {
 
     SingleValueFlowAnalyzer() : ValueFlowAnalyzer() {}
 
-    SingleValueFlowAnalyzer(const ValueFlow::Value& v, const TokenList* t) : ValueFlowAnalyzer(t), value(v) {}
+    SingleValueFlowAnalyzer(ValueFlow::Value v, const TokenList* t) : ValueFlowAnalyzer(t), value(std::move(v)) {}
 
     const std::unordered_map<nonneg int, const Variable*>& getVars() const {
         return varids;
@@ -3143,7 +3143,7 @@ struct SubExpressionAnalyzer : ExpressionAnalyzer {
     }
     void internalUpdate(Token* tok, const ValueFlow::Value& v, Direction) override
     {
-        partialReads->push_back(std::make_pair(tok, v));
+        partialReads->emplace_back(tok, v);
     }
 
     // No reanalysis for subexression
@@ -3798,11 +3798,11 @@ struct LifetimeStore {
     {}
 
     LifetimeStore(const Token* argtok,
-                  const std::string& message,
+                  std::string message,
                   ValueFlow::Value::LifetimeKind type = ValueFlow::Value::LifetimeKind::Object,
                   bool inconclusive = false)
         : argtok(argtok),
-        message(message),
+        message(std::move(message)),
         type(type),
         errorPath(),
         inconclusive(inconclusive),

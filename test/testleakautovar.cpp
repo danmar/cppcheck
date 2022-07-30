@@ -2401,6 +2401,11 @@ private:
               "    int(i);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    static_assert(1 == sizeof(char), \"test\");\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ptrptr() {

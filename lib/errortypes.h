@@ -34,7 +34,7 @@ class Token;
 /** @brief Simple container to be thrown when internal error is detected. */
 struct InternalError {
     enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION};
-    InternalError(const Token *tok, const std::string &errorMsg, Type type = INTERNAL);
+    InternalError(const Token *tok, std::string errorMsg, Type type = INTERNAL);
     const Token *token;
     std::string errorMessage;
     Type type;
