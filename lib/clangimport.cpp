@@ -1607,9 +1607,9 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
         AstNodePtr newNode = std::make_shared<AstNode>(nodeType, ext, &data);
         tree[level - 1]->children.push_back(newNode);
         if (level >= tree.size())
-            tree.push_back(newNode);
+            tree.push_back(std::move(newNode));
         else
-            tree[level] = newNode;
+            tree[level] = std::move(newNode);
     }
 
     if (!tree.empty())

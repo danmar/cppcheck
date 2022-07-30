@@ -123,7 +123,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             return false;
 
         if (!s.errorId.empty())
-            inlineSuppressions.push_back(s);
+            inlineSuppressions.push_back(std::move(s));
 
         if (!errmsg.empty())
             bad->emplace_back(tok->location, errmsg);
@@ -231,7 +231,7 @@ void Preprocessor::setDirectives(const simplecpp::TokenList &tokens)
                 else
                     directive.str += tok2->str();
             }
-            mDirectives.push_back(directive);
+            mDirectives.push_back(std::move(directive));
         }
     }
 }
@@ -474,7 +474,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
                 std::string config = readcondition(cmdtok, defined, undefined);
                 if (isUndefined(config,undefined))
                     config.clear();
-                configs_if.push_back(config);
+                configs_if.push_back(std::move(config));
                 ret.insert(cfg(configs_if, userDefines));
             } else if (!configs_ifndef.empty()) {
                 configs_if.push_back(configs_ifndef.back());
@@ -588,7 +588,7 @@ static void splitcfg(const std::string &cfg, std::list<std::string> &defines, co
         std::string def = (defineEndPos == std::string::npos) ? cfg.substr(defineStartPos) : cfg.substr(defineStartPos, defineEndPos - defineStartPos);
         if (!defaultValue.empty() && def.find('=') == std::string::npos)
             def += '=' + defaultValue;
-        defines.push_back(def);
+        defines.push_back(std::move(def));
         if (defineEndPos == std::string::npos)
             break;
         defineStartPos = defineEndPos + 1U;
@@ -615,7 +615,7 @@ static simplecpp::DUI createDUI(const Settings &mSettings, const std::string &cf
         } else {
             s[s.find(')')+1] = '=';
         }
-        dui.defines.push_back(s);
+        dui.defines.push_back(std::move(s));
     }
 
     dui.undefined = mSettings.userUndefs; // -U
@@ -825,8 +825,8 @@ void Preprocessor::error(const std::string &filename, unsigned int linenr, const
         if (mSettings.relativePaths)
             file = Path::getRelativePath(file, mSettings.basePaths);
 
-        const ErrorMessage::FileLocation loc(file, linenr, 0);
-        locationList.push_back(loc);
+        ErrorMessage::FileLocation loc(file, linenr, 0);
+        locationList.push_back(std::move(loc));
     }
     mErrorLogger->reportErr(ErrorMessage(locationList,
                                          mFile0,
@@ -865,7 +865,7 @@ void Preprocessor::missingInclude(const std::string &filename, unsigned int line
             ErrorMessage::FileLocation loc;
             loc.line = linenr;
             loc.setfile(Path::toNativeSeparators(filename));
-            locationList.push_back(loc);
+            locationList.push_back(std::move(loc));
         }
         ErrorMessage errmsg(locationList, mFile0, Severity::information,
                             (headerType==SystemHeader) ?

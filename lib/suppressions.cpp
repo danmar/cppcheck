@@ -166,7 +166,7 @@ std::vector<Suppressions::Suppression> Suppressions::parseMultiSuppressComment(c
             }
         }
 
-        suppressions.push_back(s);
+        suppressions.push_back(std::move(s));
     }
 
     return suppressions;

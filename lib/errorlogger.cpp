@@ -334,7 +334,7 @@ bool ErrorMessage::deserialize(const std::string &data)
         if (substrings.size() == 5)
             loc.setinfo(substrings[4]);
 
-        callStack.push_back(loc);
+        callStack.push_back(std::move(loc));
 
         if (callStack.size() >= stackSize)
             break;
