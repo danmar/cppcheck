@@ -4818,17 +4818,19 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
             Token * varTok;
             if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName().empty()) {
                 varTok = tok;
+
+                const Variable *var = tok->variable();
+                if (!var || (!var->isLocal() && !var->isArgument()))
+                    continue;
+
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::MOVED;
                 value.moveKind = ValueFlow::Value::MoveKind::NonMovedVariable;
                 value.errorPath.emplace_back(tok, "Calling " + tok->next()->expressionString() + " makes " + tok->str() + " 'non-moved'");
                 value.setKnown();
 
-                const Variable *var = tok->variable();
-                if (!var || (!var->isLocal() && !var->isArgument()))
-                    continue;
-                const Token * const endOfVarScope = var->scope()->bodyEnd;
                 setTokenValue(tok, value, settings);
+                const Token * const endOfVarScope = var->scope()->bodyEnd;
                 valueFlowForward(tok->next(), endOfVarScope, tok, {std::move(value)}, tokenlist);
                 continue;
             }
@@ -4852,18 +4854,20 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
                 continue;
             const Token * const endOfVarScope = var->scope()->bodyEnd;
 
-            ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::ValueType::MOVED;
-            value.moveKind = moveKind;
-            if (moveKind == ValueFlow::Value::MoveKind::MovedVariable)
-                value.errorPath.emplace_back(tok, "Calling std::move(" + varTok->str() + ")");
-            else // if (moveKind == ValueFlow::Value::ForwardedVariable)
-                value.errorPath.emplace_back(tok, "Calling std::forward(" + varTok->str() + ")");
-            value.setKnown();
             const Token * openParentesisOfMove = findOpenParentesisOfMove(varTok);
             const Token * endOfFunctionCall = findEndOfFunctionCallForParameter(openParentesisOfMove);
-            if (endOfFunctionCall)
+            if (endOfFunctionCall) {
+                ValueFlow::Value value;
+                value.valueType = ValueFlow::Value::ValueType::MOVED;
+                value.moveKind = moveKind;
+                if (moveKind == ValueFlow::Value::MoveKind::MovedVariable)
+                    value.errorPath.emplace_back(tok, "Calling std::move(" + varTok->str() + ")");
+                else // if (moveKind == ValueFlow::Value::ForwardedVariable)
+                    value.errorPath.emplace_back(tok, "Calling std::forward(" + varTok->str() + ")");
+                value.setKnown();
+
                 valueFlowForward(const_cast<Token*>(endOfFunctionCall), endOfVarScope, varTok, {std::move(value)}, tokenlist);
+            }
         }
     }
 }
@@ -6656,11 +6660,11 @@ static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const
         endToken = fortok->scope()->bodyEnd;
 
     Token* blockTok = fortok->linkAt(1)->linkAt(1);
-    std::list<ValueFlow::Value> values;
-    values.emplace_back(num);
-    values.back().errorPath.emplace_back(fortok,"After for loop, " + var->name() + " has value " + values.back().infoString());
-
     if (blockTok != endToken) {
+        std::list<ValueFlow::Value> values;
+        values.emplace_back(num);
+        values.back().errorPath.emplace_back(fortok,"After for loop, " + var->name() + " has value " + values.back().infoString());
+
         valueFlowForward(blockTok->next(), endToken, vartok, values, tokenlist);
     }
 }
