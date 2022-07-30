@@ -617,9 +617,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                             alloc = CheckMemoryLeak::Many;
 
                         if (alloc != CheckMemoryLeak::Many && memberDealloc != CheckMemoryLeak::No && memberDealloc != CheckMemoryLeak::Many && memberDealloc != alloc) {
-                            std::list<const Token *> callstack;
-                            callstack.push_back(tok);
-                            mismatchAllocDealloc(callstack, classname + "::" + varname);
+                            mismatchAllocDealloc({tok}, classname + "::" + varname);
                         }
 
                         memberAlloc = alloc;
@@ -644,9 +642,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                         dealloc = CheckMemoryLeak::Many;
 
                     if (dealloc != CheckMemoryLeak::Many && memberAlloc != CheckMemoryLeak::No && memberAlloc != Many && memberAlloc != dealloc) {
-                        std::list<const Token *> callstack;
-                        callstack.push_back(tok);
-                        mismatchAllocDealloc(callstack, classname + "::" + varname);
+                        mismatchAllocDealloc({tok}, classname + "::" + varname);
                     }
 
                     memberDealloc = dealloc;
