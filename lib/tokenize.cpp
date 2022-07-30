@@ -6434,8 +6434,11 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
             // function declaration
             else if (Token::Match(varName, "%name% (")) {
                 Token* commaTok = varName->linkAt(1)->next();
-                while (Token::Match(commaTok, "const|noexcept"))
+                while (Token::Match(commaTok, "const|noexcept|override|final")) {
                     commaTok = commaTok->next();
+                    if (Token::Match(commaTok, "( true|false )"))
+                        commaTok = commaTok->link()->next();
+                }
                 tok2 = Token::simpleMatch(commaTok, ",") ? commaTok : nullptr;
             }
 
@@ -8426,7 +8429,7 @@ void Tokenizer::simplifyKeyword()
 
             // noexcept -> noexcept(true)
             // 2) void f() noexcept; -> void f() noexcept(true);
-            else if (Token::Match(tok, ") noexcept :|{|;|const|override|final")) {
+            else if (Token::Match(tok, ") noexcept :|{|;|,|const|override|final")) {
                 // Insertion is done in inverse order
                 // The brackets are linked together accordingly afterwards
                 Token * tokNoExcept = tok->next();
