@@ -3638,7 +3638,7 @@ static bool isRangeForScope(const Scope* scope)
         return false;
     if (!Token::simpleMatch(scope->bodyStart->previous(), ") {"))
         return false;
-    return Token::Match(scope->bodyStart->linkAt(-1)->astOperand2(), ":");
+    return Token::simpleMatch(scope->bodyStart->linkAt(-1)->astOperand2(), ":");
 }
 
 static const Token* getEndOfVarScope(const Variable* var)
