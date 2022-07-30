@@ -896,6 +896,11 @@ private:
                     "  s[x*s.size()] = 1;\n"
                     "}");
         ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of s, index 'x*s.size()' is out of bounds.\n", errout.str());
+
+        checkNormal("bool f(std::string_view& sv) {\n" // #10031
+                    "    return sv[sv.size()] == '\\0';\n"
+                    "}\n");
+        ASSERT_EQUALS("test.cpp:2:error:Out of bounds access of sv, index 'sv.size()' is out of bounds.\n", errout.str());
     }
     void outOfBoundsIterator() {
         check("int f() {\n"
@@ -1574,6 +1579,17 @@ private:
               "}\n");
         ASSERT_EQUALS(
             "[test.cpp:6] -> [test.cpp:6]: (error) Same iterator is used with containers 'g()' that are temporaries or defined in different scopes.\n",
+            errout.str());
+
+        check("std::set<long> f() {\n" // #5804
+              "    std::set<long> s;\n"
+              "    return s;\n"
+              "}\n"
+              "void g() {\n"
+              "    for (std::set<long>::iterator it = f().begin(); it != f().end(); ++it) {}\n"
+              "}\n");
+        ASSERT_EQUALS(
+            "[test.cpp:6] -> [test.cpp:6]: (error) Same iterator is used with containers 'f()' that are temporaries or defined in different scopes.\n",
             errout.str());
     }
 

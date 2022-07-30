@@ -1830,6 +1830,16 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f() { throw(1); }\n"); // #8958
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n" // #9002
+              "public:\n"
+              "    static int f() { return 1; }\n"
+              "};\n"
+              "void g() { C::f(); }\n");
+        ASSERT_EQUALS("", errout.str());
+
         settings.severity = severity_old;
         settings.checkLibrary = false;
     }
