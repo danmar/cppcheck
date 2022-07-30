@@ -2494,8 +2494,8 @@ private:
     }
 
     void vardecl29() { // #9282
-        const char* code = "double f1() const, f2(double) const;";
-        ASSERT_EQUALS("double f1 ( ) const ; double f2 ( double ) const ;",
+        const char* code = "double f1() noexcept, f2(double) noexcept;";
+        ASSERT_EQUALS("double f1 ( ) noexcept ; double f2 ( double ) noexcept ;",
                       tokenizeAndStringify(code));
 
         code = "class C {\n"
