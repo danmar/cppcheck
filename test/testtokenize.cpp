@@ -217,6 +217,7 @@ private:
         TEST_CASE(vardecl26);  // #5907 - incorrect handling of extern declarations
         TEST_CASE(vardecl27);  // #7850 - crash on valid C code
         TEST_CASE(vardecl28);
+        TEST_CASE(vardecl29); // #9282
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -2490,6 +2491,20 @@ private:
                       "return x ;\n"
                       "}",
                       tokenizeAndStringify(code, /*expand=*/ true, Settings::Native, "test.c"));
+    }
+
+    void vardecl29() { // #9282
+        const char* code = "double f1() const, f2(double) const;";
+        ASSERT_EQUALS("double f1 ( ) const ; double f2 ( double ) const ;",
+                      tokenizeAndStringify(code));
+
+        code = "class C {\n"
+               "    double f1() const noexcept, f2 (double) const noexcept;\n"
+               "};\n";
+        ASSERT_EQUALS("class C {\n"
+                      "double f1 ( ) const noexcept ; double f2 ( double ) const noexcept ;\n"
+                      "} ;",
+                      tokenizeAndStringify(code));
     }
 
     void volatile_variables() {

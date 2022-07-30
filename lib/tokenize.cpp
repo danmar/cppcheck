@@ -6431,11 +6431,12 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                     tok2 = nullptr;
             }
 
-            // parenthesis, functions can't be declared like:
-            // int f1(a,b), f2(c,d);
-            // so if there is a comma assume this is a variable declaration
-            else if (Token::Match(varName, "%name% (") && Token::simpleMatch(varName->linkAt(1), ") ,")) {
-                tok2 = varName->linkAt(1)->next();
+            // function declaration
+            else if (Token::Match(varName, "%name% (")) {
+                Token* commaTok = varName->linkAt(1)->next();
+                while (Token::Match(commaTok, "const|noexcept"))
+                    commaTok = commaTok->next();
+                tok2 = Token::simpleMatch(commaTok, ",") ? commaTok : nullptr;
             }
 
             else
