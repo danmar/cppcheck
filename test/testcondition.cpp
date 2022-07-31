@@ -4239,6 +4239,17 @@ private:
               "    return col;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    static std::string m;\n"
+              "    static void f() { m = \"abc\"; }\n"
+              "    static void g() {\n"
+              "        m.clear();\n"
+              "        f();\n"
+              "        if (m.empty()) {}\n"
+              "    }\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
