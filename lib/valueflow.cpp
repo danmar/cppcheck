@@ -4831,7 +4831,7 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
 
                 setTokenValue(tok, value, settings);
                 const Token * const endOfVarScope = var->scope()->bodyEnd;
-                valueFlowForward(tok->next(), endOfVarScope, tok, {std::move(value)}, tokenlist);
+                valueFlowForward(tok->next(), endOfVarScope, tok, std::move(value), tokenlist);
                 continue;
             }
             ValueFlow::Value::MoveKind moveKind;
@@ -4866,7 +4866,7 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
                     value.errorPath.emplace_back(tok, "Calling std::forward(" + varTok->str() + ")");
                 value.setKnown();
 
-                valueFlowForward(const_cast<Token*>(endOfFunctionCall), endOfVarScope, varTok, {std::move(value)}, tokenlist);
+                valueFlowForward(const_cast<Token*>(endOfFunctionCall), endOfVarScope, varTok, std::move(value), tokenlist);
             }
         }
     }
@@ -6661,11 +6661,10 @@ static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const
 
     Token* blockTok = fortok->linkAt(1)->linkAt(1);
     if (blockTok != endToken) {
-        std::list<ValueFlow::Value> values;
-        values.emplace_back(num);
-        values.back().errorPath.emplace_back(fortok,"After for loop, " + var->name() + " has value " + values.back().infoString());
+        ValueFlow::Value v{num};
+        v.errorPath.emplace_back(fortok,"After for loop, " + var->name() + " has value " + v.infoString());
 
-        valueFlowForward(blockTok->next(), endToken, vartok, values, tokenlist);
+        valueFlowForward(blockTok->next(), endToken, vartok, v, tokenlist);
     }
 }
 
@@ -8309,7 +8308,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
             value.errorPath.emplace_back(tok->tokAt(2), "Assign " + tok->strAt(1) + ", buffer with size " + MathLib::toString(sizeValue));
             value.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
             value.setKnown();
-            valueFlowForward(const_cast<Token*>(rhs), functionScope->bodyEnd, tok->next(), {std::move(value)}, tokenlist);
+            valueFlowForward(const_cast<Token*>(rhs), functionScope->bodyEnd, tok->next(), std::move(value), tokenlist);
         }
     }
 }
