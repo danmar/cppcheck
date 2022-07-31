@@ -34,6 +34,7 @@
 #include <ostream>
 #include <unordered_map>
 #include <vector>
+#include <iostream>
 
 //---------------------------------------------------------------------------
 
@@ -285,23 +286,10 @@ void CheckFunctions::checkIteratorTypeMismatch()
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
         for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%name% ( !!)"))
+            if (!Token::Match(tok, "%name% ="))
                 continue;
 
-            if (tok->str() != "for") {
-                continue;
-            }
-
-            if (!Token::simpleMatch(tok->next()->link(), ") {"))
-                continue;
-
-            const Token *splitToken = tok->next()->astOperand2();
-            if (Token::simpleMatch(splitToken, ":"))
-                continue;
-
-            const Token* assignmentToken = splitToken->astOperand1();
-            if (!assignmentToken)
-                continue;
+            const Token* assignmentToken = Token::findsimplematch(tok, "=", scope->bodyEnd);
 
             if (!Token::simpleMatch(assignmentToken, "="))
                 continue;
@@ -329,7 +317,7 @@ void CheckFunctions::checkIteratorTypeMismatch()
             if (container->getYield(separator->astOperand2()->str()) != Library::Container::Yield::START_ITERATOR)
                 continue;
 
-            mismatchingForAssignmentType(
+            mismatchingIteratorAssignmentType(
                 tok,
                 extractVariableName(assignee->variable()),
                 extractVariableName(container_token->variable()) + "::iterator");
@@ -337,10 +325,10 @@ void CheckFunctions::checkIteratorTypeMismatch()
     }
 }
 
-void CheckFunctions::mismatchingForAssignmentType(const Token* tok, const std::string& var_type, const std::string& assigned_type)
+void CheckFunctions::mismatchingIteratorAssignmentType(const Token* tok, const std::string& var_type, const std::string& assigned_type)
 {
     reportError(tok, Severity::warning, "mismatchTypeForAssignment",
-                "For loop assigns wrong type " + assigned_type + " to variable of type " + var_type,
+                "Assignment of wrong type " + assigned_type + " to variable of type " + var_type,
                 CWE689, Certainty::normal);
 }
 
