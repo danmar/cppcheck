@@ -41,6 +41,7 @@ private:
         TEST_CASE(longCastAssign);
         TEST_CASE(longCastReturn);
         TEST_CASE(checkFloatToIntegerOverflow);
+        TEST_CASE(invalidTypeAssignmentInIterator);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -428,6 +429,27 @@ private:
               "  return 1234.5;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Undefined behaviour: float () to integer conversion overflow.\n", removeFloat(errout.str()));
+    }
+
+    void invalidTypeAssignmentInIterator() {
+        check("void foo(std::multimap<int, double>& mm) {\n"
+              "    for (std::map<int, double>::iterator it=mm.begin(); it!=mm.end(); ++it)\n"
+              "        ;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of wrong type std::multimap<int,double>::iterator to variable of type std::map<int,double>::iterator\n", errout.str());
+
+        check("void foo(std::multimap<int, double>& mm) {\n"
+              "    std::map<int, double>::iterator myIterator = mm.begin();\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of wrong type std::multimap<int,double>::iterator to variable of type std::map<int,double>::iterator\n", errout.str());
+
+        check("template<typename A>\n"
+              "using MyIterator = typename std::multimap<A, double>::iterator;\n"
+              "void foo(std::multimap<int, double>& mm) {\n"
+              "    for (MyIterator<int> it=mm.begin(); it!=mm.end(); ++it)\n"
+              "        ;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 

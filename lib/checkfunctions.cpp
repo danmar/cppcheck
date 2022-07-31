@@ -34,7 +34,6 @@
 #include <ostream>
 #include <unordered_map>
 #include <vector>
-#include <iostream>
 
 //---------------------------------------------------------------------------
 
@@ -51,7 +50,6 @@ static const CWE CWE628(628U);  // Function Call with Incorrectly Specified Argu
 static const CWE CWE686(686U);  // Function Call With Incorrect Argument Type
 static const CWE CWE687(687U);  // Function Call With Incorrectly Specified Argument Value
 static const CWE CWE688(688U);  // Function Call With Incorrect Variable or Reference as Argument
-static const CWE CWE689(689U);  // For Assignment of Wrong Type
 
 void CheckFunctions::checkProhibitedFunctions()
 {
@@ -279,60 +277,6 @@ void CheckFunctions::checkIgnoredReturnValue()
             }
         }
     }
-}
-
-void CheckFunctions::checkIteratorTypeMismatch()
-{
-    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
-    for (const Scope *scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
-            if (!Token::Match(tok, "%name% ="))
-                continue;
-
-            const Token* assignmentToken = Token::findsimplematch(tok, "=", scope->bodyEnd);
-
-            if (!Token::simpleMatch(assignmentToken, "="))
-                continue;
-
-            const Token* assignee = assignmentToken->astOperand1();
-            const Token* assigned = assignmentToken->astOperand2();
-
-            if (!astIsIterator(assignee) || !astIsIterator(assigned))
-                continue;
-
-            // Check the actual mismatch
-            if (assignee->valueType()->isTypeEqual(assigned->valueType()))
-                continue;
-
-            // Get the representations of the variables
-            const Token* separator = assigned->astOperand1();
-            if (!separator || !separator->astOperand2())
-                continue;
-
-            const Token* container_token = separator->astOperand1();
-            const Library::Container* container = getLibraryContainer(container_token);
-            if (!container)
-                continue;
-
-            if (container->getYield(separator->astOperand2()->str()) != Library::Container::Yield::START_ITERATOR)
-                continue;
-            
-            if (!assignee->variable() || !container_token->variable())
-                continue;
-
-            mismatchingIteratorAssignmentType(
-                tok,
-                assignee->variable()->getDataTypeString(),
-                container_token->variable()->getDataTypeString() + "::iterator");
-        }
-    }
-}
-
-void CheckFunctions::mismatchingIteratorAssignmentType(const Token* tok, const std::string& var_type, const std::string& assigned_type)
-{
-    reportError(tok, Severity::warning, "mismatchTypeForAssignment",
-                "Assignment of wrong type " + assigned_type + " to variable of type " + var_type,
-                CWE689, Certainty::normal);
 }
 
 void CheckFunctions::ignoredReturnValueError(const Token* tok, const std::string& function)

@@ -59,6 +59,7 @@ public:
         checkType.checkSignConversion();
         checkType.checkLongCast();
         checkType.checkFloatToIntegerOverflow();
+        checkType.checkIteratorTypeMismatch();
     }
 
     /** @brief %Check for bitwise shift with too big right operand */
@@ -77,6 +78,9 @@ public:
     void checkFloatToIntegerOverflow();
     void checkFloatToIntegerOverflow(const Token *tok, const ValueType *vtint, const ValueType *vtfloat, const std::list<ValueFlow::Value> *floatValues);
 
+    /** @brief %Check for assigning wrong type for an iterator */
+    void checkIteratorTypeMismatch();
+
 private:
 
     // Error messages..
@@ -87,6 +91,7 @@ private:
     void longCastAssignError(const Token *tok);
     void longCastReturnError(const Token *tok);
     void floatToIntegerOverflowError(const Token *tok, const ValueFlow::Value &value);
+    void mismatchingIteratorAssignmentType(const Token* tok, const std::string& var_type, const std::string& assigned_type);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckType c(nullptr, settings, errorLogger);

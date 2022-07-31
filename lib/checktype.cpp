@@ -20,6 +20,7 @@
 //---------------------------------------------------------------------------
 #include "checktype.h"
 
+#include "astutils.h"
 #include "errortypes.h"
 #include "mathlib.h"
 #include "platform.h"
@@ -51,6 +52,7 @@ static const struct CWE CWE195(195U);   // Signed to Unsigned Conversion Error
 static const struct CWE CWE197(197U);   // Numeric Truncation Error
 static const struct CWE CWE758(758U);   // Reliance on Undefined, Unspecified, or Implementation-Defined Behavior
 static const struct CWE CWE190(190U);   // Integer Overflow or Wraparound
+static const struct CWE CWE191(191U);   // Iterator Assignment of Wrong Type
 
 
 void CheckType::checkTooBigBitwiseShift()
@@ -463,4 +465,58 @@ void CheckType::floatToIntegerOverflowError(const Token *tok, const ValueFlow::V
                 value.errorSeverity() ? Severity::error : Severity::warning,
                 "floatConversionOverflow",
                 errmsg.str(), CWE190, value.isInconclusive() ? Certainty::inconclusive : Certainty::normal);
+}
+
+void CheckType::checkIteratorTypeMismatch()
+{
+    const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Scope *scope : symbolDatabase->functionScopes) {
+        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!Token::Match(tok, "%name% ="))
+                continue;
+
+            const Token* assignmentToken = Token::findsimplematch(tok, "=", scope->bodyEnd);
+
+            if (!Token::simpleMatch(assignmentToken, "="))
+                continue;
+
+            const Token* assignee = assignmentToken->astOperand1();
+            const Token* assigned = assignmentToken->astOperand2();
+
+            if (!astIsIterator(assignee) || !astIsIterator(assigned))
+                continue;
+
+            // Check the actual mismatch
+            if (assignee->valueType()->isTypeEqual(assigned->valueType()))
+                continue;
+
+            // Get the representations of the variables
+            const Token* separator = assigned->astOperand1();
+            if (!separator || !separator->astOperand2())
+                continue;
+
+            const Token* container_token = separator->astOperand1();
+            const Library::Container* container = getLibraryContainer(container_token);
+            if (!container)
+                continue;
+
+            if (container->getYield(separator->astOperand2()->str()) != Library::Container::Yield::START_ITERATOR)
+                continue;
+
+            if (!assignee->variable() || !container_token->variable())
+                continue;
+
+            mismatchingIteratorAssignmentType(
+                tok,
+                assignee->variable()->getDataTypeString(),
+                container_token->variable()->getDataTypeString() + "::iterator");
+        }
+    }
+}
+
+void CheckType::mismatchingIteratorAssignmentType(const Token* tok, const std::string& var_type, const std::string& assigned_type)
+{
+    reportError(tok, Severity::warning, "mismatchTypeForAssignment",
+                "Assignment of wrong type " + assigned_type + " to variable of type " + var_type,
+                CWE191, Certainty::normal);
 }

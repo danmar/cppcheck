@@ -69,8 +69,6 @@ private:
         TEST_CASE(invalidFunctionUsage1);
         TEST_CASE(invalidFunctionUsageStrings);
 
-        TEST_CASE(invalidTypeAssignmentInIterator);
-
         // Math function usage
         TEST_CASE(mathfunctionCall_fmod);
         TEST_CASE(mathfunctionCall_sqrt);
@@ -1235,27 +1233,6 @@ private:
               "    std::cout <<  fmod(1.0,1) << std::endl;\n"
               "    std::cout <<  fmodf(1.0,1) << std::endl;\n"
               "    std::cout <<  fmodl(1.0,1) << std::endl;\n"
-              "}");
-        ASSERT_EQUALS("", errout.str());
-    }
-
-    void invalidTypeAssignmentInIterator() {
-        check("void foo(std::multimap<int, double>& mm) {\n"
-              "    for (std::map<int, double>::iterator it=mm.begin(); it!=mm.end(); ++it)\n"
-              "        ;\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of wrong type std::multimap<int,double>::iterator to variable of type std::map<int,double>::iterator\n", errout.str());
-
-        check("void foo(std::multimap<int, double>& mm) {\n"
-              "    std::map<int, double>::iterator myIterator = mm.begin();\n"
-              "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Assignment of wrong type std::multimap<int,double>::iterator to variable of type std::map<int,double>::iterator\n", errout.str());
-
-        check("template<typename A>\n"
-              "using MyIterator = typename std::multimap<A, double>::iterator;\n"
-              "void foo(std::multimap<int, double>& mm) {\n"
-              "    for (MyIterator<int> it=mm.begin(); it!=mm.end(); ++it)\n"
-              "        ;\n"
               "}");
         ASSERT_EQUALS("", errout.str());
     }
