@@ -7856,13 +7856,20 @@ void Tokenizer::simplifyFunctionTryCatch()
         return;
 
     for (Token * tok = list.front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "try {"))
+        if (!Token::Match(tok, "try {|:"))
             continue;
         if (!isFunctionHead(tok->previous(), "try"))
             continue;
 
+        Token* tryStartToken = tok->next();
+        while (Token::Match(tryStartToken, "[:,] %name% (|{")) // skip init list
+            tryStartToken = tryStartToken->linkAt(2)->next();
+
+        if (!Token::simpleMatch(tryStartToken, "{"))
+            syntaxError(tryStartToken, "Invalid function-try-catch block code. Did not find '{' for try body.");
+
         // find the end of the last catch block
-        Token * const tryEndToken = tok->linkAt(1);
+        Token * const tryEndToken = tryStartToken->link();
         Token * endToken = tryEndToken;
         while (Token::simpleMatch(endToken, "} catch (")) {
             endToken = endToken->linkAt(2)->next();
