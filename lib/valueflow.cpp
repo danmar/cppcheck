@@ -8083,11 +8083,14 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                 values = getContainerSizeFromConstructor(constructorArgs, var->valueType(), settings, known);
             }
         }
+
+        if (constSize) {
+            valueFlowForwardConst(var->nameToken()->next(), var->scope()->bodyEnd, var, values, settings);
+            continue;
+        }
+
         for (const ValueFlow::Value& value : values) {
-            if (constSize)
-                valueFlowForwardConst(var->nameToken()->next(), var->scope()->bodyEnd, var, values, settings);
-            else
-                valueFlowForward(var->nameToken()->next(), var->nameToken(), value, tokenlist);
+            valueFlowForward(var->nameToken()->next(), var->nameToken(), value, tokenlist);
         }
     }
 
