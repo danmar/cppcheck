@@ -3526,14 +3526,6 @@ bool isSizeOfEtc(const Token *tok)
     return Token::Match(tok, "sizeof|typeof|offsetof|decltype|__typeof__ (");
 }
 
-std::string extractVariableName(const Variable *var)
-{
-    if (!var)
-        return "";
-
-    return formatTypeName(var->typeStartToken(), var->typeEndToken()->next());
-}
-
 std::string formatTypeName(const Token *start, const Token *end)
 {
     if (!start || !end)

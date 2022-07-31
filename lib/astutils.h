@@ -464,8 +464,6 @@ private:
 
 bool isSizeOfEtc(const Token *tok);
 
-std::string extractVariableName(const Variable *var);
-
 std::string formatTypeName(const Token *start, const Token *end);
 
 #endif // astutilsH

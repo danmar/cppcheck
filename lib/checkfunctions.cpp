@@ -316,11 +316,14 @@ void CheckFunctions::checkIteratorTypeMismatch()
 
             if (container->getYield(separator->astOperand2()->str()) != Library::Container::Yield::START_ITERATOR)
                 continue;
+            
+            if (!assignee->variable() || !container_token->variable())
+                continue;
 
             mismatchingIteratorAssignmentType(
                 tok,
-                extractVariableName(assignee->variable()),
-                extractVariableName(container_token->variable()) + "::iterator");
+                assignee->variable()->getDataTypeString(),
+                container_token->variable()->getDataTypeString() + "::iterator");
         }
     }
 }

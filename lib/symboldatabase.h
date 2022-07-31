@@ -649,6 +649,8 @@ public:
 
     std::string getTypeName() const;
 
+    std::string getDataTypeString() const;
+
 private:
     // only symbol database can change the type
     friend class SymbolDatabase;
