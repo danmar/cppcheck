@@ -2581,7 +2581,7 @@ bool isThisChanged(const Token* tok, int indirect, const Settings* settings, boo
     if ((Token::Match(tok->previous(), "%name% (") && !Token::simpleMatch(tok->astOperand1(), ".")) ||
         Token::Match(tok->tokAt(-3), "this . %name% (")) {
         if (tok->previous()->function()) {
-            return (!tok->previous()->function()->isConst()  && !tok->previous()->function()->isStatic());
+            return (!tok->previous()->function()->isConst() && !tok->previous()->function()->isStatic());
         } else if (!tok->previous()->isKeyword()) {
             return true;
         }
