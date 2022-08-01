@@ -1056,16 +1056,14 @@ static bool parseComparison(const Token *comp, bool *not1, std::string *op, std:
 static std::string conditionString(bool not1, const Token *expr1, const std::string &op, const std::string &value1)
 {
     if (expr1->astParent()->isComparisonOp())
-        return std::string(not1 ? "!(" : "") +
-               (expr1->isName() ? expr1->str() : std::string("EXPR")) +
+        return std::string(not1 ? "!(" : "") + expr1->expressionString() +
                " " +
                op +
                " " +
                value1 +
                (not1 ? ")" : "");
 
-    return std::string(not1 ? "!" : "") +
-           (expr1->isName() ? expr1->str() : std::string("EXPR"));
+    return std::string(not1 ? "!" : "") + expr1->expressionString();
 }
 
 static std::string conditionString(const Token * tok)

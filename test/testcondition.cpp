@@ -1271,7 +1271,7 @@ private:
         check("void f(int x) {\n"
               "  if (x+3 > 2 || x+3 < 10) {}\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: EXPR > 2 || EXPR < 10.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning) Logical disjunction always evaluates to true: x+3 > 2 || x+3 < 10.\n", errout.str());
     }
 
     void incorrectLogicOperator6() { // char literals
@@ -1740,7 +1740,7 @@ private:
         check("void f(const char *p) {\n"
               "    if (!p || !*p || *p != 'x') {}\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition '!EXPR' is redundant since 'EXPR != 'x'' is sufficient.\n",
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition '!*p' is redundant since '*p != 'x'' is sufficient.\n",
                       errout.str());
     }
 
