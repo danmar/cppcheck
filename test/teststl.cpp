@@ -5468,13 +5468,15 @@ private:
 
         // #11147
         check("void f(std::string& s) {\n"
-                "    if (!s.empty()) {\n"
-                "        std::string::iterator it = s.begin();\n"
-                "        s = s.substr(it - s.begin());\n"
-                "    }\n"
-                "}\n",
-                              true);
-        ASSERT_EQUALS("[test.cpp:4]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use resize() or pop_back() instead.\n", errout.str());
+              "    if (!s.empty()) {\n"
+              "        std::string::iterator it = s.begin();\n"
+              "        s = s.substr(it - s.begin());\n"
+              "    }\n"
+              "}\n",
+              true);
+        ASSERT_EQUALS(
+            "[test.cpp:4]: (performance) Ineffective call of function 'substr' because a prefix of the string is assigned to itself. Use resize() or pop_back() instead.\n",
+            errout.str());
     }
 
     void invalidContainerLoop() {

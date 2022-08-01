@@ -1073,7 +1073,7 @@ static const Token* endOfExpression(const Token* tok)
     if (!tok)
         return nullptr;
     const Token* parent = tok->astParent();
-    while(Token::simpleMatch(parent, "."))
+    while (Token::simpleMatch(parent, "."))
         parent = parent->astParent();
     if (!parent)
         return tok->next();
