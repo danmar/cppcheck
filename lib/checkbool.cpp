@@ -479,7 +479,7 @@ void CheckBool::returnValueOfFunctionReturningBool()
         if (!(scope->function && Token::Match(scope->function->retDef, "bool|_Bool")))
             continue;
 
-        for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
+        for (ITERATE_TOKENS(tok, scope)) {
             // Skip lambdas
             const Token* tok2 = findLambdaEndToken(tok);
             if (tok2)

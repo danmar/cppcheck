@@ -45,12 +45,12 @@ void CheckAssert::assertWithSideEffects()
     if (!mSettings->severity.isEnabled(Severity::warning))
         return;
 
-    for (const Token* tok = mTokenizer->list.front(); tok; tok = tok->next()) {
+    for (ITERATE_TOKENS(tok, mTokenizer)) {
         if (!Token::simpleMatch(tok, "assert ("))
             continue;
 
         const Token *endTok = tok->next()->link();
-        for (const Token* tmp = tok->next(); tmp != endTok; tmp = tmp->next()) {
+        for (ITERATE_TOKENS(tmp, tok->next(), endTok)) {
             if (Token::simpleMatch(tmp, "sizeof ("))
                 tmp = tmp->linkAt(1);
 
