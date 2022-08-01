@@ -24,6 +24,76 @@
 #include "tokenlist.h"
 #include "tokenize.h"
 
+#define ITERATE_TOKENS_2(loop_var_name, tokBegin, tokEnd) const Token* loop_var_name = tokBegin; loop_var_name && loop_var_name != tokEnd; loop_var_name = loop_var_name->next()
+#define ITERATE_TOKENS_1(loop_var_name, ...) ITERATE_TOKENS_2(loop_var_name, IterHelpers::GetBeginToken(__VA_ARGS__), IterHelpers::GetEndToken(__VA_ARGS__))
+
+#define ITERATE_TOKENS(loop_var_name, ...) ITERATE_TOKENS_1(loop_var_name, __VA_ARGS__)
+
+
+
+ /**
+  * @brief  Provides GetBeginToken() and GetEndToken() for various token-range objects to be used in ITERATE_TOKENS macro
+  */
+class IterHelpers {
+public:
+    // start and end token
+    inline static const Token* GetBeginToken(const Token* tokStart, const Token* /* tokEnd */ = NULL) {
+        return tokStart;
+    };
+
+    inline static const Token* GetEndToken(const Token* /* tokStart */, const Token* tokEnd = NULL) {
+        return tokEnd;
+    };
+
+public:
+    // std::pair of tokens
+    inline static const Token* GetBeginToken(const std::pair<const Token*, const Token*>& tokenPair) {
+        return tokenPair.first;
+    };
+
+    inline static const Token* GetEndToken(const std::pair<const Token*, const Token*>& tokenPair) {
+        return tokenPair.second;
+    };
+
+public:
+    // Scope
+    inline static const Token* GetBeginToken(const Scope* scope) {
+        return (scope->bodyStart) ? (scope->bodyStart->next()) : nullptr;
+    };
+
+    inline static const Token* GetEndToken(const Scope* scope) {
+        return scope->bodyEnd;
+    };
+public:
+    class ScopeIncludeBraces {};
+    // Scope
+    inline static const Token* GetBeginToken(const Scope* scope, ScopeIncludeBraces) {
+        return scope->bodyStart;
+    };
+
+    inline static const Token* GetEndToken(const Scope* scope, ScopeIncludeBraces) {
+        return scope->bodyEnd;
+    };
+
+public:
+    // TokenList
+    inline static const Token* GetBeginToken(const TokenList& tokenList) {
+        return tokenList.front();
+    };
+
+    inline static const Token* GetEndToken(const TokenList& tokenList) {
+        return tokenList.back();
+    };
+public:
+    // Tokenizer
+    inline static const Token* GetBeginToken(const Tokenizer* tokenizer) {
+        return GetBeginToken(tokenizer->list);
+    };
+
+    inline static const Token* GetEndToken(const Tokenizer* tokenizer) {
+        return GetEndToken(tokenizer->list);
+    };
+};
 
 
 /**
@@ -31,7 +101,7 @@
  */
 class IterateTokens {
 
-protected: // forbid to create iterator instances by user to avoid unexpected copy behavior
+public:
 
     class iterator {
     public:
