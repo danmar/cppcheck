@@ -1294,7 +1294,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                 const std::string text = cond1str + " " + tok->str() + " " + cond2str;
                 incorrectLogicOperatorError(tok, text, alwaysTrue, inconclusive, errorPath);
             } else if (printStyle && (firstTrue || secondTrue)) {
-                const int which = sufficientCondition(op1, not1, i1, op2, not2, i2, isAnd);
+                const int which = isfloat ? sufficientCondition(op1, not1, d1, op2, not2, d2, isAnd) : sufficientCondition(op1, not1, i1, op2, not2, i2, isAnd);
                 std::string text;
                 if (which != 0) {
                     text = "The condition '" + (which == 1 ? cond2str : cond1str) + "' is redundant since '" + (which == 1 ? cond1str : cond2str) + "' is sufficient.";
