@@ -14,6 +14,7 @@ parser.add_argument('repo', nargs='?', default=None, help='the git repository (f
 parser.add_argument('--compare', action='store_true')
 parser.add_argument('--verbose', action='store_true')
 #parser.add_argument('--diff', action='store_true') # TODO
+#parser.add_argument('--bisect', action='store_true') # TODO: invoke a bisect on the last difference
 args = parser.parse_args()
 
 def sort_commit_hashes(commits):
