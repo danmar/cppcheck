@@ -893,7 +893,7 @@ static int sign(const T v) {
     return static_cast<int>(v > 0) - static_cast<int>(v < 0);
 }
 
-// returns 1 (-1) if the first (second) condition is more general, 0 if indeterminate
+// returns 1 (-1) if the first (second) condition is sufficient, 0 if indeterminate
 template<typename T>
 static int sufficientCondition(std::string op1, const bool not1, const T value1, std::string op2, const bool not2, const T value2, const bool isAnd) {
     auto transformOp = [](std::string& op, const bool invert) {
@@ -940,7 +940,7 @@ static int sufficientCondition(std::string op1, const bool not1, const T value1,
         else if (op1 == "<=" && op2 == "<")
             res = -sign((value1 + 1) - value2);
     }
-    return res * (isAnd ^ equal ? -1 : 1);
+    return res * (isAnd == equal ? 1 : -1);
 }
 
 template<typename T>
