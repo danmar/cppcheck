@@ -2,10 +2,9 @@
 import os.path
 import subprocess
 import sys
+#import difflib
 
 from packaging.version import Version
-
-# TODO: add a mode which actually diffs the output and only reports differences
 
 def sort_commit_hashes(commits):
     git_cmd = 'git rev-list --abbrev-commit --topo-order --no-walk=sorted --reverse ' + ' '.join(commits)
@@ -18,6 +17,11 @@ argc = len(sys.argv)
 if argc < 3 and argc > 4:
     print("Usage: diff.py <dir-to-versions> <input-file> [git-repo]")
     sys.exit(1)
+
+# TODO: make parameters
+verbose = False
+do_compare = False
+#differ = difflib.Differ()
 
 directory = sys.argv[1]
 input_file = sys.argv[2]
@@ -50,11 +54,16 @@ if len(versions):
             versions.remove('cppcheck')
         versions = sort_commit_hashes(versions)
 
+last_ec = None
+last_out = None
+
 for version in versions:
     exe_path = os.path.join(directory, version)
     exe = os.path.join(exe_path, 'cppcheck')
     cmd = exe
     cmd += ' '
+    if do_compare:
+        cmd += ' -q '
     #cmd += ' --language=c '
     # TODO: get version for each commit
     if not use_hashes:
@@ -78,6 +87,58 @@ for version in versions:
         print('timeout')
         p.kill()
         comm = p.communicate()
+
+    ec = p.returncode
+    out = comm[0] + '\n' + comm[1]
+
+    if not do_compare:
+        print(version)
+        print(ec)
+        print(out)
+        continue
+
+    # filter out some false positives
+    # [*]: (information) Unmatched suppression: missingInclude
+    # [*]: (information) Unmatched suppression: missingIncludeSystem
+    # [*]: (information) Unmatched suppression: unmatchedSuppression
+    # [*]: (information) Unmatched suppression: unusedFunction
+    if not use_hashes and (Version(version) >= Version('1.48') or Version(version) <= Version('1.49')):
+        lines = out.splitlines()
+        out = ""
+        for line in lines:
+            if line.startswith('[*]: (information) Unmatched suppression:'):
+                continue
+            out += line + '\n'
+
+
+    out = out.strip()
+
+    if last_ec is None:
+        # first run - do nothing
+        last_ec = ec
+        last_out = out
+        continue
+
+    do_print = False
+
+    if last_ec != ec:
+        if verbose:
+            print("{}: exitcode changed".format(version))
+        do_print = True
+
+    if last_out != out:
+        if verbose:
+            print("{}: output changed".format(version))
+        do_print = True
+        #print('\n'.join(differ.compare([last_out], [out])))
+
+    if do_print:
+        print(last_ec)
+        print(last_out)
     print(version)
-    print(p.returncode)
-    print(comm[0] + '\n' + comm[1])
+
+    last_ec = ec
+    last_out = out
+
+print(last_ec)
+print(last_out)
