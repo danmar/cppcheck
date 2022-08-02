@@ -1737,7 +1737,7 @@ private:
                       "[test.cpp:5]: (style) Redundant condition: The condition 'x < 5' is redundant since 'x < 6' is sufficient.\n",
                       errout.str());
 
-        check("void f(const char *p) {\n"
+        check("void f(const char *p) {\n" // #10320
               "    if (!p || !*p || *p != 'x') {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition '!*p' is redundant since '*p != 'x'' is sufficient.\n",
