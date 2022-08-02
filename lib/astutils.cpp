@@ -945,7 +945,7 @@ bool exprDependsOnThis(const Token* expr, bool onVar, nonneg int depth)
         return false;
     } else if (onVar && expr->variable()) {
         const Variable* var = expr->variable();
-        return (var->isPrivate() || var->isPublic() || var->isProtected());
+        return ((var->isPrivate() || var->isPublic() || var->isProtected()) && !var->isStatic());
     }
     if (Token::simpleMatch(expr, "."))
         return exprDependsOnThis(expr->astOperand1(), onVar, depth);
@@ -2578,7 +2578,7 @@ bool isThisChanged(const Token* tok, int indirect, const Settings* settings, boo
     if ((Token::Match(tok->previous(), "%name% (") && !Token::simpleMatch(tok->astOperand1(), ".")) ||
         Token::Match(tok->tokAt(-3), "this . %name% (")) {
         if (tok->previous()->function()) {
-            return (!tok->previous()->function()->isConst());
+            return (!tok->previous()->function()->isConst() && !tok->previous()->function()->isStatic());
         } else if (!tok->previous()->isKeyword()) {
             return true;
         }
