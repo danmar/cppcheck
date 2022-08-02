@@ -288,7 +288,8 @@ void CheckNullPointer::nullPointerByDeRefAndChec()
         if (Token::Match(tok, "%num%|%char%|%str%"))
             continue;
 
-        if (!isNullablePointer(tok, mSettings))
+        if (!isNullablePointer(tok, mSettings) ||
+            (tok->str() == "." && isNullablePointer(tok->astOperand2(), mSettings) && tok->astOperand2()->getValue(0))) // avoid duplicate warning
             continue;
 
         // Can pointer be NULL?
