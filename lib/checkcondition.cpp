@@ -894,6 +894,61 @@ static std::string invertOperatorForOperandSwap(std::string s)
 }
 
 template<typename T>
+static int sign(const T v) {
+    return static_cast<int>(v > 0) - static_cast<int>(v < 0);
+}
+
+// returns 1 (-1) if the first (second) condition is sufficient, 0 if indeterminate
+template<typename T>
+static int sufficientCondition(std::string op1, const bool not1, const T value1, std::string op2, const bool not2, const T value2, const bool isAnd) {
+    auto transformOp = [](std::string& op, const bool invert) {
+        if (invert) {
+            if (op == "==")
+                op = "!=";
+            else if (op == "!=")
+                op = "==";
+            else if (op == "<")
+                op = ">=";
+            else if (op == ">")
+                op = "<=";
+            else if (op == "<=")
+                op = ">";
+            else if (op == ">=")
+                op = "<";
+        }
+    };
+    transformOp(op1, not1);
+    transformOp(op2, not2);
+    int res = 0;
+    bool equal = false;
+    if (op1 == op2) {
+        equal = true;
+        if (op1 == ">" || op1 == ">=")
+            res = sign(value1 - value2);
+        else if (op1 == "<" || op1 == "<=")
+            res = -sign(value1 - value2);
+    } else { // not equal
+        if (op1 == "!=")
+            res = 1;
+        else if (op2 == "!=")
+            res = -1;
+        else if (op1 == "==")
+            res = -1;
+        else if (op2 == "==")
+            res = 1;
+        else if (op1 == ">" && op2 == ">=")
+            res = sign(value1 - (value2 - 1));
+        else if (op1 == ">=" && op2 == ">")
+            res = sign((value1 - 1) - value2);
+        else if (op1 == "<" && op2 == "<=")
+            res = -sign(value1 - (value2 + 1));
+        else if (op1 == "<=" && op2 == "<")
+            res = -sign((value1 + 1) - value2);
+    }
+    return res * (isAnd == equal ? 1 : -1);
+}
+
+template<typename T>
 static bool checkIntRelation(const std::string &op, const T value1, const T value2)
 {
     return (op == "==" && value1 == value2) ||
@@ -1006,16 +1061,14 @@ static bool parseComparison(const Token *comp, bool *not1, std::string *op, std:
 static std::string conditionString(bool not1, const Token *expr1, const std::string &op, const std::string &value1)
 {
     if (expr1->astParent()->isComparisonOp())
-        return std::string(not1 ? "!(" : "") +
-               (expr1->isName() ? expr1->str() : std::string("EXPR")) +
+        return std::string(not1 ? "!(" : "") + expr1->expressionString() +
                " " +
                op +
                " " +
                value1 +
                (not1 ? ")" : "");
 
-    return std::string(not1 ? "!" : "") +
-           (expr1->isName() ? expr1->str() : std::string("EXPR"));
+    return std::string(not1 ? "!" : "") + expr1->expressionString();
 }
 
 static std::string conditionString(const Token * tok)
@@ -1198,6 +1251,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             // evaluate if expression is always true/false
             bool alwaysTrue = true, alwaysFalse = true;
             bool firstTrue = true, secondTrue = true;
+            const bool isAnd = tok->str() == "&&";
             for (int test = 1; test <= 5; ++test) {
                 // test:
                 // 1 => testvalue is less than both value1 and value2
@@ -1223,7 +1277,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                     result1 = !result1;
                 if (not2)
                     result2 = !result2;
-                if (tok->str() == "&&") {
+                if (isAnd) {
                     alwaysTrue &= (result1 && result2);
                     alwaysFalse &= !(result1 && result2);
                 } else {
@@ -1239,16 +1293,13 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (printWarning && (alwaysTrue || alwaysFalse)) {
                 const std::string text = cond1str + " " + tok->str() + " " + cond2str;
                 incorrectLogicOperatorError(tok, text, alwaysTrue, inconclusive, errorPath);
-            } else if (printStyle && secondTrue) {
-                const std::string text = "If '" + cond1str + "', the comparison '" + cond2str +
-                                         "' is always true.";
-                redundantConditionError(tok, text, inconclusive);
-            } else if (printStyle && firstTrue) {
-                //const std::string text = "The comparison " + cond1str + " is always " +
-                //                         (firstTrue ? "true" : "false") + " when " +
-                //                         cond2str + ".";
-                const std::string text = "If '" + cond2str + "', the comparison '" + cond1str +
-                                         "' is always true.";
+            } else if (printStyle && (firstTrue || secondTrue)) {
+                const int which = sufficientCondition(op1, not1, i1, op2, not2, i2, isAnd);
+                std::string text;
+                if (which != 0) {
+                    text = "The condition '" + (which == 1 ? cond2str : cond1str) + "' is redundant since '" + (which == 1 ? cond1str : cond2str) + "' is sufficient.";
+                } else
+                    text = "If '" + (secondTrue ? cond1str : cond2str) + "', the comparison '" + (secondTrue ? cond2str : cond1str) + "' is always true.";
                 redundantConditionError(tok, text, inconclusive);
             }
         }
