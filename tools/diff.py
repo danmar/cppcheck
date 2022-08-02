@@ -3,8 +3,18 @@ import os.path
 import subprocess
 import sys
 #import difflib
+import argparse
 
 from packaging.version import Version
+
+parser = argparse.ArgumentParser()
+parser.add_argument('dir', help='directory with versioned folders')
+parser.add_argument('infile', help='the file to analyze')
+parser.add_argument('repo', nargs='?', default=None, help='the git repository (for sorting commit hashes)')
+parser.add_argument('--compare', action='store_true')
+parser.add_argument('--verbose', action='store_true')
+#parser.add_argument('--diff', action='store_true') # TODO
+args = parser.parse_args()
 
 def sort_commit_hashes(commits):
     git_cmd = 'git rev-list --abbrev-commit --topo-order --no-walk=sorted --reverse ' + ' '.join(commits)
@@ -12,22 +22,13 @@ def sort_commit_hashes(commits):
     comm = p.communicate()
     return comm[0].splitlines()
 
-argc = len(sys.argv)
-
-if argc < 3 and argc > 4:
-    print("Usage: diff.py <dir-to-versions> <input-file> [git-repo]")
-    sys.exit(1)
-
-# TODO: make parameters
-verbose = False
-do_compare = False
+verbose = args.verbose
+do_compare = args.compare
 #differ = difflib.Differ()
 
-directory = sys.argv[1]
-input_file = sys.argv[2]
-git_repo = None
-if argc == 4:
-    git_repo = sys.argv[3]
+directory = args.dir
+input_file = args.infile
+git_repo = args.repo
 
 use_hashes = None
 versions = []
@@ -109,7 +110,6 @@ for version in versions:
             if line.startswith('[*]: (information) Unmatched suppression:'):
                 continue
             out += line + '\n'
-
 
     out = out.strip()
 
