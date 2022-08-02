@@ -670,13 +670,12 @@ private:
 
         check("void f() {\n" // #5475
               "    std::string(\"a\") + \"a\";\n"
-              "    return 0;\n"
               "}\n"
               "void f(std::string& a) {\n"
               "    a.erase(3) + \"suf\";\n"
               "}\n", /*inconclusive*/ true);
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
-                      "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n",
+                      "[test.cpp:5]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n",
                       errout.str());
     }
 
