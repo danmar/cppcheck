@@ -9,7 +9,7 @@ on: [push,pull_request]
 defaults:
   run:
     shell: cmd
-    
+
 jobs:
 
   build:
@@ -81,7 +81,7 @@ jobs:
       # no 32-bit Qt available
       - name: Install Qt ${{ matrix.qt_ver }}
         if: matrix.qt_ver != '' && matrix.arch == 'x64'
-        uses: jurplel/install-qt-action@v3
+        uses: jurplel/install-qt-action@v2
         with:
           aqtversion: '==2.0.6'
           version: ${{ matrix.qt_ver }}
