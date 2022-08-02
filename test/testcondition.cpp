@@ -1747,6 +1747,18 @@ private:
                       "[test.cpp:5]: (style) Redundant condition: The condition 'x < 5' is redundant since 'x < 6' is sufficient.\n",
                       errout.str());
 
+        check("void f(double x, bool& b) {\n"
+              "    b = x > 6.5 && x > 5.5;\n"
+              "    c = x > 5.5 || x > 6.5;\n"
+              "    d = x < 6.5 && x < 5.5;\n"
+              "    e = x < 5.5 || x < 6.5;\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Redundant condition: The condition 'x > 5.5' is redundant since 'x > 6.5' is sufficient.\n"
+                      "[test.cpp:3]: (style) Redundant condition: The condition 'x > 6.5' is redundant since 'x > 5.5' is sufficient.\n"
+                      "[test.cpp:4]: (style) Redundant condition: The condition 'x < 6.5' is redundant since 'x < 5.5' is sufficient.\n"
+                      "[test.cpp:5]: (style) Redundant condition: The condition 'x < 5.5' is redundant since 'x < 6.5' is sufficient.\n",
+                      errout.str());
+
         check("void f(const char *p) {\n" // #10320
               "    if (!p || !*p || *p != 'x') {}\n"
               "}\n");
