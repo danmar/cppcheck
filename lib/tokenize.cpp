@@ -1714,7 +1714,7 @@ void Tokenizer::simplifyTypedef()
                                 // skip over const/noexcept
                                 while (Token::Match(tok2->next(), "const|noexcept")) {
                                     tok2 = tok2->next();
-                                    if (Token::Match(tok2, "( true|false )"))
+                                    if (Token::Match(tok2->next(), "( true|false )"))
                                         tok2 = tok2->tokAt(3);
                                 }
 
