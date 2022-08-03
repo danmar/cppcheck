@@ -1068,6 +1068,21 @@ static const ValueFlow::Value* getInnerLifetime(const Token* tok,
     return nullptr;
 }
 
+static const Token* endOfExpression(const Token* tok)
+{
+    if (!tok)
+        return nullptr;
+    const Token* parent = tok->astParent();
+    while (Token::simpleMatch(parent, "."))
+        parent = parent->astParent();
+    if (!parent)
+        return tok->next();
+    const Token* endToken = nextAfterAstRightmostLeaf(parent);
+    if (!endToken)
+        return parent->next();
+    return endToken;
+}
+
 void CheckStl::invalidContainer()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -1120,9 +1135,7 @@ void CheckStl::invalidContainer()
                     }
                     if (Token::Match(assignExpr, "%assign%") && Token::Match(assignExpr->astOperand1(), "%var%"))
                         skipVarIds.insert(assignExpr->astOperand1()->varId());
-                    const Token* endToken = nextAfterAstRightmostLeaf(tok->next()->astParent());
-                    if (!endToken)
-                        endToken = tok->next();
+                    const Token* endToken = endOfExpression(tok);
                     const ValueFlow::Value* v = nullptr;
                     ErrorPath errorPath;
                     PathAnalysis::Info info =
