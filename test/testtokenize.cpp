@@ -2502,7 +2502,7 @@ private:
                "    double f1() const noexcept, f2 (double) const noexcept;\n"
                "};\n";
         ASSERT_EQUALS("class C {\n"
-                      "double f1 ( ) const noexcept ; double f2 ( double ) const noexcept ;\n"
+                      "double f1 ( ) const noexcept ( true ) ; double f2 ( double ) const noexcept ( true ) ;\n"
                       "} ;",
                       tokenizeAndStringify(code));
     }
@@ -4946,7 +4946,7 @@ private:
         ASSERT_EQUALS(result3, tokenizeAndStringify(code3));
 
         const char code4[] = "value_type * operator += (int) const noexcept ;";
-        const char result4[] = "value_type * operator+= ( int ) const noexcept ;";
+        const char result4[] = "value_type * operator+= ( int ) const noexcept ( true ) ;";
         ASSERT_EQUALS(result4, tokenizeAndStringify(code4));
 
         const char code5[] = "value_type * operator += (int) const noexcept ( true ) ;";
