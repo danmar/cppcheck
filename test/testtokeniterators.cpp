@@ -22,15 +22,6 @@
 #include "tokenize.h"
 
 
-namespace {
-
-    const char CODE_1[] =
-        "void f {"
-        "  skipThis(arg1, arg2, fail, arg4, arg5);"
-        "  reachThis();"
-        "}"
-    ;
-}
 
 
 class TestTokenIterators : public TestFixture {
@@ -40,8 +31,6 @@ public:
 private:
 
     void run() override {
-        //TEST_CASE(checkIteratorJumpInsideLoop);
-        //TEST_CASE(checkAssignAnotherIterator);
     }
 
     std::shared_ptr<Tokenizer> tokenize(const char code[]) {
@@ -53,43 +42,6 @@ private:
         return tokenizer;
     }
 
-    /*void checkIteratorJumpInsideLoop() {
-        auto tokenizer = tokenize(CODE_1);
-
-        bool expectedTokenReached = false;
-        for (auto tok : IterateTokens(tokenizer->list)) {
-            ASSERT(tok->str() != "fail");
-            if (tok->str() == "reachThis") {
-                expectedTokenReached = true;
-            }
-            if (Token::simpleMatch(tok, "skipThis (")) {
-                const Token* skipTo = tok->next()->link();
-                tok = skipTo;
-                continue;
-            }
-        }
-        ASSERT(expectedTokenReached);
-    }
-
-    void checkAssignAnotherIterator() {
-        auto tokenizer = tokenize(CODE_1);
-
-        for (auto tok : IterateTokens(tokenizer->list)) {
-            if (tok->str() == "skipThis") {
-                for (auto tok2 : IterateTokens(tokenizer->list)) {
-                    if (tok2->str() == "reachThis") {
-                        tok = tok2;
-                        ++tok2;
-                        ASSERT(tok->str() != tok2->str());
-                    }
-                }
-                // tok position should not be tangled with tok2
-                ASSERT(tok->str() == "reachThis");
-                ++tok;
-                ASSERT(tok->previous()->str() == "reachThis");
-            }
-        }
-    }*/
 };
 
 REGISTER_TEST(TestTokenIterators)
