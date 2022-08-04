@@ -1497,7 +1497,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
-            if (isConstVarExpression(tok, "[|(|&|+|-|*|/|%|^|>>|<<"))
+            if (isConstVarExpression(tok, "[|&|+|-|*|/|%|^|>>|<<", /*checkFunctionCalls*/ false))
                 continue;
 
             // there are specific warnings about nonzero expressions (pointer/unsigned)
@@ -1568,11 +1568,6 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
 
             if (isIfConstexpr(tok))
-                continue;
-            const Scope* fscope = tok->scope();
-            while (fscope && !fscope->function)
-                fscope = fscope->nestedIn;
-            if (fscope && fscope->function && fscope->function->isConstexpr())
                 continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());
