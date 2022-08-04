@@ -2406,6 +2406,20 @@ private:
               "    static_assert(1 == sizeof(char), \"test\");\n"
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace pal {\n" // #11237
+              "    struct AutoTimer {};\n"
+              "}\n"
+              "int main() {\n"
+              "    pal::AutoTimer();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct AutoTimer {};\n"
+              "int main() {\n"
+              "    AutoTimer();\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ptrptr() {

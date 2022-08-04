@@ -677,6 +677,11 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
                       "[test.cpp:5]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n",
                       errout.str());
+
+        check("void f(XMLElement& parent) {\n" // #11234
+              "    auto** elem = &parent.firstChild;\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
