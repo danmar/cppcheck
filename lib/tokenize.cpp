@@ -4106,7 +4106,7 @@ void Tokenizer::setVarIdPass1()
             }
         }
 
-        if (tok->isName()) {
+        if (tok->isName() && !tok->isKeyword()) {
             // don't set variable id after a struct|enum|union
             if (Token::Match(tok->previous(), "struct|enum|union") || (isCPP() && tok->strAt(-1) == "class"))
                 continue;
