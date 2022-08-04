@@ -2424,7 +2424,12 @@ private:
         check("void f() {\n" // #8666
               "    asm(\"assembler code\");\n"
               "    asm volatile(\"assembler code\");\n"
-              "}\n", /*cpp*/ true);
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" 
+              "    asm goto(\"assembler code\");\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 
