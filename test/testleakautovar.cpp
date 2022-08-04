@@ -2420,6 +2420,12 @@ private:
               "    AutoTimer();\n"
               "}\n", /*cpp*/ true);
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #8666
+              "    asm(\"assembler code\");\n"
+              "    asm volatile(\"assembler code\");\n"
+              "}\n", /*cpp*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ptrptr() {
