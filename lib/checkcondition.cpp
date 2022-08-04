@@ -1569,6 +1569,11 @@ void CheckCondition::alwaysTrueFalse()
 
             if (isIfConstexpr(tok))
                 continue;
+            const Scope* fscope = tok->scope();
+            while (fscope && !fscope->function)
+                fscope = fscope->nestedIn;
+            if (fscope && fscope->function && fscope->function->isConstexpr())
+                continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());
         }

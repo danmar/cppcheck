@@ -4281,6 +4281,14 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("constexpr int f() {\n" // #11238
+              "    return 1;\n"
+              "}\n"
+              "constexpr bool g() {\n"
+              "    return f() == 1;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
