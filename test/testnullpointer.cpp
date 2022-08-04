@@ -138,6 +138,7 @@ private:
         TEST_CASE(nullpointer92);
         TEST_CASE(nullpointer93); // #3929
         TEST_CASE(nullpointer94); // #11040
+        TEST_CASE(nullpointer95); // #11142
         TEST_CASE(nullpointer_addressOf); // address of
         TEST_CASE(nullpointerSwitch); // #2626
         TEST_CASE(nullpointer_cast); // #4692
@@ -2747,6 +2748,16 @@ private:
               "    *kep = (struct entry*)malloc(sizeof(**kep));\n"
               "    (*kep)->next = 0;\n"
               "    (*kep)->len = slen;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void nullpointer95() // #11142
+    {
+        check("void f(std::vector<int*>& v) {\n"
+              "    for (auto& p : v)\n"
+              "        if (*p < 2)\n"
+              "            p = nullptr;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
