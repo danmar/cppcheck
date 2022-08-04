@@ -2427,7 +2427,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n" 
+        check("void f() {\n" // #11239
               "    asm goto(\"assembler code\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
