@@ -293,7 +293,7 @@ static bool inBooleanFunction(const Token *tok)
 
 void CheckCondition::checkBadBitmaskCheck()
 {
-    if (!mSettings->severity.isEnabled(Severity::warning))
+    if (!mSettings->severity.isEnabled(Severity::style))
         return;
 
     for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
@@ -311,6 +311,11 @@ void CheckCondition::checkBadBitmaskCheck()
             if (isBoolean && isTrue)
                 badBitmaskCheckError(tok);
 
+            // If there are #ifdef in the expression don't warn about redundant | to avoid FP
+            const auto& startStop = tok->findExpressionStartEndTokens();
+            if (mTokenizer->hasIfdef(startStop.first, startStop.second))
+                continue;
+
             const bool isZero1 = (tok->astOperand1()->hasKnownIntValue() && tok->astOperand1()->values().front().intvalue == 0);
             const bool isZero2 = (tok->astOperand2()->hasKnownIntValue() && tok->astOperand2()->values().front().intvalue == 0);
 
@@ -323,7 +328,7 @@ void CheckCondition::checkBadBitmaskCheck()
 void CheckCondition::badBitmaskCheckError(const Token *tok, bool isNoOp)
 {
     if (isNoOp)
-        reportError(tok, Severity::warning, "badBitmaskCheck", "Operator '|' with one operand equal to zero is redundant.", CWE571, Certainty::normal);
+        reportError(tok, Severity::style, "badBitmaskCheck", "Operator '|' with one operand equal to zero is redundant.", CWE571, Certainty::normal);
     else
         reportError(tok, Severity::warning, "badBitmaskCheck", "Result of operator '|' is always true if one operand is non-zero. Did you intend to use '&'?", CWE571, Certainty::normal);
 }
@@ -816,8 +821,8 @@ void CheckCondition::oppositeInnerConditionError(const Token *tok1, const Token*
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "!x");
     const std::string innerSmt = innerSmtString(tok2);
-    errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
-    errorPath.emplace_back(ErrorPathItem(tok2, "opposite inner condition: " + s2));
+    errorPath.emplace_back(tok1, "outer condition: " + s1);
+    errorPath.emplace_back(tok2, "opposite inner condition: " + s2);
 
     const std::string msg("Opposite inner '" + innerSmt + "' condition leads to a dead code block.\n"
                           "Opposite inner '" + innerSmt + "' condition leads to a dead code block (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
@@ -831,8 +836,8 @@ void CheckCondition::identicalInnerConditionError(const Token *tok1, const Token
     const std::string s1(tok1 ? tok1->expressionString() : "x");
     const std::string s2(tok2 ? tok2->expressionString() : "x");
     const std::string innerSmt = innerSmtString(tok2);
-    errorPath.emplace_back(ErrorPathItem(tok1, "outer condition: " + s1));
-    errorPath.emplace_back(ErrorPathItem(tok2, "identical inner condition: " + s2));
+    errorPath.emplace_back(tok1, "outer condition: " + s1);
+    errorPath.emplace_back(tok2, "identical inner condition: " + s2);
 
     const std::string msg("Identical inner '" + innerSmt + "' condition is always true.\n"
                           "Identical inner '" + innerSmt + "' condition is always true (outer condition is '" + s1 + "' and inner condition is '" + s2 + "').");
@@ -849,8 +854,8 @@ void CheckCondition::identicalConditionAfterEarlyExitError(const Token *cond1, c
     const std::string cond(cond1 ? cond1->expressionString() : "x");
     const std::string value = (cond2 && cond2->valueType() && cond2->valueType()->type == ValueType::Type::BOOL) ? "false" : "0";
 
-    errorPath.emplace_back(ErrorPathItem(cond1, "If condition '" + cond + "' is true, the function will return/exit"));
-    errorPath.emplace_back(ErrorPathItem(cond2, (isReturnValue ? "Returning identical expression '" : "Testing identical condition '") + cond + "'"));
+    errorPath.emplace_back(cond1, "If condition '" + cond + "' is true, the function will return/exit");
+    errorPath.emplace_back(cond2, (isReturnValue ? "Returning identical expression '" : "Testing identical condition '") + cond + "'");
 
     reportError(errorPath,
                 Severity::warning,
@@ -886,6 +891,61 @@ static std::string invertOperatorForOperandSwap(std::string s)
     else if (s[0] == '>')
         s[0] = '<';
     return s;
+}
+
+template<typename T>
+static int sign(const T v) {
+    return static_cast<int>(v > 0) - static_cast<int>(v < 0);
+}
+
+// returns 1 (-1) if the first (second) condition is sufficient, 0 if indeterminate
+template<typename T>
+static int sufficientCondition(std::string op1, const bool not1, const T value1, std::string op2, const bool not2, const T value2, const bool isAnd) {
+    auto transformOp = [](std::string& op, const bool invert) {
+        if (invert) {
+            if (op == "==")
+                op = "!=";
+            else if (op == "!=")
+                op = "==";
+            else if (op == "<")
+                op = ">=";
+            else if (op == ">")
+                op = "<=";
+            else if (op == "<=")
+                op = ">";
+            else if (op == ">=")
+                op = "<";
+        }
+    };
+    transformOp(op1, not1);
+    transformOp(op2, not2);
+    int res = 0;
+    bool equal = false;
+    if (op1 == op2) {
+        equal = true;
+        if (op1 == ">" || op1 == ">=")
+            res = sign(value1 - value2);
+        else if (op1 == "<" || op1 == "<=")
+            res = -sign(value1 - value2);
+    } else { // not equal
+        if (op1 == "!=")
+            res = 1;
+        else if (op2 == "!=")
+            res = -1;
+        else if (op1 == "==")
+            res = -1;
+        else if (op2 == "==")
+            res = 1;
+        else if (op1 == ">" && op2 == ">=")
+            res = sign(value1 - (value2 - 1));
+        else if (op1 == ">=" && op2 == ">")
+            res = sign((value1 - 1) - value2);
+        else if (op1 == "<" && op2 == "<=")
+            res = -sign(value1 - (value2 + 1));
+        else if (op1 == "<=" && op2 == "<")
+            res = -sign((value1 + 1) - value2);
+    }
+    return res * (isAnd == equal ? 1 : -1);
 }
 
 template<typename T>
@@ -1001,16 +1061,14 @@ static bool parseComparison(const Token *comp, bool *not1, std::string *op, std:
 static std::string conditionString(bool not1, const Token *expr1, const std::string &op, const std::string &value1)
 {
     if (expr1->astParent()->isComparisonOp())
-        return std::string(not1 ? "!(" : "") +
-               (expr1->isName() ? expr1->str() : std::string("EXPR")) +
+        return std::string(not1 ? "!(" : "") + expr1->expressionString() +
                " " +
                op +
                " " +
                value1 +
                (not1 ? ")" : "");
 
-    return std::string(not1 ? "!" : "") +
-           (expr1->isName() ? expr1->str() : std::string("EXPR"));
+    return std::string(not1 ? "!" : "") + expr1->expressionString();
 }
 
 static std::string conditionString(const Token * tok)
@@ -1193,6 +1251,7 @@ void CheckCondition::checkIncorrectLogicOperator()
             // evaluate if expression is always true/false
             bool alwaysTrue = true, alwaysFalse = true;
             bool firstTrue = true, secondTrue = true;
+            const bool isAnd = tok->str() == "&&";
             for (int test = 1; test <= 5; ++test) {
                 // test:
                 // 1 => testvalue is less than both value1 and value2
@@ -1218,7 +1277,7 @@ void CheckCondition::checkIncorrectLogicOperator()
                     result1 = !result1;
                 if (not2)
                     result2 = !result2;
-                if (tok->str() == "&&") {
+                if (isAnd) {
                     alwaysTrue &= (result1 && result2);
                     alwaysFalse &= !(result1 && result2);
                 } else {
@@ -1234,16 +1293,13 @@ void CheckCondition::checkIncorrectLogicOperator()
             if (printWarning && (alwaysTrue || alwaysFalse)) {
                 const std::string text = cond1str + " " + tok->str() + " " + cond2str;
                 incorrectLogicOperatorError(tok, text, alwaysTrue, inconclusive, errorPath);
-            } else if (printStyle && secondTrue) {
-                const std::string text = "If '" + cond1str + "', the comparison '" + cond2str +
-                                         "' is always true.";
-                redundantConditionError(tok, text, inconclusive);
-            } else if (printStyle && firstTrue) {
-                //const std::string text = "The comparison " + cond1str + " is always " +
-                //                         (firstTrue ? "true" : "false") + " when " +
-                //                         cond2str + ".";
-                const std::string text = "If '" + cond2str + "', the comparison '" + cond1str +
-                                         "' is always true.";
+            } else if (printStyle && (firstTrue || secondTrue)) {
+                const int which = isfloat ? sufficientCondition(op1, not1, d1, op2, not2, d2, isAnd) : sufficientCondition(op1, not1, i1, op2, not2, i2, isAnd);
+                std::string text;
+                if (which != 0) {
+                    text = "The condition '" + (which == 1 ? cond2str : cond1str) + "' is redundant since '" + (which == 1 ? cond1str : cond2str) + "' is sufficient.";
+                } else
+                    text = "If '" + (secondTrue ? cond1str : cond2str) + "', the comparison '" + (secondTrue ? cond2str : cond1str) + "' is always true.";
                 redundantConditionError(tok, text, inconclusive);
             }
         }

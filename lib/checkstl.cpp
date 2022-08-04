@@ -809,7 +809,7 @@ void CheckStl::mismatchingContainers()
                 if (!i)
                     continue;
                 const Token * const argTok = args[argnr - 1];
-                containers[i->container].push_back({argTok, i});
+                containers[i->container].emplace_back(ArgIteratorInfo{argTok, i});
             }
 
             // Lambda is used to escape the nested loops
@@ -1002,7 +1002,7 @@ struct InvalidContainerAnalyzer {
                 ep.emplace_front(ftok,
                                  "After calling '" + ftok->expressionString() +
                                  "', iterators or references to the container's data may be invalid .");
-                result.push_back(Info::Reference{tok, ep, ftok});
+                result.emplace_back(Info::Reference{tok, ep, ftok});
             }
         }
         return result;

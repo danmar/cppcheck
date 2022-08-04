@@ -984,7 +984,7 @@ void CmdLineParser::printHelp()
         "*.ixx, *.tpp, and *.txx files are checked recursively from the given directory.\n\n"
         "Options:\n"
         "    --addon=<addon>\n"
-        "                         Execute addon. i.e. --addon=cert. If options must be\n"
+        "                         Execute addon. i.e. --addon=misra. If options must be\n"
         "                         provided a json configuration is needed.\n"
         "    --addon-python=<python interpreter>\n"
         "                         You can specify the python interpreter either in the\n"

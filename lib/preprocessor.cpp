@@ -56,8 +56,8 @@ static std::string trim(const std::string& s)
     return s.substr(beg, end - beg + 1);
 }
 
-Directive::Directive(const std::string &_file, const int _linenr, const std::string &_str) :
-    file(_file),
+Directive::Directive(std::string _file, const int _linenr, const std::string &_str) :
+    file(std::move(_file)),
     linenr(_linenr),
     str(trim(_str))
 {}
@@ -78,7 +78,7 @@ Preprocessor::~Preprocessor()
 
 namespace {
     struct BadInlineSuppression {
-        BadInlineSuppression(const simplecpp::Location &l, const std::string &msg) : location(l), errmsg(msg) {}
+        BadInlineSuppression(const simplecpp::Location &l, std::string msg) : location(l), errmsg(std::move(msg)) {}
         simplecpp::Location location;
         std::string errmsg;
     };
@@ -110,7 +110,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
         std::vector<Suppressions::Suppression> suppressions = Suppressions::parseMultiSuppressComment(comment, &errmsg);
 
         if (!errmsg.empty())
-            bad->push_back(BadInlineSuppression(tok->location, errmsg));
+            bad->emplace_back(tok->location, errmsg);
 
         for (const Suppressions::Suppression &s : suppressions) {
             if (!s.errorId.empty())
@@ -127,7 +127,7 @@ static bool parseInlineSuppressionCommentToken(const simplecpp::Token *tok, std:
             inlineSuppressions.push_back(s);
 
         if (!errmsg.empty())
-            bad->push_back(BadInlineSuppression(tok->location, errmsg));
+            bad->emplace_back(tok->location, errmsg);
     }
 
     return true;

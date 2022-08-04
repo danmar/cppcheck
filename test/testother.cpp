@@ -10347,6 +10347,12 @@ private:
               "  }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i, int j) {\n" // #11191
+              "    const int c = pow(2, i);\n"
+              "    if (j % c) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void sameExpressionPointers() {

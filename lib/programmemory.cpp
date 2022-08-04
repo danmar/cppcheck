@@ -709,133 +709,145 @@ static std::unordered_map<std::string, BuiltinLibraryFunction> createBuiltinLibr
         return v;
     };
     functions["atan2"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::atan2(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["remainder"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::remainder(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["nextafter"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::nextafter(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["nexttoward"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::nexttoward(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["hypot"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::hypot(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["fdim"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::fdim(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["fmax"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::fmax(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["fmin"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::fmin(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["fmod"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::fmod(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["pow"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::pow(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["scalbln"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::scalbln(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;
     };
     functions["ldexp"] = [](const std::vector<ValueFlow::Value>& args) {
-        if (args.size() != 2)
-            return ValueFlow::Value::unknown();
-        ValueFlow::Value v = args[0];
-        if (!v.isFloatValue() && !v.isIntValue())
+        if (args.size() != 2 || !std::all_of(args.begin(), args.end(), [](const ValueFlow::Value& v) {
+            return v.isFloatValue() || v.isIntValue();
+        }))
             return ValueFlow::Value::unknown();
         double value = args[0].isFloatValue() ? args[0].floatValue : args[0].intvalue;
+        ValueFlow::Value v;
+        combineValueProperties(args[0], args[1], &v);
         v.floatValue = std::ldexp(value, args[1].isFloatValue() ? args[1].floatValue : args[1].intvalue);
         v.valueType = ValueFlow::Value::ValueType::FLOAT;
         return v;

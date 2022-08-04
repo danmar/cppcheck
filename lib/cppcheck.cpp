@@ -351,7 +351,7 @@ CppCheck::CppCheck(ErrorLogger &errorLogger,
     , mUseGlobalSuppressions(useGlobalSuppressions)
     , mTooManyConfigs(false)
     , mSimplify(true)
-    , mExecuteCommand(executeCommand)
+    , mExecuteCommand(std::move(executeCommand))
 {}
 
 CppCheck::~CppCheck()

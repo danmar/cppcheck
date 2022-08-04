@@ -437,6 +437,45 @@ class Token:
     def isBinaryOp(self):
         return self.astOperand1 and self.astOperand2
 
+    def forward(self, end=None):
+        token = self
+        while token and token != end:
+            yield token
+            token = token.next
+
+    def backward(self, start=None):
+        token = self
+        while token and token != start:
+            yield token
+            token = token.previous
+
+    def astParents(self):
+        token = self
+        while token and token.astParent:
+            token = token.astParent
+            yield token
+
+    def astTop(self):
+        top = None
+        for parent in self.astParents():
+            top = parent
+        return top
+
+    def tokAt(self, n):
+        tl = self.forward()
+        if n < 0:
+            tl = self.backward()
+            n = -n
+        for i, t in enumerate(tl):
+            if i == n:
+                return t
+
+    def linkAt(self, n):
+        token = self.tokAt(n)
+        if token:
+            return token.link
+        return None
+
 class Scope:
     """
     Scope. Information about global scope, function scopes, class scopes, inner scopes, etc.

@@ -45,7 +45,7 @@
 typedef struct {
   union { // 19.2
     struct {
-      unsigned a : 2; // 8.1
+      unsigned a : 2;
       unsigned : 14;
     };
     uint16_t value;
