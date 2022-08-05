@@ -31,9 +31,9 @@
 
 
 
- /**
-  * @brief  Provides GetBeginToken() and GetEndToken() for various token-range objects to be used in ITERATE_TOKENS macro
-  */
+/**
+ * @brief  Provides GetBeginToken() and GetEndToken() for various token-range objects to be used in ITERATE_TOKENS macro
+ */
 class IterHelpers {
 public:
     // start and end token
@@ -118,7 +118,7 @@ public:
         iterator(const iterator& it)
             : mTok(it.mTok)
         {};
-        
+
         ~iterator() {};
 
         iterator(iterator&& it) noexcept = default;

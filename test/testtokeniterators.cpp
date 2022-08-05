@@ -30,8 +30,7 @@ public:
 
 private:
 
-    void run() override {
-    }
+    void run() override {}
 
     std::shared_ptr<Tokenizer> tokenize(const char code[]) {
         Settings settings0;
