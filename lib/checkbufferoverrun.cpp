@@ -41,6 +41,7 @@
 #include <numeric> // std::accumulate
 #include <sstream>
 #include <tinyxml2.h>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -687,7 +688,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        for (ITERATE_TOKENS(tok, scope)) {
             if (Token::simpleMatch(tok, "sizeof (")) {
                 tok = tok->linkAt(1);
                 continue;

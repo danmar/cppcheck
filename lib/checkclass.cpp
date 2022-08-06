@@ -41,6 +41,7 @@
 #include <unordered_map>
 
 #include <tinyxml2.h>
+#include "tokeniterators.h"
 
 namespace CTU {
     class FileInfo;
@@ -949,7 +950,7 @@ void CheckClass::initializeVarList(const Function &func, std::list<const Functio
                     callstack.pop_back();
 
                     // Assume that variables that are passed to it are initialized..
-                    for (const Token *tok2 = ftok; tok2; tok2 = tok2->next()) {
+                    for (ITERATE_TOKENS(tok2, ftok)) {
                         if (Token::Match(tok2, "[;{}]"))
                             break;
                         if (Token::Match(tok2, "[(,] &| %name% [,)]")) {
@@ -2254,7 +2255,7 @@ bool CheckClass::checkConstFunc(const Scope *scope, const Function *func, bool& 
 
     // if the function doesn't have any assignment nor function call,
     // it can be a const function..
-    for (const Token *tok1 = func->functionScope->bodyStart; tok1 && tok1 != func->functionScope->bodyEnd; tok1 = tok1->next()) {
+    for (ITERATE_TOKENS(tok1, func->functionScope)) {
         if (tok1->isName() && isMemberVar(scope, tok1)) {
             memberAccessed = true;
             const Variable* v = tok1->variable();
@@ -2959,9 +2960,7 @@ bool CheckClass::checkThisUseAfterFreeRecursive(const Scope *classScope, const F
         return false;
     callstack.insert(func);
 
-    const Token * const bodyStart = func->functionScope->bodyStart;
-    const Token * const bodyEnd = func->functionScope->bodyEnd;
-    for (const Token *tok = bodyStart; tok != bodyEnd; tok = tok->next()) {
+    for (ITERATE_TOKENS(tok, func->functionScope)) {
         const bool isDestroyed = *freeToken != nullptr && !func->isStatic();
         if (Token::Match(tok, "delete %var% ;") && selfPointer == tok->next()->variable()) {
             *freeToken = tok;

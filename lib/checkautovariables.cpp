@@ -34,6 +34,7 @@
 #include <unordered_set>
 #include <utility>
 #include <vector>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -235,7 +236,7 @@ void CheckAutoVariables::autoVariables()
     const bool printInconclusive = mSettings->certainty.isEnabled(Certainty::inconclusive);
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        for (ITERATE_TOKENS(tok, scope)) {
             // Skip lambda..
             if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
                 tok = lambdaEndToken;
@@ -297,7 +298,7 @@ bool CheckAutoVariables::checkAutoVariableAssignment(const Token *expr, bool inc
 {
     if (!startToken)
         startToken = Token::findsimplematch(expr, "=")->next();
-    for (const Token *tok = startToken; tok; tok = tok->next()) {
+    for (ITERATE_TOKENS(tok, startToken)) {
         if (tok->str() == "}" && tok->scope()->type == Scope::ScopeType::eFunction)
             errorAutoVariableAssignment(expr, inconclusive);
 
@@ -531,7 +532,7 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
     if (scope->bodyStart != start)
         return;
     bool returnRef = Function::returnsReference(scope->function);
-    for (const Token *tok = start; tok && tok != end; tok = tok->next()) {
+    for (ITERATE_TOKENS(tok, start, end)) {
         // Return reference from function
         if (returnRef && Token::simpleMatch(tok->astParent(), "return")) {
             for (const LifetimeToken& lt : getLifetimeTokens(tok, true)) {

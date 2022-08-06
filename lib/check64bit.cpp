@@ -29,6 +29,7 @@
 #include "tokenize.h"
 
 #include <vector>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -61,7 +62,7 @@ void Check64BitPortability::pointerassignment()
         else
             continue;
 
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (ITERATE_TOKENS(tok, scope)) {
             // skip nested functions
             if (tok->str() == "{") {
                 if (tok->scope()->type == Scope::ScopeType::eFunction || tok->scope()->type == Scope::ScopeType::eLambda)
