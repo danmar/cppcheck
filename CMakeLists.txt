@@ -35,6 +35,13 @@ if (LIBXML2_XMLLINT_EXECUTABLE)
     # this is a symbolic name for a build rule and not an output file
     set_source_files_properties(validateCFG-cmd PROPERTIES SYMBOLIC "true")
 
+    add_custom_target(validatePlatforms ${LIBXML2_XMLLINT_EXECUTABLE} --noout ${CMAKE_SOURCE_DIR}/platforms/cppcheck-platforms.rng)
+    foreach(platform ${platforms})
+        get_filename_component(platformname ${platform} NAME_WE)
+        add_custom_target(validatePlatforms-${platformname} ${LIBXML2_XMLLINT_EXECUTABLE} --noout --relaxng ${CMAKE_SOURCE_DIR}/platforms/cppcheck-platforms.rng ${platform})
+        add_dependencies(validatePlatforms validatePlatforms-${platformname})
+    endforeach()
+
     add_custom_target(errorlist-xml $<TARGET_FILE:cppcheck> --errorlist > ${CMAKE_BINARY_DIR}/errorlist.xml
             DEPENDS cppcheck)
 

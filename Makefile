@@ -375,6 +375,7 @@ PlatformFilesCHECKED := $(patsubst %.xml,%.checked,$(PlatformFiles))
 %.checked:%.xml
 	xmllint --noout --relaxng platforms/cppcheck-platforms.rng $<
 validatePlatforms: ${PlatformFilesCHECKED}
+	xmllint --noout platforms/cppcheck-platforms.rng
 
 # Validate XML output (to detect regressions)
 /tmp/errorlist.xml: cppcheck
