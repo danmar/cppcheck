@@ -23,6 +23,7 @@
 #include "token.h"
 
 #include <vector>
+#include "tokeniterators.h"
 
 // Register this check class (by creating a static instance of it)
 namespace {
@@ -35,7 +36,7 @@ void CheckBoost::checkBoostForeachModification()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart->next(); tok && tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!Token::simpleMatch(tok, "BOOST_FOREACH ("))
                 continue;
 
@@ -43,11 +44,10 @@ void CheckBoost::checkBoostForeachModification()
             if (!Token::Match(containerTok, "%var% ) {"))
                 continue;
 
-            const Token *tok2 = containerTok->tokAt(2);
-            const Token *end = tok2->link();
-            for (; tok2 != end; tok2 = tok2->next()) {
+            auto foreachScope = IterateTokens::UntilLinked(containerTok->tokAt(2));
+            for (const auto& tok2 : foreachScope) {
                 if (Token::Match(tok2, "%varid% . insert|erase|push_back|push_front|pop_front|pop_back|clear|swap|resize|assign|merge|remove|remove_if|reverse|sort|splice|unique|pop|push", containerTok->varId())) {
-                    const Token* nextStatement = Token::findsimplematch(tok2->linkAt(3), ";", end);
+                    const Token* nextStatement = Token::findsimplematch(tok2->linkAt(3), ";", foreachScope.end());
                     if (!Token::Match(nextStatement, "; break|return|throw"))
                         boostForeachError(tok2);
                     break;

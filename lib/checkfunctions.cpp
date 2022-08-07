@@ -34,6 +34,7 @@
 #include <ostream>
 #include <unordered_map>
 #include <vector>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -57,7 +58,7 @@ void CheckFunctions::checkProhibitedFunctions()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!Token::Match(tok, "%name% (") && tok->varId() == 0)
                 continue;
             // alloca() is special as it depends on the code being C or C++, so it is not in Library
@@ -100,7 +101,7 @@ void CheckFunctions::invalidFunctionUsage()
 {
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto &tok : IterateTokens(scope)) {
             if (!Token::Match(tok, "%name% ( !!)"))
                 continue;
             const Token * const functionToken = tok;
@@ -421,7 +422,7 @@ void CheckFunctions::checkMathFunctions()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (tok->varId())
                 continue;
             if (printWarnings && Token::Match(tok, "%name% ( !!)")) {
@@ -503,7 +504,7 @@ void CheckFunctions::memsetZeroBytes()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto &tok : IterateTokens(scope)) {
             if (Token::Match(tok, "memset|wmemset (") && (numberOfArguments(tok)==3)) {
                 const std::vector<const Token *> &arguments = getArguments(tok);
                 if (WRONG_DATA(arguments.size() != 3U, tok))
@@ -542,7 +543,7 @@ void CheckFunctions::memsetInvalid2ndParam()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
+        for (const auto &tok : IterateTokens(scope)) {
             if (!Token::simpleMatch(tok, "memset ("))
                 continue;
 
@@ -597,7 +598,7 @@ void CheckFunctions::checkLibraryMatchFunctions()
         return;
 
     bool insideNew = false;
-    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+    for (const auto& tok : IterateTokens(mTokenizer)) {
         if (!tok->scope() || !tok->scope()->isExecutable())
             continue;
 

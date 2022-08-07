@@ -1503,7 +1503,7 @@ static void valueFlowArrayElement(TokenList* tokenlist, const Settings* settings
 
                 ValueFlow::Value result(0);
                 result.condition = arrayValue.condition ? arrayValue.condition : indexValue.condition;
-                result.setInconclusive(arrayValue.isInconclusive() | indexValue.isInconclusive());
+                result.setInconclusive(arrayValue.isInconclusive() || indexValue.isInconclusive());
                 result.varId = (arrayValue.varId != 0) ? arrayValue.varId : indexValue.varId;
                 result.varvalue = (result.varId == arrayValue.varId) ? arrayValue.intvalue : indexValue.intvalue;
                 if (arrayValue.valueKind == indexValue.valueKind)

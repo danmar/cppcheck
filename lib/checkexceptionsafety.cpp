@@ -27,6 +27,7 @@
 #include <set>
 #include <utility>
 #include <vector>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -121,8 +122,7 @@ void CheckExceptionSafety::deallocThrow()
             const Token *throwToken = nullptr;
 
             // is there a throw after the deallocation?
-            const Token* const end2 = tok->scope()->bodyEnd;
-            for (const Token *tok2 = tok; tok2 != end2; tok2 = tok2->next()) {
+            for (const auto& tok2 : IterateTokens::UntilScopeEnd(tok)) {
                 // Throw after delete -> Dead pointer
                 if (tok2->str() == "throw") {
                     if (printInconclusive) { // For inconclusive checking, throw directly.
@@ -325,8 +325,8 @@ void CheckExceptionSafety::unhandledExceptionSpecification()
         if (scope->function && !scope->function->isThrow() &&
             scope->className != "main" && scope->className != "wmain" &&
             scope->className != "_tmain" && scope->className != "WinMain") {
-            for (const Token *tok = scope->function->functionScope->bodyStart->next();
-                 tok != scope->function->functionScope->bodyEnd; tok = tok->next()) {
+
+            for (const auto& tok : IterateTokens(scope->function->functionScope)) {
                 if (tok->str() == "try") {
                     break;
                 } else if (tok->function()) {

@@ -47,41 +47,58 @@ enum class ChildrenToVisit {
 /**
  * Visit AST nodes recursively. The order is not "well defined"
  */
-template<class T, class TFunc, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
-void visitAstNodes(T *ast, const TFunc &visitor)
+namespace {
+
+    template<class T, class TFunc, REQUIRES("T must be a Token class", std::is_convertible<T*, const Token*> )>
+    void tplVisitAstNodes(T* ast, const TFunc& visitor)
+    {
+        if (!ast)
+            return;
+
+        std::vector<T*> tokensContainer;
+        // the size of 8 was determined in tests to be sufficient to avoid excess allocations. also add 1 as a buffer.
+        // we might need to increase that value in the future.
+        tokensContainer.reserve(8 + 1);
+        std::stack<T*, std::vector<T*>> tokens(std::move(tokensContainer));
+        T* tok = ast;
+        do {
+            ChildrenToVisit c = visitor(tok);
+
+            if (c == ChildrenToVisit::done)
+                break;
+            if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2) {
+                T* t2 = tok->astOperand2();
+                if (t2)
+                    tokens.push(t2);
+            }
+            if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2) {
+                T* t1 = tok->astOperand1();
+                if (t1)
+                    tokens.push(t1);
+            }
+
+            if (tokens.empty())
+                break;
+
+            tok = tokens.top();
+            tokens.pop();
+        } while (true);
+    }
+
+} // namespace
+
+template<class TFunc>
+void visitAstNodes(const Token* ast, const TFunc& visitor)
 {
-    if (!ast)
-        return;
-
-    std::vector<T *> tokensContainer;
-    // the size of 8 was determined in tests to be sufficient to avoid excess allocations. also add 1 as a buffer.
-    // we might need to increase that value in the future.
-    tokensContainer.reserve(8 + 1);
-    std::stack<T *, std::vector<T *>> tokens(std::move(tokensContainer));
-    T *tok = ast;
-    do {
-        ChildrenToVisit c = visitor(tok);
-
-        if (c == ChildrenToVisit::done)
-            break;
-        if (c == ChildrenToVisit::op2 || c == ChildrenToVisit::op1_and_op2) {
-            T *t2 = tok->astOperand2();
-            if (t2)
-                tokens.push(t2);
-        }
-        if (c == ChildrenToVisit::op1 || c == ChildrenToVisit::op1_and_op2) {
-            T *t1 = tok->astOperand1();
-            if (t1)
-                tokens.push(t1);
-        }
-
-        if (tokens.empty())
-            break;
-
-        tok = tokens.top();
-        tokens.pop();
-    } while (true);
+    tplVisitAstNodes(ast, visitor);
 }
+
+template<class TFunc>
+void visitAstNodes(Token* ast, const TFunc& visitor)
+{
+    tplVisitAstNodes(ast, visitor);
+}
+
 
 template<class TFunc>
 const Token* findAstNode(const Token* ast, const TFunc& pred)

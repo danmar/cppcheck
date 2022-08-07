@@ -36,6 +36,7 @@
 #include <memory>
 #include <set>
 #include <vector>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -461,7 +462,7 @@ void CheckNullPointer::arithmetic()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!Token::Match(tok, "-|+|+=|-=|++|--"))
                 continue;
             const Token *pointerOperand;

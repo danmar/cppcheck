@@ -30,6 +30,7 @@
 
 #include <list>
 #include <vector>
+#include "tokeniterators.h"
 //---------------------------------------------------------------------------
 
 // Register this check class (by creating a static instance of it)
@@ -55,7 +56,7 @@ void CheckBool::checkIncrementBoolean()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (astIsBool(tok) && tok->astParent() && tok->astParent()->str() == "++") {
                 incrementBooleanError(tok);
             }
@@ -98,7 +99,7 @@ void CheckBool::checkBitwiseOnBoolean()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (tok->isBinaryOp()) {
                 bool isCompound{};
                 if (tok->str() == "&" || tok->str() == "|")
@@ -151,7 +152,7 @@ void CheckBool::checkComparisonOfBoolWithInt()
 
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!tok->isComparisonOp() || !tok->isBinaryOp())
                 continue;
             const Token* const left = tok->astOperand1();
@@ -213,7 +214,7 @@ void CheckBool::checkComparisonOfFuncReturningBool()
     };
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!tok->isComparisonOp() || tok->str() == "==" || tok->str() == "!=")
                 continue;
 
@@ -268,7 +269,7 @@ void CheckBool::checkComparisonOfBoolWithBool()
     const SymbolDatabase* const symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!tok->isComparisonOp() || tok->str() == "==" || tok->str() == "!=")
                 continue;
             bool firstTokenBool = false;
@@ -310,7 +311,7 @@ void CheckBool::checkAssignBoolToPointer()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (tok->str() == "=" && astIsPointer(tok->astOperand1()) && astIsBool(tok->astOperand2())) {
                 assignBoolToPointerError(tok);
             }
@@ -334,7 +335,7 @@ void CheckBool::checkComparisonOfBoolExpressionWithInt()
     const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
 
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!tok->isComparisonOp())
                 continue;
 
@@ -453,7 +454,7 @@ void CheckBool::checkAssignBoolToFloat()
         return;
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token* tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (tok->str() == "=" && astIsFloat(tok->astOperand1(), false) && astIsBool(tok->astOperand2())) {
                 assignBoolToFloatError(tok);
             }
@@ -478,7 +479,7 @@ void CheckBool::returnValueOfFunctionReturningBool()
         if (!(scope->function && Token::Match(scope->function->retDef, "bool|_Bool")))
             continue;
 
-        for (const Token* tok = scope->bodyStart->next(); tok && (tok != scope->bodyEnd); tok = tok->next()) {
+        for (ITERATE_TOKENS(tok, scope)) {
             // Skip lambdas
             const Token* tok2 = findLambdaEndToken(tok);
             if (tok2)

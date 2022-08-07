@@ -41,6 +41,7 @@
 #include <numeric> // std::accumulate
 #include <sstream>
 #include <tinyxml2.h>
+#include "tokeniterators.h"
 
 //---------------------------------------------------------------------------
 
@@ -280,7 +281,7 @@ static std::vector<ValueFlow::Value> getOverrunIndexValues(const Token* tok,
 
 void CheckBufferOverrun::arrayIndex()
 {
-    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+    for (const auto& tok : IterateTokens(mTokenizer)) {
         if (tok->str() != "[")
             continue;
         const Token *array = tok->astOperand1();
@@ -461,7 +462,7 @@ void CheckBufferOverrun::pointerArithmetic()
     if (!mSettings->severity.isEnabled(Severity::portability))
         return;
 
-    for (const Token *tok = mTokenizer->tokens(); tok; tok = tok->next()) {
+    for (const auto& tok : IterateTokens(mTokenizer)) {
         if (!Token::Match(tok, "+|-"))
             continue;
         if (!tok->valueType() || tok->valueType()->pointer == 0)
@@ -622,7 +623,7 @@ void CheckBufferOverrun::bufferOverflow()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto &tok : IterateTokens(scope)) {
             if (!Token::Match(tok, "%name% (") || Token::simpleMatch(tok, ") {"))
                 continue;
             if (!mSettings->library.hasminsize(tok))
@@ -687,7 +688,7 @@ void CheckBufferOverrun::arrayIndexThenCheck()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        for (ITERATE_TOKENS(tok, scope)) {
             if (Token::simpleMatch(tok, "sizeof (")) {
                 tok = tok->linkAt(1);
                 continue;
@@ -742,7 +743,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
         return;
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!Token::simpleMatch(tok, "strncpy ("))
                 continue;
             const std::vector<const Token *> args = getArguments(tok);
@@ -768,7 +769,7 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             }
             // Is the buffer zero terminated after the call?
             bool isZeroTerminated = false;
-            for (const Token *tok2 = tok->next()->link(); tok2 != scope->bodyEnd; tok2 = tok2->next()) {
+            for (const auto& tok2 : IterateTokens(tok->next()->link(), scope->bodyEnd)) {
                 if (!Token::simpleMatch(tok2, "] ="))
                     continue;
                 const Token *rhs = tok2->next()->astOperand2();
@@ -806,7 +807,7 @@ void CheckBufferOverrun::argumentSize()
 
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * const scope : symbolDatabase->functionScopes) {
-        for (const Token *tok = scope->bodyStart; tok != scope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(scope)) {
             if (!tok->function() || !Token::Match(tok, "%name% ("))
                 continue;
 
@@ -1011,7 +1012,7 @@ void CheckBufferOverrun::objectIndex()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope *functionScope : symbolDatabase->functionScopes) {
-        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(functionScope)) {
             if (!Token::simpleMatch(tok, "["))
                 continue;
             const Token *obj = tok->astOperand1();
@@ -1133,7 +1134,7 @@ void CheckBufferOverrun::negativeArraySize()
     }
 
     for (const Scope* functionScope : symbolDatabase->functionScopes) {
-        for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+        for (const auto& tok : IterateTokens(functionScope)) {
             if (!tok->isKeyword() || tok->str() != "new" || !tok->astOperand1() || tok->astOperand1()->str() != "[")
                 continue;
             const Token* valOperand = tok->astOperand1()->astOperand2();
