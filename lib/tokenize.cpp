@@ -1712,8 +1712,11 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->linkAt(1);
 
                                 // skip over const/noexcept
-                                while (Token::Match(tok2->next(), "const|noexcept"))
+                                while (Token::Match(tok2->next(), "const|noexcept")) {
                                     tok2 = tok2->next();
+                                    if (Token::Match(tok2->next(), "( true|false )"))
+                                        tok2 = tok2->tokAt(3);
+                                }
 
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
@@ -6431,11 +6434,15 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                     tok2 = nullptr;
             }
 
-            // parenthesis, functions can't be declared like:
-            // int f1(a,b), f2(c,d);
-            // so if there is a comma assume this is a variable declaration
-            else if (Token::Match(varName, "%name% (") && Token::simpleMatch(varName->linkAt(1), ") ,")) {
-                tok2 = varName->linkAt(1)->next();
+            // function declaration
+            else if (Token::Match(varName, "%name% (")) {
+                Token* commaTok = varName->linkAt(1)->next();
+                while (Token::Match(commaTok, "const|noexcept|override|final")) {
+                    commaTok = commaTok->next();
+                    if (Token::Match(commaTok, "( true|false )"))
+                        commaTok = commaTok->link()->next();
+                }
+                tok2 = Token::simpleMatch(commaTok, ",") ? commaTok : nullptr;
             }
 
             else
@@ -8424,10 +8431,12 @@ void Tokenizer::simplifyKeyword()
 
             // noexcept -> noexcept(true)
             // 2) void f() noexcept; -> void f() noexcept(true);
-            else if (Token::Match(tok, ") noexcept :|{|;|const|override|final")) {
+            else if (Token::Match(tok, ") const|override|final| noexcept :|{|;|,|const|override|final")) {
                 // Insertion is done in inverse order
                 // The brackets are linked together accordingly afterwards
-                Token * tokNoExcept = tok->next();
+                Token* tokNoExcept = tok->next();
+                while (tokNoExcept->str() != "noexcept")
+                    tokNoExcept = tokNoExcept->next();
                 tokNoExcept->insertToken(")");
                 Token * braceEnd = tokNoExcept->next();
                 tokNoExcept->insertToken("true");
