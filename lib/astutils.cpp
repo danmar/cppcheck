@@ -2768,35 +2768,37 @@ bool isCPPCast(const Token* tok)
     return tok && Token::simpleMatch(tok->previous(), "> (") && tok->astOperand2() && tok->astOperand1() && isCPPCastKeyword(tok->astOperand1());
 }
 
-bool isConstVarExpression(const Token *tok, const char* skipMatch)
+bool isConstVarExpression(const Token *tok, std::function<bool(const Token*)> skipPredicate)
 {
     if (!tok)
         return false;
     if (tok->str() == "?" && tok->astOperand2() && tok->astOperand2()->str() == ":") // ternary operator
         return isConstVarExpression(tok->astOperand2()->astOperand1()) && isConstVarExpression(tok->astOperand2()->astOperand2()); // left and right of ":"
-    if (skipMatch && Token::Match(tok, skipMatch))
+    if (skipPredicate && skipPredicate(tok))
         return false;
     if (Token::simpleMatch(tok->previous(), "sizeof ("))
         return true;
     if (Token::Match(tok->previous(), "%name% (")) {
-        if (Token::simpleMatch(tok->astOperand1(), ".") && !isConstVarExpression(tok->astOperand1(), skipMatch))
+        if (Token::simpleMatch(tok->astOperand1(), ".") && !isConstVarExpression(tok->astOperand1(), skipPredicate))
             return false;
         std::vector<const Token *> args = getArguments(tok);
+        if (args.empty() && tok->previous()->function() && tok->previous()->function()->isConstexpr())
+            return true;
         return std::all_of(args.begin(), args.end(), [&](const Token* t) {
-            return isConstVarExpression(t, skipMatch);
+            return isConstVarExpression(t, skipPredicate);
         });
     }
     if (isCPPCast(tok)) {
-        return isConstVarExpression(tok->astOperand2(), skipMatch);
+        return isConstVarExpression(tok->astOperand2(), skipPredicate);
     }
     if (Token::Match(tok, "( %type%"))
-        return isConstVarExpression(tok->astOperand1(), skipMatch);
+        return isConstVarExpression(tok->astOperand1(), skipPredicate);
     if (tok->str() == "::" && tok->hasKnownValue())
-        return isConstVarExpression(tok->astOperand2(), skipMatch);
+        return isConstVarExpression(tok->astOperand2(), skipPredicate);
     if (Token::Match(tok, "%cop%|[|.")) {
-        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1(), skipMatch))
+        if (tok->astOperand1() && !isConstVarExpression(tok->astOperand1(), skipPredicate))
             return false;
-        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2(), skipMatch))
+        if (tok->astOperand2() && !isConstVarExpression(tok->astOperand2(), skipPredicate))
             return false;
         return true;
     }
