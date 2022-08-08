@@ -2054,11 +2054,12 @@ void CheckOther::checkMisusedScopedObject()
     const SymbolDatabase * const symbolDatabase = mTokenizer->getSymbolDatabase();
     for (const Scope * scope : symbolDatabase->functionScopes) {
         for (const Token *tok = scope->bodyStart; tok && tok != scope->bodyEnd; tok = tok->next()) {
-            if ((tok->next()->type() || (tok->next()->function() && tok->next()->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
-                && Token::Match(tok, "[;{}] %name% (")
-                && Token::Match(tok->linkAt(2), ") ; !!}")
+            if ((tok->next()->type() || tok->next()->isStandardType() || (tok->next()->function() && tok->next()->function()->isConstructor())) // TODO: The rhs of || should be removed; It is a workaround for a symboldatabase bug
+                && Token::Match(tok, "[;{}] %name% (|{")
+                && Token::Match(tok->linkAt(2), ")|} ; !!}")
                 && (!tok->next()->function() || // is not a function on this scope
-                    tok->next()->function()->isConstructor())) { // or is function in this scope and it's a ctor
+                    tok->next()->function()->isConstructor()) // or is function in this scope and it's a ctor
+                && (!tok->tokAt(2)->astOperand2() || isConstStatement(tok->tokAt(2)->astOperand2(), mTokenizer->isCPP()))) {
                 tok = tok->next();
                 misusedScopeObjectError(tok, tok->str());
                 tok = tok->next();
