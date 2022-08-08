@@ -37,6 +37,7 @@ jobs:
           python-version: '3.10'
 
       - name: Set up Visual Studio environment
+        if: matrix.arch == 'x64' || matrix.qt_ver == ''
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: ${{ matrix.arch }}
@@ -44,18 +45,21 @@ jobs:
       - name: Cache PCRE
         id: cache-pcre
         uses: actions/cache@v2
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        if: matrix.qt_ver == ''
         with:
-          path: pcre-${{ env.PCRE_VERSION }}.zip
-          key: pcre-${{ env.PCRE_VERSION }}
+          path: |
+            externals\pcre.h
+            externals\pcre.lib
+            externals\pcre64.lib
+          key: pcre-${{ env.PCRE_VERSION }}-${{ matrix.arch }}-bin-win
 
       - name: Download PCRE
-        if: (matrix.arch == 'x64' || matrix.qt_ver == '') && steps.cache-pcre.outputs.cache-hit != 'true'
+        if: matrix.qt_ver == '' && steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
 
       - name: Install PCRE
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
+        if: matrix.qt_ver == '' && steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!

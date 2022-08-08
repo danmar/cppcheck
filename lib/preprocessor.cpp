@@ -525,7 +525,7 @@ static void getConfigs(const simplecpp::TokenList &tokens, std::set<std::string>
         }
     }
     if (!elseError.empty())
-        ret.insert(elseError);
+        ret.insert(std::move(elseError));
 }
 
 

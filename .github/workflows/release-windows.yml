@@ -37,8 +37,10 @@ jobs:
         id: cache-pcre
         uses: actions/cache@v2
         with:
-          path: pcre-${{ env.PCRE_VERSION }}.zip
-          key: pcre-${{ env.PCRE_VERSION }}
+          path: |
+            externals\pcre.h
+            externals\pcre64.lib
+          key: pcre-${{ env.PCRE_VERSION }}-bin-x64-win-release-job
 
       - name: Download PCRE
         if: steps.cache-pcre.outputs.cache-hit != 'true'
@@ -46,6 +48,7 @@ jobs:
           curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
 
       - name: Install PCRE
+        if: steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!

@@ -217,6 +217,7 @@ private:
         TEST_CASE(vardecl26);  // #5907 - incorrect handling of extern declarations
         TEST_CASE(vardecl27);  // #7850 - crash on valid C code
         TEST_CASE(vardecl28);
+        TEST_CASE(vardecl29); // #9282
         TEST_CASE(vardecl_stl_1);
         TEST_CASE(vardecl_stl_2);
         TEST_CASE(vardecl_stl_3);
@@ -2490,6 +2491,20 @@ private:
                       "return x ;\n"
                       "}",
                       tokenizeAndStringify(code, /*expand=*/ true, Settings::Native, "test.c"));
+    }
+
+    void vardecl29() { // #9282
+        const char* code = "double f1() noexcept, f2(double) noexcept;";
+        ASSERT_EQUALS("double f1 ( ) noexcept ( true ) ; double f2 ( double ) noexcept ( true ) ;",
+                      tokenizeAndStringify(code));
+
+        code = "class C {\n"
+               "    double f1() const noexcept, f2 (double) const noexcept;\n"
+               "};\n";
+        ASSERT_EQUALS("class C {\n"
+                      "double f1 ( ) const noexcept ( true ) ; double f2 ( double ) const noexcept ( true ) ;\n"
+                      "} ;",
+                      tokenizeAndStringify(code));
     }
 
     void volatile_variables() {
@@ -4931,7 +4946,7 @@ private:
         ASSERT_EQUALS(result3, tokenizeAndStringify(code3));
 
         const char code4[] = "value_type * operator += (int) const noexcept ;";
-        const char result4[] = "value_type * operator+= ( int ) const noexcept ;";
+        const char result4[] = "value_type * operator+= ( int ) const noexcept ( true ) ;";
         ASSERT_EQUALS(result4, tokenizeAndStringify(code4));
 
         const char code5[] = "value_type * operator += (int) const noexcept ( true ) ;";
