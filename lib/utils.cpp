@@ -69,7 +69,7 @@ bool matchglob(const std::string& pattern, const std::string& name)
                 }
                 if (*n != '\0') {
                     // If this isn't the last possibility, save it for later
-                    backtrack.push(std::make_pair(p, n));
+                    backtrack.emplace(p, n);
                 }
                 break;
             case '?':
