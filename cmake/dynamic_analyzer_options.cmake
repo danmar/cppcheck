@@ -19,7 +19,7 @@ endif()
 
 if(ANALYZE_UNDEFINED)
     # TODO: enable signed-integer-overflow
-    add_compile_options(-fsanitize=undefined -fsanitize=nullability -fno-sanitize=signed-integer-overflow)
+    add_compile_options(-fsanitize=undefined -fsanitize=nullability -fno-sanitize=signed-integer-overflow -fno-sanitize=float-cast-overflow)
     add_compile_options(-fno-sanitize-recover=all)
     add_compile_options(-fno-omit-frame-pointer)
 
