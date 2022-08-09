@@ -4281,6 +4281,16 @@ private:
               "    }\n"
               "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11203
+        check("void f() {\n"
+              "    int i = 10;\n"
+              "    if(i > 9.9){}\n"
+              "    float f = 9.9f;\n"
+              "    if(f < 10) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i>9.9' is always true\n"
+                      "[test.cpp:5]: (style) Condition 'f<10' is always true\n", errout.str());
     }
 
     void alwaysTrueSymbolic()
