@@ -3634,6 +3634,19 @@ static void valueFlowLifetimeConstructor(Token *tok,
                                          ErrorLogger *errorLogger,
                                          const Settings *settings);
 
+static bool isRangeForScope(const Scope* scope)
+{
+    if (!scope)
+        return false;
+    if (scope->type != Scope::eFor)
+        return false;
+    if (!scope->bodyStart)
+        return false;
+    if (!Token::simpleMatch(scope->bodyStart->previous(), ") {"))
+        return false;
+    return Token::simpleMatch(scope->bodyStart->linkAt(-1)->astOperand2(), ":");
+}
+
 static const Token* getEndOfVarScope(const Variable* var)
 {
     if (!var)
@@ -3651,7 +3664,8 @@ static const Token* getEndOfVarScope(const Variable* var)
     // If the variable is defined in a for/while initializer then we want to
     // pick one token after the end so forward analysis can analyze the exit
     // conditions
-    if (innerScope != outerScope && outerScope->isExecutable() && innerScope->isLocal())
+    if (innerScope != outerScope && outerScope->isExecutable() && innerScope->isLoopScope() &&
+        !isRangeForScope(innerScope))
         return innerScope->bodyEnd->next();
     return innerScope->bodyEnd;
 }

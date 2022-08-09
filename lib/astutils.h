@@ -383,7 +383,7 @@ bool isLikelyStreamRead(bool cpp, const Token *op);
 
 bool isCPPCast(const Token* tok);
 
-bool isConstVarExpression(const Token *tok, const char * skipMatch = nullptr);
+bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> skipPredicate = nullptr);
 
 const Variable *getLHSVariable(const Token *tok);
 

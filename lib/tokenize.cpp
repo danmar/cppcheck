@@ -1712,8 +1712,11 @@ void Tokenizer::simplifyTypedef()
                                     tok2 = tok2->linkAt(1);
 
                                 // skip over const/noexcept
-                                while (Token::Match(tok2->next(), "const|noexcept"))
+                                while (Token::Match(tok2->next(), "const|noexcept")) {
                                     tok2 = tok2->next();
+                                    if (Token::Match(tok2->next(), "( true|false )"))
+                                        tok2 = tok2->tokAt(3);
+                                }
 
                                 tok2->insertToken(")");
                                 tok2 = tok2->next();
@@ -1973,7 +1976,7 @@ namespace {
                     nameSpace += tok1->str();
                     tok1 = tok1->next();
                 }
-                (*scopeInfo)->usingNamespaces.insert(nameSpace);
+                (*scopeInfo)->usingNamespaces.insert(std::move(nameSpace));
             }
             // check for member function
             else if (tok->str() == "{") {
@@ -2066,7 +2069,7 @@ namespace {
                         }
                     }
                 }
-                baseTypes.insert(base);
+                baseTypes.insert(std::move(base));
             } while (tok && !Token::Match(tok, ";|{"));
         }
 
@@ -3354,7 +3357,7 @@ void Tokenizer::calculateScopes()
                 }
                 if (!usingNamespaceName.empty())
                     usingNamespaceName.pop_back();
-                tok->scopeInfo()->usingNamespaces.insert(usingNamespaceName);
+                tok->scopeInfo()->usingNamespaces.insert(std::move(usingNamespaceName));
             } else if (Token::Match(tok, "namespace|class|struct|union %name% {|::|:|<")) {
                 for (Token* nameTok = tok->next(); nameTok && !Token::Match(nameTok, "{|:"); nameTok = nameTok->next()) {
                     if (Token::Match(nameTok, ";|<")) {
@@ -4106,7 +4109,7 @@ void Tokenizer::setVarIdPass1()
             }
         }
 
-        if (tok->isName()) {
+        if (tok->isName() && !tok->isKeyword()) {
             // don't set variable id after a struct|enum|union
             if (Token::Match(tok->previous(), "struct|enum|union") || (isCPP() && tok->strAt(-1) == "class"))
                 continue;
@@ -6431,11 +6434,15 @@ void Tokenizer::simplifyVarDecl(Token * tokBegin, const Token * const tokEnd, co
                     tok2 = nullptr;
             }
 
-            // parenthesis, functions can't be declared like:
-            // int f1(a,b), f2(c,d);
-            // so if there is a comma assume this is a variable declaration
-            else if (Token::Match(varName, "%name% (") && Token::simpleMatch(varName->linkAt(1), ") ,")) {
-                tok2 = varName->linkAt(1)->next();
+            // function declaration
+            else if (Token::Match(varName, "%name% (")) {
+                Token* commaTok = varName->linkAt(1)->next();
+                while (Token::Match(commaTok, "const|noexcept|override|final")) {
+                    commaTok = commaTok->next();
+                    if (Token::Match(commaTok, "( true|false )"))
+                        commaTok = commaTok->link()->next();
+                }
+                tok2 = Token::simpleMatch(commaTok, ",") ? commaTok : nullptr;
             }
 
             else
@@ -7115,22 +7122,14 @@ bool Tokenizer::isScopeNoReturn(const Token *endScopeToken, bool *unknown) const
     if (unknown)
         *unknown = !unknownFunc.empty();
     if (!unknownFunc.empty() && mSettings->checkLibrary && mSettings->severity.isEnabled(Severity::information)) {
-        // Is function global?
-        bool globalFunction = true;
+        bool warn = true;
         if (Token::simpleMatch(endScopeToken->tokAt(-2), ") ; }")) {
             const Token * const ftok = endScopeToken->linkAt(-2)->previous();
-            if (ftok &&
-                ftok->isName() &&
-                ftok->function() &&
-                ftok->function()->nestedIn &&
-                ftok->function()->nestedIn->type != Scope::eGlobal) {
-                globalFunction = false;
-            }
+            if (ftok && ftok->type()) // constructor call
+                warn = false;
         }
 
-        // don't warn for nonglobal functions (class methods, functions hidden in namespaces) since they can't be configured yet
-        // FIXME: when methods and namespaces can be configured properly, remove the "globalFunction" check
-        if (globalFunction) {
+        if (warn) {
             reportError(endScopeToken->previous(),
                         Severity::information,
                         "checkLibraryNoReturn",
@@ -8432,10 +8431,12 @@ void Tokenizer::simplifyKeyword()
 
             // noexcept -> noexcept(true)
             // 2) void f() noexcept; -> void f() noexcept(true);
-            else if (Token::Match(tok, ") noexcept :|{|;|const|override|final")) {
+            else if (Token::Match(tok, ") const|override|final| noexcept :|{|;|,|const|override|final")) {
                 // Insertion is done in inverse order
                 // The brackets are linked together accordingly afterwards
-                Token * tokNoExcept = tok->next();
+                Token* tokNoExcept = tok->next();
+                while (tokNoExcept->str() != "noexcept")
+                    tokNoExcept = tokNoExcept->next();
                 tokNoExcept->insertToken(")");
                 Token * braceEnd = tokNoExcept->next();
                 tokNoExcept->insertToken("true");
