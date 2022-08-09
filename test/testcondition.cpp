@@ -4289,6 +4289,14 @@ private:
               "    return f() == 1;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int g() { return -1; }\n"
+              "void f() {\n"
+              "    if (g() == 1 && g() == -1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'g()==1' is always false\n"
+                      "[test.cpp:3]: (style) Condition 'g()==-1' is always true\n",
+                      errout.str());
     }
 
     void alwaysTrueSymbolic()

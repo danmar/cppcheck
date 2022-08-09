@@ -2784,7 +2784,7 @@ bool isConstVarExpression(const Token *tok, std::function<bool(const Token*)> sk
         std::vector<const Token *> args = getArguments(tok);
         if (args.empty() && tok->previous()->function() && tok->previous()->function()->isConstexpr())
             return true;
-        return std::all_of(args.begin(), args.end(), [&](const Token* t) {
+        return !args.empty() && std::all_of(args.begin(), args.end(), [&](const Token* t) {
             return isConstVarExpression(t, skipPredicate);
         });
     }
