@@ -693,50 +693,64 @@ void CheckFunctions::useStandardLibrary()
         if (scope.type != Scope::ScopeType::eFor)
             continue;
 
-        const auto *tok = scope.bodyStart; // { token
-        const auto *forToken = tok->previous()->link()->previous(); // should be for
-
-        // for ( firstExpression ; secondExpression ; thirdExpression )
-        const Token *firstExpression  = forToken->next()->astOperand2()->astOperand1();
-        if (!firstExpression)
+        const Token *forToken = scope.classDef;
+        // for ( initToken ; condToken ; stepToken )
+        const Token* initToken = getInitTok(forToken);
+        if (!initToken)
             continue;
-        const auto *astOperand22 = forToken->next()->astOperand2()->astOperand2();
-        if (!astOperand22)   // #7050
+        const Token* condToken = getCondTok(forToken);
+        if (!condToken)
             continue;
-        const Token *secondExpression = astOperand22->astOperand1();
-        if (!secondExpression)
-            continue;
-        const Token *thirdExpression = astOperand22->astOperand2();
-        if (!thirdExpression)
+        const Token* stepToken = getStepTok(forToken);
+        if (!stepToken)
             continue;
 
         // 1. we expect that idx variable will be initialized with 0
-        const auto* idxToken = firstExpression->astOperand1();
-        const auto* initVal = firstExpression->astOperand2();
-        if (!idxToken || !initVal || !initVal->isNumber() || initVal->str() != "0")
+        const Token* idxToken = initToken->astOperand1();
+        const Token* initVal = initToken->astOperand2();
+        if (!idxToken || !initVal || !initVal->hasKnownIntValue() || initVal->getKnownIntValue() != 0)
             continue;
         const auto idxVarId = idxToken->varId();
-
-        // 2. we expect that idx will be less of something
-        if (!secondExpression->isComparisonOp())
+        if (0 == idxVarId)
             continue;
-        const auto& secondOp = secondExpression->str();
 
-        if (!(("<" == secondOp && secondExpression->astOperand1()->varId() == idxVarId) ||
-              (">" == secondOp && secondExpression->astOperand2()->varId() == idxVarId)))
+        // 2. we expect that idx will be less of some variable
+        if (!condToken->isComparisonOp())
+            continue;
+
+        const auto checkBoundaryType = [](const Token* t) -> bool {
+            if (!t)
+                return false;
+            if (t->isNumber())
+                return true;
+            if (t->isVariable() && !t->variable()->isArray())
+                return true;
+            return false;
+        };
+
+        const auto& secondOp = condToken->str();
+        const bool isLess = "<" == secondOp && checkBoundaryType(condToken->astOperand2()) &&
+                            condToken->astOperand1()->varId() == idxVarId &&
+                            condToken->astOperand2()->next()->str() == ";";
+        const bool isMore = ">" == secondOp && checkBoundaryType(condToken->astOperand1()) &&
+                            condToken->astOperand2()->varId() == idxVarId &&
+                            condToken->astOperand1()->next()->str() == ">";
+
+        if (!(isLess || isMore))
             continue;
 
         // 3. we expect idx incrementing by 1
-        const bool inc = thirdExpression->str() == "++" && thirdExpression->astOperand1()->varId() == idxVarId;
-        const bool plusOne = thirdExpression->str() == "+=" &&
-                             thirdExpression->astOperand1()->varId() == idxVarId &&
-                             thirdExpression->astOperand2() != nullptr && thirdExpression->astOperand2()->str() == "1";
+        const bool inc = stepToken->str() == "++" && stepToken->astOperand1()->varId() == idxVarId;
+        const bool plusOne = stepToken->str() == "+=" &&
+                             stepToken->astOperand1()->varId() == idxVarId &&
+                             stepToken->astOperand2() != nullptr && stepToken->astOperand2()->str() == "1";
         if (!inc && !plusOne)
             continue;
 
         // technically using void* here is not correct but some compilers could allow it
 
-        const static std::string memcpyName = mTokenizer->isCPP() ? "std::memcpy" : "memcpy";
+        const Token *tok = scope.bodyStart;
+        const std::string memcpyName = mTokenizer->isCPP() ? "std::memcpy" : "memcpy";
         // (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];
         if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
                          "(| reinterpret_cast < const| uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] ; }", idxVarId)) {

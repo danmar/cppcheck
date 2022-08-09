@@ -116,6 +116,7 @@ private:
         TEST_CASE(checkUseStandardLibrary11);
         TEST_CASE(checkUseStandardLibrary12);
         TEST_CASE(checkUseStandardLibrary13);
+        TEST_CASE(checkUseStandardLibrary14);
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
@@ -1879,7 +1880,7 @@ private:
     }
 
     void checkUseStandardLibrary3() {
-        check("void f(void* dst, const void* src, const size_t size) {\n"
+        check("void f(void* dst, const void* src, const size_t count) {\n"
               "    size_t i;\n"
               "    for (i = 0; count > i; i++)\n"
               "        ((char*)dst)[i] = ((const char*)src)[i];\n"
@@ -1976,6 +1977,15 @@ private:
     void checkUseStandardLibrary13() {
         check("void f(void* dest, const size_t count) {\n"
               "    for (size_t i = 0; i < count; i++) {\n"
+              "        reinterpret_cast<unsigned char*>(dest)[i] = '0';\n"
+              "}}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
+                      "Also library function could work faster in general cases.\n", errout.str());
+    }
+
+    void checkUseStandardLibrary14() {
+        check("void f(void* dest) {\n"
+              "    for (size_t i = 0; i < 64; i++) {\n"
               "        reinterpret_cast<unsigned char*>(dest)[i] = '0';\n"
               "}}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
