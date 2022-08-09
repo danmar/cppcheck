@@ -47,6 +47,7 @@ private:
         TEST_CASE(test4);
         TEST_CASE(test5);
         TEST_CASE(test6); // ticket #2602
+        TEST_CASE(test7); // ticket #9282
 
         // [ 2236547 ] False positive --style unused function, called via pointer
         TEST_CASE(func_pointer1);
@@ -248,6 +249,16 @@ private:
         check("class A {\n"
               "    A& operator=(const A&);\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void test7() { // ticket #9282
+        check("class C {\n"
+              "    double f1() const noexcept, f2(double) const noexcept;\n"
+              "    void f3() const noexcept;\n"
+              "};\n"
+              "double C::f1() const noexcept { f3(); }\n"
+              "void C::f3() const noexcept {}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

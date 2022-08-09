@@ -562,11 +562,11 @@ private:
 
     class ExportedFunctions {
     public:
-        void addPrefix(const std::string& prefix) {
-            mPrefixes.insert(prefix);
+        void addPrefix(std::string prefix) {
+            mPrefixes.insert(std::move(prefix));
         }
-        void addSuffix(const std::string& suffix) {
-            mSuffixes.insert(suffix);
+        void addSuffix(std::string suffix) {
+            mSuffixes.insert(std::move(suffix));
         }
         bool isPrefix(const std::string& prefix) const {
             return (mPrefixes.find(prefix) != mPrefixes.end());
