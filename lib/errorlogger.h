@@ -184,10 +184,6 @@ public:
 
     /** For GUI rechecking; source file (not header) */
     std::string file0;
-    /** For GUI bug hunting; function name */
-    std::string function;
-    /** For GUI bug hunting; incomplete analysis */
-    bool incomplete;
 
     Severity::SeverityType severity;
     CWE cwe;
