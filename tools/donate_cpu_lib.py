@@ -172,11 +172,15 @@ def compile_cppcheck(cppcheck_path, jobs):
             subprocess.check_call([__make_cmd, jobs.replace('j', 'm:', 1), '-t:cli', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release;Platform=x64'], cwd=cppcheck_path)
             subprocess.check_call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'], cwd=os.path.join(cppcheck_path, 'bin'))
         else:
+            rdynamic = ''
             build_env = os.environ
             if __make_cmd == 'mingw32-make':
+                # TODO: MinGW will always link even if no changes are present
                 # assume Python is in PATH for now
                 build_env['PYTHON_INTERPRETER'] = 'python3'
-            subprocess.check_call([__make_cmd, jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path, env=build_env)
+                # TODO: MinGW is not detected by Makefile - so work around it for now
+                rdynamic = 'RDYNAMIC=-lshlwapi'
+            subprocess.check_call([__make_cmd, jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w', rdynamic], cwd=cppcheck_path, env=build_env)
             subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
     except:
         return False
