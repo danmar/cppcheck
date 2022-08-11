@@ -147,7 +147,10 @@ def get_cppcheck_info(cppcheck_path):
 
 
 def compile_version(cppcheck_path, jobs):
-    if os.path.isfile(os.path.join(cppcheck_path, 'cppcheck')):
+    if __make_cmd == "msbuild.exe":
+        if os.path.isfile(os.path.join(cppcheck_path, 'bin', 'cppcheck.exe')):
+            return True
+    elif os.path.isfile(os.path.join(cppcheck_path, 'cppcheck')):
         return True
     # Build
     ret = compile_cppcheck(cppcheck_path, jobs)
@@ -371,7 +374,7 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --template=daca2'
     options += ' -D__GNUC__ --platform=unix64'
     options_rp = options + ' -rp={}'.format(dir_to_scan)
-    if sys.platform == 'win32':
+    if __make_cmd == 'msbuild.exe':
         cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options_rp
         cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     else:
