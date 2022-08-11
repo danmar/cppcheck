@@ -155,7 +155,11 @@ def compile_version(cppcheck_path, jobs):
     # Build
     ret = compile_cppcheck(cppcheck_path, jobs)
     # Clean intermediate build files
-    subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', 'cppcheck'], cwd=cppcheck_path)
+    if __make_cmd == "msbuild.exe":
+        exclude_bin = 'bin'
+    else:
+        exclude_bin = 'cppcheck'
+    subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', exclude_bin], cwd=cppcheck_path)
     return ret
 
 
