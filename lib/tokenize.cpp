@@ -5264,6 +5264,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
             out << " varId=\"" << MathLib::toString(tok->varId()) << '\"';
+        if (tok->exprId() > 0)
+            out << " exprId=\"" << MathLib::toString(tok->exprId()) << '\"';
         if (tok->variable())
             out << " variable=\"" << tok->variable() << '\"';
         if (tok->function())
