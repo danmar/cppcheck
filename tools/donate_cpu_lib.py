@@ -50,7 +50,17 @@ def detect_make():
 def check_requirements():
     result = True
 
-    for app in ['g++', 'git', 'wget', 'gdb']:
+    global __make_cmd
+    __make_cmd = detect_make()
+    if not __make_cmd:
+        result = False
+
+    apps = ['git', 'wget']
+    if __make_cmd in ['make', 'mingw32-make']:
+        apps.append('g++')
+        apps.append('gdb')
+
+    for app in apps:
         try:
             print('{} --version'.format(app))
             subprocess.call([app, '--version'])
@@ -62,11 +72,6 @@ def check_requirements():
         import psutil
     except ImportError as e:
         print("Error: {}. Module is required.".format(e))
-        result = False
-
-    global __make_cmd
-    __make_cmd = detect_make()
-    if not __make_cmd:
         result = False
 
     return result
