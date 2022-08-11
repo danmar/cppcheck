@@ -150,6 +150,9 @@ def compile_version(cppcheck_path, jobs):
     if __make_cmd == "msbuild.exe":
         if os.path.isfile(os.path.join(cppcheck_path, 'bin', 'cppcheck.exe')):
             return True
+    elif __make_cmd == 'mingw32-make':
+        if os.path.isfile(os.path.join(cppcheck_path, 'cppcheck.exe')):
+            return True
     elif os.path.isfile(os.path.join(cppcheck_path, 'cppcheck')):
         return True
     # Build
