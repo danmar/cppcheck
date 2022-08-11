@@ -542,6 +542,10 @@ def __send_all(connection, data):
 
 
 def upload_results(package, results, server_address):
+    if not __make_cmd == 'make':
+        print('Error: Information upload not performed - only make build binaries are currently fully supported')
+        return False
+
     print('Uploading results.. ' + str(len(results)) + ' bytes')
     max_retries = 4
     for retry in range(max_retries):
@@ -562,6 +566,10 @@ def upload_results(package, results, server_address):
 
 
 def upload_info(package, info_output, server_address):
+    if not __make_cmd == 'make':
+        print('Error: Information upload not performed - only make build binaries are currently fully supported')
+        return False
+
     print('Uploading information output.. ' + str(len(info_output)) + ' bytes')
     max_retries = 3
     for retry in range(max_retries):
