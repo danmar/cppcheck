@@ -160,7 +160,7 @@ def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
         if __make_cmd == 'msbuild.exe':
-            subprocess.check_call([__make_cmd, os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release', '/property:Platform=x64'], cwd=cppcheck_path)
+            subprocess.check_call([__make_cmd, jobs.replace('j', 'm:', 1), os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release', '/property:Platform=x64'], cwd=cppcheck_path)
             subprocess.check_call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'], cwd=cppcheck_path)
         else:
             subprocess.check_call([__make_cmd, jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
