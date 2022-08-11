@@ -396,8 +396,11 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
         cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options_rp
         cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     else:
+        nice_cmd = 'nice'
+        if __make_cmd == 'mingw32-make':
+            nice_cmd = ''
         cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options_rp
-        cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+        cmd = nice_cmd + ' ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
     # collect messages
