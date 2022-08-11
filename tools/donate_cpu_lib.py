@@ -164,6 +164,7 @@ def compile_version(cppcheck_path, jobs):
         exclude_bin = 'cppcheck.exe'
     else:
         exclude_bin = 'cppcheck'
+    # TODO: how to support multiple compiler on the same machine? this will clean msbuild.exe files in a mingw32-make build and vice versa
     subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', exclude_bin], cwd=cppcheck_path)
     return ret
 
