@@ -675,6 +675,11 @@ class LibraryIncludes:
 
 
 def get_compiler_version():
+    if __make_cmd == 'msbuild.exe':
+        # TODO: shorted version string
+        _, _, stderr, _ = __run_command('cl.exe', False)
+        return stderr.split('\n')[0]
+
     _, stdout, _, _ = __run_command('g++ --version', False)
     return stdout.split('\n')[0]
 
