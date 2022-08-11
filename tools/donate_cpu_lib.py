@@ -157,6 +157,8 @@ def compile_version(cppcheck_path, jobs):
     # Clean intermediate build files
     if __make_cmd == "msbuild.exe":
         exclude_bin = 'bin'
+    elif __make_cmd == 'mingw32-make':
+        exclude_bin = 'cppcheck.exe'
     else:
         exclude_bin = 'cppcheck'
     subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', exclude_bin], cwd=cppcheck_path)
