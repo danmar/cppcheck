@@ -34,6 +34,7 @@ def detect_make():
 
     for m in make_cmds:
         try:
+            print('{} --version'.format(m))
             subprocess.call([m, '--version'])
         except OSError as e:
             print("'{}' not found ({})".format(m, e))
@@ -51,6 +52,7 @@ def check_requirements():
 
     for app in ['g++', 'git', 'wget', 'gdb']:
         try:
+            print('{} --version'.format(app))
             subprocess.call([app, '--version'])
         except OSError:
             print("Error: '{}' is required".format(app))
