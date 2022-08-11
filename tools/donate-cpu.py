@@ -229,7 +229,7 @@ while True:
             capture_callstack = True
 
             def get_client_version_head():
-                cmd = os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
+                cmd = 'python3' + ' ' + os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
                 p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
                 try:
                     comm = p.communicate()
