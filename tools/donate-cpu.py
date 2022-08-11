@@ -284,8 +284,8 @@ while True:
         print(info_output)
         print('=========================================================')
     if do_upload:
-        upload_results(package, output, server_address)
-        upload_info(package, info_output, server_address)
+        if upload_results(package, output, server_address):
+            upload_info(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
         if (client_version_head is not None) and (Version(client_version_head) > Version(get_client_version())):
