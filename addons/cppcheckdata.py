@@ -1385,6 +1385,15 @@ def match_atom(token, p):
         t = match_atom(token, p[1:])
         if not t:
             return token
+    elif p.startswith('**'):
+        a = p[1:]
+        t = token
+        while t:
+            if match_atom(t, a):
+                return t
+            if t.link and t.str in ['(', '[', '<', '{']:
+                t = t.link
+            t = t.next
     return None
 
 class MatchResult:
