@@ -510,6 +510,10 @@ void combineValueProperties(const ValueFlow::Value &value1, const ValueFlow::Val
         result->setInconclusive();
     else
         result->setPossible();
+    if (value1.tokvalue)
+        result->tokvalue = value1.tokvalue;
+    else if (value2.tokvalue)
+        result->tokvalue = value2.tokvalue;
     if (value1.isSymbolicValue()) {
         result->valueType = value1.valueType;
         result->tokvalue = value1.tokvalue;
@@ -2465,10 +2469,7 @@ struct ValueFlowAnalyzer : Analyzer {
             // Check if its assigned to the same value
             if (value && !value->isImpossible() && Token::simpleMatch(tok->astParent(), "=") && astIsLHS(tok) &&
                 astIsIntegral(tok->astParent()->astOperand2(), false)) {
-                std::vector<MathLib::bigint> result =
-                    evaluateInt(tok->astParent()->astOperand2(), [&] {
-                    return ProgramMemory{getProgramState()};
-                });
+                std::vector<MathLib::bigint> result = evaluateInt(tok->astParent()->astOperand2());
                 if (!result.empty() && value->equalTo(result.front()))
                     return Action::Idempotent;
             }
@@ -2541,23 +2542,28 @@ struct ValueFlowAnalyzer : Analyzer {
                 return Action::None;
             return Action::Read | Action::Write;
         }
-        if (parent && parent->isAssignmentOp() && astIsLHS(tok) &&
-            parent->astOperand2()->hasKnownValue()) {
+        if (parent && parent->isAssignmentOp() && astIsLHS(tok)) {
             const Token* rhs = parent->astOperand2();
-            const ValueFlow::Value* rhsValue = rhs->getKnownValue(ValueFlow::Value::ValueType::INT);
-            Action a;
-            if (!rhsValue || !evalAssignment(*value, getAssign(parent, d), *rhsValue))
-                a = Action::Invalid;
-            else
-                a = Action::Write;
-            if (parent->str() != "=") {
-                a |= Action::Read;
-            } else {
-                if (rhsValue && !value->isImpossible() && value->equalValue(*rhsValue))
-                    a = Action::Idempotent;
-                a |= Action::Incremental;
+            std::vector<MathLib::bigint> result = evaluateInt(rhs);
+            if (!result.empty()) {
+                ValueFlow::Value rhsValue{result.front()};
+                Action a;
+                if (!evalAssignment(*value, getAssign(parent, d), rhsValue))
+                    a = Action::Invalid;
+                else
+                    a = Action::Write;
+                if (parent->str() != "=") {
+                    a |= Action::Read | Action::Incremental;
+                } else {
+                    if (!value->isImpossible() && value->equalValue(rhsValue))
+                        a = Action::Idempotent;
+                    if (tok->exprId() != 0 && findAstNode(rhs, [&](const Token* child) {
+                        return tok->exprId() == child->exprId();
+                    }))
+                        a |= Action::Incremental;
+                }
+                return a;
             }
-            return a;
         }
 
         // increment/decrement
@@ -2576,10 +2582,11 @@ struct ValueFlowAnalyzer : Analyzer {
         if (value->isLifetimeValue())
             return;
         if (tok->astParent()->isAssignmentOp()) {
-            const ValueFlow::Value* rhsValue =
-                tok->astParent()->astOperand2()->getKnownValue(ValueFlow::Value::ValueType::INT);
-            assert(rhsValue);
-            if (evalAssignment(*value, getAssign(tok->astParent(), d), *rhsValue)) {
+            const Token* rhs = tok->astParent()->astOperand2();
+            std::vector<MathLib::bigint> result = evaluateInt(rhs);
+            assert(!result.empty());
+            ValueFlow::Value rhsValue{result.front()};
+            if (evalAssignment(*value, getAssign(tok->astParent(), d), rhsValue)) {
                 std::string info("Compound assignment '" + tok->astParent()->str() + "', assigned value is " +
                                  value->infoString());
                 if (tok->astParent()->str() == "=")
@@ -2776,6 +2783,12 @@ struct ValueFlowAnalyzer : Analyzer {
                 result.push_back(out);
         }
         return result;
+    }
+    std::vector<MathLib::bigint> evaluateInt(const Token* tok) const
+    {
+        return evaluateInt(tok, [&] {
+            return ProgramMemory{getProgramState()};
+        });
     }
 
     std::vector<MathLib::bigint> evaluate(Evaluate e, const Token* tok, const Token* ctx = nullptr) const override
@@ -5536,6 +5549,15 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                     return value.tokvalue->exprId() == tok->astOperand1()->exprId();
                 return false;
             });
+            // Remove values from the same assignment if it is incremental
+            if (findAstNode(tok->astOperand2(), [&](const Token* child) {
+                return child->exprId() == tok->astOperand1()->exprId();
+            }))
+                values.remove_if([&](const ValueFlow::Value& value) {
+                    if (value.tokvalue)
+                        return value.tokvalue == tok->astOperand2();
+                    return false;
+                });
             // If assignment copy by value, remove Uninit values..
             if ((tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer == 0) ||
                 (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() == tok->astOperand1()))
