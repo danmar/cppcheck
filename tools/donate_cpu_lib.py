@@ -403,6 +403,7 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
 
     # Reference for GNU C: https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --template=daca2'
+    options += ' --debug-warnings --suppress=autoNoType --suppress=valueFlowBailout --suppress=bailoutUninitVar --suppress=symbolDatabaseWarning --suppress=valueFlowBailoutIncompleteVar'
     options += ' -D__GNUC__ --platform=unix64'
     options_rp = options + ' -rp={}'.format(dir_to_scan)
     if __make_cmd == 'msbuild.exe':
