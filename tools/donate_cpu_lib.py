@@ -572,7 +572,7 @@ def __send_all(connection, data):
 
 def upload_results(package, results, server_address):
     if not __make_cmd == 'make':
-        print('Error: Information upload not performed - only make build binaries are currently fully supported')
+        print('Error: Result upload not performed - only make build binaries are currently fully supported')
         return False
 
     print('Uploading results.. ' + str(len(results)) + ' bytes')
@@ -696,7 +696,6 @@ class LibraryIncludes:
 
 def get_compiler_version():
     if __make_cmd == 'msbuild.exe':
-        # TODO: shorted version string
         _, _, stderr, _ = __run_command('cl.exe', False)
         return stderr.split('\n')[0]
 
