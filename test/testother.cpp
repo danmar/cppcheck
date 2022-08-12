@@ -613,15 +613,16 @@ private:
     }
 
     // #11158
-    void zeroDiv16() {
+    void zeroDiv16()
+    {
         check("int f(int i) {\n"
-                "    int number = 10, a = 0;\n"
-                "    for (int count = 0; count < 2; count++) {\n"
-                "        a += (i / number) % 10;\n"
-                "        number = number / 10;\n"
-                "    }\n"
-                "    return a;\n"
-                "}\n");
+              "    int number = 10, a = 0;\n"
+              "    for (int count = 0; count < 2; count++) {\n"
+              "        a += (i / number) % 10;\n"
+              "        number = number / 10;\n"
+              "    }\n"
+              "    return a;\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

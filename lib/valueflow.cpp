@@ -2557,7 +2557,8 @@ struct ValueFlowAnalyzer : Analyzer {
                 } else {
                     if (!value->isImpossible() && value->equalValue(rhsValue))
                         a = Action::Idempotent;
-                    if (tok->exprId() != 0 && findAstNode(rhs, [&](const Token* child) {
+                    if (tok->exprId() != 0 &&
+                        findAstNode(rhs, [&](const Token* child) {
                         return tok->exprId() == child->exprId();
                     }))
                         a |= Action::Incremental;
@@ -5550,7 +5551,8 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                 return false;
             });
             // Remove values from the same assignment if it is incremental
-            if (findAstNode(tok->astOperand2(), [&](const Token* child) {
+            if (findAstNode(tok->astOperand2(),
+                            [&](const Token* child) {
                 return child->exprId() == tok->astOperand1()->exprId();
             }))
                 values.remove_if([&](const ValueFlow::Value& value) {
