@@ -24,6 +24,7 @@
 
 #include <ctime>
 #include <map>
+#include <mutex>
 #include <string>
 
 enum class SHOWTIME_MODES {
@@ -63,6 +64,7 @@ public:
 
 private:
     std::map<std::string, struct TimerResultsData> mResults;
+    mutable std::mutex mResultsSync;
 };
 
 class CPPCHECKLIB Timer {
