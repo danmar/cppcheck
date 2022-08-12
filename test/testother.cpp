@@ -624,6 +624,17 @@ private:
               "    return a;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n"
+                "    int number = 10, a = 0;\n"
+                "    for (int count = 0; count < 2; count++) {\n"
+                "        int x = number / 10;\n"
+                "        a += (i / number) % 10;\n"
+                "        number = x;\n"
+                "    }\n"
+                "    return a;\n"
+                "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void zeroDivCond() {
