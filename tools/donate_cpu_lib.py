@@ -174,8 +174,11 @@ def compile_cppcheck(cppcheck_path, jobs):
     try:
         if __make_cmd == 'msbuild.exe':
             # TODO: run matchcompiler
-            # TODO: always uses all available threads
-            subprocess.check_call([__make_cmd, jobs.replace('j', 'm:', 1), '-t:cli', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release;Platform=x64'], cwd=cppcheck_path)
+            build_env = os.environ
+            # append to cl.exe options - need to omit dash or slash since a dash is being prepended
+            build_env["_CL_"] = jobs.replace('j', 'MP', 1)
+            # TODO: processes still exhaust all threads of the system
+            subprocess.check_call([__make_cmd, '-t:cli', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release;Platform=x64'], cwd=cppcheck_path, env=build_env)
             subprocess.check_call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'], cwd=os.path.join(cppcheck_path, 'bin'))
         else:
             rdynamic = ''
