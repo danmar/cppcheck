@@ -47,8 +47,10 @@ jobs:
       - name: Run tests
         run: ./cmake.output/bin/testrunner
 
+      # TODO: disabled for now as it takes around 40 minutes to finish
       # TODO: no gui/temp/*.cpp files available
       - name: Self check
+        if: false
         run: |
           ec=0
           ./cmake.output/bin/cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.travis_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,internal --exception-handling --debug-warnings cli lib || ec=1
