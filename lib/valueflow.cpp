@@ -5550,16 +5550,27 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
                     return value.tokvalue->exprId() == tok->astOperand1()->exprId();
                 return false;
             });
+            // Find references to LHS in RHS
+            auto isIncremental = [&](const Token* tok2) -> bool {
+                return findAstNode(tok2,
+                                [&](const Token* child) {
+                    return child->exprId() == tok->astOperand1()->exprId();
+                });
+            };
+            // Check symbolic values as well
+            const bool incremental = isIncremental(tok->astOperand2()) || std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& value) {
+                if (!value.isSymbolicValue())
+                    return false;
+                return isIncremental(value.tokvalue);
+            });
             // Remove values from the same assignment if it is incremental
-            if (findAstNode(tok->astOperand2(),
-                            [&](const Token* child) {
-                return child->exprId() == tok->astOperand1()->exprId();
-            }))
+            if (incremental) {
                 values.remove_if([&](const ValueFlow::Value& value) {
                     if (value.tokvalue)
                         return value.tokvalue == tok->astOperand2();
                     return false;
                 });
+            }
             // If assignment copy by value, remove Uninit values..
             if ((tok->astOperand1()->valueType() && tok->astOperand1()->valueType()->pointer == 0) ||
                 (tok->astOperand1()->variable() && tok->astOperand1()->variable()->isReference() && tok->astOperand1()->variable()->nameToken() == tok->astOperand1()))
