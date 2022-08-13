@@ -39,14 +39,13 @@
 #include <tinyxml2.h>
 
 ErrorMessage::ErrorMessage()
-    : incomplete(false), severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
+    : severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
 {}
 
 ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, Certainty::CertaintyLevel certainty) :
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
     file0(std::move(file1)),
-    incomplete(false),
     severity(severity),   // severity for this error message
     cwe(0U),
     certainty(certainty),
@@ -62,7 +61,6 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
     callStack(std::move(callStack)), // locations for this error message
     id(std::move(id)),               // set the message id
     file0(std::move(file1)),
-    incomplete(false),
     severity(severity),   // severity for this error message
     cwe(cwe.id),
     certainty(certainty),
@@ -73,7 +71,7 @@ ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1,
 }
 
 ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, Certainty::CertaintyLevel certainty)
-    : id(std::move(id)), incomplete(false), severity(severity), cwe(0U), certainty(certainty), hash(0)
+    : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty), hash(0)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -92,7 +90,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 
 
 ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
-    : id(std::move(id)), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
+    : id(std::move(id)), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
     for (const Token *tok: callstack) {
@@ -112,7 +110,7 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
-    : id(id), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
+    : id(id), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
     for (const ErrorPathItem& e: errorPath) {
@@ -139,8 +137,7 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 }
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
-    : incomplete(false),
-    severity(Severity::none),
+    : severity(Severity::none),
     cwe(0U),
     certainty(Certainty::normal)
 {
