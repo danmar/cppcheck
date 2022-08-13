@@ -129,5 +129,8 @@ static const std::string emptyString;
 #define SUPPRESS_FLOAT_EQUAL_WARNING(...) __VA_ARGS__
 #endif
 
+#if defined(_WIN32) && defined(_MSC_VER)
+#define USE_WINDOWS_SEH
+#endif
 
 #endif // configH
