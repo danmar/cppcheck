@@ -15,6 +15,7 @@
 #include <memory.h>
 #include <mbstring.h>
 #include <wchar.h>
+#include <atlstr.h>
 
 int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
 {
@@ -1102,3 +1103,11 @@ public:
 IMPLEMENT_DYNAMIC(MyClass, CObject)
 IMPLEMENT_DYNCREATE(MyClass, CObject)
 IMPLEMENT_SERIAL(MyClass,CObject, 42)
+
+void invalidPrintfArgType_StructMember(double d) { // #9672
+  typedef struct { CString st; } my_struct_t;
+
+  my_struct_t my_struct;
+  // cppcheck-suppress invalidPrintfArgType_sint
+  my_struct.st.Format("%d", d);
+}

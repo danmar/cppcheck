@@ -139,6 +139,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(testMisusedScopeObjectInConstructor);
         TEST_CASE(testMisusedScopeObjectNoCodeAfter);
+        TEST_CASE(testMisusedScopeObjectStandardType);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
@@ -5029,6 +5030,26 @@ private:
               "  Foo();\n" // No code after class => don't warn
               "}", "test.cpp");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectStandardType() {
+        check("int g();\n"
+              "void f(int i) {\n"
+              "    int();\n"
+              "    int(0);\n"
+              "    int( g() );\n" // don't warn
+              "    int{};\n"
+              "    int{ 0 };\n"
+              "    int{ i };\n"
+              "    int{ g() };\n" // don't warn
+              "    g();\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:4]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:6]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:7]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:8]: (style) Instance of 'int' object is destroyed immediately.\n",
+                      errout.str());
     }
 
     void trac2084() {
