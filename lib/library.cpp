@@ -442,19 +442,19 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                 container.itEndPattern = itEndPattern;
             const char* const opLessAllowed = node->Attribute("opLessAllowed");
             if (opLessAllowed)
-                container.opLessAllowed = std::string(opLessAllowed) == "true";
+                container.opLessAllowed = strcmp(opLessAllowed, "true") == 0;
             const char* const hasInitializerListConstructor = node->Attribute("hasInitializerListConstructor");
             if (hasInitializerListConstructor)
-                container.hasInitializerListConstructor = std::string(hasInitializerListConstructor) == "true";
+                container.hasInitializerListConstructor = strcmp(hasInitializerListConstructor, "true") == 0;
             const char* const view = node->Attribute("view");
             if (view)
-                container.view = std::string(view) == "true";
+                container.view = strcmp(view, "true") == 0;
 
             for (const tinyxml2::XMLElement *containerNode = node->FirstChildElement(); containerNode; containerNode = containerNode->NextSiblingElement()) {
                 const std::string containerNodeName = containerNode->Name();
                 if (containerNodeName == "size" || containerNodeName == "access" || containerNodeName == "other") {
                     for (const tinyxml2::XMLElement *functionNode = containerNode->FirstChildElement(); functionNode; functionNode = functionNode->NextSiblingElement()) {
-                        if (std::string(functionNode->Name()) != "function") {
+                        if (strcmp(functionNode->Name(), "function") != 0) {
                             unknown_elements.insert(functionNode->Name());
                             continue;
                         }
@@ -492,7 +492,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                     } else if (containerNodeName == "access") {
                         const char* const indexArg = containerNode->Attribute("indexOperator");
                         if (indexArg)
-                            container.arrayLike_indexOp = std::string(indexArg) == "array-like";
+                            container.arrayLike_indexOp = strcmp(indexArg, "array-like") == 0;
                     }
                 } else if (containerNodeName == "type") {
                     const char* const templateArg = containerNode->Attribute("templateParameter");
@@ -501,10 +501,10 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
 
                     const char* const string = containerNode->Attribute("string");
                     if (string)
-                        container.stdStringLike = std::string(string) == "std-like";
+                        container.stdStringLike = strcmp(string, "std-like") == 0;
                     const char* const associative = containerNode->Attribute("associative");
                     if (associative)
-                        container.stdAssociativeLike = std::string(associative) == "std-like";
+                        container.stdAssociativeLike = strcmp(associative, "std-like") == 0;
                     const char* const unstable = containerNode->Attribute("unstable");
                     if (unstable) {
                         std::string unstableType = unstable;
