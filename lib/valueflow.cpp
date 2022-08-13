@@ -5553,12 +5553,13 @@ static void valueFlowAfterAssign(TokenList *tokenlist, SymbolDatabase* symboldat
             // Find references to LHS in RHS
             auto isIncremental = [&](const Token* tok2) -> bool {
                 return findAstNode(tok2,
-                                [&](const Token* child) {
+                                   [&](const Token* child) {
                     return child->exprId() == tok->astOperand1()->exprId();
                 });
             };
             // Check symbolic values as well
-            const bool incremental = isIncremental(tok->astOperand2()) || std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& value) {
+            const bool incremental = isIncremental(tok->astOperand2()) ||
+                                     std::any_of(values.begin(), values.end(), [&](const ValueFlow::Value& value) {
                 if (!value.isSymbolicValue())
                     return false;
                 return isIncremental(value.tokvalue);
