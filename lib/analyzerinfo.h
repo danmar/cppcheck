@@ -24,6 +24,7 @@
 #include "config.h"
 #include "importproject.h"
 
+#include <cstddef>
 #include <fstream>
 #include <list>
 #include <string>

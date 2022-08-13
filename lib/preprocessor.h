@@ -24,13 +24,15 @@
 #include "config.h"
 
 #include <atomic>
-#include <simplecpp.h>
+#include <cstddef>
 #include <istream>
 #include <list>
 #include <map>
 #include <set>
 #include <string>
 #include <vector>
+
+#include <simplecpp.h>
 
 class ErrorLogger;
 class Settings;

@@ -22,6 +22,7 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
 #include "sourcelocation.h"

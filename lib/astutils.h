@@ -26,13 +26,15 @@
 #include <set>
 #include <stack>
 #include <string>
+#include <type_traits>
+#include <utility>
 #include <vector>
 
 #include "config.h"
 #include "errortypes.h"
+#include "library.h"
 #include "symboldatabase.h"
 
-class Library;
 class Settings;
 class Token;
 
