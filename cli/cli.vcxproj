@@ -412,6 +412,7 @@
     <ClInclude Include="filelister.h" />
     <ClInclude Include="processexecutor.h" />
     <ClInclude Include="threadexecutor.h" />
+    <ClInclude Include="stacktrace.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\cppcheck.vcxproj">
@@ -427,6 +428,7 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="processexecutor.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
+    <ClCompile Include="stacktrace.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
