@@ -27,7 +27,6 @@
 #include "tokenize.h"
 
 #include <iosfwd>
-#include <list>
 #include <map>
 #include <string>
 #include <unordered_map>
@@ -66,6 +65,7 @@ private:
         TEST_CASE(zeroDiv13);
         TEST_CASE(zeroDiv14); // #1169
         TEST_CASE(zeroDiv15); // #8319
+        TEST_CASE(zeroDiv16); // #11158
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -138,6 +138,7 @@ private:
         TEST_CASE(testMisusedScopeObjectDoesNotPickNestedClass);
         TEST_CASE(testMisusedScopeObjectInConstructor);
         TEST_CASE(testMisusedScopeObjectNoCodeAfter);
+        TEST_CASE(testMisusedScopeObjectStandardType);
         TEST_CASE(trac2071);
         TEST_CASE(trac2084);
         TEST_CASE(trac3693);
@@ -609,6 +610,31 @@ private:
               "    return r;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Division by zero.\n", errout.str());
+    }
+
+    // #11158
+    void zeroDiv16()
+    {
+        check("int f(int i) {\n"
+              "    int number = 10, a = 0;\n"
+              "    for (int count = 0; count < 2; count++) {\n"
+              "        a += (i / number) % 10;\n"
+              "        number = number / 10;\n"
+              "    }\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n"
+              "    int number = 10, a = 0;\n"
+              "    for (int count = 0; count < 2; count++) {\n"
+              "        int x = number / 10;\n"
+              "        a += (i / number) % 10;\n"
+              "        number = x;\n"
+              "    }\n"
+              "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void zeroDivCond() {
@@ -5003,6 +5029,26 @@ private:
               "  Foo();\n" // No code after class => don't warn
               "}", "test.cpp");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void testMisusedScopeObjectStandardType() {
+        check("int g();\n"
+              "void f(int i) {\n"
+              "    int();\n"
+              "    int(0);\n"
+              "    int( g() );\n" // don't warn
+              "    int{};\n"
+              "    int{ 0 };\n"
+              "    int{ i };\n"
+              "    int{ g() };\n" // don't warn
+              "    g();\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:4]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:6]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:7]: (style) Instance of 'int' object is destroyed immediately.\n"
+                      "[test.cpp:8]: (style) Instance of 'int' object is destroyed immediately.\n",
+                      errout.str());
     }
 
     void trac2084() {
