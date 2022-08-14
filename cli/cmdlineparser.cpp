@@ -40,6 +40,7 @@
 #include <iostream>
 #include <list>
 #include <set>
+#include <utility>
 
 #ifdef HAVE_RULES
 // xml is used for rules

@@ -29,8 +29,6 @@
 
 #include <algorithm>
 #include <cstddef>
-#include <cstdint>
-#include <functional>
 #include <iterator> // back_inserter
 #include <memory>
 #include <utility>

@@ -32,7 +32,6 @@
 #include "preprocessor.h"
 #include "settings.h"
 #include "suppressions.h"
-#include "threadexecutor.h"
 #include "utils.h"
 #include "checkunusedfunctions.h"
 

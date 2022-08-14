@@ -521,7 +521,7 @@ private:
             const Library::ArgumentChecks::MinSize &m = minsizes->front();
             ASSERT(Library::ArgumentChecks::MinSize::Type::VALUE == m.type);
             ASSERT_EQUALS(500, m.value);
-            ASSERT_EQUALS(emptyString, m.baseType);
+            ASSERT_EQUALS("", m.baseType);
         }
 
         // arg5: type=value

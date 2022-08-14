@@ -24,6 +24,7 @@
 #include "config.h"
 #include "token.h"
 
+#include <cstddef>
 #include <iosfwd>
 #include <string>
 #include <unordered_set>

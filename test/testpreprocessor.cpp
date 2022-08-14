@@ -24,6 +24,7 @@
 #include "platform.h"
 #include "preprocessor.h"
 #include "settings.h"
+#include "suppressions.h"
 #include "testsuite.h"
 #include "testutils.h"
 

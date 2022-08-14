@@ -27,7 +27,6 @@
 #include "tokenize.h"
 
 #include <iosfwd>
-#include <list>
 #include <map>
 #include <string>
 #include <unordered_map>
