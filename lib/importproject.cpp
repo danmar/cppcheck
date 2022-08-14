@@ -1197,7 +1197,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0) {
             const std::list<std::string> toolList = readXmlStringList(node, emptyString, CppcheckXml::ToolElementName, nullptr);
             for (const std::string &toolName : toolList) {
-                if (toolName == std::string(CppcheckXml::ClangTidy))
+                if (toolName == CppcheckXml::ClangTidy)
                     temp.clangTidy = true;
             }
         } else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)

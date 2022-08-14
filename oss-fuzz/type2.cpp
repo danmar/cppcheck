@@ -16,8 +16,10 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <sstream>
 #include "type2.h"
+
+#include <cstring>
+#include <sstream>
 
 static int getValue(const uint8_t *data, size_t dataSize, uint8_t maxValue, bool *done = nullptr)
 {
@@ -92,9 +94,9 @@ static std::string generateExpression2_Expr(const uint8_t *data, size_t dataSize
     }
     case 2: {
         const char *u = unop[getValue(data,dataSize,sizeof(unop)/sizeof(*unop))];
-        if (u == std::string("()"))
+        if (strcmp(u, "()") == 0)
             return "(" + generateExpression2_Expr(data, dataSize, numberOfGlobalConstants, depth) + ")";
-        else if (u == std::string("++") || u == std::string("--"))
+        else if (strcmp(u, "++") == 0 || strcmp(u, "--") == 0)
             return u + generateExpression2_lvalue(data, dataSize);
         return u + generateExpression2_Expr(data, dataSize, numberOfGlobalConstants, depth);
     }
