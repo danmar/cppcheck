@@ -11,8 +11,8 @@ parser = argparse.ArgumentParser()
 parser.add_argument('dir', help='directory with versioned folders')
 parser.add_argument('infile', help='the file to analyze')
 parser.add_argument('repo', nargs='?', default=None, help='the git repository (for sorting commit hashes)')
-parser.add_argument('--compare', action='store_true')
-parser.add_argument('--verbose', action='store_true')
+parser.add_argument('--compare', action='store_true', help='compare output and only show when changed')
+parser.add_argument('--verbose', action='store_true', help='verbose output for debugging')
 #parser.add_argument('--diff', action='store_true') # TODO
 #parser.add_argument('--bisect', action='store_true') # TODO: invoke a bisect on the last difference
 args = parser.parse_args()
