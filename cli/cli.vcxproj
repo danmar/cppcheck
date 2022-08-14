@@ -408,6 +408,7 @@
     <ClInclude Include="cmdlineparser.h" />
     <ClInclude Include="cppcheckexecutor.h" />
     <ClCompile Include="cppcheckexecutorseh.h" />
+    <ClCompile Include="cppcheckexecutorsig.h" />
     <ClInclude Include="executor.h" />
     <ClInclude Include="filelister.h" />
     <ClInclude Include="processexecutor.h" />
@@ -423,6 +424,7 @@
     <ClCompile Include="cmdlineparser.cpp" />
     <ClCompile Include="cppcheckexecutor.cpp" />
     <ClCompile Include="cppcheckexecutorseh.cpp" />
+    <ClCompile Include="cppcheckexecutorsig.cpp" />
     <ClCompile Include="executor.cpp" />
     <ClCompile Include="filelister.cpp" />
     <ClCompile Include="main.cpp" />

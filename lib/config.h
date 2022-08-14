@@ -137,4 +137,8 @@ static const std::string emptyString;
 #define USE_UNIX_BACKTRACE_SUPPORT
 #endif
 
+#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__OS2__)
+#define USE_UNIX_SIGNAL_HANDLING
+#endif
+
 #endif // configH
