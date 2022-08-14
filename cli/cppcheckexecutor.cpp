@@ -41,17 +41,13 @@
 #include "processexecutor.h"
 #endif
 
-#include <algorithm>
 #include <atomic>
-#include <csignal>
 #include <cstdio>
 #include <cstdlib> // EXIT_SUCCESS and EXIT_FAILURE
-#include <cstring>
 #include <functional>
 #include <iostream>
 #include <list>
 #include <memory>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
