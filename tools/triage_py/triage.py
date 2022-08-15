@@ -98,14 +98,13 @@ for entry in versions:
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
     try:
         comm = p.communicate(timeout=args.timeout)
+        out = comm[0] + '\n' + comm[1]
     except subprocess.TimeoutExpired:
-        # TODO: printed out of sequence
-        print('timeout')
+        out = "timeout"
         p.kill()
         comm = p.communicate()
 
     ec = p.returncode
-    out = comm[0] + '\n' + comm[1]
 
     if not do_compare:
         if not use_hashes:
