@@ -127,7 +127,12 @@ for entry in versions:
     out = out.strip()
 
     if last_ec is None:
-        # first run - do nothing
+        # first run - only print version
+        if not use_hashes:
+            print(version)
+        else:
+            print('{} ({})'.format(entry, version))
+
         last_ec = ec
         last_out = out
         continue
