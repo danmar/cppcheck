@@ -62,34 +62,43 @@ if len(versions):
 last_ec = None
 last_out = None
 
-for version in versions:
-    exe_path = os.path.join(directory, version)
+for entry in versions:
+    exe_path = os.path.join(directory, entry)
     exe = os.path.join(exe_path, 'cppcheck')
+
+    if not use_hashes:
+        version = entry
+    else:
+        # get version string
+        version_cmd = exe + ' ' + '--version'
+        version = subprocess.Popen(version_cmd.split(), stdout=subprocess.PIPE, universal_newlines=True).stdout.read().strip()
+        # sanitize version
+        version = version.replace('Cppcheck ', '').replace(' dev', '')
+
     cmd = exe
     cmd += ' '
     if do_compare:
         cmd += ' -q '
-    # TODO: get version for each commit
-    if not use_hashes:
-        if args.debug and Version(version) >= Version('1.45'):
-            cmd += '--debug '
-        if args.debug_warnings and Version(version) >= Version('1.45'):
-            cmd += '--debug-warnings '
-        if args.check_library and Version(version) >= Version('1.61'):
-            cmd += '--check-library '
-        if Version(version) >= Version('1.39'):
-            cmd += '--enable=all '
-        if Version(version) >= Version('1.40'):
-            cmd += '--inline-suppr '
-        if Version(version) >= Version('1.48'):
-            cmd += '--suppress=missingInclude --suppress=missingIncludeSystem --suppress=unmatchedSuppression --suppress=unusedFunction '
-        if Version(version) >= Version('1.49'):
-            cmd += '--inconclusive '
+    if args.debug and Version(version) >= Version('1.45'):
+        cmd += '--debug '
+    if args.debug_warnings and Version(version) >= Version('1.45'):
+        cmd += '--debug-warnings '
+    if args.check_library and Version(version) >= Version('1.61'):
+        cmd += '--check-library '
+    if Version(version) >= Version('1.39'):
+        cmd += '--enable=all '
+    if Version(version) >= Version('1.40'):
+        cmd += '--inline-suppr '
+    if Version(version) >= Version('1.48'):
+        cmd += '--suppress=missingInclude --suppress=missingIncludeSystem --suppress=unmatchedSuppression --suppress=unusedFunction '
+    if Version(version) >= Version('1.49'):
+        cmd += '--inconclusive '
     cmd += input_file
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
     try:
         comm = p.communicate(timeout=2)
     except subprocess.TimeoutExpired:
+        # TODO: printed out of sequence
         print('timeout')
         p.kill()
         comm = p.communicate()
@@ -98,7 +107,10 @@ for version in versions:
     out = comm[0] + '\n' + comm[1]
 
     if not do_compare:
-        print(version)
+        if not use_hashes:
+            print(version)
+        else:
+            print('{} ({})'.format(entry, version))
         print(ec)
         print(out)
         continue
@@ -140,7 +152,10 @@ for version in versions:
     if do_print:
         print(last_ec)
         print(last_out)
-    print(version)
+    if not use_hashes:
+        print(version)
+    else:
+        print('{} ({})'.format(entry, version))
 
     last_ec = ec
     last_out = out
