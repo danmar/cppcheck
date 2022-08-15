@@ -2,7 +2,6 @@
 import os.path
 import subprocess
 import sys
-#import difflib
 import argparse
 
 from packaging.version import Version
@@ -17,7 +16,6 @@ parser.add_argument('--debug', action='store_true', help='passed through to bina
 parser.add_argument('--debug-warnings', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--check-library', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--timeout', default=2, help='the amount of seconds to wait for the analysis to finish')
-#parser.add_argument('--diff', action='store_true') # TODO
 #parser.add_argument('--bisect', action='store_true') # TODO: invoke a bisect on the last difference
 args = parser.parse_args()
 
@@ -29,7 +27,6 @@ def sort_commit_hashes(commits):
 
 verbose = args.verbose
 do_compare = args.compare
-#differ = difflib.Differ()
 
 directory = args.dir
 input_file = args.infile
@@ -147,7 +144,6 @@ for entry in versions:
         if verbose:
             print("{}: output changed".format(version))
         do_print = True
-        #print('\n'.join(differ.compare([last_out], [out])))
 
     if do_print:
         print(last_ec)
