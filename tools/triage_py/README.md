@@ -5,20 +5,22 @@ A script to run a code sample against a given set of Cppcheck versions.
 ## Usage
 
 ```
-usage: triage.py [-h] [--compare] [--verbose] [--debug] [--debug-warnings] [--check-library] dir infile [repo]
+usage: triage.py [-h] [--compare] [--verbose] [--debug] [--debug-warnings] [--check-library] [--timeout TIMEOUT]
+                 dir infile [repo]
 
 positional arguments:
-  dir               directory with versioned folders
-  infile            the file to analyze
-  repo              the git repository (for sorting commit hashes)
+  dir                directory with versioned folders
+  infile             the file to analyze
+  repo               the git repository (for sorting commit hashes)
 
 options:
-  -h, --help        show this help message and exit
-  --compare         compare output and only show when changed
-  --verbose         verbose output for debugging
-  --debug           passed through to binary if supported
-  --debug-warnings  passed through to binary if supported
-  --check-library   passed through to binary if supported
+  -h, --help         show this help message and exit
+  --compare          compare output and only show when changed
+  --verbose          verbose output for debugging
+  --debug            passed through to binary if supported
+  --debug-warnings   passed through to binary if supported
+  --check-library    passed through to binary if supported
+  --timeout TIMEOUT  the amount of seconds to wait for the analysis to finish
 ```
 
 ### Structure of `dir`

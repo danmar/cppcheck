@@ -16,6 +16,7 @@ parser.add_argument('--verbose', action='store_true', help='verbose output for d
 parser.add_argument('--debug', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--debug-warnings', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--check-library', action='store_true', help='passed through to binary if supported')
+parser.add_argument('--timeout', default=2, help='the amount of seconds to wait for the analysis to finish')
 #parser.add_argument('--diff', action='store_true') # TODO
 #parser.add_argument('--bisect', action='store_true') # TODO: invoke a bisect on the last difference
 args = parser.parse_args()
@@ -96,7 +97,7 @@ for entry in versions:
     cmd += input_file
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
     try:
-        comm = p.communicate(timeout=2)
+        comm = p.communicate(timeout=args.timeout)
     except subprocess.TimeoutExpired:
         # TODO: printed out of sequence
         print('timeout')
