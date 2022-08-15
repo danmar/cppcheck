@@ -16,7 +16,6 @@ parser.add_argument('--debug', action='store_true', help='passed through to bina
 parser.add_argument('--debug-warnings', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--check-library', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--timeout', default=2, help='the amount of seconds to wait for the analysis to finish')
-#parser.add_argument('--bisect', action='store_true') # TODO: invoke a bisect on the last difference
 args = parser.parse_args()
 
 def sort_commit_hashes(commits):
