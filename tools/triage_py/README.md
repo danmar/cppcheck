@@ -6,6 +6,7 @@ A script to run a code sample against a given set of Cppcheck versions.
 
 ```
 usage: triage.py [-h] [--compare] [--verbose] [--debug] [--debug-warnings] [--check-library] [--timeout TIMEOUT]
+                 [--compact]
                  dir infile [repo]
 
 positional arguments:
@@ -21,6 +22,7 @@ options:
   --debug-warnings   passed through to binary if supported
   --check-library    passed through to binary if supported
   --timeout TIMEOUT  the amount of seconds to wait for the analysis to finish
+  --compact          only print versions with changes with --compare
 ```
 
 ### Structure of `dir`

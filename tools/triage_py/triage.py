@@ -16,6 +16,7 @@ parser.add_argument('--debug', action='store_true', help='passed through to bina
 parser.add_argument('--debug-warnings', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--check-library', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--timeout', default=2, help='the amount of seconds to wait for the analysis to finish')
+parser.add_argument('--compact', action='store_true', help='only print versions with changes with --compare')
 args = parser.parse_args()
 
 def sort_commit_hashes(commits):
@@ -26,6 +27,10 @@ def sort_commit_hashes(commits):
 
 verbose = args.verbose
 do_compare = args.compare
+if args.compact:
+    if not do_compare:
+        print('error: --compact requires --compare')
+        sys.exit(1)
 
 directory = args.dir
 input_file = args.infile
@@ -152,10 +157,13 @@ for entry in versions:
     if do_print:
         print(last_ec)
         print(last_out)
-    if not use_hashes:
-        print(version)
-    else:
-        print('{} ({})'.format(entry, version))
+
+    # do not print intermediate versions with --compact
+    if not args.compact or do_print:
+        if not use_hashes:
+            print(version)
+        else:
+            print('{} ({})'.format(entry, version))
 
     last_ec = ec
     last_out = out
