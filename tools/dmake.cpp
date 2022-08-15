@@ -374,7 +374,7 @@ int main(int argc, char **argv)
     }
 
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
-         << "    override CXXFLAGS += -std=gnu++0x\n"
+         << "    override CXXFLAGS += -std=gnu++0x -pipe\n"
          << "else ifeq (clang++, $(findstring clang++,$(CXX)))\n"
          << "    override CXXFLAGS += -std=c++0x\n"
          << "else ifeq ($(CXX), c++)\n"
