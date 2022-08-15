@@ -13,6 +13,9 @@ parser.add_argument('infile', help='the file to analyze')
 parser.add_argument('repo', nargs='?', default=None, help='the git repository (for sorting commit hashes)')
 parser.add_argument('--compare', action='store_true', help='compare output and only show when changed')
 parser.add_argument('--verbose', action='store_true', help='verbose output for debugging')
+parser.add_argument('--debug', action='store_true', help='passed through to binary if supported')
+parser.add_argument('--debug-warnings', action='store_true', help='passed through to binary if supported')
+parser.add_argument('--check-library', action='store_true', help='passed through to binary if supported')
 #parser.add_argument('--diff', action='store_true') # TODO
 #parser.add_argument('--bisect', action='store_true') # TODO: invoke a bisect on the last difference
 args = parser.parse_args()
@@ -66,13 +69,14 @@ for version in versions:
     cmd += ' '
     if do_compare:
         cmd += ' -q '
-    #cmd += ' --language=c '
     # TODO: get version for each commit
     if not use_hashes:
-        #if Version(version) >= Version('1.45'):
-        #    cmd += '--debug-warnings --debug '
-        #if Version(version) >= Version('1.61'):
-        #    cmd += '--check-library '
+        if args.debug and Version(version) >= Version('1.45'):
+            cmd += '--debug '
+        if args.debug_warnings and Version(version) >= Version('1.45'):
+            cmd += '--debug-warnings '
+        if args.check_library and Version(version) >= Version('1.61'):
+            cmd += '--check-library '
         if Version(version) >= Version('1.39'):
             cmd += '--enable=all '
         if Version(version) >= Version('1.40'):
