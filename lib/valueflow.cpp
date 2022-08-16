@@ -4022,6 +4022,8 @@ struct LifetimeStore {
             return;
         if (!argtok)
             return;
+        if (!tok)
+            return;
         for (const ValueFlow::Value &v : argtok->values()) {
             if (!v.isLifetimeValue())
                 continue;
@@ -4030,7 +4032,7 @@ struct LifetimeStore {
             const Variable *var = getLifetimeVariable(tok2, er);
             // TODO: the inserted data is never used
             er.insert(er.end(), errorPath.begin(), errorPath.end());
-            if (!var || !tok)
+            if (!var)
                 continue;
             const Token * const varDeclEndToken = var->declEndToken();
             for (const Token *tok3 = tok; tok3 && tok3 != varDeclEndToken; tok3 = tok3->previous()) {
