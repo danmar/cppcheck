@@ -341,6 +341,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strcmp(argv[i], "--exception-handling") == 0)
                 mSettings->exceptionHandling = true;
 
+            // TODO: only applied with Signal handling i.e. Linux
             else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
                 mSettings->exceptionHandling = true;
                 const std::string exceptionOutfilename = &(argv[i][21]);
