@@ -168,5 +168,6 @@ for entry in versions:
     last_ec = ec
     last_out = out
 
-print(last_ec)
-print(last_out)
+if do_compare:
+    print(last_ec)
+    print(last_out)
