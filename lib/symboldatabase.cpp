@@ -2879,9 +2879,9 @@ static bool checkReturns(const Function* function, bool unknown, bool emptyEnabl
     if (function->type != Function::eFunction && function->type != Function::eOperatorEqual)
         return false;
     const Token* defStart = function->retDef;
-    const Token* defEnd = function->returnDefEnd();
     if (!defStart)
         return unknown;
+    const Token* defEnd = function->returnDefEnd();
     if (!defEnd)
         return unknown;
     if (defEnd == defStart)
