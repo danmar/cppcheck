@@ -1025,6 +1025,10 @@ void CppCheck::checkRawTokens(const Tokenizer &tokenizer)
 
 void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 {
+    // TODO: this should actually be the behavior if only "--enable=unusedFunction" is specified - see #10648
+    const char* unusedFunctionOnly = std::getenv("UNUSEDFUNCTION_ONLY");
+    const bool doUnusedFunctionOnly = unusedFunctionOnly && (std::strcmp(unusedFunctionOnly, "1") == 0);
+
     // call all "runChecks" in all registered Check classes
     for (Check *check : Check::instances()) {
         if (Settings::terminated())
@@ -1032,6 +1036,9 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
 
         if (Tokenizer::isMaxTime())
             return;
+
+        if (doUnusedFunctionOnly && dynamic_cast<CheckUnusedFunctions*>(check) == nullptr)
+            continue;
 
         Timer timerRunChecks(check->name() + "::runChecks", mSettings.showtime, &s_timerResults);
         check->runChecks(&tokenizer, &mSettings, this);
@@ -1053,7 +1060,10 @@ void CppCheck::checkNormalTokens(const Tokenizer &tokenizer)
                 mAnalyzerInformation.setFileInfo("ctu", fi1->toString());
         }
 
-        for (const Check *check: Check::instances()) {
+        for (const Check *check : Check::instances()) {
+            if (doUnusedFunctionOnly && dynamic_cast<const CheckUnusedFunctions*>(check) == nullptr)
+                continue;
+
             Check::FileInfo *fi = check->getFileInfo(&tokenizer, &mSettings);
             if (fi != nullptr) {
                 if (mSettings.jobs == 1)
