@@ -1476,9 +1476,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
 
     std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        ErrorMessage::FileLocation location;
-        location.setfile(file);
-        loclist.push_back(std::move(location));
+        loclist.emplace_back(file);
     }
 
     std::ostringstream msg;
@@ -1514,9 +1512,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
 
     std::list<ErrorMessage::FileLocation> loclist;
     if (!file.empty()) {
-        ErrorMessage::FileLocation location;
-        location.setfile(file);
-        loclist.push_back(std::move(location));
+        loclist.emplace_back(file);
     }
 
     ErrorMessage errmsg(loclist,
