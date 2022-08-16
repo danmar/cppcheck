@@ -718,23 +718,34 @@ void CheckFunctions::useStandardLibrary()
         if (!condToken->isComparisonOp())
             continue;
 
-        const auto checkBoundaryType = [](const Token* t) -> bool {
-            if (!t)
-                return false;
-            if (t->isNumber())
-                return true;
-            if (t->isVariable() && !t->variable()->isArray())
-                return true;
-            return false;
+        const auto checkBoundaryType = [](const Token* t, const bool rightOp) -> bool {
+            const auto& till = rightOp ? ";" : ">"; // valid end of expression
+
+            bool result = nullptr != t;
+            for (; result && nullptr != t && Token::simpleMatch(t, till); t = t->next()) {
+                if (t->isNumber()) {
+                    continue;
+                } else if (t->isVariable() && !t->variable()->isArray()) {
+                    continue;
+                } else if (t->isArithmeticalOp()) {
+                    continue;
+                } else if (Token::simpleMatch(t, "sizeof (")) {
+                    t = t->next()->link();
+                    continue;
+                } else if (Token::Match(t, "(|)")) {
+                    continue;
+                } else {
+                    result = false;
+                }
+            }
+            return result && nullptr != t;
         };
 
         const auto& secondOp = condToken->str();
-        const bool isLess = "<" == secondOp && checkBoundaryType(condToken->astOperand2()) &&
-                            condToken->astOperand1()->varId() == idxVarId &&
-                            condToken->astOperand2()->next()->str() == ";";
-        const bool isMore = ">" == secondOp && checkBoundaryType(condToken->astOperand1()) &&
-                            condToken->astOperand2()->varId() == idxVarId &&
-                            condToken->astOperand1()->next()->str() == ">";
+        const bool isLess = "<" == secondOp && checkBoundaryType(condToken->astOperand2(), true) &&
+                            condToken->astOperand1()->varId() == idxVarId;
+        const bool isMore = ">" == secondOp && checkBoundaryType(condToken->astOperand1(), false) &&
+                            condToken->astOperand2()->varId() == idxVarId;
 
         if (!(isLess || isMore))
             continue;

@@ -1985,7 +1985,7 @@ private:
 
     void checkUseStandardLibrary14() {
         check("void f(void* dest) {\n"
-              "    for (size_t i = 0; i < 64; i++) {\n"
+              "    for (size_t i = 0; i < sizeof(int)*(15 + 42/2 - 7); i++) {\n"
               "        reinterpret_cast<unsigned char*>(dest)[i] = '0';\n"
               "}}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
