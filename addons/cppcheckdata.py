@@ -278,6 +278,7 @@ class Token:
     isSplittedVarDeclComma = False
     isSplittedVarDeclEq = False
     isImplicitInt = False
+    exprId = None
     varId = None
     variableId = None
     variable = None
@@ -351,6 +352,8 @@ class Token:
         self.link = None
         if element.get('varId'):
             self.varId = int(element.get('varId'))
+        if element.get('exprId'):
+            self.exprId = int(element.get('exprId'))
         self.variableId = element.get('variable')
         self.variable = None
         self.functionId = element.get('function')
