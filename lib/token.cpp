@@ -1858,7 +1858,7 @@ const Token *Token::getValueTokenMinStrSize(const Settings *settings, MathLib::b
                 minsize = size;
                 ret = it->tokvalue;
                 if (path)
-                  *path = it->path;
+                    *path = it->path;
             }
         }
     }
