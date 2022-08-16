@@ -471,11 +471,12 @@ static bool isEscapedReference(const Variable* var)
         return false;
     if (!var->isReference())
         return false;
-    if (!var->declEndToken())
+    const Token * const varDeclEndToken = var->declEndToken();
+    if (!varDeclEndToken)
         return false;
-    if (!Token::simpleMatch(var->declEndToken(), "="))
+    if (!Token::simpleMatch(varDeclEndToken, "="))
         return false;
-    const Token* vartok = var->declEndToken()->astOperand2();
+    const Token* vartok = varDeclEndToken->astOperand2();
     return !isTemporary(true, vartok, nullptr, false);
 }
 
