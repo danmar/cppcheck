@@ -102,7 +102,7 @@ ifndef CXXFLAGS
 endif
 
 ifeq (g++, $(findstring g++,$(CXX)))
-    override CXXFLAGS += -std=gnu++0x
+    override CXXFLAGS += -std=gnu++0x -pipe
 else ifeq (clang++, $(findstring clang++,$(CXX)))
     override CXXFLAGS += -std=c++0x
 else ifeq ($(CXX), c++)
