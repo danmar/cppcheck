@@ -1382,9 +1382,18 @@ def match_atom(token, p):
             if t:
                 return t
     elif p.startswith('!!'):
-        t = match_atom(token, p[1:])
+        t = match_atom(token, p[2:])
         if not t:
             return token
+    elif p.startswith('**'):
+        a = p[2:]
+        t = token
+        while t:
+            if match_atom(t, a):
+                return t
+            if t.link and t.str in ['(', '[', '<', '{']:
+                t = t.link
+            t = t.next
     return None
 
 class MatchResult:
