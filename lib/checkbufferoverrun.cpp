@@ -202,7 +202,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
                 return ChildrenToVisit::op1_and_op2;
             });
         }
-    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings)) {
+    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings, path)) {
         Dimension dim;
         dim.tok = nullptr;
         dim.num = Token::getStrArraySize(stringLiteral);
