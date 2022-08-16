@@ -357,12 +357,18 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // #8827
     void commaoperator1() {
-        check("void foo(int,const char*,int);\n"
+        check("void foo(int,const char*,int);\n" // #8827
               "void f(int value) {\n"
               "    foo(42,\"test\",42),(value&42);\n"
               "}");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ',', result is not used.\n", errout.str());
+
+        check("int f() {\n" // #11257
+              "    int y;\n"
+              "    y = (3, 4);\n"
+              "    return y;\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ',', result is not used.\n", errout.str());
     }
 
