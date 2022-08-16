@@ -56,11 +56,17 @@ if len(versions):
         if not git_repo:
             print('error: git repository argument required for commit hash sorting')
             sys.exit(1)
+        if verbose:
+            print("using git repository '{}' to sort commit hashes".format(git_repo))
         use_hashes = True
         # if you use the folder from the bisect script that contains the repo as a folder - so remove it from the list
         if versions.count('cppcheck'):
             versions.remove('cppcheck')
         versions = sort_commit_hashes(versions)
+
+if verbose:
+    print("found {} versions in '{}'".format(len(versions), directory))
+    print("analyzing '{}'".format(input_file))
 
 last_ec = None
 last_out = None
@@ -97,6 +103,8 @@ for entry in versions:
     if Version(version) >= Version('1.49'):
         cmd += '--inconclusive '
     cmd += input_file
+    if verbose:
+        print("running '{}'". format(cmd))
     p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd=exe_path, universal_newlines=True)
     try:
         comm = p.communicate(timeout=args.timeout)
@@ -172,3 +180,6 @@ for entry in versions:
 if do_compare:
     print(last_ec)
     print(last_out)
+
+if verbose:
+    print('done')
