@@ -347,7 +347,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         printError("invalid '--exception-handling' argument");
                         return false;
                     }
-                    // TODO: only applied with Signal handling i.e. Linux
                     CppCheckExecutor::setExceptionOutput((exceptionOutfilename == "stderr") ? stderr : stdout);
                 }
             }
