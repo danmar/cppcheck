@@ -17,6 +17,7 @@
  */
 
 #include "cmdlineparser.h"
+#include "cppcheckexecutor.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "redirect.h"
@@ -131,6 +132,10 @@ private:
         TEST_CASE(errorlistverbose1);
         TEST_CASE(errorlistverbose2);
         TEST_CASE(ignorepathsnopath);
+        TEST_CASE(exceptionhandling);
+        TEST_CASE(exceptionhandling2);
+        TEST_CASE(exceptionhandling3);
+        TEST_CASE(exceptionhandlingInvalid);
 
         // TODO
         // Disabling these tests since they use relative paths to the
@@ -963,6 +968,43 @@ private:
         // Fails since no ignored path given
         ASSERT_EQUALS(false, parser.parseFromArgs(2, argv));
         ASSERT_EQUALS(0, parser.getIgnoredPaths().size());
+    }
+
+    void exceptionhandling() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--exception-handling"};
+        settings.exceptionHandling = false;
+        CppCheckExecutor::setExceptionOutput(stderr);
+        ASSERT(defParser.parseFromArgs(2, argv));
+        ASSERT(settings.exceptionHandling);
+        ASSERT_EQUALS(stderr, CppCheckExecutor::getExceptionOutput());
+    }
+
+    void exceptionhandling2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--exception-handling=stderr"};
+        settings.exceptionHandling = false;
+        CppCheckExecutor::setExceptionOutput(stdout);
+        ASSERT(defParser.parseFromArgs(2, argv));
+        ASSERT(settings.exceptionHandling);
+        ASSERT_EQUALS(stderr, CppCheckExecutor::getExceptionOutput());
+    }
+
+    void exceptionhandling3() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--exception-handling=stdout"};
+        settings.exceptionHandling = false;
+        CppCheckExecutor::setExceptionOutput(stderr);
+        ASSERT(defParser.parseFromArgs(2, argv));
+        ASSERT(settings.exceptionHandling);
+        ASSERT_EQUALS(stdout, CppCheckExecutor::getExceptionOutput());
+    }
+
+    void exceptionhandlingInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--exception-handling=exfile"};
+        ASSERT_EQUALS(false, defParser.parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: invalid '--exception-handling' argument\n", GET_REDIRECT_OUTPUT);
     }
 
     /*
