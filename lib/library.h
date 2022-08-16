@@ -555,7 +555,7 @@ public:
 
     /** Suppress/check a type */
     enum class TypeCheck { def, check, suppress };
-    TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
+    TypeCheck getTypeCheck(std::string check, std::string typeName) const;
 
 private:
     // load a <function> xml node
