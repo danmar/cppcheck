@@ -5055,7 +5055,7 @@ private:
               "}\n", "test.cpp");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f() {\n"
+        check("void g() {\n"
               "    float (f);\n"
               "    float (*p);\n"
               "}\n", "test.cpp");
