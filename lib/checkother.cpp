@@ -2063,7 +2063,7 @@ void CheckOther::checkMisusedScopedObject()
                 if (const Token* arg = tok->tokAt(2)->astOperand2()) {
                     if (!isConstStatement(arg, mTokenizer->isCPP()))
                         continue;
-                    if (tok->tokAt(2)->str() == "(") {
+                    if (tok->strAt(2) == "(") {
                         if (arg->varId()) // TODO: check if this is a declaration
                             continue;
                         const Token* rml = nextAfterAstRightmostLeaf(arg);
