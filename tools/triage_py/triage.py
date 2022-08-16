@@ -15,7 +15,7 @@ parser.add_argument('--verbose', action='store_true', help='verbose output for d
 parser.add_argument('--debug', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--debug-warnings', action='store_true', help='passed through to binary if supported')
 parser.add_argument('--check-library', action='store_true', help='passed through to binary if supported')
-parser.add_argument('--timeout', default=2, help='the amount of seconds to wait for the analysis to finish')
+parser.add_argument('--timeout', type=int, default=2, help='the amount of seconds to wait for the analysis to finish')
 parser.add_argument('--compact', action='store_true', help='only print versions with changes with --compare')
 args = parser.parse_args()
 
