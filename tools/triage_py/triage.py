@@ -51,7 +51,8 @@ if len(versions):
         use_hashes = False
         versions.sort(key=Version)
     except:
-        print("'{}' not a version - assuming commit hashes".format(versions[0]))
+        if verbose:
+            print("'{}' not a version - assuming commit hashes".format(versions[0]))
         if not git_repo:
             print('error: git repository argument required for commit hash sorting')
             sys.exit(1)
