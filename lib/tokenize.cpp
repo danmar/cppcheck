@@ -9228,10 +9228,10 @@ void Tokenizer::simplifyOperatorName()
                 op += par->strAt(1);
                 par = par->tokAt(2);
                 if (par->str() == ")") {
-                  par->link()->deleteThis();
-                  par = par->next();
-                  par->deletePrevious();
-                  tok = par->tokAt(-3);
+                    par->link()->deleteThis();
+                    par = par->next();
+                    par->deletePrevious();
+                    tok = par->tokAt(-3);
                 }
                 done = true;
             } else if (par->str() == "::") {
