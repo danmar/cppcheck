@@ -4066,6 +4066,16 @@ private:
               "    const double* const QM_R__ buf(v.data() + i);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::stringstream& strm, const std::string& s) {\n" // #
+              "    strm << s.c_str();\n"
+              "    strm << \"abc\" << s.c_str();\n"
+              "    strm << \"abc\" << s.c_str() << \"def\";\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:3]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:4]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n",
+                      errout.str());
     }
 
     void uselessCalls() {
