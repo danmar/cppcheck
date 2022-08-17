@@ -7101,10 +7101,10 @@ private:
     }
 
     void noCrash6() { // #10212
-      ASSERT_NO_THROW(tokenizeAndStringify("template <long, long a = 0> struct b;\n"
-                                           "template <class, bool> struct c;\n"
-                                           "template <template <class, class> class a, class e, class... d>\n"
-                                           "struct c<a<e, d...>, true> {};\n"));
+        ASSERT_NO_THROW(tokenizeAndStringify("template <long, long a = 0> struct b;\n"
+                                             "template <class, bool> struct c;\n"
+                                             "template <template <class, class> class a, class e, class... d>\n"
+                                             "struct c<a<e, d...>, true> {};\n"));
     }
 
     void checkConfig(const char code[]) {
