@@ -2482,10 +2482,11 @@ static bool isExpressionChangedAt(const F& getExprTok,
             return true;
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
-        if (!getExprTok())
+        auto expr = getExprTok();
+        if (!expr)
             aliased = true;
         if (!aliased)
-            aliased = isAliasOf(tok, getExprTok());
+            aliased = isAliasOf(tok, expr);
         if (!aliased)
             return false;
         if (isVariableChanged(tok, 1, settings, cpp, depth))
