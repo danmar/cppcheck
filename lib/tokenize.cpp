@@ -3466,7 +3466,7 @@ public:
 
 void VariableMap::enterScope()
 {
-    mScopeInfo.push(std::vector<std::pair<std::string, nonneg int>>());
+    mScopeInfo.emplace(/*std::vector<std::pair<std::string, nonneg int>>()*/);
 }
 
 bool VariableMap::leaveScope()
@@ -3840,7 +3840,7 @@ void Tokenizer::setVarIdPass1()
 
     std::stack<VarIdScopeInfo> scopeStack;
 
-    scopeStack.push(VarIdScopeInfo());
+    scopeStack.emplace(/*VarIdScopeInfo()*/);
     std::stack<const Token *> functionDeclEndStack;
     const Token *functionDeclEndToken = nullptr;
     bool initlist = false;
@@ -3864,7 +3864,7 @@ void Tokenizer::setVarIdPass1()
                 if (!variableMap.leaveScope())
                     cppcheckError(tok);
             } else if (tok->str() == "{") {
-                scopeStack.push(VarIdScopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/ false, *variableMap.getVarId()));
+                scopeStack.emplace(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/ false, *variableMap.getVarId());
 
                 // check if this '{' is a start of an "if" body
                 const Token * ifToken = tok->previous();
@@ -3918,7 +3918,7 @@ void Tokenizer::setVarIdPass1()
                             variableMap.enterScope();
                     }
                     initlist = false;
-                    scopeStack.push(VarIdScopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), *variableMap.getVarId()));
+                    scopeStack.emplace(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), *variableMap.getVarId());
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
                     for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous()) {
@@ -3952,7 +3952,7 @@ void Tokenizer::setVarIdPass1()
 
                     scopeStack.pop();
                     if (scopeStack.empty()) {  // should be impossible
-                        scopeStack.push(VarIdScopeInfo());
+                        scopeStack.emplace(/*VarIdScopeInfo()*/);
                     }
                 }
             }

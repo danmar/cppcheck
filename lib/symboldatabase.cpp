@@ -699,7 +699,7 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                     scope->checkVariable(tok->tokAt(2), AccessControl::Throw, mSettings); // check for variable declaration and add it to new scope if found
                 tok = scopeStartTok;
             } else if (Token::Match(tok, "%var% {")) {
-                endInitList.push(std::make_pair(tok->next()->link(), scope));
+                endInitList.emplace(tok->next()->link(), scope);
                 tok = tok->next();
             } else if (const Token *lambdaEndToken = findLambdaEndToken(tok)) {
                 const Token *lambdaStartToken = lambdaEndToken->link();
@@ -711,13 +711,13 @@ void SymbolDatabase::createSymbolDatabaseFindAllScopes()
                 tok = lambdaStartToken;
             } else if (tok->str() == "{") {
                 if (inInitList()) {
-                    endInitList.push(std::make_pair(tok->link(), scope));
+                    endInitList.emplace(tok->link(), scope);
                 } else if (isExecutableScope(tok)) {
                     scopeList.emplace_back(this, tok, scope, Scope::eUnconditional, tok);
                     scope->nestedList.push_back(&scopeList.back());
                     scope = &scopeList.back();
                 } else if (scope->isExecutable()) {
-                    endInitList.push(std::make_pair(tok->link(), scope));
+                    endInitList.emplace(tok->link(), scope);
                 } else {
                     tok = tok->link();
                 }
