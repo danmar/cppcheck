@@ -425,6 +425,7 @@ private:
         TEST_CASE(noCrash3);
         TEST_CASE(noCrash4);
         TEST_CASE(noCrash5); // #10603
+        TEST_CASE(noCrash6); // #10212
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -7086,8 +7087,7 @@ private:
         ASSERT_NO_THROW(tokenizeAndStringify("void a(X<int> x, typename Y1::Y2<int, A::B::C, 2> y, Z z = []{});"));
     }
 
-    void noCrash4()
-    {
+    void noCrash4() {
         ASSERT_NO_THROW(tokenizeAndStringify("static int foo() {\n"
                                              "    zval ref ;\n"
                                              "    p = &(ref).value;\n"
@@ -7095,10 +7095,16 @@ private:
                                              "}\n"));
     }
 
-    void noCrash5() // #10603
-    {
+    void noCrash5() { // #10603
         ASSERT_NO_THROW(tokenizeAndStringify("class B { using shared_ptr = std::shared_ptr<Foo>; };\n"
                                              "class D : public B { void f(const std::shared_ptr<int>& ptr) {} };\n"));
+    }
+
+    void noCrash6() { // #10212
+        ASSERT_NO_THROW(tokenizeAndStringify("template <long, long a = 0> struct b;\n"
+                                             "template <class, bool> struct c;\n"
+                                             "template <template <class, class> class a, class e, class... d>\n"
+                                             "struct c<a<e, d...>, true> {};\n"));
     }
 
     void checkConfig(const char code[]) {
