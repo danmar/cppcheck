@@ -25,6 +25,11 @@
 
 #include "ui_newsuppressiondialog.h"
 
+#include <functional>
+#include <string>
+
+class QWidget;
+
 NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
     QDialog(parent),
     mUI(new Ui::NewSuppressionDialog)
@@ -37,7 +42,6 @@ NewSuppressionDialog::NewSuppressionDialog(QWidget *parent) :
         void reportErr(const ErrorMessage &msg) override {
             errorIds << QString::fromStdString(msg.id);
         }
-        void bughuntingReport(const std::string & /*str*/) override {}
         QStringList errorIds;
     };
 

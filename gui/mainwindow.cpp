@@ -20,26 +20,38 @@
 
 #include "applicationlist.h"
 #include "aboutdialog.h"
+#include "analyzerinfo.h"
 #include "common.h"
 #include "cppcheck.h"
+#include "errortypes.h"
 #include "filelist.h"
 #include "fileviewdialog.h"
-#include "functioncontractdialog.h"
 #include "helpdialog.h"
+#include "importproject.h"
 #include "librarydialog.h"
+#include "platform.h"
 #include "projectfile.h"
 #include "projectfiledialog.h"
 #include "report.h"
+#include "resultsview.h"
 #include "scratchpad.h"
 #include "showtypes.h"
 #include "statsdialog.h"
 #include "settingsdialog.h"
+#include "standards.h"
+#include "suppressions.h"
 #include "threadhandler.h"
 #include "threadresult.h"
 #include "translationhandler.h"
-#include "variablecontractsdialog.h"
 
 #include "ui_mainwindow.h"
+
+#include <algorithm>
+#include <functional>
+#include <list>
+#include <set>
+#include <string>
+#include <vector>
 
 #include <QApplication>
 #include <QAction>
@@ -143,15 +155,10 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     connect(mThread, &ThreadHandler::done, this, &MainWindow::analysisDone);
     connect(mThread, &ThreadHandler::log, mUI->mResults, &ResultsView::log);
     connect(mThread, &ThreadHandler::debugError, mUI->mResults, &ResultsView::debugError);
-    connect(mThread, &ThreadHandler::bughuntingReportLine, mUI->mResults, &ResultsView::bughuntingReportLine);
     connect(mUI->mResults, &ResultsView::gotResults, this, &MainWindow::resultsAdded);
     connect(mUI->mResults, &ResultsView::resultsHidden, mUI->mActionShowHidden, &QAction::setEnabled);
     connect(mUI->mResults, &ResultsView::checkSelected, this, &MainWindow::performSelectedFilesCheck);
     connect(mUI->mResults, &ResultsView::suppressIds, this, &MainWindow::suppressIds);
-    connect(mUI->mResults, &ResultsView::editFunctionContract, this, &MainWindow::editFunctionContract);
-    connect(mUI->mResults, &ResultsView::editVariableContract, this, &MainWindow::editVariableContract);
-    connect(mUI->mResults, &ResultsView::deleteFunctionContract, this, &MainWindow::deleteFunctionContract);
-    connect(mUI->mResults, &ResultsView::deleteVariableContract, this, &MainWindow::deleteVariableContract);
     connect(mUI->mMenuView, &QMenu::aboutToShow, this, &MainWindow::aboutToShowViewMenu);
 
     // File menu
@@ -222,6 +229,7 @@ MainWindow::MainWindow(TranslationHandler* th, QSettings* settings) :
     mUI->mActionCpp14->setActionGroup(mCppStandardActions);
     mUI->mActionCpp17->setActionGroup(mCppStandardActions);
     mUI->mActionCpp20->setActionGroup(mCppStandardActions);
+    //mUI->mActionCpp23->setActionGroup(mCppStandardActions);
 
     mUI->mActionEnforceC->setActionGroup(mSelectLanguageActions);
     mUI->mActionEnforceCpp->setActionGroup(mSelectLanguageActions);
@@ -269,9 +277,9 @@ void MainWindow::handleCLIParams(const QStringList &params)
         } else {
             loadResults(logFile);
         }
-    } else if ((index = params.indexOf(QRegularExpression(".*\\.cppcheck$", QRegularExpression::CaseInsensitiveOption), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
+    } else if ((index = params.indexOf(QRegularExpression(".*\\.cppcheck$", QRegularExpression::CaseInsensitiveOption))) >= 0 && index < params.length() && QFile(params[index]).exists()) {
         loadProjectFile(params[index]);
-    } else if ((index = params.indexOf(QRegularExpression(".*\\.xml$", QRegularExpression::CaseInsensitiveOption), 0)) >= 0 && index < params.length() && QFile(params[index]).exists()) {
+    } else if ((index = params.indexOf(QRegularExpression(".*\\.xml$", QRegularExpression::CaseInsensitiveOption))) >= 0 && index < params.length() && QFile(params[index]).exists()) {
         loadResults(params[index],QDir::currentPath());
     } else
         doAnalyzeFiles(params);
@@ -308,6 +316,7 @@ void MainWindow::loadSettings()
     mUI->mActionCpp14->setChecked(standards.cpp == Standards::CPP14);
     mUI->mActionCpp17->setChecked(standards.cpp == Standards::CPP17);
     mUI->mActionCpp20->setChecked(standards.cpp == Standards::CPP20);
+    //mUI->mActionCpp23->setChecked(standards.cpp == Standards::CPP23);
 
     // Main window settings
     const bool showMainToolbar = mSettings->value(SETTINGS_TOOLBARS_MAIN_SHOW, true).toBool();
@@ -356,9 +365,6 @@ void MainWindow::loadSettings()
             QDir::setCurrent(inf.absolutePath());
         }
     }
-
-    updateFunctionContractsTab();
-    updateVariableContractsTab();
 }
 
 void MainWindow::saveSettings() const
@@ -393,6 +399,8 @@ void MainWindow::saveSettings() const
         mSettings->setValue(SETTINGS_STD_CPP, "C++17");
     if (mUI->mActionCpp20->isChecked())
         mSettings->setValue(SETTINGS_STD_CPP, "C++20");
+    //if (mUI.mActionCpp23->isChecked())
+    //    mSettings->setValue(SETTINGS_STD_CPP, "C++23");
 
     // Main window settings
     mSettings->setValue(SETTINGS_TOOLBARS_MAIN_SHOW, mUI->mToolBarMain->isVisible());
@@ -618,33 +626,6 @@ QStringList MainWindow::selectFilesToAnalyze(QFileDialog::FileMode mode)
     setPath(SETTINGS_LAST_CHECK_PATH, mCurrentDirectory);
 
     return selected;
-}
-
-void MainWindow::updateFunctionContractsTab()
-{
-    QStringList addedContracts;
-    if (mProjectFile) {
-        for (const auto& it: mProjectFile->getFunctionContracts()) {
-            addedContracts << QString::fromStdString(it.first);
-        }
-    }
-    mUI->mResults->setAddedFunctionContracts(addedContracts);
-}
-
-void MainWindow::updateVariableContractsTab()
-{
-    QStringList added;
-    if (mProjectFile) {
-        for (const auto &vc: mProjectFile->getVariableContracts()) {
-            QString line = vc.first;
-            if (!vc.second.minValue.empty())
-                line += " min:" + QString::fromStdString(vc.second.minValue);
-            if (!vc.second.maxValue.empty())
-                line += " max:" + QString::fromStdString(vc.second.maxValue);
-            added << line;
-        }
-    }
-    mUI->mResults->setAddedVariableContracts(added);
 }
 
 void MainWindow::analyzeFiles()
@@ -881,13 +862,6 @@ Settings MainWindow::getCppcheckSettings()
         }
 
         result.clang = mProjectFile->clangParser;
-        result.bugHunting = mProjectFile->bugHunting;
-        result.bugHuntingReport = " ";
-
-        result.functionContracts = mProjectFile->getFunctionContracts();
-
-        for (const auto& vc: mProjectFile->getVariableContracts())
-            result.variableContracts[vc.first.toStdString()] = vc.second;
 
         const QStringList undefines = mProjectFile->getUndefines();
         for (const QString& undefine : undefines)
@@ -1186,8 +1160,11 @@ void MainWindow::clearResults()
     if (mProjectFile && !mProjectFile->getBuildDir().isEmpty()) {
         QDir dir(QFileInfo(mProjectFile->getFilename()).absolutePath() + '/' + mProjectFile->getBuildDir());
         for (const QString& f: dir.entryList(QDir::Files)) {
-            if (!f.endsWith("files.txt") && !QRegularExpression("^.*.s[0-9]+$").match(f).hasMatch())
-                dir.remove(f);
+            if (!f.endsWith("files.txt")) {
+                static const QRegularExpression rx("^.*.s[0-9]+$");
+                if (!rx.match(f).hasMatch())
+                    dir.remove(f);
+            }
         }
     }
     mUI->mResults->clear(true);
@@ -1557,9 +1534,6 @@ void MainWindow::loadProjectFile(const QString &filePath)
     delete mProjectFile;
     mProjectFile = new ProjectFile(filePath, this);
     mProjectFile->setActiveProject();
-    mUI->mResults->showContracts(mProjectFile->bugHunting);
-    updateFunctionContractsTab();
-    updateVariableContractsTab();
     if (!loadLastResults())
         analyzeProject(mProjectFile);
 }
@@ -1693,14 +1667,10 @@ void MainWindow::newProjectFile()
     ProjectFileDialog dlg(mProjectFile, this);
     if (dlg.exec() == QDialog::Accepted) {
         addProjectMRU(filepath);
-        mUI->mResults->showContracts(mProjectFile->bugHunting);
         analyzeProject(mProjectFile);
     } else {
         closeProjectFile();
     }
-
-    updateFunctionContractsTab();
-    updateVariableContractsTab();
 }
 
 void MainWindow::closeProjectFile()
@@ -1708,8 +1678,6 @@ void MainWindow::closeProjectFile()
     delete mProjectFile;
     mProjectFile = nullptr;
     mUI->mResults->clear(true);
-    mUI->mResults->clearContracts();
-    mUI->mResults->showContracts(false);
     enableProjectActions(false);
     enableProjectOpenActions(true);
     formatAndSetTitle();
@@ -1730,7 +1698,6 @@ void MainWindow::editProjectFile()
     ProjectFileDialog dlg(mProjectFile, this);
     if (dlg.exec() == QDialog::Accepted) {
         mProjectFile->write();
-        mUI->mResults->showContracts(mProjectFile->bugHunting);
         analyzeProject(mProjectFile);
     }
 }
@@ -1896,56 +1863,4 @@ void MainWindow::suppressIds(QStringList ids)
 
     mProjectFile->setSuppressions(suppressions);
     mProjectFile->write();
-}
-
-void MainWindow::editFunctionContract(QString function)
-{
-    if (!mProjectFile)
-        return;
-
-    QString expects;
-    const auto it = mProjectFile->getFunctionContracts().find(function.toStdString());
-    if (it != mProjectFile->getFunctionContracts().end())
-        expects = QString::fromStdString(it->second);
-
-    FunctionContractDialog dlg(nullptr,
-                               function,
-                               expects);
-
-    if (dlg.exec() == QDialog::Accepted) {
-        mProjectFile->setFunctionContract(function, dlg.getExpects());
-        mProjectFile->write();
-    }
-
-    updateFunctionContractsTab();
-}
-
-void MainWindow::editVariableContract(QString var)
-{
-    if (!mProjectFile)
-        return;
-
-    VariableContractsDialog dlg(nullptr, var);
-    if (dlg.exec() == QDialog::Accepted) {
-        mProjectFile->setVariableContracts(dlg.getVarname(), dlg.getMin(), dlg.getMax());
-        mProjectFile->write();
-    }
-
-    updateVariableContractsTab();
-}
-
-void MainWindow::deleteFunctionContract(const QString& function)
-{
-    if (mProjectFile) {
-        mProjectFile->deleteFunctionContract(function);
-        mProjectFile->write();
-    }
-}
-
-void MainWindow::deleteVariableContract(const QString& var)
-{
-    if (mProjectFile) {
-        mProjectFile->deleteVariableContract(var);
-        mProjectFile->write();
-    }
 }

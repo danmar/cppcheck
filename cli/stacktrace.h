@@ -16,16 +16,23 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef STACKTRACE_H
+#define STACKTRACE_H
 
-//---------------------------------------------------------------------------
-#ifndef bughuntingchecksH
-#define bughuntingchecksH
-//---------------------------------------------------------------------------
+#include "config.h"
 
-#include "exprengine.h"
-#include <vector>
+#ifdef USE_UNIX_BACKTRACE_SUPPORT
 
-void addBughuntingChecks(std::vector<ExprEngine::Callback> *callbacks);
+#include <cstdio>
 
-//---------------------------------------------------------------------------
-#endif // bughuntingchecksH
+/*
+ * Try to print the callstack.
+ * That is very sensitive to the operating system, hardware, compiler and runtime.
+ * The code is not meant for production environment!
+ * One reason is named first: it's using functions not whitelisted for usage in a signal handler function.
+ */
+void print_stacktrace(FILE* output, bool demangling, int maxdepth, bool lowMem);
+
+#endif
+
+#endif // STACKTRACE_H

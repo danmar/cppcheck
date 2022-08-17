@@ -9,8 +9,27 @@ License: No restrictions, use this as you need.
 import argparse
 import json
 import os
-import pathlib
 import sys
+import subprocess
+
+try:
+    import pathlib
+except ImportError:
+    message = "Failed to load pathlib. Upgrade python to 3.x or install pathlib with 'pip install pathlib'."
+    error_id = 'pythonError'
+    if '--cli' in sys.argv:
+        msg = { 'file': '',
+                'linenr': 0,
+                'column': 0,
+                'severity': 'error',
+                'message': message,
+                'addon': 'cppcheckdata',
+                'errorId': error_id,
+                'extra': ''}
+        sys.stdout.write(json.dumps(msg) + '\n')
+    else:
+        sys.stderr.write('%s [%s]\n' % (message, error_id))
+    sys.exit(1)
 
 from xml.etree import ElementTree
 from fnmatch import fnmatch
@@ -259,6 +278,7 @@ class Token:
     isSplittedVarDeclComma = False
     isSplittedVarDeclEq = False
     isImplicitInt = False
+    exprId = None
     varId = None
     variableId = None
     variable = None
@@ -332,6 +352,8 @@ class Token:
         self.link = None
         if element.get('varId'):
             self.varId = int(element.get('varId'))
+        if element.get('exprId'):
+            self.exprId = int(element.get('exprId'))
         self.variableId = element.get('variable')
         self.variable = None
         self.functionId = element.get('function')
@@ -417,6 +439,45 @@ class Token:
 
     def isBinaryOp(self):
         return self.astOperand1 and self.astOperand2
+
+    def forward(self, end=None):
+        token = self
+        while token and token != end:
+            yield token
+            token = token.next
+
+    def backward(self, start=None):
+        token = self
+        while token and token != start:
+            yield token
+            token = token.previous
+
+    def astParents(self):
+        token = self
+        while token and token.astParent:
+            token = token.astParent
+            yield token
+
+    def astTop(self):
+        top = None
+        for parent in self.astParents():
+            top = parent
+        return top
+
+    def tokAt(self, n):
+        tl = self.forward()
+        if n < 0:
+            tl = self.backward()
+            n = -n
+        for i, t in enumerate(tl):
+            if i == n:
+                return t
+
+    def linkAt(self, n):
+        token = self.tokAt(n)
+        if token:
+            return token.link
+        return None
 
 class Scope:
     """
@@ -1292,6 +1353,93 @@ def simpleMatch(token, pattern):
         token = token.next
     return True
 
+patterns = {
+    '%any%': lambda tok: tok,
+    '%assign%': lambda tok: tok if tok.isAssignmentOp else None,
+    '%comp%': lambda tok: tok if tok.isComparisonOp else None,
+    '%name%': lambda tok: tok if tok.isName else None,
+    '%op%': lambda tok: tok if tok.isOp else None,
+    '%or%': lambda tok: tok if tok.str == '|' else None,
+    '%oror%': lambda tok: tok if tok.str == '||' else None,
+    '%var%': lambda tok: tok if tok.variable else None,
+    '(*)': lambda tok: tok.link if tok.str == '(' else None,
+    '[*]': lambda tok: tok.link if tok.str == '[' else None,
+    '{*}': lambda tok: tok.link if tok.str == '{' else None,
+    '<*>': lambda tok: tok.link if tok.str == '<' and tok.link else None,
+}
+
+def match_atom(token, p):
+    if not token:
+        return None
+    if not p:
+        return None
+    if token.str == p:
+        return token
+    if p in ['!', '|', '||', '%', '!=', '*']:
+        return None
+    if p in patterns:
+        return patterns[p](token)
+    if '|' in p:
+        for x in p.split('|'):
+            t = match_atom(token, x)
+            if t:
+                return t
+    elif p.startswith('!!'):
+        t = match_atom(token, p[2:])
+        if not t:
+            return token
+    elif p.startswith('**'):
+        a = p[2:]
+        t = token
+        while t:
+            if match_atom(t, a):
+                return t
+            if t.link and t.str in ['(', '[', '<', '{']:
+                t = t.link
+            t = t.next
+    return None
+
+class MatchResult:
+    def __init__(self, matches, bindings=None, keys=None):
+        self.__dict__.update(bindings or {})
+        self._matches = matches
+        self._keys = keys or []
+
+    def __bool__(self):
+        return self._matches
+
+    def __nonzero__(self):
+        return self._matches
+
+    def __getattr__(self, k):
+        if k in self._keys:
+            return None
+        else:
+            raise AttributeError
+
+def bind_split(s):
+    if '@' in s:
+        p = s.partition('@')
+        return (p[0], p[2])
+    return (s, None)
+
+def match(token, pattern):
+    if not pattern:
+        return MatchResult(False)
+    end = None
+    bindings = {}
+    words = [bind_split(word) for word in pattern.split()]
+    for p, b in words:
+        t = match_atom(token, p)
+        if b:
+            bindings[b] = token
+        if not t:
+            return MatchResult(False, keys=[xx for pp, xx in words]+['end'])
+        end = t
+        token = t.next
+    bindings['end'] = end
+    return MatchResult(True, bindings=bindings)
+
 def get_function_call_name_args(token):
     """Get function name and arguments for function call
     name, args = get_function_call_name_args(tok)
@@ -1369,3 +1517,13 @@ def get_path_premium_addon():
         if os.path.isfile(p1) and os.path.isfile(p2):
             return p1
     return None
+
+
+def cmd_output(cmd):
+    with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE) as p:
+        comm = p.communicate()
+        out = comm[0]
+        if p.returncode == 1 and len(comm[1]) > 2:
+            out = comm[1]
+        return out.decode(encoding='utf-8', errors='ignore')
+

@@ -80,6 +80,15 @@ static const Token *getAstParentSkipPossibleCastAndAddressOf(const Token *vartok
     return parent;
 }
 
+bool CheckUninitVar::diag(const Token* tok)
+{
+    if (!tok)
+        return true;
+    while (Token::Match(tok->astParent(), "*|&|."))
+        tok = tok->astParent();
+    return !mUninitDiags.insert(tok).second;
+}
+
 void CheckUninitVar::check()
 {
     const SymbolDatabase *symbolDatabase = mTokenizer->getSymbolDatabase();
@@ -627,7 +636,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     // Assert that the tokens are '} while ('
                     if (!Token::simpleMatch(tok, "} while (")) {
                         if (printDebug)
-                            reportError(tok,Severity::debug,"","assertion failed '} while ('");
+                            reportError(tok,Severity::debug,emptyString,"assertion failed '} while ('");
                         break;
                     }
 
@@ -1461,7 +1470,7 @@ bool CheckUninitVar::isMemberVariableUsage(const Token *tok, bool isPointer, All
         if (parent && parent->isUnaryOp("&"))
             return false;
         return true;
-    } else if (!isPointer && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
+    } else if (!isPointer && !Token::simpleMatch(tok->astParent(), ".") && Token::Match(tok->previous(), "[(,] %name% [,)]") && isVariableUsage(tok, isPointer, alloc))
         return true;
 
     else if (!isPointer && Token::Match(tok->previous(), "= %name% ;"))
@@ -1496,25 +1505,38 @@ void CheckUninitVar::uninitdataError(const Token *tok, const std::string &varnam
 
 void CheckUninitVar::uninitvarError(const Token *tok, const std::string &varname, ErrorPath errorPath)
 {
+    if (diag(tok))
+        return;
     errorPath.emplace_back(tok, "");
-    reportError(errorPath, Severity::error, "uninitvar", "$symbol:" + varname + "\nUninitialized variable: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
+    reportError(errorPath,
+                Severity::error,
+                "legacyUninitvar",
+                "$symbol:" + varname + "\nUninitialized variable: $symbol",
+                CWE_USE_OF_UNINITIALIZED_VARIABLE,
+                Certainty::normal);
 }
 
 void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
 {
+    if (!mSettings->isEnabled(&v))
+        return;
+    if (diag(tok))
+        return;
     const Token* ltok = tok;
     if (tok && Token::simpleMatch(tok->astParent(), ".") && astIsRHS(tok))
         ltok = tok->astParent();
     const std::string& varname = ltok ? ltok->expressionString() : "x";
     ErrorPath errorPath = v.errorPath;
     errorPath.emplace_back(tok, "");
+    auto severity = v.isKnown() ? Severity::error : Severity::warning;
+    auto certainty = v.isInconclusive() ? Certainty::inconclusive : Certainty::normal;
     if (v.subexpressions.empty()) {
         reportError(errorPath,
-                    Severity::error,
+                    severity,
                     "uninitvar",
                     "$symbol:" + varname + "\nUninitialized variable: $symbol",
                     CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                    Certainty::normal);
+                    certainty);
         return;
     }
     std::string vars = v.subexpressions.size() == 1 ? "variable: " : "variables: ";
@@ -1524,11 +1546,11 @@ void CheckUninitVar::uninitvarError(const Token* tok, const ValueFlow::Value& v)
         prefix = ", ";
     }
     reportError(errorPath,
-                Severity::error,
+                severity,
                 "uninitvar",
                 "$symbol:" + varname + "\nUninitialized " + vars,
                 CWE_USE_OF_UNINITIALIZED_VARIABLE,
-                Certainty::normal);
+                certainty);
 }
 
 void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string &membername)
@@ -1539,7 +1561,7 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-enum class ExprUsage { None, PassedByReference, Used };
+enum class ExprUsage { None, NotUsed, PassedByReference, Used };
 
 static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
 {
@@ -1571,7 +1593,15 @@ static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings
 
 static ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
 {
-    if (indirect == 0 && Token::Match(tok->astParent(), "%cop%|%assign%") && tok->astParent()->str() != "=")
+    if (indirect > 0 && tok->astParent()) {
+        if (Token::Match(tok->astParent(), "%assign%") && astIsRhs(tok))
+            return ExprUsage::NotUsed;
+        if (tok->astParent()->isConstOp())
+            return ExprUsage::NotUsed;
+        if (tok->astParent()->isCast())
+            return ExprUsage::NotUsed;
+    }
+    if (indirect == 0 && Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && tok->astParent()->str() != "=")
         return ExprUsage::Used;
     return getFunctionUsage(tok, indirect, settings);
 }
@@ -1603,7 +1633,7 @@ void CheckUninitVar::valueFlowUninit()
                 }
                 if (ids.count(tok->exprId()) > 0)
                     continue;
-                if (!tok->variable() && !tok->isUnaryOp("*"))
+                if (!tok->variable() && !tok->isUnaryOp("*") && !tok->isUnaryOp("&"))
                     continue;
                 if (Token::Match(tok, "%name% ("))
                     continue;
@@ -1642,6 +1672,8 @@ void CheckUninitVar::valueFlowUninit()
                         continue;
                 }
                 ExprUsage usage = getExprUsage(tok, v->indirect, mSettings);
+                if (usage == ExprUsage::NotUsed)
+                    continue;
                 if (!v->subexpressions.empty() && usage == ExprUsage::PassedByReference)
                     continue;
                 if (usage != ExprUsage::Used) {
@@ -1656,10 +1688,6 @@ void CheckUninitVar::valueFlowUninit()
                 ids.insert(tok->exprId());
                 if (v->tokvalue)
                     ids.insert(v->tokvalue->exprId());
-                const Token* nextTok = nextAfterAstRightmostLeaf(parent);
-                if (nextTok == scope->bodyEnd)
-                    break;
-                tok = nextTok ? nextTok : tok;
             }
         }
     }

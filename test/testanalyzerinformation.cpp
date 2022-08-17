@@ -16,35 +16,28 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "functioncontractdialog.h"
 
-#include "ui_functioncontractdialog.h"
+#include "analyzerinfo.h"
+#include "testsuite.h"
+#include <sstream>
 
-static QString formatFunctionName(QString f)
-{
-    if (f.endsWith("()"))
-        return f;
-    f.replace("(", "(\n    ");
-    f.replace(",", ",\n    ");
-    return f;
-}
+class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
+public:
+    TestAnalyzerInformation() : TestFixture("TestAnalyzerInformation") {}
 
-FunctionContractDialog::FunctionContractDialog(QWidget *parent, const QString &name, const QString &expects) :
-    QDialog(parent),
-    mUi(new Ui::FunctionContractDialog)
-{
-    mUi->setupUi(this);
-    mUi->functionName->setText(formatFunctionName(name));
-    mUi->expects->setPlainText(expects);
-}
+private:
 
-FunctionContractDialog::~FunctionContractDialog()
-{
-    delete mUi;
-}
+    void run() override {
+        TEST_CASE(getAnalyzerInfoFile);
+    }
 
-QString FunctionContractDialog::getExpects() const
-{
-    return mUi->expects->toPlainText();
-}
+    void getAnalyzerInfoFile() const {
+        const char filesTxt[] = "file1.a4::file1.c\n";
+        std::istringstream f1(filesTxt);
+        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", ""));
+        std::istringstream f2(filesTxt);
+        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f2, "./file1.c", ""));
+    }
+};
 
+REGISTER_TEST(TestAnalyzerInformation)

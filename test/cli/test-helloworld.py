@@ -3,6 +3,7 @@
 
 import os
 import re
+import tempfile
 from testutils import create_gui_project_file, cppcheck
 
 # Run Cppcheck from project path
@@ -176,5 +177,18 @@ def test_exclude():
     ret, stdout, _ = cppcheck(['-i' + prjpath, '--platform=win64', '--project=' + os.path.join(prjpath, 'helloworld.cppcheck')])
     assert ret == 1
     assert stdout == 'cppcheck: error: no C or C++ source files found.\n'
+
+
+def test_build_dir_dump_output():
+    with tempfile.TemporaryDirectory() as tempdir:
+        args = f'--cppcheck-build-dir={tempdir} --addon=misra helloworld'
+
+        cppcheck(args.split())
+        cppcheck(args.split())
+        with open(f'{tempdir}/main.a1.dump', 'rt') as f:
+            dump = f.read()
+            assert '</dump>' in dump, 'invalid dump data: ...' + dump[-100:]
+
+
 
 

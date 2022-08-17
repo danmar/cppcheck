@@ -15,6 +15,25 @@
 #include <memory.h>
 #include <mbstring.h>
 #include <wchar.h>
+#include <atlstr.h>
+
+int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
+{
+    // cppcheck-suppress stringCompare
+    (void) _mbscmp(string1, string1);
+    // cppcheck-suppress staticStringCompare
+    (void) _mbscmp("x", "x");
+    return _mbscmp(string1, string2);
+}
+
+int stringCompare_mbscmp_l(const unsigned char *string1, const unsigned char *string2, _locale_t locale)
+{
+    // cppcheck-suppress stringCompare
+    (void) _mbscmp_l(string1, string1, locale);
+    // cppcheck-suppress staticStringCompare
+    (void) _mbscmp_l("x", "x", locale);
+    return _mbscmp_l(string1, string2, locale);
+}
 
 int ignoredReturnValue__wtoi_l(const wchar_t *str, _locale_t locale)
 {
@@ -242,6 +261,7 @@ void validCode()
     void *pMem1 = _malloca(1);
     _freea(pMem1);
     // Memory from _alloca must not be freed
+    // cppcheck-suppress _allocaCalled
     void *pMem2 = _alloca(10);
     memset(pMem2, 0, 10);
 
@@ -305,6 +325,7 @@ void validCode()
     wordInit = HIWORD(dwordInit);
     // cppcheck-suppress redundantAssignment
     byteInit = HIBYTE(wordInit);
+    // cppcheck-suppress knownConditionTrueFalse
     if (byteInit) {}
 
     bool boolVar;
@@ -664,6 +685,7 @@ void ignoredReturnValue()
     // cppcheck-suppress leakReturnValNotUsed
     _malloca(10);
     // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress _allocaCalled
     _alloca(5);
 
     // cppcheck-suppress ignoredReturnValue
@@ -726,6 +748,7 @@ void invalidFunctionArg()
     _freea(pMem);
     // FIXME cppcheck-suppress unreadVariable
     // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress _allocaCalled
     pMem = _alloca(-5);
 }
 
@@ -1080,3 +1103,11 @@ public:
 IMPLEMENT_DYNAMIC(MyClass, CObject)
 IMPLEMENT_DYNCREATE(MyClass, CObject)
 IMPLEMENT_SERIAL(MyClass,CObject, 42)
+
+void invalidPrintfArgType_StructMember(double d) { // #9672
+  typedef struct { CString st; } my_struct_t;
+
+  my_struct_t my_struct;
+  // cppcheck-suppress invalidPrintfArgType_sint
+  my_struct.st.Format("%d", d);
+}

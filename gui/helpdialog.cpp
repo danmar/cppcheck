@@ -28,6 +28,8 @@
 #include <QHelpIndexWidget>
 #include <QMessageBox>
 
+class QWidget;
+
 void HelpBrowser::setHelpEngine(QHelpEngine *helpEngine)
 {
     mHelpEngine = helpEngine;
@@ -110,4 +112,5 @@ HelpDialog::HelpDialog(QWidget *parent) :
 HelpDialog::~HelpDialog()
 {
     delete mUi;
+    delete mHelpEngine;
 }

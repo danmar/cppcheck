@@ -7,10 +7,10 @@ on: [push, pull_request]
 jobs:
   build:
 
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
 
     container:
-      image: "ubuntu:21.10"
+      image: "ubuntu:22.04"
 
     env:
       QT_VERSION: 5.15.2
@@ -21,11 +21,10 @@ jobs:
       - name: Install missing software
         run: |
           apt-get update
-          apt-get install -y cmake g++ make
-          apt-get install -y libz3-dev
+          apt-get install -y cmake clang-14 make
           apt-get install -y libpcre3-dev
           apt-get install -y libffi7 # work around missing dependency for Qt install step
-          apt-get install -y clang-tidy-13
+          apt-get install -y clang-tidy-14
 
       - name: Cache Qt ${{ env.QT_VERSION }}
         id: cache-qt
@@ -44,16 +43,16 @@ jobs:
 
       - name: Prepare CMake
         run: |
-          mkdir cmake.output
-          cd cmake.output
-          cmake -G "Unix Makefiles" -DUSE_Z3=On -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off ..
-          cd ..
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCPPCHK_GLIBCXX_DEBUG=Off
+        env:
+          CC: clang-14
+          CXX: clang++-14
 
       - name: Prepare CMake dependencies
         run: |
           # make sure the precompiled headers exist
-          make -C cmake.output lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
-          make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
+          make -C cmake.output/lib cmake_pch.hxx.pch
+          make -C cmake.output/test cmake_pch.hxx.pch
           # make sure the auto-generated GUI sources exist
           make -C cmake.output autogen
 

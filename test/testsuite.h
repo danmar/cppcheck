@@ -104,7 +104,6 @@ protected:
 
     void processOptions(const options& args);
 public:
-    void bughuntingReport(const std::string & /*str*/) override {}
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
     void run(const std::string &str);

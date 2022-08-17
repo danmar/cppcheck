@@ -12,7 +12,7 @@ target_include_directories(cli_objs PRIVATE ${PROJECT_SOURCE_DIR}/externals/simp
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "Clang" AND CMAKE_CXX_COMPILER_VERSION VERSION_LESS 14)
     # false positive warning in up to Clang 13 - caused by FD_ZERO macro
-    set_source_files_properties(threadexecutor.cpp PROPERTIES COMPILE_FLAGS -Wno-reserved-identifier)
+    set_source_files_properties(processexecutor.cpp PROPERTIES COMPILE_FLAGS -Wno-reserved-identifier)
 endif()
 
 list(APPEND cppcheck_SOURCES ${hdrs} ${mainfile} $<TARGET_OBJECTS:cli_objs> $<TARGET_OBJECTS:lib_objs> $<TARGET_OBJECTS:simplecpp_objs>)
@@ -29,9 +29,6 @@ target_include_directories(cppcheck PRIVATE ${PROJECT_SOURCE_DIR}/externals/simp
 if (HAVE_RULES)
     target_link_libraries(cppcheck ${PCRE_LIBRARY})
 endif()
-if (USE_Z3)
-    target_link_libraries(cppcheck ${Z3_LIBRARIES})
-endif()
 if (WIN32 AND NOT BORLAND)
     if(NOT MINGW)
         target_link_libraries(cppcheck Shlwapi.lib)
@@ -42,9 +39,7 @@ endif()
 if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
     target_link_libraries(cppcheck ${tinyxml2_LIBRARIES})
 endif()
-if (USE_THREADS)
-    target_link_libraries(cppcheck ${CMAKE_THREAD_LIBS_INIT})
-endif()
+target_link_libraries(cppcheck ${CMAKE_THREAD_LIBS_INIT})
 
 add_dependencies(cppcheck copy_cfg)
 add_dependencies(cppcheck copy_addons)

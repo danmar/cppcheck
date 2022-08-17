@@ -20,9 +20,6 @@
           <Component Id='cppcheckcore.dll' Guid='$(var.cppcheckcoreGUID)'>
             <File Id='cppcheckcore.dll' Name='cppcheck-core.dll' DiskId='1' Source='$(var.CliBuildDir)\cppcheck-core.dll' KeyPath='yes' />
           </Component>
-          <Component Id='libz3.dll' Guid='$(var.libz3GUID)'>
-            <File Id='libz3.dll' Name='libz3.dll' DiskId='1' Source='$(var.Z3DllDir)\libz3.dll' KeyPath='yes' />
-          </Component>
           <Component Id='cppcheck.exe' Guid='$(var.cppcheckGUID)'>
             <File Id='cppcheck.exe' Name='cppcheck.exe' DiskId='1' Source='$(var.CliBuildDir)\cppcheck.exe' KeyPath='yes' />
           </Component>
@@ -167,7 +164,6 @@
             <File Id='picojson_license.txt' Name='picojson-license.txt' DiskId='1' Source='../externals/picojson/LICENSE' />
             <File Id='simplecpp_license.txt' Name='simplecpp-license.txt' DiskId='1' Source='../externals/simplecpp/LICENSE' />
             <File Id='tinyxml2_license.txt' Name='tinyxml2-license.txt' DiskId='1' Source='../externals/tinyxml2/LICENSE' />
-            <File Id='z3_license.txt' Name='z3-license.txt' DiskId='1' Source='../externals/z3-LICENSE' />
           </Component>
         </Directory>
         <Merge Id="CRT" Language="0" SourceFile="$(var.CrtMergeModule)" DiskId="1" />
@@ -188,7 +184,6 @@
       Display='expand' Level='1' AllowAdvertise='no' ConfigurableDirectory='INSTALLDIR' >
       <Feature Id='CppcheckCore' Display='hidden' AllowAdvertise='no' Title='Cppcheck-Core' Description='Cppcheck core components' Level='1'>
         <ComponentRef Id='cppcheckcore.dll' />
-        <ComponentRef Id='libz3.dll' />
         <ComponentRef Id='RegistryEntries' />
         <ComponentRef Id='BaseDocs' />
         <ComponentRef Id='MandatoryCfgs' />

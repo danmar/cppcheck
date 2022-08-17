@@ -1,6 +1,6 @@
 set(srcs_lib pathmatch.cpp path.cpp)
 foreach(file ${srcs_lib})
-    if (NOT USE_MATCHCOMPILER_OPT MATCHES "Off")
+    if (NOT USE_MATCHCOMPILER_OPT STREQUAL "Off")
         set(src "${CMAKE_BINARY_DIR}/lib/build/mc_${file}")
         set_source_files_properties(${src} PROPERTIES GENERATED TRUE)
     else()

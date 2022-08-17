@@ -86,8 +86,6 @@ public:
      */
     void reportInfo(const ErrorMessage &msg) override;
 
-    void bughuntingReport(const std::string &str) override;
-
     /**
      * Information about how many files have been checked
      *
@@ -117,6 +115,8 @@ public:
      * Execute a shell command and read the output from it. Returns true if command terminated successfully.
      */
     static bool executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output_);
+
+    static bool reportSuppressions(const Settings &settings, bool unusedFunctionCheckEnabled, const std::map<std::string, std::size_t> &files, ErrorLogger& errorLogger);
 
 protected:
 
@@ -194,11 +194,6 @@ private:
      * Error output
      */
     std::ofstream *mErrorOutput;
-
-    /**
-     * Bug hunting report
-     */
-    std::ostream *mBugHuntingReport;
 
     /**
      * Has --errorlist been given?

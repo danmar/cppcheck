@@ -27,6 +27,9 @@
 #include <QFont>
 #include <QPushButton>
 
+class QObject;
+class QWidget;
+
 class SelectColorButton : public QPushButton {
     Q_OBJECT
 public:

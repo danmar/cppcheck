@@ -17,6 +17,7 @@
 #  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.
 #  --no-upload          Do not upload anything. Defaults to False.
 #  --packages           Process a list of given packages.
+#  --version            Returns the version (of the underlying donate_cpu_lib.py).
 #
 # What this script does:
 # 1. Check requirements
@@ -30,6 +31,8 @@
 # Quick start: just run this script without any arguments
 
 import platform
+
+from packaging.version import Version
 from donate_cpu_lib import *
 
 max_packages = None
@@ -86,6 +89,9 @@ for arg in sys.argv[1:]:
             max_packages = None
     elif arg.startswith('--no-upload'):
         do_upload = False
+    elif arg == '--version':
+        print(get_client_version())
+        sys.exit(0)
     elif arg == '--help':
         print('Donate CPU to Cppcheck project')
         print('')
@@ -100,6 +106,8 @@ for arg in sys.argv[1:]:
         print('                                 --bandwidth-limit=2m => max. 2 megabytes per second')
         print('  --max-packages=N     Process N packages and then exit. A value of 0 means infinitely.')
         print('  --no-upload          Do not upload anything. Defaults to False.')
+        print('  --packages           Process a list of given packages.')
+        print('  --version            Returns the version (of the underlying donate_cpu_lib.py).')
         print('')
         print('Quick start: just run this script without any arguments')
         sys.exit(0)
@@ -191,7 +199,12 @@ while True:
     if tgz is None:
         print("No package downloaded")
         continue
-    if not unpack_package(work_path, tgz):
+    skip_files = None
+    if package.find('/qtcreator/') > 0:
+        # macro_pounder_fn.c is a preprocessor torture test that takes time to finish
+        skip_files = ('macro_pounder_fn.c',)
+    source_path, source_found = unpack_package(work_path, tgz, skip_files=skip_files)
+    if not source_found:
         print("No files to process")
         continue
     crash = False
@@ -204,7 +217,8 @@ while True:
     head_timing_info = ''
     old_timing_info = ''
     cppcheck_head_info = ''
-    libraries = get_libraries()
+    client_version_head = ''
+    libraries = library_includes.get_libraries(source_path)
 
     for ver in cppcheck_versions:
         tree_path = os.path.join(work_path, 'tree-'+ver)
@@ -213,7 +227,18 @@ while True:
             tree_path = os.path.join(work_path, 'tree-main')
             cppcheck_head_info = get_cppcheck_info(tree_path)
             capture_callstack = True
-        c, errout, info, t, cppcheck_options, timing_info = scan_package(work_path, tree_path, jobs, libraries, capture_callstack)
+
+            def get_client_version_head():
+                cmd = os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
+                p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                try:
+                    comm = p.communicate()
+                    return comm[0].decode(encoding='utf-8', errors='ignore').strip()
+                except:
+                    return None
+
+            client_version_head = get_client_version_head()
+        c, errout, info, t, cppcheck_options, timing_info = scan_package(tree_path, source_path, jobs, libraries, capture_callstack)
         if c < 0:
             if c == -101 and 'error: could not find or open any of the paths given.' in errout:
                 # No sourcefile found (for example only headers present)
@@ -238,7 +263,7 @@ while True:
     output = 'cppcheck-options: ' + cppcheck_options + '\n'
     output += 'platform: ' + platform.platform() + '\n'
     output += 'python: ' + platform.python_version() + '\n'
-    output += 'client-version: ' + CLIENT_VERSION + '\n'
+    output += 'client-version: ' + get_client_version() + '\n'
     output += 'compiler: ' + get_compiler_version() + '\n'
     output += 'cppcheck: ' + ' '.join(cppcheck_versions) + '\n'
     output += 'head-info: ' + cppcheck_head_info + '\n'
@@ -263,4 +288,6 @@ while True:
         upload_info(package, info_output, server_address)
     if not max_packages or packages_processed < max_packages:
         print('Sleep 5 seconds..')
+        if (client_version_head is not None) and (Version(client_version_head) > Version(get_client_version())):
+            print("ATTENTION: A newer client version ({}) is available - please update!".format(client_version_head))
         time.sleep(5)

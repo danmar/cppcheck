@@ -18,6 +18,7 @@
 
 #include "settingsdialog.h"
 
+#include "application.h"
 #include "applicationdialog.h"
 #include "applicationlist.h"
 #include "codeeditorstyle.h"
@@ -114,6 +115,7 @@ SettingsDialog::SettingsDialog(ApplicationList *list,
 SettingsDialog::~SettingsDialog()
 {
     saveSettings();
+    delete mCurrentStyle;
     delete mUI;
 }
 

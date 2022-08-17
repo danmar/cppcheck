@@ -1391,7 +1391,7 @@ private:
                                 "I i;";
 
             // The expected result..
-            const char expected[] = "std :: pair < int , int > const i ;";
+            const char expected[] = "const std :: pair < int , int > i ;";
             ASSERT_EQUALS(expected, tok(code));
         }
 
@@ -2437,8 +2437,7 @@ private:
                                 "std :: vector < CharacterConversion > ( ) . swap ( c2c ) ; "
                                 "}";
         ASSERT_EQUALS(expected, tok(code, false));
-        ASSERT_EQUALS_WITHOUT_LINENUMBERS(
-            "[test.cpp:4]: (debug) valueflow.cpp:4635:(valueFlow) bailout: variable 'it' used in loop\n", errout.str());
+        ASSERT_EQUALS_WITHOUT_LINENUMBERS("", errout.str());
     }
 
     void simplifyTypedef117() { // #6507
@@ -2623,7 +2622,7 @@ private:
                                 "  constexpr const foo &c_str() const noexcept { return _a; }\n"
                                 "};";
 
-            const char exp[] = "class c { char _a [ 4 ] ; const constexpr char ( & c_str ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const constexpr char ( & c_str ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             ASSERT_EQUALS(exp, tok(code, false));
         }
 
@@ -2634,8 +2633,8 @@ private:
                                 "  constexpr operator foo &() const noexcept { return _a; }\n"
                                 "};";
 
-            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
-            const char exp[] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorchar ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const operator char ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
 
@@ -2646,8 +2645,8 @@ private:
                                 "  constexpr operator const foo &() const noexcept { return _a; }\n"
                                 "};";
 
-            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorconstchar ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
-            const char exp[] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ) [ 4 ] { return _a ; } } ;";
+            const char actual[] = "class c { char _a [ 4 ] ; constexpr operatorconstchar ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
+            const char exp[] = "class c { char _a [ 4 ] ; const operator const char ( & ( ) const noexcept ( true ) ) [ 4 ] { return _a ; } } ;";
             TODO_ASSERT_EQUALS(exp, actual, tok(code, false));
         }
     }

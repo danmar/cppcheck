@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -175,8 +175,8 @@ std::string TestFixture::deleteLineNumber(const std::string &message)
     while ((pos = result.find(':', pos)) != std::string::npos) {
         // get number
         if (pos + 1 == result.find_first_of("0123456789", pos + 1)) {
-            std::string::size_type after;
-            if ((after = result.find_first_not_of("0123456789", pos + 1)) != std::string::npos
+            std::string::size_type after = result.find_first_not_of("0123456789", pos + 1);
+            if (after != std::string::npos
                 && result.at(after) == ':') {
                 // erase NUMBER
                 result.erase(pos + 1, after - pos - 1);

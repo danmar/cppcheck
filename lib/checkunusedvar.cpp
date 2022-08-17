@@ -30,10 +30,10 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 #include "utils.h"
+#include "valueflow.h"
 
 #include <algorithm>
 #include <list>
-#include <memory>
 #include <set>
 #include <utility>
 #include <vector>
@@ -62,7 +62,7 @@ static bool isRaiiClass(const ValueType *valueType, bool cpp, bool defaultReturn
     if (!valueType)
         return defaultReturn;
 
-    if (valueType->smartPointerType && isRaiiClassScope(valueType->smartPointerType->classScope))
+    if ((valueType->smartPointerType && isRaiiClassScope(valueType->smartPointerType->classScope)) || (!valueType->smartPointerType && valueType->type == ValueType::Type::SMART_POINTER))
         return true;
 
     switch (valueType->type) {
@@ -704,7 +704,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
                 type = Variables::referenceArray;
             else if (i->isArray())
                 type = (i->dimensions().size() == 1U) ? Variables::array : Variables::pointerArray;
-            else if (i->isReference())
+            else if (i->isReference() && !(i->valueType() && i->valueType()->type == ValueType::UNKNOWN_TYPE && Token::simpleMatch(i->typeStartToken(), "auto")))
                 type = Variables::reference;
             else if (i->nameToken()->previous()->str() == "*" && i->nameToken()->strAt(-2) == "*")
                 type = Variables::pointerPointer;
@@ -1078,7 +1078,10 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
 
         // function
         else if (Token::Match(tok, "%name% (")) {
-            variables.read(tok->varId(), tok);
+            if (tok->varId() && !tok->function()) // operator()
+                variables.use(tok->varId(), tok);
+            else
+                variables.read(tok->varId(), tok);
             useFunctionArgs(tok->next()->astOperand2(), variables);
         } else if (Token::Match(tok, "std :: ref ( %var% )")) {
             variables.eraseAll(tok->tokAt(4)->varId());
@@ -1196,8 +1199,10 @@ void CheckUnusedVar::checkFunctionVariableUsage()
             if (isIncrementOrDecrement && tok->astParent() && precedes(tok, tok->astOperand1()))
                 continue;
 
-            if (tok->str() == "=" && isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
+            if (tok->str() == "=" && !(tok->valueType() && tok->valueType()->pointer) && isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
                 continue;
+
+            const bool isPointer = tok->valueType() && (tok->valueType()->pointer || tok->valueType()->type == ValueType::SMART_POINTER);
 
             if (tok->isName()) {
                 if (isRaiiClass(tok->valueType(), mTokenizer->isCPP(), false))
@@ -1214,7 +1219,7 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                     continue;
             }
             // Do not warn about assignment with NULL
-            if (isNullOperand(tok->astOperand2()))
+            if (isPointer && isNullOperand(tok->astOperand2()))
                 continue;
 
             if (!tok->astOperand1())
@@ -1534,7 +1539,7 @@ bool CheckUnusedVar::isRecordTypeWithoutSideEffects(const Type* type)
 
     // Non-empty constructors => possible side effects
     for (const Function& f : type->classScope->functionList) {
-        if (!f.isConstructor())
+        if (!f.isConstructor() && !f.isDestructor())
             continue;
         if (f.argDef && Token::simpleMatch(f.argDef->link(), ") ="))
             continue; // ignore default/deleted constructors

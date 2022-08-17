@@ -19,6 +19,7 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include "library.h"
 #include "settings.h"
 #include "platforms.h"
 
@@ -36,9 +37,12 @@ class QActionGroup;
 class QSettings;
 class QTimer;
 class QLineEdit;
+class ImportProject;
+class QCloseEvent;
+class QObject;
 namespace Ui {
     class MainWindow;
-};
+}
 
 /// @addtogroup GUI
 /// @{
@@ -75,13 +79,6 @@ public:
     void analyzeCode(const QString& code, const QString& filename);
 
 public slots:
-
-    /** Update "Functions" tab */
-    void updateFunctionContractsTab();
-
-    /** Update "Variables" tab */
-    void updateVariableContractsTab();
-
     /** @brief Slot for analyze files menu item */
     void analyzeFiles();
 
@@ -230,18 +227,6 @@ protected slots:
 
     /** Suppress error ids */
     void suppressIds(QStringList ids);
-
-    /** Edit contract for function */
-    void editFunctionContract(QString function);
-
-    /** Edit constraints for variable */
-    void editVariableContract(QString var);
-
-    /** Delete contract for function */
-    void deleteFunctionContract(const QString& function);
-
-    /** Edit constraints for variable */
-    void deleteVariableContract(const QString& var);
 
 private:
 

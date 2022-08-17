@@ -75,6 +75,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
         if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction || func->isOperator())
             continue;
 
+        if (func->isExtern())
+            continue;
+
         // Don't care about templates
         if (tokenizer.isCPP() && func->templateDef != nullptr)
             continue;
@@ -390,7 +393,7 @@ std::string CheckUnusedFunctions::analyzerInfo() const
 namespace {
     struct Location {
         Location() : lineNumber(0) {}
-        Location(const std::string &f, const int l) : fileName(f), lineNumber(l) {}
+        Location(std::string f, const int l) : fileName(std::move(f)), lineNumber(l) {}
         std::string fileName;
         int lineNumber;
     };

@@ -20,8 +20,8 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     add_compile_options(-Weverything)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-    if(CMAKE_BUILD_TYPE MATCHES "Release")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if(CMAKE_BUILD_TYPE STREQUAL "Release")
         # "Release" uses -O3 by default
         add_compile_options(-O2)
     endif()
@@ -45,12 +45,25 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang"
     add_compile_options(-Wno-multichar)
 endif()
 
-if (CMAKE_CXX_COMPILER_ID MATCHES "GNU")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # use pipes instead of temporary files - greatly reduces I/O usage
+    add_compile_options(-pipe)
+
     add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
     add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
     add_compile_options(-Wno-shadow)                # whenever a local variable or type declaration shadows another one
 elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_EQUAL 14 OR CMAKE_CXX_COMPILER_VERSION VERSION_GREATER 14)
+        # TODO: verify this regression still exists in clang-15
+        if (CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+            # work around performance regression - see https://github.com/llvm/llvm-project/issues/53555
+            add_compile_options(-mllvm -inline-deferral)
+        endif()
+
+        # use force DWARF 4 debug format since not all tools might be able to handle DWARF 5 yet - e.g. valgrind on ubuntu 20.04
+        add_compile_options(-gdwarf-4)
+    endif()
 
    add_compile_options_safe(-Wno-documentation-unknown-command)
 
@@ -86,6 +99,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
    add_compile_options_safe(-Wno-tautological-type-limit-compare)
    add_compile_options_safe(-Wno-unused-member-function)
    add_compile_options(-Wno-disabled-macro-expansion)
+   add_compile_options_safe(-Wno-bitwise-instead-of-logical) # TODO: fix these
 
    # warnings we are not interested in
    add_compile_options(-Wno-four-char-constants)
@@ -101,7 +115,48 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 endif()
 
 if (MSVC)
-    add_compile_options(/W4)
+    # General
+    add_compile_options(/W4) # Warning Level
+    add_compile_options(/Zi) # Debug Information Format - Program Database
+    if (WARNINGS_ARE_ERRORS)
+        add_compile_options(/WX) # Treat Warning As Errors
+    endif()
+    add_compile_options(/MP) # Multi-processor Compilation
+
+    # Advanced
+    # Character Set - Use Unicode Character Set
+    # No Whole Program Optimization
+
+    # C/C++ - Optimization
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        add_compile_options(/O2) # Optimization - Maximum Optimization (Favor Speed)
+        add_compile_options(/Ob2) # Inline Function Expansion - Any Suitable
+        add_compile_options(/Oi) # Enable Intrinsic Functions
+        add_compile_options(/Ot) # Favor fast code
+        add_compile_options(/Oy) # Omit Frame Pointers
+    else()
+        add_compile_options(/Od) # Optimization - Disabled
+    endif()
+
+    # C/C++ - Code Generation
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        add_compile_options(/GF) # Enable String Pooling
+        add_compile_options(/MD) # Runtime Library - Multi-threaded DLL
+        add_compile_options(/GS-) # Disable Security Check
+        add_compile_options(/Gy) # Enable Function-Level Linking
+    else()
+        add_compile_options(/MDd) # Runtime Library - Multi-threaded Debug DLL
+        add_compile_options(/GS) # Enable Security Check
+    endif()
+
+    # C/C++ - Language
+    add_compile_options(/Zc:rvalueCast) # Enforce type conversion rules
+    add_compile_options(/std:c++14) # C++ Language Standard - ISO C++14 Standard
+
+    # C/C++ - Browse Information
+    # Enable Browse Information - No
+
+    # C/C++ - Advanced
     add_compile_options(/wd4018) # warning C4018: '>': signed/unsigned mismatch
     add_compile_options(/wd4127) # warning C4127: conditional expression is constant
     add_compile_options(/wd4146) # warning C4146: unary minus operator applied to unsigned type, result still unsigned
@@ -117,13 +172,36 @@ if (MSVC)
     add_compile_options(/wd4800) # warning C4800: 'const SymbolDatabase *' : forcing value to bool 'true' or 'false' (performance warning)
     add_compile_options(/wd4805) # warning C4805: '==' : unsafe mix of type 'bool' and type 'long long' in operation
 
-    if (WARNINGS_ARE_ERRORS)
-        add_compile_options(/WX)
+    # C/C++ - All Options
+    add_compile_options(/Zc:throwingNew /Zc:__cplusplus) # Additional Options
+
+    # Linker - General
+    if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        add_link_options(/INCREMENTAL) # Enable Incremental Linking - Yes
+    endif()
+    add_link_options(/NOLOGO) # SUppress Startup Banner - Yes
+    # Ignore Import Library - Yes
+
+    # Linker - Debugging
+    add_link_options(/DEBUG) # Generate Debug Information
+
+    # Linker - System
+    # Stack Reserve Size - 8000000
+    # Stack Commit Size - 8000000
+    add_link_options(/LARGEADDRESSAWARE) # Enable Large Addresses - Yes
+
+    # Linker - Optimization
+    add_link_options(/OPT:REF) # References - Yes
+    add_link_options(/OPT:ICF) # Enable COMDAT Folding - Yes
+
+    # Linker - Advanced
+    if(CMAKE_BUILD_TYPE STREQUAL "Release" OR CMAKE_BUILD_TYPE STREQUAL "RelWithDebInfo")
+        add_link_options(/RELEASE) # Set Checksum - Yes
     endif()
 endif()
 
 # TODO: check if this can be enabled again - also done in Makefile
-if (CMAKE_SYSTEM_NAME MATCHES "Linux" AND
+if (CMAKE_SYSTEM_NAME STREQUAL "Linux" AND
     CMAKE_CXX_COMPILER_ID MATCHES "Clang")
 
     add_compile_options(-U_GLIBCXX_DEBUG)

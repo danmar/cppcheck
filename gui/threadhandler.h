@@ -35,6 +35,7 @@ class CheckThread;
 class QSettings;
 class Settings;
 class ImportProject;
+class ErrorItem;
 
 /// @addtogroup GUI
 /// @{
@@ -186,8 +187,6 @@ signals:
     void log(const QString &msg);
 
     void debugError(const ErrorItem &item);
-
-    void bughuntingReportLine(QString line);
 
 public slots:
 

@@ -24,6 +24,9 @@
 #include "errorlogger.h"
 #include "importproject.h"
 
+#include <list>
+#include <string>
+
 #include <QMutex>
 #include <QObject>
 #include <QStringList>
@@ -76,7 +79,6 @@ public:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
-    void bughuntingReport(const std::string &str) override;
 
 public slots:
 
@@ -113,9 +115,6 @@ signals:
      * @param item Error data
      */
     void debugError(const ErrorItem &item);
-
-    /** @brief bug hunting report */
-    void bughuntingReportLine(QString line);
 
 protected:
 

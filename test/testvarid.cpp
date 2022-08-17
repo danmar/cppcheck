@@ -153,6 +153,7 @@ private:
         TEST_CASE(varid_templateNamespaceFuncPtr); // #4172
         TEST_CASE(varid_templateArray);
         TEST_CASE(varid_templateParameter); // #7046 set varid for "X":  std::array<int,X> Y;
+        TEST_CASE(varid_templateParameterFunctionPointer); // #11050
         TEST_CASE(varid_templateUsing); // #5781 #7273
         TEST_CASE(varid_not_template_in_condition); // #7988
         TEST_CASE(varid_cppcast); // #6190
@@ -177,6 +178,7 @@ private:
         TEST_CASE(varid_for_auto_cpp17);
         TEST_CASE(varid_not); // #9689 'not x'
         TEST_CASE(varid_declInIfCondition);
+        TEST_CASE(varid_globalScope);
 
         TEST_CASE(varidclass1);
         TEST_CASE(varidclass2);
@@ -206,6 +208,8 @@ private:
         TEST_CASE(varidenum3);
         TEST_CASE(varidenum4);
         TEST_CASE(varidenum5);
+        TEST_CASE(varidenum6); // #9180
+        TEST_CASE(varidenum7); // #8991
 
         TEST_CASE(varidnamespace1);
         TEST_CASE(varidnamespace2);
@@ -1165,7 +1169,7 @@ private:
 
     void varid63() {
         const char code[] = "void f(boost::optional<int> const& x) {}";
-        const char expected[] = "1: void f ( boost :: optional < int > const & x@1 ) { }\n";
+        const char expected[] = "1: void f ( const boost :: optional < int > & x@1 ) { }\n";
         ASSERT_EQUALS(expected, tokenize(code));
     }
 
@@ -2339,13 +2343,32 @@ private:
                       tokenize("VertexArrayIterator<float[2]> attrPos = m_AttributePos.GetIterator<float[2]>();"));
     }
 
-    void varid_templateParameter() { // #7046 set varid for "X":  std::array<int,X> Y;
-        const char code[] = "const int X = 0;\n"
-                            "std::array<int,X> Y;\n";
+    void varid_templateParameter() {
+        {
+            const char code[] = "const int X = 0;\n" // #7046 set varid for "X":  std::array<int,X> Y;
+                                "std::array<int,X> Y;\n";
 
-        ASSERT_EQUALS("1: const int X@1 = 0 ;\n"
-                      "2: std :: array < int , X@1 > Y@2 ;\n",
-                      tokenize(code));
+            ASSERT_EQUALS("1: const int X@1 = 0 ;\n"
+                          "2: std :: array < int , X@1 > Y@2 ;\n",
+                          tokenize(code));
+        }
+        {
+            const char code[] = "std::optional<N::Foo<A>> Foo;\n"; // #11003
+
+            ASSERT_EQUALS("1: std :: optional < N :: Foo < A > > Foo@1 ;\n",
+                          tokenize(code));
+        }
+    }
+
+    void varid_templateParameterFunctionPointer() {
+        {
+            const char code[] = "template <class, void (*F)()>\n"
+                                "struct a;\n";
+
+            ASSERT_EQUALS("1: template < class , void ( * F ) ( ) >\n"
+                          "2: struct a ;\n",
+                          tokenize(code));
+        }
     }
 
     void varid_templateUsing() { // #5781 #7273
@@ -2835,6 +2858,29 @@ private:
                                "  else x;\n"
                                "  x;\n"
                                "}"));
+    }
+
+    void varid_globalScope() {
+        const char code1[] = "int a[5];\n"
+                             "namespace Z { struct B { int a[5]; } b; }\n"
+                             "void f() {\n"
+                             "  int a[5];\n"
+                             "  memset(a, 123, 5);\n"
+                             "  memset(::a, 123, 5);\n"
+                             "  memset(Z::b.a, 123, 5);\n"
+                             "  memset(::Z::b.a, 123, 5);\n"
+                             "}";
+
+        const char exp1[] = "1: int a@1 [ 5 ] ;\n"
+                            "2: namespace Z { struct B { int a@2 [ 5 ] ; } ; struct B b@3 ; }\n"
+                            "3: void f ( ) {\n"
+                            "4: int a@4 [ 5 ] ;\n"
+                            "5: memset ( a@4 , 123 , 5 ) ;\n"
+                            "6: memset ( :: a@1 , 123 , 5 ) ;\n"
+                            "7: memset ( Z :: b@3 . a , 123 , 5 ) ;\n"
+                            "8: memset ( :: Z :: b@3 . a , 123 , 5 ) ;\n"
+                            "9: }\n";
+        ASSERT_EQUALS(exp1, tokenize(code1));
     }
 
     void varidclass1() {
@@ -3334,6 +3380,28 @@ private:
                                "3: A = f ( x , eStart , y ) ;\n"
                                "4: } ;\n";
         TODO_ASSERT_EQUALS(expected, current, tokenize(code));
+    }
+
+    void varidenum6() { // #9180
+        const char code[] = "const int IDL1 = 13;\n"
+                            "enum class E { IDL1 = 16, };\n";
+        const char expected[] = "1: const int IDL1@1 = 13 ;\n"
+                                "2: enum class E { IDL1 = 16 , } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
+    }
+
+    void varidenum7() { // #8991
+        const char code[] = "namespace N1 { const int c = 42; }\n"
+                            "namespace N2 { const int c = 24; }\n"
+                            "struct S {\n"
+                            "    enum { v1 = N1::c, v2 = N2::c };\n"
+                            "};\n";
+        const char expected[] = "1: namespace N1 { const int c@1 = 42 ; }\n"
+                                "2: namespace N2 { const int c@2 = 24 ; }\n"
+                                "3: struct S {\n"
+                                "4: enum Anonymous0 { v1 = N1 :: c@1 , v2 = N2 :: c@2 } ;\n"
+                                "5: } ;\n";
+        ASSERT_EQUALS(expected, tokenize(code));
     }
 
     void varid_classnameshaddowsvariablename() {

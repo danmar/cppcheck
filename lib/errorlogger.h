@@ -76,7 +76,7 @@ public:
             : fileIndex(0), line(line), column(column), mOrigFileName(file), mFileName(file), mInfo(info) {}
 
         FileLocation(const Token* tok, const TokenList* tokenList);
-        FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList);
+        FileLocation(const Token* tok, std::string info, const TokenList* tokenList);
 
         /**
          * Return the filename.
@@ -120,40 +120,38 @@ public:
         std::string mInfo;
     };
 
-    ErrorMessage(const std::list<FileLocation> &callStack,
-                 const std::string& file1,
+    ErrorMessage(std::list<FileLocation> callStack,
+                 std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 const std::string &id, Certainty::CertaintyLevel certainty);
-    ErrorMessage(const std::list<FileLocation> &callStack,
-                 const std::string& file1,
+                 std::string id, Certainty::CertaintyLevel certainty);
+    ErrorMessage(std::list<FileLocation> callStack,
+                 std::string file1,
                  Severity::SeverityType severity,
                  const std::string &msg,
-                 const std::string &id,
+                 std::string id,
                  const CWE &cwe,
                  Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
-                 const std::string& id,
+                 std::string id,
                  const std::string& msg,
                  Certainty::CertaintyLevel certainty);
     ErrorMessage(const std::list<const Token*>& callstack,
                  const TokenList* list,
                  Severity::SeverityType severity,
-                 const std::string& id,
+                 std::string id,
                  const std::string& msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty,
-                 bool bugHunting);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage(const ErrorPath &errorPath,
                  const TokenList *tokenList,
                  Severity::SeverityType severity,
                  const char id[],
                  const std::string &msg,
                  const CWE &cwe,
-                 Certainty::CertaintyLevel certainty,
-                 bool bugHunting);
+                 Certainty::CertaintyLevel certainty);
     ErrorMessage();
     explicit ErrorMessage(const tinyxml2::XMLElement * const errmsg);
 
@@ -162,7 +160,7 @@ public:
      */
     std::string toXML() const;
 
-    static std::string getXMLHeader();
+    static std::string getXMLHeader(const std::string& productName);
     static std::string getXMLFooter();
 
     /**
@@ -186,10 +184,6 @@ public:
 
     /** For GUI rechecking; source file (not header) */
     std::string file0;
-    /** For GUI bug hunting; function name */
-    std::string function;
-    /** For GUI bug hunting; incomplete analysis */
-    bool incomplete;
 
     Severity::SeverityType severity;
     CWE cwe;
@@ -282,8 +276,6 @@ public:
     virtual void reportInfo(const ErrorMessage &msg) {
         reportErr(msg);
     }
-
-    virtual void bughuntingReport(const std::string &str) = 0;
 
     /**
      * Report unmatched suppressions

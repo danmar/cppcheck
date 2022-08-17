@@ -357,18 +357,30 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
-    // #8827
     void commaoperator1() {
-        check("void foo(int,const char*,int);\n"
+        check("void foo(int,const char*,int);\n" // #8827
               "void f(int value) {\n"
               "    foo(42,\"test\",42),(value&42);\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ','\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ',', result is not used.\n", errout.str());
+
+        check("int f() {\n" // #11257
+              "    int y;\n"
+              "    y = (3, 4);\n"
+              "    return y;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (warning) Found suspicious operator ',', result is not used.\n", errout.str());
     }
 
     void commaoperator2() {
         check("void f() {\n"
               "    for(unsigned int a=0, b; a<10; a++ ) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g();\n" // #10952
+              "bool f() {\n"
+              "    return (void)g(), false;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
@@ -396,6 +408,16 @@ private:
               "    a.b[4][3].c()->d << x , y, z;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct V {\n"
+              "    Eigen::Vector3d& operator[](int i) { return v[i]; }\n"
+              "    void f(int a, int b, int c);\n"
+              "    Eigen::Vector3d v[1];\n"
+              "};\n"
+              "void V::f(int a, int b, int c) {\n"
+              "    (*this)[0] << a, b, c;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     // #8451
@@ -414,10 +436,11 @@ private:
                       "[test.cpp:3]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:4]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
                       "[test.cpp:5]: (warning) Redundant code: Found a statement that begins with numeric constant.\n"
-                      "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!'\n"
-                      "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!'\n"
+                      "[test.cpp:6]: (warning, inconclusive) Found suspicious operator '!', result is not used.\n"
+                      "[test.cpp:7]: (warning, inconclusive) Found suspicious operator '!', result is not used.\n"
                       "[test.cpp:8]: (warning) Redundant code: Found unused cast of expression '!x'.\n"
-                      "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~'\n", errout.str());
+                      "[test.cpp:9]: (warning, inconclusive) Found suspicious operator '~', result is not used.\n",
+                      errout.str());
 
         check("void f1(int x) { x; }", true);
         ASSERT_EQUALS("[test.cpp:1]: (warning) Unused variable value 'x'\n", errout.str());
@@ -629,6 +652,42 @@ private:
               "    };\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("namespace N {\n" // #10876
+              "    template <class R, class S, void(*T)(R&, float, S)>\n"
+              "    inline void f() {}\n"
+              "    template<class T>\n"
+              "    void g(T& c) {\n"
+              "        for (typename T::iterator v = c.begin(); v != c.end(); ++v) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string a, std::string b) {\n" // #7529
+              "    const std::string s = \" x \" + a;\n"
+              "    +\" y = \" + b;\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:3]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n", errout.str());
+
+        check("void f() {\n"
+              "    *new int;\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '*', result is not used.\n", errout.str());
+
+        check("void f() {\n" // #5475
+              "    std::string(\"a\") + \"a\";\n"
+              "}\n"
+              "void f(std::string& a) {\n"
+              "    a.erase(3) + \"suf\";\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n"
+                      "[test.cpp:5]: (warning, inconclusive) Found suspicious operator '+', result is not used.\n",
+                      errout.str());
+
+        check("void f(XMLElement& parent) {\n" // #11234
+              "    auto** elem = &parent.firstChild;\n"
+              "}\n", /*inconclusive*/ true);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void vardecl() {
@@ -670,7 +729,7 @@ private:
         check("void f(int ar) {\n"
               "  ar & x;\n"
               "}", true);
-        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&'\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Found suspicious operator '&', result is not used.\n", errout.str());
     }
 
     void ast() {

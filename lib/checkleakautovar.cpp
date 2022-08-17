@@ -268,7 +268,7 @@ static bool isLocalVarNoAutoDealloc(const Token *varTok, const bool isCpp)
 
 static const Token * isFunctionCall(const Token * nameToken)
 {
-    if (nameToken->isName()) {
+    if (!nameToken->isStandardType() && nameToken->isName()) {
         nameToken = nameToken->next();
         // check if function is a template
         if (nameToken && nameToken->link() && nameToken->str() == "<") {
@@ -331,6 +331,11 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         if (Token::Match(tok, "const %type%"))
             tok = tok->tokAt(2);
 
+        while (tok->str() == "(")
+            tok = tok->next();
+        while (tok->isUnaryOp("*") && tok->astOperand1()->isUnaryOp("&"))
+            tok = tok->astOperand1()->astOperand1();
+
         // parse statement, skip to last member
         const Token *varTok = tok;
         while (Token::Match(varTok, "%name% ::|. %name% !!("))
@@ -342,10 +347,25 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         while (Token::Match(ftok, "%name% :: %name%"))
             ftok = ftok->tokAt(2);
 
-        // assignment..
-        if (Token::Match(varTok, "%var% =")) {
-            const Token* const tokAssignOp = varTok->next();
+        auto isAssignment = [](const Token* varTok) -> const Token* {
+            if (varTok->varId()) {
+                const Token* top = varTok;
+                while (top->astParent()) {
+                    top = top->astParent();
+                    if (!Token::Match(top, "(|*|&|."))
+                        break;
+                }
+                if (top->str() == "=" && succeeds(top, varTok))
+                    return top;
+            }
+            return nullptr;
+        };
 
+        // assignment..
+        if (const Token* const tokAssignOp = isAssignment(varTok)) {
+
+            if (Token::simpleMatch(tokAssignOp->astOperand1(), "."))
+                continue;
             // taking address of another variable..
             if (Token::Match(tokAssignOp, "= %var% [+;]")) {
                 if (varTok->tokAt(2)->varId() != varTok->varId()) {
@@ -423,7 +443,9 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                 if (!isLocalVarNoAutoDealloc(innerTok, mTokenizer->isCPP()))
                     continue;
 
-                if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next()) {
+                // Check assignments in the if-statement. Skip multiple assignments since we don't track those
+                if (Token::Match(innerTok, "%var% =") && innerTok->astParent() == innerTok->next() &&
+                    !(innerTok->next()->astParent() && innerTok->next()->astParent()->isAssignmentOp())) {
                     // allocation?
                     // right ast part (after `=` operator)
                     const Token* tokRightAstOperand = innerTok->next()->astOperand2();
@@ -481,7 +503,7 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
                     }
                     if (tok3->str() == "(" && Token::Match(tok3->astOperand1(), "UNLIKELY|LIKELY")) {
                         return ChildrenToVisit::op2;
-                    } else if (tok3->str() == "(" && Token::Match(tok3->previous(), "%name%")) {
+                    } else if (tok3->str() == "(" && tok3->previous()->isName()) {
                         const std::vector<const Token *> params = getArguments(tok3->previous());
                         for (const Token *par : params) {
                             if (!par->isComparisonOp())
@@ -603,6 +625,8 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         // delete
         else if (mTokenizer->isCPP() && tok->str() == "delete") {
             const Token * delTok = tok;
+            if (Token::simpleMatch(delTok->astOperand1(), "."))
+                continue;
             const bool arrayDelete = Token::simpleMatch(tok->next(), "[ ]");
             if (arrayDelete)
                 tok = tok->tokAt(3);
@@ -620,19 +644,22 @@ void CheckLeakAutoVar::checkScope(const Token * const startToken,
         }
 
         // Function call..
-        else if (isFunctionCall(ftok)) {
-            const Token * openingPar = isFunctionCall(ftok);
+        else if (const Token* openingPar = isFunctionCall(ftok)) {
             const Library::AllocFunc* af = mSettings->library.getDeallocFuncInfo(ftok);
             VarInfo::AllocInfo allocation(af ? af->groupId : 0, VarInfo::DEALLOC, ftok);
             if (allocation.type == 0)
                 allocation.status = VarInfo::NOALLOC;
+            if (Token::simpleMatch(ftok->astParent(), "(") && Token::simpleMatch(ftok->astParent()->astOperand2(), "."))
+                continue;
             functionCall(ftok, openingPar, varInfo, allocation, af);
 
             tok = ftok->next()->link();
 
             // Handle scopes that might be noreturn
             if (allocation.status == VarInfo::NOALLOC && Token::simpleMatch(tok, ") ; }")) {
-                const std::string &functionName(tok->link()->previous()->str());
+                if (ftok->isKeyword())
+                    continue;
+                const std::string functionName(mSettings->library.getFunctionName(ftok));
                 bool unknown = false;
                 if (mTokenizer->isScopeNoReturn(tok->tokAt(2), &unknown)) {
                     if (!unknown)
@@ -755,7 +782,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                 if (rhs->varId() == tok->varId()) {
                     // simple assignment
                     varInfo->erase(tok->varId());
-                } else if (rhs->str() == "(" && mSettings->library.returnValue(rhs->astOperand1()) != emptyString) {
+                } else if (rhs->str() == "(" && !mSettings->library.returnValue(rhs->astOperand1()).empty()) {
                     // #9298, assignment through return value of a function
                     const std::string &returnValue = mSettings->library.returnValue(rhs->astOperand1());
                     if (returnValue.compare(0, 3, "arg") == 0) {
@@ -847,7 +874,7 @@ void CheckLeakAutoVar::changeAllocStatus(VarInfo *varInfo, const VarInfo::AllocI
 void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpeningPar, VarInfo *varInfo, const VarInfo::AllocInfo& allocation, const Library::AllocFunc* af)
 {
     // Ignore function call?
-    if (mSettings->library.isLeakIgnore(tokName->str()))
+    if (mSettings->library.isLeakIgnore(mSettings->library.getFunctionName(tokName)))
         return;
     if (mSettings->library.getReallocFuncInfo(tokName))
         return;
@@ -1000,7 +1027,7 @@ void CheckLeakAutoVar::ret(const Token *tok, VarInfo &varInfo, const bool isEndO
                         (tok3->valueType()->typeSize(*mSettings) == 0) ||
                         (tok3->valueType()->typeSize(*mSettings) >= mSettings->sizeof_pointer)))
                     tok3 = tok3->astOperand2() ? tok3->astOperand2() : tok3->astOperand1();
-                if (Token::Match(tok3, "%varid%", varid))
+                if (tok3 && tok3->varId() == varid)
                     tok2 = tok3->next();
                 else if (Token::Match(tok3, "& %varid% . %name%", varid))
                     tok2 = tok3->tokAt(4);

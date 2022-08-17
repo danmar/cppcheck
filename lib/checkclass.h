@@ -36,10 +36,6 @@
 class ErrorLogger;
 class Settings;
 class Token;
-class Function;
-class Scope;
-class Type;
-class Variable;
 
 namespace CTU {
     class FileInfo;
@@ -355,6 +351,13 @@ private:
      * @param varid id of variable to mark assigned
      */
     static void assignVar(std::vector<Usage> &usageList, nonneg int varid);
+
+    /**
+     * @brief assign a variable in the varlist
+     * @param usageList reference to usage vector
+     * @param vartok variable token
+     */
+    static void assignVar(std::vector<Usage> &usageList, const Token *vartok);
 
     /**
      * @brief initialize a variable in the varlist

@@ -193,7 +193,9 @@ private:
         TEST_CASE(const74); // ticket #10671
         TEST_CASE(const75); // ticket #10065
         TEST_CASE(const76); // ticket #10825
-        TEST_CASE(const77); // ticket #10307
+        TEST_CASE(const77); // ticket #10307, #10311
+        TEST_CASE(const78); // ticket #10315
+        TEST_CASE(const79); // ticket #9861
         TEST_CASE(const_handleDefaultParameters);
         TEST_CASE(const_passThisToMemberOfOtherClass);
         TEST_CASE(assigningPointerToPointerIsNotAConstOperation);
@@ -478,6 +480,35 @@ private:
                                   "    explicit constexpr Baz(int) {}\n"
                                   "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("class Token;\n" // #11126
+                                  "struct Branch {\n"
+                                  "    Branch(Token* tok = nullptr) : endBlock(tok) {}\n"
+                                  "    Token* endBlock = nullptr;\n"
+                                  "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Struct 'Branch' has a constructor with 1 argument that is not explicit.\n", errout.str());
+
+        checkExplicitConstructors("struct S {\n"
+                                  "    S(std::initializer_list<int> il) : v(il) {}\n"
+                                  "    std::vector<int> v;\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("template<class T>\n" // #10977
+                                  "struct A {\n"
+                                  "    template<class... Ts>\n"
+                                  "    A(Ts&&... ts) {}\n"
+                                  "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkExplicitConstructors("class Color {\n" // #7176
+                                  "public:\n"
+                                  "    Color(unsigned int rgba);\n"
+                                  "    Color(std::uint8_t r = 0, std::uint8_t g = 0, std::uint8_t b = 0, std::uint8_t a = 255);\n"
+                                  "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Class 'Color' has a constructor with 1 argument that is not explicit.\n"
+                      "[test.cpp:4]: (style) Class 'Color' has a constructor with 1 argument that is not explicit.\n",
+                      errout.str());
     }
 
 #define checkDuplInheritedMembers(code) checkDuplInheritedMembers_(code, __FILE__, __LINE__)
@@ -6032,13 +6063,50 @@ private:
                       errout.str());
     }
 
-    void const77() { // #10307
-        checkConst("template <typename T>\n"
+    void const77() {
+        checkConst("template <typename T>\n" // #10307
                    "struct S {\n"
                    "    std::vector<T> const* f() const { return p; }\n"
                    "    std::vector<T> const* p;\n"
                    "};\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n" // #10311
+                   "    std::vector<const int*> v;\n"
+                   "    std::vector<const int*>& f() { return v; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const78() { // #10315
+        checkConst("struct S {\n"
+                   "    typedef void(S::* F)();\n"
+                   "    void g(F f);\n"
+                   "};\n"
+                   "void S::g(F f) {\n"
+                   "    (this->*f)();\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        checkConst("struct S {\n"
+                   "    using F = void(S::*)();\n"
+                   "    void g(F f);\n"
+                   "};\n"
+                   "void S::g(F f) {\n"
+                   "    (this->*f)();\n"
+                   "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void const79() { // #9861
+        checkConst("class A {\n"
+                   "public:\n"
+                   "    char* f() {\n"
+                   "        return nullptr;\n"
+                   "    }\n"
+                   "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'A::f' can be static (but you may consider moving to unnamed namespace).\n",
+                      errout.str());
     }
 
     void const_handleDefaultParameters() {
@@ -6177,6 +6245,14 @@ private:
                    "    void nextA() { return a--; }\n"
                    "};");
         ASSERT_EQUALS("[test.cpp:3]: (performance, inconclusive) Technically the member function 'Fred::nextA' can be static (but you may consider moving to unnamed namespace).\n", errout.str());
+
+        checkConst("struct S {\n" // #10077
+                   "    int i{};\n"
+                   "    S& operator ++() { ++i; return *this; }\n"
+                   "    S operator ++(int) { S s = *this; ++(*this); return s; }\n"
+                   "    void f() { (*this)--; }\n"
+                   "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void constassign1() {
@@ -7159,6 +7235,22 @@ private:
                                 "}");
         ASSERT_EQUALS("[test.cpp:5]: (error) Member variable 'i' is initialized by itself.\n", errout.str());
 
+        checkSelfInitialization("class A {\n" // #10427
+                                "public:\n"
+                                "    explicit A(int x) : _x(static_cast<int>(_x)) {}\n"
+                                "private:\n"
+                                "    int _x;\n"
+                                "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Member variable '_x' is initialized by itself.\n", errout.str());
+
+        checkSelfInitialization("class A {\n"
+                                "public:\n"
+                                "    explicit A(int x) : _x((int)(_x)) {}\n"
+                                "private:\n"
+                                "    int _x;\n"
+                                "};\n");
+        ASSERT_EQUALS("[test.cpp:3]: (error) Member variable '_x' is initialized by itself.\n", errout.str());
+
         checkSelfInitialization("class Fred {\n"
                                 "    std::string s;\n"
                                 "    Fred() : s(s) {\n"
@@ -7335,6 +7427,17 @@ private:
                                  "    virtual void f() {}\n"
                                  "};\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (style) Virtual function 'f' is called from constructor 'B()' at line 2. Dynamic binding is not used.\n", errout.str());
+
+        checkVirtualFunctionCall("class S {\n" // don't crash
+                                 "    ~S();\n"
+                                 "public:\n"
+                                 "    S();\n"
+                                 "};\n"
+                                 "S::S() {\n"
+                                 "    typeid(S);\n"
+                                 "}\n"
+                                 "S::~S() = default;\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {

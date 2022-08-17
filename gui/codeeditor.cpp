@@ -23,6 +23,8 @@
 #include <QPainter>
 #include <QShortcut>
 
+class QTextDocument;
+
 
 Highlighter::Highlighter(QTextDocument *parent,
                          CodeEditorStyle *widgetStyle) :
@@ -43,62 +45,66 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "case"
                     << "catch"
                     << "char"
-                    << "char8_­t"
-                    << "char16_­t"
-                    << "char32_­t"
+                    << "char8_t"
+                    << "char16_t"
+                    << "char32_t"
                     << "class"
                     << "concept"
                     << "const"
                     << "consteval"
                     << "constexpr"
                     << "constinit"
-                    << "const_­cast"
+                    << "const_cast"
                     << "continue"
-                    << "co_­await"
-                    << "co_­return"
-                    << "co_­yield"
+                    << "co_await"
+                    << "co_return"
+                    << "co_yield"
                     << "decltype"
                     << "default"
                     << "delete"
                     << "do"
                     << "double"
-                    << "dynamic_­cast"
+                    << "dynamic_cast"
                     << "else"
                     << "enum"
                     << "explicit"
                     << "export"
                     << "extern"
                     << "false"
+                    << "final"
                     << "float"
                     << "for"
                     << "friend"
                     << "goto"
                     << "if"
+                    << "import"
                     << "inline"
                     << "int"
                     << "long"
+                    << "module"
                     << "mutable"
                     << "namespace"
                     << "new"
                     << "noexcept"
                     << "nullptr"
                     << "operator"
+                    << "override"
                     << "private"
                     << "protected"
                     << "public"
-                    << "reinterpret_­cast"
+                    << "reinterpret_cast"
                     << "requires"
                     << "return"
                     << "short"
                     << "signed"
                     << "static"
-                    << "static_­assert"
-                    << "static_­cast"
+                    << "static_assert"
+                    << "static_cast"
                     << "struct"
                     << "switch"
                     << "template"
                     << "this"
-                    << "thread_­local"
+                    << "thread_local"
                     << "throw"
                     << "true"
                     << "try"
@@ -110,7 +116,7 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "virtual"
                     << "void"
                     << "volatile"
-                    << "wchar_­t"
+                    << "wchar_t"
                     << "while";
     for (const QString &pattern : keywordPatterns) {
         rule.pattern = QRegularExpression("\\b" + pattern + "\\b");
@@ -128,7 +134,9 @@ Highlighter::Highlighter(QTextDocument *parent,
 
     mQuotationFormat.setForeground(mWidgetStyle->quoteColor);
     mQuotationFormat.setFontWeight(mWidgetStyle->quoteWeight);
-    rule.pattern = QRegularExpression("\".*\"");
+    // We use lazy `*?` instead greed `*` quantifier to find the real end of the c-string.
+    // We use negative lookbehind assertion `(?<!\)` to ignore `\"` sequience in the c-string.
+    rule.pattern = QRegularExpression("\".*?(?<!\\\\)\"");
     rule.format = mQuotationFormat;
     rule.ruleRole = RuleRole::Quote;
     mHighlightingRules.append(rule);
@@ -149,7 +157,9 @@ Highlighter::Highlighter(QTextDocument *parent,
     mSymbolFormat.setBackground(mWidgetStyle->symbolBGColor);
     mSymbolFormat.setFontWeight(mWidgetStyle->symbolWeight);
 
-    mCommentStartExpression = QRegularExpression("/\\*");
+    // We use negative lookbehind assertion `(?<!/)`
+    // to ignore case: single line comment and line of asterisk
+    mCommentStartExpression = QRegularExpression("(?<!/)/\\*");
     mCommentEndExpression = QRegularExpression("\\*/");
 }
 
@@ -259,8 +269,13 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setObjectName("CodeEditor");
     setStyleSheet(generateStyleString());
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
+    QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
+#else
     QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
     QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
+#endif
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));

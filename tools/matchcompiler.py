@@ -24,6 +24,77 @@ import glob
 import argparse
 import errno
 
+tokTypes = {
+    '+': ['eArithmeticalOp'],
+    '-': ['eArithmeticalOp'],
+    '*': ['eArithmeticalOp'],
+    '/': ['eArithmeticalOp'],
+    '%': ['eArithmeticalOp'],
+    '>>': ['eArithmeticalOp'],
+    '<<': ['eArithmeticalOp'],
+    '=': ['eAssignmentOp'],
+    '+=': ['eAssignmentOp'],
+    '-=': ['eAssignmentOp'],
+    '*=': ['eAssignmentOp'],
+    '/=': ['eAssignmentOp'],
+    '%=': ['eAssignmentOp'],
+    '&=': ['eAssignmentOp'],
+    '|=': ['eAssignmentOp'],
+    '^=': ['eAssignmentOp'],
+    '&': ['eBitOp'],
+    '^': ['eBitOp'],
+    '~': ['eBitOp'],
+    'true': ['eBoolean'],
+    'false': ['eBoolean'],
+    '{': ['eBracket'],
+    '}': ['eBracket'],
+    '<': ['eBracket', 'eComparisonOp'],
+    '>': ['eBracket', 'eComparisonOp'],
+    '==': ['eComparisonOp'],
+    '!=': ['eComparisonOp'],
+    '<=': ['eComparisonOp'],
+    '>=': ['eComparisonOp'],
+    '<=>': ['eComparisonOp'],
+    '...': ['eEllipsis'],
+    ',': ['eExtendedOp'],
+    '?': ['eExtendedOp'],
+    ':': ['eExtendedOp'],
+    '(': ['eExtendedOp'],
+    ')': ['eExtendedOp'],
+    '[': ['eExtendedOp', 'eLambda'],
+    ']': ['eExtendedOp', 'eLambda'],
+    '++': ['eIncDecOp'],
+    '--': ['eIncDecOp'],
+    'asm': ['eKeyword'],
+    'auto': ['eKeyword', 'eType'],
+    'break': ['eKeyword'],
+    'case': ['eKeyword'],
+    'const': ['eKeyword'],
+    'continue': ['eKeyword'],
+    'default': ['eKeyword'],
+    'do': ['eKeyword'],
+    'else': ['eKeyword'],
+    'enum': ['eKeyword'],
+    'extern': ['eKeyword'],
+    'for': ['eKeyword'],
+    'goto': ['eKeyword'],
+    'if': ['eKeyword'],
+    'inline': ['eKeyword'],
+    'register': ['eKeyword'],
+    'restrict': ['eKeyword'],
+    'return': ['eKeyword'],
+    'sizeof': ['eKeyword'],
+    'static': ['eKeyword'],
+    'struct': ['eKeyword'],
+    'switch': ['eKeyword'],
+    'typedef': ['eKeyword'],
+    'union': ['eKeyword'],
+    'volatile': ['eKeyword'],
+    'while': ['eKeyword'],
+    'void': ['eKeyword', 'eType'],
+    '&&': ['eLogicalOp'],
+    '!': ['eLogicalOp']
+}
 
 class MatchCompiler:
 
@@ -108,7 +179,7 @@ class MatchCompiler:
         elif tok == '%str%':
             return '(tok->tokType() == Token::eString)'
         elif tok == '%type%':
-            return '(tok->isName() && tok->varId() == 0U && (tok->str() != "delete" || !tok->isKeyword()))'
+            return '(tok->isName() && tok->varId() == 0U && (tok->str() != MatchCompiler::makeConstString("delete") || !tok->isKeyword()))'
         elif tok == '%name%':
             return 'tok->isName()'
         elif tok == '%var%':
@@ -117,7 +188,9 @@ class MatchCompiler:
             return '(tok->isName() && tok->varId() == varid)'
         elif (len(tok) > 2) and (tok[0] == "%"):
             print("unhandled:" + tok)
-
+        elif tok in tokTypes:
+            cond = ' || '.join(['tok->tokType() == Token::{}'.format(tokType) for tokType in tokTypes[tok]])
+            return '(({cond}) && tok->str() == MatchCompiler::makeConstString("{tok}"))'.format(cond=cond, tok=tok)
         return (
             '(tok->str() == MatchCompiler::makeConstString("' + tok + '"))'
         )

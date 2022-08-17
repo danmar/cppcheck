@@ -32,6 +32,7 @@ tools/extracttests
 *.suo
 *.user
 .vs/
+UpgradeLog*.htm
 
 # VS build folders
 bin/

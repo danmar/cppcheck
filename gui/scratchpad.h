@@ -22,6 +22,7 @@
 #include <QDialog>
 
 class MainWindow;
+class QObject;
 namespace Ui {
     class ScratchPad;
 }
@@ -36,7 +37,7 @@ class ScratchPad : public QDialog {
     Q_OBJECT
 public:
     explicit ScratchPad(MainWindow& mainWindow);
-    ~ScratchPad();
+    ~ScratchPad() override;
 
     /**
      * @brief Translate dialog

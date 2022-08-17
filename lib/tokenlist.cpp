@@ -23,6 +23,7 @@
 #include "errorlogger.h"
 #include "errortypes.h"
 #include "library.h"
+#include "mathlib.h"
 #include "path.h"
 #include "settings.h"
 #include "standards.h"
@@ -52,6 +53,7 @@ TokenList::TokenList(const Settings* settings) :
     mIsCpp(false)
 {
     mTokensFrontBack.list = this;
+    mKeywords.insert("asm");
     mKeywords.insert("auto");
     mKeywords.insert("break");
     mKeywords.insert("case");
@@ -211,7 +213,7 @@ void TokenList::deleteTokens(Token *tok)
 // add a token.
 //---------------------------------------------------------------------------
 
-void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split)
+void TokenList::addtoken(const std::string& str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split)
 {
     if (str.empty())
         return;
@@ -244,7 +246,7 @@ void TokenList::addtoken(std::string str, const nonneg int lineno, const nonneg 
     mTokensFrontBack.back->fileIndex(fileno);
 }
 
-void TokenList::addtoken(std::string str, const Token *locationTok)
+void TokenList::addtoken(const std::string& str, const Token *locationTok)
 {
     if (str.empty())
         return;
@@ -344,6 +346,7 @@ Token *TokenList::copyTokens(Token *dest, const Token *first, const Token *last,
         tok2->tokType(tok->tokType());
         tok2->flags(tok->flags());
         tok2->varId(tok->varId());
+        tok2->setTokenDebug(tok->getTokenDebug());
 
         // Check for links and fix them up
         if (Token::Match(tok2, "(|[|{"))
@@ -459,27 +462,17 @@ void TokenList::createTokens(simplecpp::TokenList&& tokenList)
 
 //---------------------------------------------------------------------------
 
-unsigned long long TokenList::calculateChecksum() const
+std::size_t TokenList::calculateHash() const
 {
-    unsigned long long checksum = 0;
+    std::string hashData;
     for (const Token* tok = front(); tok; tok = tok->next()) {
-        const unsigned int subchecksum1 = tok->flags() + tok->varId() + tok->tokType();
-        unsigned int subchecksum2 = 0;
-        for (char i : tok->str())
-            subchecksum2 += (unsigned int)i;
-        if (!tok->originalName().empty()) {
-            for (char i : tok->originalName())
-                subchecksum2 += (unsigned int) i;
-        }
-
-        checksum ^= ((static_cast<unsigned long long>(subchecksum1) << 32) | subchecksum2);
-
-        const bool bit1 = (checksum & 1) != 0;
-        checksum >>= 1;
-        if (bit1)
-            checksum |= (1ULL << 63);
+        hashData += MathLib::toString(tok->flags());
+        hashData += MathLib::toString(tok->varId());
+        hashData += MathLib::toString(tok->tokType());
+        hashData += tok->str();
+        hashData += tok->originalName();
     }
-    return checksum;
+    return (std::hash<std::string>{})(hashData);
 }
 
 
@@ -1381,6 +1374,22 @@ static void createAstAtTokenInner(Token * const tok1, const Token *endToken, boo
                 tok = tok->next();
                 for (; tok && tok != endToken && tok != endToken2; tok = tok ? tok->next() : nullptr)
                     tok = createAstAtToken(tok, cpp);
+            }
+        }
+        else if (Token::simpleMatch(tok, "( * ) [")) {
+            bool hasAst = false;
+            for (const Token* tok2 = tok->linkAt(3); tok2 != tok; tok2 = tok2->previous()) {
+                if (tok2->astParent() || tok2->astOperand1() || tok2->astOperand2()) {
+                    hasAst = true;
+                    break;
+                }
+            }
+            if (!hasAst) {
+                Token *const startTok = tok = tok->tokAt(4);
+                const Token* const endtok = startTok->linkAt(-1);
+                AST_state state(cpp);
+                compileExpression(tok, state);
+                createAstAtTokenInner(startTok, endtok, cpp);
             }
         }
     }

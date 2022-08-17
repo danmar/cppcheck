@@ -138,7 +138,7 @@ public:
          * \param token template instantiation name token "name<...>"
          * \param scope full qualification of template(scope)
          */
-        TokenAndName(Token *token, const std::string &scope);
+        TokenAndName(Token *token, std::string scope);
         /**
          * Constructor used for declarations.
          * \param token template declaration token "template < ... >"
@@ -146,7 +146,7 @@ public:
          * \param nameToken template name token "template < ... > class name"
          * \param paramEnd template parameter end token ">"
          */
-        TokenAndName(Token *token, const std::string &scope, const Token *nameToken, const Token *paramEnd);
+        TokenAndName(Token *token, std::string scope, const Token *nameToken, const Token *paramEnd);
         TokenAndName(const TokenAndName& other);
         ~TokenAndName();
 
@@ -242,7 +242,7 @@ public:
         bool isSameFamily(const TemplateSimplifier::TokenAndName &decl) const {
             // Make sure a family flag is set and matches.
             // This works because at most only one flag will be set.
-            return ((mFlags & fFamilyMask) & (decl.mFlags & fFamilyMask)) != 0;
+            return ((mFlags & fFamilyMask) && (decl.mFlags & fFamilyMask));
         }
     };
 
@@ -485,7 +485,7 @@ private:
     void printOut(
         const TokenAndName &tokenAndName,
         const std::string &indent = "    ") const;
-    void printOut(const std::string &text = "") const;
+    void printOut(const std::string &text = emptyString) const;
 
     Tokenizer *mTokenizer;
     TokenList &mTokenList;

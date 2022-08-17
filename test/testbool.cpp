@@ -63,6 +63,8 @@ private:
         TEST_CASE(checkComparisonOfFuncReturningBool4);
         TEST_CASE(checkComparisonOfFuncReturningBool5);
         TEST_CASE(checkComparisonOfFuncReturningBool6);
+        TEST_CASE(checkComparisonOfFuncReturningBool7); // #7197
+        TEST_CASE(checkComparisonOfFuncReturningBool8); // #4103
         // Integration tests..
         TEST_CASE(checkComparisonOfFuncReturningBoolIntegrationTest1); // #7798 overloaded functions
 
@@ -78,11 +80,9 @@ private:
     }
 
 #define check(...) check_(__FILE__, __LINE__, __VA_ARGS__)
-    void check_(const char* file, int line, const char code[], bool experimental = false, const char filename[] = "test.cpp") {
+    void check_(const char* file, int line, const char code[], const char filename[] = "test.cpp") {
         // Clear the error buffer..
         errout.str("");
-
-        settings.certainty.setEnabled(Certainty::experimental, experimental);
 
         // Tokenize..
         Tokenizer tokenizer(&settings, this);
@@ -154,7 +154,7 @@ private:
               "  const int *rmat = n < 4 ? " /* OK */
               "                       ctx->q_intra_matrix :"
               "                       ctx->q_chroma_intra_matrix;\n"
-              "}", /*experimental=*/ false, "test.c");
+              "}", "test.c");
         ASSERT_EQUALS("[test.c:3]: (error) Boolean value assigned to pointer.\n", errout.str());
 
         // ticket #6588 (c++ mode)
@@ -173,7 +173,7 @@ private:
               "  char* m1 = compare(a, b) < 0\n"
               "      ? (compare(b, c) < 0 ? b : (compare(a, c) < 0 ? c : a))\n"
               "      : (compare(a, c) < 0 ? a : (compare(b, c) < 0 ? c : b));\n"
-              "}", /*experimental=*/ false, "test.c");
+              "}", "test.c");
         ASSERT_EQUALS("", errout.str());
 
         // #7381
@@ -712,6 +712,63 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void checkComparisonOfFuncReturningBool7() { // #7197
+        check("struct C {\n"
+              "    bool isEmpty();\n"
+              "};\n"
+              "void f() {\n"
+              "    C c1, c2;\n"
+              "    if ((c1.isEmpty()) < (c2.isEmpty())) {}\n"
+              "    if (!c1.isEmpty() < !!c2.isEmpty()) {}\n"
+              "    if ((int)c1.isEmpty() < (int)c2.isEmpty()) {}\n"
+              "    if (static_cast<int>(c1.isEmpty()) < static_cast<int>(c2.isEmpty())) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
+                      "[test.cpp:7]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
+                      "[test.cpp:8]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n"
+                      "[test.cpp:9]: (style) Comparison of two functions returning boolean value using relational (<, >, <= or >=) operator.\n",
+                      errout.str());
+    }
+
+    void checkComparisonOfFuncReturningBool8() { // #4103
+        // op: >
+        check("int main(void){\n"
+              "    bool a = true;\n"
+              "    bool b = false;\n"
+              "    if(b > a){ \n"                             // here warning should be displayed
+              "        ;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        // op: <
+        check("int main(void){\n"
+              "    bool a = true;\n"
+              "    bool b = false;\n"
+              "    if(b < a){ \n"                             // here warning should be displayed
+              "        ;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        // op: >=
+        check("int main(void){\n"
+              "    bool a = true;\n"
+              "    bool b = false;\n"
+              "    if(b >= a){ \n"                             // here warning should be displayed
+              "        ;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+        // op: <=
+        check("int main(void){\n"
+              "    bool a = true;\n"
+              "    bool b = false;\n"
+              "    if(b <= a){ \n"                             // here warning should be displayed
+              "        ;\n"
+              "    }\n"
+              "}");
+        ASSERT_EQUALS("[test.cpp:4]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
+    }
+
     void checkComparisonOfFuncReturningBoolIntegrationTest1() { // #7798
         check("bool eval(double *) { return false; }\n"
               "double eval(char *) { return 1.0; }\n"
@@ -747,10 +804,8 @@ private:
                             "    else\n"
                             "        return false;\n"
                             "}\n";
-        check(code, true);
+        check(code);
         ASSERT_EQUALS("[test.cpp:5]: (style) Comparison of a variable having boolean value using relational (<, >, <= or >=) operator.\n", errout.str());
-        check(code, false);
-        ASSERT_EQUALS("", errout.str());
     }
 
     void bitwiseOnBoolean() { // 3062
@@ -857,6 +912,47 @@ private:
         check("uint8 outcode(float p) {\n"
               "    float d = 0.;\n"
               "    return ((p - xm >= d) << 1) | (x - p > d);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g();\n" // #10655
+              "void f(bool b) {\n"
+              "    if (g() | b) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'b' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+
+        check("int g();\n"
+              "void f(bool b) {\n"
+              "    if (b | g()) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int g();\n"
+              "bool f(bool b, bool c) {\n"
+              "    return b | g() | c;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'c' is used in bitwise operation. Did you mean '||'?\n", errout.str());
+
+        check("void f(int i) {\n" // #4233
+              "    bool b = true, c = false;\n"
+              "    b &= i;\n"
+              "    c |= i;\n"
+              "    if (b || c) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style, inconclusive) Boolean expression 'b' is used in bitwise operation.\n"
+                      "[test.cpp:4]: (style, inconclusive) Boolean expression 'c' is used in bitwise operation.\n",
+                      errout.str());
+
+        check("void f(int i, int j, bool b) {\n"
+              "    i &= b;\n"
+              "    j |= b;\n"
+              "    if (b || c) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("bool f(bool b, int i) {\n"
+              "    b &= (i == 5);\n"
+              "    return b;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -1079,6 +1175,23 @@ private:
               "    }\n"
               "    return b;\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void comparisonOfBoolWithInt10() { // #10935
+        check("enum class E { H = 2 };\n"
+              "template <bool H>\n"
+              "void f(bool v) {\n"
+              "    if (v == H) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("namespace N {\n"
+              "    enum class E { H = 2 };\n"
+              "}\n"
+              "void f(bool v) {\n"
+              "    if (v == N::H) {}\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

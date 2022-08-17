@@ -81,10 +81,8 @@ public:
     QString tool() const;
 
     QString file0;
-    QString function;
     QString errorId;
     Severity::SeverityType severity;
-    bool incomplete;
     bool inconclusive;
     QString summary;
     QString message;
@@ -114,7 +112,6 @@ public:
     int line;
     QString file0;
     QString errorId;
-    bool incomplete;
     int cwe;
     unsigned long long hash;
     bool inconclusive;

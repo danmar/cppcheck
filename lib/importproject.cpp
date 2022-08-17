@@ -37,6 +37,8 @@
 
 #include <tinyxml2.h>
 
+#include <simplecpp.h>
+
 #define PICOJSON_USE_INT64
 #include <picojson.h>
 
@@ -137,7 +139,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
             variables[var] = std::string(envValue);
             it1 = variables.find(var);
         }
-        s = s.substr(0, start) + it1->second + s.substr(end + 1);
+        s.replace(start, end - start + 1, it1->second);
     }
     if (s.find("$(") != std::string::npos)
         return false;
@@ -148,6 +150,7 @@ static bool simplifyPathWithVariables(std::string &s, std::map<std::string, std:
 void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, const std::list<std::string> &in, std::map<std::string, std::string, cppcheck::stricmp> &variables)
 {
     std::set<std::string> found;
+    // NOLINTNEXTLINE(performance-unnecessary-copy-initialization)
     const std::list<std::string> copyIn(in);
     includePaths.clear();
     for (const std::string &ipath : copyIn) {
@@ -314,18 +317,9 @@ void ImportProject::FileSettings::parseCommand(std::string command)
             ++pos;
             const std::string stdval = readUntil(command, &pos, " ");
             standard = stdval;
+            // TODO: use simplecpp::DUI::std instead of specifying it manually
             if (standard.compare(0, 3, "c++") || standard.compare(0, 5, "gnu++")) {
-                std::string stddef;
-                if (standard == "c++98" || standard == "gnu++98" || standard == "c++03" || standard == "gnu++03") {
-                    stddef = "199711L";
-                } else if (standard == "c++11" || standard == "gnu++11" || standard == "c++0x" || standard == "gnu++0x") {
-                    stddef = "201103L";
-                } else if (standard == "c++14" || standard == "gnu++14" || standard == "c++1y" || standard == "gnu++1y") {
-                    stddef = "201402L";
-                } else if (standard == "c++17" || standard == "gnu++17" || standard == "c++1z" || standard == "gnu++1z") {
-                    stddef = "201703L";
-                }
-
+                const std::string stddef = simplecpp::getCppStdString(standard);
                 if (stddef.empty()) {
                     // TODO: log error
                     continue;
@@ -335,21 +329,7 @@ void ImportProject::FileSettings::parseCommand(std::string command)
                 defs += stddef;
                 defs += ";";
             } else if (standard.compare(0, 1, "c") || standard.compare(0, 3, "gnu")) {
-                if (standard == "c90" || standard == "iso9899:1990" || standard == "gnu90" || standard == "iso9899:199409") {
-                    // __STDC_VERSION__ is not set for C90 although the macro was added in the 1994 amendments
-                    continue;
-                }
-
-                std::string stddef;
-
-                if (standard == "c99" || standard == "iso9899:1999" || standard == "gnu99") {
-                    stddef = "199901L";
-                } else if (standard == "c11" || standard == "iso9899:2011" || standard == "gnu11" || standard == "c1x" || standard == "gnu1x") {
-                    stddef = "201112L";
-                } else if (standard == "c17") {
-                    stddef = "201710L";
-                }
-
+                const std::string stddef = simplecpp::getCStdString(standard);
                 if (stddef.empty()) {
                     // TODO: log error
                     continue;
@@ -548,7 +528,7 @@ namespace {
     };
 
     struct ItemDefinitionGroup {
-        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg, const std::string &includePaths) : additionalIncludePaths(includePaths) {
+        explicit ItemDefinitionGroup(const tinyxml2::XMLElement *idg, std::string includePaths) : additionalIncludePaths(std::move(includePaths)) {
             const char *condAttr = idg->Attribute("Condition");
             if (condAttr)
                 condition = condAttr;
@@ -664,7 +644,7 @@ static void importPropertyGroup(const tinyxml2::XMLElement *node, std::map<std::
             std::string path(text);
             const std::string::size_type pos = path.find("$(IncludePath)");
             if (pos != std::string::npos)
-                path = path.substr(0,pos) + *includePath + path.substr(pos+14U);
+                path.replace(pos, 14U, *includePath);
             *includePath = path;
         }
     }
@@ -808,14 +788,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             for (const ItemDefinitionGroup &i : itemDefinitionGroupList) {
                 if (!i.conditionIsTrue(p))
                     continue;
-                if (i.cppstd == Standards::CPP11)
-                    fs.standard = "c++11";
-                else if (i.cppstd == Standards::CPP14)
-                    fs.standard = "c++14";
-                else if (i.cppstd == Standards::CPP17)
-                    fs.standard = "c++17";
-                else if (i.cppstd == Standards::CPP20)
-                    fs.standard = "c++20";
+                fs.standard = Standards::getCPP(i.cppstd);
                 fs.defines += ';' + i.preprocessorDefinitions;
                 if (i.enhancedInstructionSet == "StreamingSIMDExtensions")
                     fs.defines += ";__SSE__";
@@ -1168,7 +1141,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             temp.basePaths.push_back(joinRelativePath(path, node->Attribute(CppcheckXml::RootPathNameAttrib)));
             temp.relativePaths = true;
         } else if (strcmp(node->Name(), CppcheckXml::BugHunting) == 0)
-            temp.bugHunting = true;
+            ;
         else if (strcmp(node->Name(), CppcheckXml::BuildDirElementName) == 0)
             temp.buildDir = joinRelativePath(path, node->GetText() ? node->GetText() : "");
         else if (strcmp(node->Name(), CppcheckXml::IncludeDirElementName) == 0)
@@ -1184,26 +1157,11 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             paths = readXmlStringList(node, path, CppcheckXml::PathName, CppcheckXml::PathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::ExcludeElementName) == 0)
             guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::ExcludePathName, CppcheckXml::ExcludePathNameAttrib);
-        else if (strcmp(node->Name(), CppcheckXml::FunctionContracts) == 0) {
-            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
-                if (strcmp(child->Name(), CppcheckXml::FunctionContract) == 0) {
-                    const char *function = child->Attribute(CppcheckXml::ContractFunction);
-                    const char *expects = child->Attribute(CppcheckXml::ContractExpects);
-                    if (function && expects)
-                        temp.functionContracts[function] = expects;
-                }
-            }
-        } else if (strcmp(node->Name(), CppcheckXml::VariableContractsElementName) == 0) {
-            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
-                if (strcmp(child->Name(), CppcheckXml::VariableContractItemElementName) == 0) {
-                    const char *name = child->Attribute(CppcheckXml::VariableContractVarName);
-                    const char *min = child->Attribute(CppcheckXml::VariableContractMin);
-                    const char *max = child->Attribute(CppcheckXml::VariableContractMax);
-                    if (name)
-                        temp.variableContracts[name] = Settings::VariableContracts{min?min:"", max?max:""};
-                }
-            }
-        } else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
+        else if (strcmp(node->Name(), CppcheckXml::FunctionContracts) == 0)
+            ;
+        else if (strcmp(node->Name(), CppcheckXml::VariableContractsElementName) == 0)
+            ;
+        else if (strcmp(node->Name(), CppcheckXml::IgnoreElementName) == 0)
             guiProject.excludedPaths = readXmlStringList(node, "", CppcheckXml::IgnorePathName, CppcheckXml::IgnorePathNameAttrib);
         else if (strcmp(node->Name(), CppcheckXml::LibrariesElementName) == 0)
             guiProject.libraries = readXmlStringList(node, "", CppcheckXml::LibraryElementName, nullptr);
@@ -1225,7 +1183,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 suppressions.push_back(s);
             }
         } else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
-            guiProject.checkVsConfigs = readXmlStringList(node, "", CppcheckXml::VSConfigurationName, nullptr);
+            guiProject.checkVsConfigs = readXmlStringList(node, emptyString, CppcheckXml::VSConfigurationName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::PlatformElementName) == 0)
             guiProject.platform = node->GetText();
         else if (strcmp(node->Name(), CppcheckXml::AnalyzeAllVsConfigsElementName) == 0)
@@ -1233,13 +1191,13 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
         else if (strcmp(node->Name(), CppcheckXml::Parser) == 0)
             temp.clang = true;
         else if (strcmp(node->Name(), CppcheckXml::AddonsElementName) == 0)
-            temp.addons = readXmlStringList(node, "", CppcheckXml::AddonElementName, nullptr);
+            temp.addons = readXmlStringList(node, emptyString, CppcheckXml::AddonElementName, nullptr);
         else if (strcmp(node->Name(), CppcheckXml::TagsElementName) == 0)
             node->Attribute(CppcheckXml::TagElementName); // FIXME: Write some warning
         else if (strcmp(node->Name(), CppcheckXml::ToolsElementName) == 0) {
-            const std::list<std::string> toolList = readXmlStringList(node, "", CppcheckXml::ToolElementName, nullptr);
+            const std::list<std::string> toolList = readXmlStringList(node, emptyString, CppcheckXml::ToolElementName, nullptr);
             for (const std::string &toolName : toolList) {
-                if (toolName == std::string(CppcheckXml::ClangTidy))
+                if (toolName == CppcheckXml::ClangTidy)
                     temp.clangTidy = true;
             }
         } else if (strcmp(node->Name(), CppcheckXml::CheckHeadersElementName) == 0)
@@ -1289,8 +1247,6 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->maxCtuDepth = temp.maxCtuDepth;
     settings->maxTemplateRecursion = temp.maxTemplateRecursion;
     settings->safeChecks = temp.safeChecks;
-    settings->bugHunting = temp.bugHunting;
-    settings->functionContracts = temp.functionContracts;
 
     return true;
 }

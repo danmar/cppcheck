@@ -22,6 +22,7 @@
 #include "settings.h"
 #include "suppressions.h"
 
+#include <cstddef>
 #include <map>
 
 #include <QObject>
@@ -45,7 +46,7 @@ class ProjectFile : public QObject {
 
 public:
     explicit ProjectFile(QObject *parent = nullptr);
-    explicit ProjectFile(const QString &filename, QObject *parent = nullptr);
+    explicit ProjectFile(QString filename, QObject *parent = nullptr);
     ~ProjectFile() override {
         if (this == mActiveProject) mActiveProject = nullptr;
     }
@@ -228,26 +229,6 @@ public:
         mMaxTemplateRecursion = maxTemplateRecursion;
     }
 
-    const std::map<std::string,std::string>& getFunctionContracts() const {
-        return mFunctionContracts;
-    }
-
-    const std::map<QString, Settings::VariableContracts>& getVariableContracts() const {
-        return mVariableContracts;
-    }
-
-    void setVariableContracts(QString var, const QString& min, const QString& max) {
-        mVariableContracts[var] = Settings::VariableContracts{min.toStdString(), max.toStdString()};
-    }
-
-    void deleteFunctionContract(const QString& function) {
-        mFunctionContracts.erase(function.toStdString());
-    }
-
-    void deleteVariableContract(const QString& var) {
-        mVariableContracts.erase(var);
-    }
-
     /**
      * @brief Get filename for the project file.
      * @return file name.
@@ -311,9 +292,6 @@ public:
      * @param libraries List of libraries.
      */
     void setLibraries(const QStringList &libraries);
-
-    /** Set contract for a function */
-    void setFunctionContract(const QString& function, const QString& expects);
 
     /**
      * @brief Set platform.
@@ -391,8 +369,6 @@ public:
     /** Use Clang parser */
     bool clangParser;
 
-    /** Bug hunting */
-    bool bugHunting;
 protected:
 
     /**
@@ -436,18 +412,6 @@ protected:
      * @param reader XML stream reader.
      */
     void readExcludes(QXmlStreamReader &reader);
-
-    /**
-     * @brief Read function contracts.
-     * @param reader XML stream reader.
-     */
-    void readFunctionContracts(QXmlStreamReader &reader);
-
-    /**
-     * @brief Read variable constraints.
-     * @param reader XML stream reader.
-     */
-    void readVariableContracts(QXmlStreamReader &reader);
 
     /**
      * @brief Read lists of Visual Studio configurations
@@ -563,10 +527,6 @@ private:
      * @brief List of libraries.
      */
     QStringList mLibraries;
-
-    std::map<std::string, std::string> mFunctionContracts;
-
-    std::map<QString, Settings::VariableContracts> mVariableContracts;
 
     /**
      * @brief Platform

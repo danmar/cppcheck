@@ -23,6 +23,8 @@
 
 #include <QDialog>
 
+class QObject;
+class QWidget;
 namespace Ui {
     class NewSuppressionDialog;
 }

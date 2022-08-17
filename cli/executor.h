@@ -16,24 +16,41 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef FUNCTIONCONTRACTDIALOG_H
-#define FUNCTIONCONTRACTDIALOG_H
+#ifndef EXECUTOR_H
+#define EXECUTOR_H
 
-#include <QDialog>
+#include <cstddef>
+#include <list>
+#include <map>
+#include <string>
 
-namespace Ui {
-    class FunctionContractDialog;
-}
+class Settings;
+class ErrorLogger;
 
-class FunctionContractDialog : public QDialog {
-    Q_OBJECT
+/// @addtogroup CLI
+/// @{
 
+/**
+ * This class will take a list of filenames and settings and check then
+ * all files using threads.
+ */
+class Executor {
 public:
-    explicit FunctionContractDialog(QWidget *parent, const QString &name, const QString &expects);
-    ~FunctionContractDialog() override;
-    QString getExpects() const;
-private:
-    Ui::FunctionContractDialog *mUi;
+    Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
+    virtual ~Executor();
+
+    Executor(const Executor &) = delete;
+    void operator=(const Executor &) = delete;
+
+    virtual unsigned int check() = 0;
+
+protected:
+    const std::map<std::string, std::size_t> &mFiles;
+    Settings &mSettings;
+    ErrorLogger &mErrorLogger;
+    std::list<std::string> mErrorList;
 };
 
-#endif // FUNCTIONCONTRACTDIALOG_H
+/// @}
+
+#endif // EXECUTOR_H

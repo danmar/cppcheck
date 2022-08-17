@@ -15,9 +15,6 @@ if (BUILD_TESTS)
     if (HAVE_RULES)
         target_link_libraries(testrunner ${PCRE_LIBRARY})
     endif()
-    if (USE_Z3)
-        target_link_libraries(testrunner ${Z3_LIBRARIES})
-    endif()
     if (WIN32 AND NOT BORLAND)
         if(NOT MINGW)
             target_link_libraries(testrunner Shlwapi.lib)
@@ -28,9 +25,7 @@ if (BUILD_TESTS)
     if(tinyxml2_FOUND AND NOT USE_BUNDLED_TINYXML2)
         target_link_libraries(testrunner ${tinyxml2_LIBRARIES})
     endif()
-    if (USE_THREADS)
-        target_link_libraries(testrunner ${CMAKE_THREAD_LIBS_INIT})
-    endif()
+    target_link_libraries(testrunner ${CMAKE_THREAD_LIBS_INIT})
 
     if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
         target_precompile_headers(testrunner PRIVATE precompiled.h)
@@ -38,21 +33,22 @@ if (BUILD_TESTS)
 
     add_dependencies(testrunner copy_cfg)
     add_dependencies(testrunner copy_addons)
+    add_dependencies(testrunner run-dmake)
 
     if (LIBXML2_XMLLINT_EXECUTABLE)
+        # TODO: run the CMake implementation of the tests
         # TODO: get rid of the copy
         add_custom_target(checkcfg ${CMAKE_COMMAND} -E copy $<TARGET_FILE:cppcheck> ${CMAKE_SOURCE_DIR}
                 COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/cfg/runtests.sh
-                DEPENDS cppcheck validateCFG
-                WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/cfg)
+                DEPENDS cppcheck validateCFG)
     endif()
 
     if (REGISTER_TESTS)
-        cmake_minimum_required(VERSION 3.4) # cmake_policy(SET CMP0064 NEW)
+        # CMP0064 requires 3.4
+        # CMAKE_MATCH_<n> usage for if (MATCHES) requires 3.9
+        cmake_minimum_required(VERSION 3.9)
         cmake_policy(SET CMP0064 NEW)
         cmake_policy(SET CMP0057 NEW)
-
-        include(CTest)
 
         find_package(Threads REQUIRED)
         include(ProcessorCount)
@@ -88,21 +84,14 @@ if (BUILD_TESTS)
             endif()
         endfunction()
 
-        # TODO: what is this?
-        add_fixture(TestSamples WORKING_DIRECTORY ${PROJECT_SOURCE_DIR})
         foreach(SRC ${srcs})
-            file(STRINGS ${SRC} FIXTURE_LINE REGEX "TestFixture\\(" LIMIT_COUNT 1)
-            if(FIXTURE_LINE MATCHES "TestFixture\\(\"([a-zA-z0-9]+)\"\\)")
-                add_fixture(${CMAKE_MATCH_1})
-            endif()
+            file(STRINGS ${SRC} FIXTURE_LINE REGEX "^REGISTER_TEST\\([a-zA-z0-9]+\\)$")
+            foreach(_fixture_line ${FIXTURE_LINE})
+                if(_fixture_line MATCHES "^REGISTER_TEST\\(([a-zA-z0-9]+)\\)$")
+                    add_fixture(${CMAKE_MATCH_1})
+                endif()
+            endforeach()
         endforeach()
-        # TODO: parse files for REGISTER_TEST macro
-        add_fixture(TestLeakAutoVarStrcpy)
-        add_fixture(TestLeakAutoVarWindows)
-        add_fixture(TestMemleakInFunction)
-        add_fixture(TestMemleakInClass)
-        add_fixture(TestMemleakStructMember)
-        add_fixture(TestMemleakNoVar)
 
         function(add_cfg CFG_TEST)
             set(options INCONCLUSIVE)
@@ -128,7 +117,7 @@ if (BUILD_TESTS)
             if(PARSE_INCONCLUSIVE)
                 set(INCONCLUSIVE "--inconclusive")
             endif()
-            if (${TEST_NAME} IN_LIST SKIP_TESTS)
+            if ("cfg-${TEST_NAME}" IN_LIST SKIP_TESTS)
             else()
                 # TODO: add syntax check
                 add_test(NAME cfg-${TEST_NAME}
@@ -141,35 +130,35 @@ if (BUILD_TESTS)
                         --error-exitcode=1
                         --suppress=missingIncludeSystem
                         --inline-suppr
-                        --template="{file}:{line}:{severity}:{id}:{message}"
                         ${INCONCLUSIVE}
                         ${CMAKE_CURRENT_SOURCE_DIR}/cfg/${CFG_TEST}
                 )
             endif()
         endfunction()
-        add_cfg(posix.c)
-        add_cfg(gnu.c LIBRARY posix;gnu)
-        add_cfg(qt.cpp INCONCLUSIVE)
+        add_cfg(boost.cpp INCONCLUSIVE)
         add_cfg(bsd.c)
+        add_cfg(cairo.c)
+        add_cfg(cppunit.cpp INCONCLUSIVE)
+        add_cfg(gnu.c LIBRARY posix;gnu)
+        add_cfg(googletest.cpp INCONCLUSIVE)
+        add_cfg(gtk.c INCONCLUSIVE)
+        add_cfg(kde.cpp INCONCLUSIVE)
+        add_cfg(libcurl.c)
+        add_cfg(libsigc++.cpp)
+        add_cfg(lua.c)
+        add_cfg(opencv2.cpp)
+        add_cfg(openmp.c)
+        add_cfg(openssl.c)
+        add_cfg(posix.c)
+        add_cfg(python.c)
+        add_cfg(qt.cpp INCONCLUSIVE)
+        add_cfg(sqlite3.c INCONCLUSIVE)
         add_cfg(std.c INCONCLUSIVE)
         add_cfg(std.cpp INCONCLUSIVE)
         add_cfg(windows.cpp INCONCLUSIVE NAME windows32A PLATFORM win32A)
         add_cfg(windows.cpp INCONCLUSIVE NAME windows32W PLATFORM win32W)
         add_cfg(windows.cpp INCONCLUSIVE NAME windows64 PLATFORM win64)
         add_cfg(wxwidgets.cpp INCONCLUSIVE)
-        add_cfg(gtk.c INCONCLUSIVE)
-        add_cfg(boost.cpp INCONCLUSIVE)
-        add_cfg(sqlite3.c INCONCLUSIVE)
-        add_cfg(openmp.c)
-        add_cfg(python.c)
-        add_cfg(lua.c)
-        add_cfg(libcurl.c)
-        add_cfg(cairo.c)
-        add_cfg(googletest.cpp INCONCLUSIVE)
-        add_cfg(kde.cpp INCONCLUSIVE)
-        add_cfg(libsigc++.cpp)
-        add_cfg(openssl.c)
-        add_cfg(opencv2.cpp)
 
         # Set cost of the more expensive tests to help improve parallel scheduling
         # of tests

@@ -30,7 +30,6 @@
 #include "tokenize.h"
 #include "valueflow.h"
 
-#include <algorithm>
 #include <list>
 #include <unordered_set>
 #include <utility>
@@ -215,7 +214,7 @@ void CheckAutoVariables::assignFunctionArg()
             // TODO: What happens if this is removed?
             if (tok->astParent())
                 continue;
-            if (!(tok->isAssignmentOp() || Token::Match(tok, "++|--")) || !Token::Match(tok->astOperand1(), "%var%"))
+            if (!(tok->isAssignmentOp() || tok->tokType() == Token::eIncDecOp) || !Token::Match(tok->astOperand1(), "%var%"))
                 continue;
             const Token* const vartok = tok->astOperand1();
             if (isNonReferenceArg(vartok) &&
@@ -443,7 +442,7 @@ static int getPointerDepth(const Token *tok)
     int n = 0;
     std::pair<const Token*, const Token*> decl = Token::typeDecl(tok);
     for (const Token* tok2 = decl.first; tok2 != decl.second; tok2 = tok2->next())
-        if (Token::simpleMatch(tok, "*"))
+        if (Token::simpleMatch(tok2, "*"))
             n++;
     return n;
 }

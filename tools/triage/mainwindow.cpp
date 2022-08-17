@@ -111,7 +111,10 @@ void MainWindow::load(QTextStream &textStream)
             if (!errorMessage.isEmpty())
                 mAllErrors << errorMessage;
             errorMessage.clear();
-        } else if (!url.isEmpty() && QRegularExpression("^.*: (error|warning|style|note):.*$").match(line).hasMatch()) {
+        } else if (!url.isEmpty()) {
+            static const QRegularExpression severityRe("^.*: (error|warning|style|note):.*$");
+            if (severityRe.match(line).hasMatch())
+                continue;
             const QRegularExpressionMatch matchRes = mVersionRe.match(line);
             if (matchRes.hasMatch()) {
                 const QString version = matchRes.captured(1);
@@ -144,7 +147,7 @@ void MainWindow::refreshResults()
     filter(ui->version->currentText());
 }
 
-void MainWindow::filter(QString filter)
+void MainWindow::filter(const QString& filter)
 {
     QStringList allErrors;
 
@@ -260,7 +263,7 @@ void MainWindow::showResult(QListWidgetItem *item)
     const QStringList lines = item->text().split("\n");
     if (lines.size() < 2)
         return;
-    const QString url = lines[0];
+    const QString &url = lines[0];
     QString msg = lines[1];
     const QRegularExpressionMatch matchRes = mVersionRe.match(msg);
     if (matchRes.hasMatch())
@@ -269,7 +272,7 @@ void MainWindow::showResult(QListWidgetItem *item)
     const int pos1 = msg.indexOf(":");
     const int pos2 = msg.indexOf(":", pos1+1);
     const QString fileName = WORK_FOLDER + '/' + msg.left(msg.indexOf(":"));
-    const int lineNumber = msg.midRef(pos1+1, pos2-pos1-1).toInt();
+    const int lineNumber = msg.mid(pos1+1, pos2-pos1-1).toInt();
 
     if (!QFileInfo::exists(fileName)) {
         const QString daca2archiveFile {DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz"};
@@ -366,7 +369,7 @@ void MainWindow::searchResultsDoubleClick()
 {
     QString filename = ui->inFilesResult->currentItem()->text();
     const auto idx = filename.lastIndexOf(':');
-    const int line = filename.midRef(idx + 1).toInt();
+    const int line = filename.mid(idx + 1).toInt();
     showSrcFile(WORK_FOLDER + QString{"/"} + filename.left(idx), "", line);
 }
 

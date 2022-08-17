@@ -24,7 +24,8 @@
 #include <QDialog>
 
 class QListWidgetItem;
-
+class QObject;
+class QWidget;
 namespace Ui {
     class LibraryDialog;
 }

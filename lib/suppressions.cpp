@@ -22,7 +22,9 @@
 #include "mathlib.h"
 #include "path.h"
 #include "utils.h"
+#include "token.h"
 #include "tokenize.h"
+#include "tokenlist.h"
 
 #include <algorithm>
 #include <cctype>   // std::isdigit, std::isalnum, etc
@@ -258,7 +260,7 @@ std::string Suppressions::addSuppressions(const std::list<Suppression> &suppress
 {
     for (const auto &newSuppression : suppressions) {
         auto errmsg = addSuppression(newSuppression);
-        if (errmsg != "")
+        if (!errmsg.empty())
             return errmsg;
     }
     return "";
