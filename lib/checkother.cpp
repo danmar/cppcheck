@@ -2062,7 +2062,8 @@ void CheckOther::checkMisusedScopedObject()
                 && Token::Match(tok->linkAt(2), ")|} ; !!}")
                 && (!tok->next()->function() || // is not a function on this scope
                     tok->next()->function()->isConstructor()) // or is function in this scope and it's a ctor
-                && !Token::simpleMatch(tok->tokAt(2)->astParent(), ";")) { // for loop condition
+                && !Token::simpleMatch(tok->tokAt(2)->astParent(), ";") // for loop condition
+                && tok->next()->str() != "void") {
                 if (const Token* arg = tok->tokAt(2)->astOperand2()) {
                     if (!isConstStatement(arg, mTokenizer->isCPP()))
                         continue;
