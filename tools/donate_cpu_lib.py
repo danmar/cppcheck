@@ -52,7 +52,7 @@ def check_requirements():
 
     global __make_cmd
     __make_cmd = detect_make()
-    if not __make_cmd:
+    if __make_cmd is None:
         result = False
 
     apps = ['git', 'wget']
