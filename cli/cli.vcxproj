@@ -407,10 +407,13 @@
     <ClInclude Include="..\lib\config.h" />
     <ClInclude Include="cmdlineparser.h" />
     <ClInclude Include="cppcheckexecutor.h" />
+    <ClCompile Include="cppcheckexecutorseh.h" />
+    <ClCompile Include="cppcheckexecutorsig.h" />
     <ClInclude Include="executor.h" />
     <ClInclude Include="filelister.h" />
     <ClInclude Include="processexecutor.h" />
     <ClInclude Include="threadexecutor.h" />
+    <ClInclude Include="stacktrace.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\lib\cppcheck.vcxproj">
@@ -420,11 +423,14 @@
   <ItemGroup>
     <ClCompile Include="cmdlineparser.cpp" />
     <ClCompile Include="cppcheckexecutor.cpp" />
+    <ClCompile Include="cppcheckexecutorseh.cpp" />
+    <ClCompile Include="cppcheckexecutorsig.cpp" />
     <ClCompile Include="executor.cpp" />
     <ClCompile Include="filelister.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="processexecutor.cpp" />
     <ClCompile Include="threadexecutor.cpp" />
+    <ClCompile Include="stacktrace.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

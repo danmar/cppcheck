@@ -1866,6 +1866,8 @@ static bool isConstTop(const Token *tok)
         if (!bracTok->astParent())
             return true;
     }
+    if (tok->str() == "," && tok->astParent() && tok->astParent()->isAssignmentOp())
+        return true;
     return false;
 }
 
@@ -1908,7 +1910,8 @@ void CheckOther::checkIncompleteStatement()
             !Token::Match(tok->previous(), ";|}|{ %any% ;") &&
             !(mTokenizer->isCPP() && tok->isCast() && !tok->astParent()) &&
             !Token::simpleMatch(tok->tokAt(-2), "for (") &&
-            !Token::Match(tok->tokAt(-1), "%var% ["))
+            !Token::Match(tok->tokAt(-1), "%var% [") &&
+            !(tok->str() == "," && tok->astParent() && tok->astParent()->isAssignmentOp()))
             continue;
         // Skip statement expressions
         if (Token::simpleMatch(rtok, "; } )"))

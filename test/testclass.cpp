@@ -7553,6 +7553,14 @@ private:
                                  "    virtual void VirtualMethod() = 0;\n"
                                  "};");
         ASSERT_EQUALS("", errout.str());
+
+        // #10559
+        checkVirtualFunctionCall("struct S {\n"
+                                 "    S(const int x) : m(std::bind(&S::f, this, x, 42)) {}\n"
+                                 "    virtual int f(const int x, const int y) = 0;\n"
+                                 "    std::function<int()> m;\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCallOtherClass() {

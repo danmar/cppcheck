@@ -424,6 +424,7 @@ private:
         TEST_CASE(noCrash2);
         TEST_CASE(noCrash3);
         TEST_CASE(noCrash4);
+        TEST_CASE(noCrash5); // #10603
 
         // --check-config
         TEST_CASE(checkConfiguration);
@@ -7092,6 +7093,12 @@ private:
                                              "    p = &(ref).value;\n"
                                              "    return result ;\n"
                                              "}\n"));
+    }
+
+    void noCrash5() // #10603
+    {
+        ASSERT_NO_THROW(tokenizeAndStringify("class B { using shared_ptr = std::shared_ptr<Foo>; };\n"
+                                             "class D : public B { void f(const std::shared_ptr<int>& ptr) {} };\n"));
     }
 
     void checkConfig(const char code[]) {

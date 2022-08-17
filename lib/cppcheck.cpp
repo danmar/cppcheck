@@ -400,14 +400,13 @@ static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMe
         const std::string colnr = line.substr(pos2+1, pos3-pos2-1);
         const std::string msg = line.substr(line.find(":", pos3+1) + 2);
 
-        std::list<ErrorMessage::FileLocation> locationList;
+        const std::string locFile = Path::toNativeSeparators(filename);
         ErrorMessage::FileLocation loc;
-        loc.setfile(Path::toNativeSeparators(filename));
+        loc.setfile(locFile);
         loc.line = std::atoi(linenr.c_str());
         loc.column = std::atoi(colnr.c_str());
-        locationList.push_back(loc);
-        ErrorMessage errmsg(locationList,
-                            loc.getfile(),
+        ErrorMessage errmsg({std::move(loc)},
+                            locFile,
                             Severity::error,
                             msg,
                             "syntaxError",
@@ -933,12 +932,11 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
             for (const std::string &s : configurationError)
                 msg += '\n' + s;
 
-            std::list<ErrorMessage::FileLocation> locationList;
+            const std::string locFile = Path::toNativeSeparators(filename);
             ErrorMessage::FileLocation loc;
-            loc.setfile(Path::toNativeSeparators(filename));
-            locationList.push_back(loc);
-            ErrorMessage errmsg(locationList,
-                                loc.getfile(),
+            loc.setfile(locFile);
+            ErrorMessage errmsg({std::move(loc)},
+                                locFile,
                                 Severity::information,
                                 msg,
                                 "noValidConfiguration",

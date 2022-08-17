@@ -3575,6 +3575,16 @@ private:
               "    std::cout << hi << std::endl;\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (portability) Undefined behaviour, pointer arithmetic '\"hi\"+val' is out of bounds.\n", errout.str());
+
+        check("void f(const char* s, int len) {\n" // #11026
+              "    const char* end = s + len;\n"
+              "    printf(\"%s, %d\\n\", s, *end);\n"
+              "}\n"
+              "void g() {\n"
+              "    f(\"a\", 1);\n"
+              "    f(\"bbb\", 3);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 

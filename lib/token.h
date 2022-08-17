@@ -1199,7 +1199,7 @@ public:
     const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
 
     const Token *getValueTokenMaxStrLength() const;
-    const Token *getValueTokenMinStrSize(const Settings *settings) const;
+    const Token *getValueTokenMinStrSize(const Settings *settings, MathLib::bigint* path = nullptr) const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);

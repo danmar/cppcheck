@@ -46,6 +46,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU" OR CMAKE_CXX_COMPILER_ID MATCHES "Clang
 endif()
 
 if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    # use pipes instead of temporary files - greatly reduces I/O usage
+    add_compile_options(-pipe)
+
     add_compile_options(-Woverloaded-virtual)       # when a function declaration hides virtual functions from a base class
     add_compile_options(-Wno-maybe-uninitialized)   # there are some false positives
     add_compile_options(-Wsuggest-attribute=noreturn)
