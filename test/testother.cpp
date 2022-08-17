@@ -5049,6 +5049,17 @@ private:
                       "[test.cpp:7]: (style) Instance of 'int' object is destroyed immediately.\n"
                       "[test.cpp:8]: (style) Instance of 'int' object is destroyed immediately.\n",
                       errout.str());
+
+        check("void f(int j) {\n"
+              "    for (; bool(j); ) {}\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void g() {\n"
+              "    float (f);\n"
+              "    float (*p);\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac2084() {

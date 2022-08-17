@@ -2062,7 +2062,18 @@ void CheckOther::checkMisusedScopedObject()
                 && Token::Match(tok->linkAt(2), ")|} ; !!}")
                 && (!tok->next()->function() || // is not a function on this scope
                     tok->next()->function()->isConstructor()) // or is function in this scope and it's a ctor
-                && (!tok->tokAt(2)->astOperand2() || isConstStatement(tok->tokAt(2)->astOperand2(), mTokenizer->isCPP()))) {
+                && !Token::simpleMatch(tok->tokAt(2)->astParent(), ";")) { // for loop condition
+                if (const Token* arg = tok->tokAt(2)->astOperand2()) {
+                    if (!isConstStatement(arg, mTokenizer->isCPP()))
+                        continue;
+                    if (tok->strAt(2) == "(") {
+                        if (arg->varId()) // TODO: check if this is a declaration
+                            continue;
+                        const Token* rml = nextAfterAstRightmostLeaf(arg);
+                        if (rml && rml->previous() && rml->previous()->varId())
+                            continue;
+                    }
+                }
                 tok = tok->next();
                 misusedScopeObjectError(tok, tok->str());
                 tok = tok->next();
