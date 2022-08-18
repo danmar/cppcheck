@@ -1343,6 +1343,11 @@ private:
         values = tokenValues(code,"( arr )");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(10 * sizeof(std::uint16_t), values.back().intvalue);
+
+        code = "int sz = sizeof(int32_t[10][20]);";
+        values = tokenValues(code, "=");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(sizeof(std::int32_t) * 10 * 20, values.back().intvalue);
     }
 
     void valueFlowErrorPath() {

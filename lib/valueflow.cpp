@@ -1206,7 +1206,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
 
         const Token *tok2 = tok->tokAt(2);
         // skip over tokens to find variable or type
-        while (Token::Match(tok2, "%name% ::|.|[")) {
+        while (tok2 && !tok2->isStandardType() && Token::Match(tok2, "%name% ::|.|[")) {
             if (tok2->next()->str() == "[")
                 tok2 = tok2->linkAt(1)->next();
             else
@@ -1322,8 +1322,25 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 setTokenValue(tok->next(), value, settings);
             }
         } else if (!tok2->type()) {
-            const ValueType &vt = ValueType::parseDecl(tok2,settings);
-            const size_t sz = ValueFlow::getSizeOf(vt, settings);
+            const ValueType& vt = ValueType::parseDecl(tok2, settings);
+            size_t sz = ValueFlow::getSizeOf(vt, settings);
+            const Token* brac = tok2->astParent();
+            while (Token::simpleMatch(brac, "[")) {
+                const Token* num = brac->astOperand2();
+                if (num && ((num->isNumber() && MathLib::isInt(num->str())) || num->tokType() == Token::eChar)) {
+                    try {
+                        MathLib::biguint dim = MathLib::toULongNumber(num->str());
+                        sz *= dim;
+                        brac = brac->astParent();
+                        continue;
+                    }
+                    catch (const std::exception& /*e*/) {
+                        // Bad integer literal
+                    }
+                }
+                sz = 0;
+                break;
+            }
             if (sz > 0) {
                 ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
