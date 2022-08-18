@@ -1339,7 +1339,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                     }
                 }
                 sz = 0;
-                break;                
+                break;
             }
             if (sz > 0) {
                 ValueFlow::Value value(sz);
