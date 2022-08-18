@@ -3585,6 +3585,19 @@ private:
               "    f(\"bbb\", 3);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i, const char* a) {\n" // #11140
+              "    (void)a[i];\n"
+              "}\n"
+              "void g() {\n"
+              "    for (int i = 0; \"01234\"[i]; ++i)\n"
+              "        f(i, \"56789\");\n"
+              "}\n"
+              "void h() {\n"
+              "    for (int i = 0; \"012\"[i]; ++i)\n"
+              "        f(i, \"345\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
