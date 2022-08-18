@@ -575,7 +575,7 @@ static std::vector<const Token*> getParentMembers(const Token* tok)
         return {};
     if (!Token::simpleMatch(tok->astParent(), "."))
         return {tok};
-    const Token* parent = tok;
+    const Token* parent = tok->astParent();
     while (Token::simpleMatch(parent->astParent(), "."))
         parent = parent->astParent();
     std::vector<const Token*> result;
