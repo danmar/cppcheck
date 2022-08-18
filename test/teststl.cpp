@@ -4067,7 +4067,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("void f(std::stringstream& strm, const std::string& s) {\n" // #
+        check("void f(std::stringstream& strm, const std::string& s) {\n" // #7515
               "    strm << s.c_str();\n"
               "    strm << \"abc\" << s.c_str();\n"
               "    strm << \"abc\" << s.c_str() << \"def\";\n"
