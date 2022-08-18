@@ -5060,6 +5060,12 @@ private:
               "    float (*p);\n"
               "}\n", "test.cpp");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n"
+              "    void();\n"
+              "    return i;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac2084() {
