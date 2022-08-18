@@ -1407,20 +1407,20 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                 value = &condTok->astOperand2()->values().front();
                 varTok1 = condTok->astOperand1();
             }
-            if (Token::simpleMatch(exprTok, "!"))
+            const bool exprIsNot = Token::simpleMatch(exprTok, "!");
+            if (exprIsNot)
                 varTok2 = exprTok->astOperand1();
             bool compare = false;
             if (value) {
-                if (value->intvalue == 0 && Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "==")) {
+                if (value->intvalue == 0 && exprIsNot && Token::simpleMatch(condTok, "==")) {
                     compare = true;
-                } else if (value->intvalue == 0 && !Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "!=")) {
+                } else if (value->intvalue == 0 && !exprIsNot && Token::simpleMatch(condTok, "!=")) {
                     compare = true;
-                } else if (value->intvalue != 0 && Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "!=")) {
+                } else if (value->intvalue != 0 && exprIsNot && Token::simpleMatch(condTok, "!=")) {
                     compare = true;
-                } else if (value->intvalue != 0 && !Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "==")) {
+                } else if (value->intvalue != 0 && !exprIsNot && Token::simpleMatch(condTok, "==")) {
                     compare = true;
                 }
-
             }
             if (compare && astIsBoolLike(varTok1) && astIsBoolLike(varTok2))
                 return isSameExpression(cpp, macro, varTok1, varTok2, library, pure, followVar, errors);
