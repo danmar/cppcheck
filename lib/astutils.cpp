@@ -50,9 +50,9 @@ const Token* findExpression(const nonneg int exprid,
                             const Token* end,
                             const std::function<bool(const Token*)>& pred)
 {
-    if (!precedes(start, end))
-        return nullptr;
     if (exprid == 0)
+        return nullptr;
+    if (!precedes(start, end))
         return nullptr;
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->exprId() != exprid)
@@ -3357,9 +3357,9 @@ static bool hasVolatileCastOrVar(const Token *expr)
     bool ret = false;
     visitAstNodes(expr,
                   [&ret](const Token *tok) {
-        if (Token::simpleMatch(tok, "( volatile"))
+        if (tok->variable() && tok->variable()->isVolatile())
             ret = true;
-        else if (tok->variable() && tok->variable()->isVolatile())
+        else if (Token::simpleMatch(tok, "( volatile"))
             ret = true;
         return ret ? ChildrenToVisit::none : ChildrenToVisit::op1_and_op2;
     });
