@@ -5953,7 +5953,7 @@ private:
               "       break;\n"
               "   }\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The comparison 'Diag == 0' is always true.\n", errout.str());       
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The comparison 'Diag == 0' is always true.\n", errout.str());
 
         // #9744
         check("void f(const std::vector<int>& ints) {\n"
