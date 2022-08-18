@@ -59,6 +59,7 @@ private:
         TEST_CASE(checkWithFS);
         TEST_CASE(suppress_error_library);
         TEST_CASE(unique_errors);
+        TEST_CASE(unique_errors_2);
         TEST_CASE(isPremiumCodingStandardId);
         TEST_CASE(getDumpFileContentsRawTokens);
         TEST_CASE(getDumpFileContentsLibrary);
@@ -170,7 +171,7 @@ private:
         ASSERT_EQUALS(0, errorLogger.ids.size());
     }
 
-    // TODO: hwo to actually get duplicated findings
+    // TODO: how to actually get duplicated findings
     void unique_errors() const
     {
         ScopedFile file("inc.h",
@@ -196,9 +197,55 @@ private:
         // the internal errorlist is cleared after each check() call
         ASSERT_EQUALS(2, errorLogger.errmsgs.size());
         auto it = errorLogger.errmsgs.cbegin();
+        ASSERT_EQUALS("a.cpp", it->file0);
         ASSERT_EQUALS("nullPointer", it->id);
         ++it;
+        ASSERT_EQUALS("b.cpp", it->file0);
         ASSERT_EQUALS("nullPointer", it->id);
+    }
+
+    void unique_errors_2() const
+    {
+        ScopedFile test_file("c.cpp",
+                             "void f()\n"
+                             "{\n"
+                             "const long m[9] = {};\n"
+                             "long a=m[9], b=m[9];\n"
+                             "(void)a;\n"
+                             "(void)b;\n"
+                             "}");
+
+        Settings s;
+        // this is the "simple" format
+        s.templateFormat = "{file}:{line}:{column}: {severity}:{inconclusive:inconclusive:} {message} [{id}]";
+        Suppressions supprs;
+        ErrorLogger2 errorLogger;
+        CppCheck cppcheck(s, supprs, errorLogger, false, {});
+        ASSERT_EQUALS(1, cppcheck.check(FileWithDetails(test_file.path())));
+        // TODO: how to properly disable these warnings?
+        errorLogger.errmsgs.erase(std::remove_if(errorLogger.errmsgs.begin(), errorLogger.errmsgs.end(), [](const ErrorMessage& msg) {
+            return msg.id == "logChecker";
+        }), errorLogger.errmsgs.end());
+        // the internal errorlist is cleared after each check() call
+        ASSERT_EQUALS(2, errorLogger.errmsgs.size());
+        auto it = errorLogger.errmsgs.cbegin();
+        ASSERT_EQUALS("c.cpp", it->file0);
+        ASSERT_EQUALS(1, it->callStack.size());
+        {
+            auto stack = it->callStack.cbegin();
+            ASSERT_EQUALS(4, stack->line);
+            ASSERT_EQUALS(9, stack->column);
+        }
+        ASSERT_EQUALS("arrayIndexOutOfBounds", it->id);
+        ++it;
+        ASSERT_EQUALS("c.cpp", it->file0);
+        ASSERT_EQUALS(1, it->callStack.size());
+        {
+            auto stack = it->callStack.cbegin();
+            ASSERT_EQUALS(4, stack->line);
+            ASSERT_EQUALS(17, stack->column);
+        }
+        ASSERT_EQUALS("arrayIndexOutOfBounds", it->id);
     }
 
     void isPremiumCodingStandardId() const {

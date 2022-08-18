@@ -46,7 +46,7 @@ bool Executor::hasToLog(const ErrorMessage &msg)
     if (!mSuppressions.nomsg.isSuppressed(msg, {}))
     {
         // TODO: there should be no need for verbose and default messages here
-        std::string errmsg = msg.toString(mSettings.verbose);
+        std::string errmsg = msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
         if (errmsg.empty())
             return false;
 
