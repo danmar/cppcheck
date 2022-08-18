@@ -1327,7 +1327,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
             const Token* brac = tok2->astParent();
             while (Token::simpleMatch(brac, "[")) {
                 const Token* num = brac->astOperand2();
-                if (num && (num->isNumber() && MathLib::isInt(num->str())) || num->tokType() == Token::eChar) {
+                if (num && ((num->isNumber() && MathLib::isInt(num->str())) || num->tokType() == Token::eChar)) {
                     try {
                         MathLib::biguint dim = MathLib::toULongNumber(num->str());
                         sz *= dim;
