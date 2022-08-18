@@ -61,6 +61,7 @@
     <ClCompile Include="testcppcheck.cpp" />
     <ClCompile Include="testerrorlogger.cpp" />
     <ClCompile Include="testexceptionsafety.cpp" />
+    <ClCompile Include="testexecutor.cpp" />
     <ClCompile Include="testfilelister.cpp" />
     <ClCompile Include="testfilesettings.cpp" />
     <ClCompile Include="testfunctions.cpp" />

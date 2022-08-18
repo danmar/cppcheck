@@ -641,23 +641,24 @@ void StdLogger::reportErr(const ErrorMessage &msg)
     if (msg.severity == Severity::internal)
         return;
 
-    // TODO: we generate a different message here then we log below
-    // TODO: there should be no need for verbose and default messages here
-    // Alert only about unique errors
-    if (!mSettings.emitDuplicates && !mShownErrors.insert(msg.toString(mSettings.verbose)).second)
-        return;
-
     ErrorMessage msgCopy = msg;
     msgCopy.guideline = getGuideline(msgCopy.id, mSettings.reportType,
                                      mGuidelineMapping, msgCopy.severity);
     msgCopy.classification = getClassification(msgCopy.guideline, mSettings.reportType);
+
+    // TODO: there should be no need for verbose and default messages here
+    const std::string msgStr = msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
+
+    // Alert only about unique errors
+    if (!mSettings.emitDuplicates && !mShownErrors.insert(msgStr).second)
+        return;
 
     if (mSettings.outputFormat == Settings::OutputFormat::sarif)
         mSarifReport.addFinding(std::move(msgCopy));
     else if (mSettings.outputFormat == Settings::OutputFormat::xml)
         reportErr(msgCopy.toXML());
     else
-        reportErr(msgCopy.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation));
+        reportErr(msgStr);
 }
 
 /**

@@ -203,7 +203,7 @@ private:
         }
 
         // TODO: there should be no need for the verbose and default messages here
-        std::string errmsg = msg.toString(mSettings.verbose);
+        std::string errmsg = msg.toString(mSettings.verbose, mSettings.templateFormat, mSettings.templateLocation);
         if (errmsg.empty())
             return;
 
