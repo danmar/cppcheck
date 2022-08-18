@@ -66,6 +66,7 @@ private:
         TEST_CASE(zeroDiv14); // #1169
         TEST_CASE(zeroDiv15); // #8319
         TEST_CASE(zeroDiv16); // #11158
+        TEST_CASE(zeroDiv17); // #9931
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -633,6 +634,15 @@ private:
               "        number = x;\n"
               "    }\n"
               "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv17() { // #9931
+        check("int f(int len) {\n"
+              "    int sz = sizeof(void*[255]) / 255;\n"
+              "    int x = len % sz;\n"
+              "    return x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
