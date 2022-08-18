@@ -5964,6 +5964,15 @@ private:
               "   }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The comparison 'Diag == 0' is always true.\n", errout.str());
+
+        // #9744
+        check("void f(const std::vector<int>& ints) {\n"
+              "    int i = 0;\n"
+              "    for (int p = 0; i < ints.size(); ++i) {\n"
+              "        if (p == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The comparison 'p == 0' is always true.\n", errout.str());
     }
 
     void duplicateExpression8() {
