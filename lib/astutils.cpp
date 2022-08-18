@@ -885,7 +885,7 @@ bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive)
                                 [&](const Token* aliasTok) {
                     return aliasTok->exprId() == childTok->exprId();
                 })) {
-                    if (val.isInconclusive() && inconclusive) { // NOLINT
+                    if (val.isInconclusive() && inconclusive != nullptr) {
                         value = &val;
                     } else {
                         return true;
