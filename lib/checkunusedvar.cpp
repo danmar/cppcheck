@@ -1448,6 +1448,9 @@ void CheckUnusedVar::checkStructMemberUsage()
                     }
                 }
             }
+
+            if (bailout)
+                break;
         }
         if (bailout)
             continue;
@@ -1471,6 +1474,9 @@ void CheckUnusedVar::checkStructMemberUsage()
                         addrTok = addrTok->next();
                 } while (addrTok);
             }
+
+            if (bailout)
+                break;
         }
         if (bailout)
             continue;
