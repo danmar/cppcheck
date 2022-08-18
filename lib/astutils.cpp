@@ -1168,8 +1168,10 @@ const Token* followReferences(const Token* tok, ErrorPath* errors)
 static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
 {
     ValueFlow::Value v1 = getLifetimeObjValue(tok1);
+    if (!v1.isLifetimeValue())
+        return false;
     ValueFlow::Value v2 = getLifetimeObjValue(tok2);
-    if (!v1.isLifetimeValue() || !v2.isLifetimeValue())
+    if (!v2.isLifetimeValue())
         return false;
     return v1.tokvalue == v2.tokvalue;
 }
@@ -1227,10 +1229,12 @@ static inline bool isSameConstantValue(bool macro, const Token* tok1, const Toke
             return tok->astOperand2();
         return tok;
     };
-    tok1 = adjustForCast(tok1);
-    tok2 = adjustForCast(tok2);
 
-    if (!tok1->isNumber() || !tok2->isNumber())
+    tok1 = adjustForCast(tok1);
+    if (!tok1->isNumber())
+        return false;
+    tok2 = adjustForCast(tok2);
+    if (!tok2->isNumber())
         return false;
 
     if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
