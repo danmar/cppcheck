@@ -34,6 +34,7 @@
 #include <iosfwd>
 #include <list>
 #include <memory>
+#include <sstream>
 #include <stack>
 #include <string>
 
