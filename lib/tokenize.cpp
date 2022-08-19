@@ -8433,9 +8433,10 @@ void Tokenizer::simplifyKeyword()
                     if (finalTok)
                         finalTok = finalTok->next();
                 }
-                if (Token::Match(finalTok, "final [:{]"))
+                if (Token::Match(finalTok, "final [:{]")) {
                     finalTok->deleteThis();
-                // TODO: preserve final type info
+                    tok->previous()->isFinalType(true);
+                }
             }
 
             // noexcept -> noexcept(true)
