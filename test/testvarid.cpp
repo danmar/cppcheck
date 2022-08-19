@@ -25,6 +25,7 @@
 #include "tokenize.h"
 
 #include <iosfwd>
+#include <sstream>
 #include <string>
 
 struct InternalError;

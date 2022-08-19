@@ -25,6 +25,7 @@
 
 #include <cstddef>
 #include <iosfwd>
+#include <sstream>
 #include <string>
 
 

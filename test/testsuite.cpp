@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <cctype>
 #include <iostream>
+#include <sstream>
 #include <string>
 
 std::ostringstream errout;

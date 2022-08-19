@@ -25,6 +25,7 @@
 #include "tokenize.h"
 
 #include <istream>
+#include <sstream>
 #include <string>
 
 

@@ -29,6 +29,7 @@
 #include <iosfwd>
 #include <list>
 #include <map>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
