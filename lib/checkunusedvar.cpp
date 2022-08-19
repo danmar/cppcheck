@@ -715,7 +715,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             else if (mTokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
-                     mSettings->library.detectContainer(i->typeStartToken(), /*iterator*/ false) ||
+                     mSettings->library.detectContainer(i->typeStartToken()) ||
                      i->isStlType())
                 type = Variables::standard;
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))

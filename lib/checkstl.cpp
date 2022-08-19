@@ -1421,7 +1421,7 @@ void CheckStl::stlBoundaries()
         if (!var || !var->scope() || !var->scope()->isExecutable())
             continue;
 
-        const Library::Container* container = mSettings->library.detectContainer(var->typeStartToken(), true);
+        const Library::Container* container = mSettings->library.detectIterator(var->typeStartToken());
         if (!container || container->opLessAllowed)
             continue;
 
