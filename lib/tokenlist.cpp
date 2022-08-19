@@ -138,6 +138,7 @@ void TokenList::determineCppC()
         mKeywords.insert("explicit");
         mKeywords.insert("export");
         //mKeywords.insert("false"); // literal
+        mKeywords.insert("final");
         mKeywords.insert("friend");
         mKeywords.insert("mutable");
         mKeywords.insert("namespace");
