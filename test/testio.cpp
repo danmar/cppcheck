@@ -26,6 +26,7 @@
 #include "tokenize.h"
 
 #include <iosfwd>
+#include <sstream>
 
 
 class TestIO : public TestFixture {

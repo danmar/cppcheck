@@ -31,6 +31,7 @@
 #include <iosfwd>
 #include <map>
 #include <list>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>

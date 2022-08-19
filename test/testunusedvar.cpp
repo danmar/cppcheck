@@ -25,6 +25,7 @@
 
 #include <iosfwd>
 #include <list>
+#include <sstream>
 #include <string>
 
 class TestUnusedVar : public TestFixture {

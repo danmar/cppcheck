@@ -19,6 +19,7 @@
 
 #include "analyzerinfo.h"
 #include "testsuite.h"
+
 #include <sstream>
 
 class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
