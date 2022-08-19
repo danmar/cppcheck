@@ -2384,11 +2384,11 @@ private:
                             "struct S;\n"
                             "template <>\n"
                             "struct S<void> final {};\n";
-        ASSERT_EQUALS("4: struct S<void> final ;\n"
+        ASSERT_EQUALS("4: struct S<void> ;\n"
                       "1: template < typename T >\n"
                       "2: struct S ;\n"
                       "3:\n"
-                      "4: struct S<void> final { } ;\n",
+                      "4: struct S<void> { } ;\n",
                       tokenize(code));
     }
 
