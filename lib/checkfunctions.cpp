@@ -32,6 +32,7 @@
 
 #include <iomanip>
 #include <ostream>
+#include <sstream>
 #include <unordered_map>
 #include <vector>
 

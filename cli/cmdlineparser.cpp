@@ -40,6 +40,7 @@
 #include <iostream>
 #include <list>
 #include <set>
+#include <sstream>
 #include <utility>
 
 #ifdef HAVE_RULES

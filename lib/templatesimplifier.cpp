@@ -32,6 +32,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <stack>
 #include <utility>
 
