@@ -719,10 +719,10 @@ void CheckFunctions::useStandardLibrary()
             continue;
 
         const auto checkBoundaryType = [](const Token* t, const bool rightOp) -> bool {
-            const auto& till = rightOp ? ";" : ">"; // valid end of expression
+            const auto *const till = rightOp ? ";" : ">"; // valid end of expression
 
             bool result = nullptr != t;
-            for (; result && nullptr != t && Token::simpleMatch(t, till); t = t->next()) {
+            for (; result && nullptr != t && t->str() == till; t = t->next()) {
                 if (t->isNumber()) {
                     continue;
                 } else if (t->isVariable() && !t->variable()->isArray()) {
