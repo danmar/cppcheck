@@ -8427,8 +8427,17 @@ void Tokenizer::simplifyKeyword()
 
             // final:
             // 1) struct name final { };   <- struct is final
-            if (Token::Match(tok->previous(), "struct|class|union %type% final [:{]")) {
-                tok->deleteNext();
+            if (Token::Match(tok->previous(), "struct|class|union %type%")) {
+                Token* finalTok = tok->next();
+                if (Token::simpleMatch(finalTok, "<")) { // specialization
+                    finalTok = finalTok->findClosingBracket();
+                    if (finalTok)
+                        finalTok = finalTok->next();
+                }
+                if (Token::Match(finalTok, "final [:{]")) {
+                    finalTok->deleteThis();
+                    tok->previous()->isFinalType(true);
+                }
             }
 
             // noexcept -> noexcept(true)

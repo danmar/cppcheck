@@ -5531,7 +5531,7 @@ private:
                             "private:\n"
                             "    std::basic_ostream<unsigned char> &outputStream_;\n"
                             "};";
-        const char expected[] = "struct OutputU16<unsignedchar> final { "
+        const char expected[] = "struct OutputU16<unsignedchar> { "
                                 "explicit OutputU16<unsignedchar> ( std :: basic_ostream < unsigned char > & t ) : outputStream_ ( t ) { } "
                                 "void operator() ( unsigned short ) const ; "
                                 "private: "

@@ -7439,6 +7439,14 @@ private:
                                  "}\n"
                                  "S::~S() = default;\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("struct Base: { virtual void wibble() = 0; virtual ~Base() {} };\n" // #11167
+                                 "struct D final : public Base {\n"
+                                 "    void wibble() override;\n"
+                                 "    D() {}\n"
+                                 "    virtual ~D() { wibble(); }\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {
