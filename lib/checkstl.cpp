@@ -2124,25 +2124,29 @@ void CheckStl::string_c_strParam(const Token* tok, nonneg int number)
 
 void CheckStl::string_c_strConstructor(const Token* tok)
 {
-    std::string msg = "Constructing a std::string from the result of c_str() is slow and redundant.\nSolve that by directly passing the string.";
+    std::string msg = "Constructing a std::string from the result of c_str() is slow and redundant.\n"
+                      "Constructing a std::string from const char* requires a call to strlen(). Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrConstructor", msg, CWE704, Certainty::normal);
 }
 
 void CheckStl::string_c_strAssignment(const Token* tok)
 {
-    std::string msg = "Assigning the result of c_str() to a std::string is slow and redundant.\nSolve that by directly assigning the string.";
+    std::string msg = "Assigning the result of c_str() to a std::string is slow and redundant.\n"
+                      "Assigning a const char* to a std::string requires a call to strlen(). Solve that by directly assigning the string.";
     reportError(tok, Severity::performance, "stlcstrAssignment", msg, CWE704, Certainty::normal);
 }
 
 void CheckStl::string_c_strConcat(const Token* tok)
 {
-    std::string msg = "Concatenating the result of c_str() and a std::string is slow and redundant.\nSolve that by directly concatenating the strings.";
+    std::string msg = "Concatenating the result of c_str() and a std::string is slow and redundant.\n"
+                      "Concatenating a const char* with a std::string requires a call to strlen(). Solve that by directly concatenating the strings.";
     reportError(tok, Severity::performance, "stlcstrConcat", msg, CWE704, Certainty::normal);
 }
 
 void CheckStl::string_c_strStream(const Token* tok)
 {
-    std::string msg = "Passing the result of c_str() to a stream is slow and redundant.\nSolve that by directly passing the string.";
+    std::string msg = "Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "Passing a const char* to a stream requires a call to strlen(). Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrStream", msg, CWE704, Certainty::normal);
 }
 
