@@ -44,6 +44,7 @@
 #include <exception>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <type_traits>
@@ -8426,8 +8427,17 @@ void Tokenizer::simplifyKeyword()
 
             // final:
             // 1) struct name final { };   <- struct is final
-            if (Token::Match(tok->previous(), "struct|class|union %type% final [:{]")) {
-                tok->deleteNext();
+            if (Token::Match(tok->previous(), "struct|class|union %type%")) {
+                Token* finalTok = tok->next();
+                if (Token::simpleMatch(finalTok, "<")) { // specialization
+                    finalTok = finalTok->findClosingBracket();
+                    if (finalTok)
+                        finalTok = finalTok->next();
+                }
+                if (Token::Match(finalTok, "final [:{]")) {
+                    finalTok->deleteThis();
+                    tok->previous()->isFinalType(true);
+                }
             }
 
             // noexcept -> noexcept(true)
@@ -9223,10 +9233,16 @@ void Tokenizer::simplifyOperatorName()
                     break;
                 }
                 done = false;
-            } else if (Token::Match(par, "\"\" %name% (|;|<")) {
+            } else if (Token::Match(par, "\"\" %name% )| (|;|<")) {
                 op += "\"\"";
                 op += par->strAt(1);
                 par = par->tokAt(2);
+                if (par->str() == ")") {
+                    par->link()->deleteThis();
+                    par = par->next();
+                    par->deletePrevious();
+                    tok = par->tokAt(-3);
+                }
                 done = true;
             } else if (par->str() == "::") {
                 op += par->str();

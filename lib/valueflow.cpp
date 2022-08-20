@@ -117,6 +117,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -1206,7 +1207,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
 
         const Token *tok2 = tok->tokAt(2);
         // skip over tokens to find variable or type
-        while (Token::Match(tok2, "%name% ::|.|[")) {
+        while (tok2 && !tok2->isStandardType() && Token::Match(tok2, "%name% ::|.|[")) {
             if (tok2->next()->str() == "[")
                 tok2 = tok2->linkAt(1)->next();
             else
@@ -1322,8 +1323,25 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 setTokenValue(tok->next(), value, settings);
             }
         } else if (!tok2->type()) {
-            const ValueType &vt = ValueType::parseDecl(tok2,settings);
-            const size_t sz = ValueFlow::getSizeOf(vt, settings);
+            const ValueType& vt = ValueType::parseDecl(tok2, settings);
+            size_t sz = ValueFlow::getSizeOf(vt, settings);
+            const Token* brac = tok2->astParent();
+            while (Token::simpleMatch(brac, "[")) {
+                const Token* num = brac->astOperand2();
+                if (num && ((num->isNumber() && MathLib::isInt(num->str())) || num->tokType() == Token::eChar)) {
+                    try {
+                        MathLib::biguint dim = MathLib::toULongNumber(num->str());
+                        sz *= dim;
+                        brac = brac->astParent();
+                        continue;
+                    }
+                    catch (const std::exception& /*e*/) {
+                        // Bad integer literal
+                    }
+                }
+                sz = 0;
+                break;
+            }
             if (sz > 0) {
                 ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
@@ -3322,14 +3340,15 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
         return {{tok, std::move(errorPath)}};
     if (var && var->declarationId() == tok->varId()) {
         if (var->isReference() || var->isRValueReference()) {
-            if (!var->declEndToken())
+            const Token * const varDeclEndToken = var->declEndToken();
+            if (!varDeclEndToken)
                 return {{tok, true, std::move(errorPath)}};
             if (var->isArgument()) {
-                errorPath.emplace_back(var->declEndToken(), "Passed to reference.");
+                errorPath.emplace_back(varDeclEndToken, "Passed to reference.");
                 return {{tok, true, std::move(errorPath)}};
-            } else if (Token::simpleMatch(var->declEndToken(), "=")) {
-                errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
-                const Token *vartok = var->declEndToken()->astOperand2();
+            } else if (Token::simpleMatch(varDeclEndToken, "=")) {
+                errorPath.emplace_back(varDeclEndToken, "Assigned to reference.");
+                const Token *vartok = varDeclEndToken->astOperand2();
                 const bool temporary = isTemporary(true, vartok, nullptr, true);
                 const bool nonlocal = var->isStatic() || var->isGlobal();
                 if (vartok == tok || (nonlocal && temporary) ||
@@ -4003,6 +4022,8 @@ struct LifetimeStore {
             return;
         if (!argtok)
             return;
+        if (!tok)
+            return;
         for (const ValueFlow::Value &v : argtok->values()) {
             if (!v.isLifetimeValue())
                 continue;
@@ -4013,7 +4034,8 @@ struct LifetimeStore {
             er.insert(er.end(), errorPath.begin(), errorPath.end());
             if (!var)
                 continue;
-            for (const Token *tok3 = tok; tok3 && tok3 != var->declEndToken(); tok3 = tok3->previous()) {
+            const Token * const varDeclEndToken = var->declEndToken();
+            for (const Token *tok3 = tok; tok3 && tok3 != varDeclEndToken; tok3 = tok3->previous()) {
                 if (tok3->varId() == var->declarationId()) {
                     LifetimeStore{tok3, message, type, inconclusive}.byVal(tok, tokenlist, errorLogger, settings, pred);
                     break;

@@ -24,6 +24,7 @@
 #include "tokenize.h"
 
 #include <iosfwd>
+#include <sstream>
 
 class TestBool : public TestFixture {
 public:

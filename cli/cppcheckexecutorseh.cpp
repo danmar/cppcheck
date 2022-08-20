@@ -165,9 +165,8 @@ namespace {
     /*
      * Any evaluation of the exception needs to be done here!
      */
-    int filterException(int code, PEXCEPTION_POINTERS ex)
+    int filterException(FILE *outputFile, int code, PEXCEPTION_POINTERS ex)
     {
-        FILE *outputFile = stdout;
         fputs("Internal error: ", outputFile);
         switch (ex->ExceptionRecord->ExceptionCode) {
         case EXCEPTION_ACCESS_VIOLATION:
@@ -256,11 +255,10 @@ namespace {
  */
 int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&), CppCheck& cppcheck)
 {
-    FILE *outputFile = stdout;
+    FILE *outputFile = CppCheckExecutor::getExceptionOutput();
     __try {
         return (&executor->*f)(cppcheck);
-    } __except (filterException(GetExceptionCode(), GetExceptionInformation())) {
-        // reporting to stdout may not be helpful within a GUI application...
+    } __except (filterException(outputFile, GetExceptionCode(), GetExceptionInformation())) {
         fputs("Please report this to the cppcheck developers!\n", outputFile);
         return -1;
     }

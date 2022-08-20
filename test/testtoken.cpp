@@ -26,6 +26,7 @@
 
 #include <algorithm>
 #include <iosfwd>
+#include <sstream>
 #include <string>
 #include <vector>
 

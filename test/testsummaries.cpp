@@ -22,7 +22,8 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>       // for istringstream, ostringstream
+#include <iosfwd>
+#include <sstream>
 #include <string>
 
 

@@ -41,6 +41,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
+#include <sstream>
 #include <stack>
 #include <string>
 #include <type_traits>

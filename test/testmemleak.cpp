@@ -27,6 +27,7 @@
 #include <iosfwd>
 #include <list>
 #include <memory>
+#include <sstream>
 #include <string>
 
 class TestMemleakInClass;

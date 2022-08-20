@@ -22,6 +22,7 @@
 #include "checkinternal.h"
 #include "testsuite.h"
 
+#include <sstream>
 
 class TestInternal : public TestFixture {
 public:

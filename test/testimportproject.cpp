@@ -24,6 +24,7 @@
 #include <list>
 #include <memory>
 #include <map>
+#include <sstream>
 #include <string>
 #include <vector>
 
