@@ -136,6 +136,10 @@ private:
         TEST_CASE(exceptionhandling2);
         TEST_CASE(exceptionhandling3);
         TEST_CASE(exceptionhandlingInvalid);
+        TEST_CASE(exceptionhandlingInvalid2);
+        TEST_CASE(clang);
+        TEST_CASE(clang2);
+        TEST_CASE(clangInvalid);
 
         // TODO
         // Disabling these tests since they use relative paths to the
@@ -1005,6 +1009,40 @@ private:
         const char * const argv[] = {"cppcheck", "--exception-handling=exfile"};
         ASSERT_EQUALS(false, defParser.parseFromArgs(2, argv));
         ASSERT_EQUALS("cppcheck: error: invalid '--exception-handling' argument\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void exceptionhandlingInvalid2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--exception-handling-foo"};
+        ASSERT_EQUALS(false, defParser.parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exception-handling-foo\".\n", GET_REDIRECT_OUTPUT);
+    }
+
+    void clang() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--clang"};
+        settings.clang = false;
+        settings.clangExecutable = "exe";
+        ASSERT(defParser.parseFromArgs(2, argv));
+        ASSERT(settings.clang);
+        ASSERT_EQUALS("exe", settings.clangExecutable);
+    }
+
+    void clang2() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--clang=clang-14"};
+        settings.clang = false;
+        settings.clangExecutable = "";
+        ASSERT(defParser.parseFromArgs(2, argv));
+        ASSERT(settings.clang);
+        ASSERT_EQUALS("clang-14", settings.clangExecutable);
+    }
+
+    void clangInvalid() {
+        REDIRECT;
+        const char * const argv[] = {"cppcheck", "--clang-foo"};
+        ASSERT_EQUALS(false, defParser.parseFromArgs(2, argv));
+        ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--clang-foo\".\n", GET_REDIRECT_OUTPUT);
     }
 
     /*
