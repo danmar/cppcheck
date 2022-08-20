@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,6 +27,7 @@
 #include <memory>
 #include <string>
 #include <tuple>
+#include <type_traits>
 
 const Scope* PathAnalysis::findOuterScope(const Scope * scope)
 {
@@ -84,7 +85,7 @@ PathAnalysis::Progress PathAnalysis::forwardRecursive(const Token* tok, Info inf
 
 PathAnalysis::Progress PathAnalysis::forwardRange(const Token* startToken, const Token* endToken, Info info, const std::function<PathAnalysis::Progress(const Info&)>& f) const
 {
-    for (const Token *tok = startToken; tok && tok != endToken; tok = tok->next()) {
+    for (const Token *tok = startToken; precedes(tok, endToken); tok = tok->next()) {
         if (Token::Match(tok, "asm|goto|break|continue"))
             return Progress::Break;
         else if (Token::Match(tok, "return|throw")) {

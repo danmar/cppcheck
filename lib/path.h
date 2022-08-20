@@ -179,6 +179,11 @@ public:
      * @return true if given path is a File
      */
     static bool fileExists(const std::string &file);
+
+    /**
+     * join 2 paths with '/' separators
+     */
+    static std::string join(std::string path1, std::string path2);
 };
 
 /// @}

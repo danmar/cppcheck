@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -59,7 +59,7 @@ public:
     TimerResults() {}
 
     void showResults(SHOWTIME_MODES mode) const;
-    void addResults(const std::string& str, std::clock_t clocks) OVERRIDE;
+    void addResults(const std::string& str, std::clock_t clocks) override;
 
 private:
     std::map<std::string, struct TimerResultsData> mResults;
@@ -67,14 +67,15 @@ private:
 
 class CPPCHECKLIB Timer {
 public:
-    Timer(const std::string& str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
+    Timer(std::string str, SHOWTIME_MODES showtimeMode, TimerResultsIntf* timerResults = nullptr);
     ~Timer();
+
+    Timer(const Timer&) = delete;
+    Timer& operator=(const Timer&) = delete;
+
     void stop();
 
 private:
-    Timer(const Timer& other); // disallow copying
-    Timer& operator=(const Timer&); // disallow assignments
-
     const std::string mStr;
     TimerResultsIntf* mTimerResults;
     std::clock_t mStart;

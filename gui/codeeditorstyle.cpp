@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,34 +17,44 @@
  */
 
 #include "codeeditorstyle.h"
+
 #include <QSettings>
+#include <utility>
 
 CodeEditorStyle::CodeEditorStyle(
-    const QColor& CtrlFGColor, const QColor& CtrlBGColor,
-    const QColor& HiLiBGColor,
-    const QColor& LnNumFGColor, const QColor& LnNumBGColor,
-    const QColor& KeyWdFGColor, const QFont::Weight& KeyWdWeight,
-    const QColor& ClsFGColor, const QFont::Weight& ClsWeight,
-    const QColor& QteFGColor, const QFont::Weight& QteWeight,
-    const QColor& CmtFGColor, const QFont::Weight& CmtWeight,
-    const QColor& SymbFGColor, const QColor& SymbBGColor,
+    // cppcheck-suppress naming-varname - TODO: fix this
+    QColor CtrlFGColor, QColor CtrlBGColor,
+    // cppcheck-suppress naming-varname - TODO: fix this
+    QColor HiLiBGColor,
+    // cppcheck-suppress naming-varname - TODO: fix this
+    QColor LnNumFGColor, QColor LnNumBGColor,
+    // cppcheck-suppress naming-varname - TODO: fix this
+    QColor KeyWdFGColor, const QFont::Weight& KeyWdWeight,
+    // cppcheck-suppress naming-varname - TODO: fix this
+    QColor ClsFGColor, const QFont::Weight& ClsWeight,
+    // cppcheck-suppress naming-varname - TODO: fix this
+    QColor QteFGColor, const QFont::Weight& QteWeight,
+    // cppcheck-suppress naming-varname - TODO: fix this
+    QColor CmtFGColor, const QFont::Weight& CmtWeight,
+    // cppcheck-suppress naming-varname - TODO: fix this
+    QColor SymbFGColor, QColor SymbBGColor,
     const QFont::Weight& SymbWeight) :
     mSystemTheme(false),
-    widgetFGColor(CtrlFGColor),
-    widgetBGColor(CtrlBGColor),
-    highlightBGColor(HiLiBGColor),
-    lineNumFGColor(LnNumFGColor),
-    lineNumBGColor(LnNumBGColor),
-    keywordColor(KeyWdFGColor),
+    widgetFGColor(std::move(CtrlFGColor)),
+    widgetBGColor(std::move(CtrlBGColor)),
+    highlightBGColor(std::move(HiLiBGColor)),
+    lineNumFGColor(std::move(LnNumFGColor)),
+    lineNumBGColor(std::move(LnNumBGColor)),
+    keywordColor(std::move(KeyWdFGColor)),
     keywordWeight(KeyWdWeight),
-    classColor(ClsFGColor),
+    classColor(std::move(ClsFGColor)),
     classWeight(ClsWeight),
-    quoteColor(QteFGColor),
+    quoteColor(std::move(QteFGColor)),
     quoteWeight(QteWeight),
-    commentColor(CmtFGColor),
+    commentColor(std::move(CmtFGColor)),
     commentWeight(CmtWeight),
-    symbolFGColor(SymbFGColor),
-    symbolBGColor(SymbBGColor),
+    symbolFGColor(std::move(SymbFGColor)),
+    symbolBGColor(std::move(SymbBGColor)),
     symbolWeight(SymbWeight)
 {}
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,12 +27,12 @@ public:
     TestUtils() : TestFixture("TestUtils") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(isValidGlobPattern);
         TEST_CASE(matchglob);
     }
 
-    void isValidGlobPattern() {
+    void isValidGlobPattern() const {
         ASSERT_EQUALS(true, ::isValidGlobPattern("*"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("*x"));
         ASSERT_EQUALS(true, ::isValidGlobPattern("x*"));
@@ -52,7 +52,7 @@ private:
         ASSERT_EQUALS(false, ::isValidGlobPattern("x??"));
     }
 
-    void matchglob() {
+    void matchglob() const {
         ASSERT_EQUALS(true, ::matchglob("*", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("x*", "xyz"));
         ASSERT_EQUALS(true, ::matchglob("*z", "xyz"));

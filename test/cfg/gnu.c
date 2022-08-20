@@ -12,11 +12,100 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <stdarg.h>
+#include <netdb.h>
 #include <sys/time.h>
+#include <sys/types.h>
+#include <pwd.h>
 #include <sys/mman.h>
+#include <sys/sem.h>
+#include <wchar.h>
 #ifndef __CYGWIN__
 #include <sys/epoll.h>
 #endif
+#include <strings.h>
+#include <error.h>
+
+void unreachableCode_error(void) // #11197
+{
+    error(1, 0, ""); // will call exit() if the first parameter is non-zero
+    // cppcheck-suppress unusedVariable
+    // TODO cppcheck-suppress unreachableCode
+    int i;
+}
+
+int nullPointer_getservent_r(struct servent *restrict result_buf, char *restrict buf, size_t buflen, struct servent **restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getservent_r(NULL, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getservent_r(result_buf, NULL, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getservent_r(result_buf, buf, buflen, NULL);
+    return getservent_r(result_buf, buf, buflen, result);
+}
+
+void *bufferAccessOutOfBounds_memrchr(const void *s, int c, size_t n)
+{
+    char buf[42]={0};
+    (void)memrchr(buf,c,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)memrchr(buf,c,43);
+    return memrchr(s,c,n);
+}
+
+void knownConditionTrueFalse_ffsl(long i)
+{
+    // ffs() returns the position of the first bit set, or 0 if no bits are set in i.
+    const int x = ffsl(0);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 0) {}
+    if (ffsl(i) == 0) {}
+}
+
+void knownConditionTrueFalse_ffsll(long long i)
+{
+    // ffs() returns the position of the first bit set, or 0 if no bits are set in i.
+    const int x = ffsll(0);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 0) {}
+    if (ffsll(i) == 0) {}
+}
+
+int nullPointer_semtimedop(int semid, struct sembuf *sops, size_t nsops, const struct timespec *timeout)
+{
+    (void) semtimedop(semid, sops, nsops, NULL); // If the timeout argument is NULL, then semtimedop() behaves exactly like semop().
+    (void) semtimedop(semid, sops, nsops, timeout);
+    // cppcheck-suppress nullPointer
+    return semtimedop(semid, NULL, nsops, timeout);
+}
+
+void *nullPointer_mempcpy(void *dest, const void *src, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) mempcpy(NULL,src,n);
+    // cppcheck-suppress nullPointer
+    (void) mempcpy(dest,NULL,n);
+    return mempcpy(dest,src,n);
+}
+
+wchar_t *nullPointer_wmempcpy(wchar_t *dest, const wchar_t *src, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) wmempcpy(NULL,src,n);
+    // cppcheck-suppress nullPointer
+    (void) wmempcpy(dest,NULL,n);
+    return wmempcpy(dest,src,n);
+}
+
+int uninitvar_getpw(uid_t uid, char *buf)
+{
+    uid_t someUid;
+    // cppcheck-suppress getpwCalled
+    (void)getpw(uid, buf);
+    // cppcheck-suppress getpwCalled
+    // cppcheck-suppress uninitvar
+    return getpw(someUid, buf);
+}
 
 // #9323, #9331
 void syntaxError_timercmp(struct timeval t)

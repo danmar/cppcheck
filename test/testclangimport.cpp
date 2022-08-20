@@ -1,5 +1,5 @@
 // Cppcheck - A tool for static C/C++ code analysis
-// Copyright (C) 2007-2021 Cppcheck team.
+// Copyright (C) 2007-2022 Cppcheck team.
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "clangimport.h"
-#include "config.h"
 #include "platform.h"
 #include "settings.h"
 #include "symboldatabase.h"
@@ -38,7 +37,7 @@ public:
 
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(breakStmt);
         TEST_CASE(callExpr);
         TEST_CASE(caseStmt1);
@@ -585,7 +584,10 @@ private:
     }
 
     void cxxRecordDecl1() {
-        const char clang[] = "`-CXXRecordDecl 0x34cc5f8 <1.cpp:2:1, col:7> col:7 class Foo";
+        const char* clang = "`-CXXRecordDecl 0x34cc5f8 <1.cpp:2:1, col:7> col:7 class Foo";
+        ASSERT_EQUALS("class Foo ;", parse(clang));
+
+        clang = "`-CXXRecordDecl 0x34cc5f8 <C:\\Foo\\Bar Baz\\1.cpp:2:1, col:7> col:7 class Foo";
         ASSERT_EQUALS("class Foo ;", parse(clang));
     }
 
@@ -1282,8 +1284,7 @@ private:
         const Token *tok = Token::findsimplematch(tokenizer.tokens(), "sizeof (");
         ASSERT(!!tok);
         tok = tok->next();
-        // TODO ASSERT(tok->hasKnownIntValue());
-        // TODO ASSERT_EQUALS(10, tok->getKnownIntValue());
+        TODO_ASSERT_EQUALS(true, false, tok->hasKnownIntValue() && tok->getKnownIntValue() == 10);
     }
 
     void valueType1() {

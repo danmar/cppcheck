@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,13 @@
 #ifndef TXT_REPORT_H
 #define TXT_REPORT_H
 
+#include "report.h"
+
 #include <QString>
 #include <QTextStream>
-#include "report.h"
+
+class ErrorItem;
+class QObject;
 
 /// @addtogroup GUI
 /// @{
@@ -36,29 +40,29 @@ class TxtReport : public Report {
 
 public:
     explicit TxtReport(const QString &filename);
-    virtual ~TxtReport();
+    ~TxtReport() override;
 
     /**
      * @brief Create the report (file).
      * @return true if succeeded, false if file could not be created.
      */
-    virtual bool create() override;
+    bool create() override;
 
     /**
      * @brief Write report header.
      */
-    virtual void writeHeader() override;
+    void writeHeader() override;
 
     /**
      * @brief Write report footer.
      */
-    virtual void writeFooter() override;
+    void writeFooter() override;
 
     /**
      * @brief Write error to report.
      * @param error Error data.
      */
-    virtual void writeError(const ErrorItem &error) override;
+    void writeError(const ErrorItem &error) override;
 
 private:
 

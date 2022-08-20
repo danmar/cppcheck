@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,6 +17,31 @@
  */
 
 #include "errortypes.h"
+
+InternalError::InternalError(const Token *tok, std::string errorMsg, Type type) :
+    token(tok), errorMessage(std::move(errorMsg)), type(type)
+{
+    switch (type) {
+    case AST:
+        id = "internalAstError";
+        break;
+    case SYNTAX:
+        id = "syntaxError";
+        break;
+    case UNKNOWN_MACRO:
+        id = "unknownMacro";
+        break;
+    case INTERNAL:
+        id = "cppcheckError";
+        break;
+    case LIMIT:
+        id = "cppcheckLimit";
+        break;
+    case INSTANTIATION:
+        id = "instantiationError";
+        break;
+    }
+}
 
 std::string Severity::toString(Severity::SeverityType severity)
 {

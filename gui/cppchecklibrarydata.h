@@ -22,6 +22,7 @@
 #include <QList>
 #include <QString>
 #include <QStringList>
+#include <QMap>
 
 class QIODevice;
 
@@ -47,6 +48,11 @@ public:
             QString string;
         } type;
 
+        struct RangeItemRecordType {
+            QString name;
+            QString templateParameter;
+        };
+
         struct Function {
             QString name;
             QString yields;
@@ -55,6 +61,7 @@ public:
         QList<struct Function> accessFunctions;
         QList<struct Function> otherFunctions;
         QList<struct Function> sizeFunctions;
+        QList<struct RangeItemRecordType> rangeItemRecordTypeList;
     };
 
     struct Define {
@@ -130,6 +137,9 @@ public:
                        msg.isEmpty();
             }
         } warn;
+
+        QMap<QString, QString> notOverlappingDataArgs;
+        QMap<QString, QString> containerAttributes;
     };
 
     struct MemoryResource {
@@ -219,6 +229,15 @@ public:
         QList<Exporter> exporter;
     };
 
+    struct SmartPointer {
+        SmartPointer() :
+            unique {false}
+        {}
+
+        QString name;
+        bool unique;
+    };
+
     void clear() {
         containers.clear();
         defines.clear();
@@ -258,7 +277,7 @@ public:
     QList<TypeChecks> typeChecks;
     QList<struct PlatformType> platformTypes;
     QStringList undefines;
-    QStringList smartPointers;
+    QList<struct SmartPointer> smartPointers;
     QList<struct Reflection> reflections;
     QList<struct Markup> markups;
 };

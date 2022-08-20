@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,6 +28,7 @@
 
 #include <cstddef>
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <unordered_map>
@@ -35,6 +36,7 @@
 #include <vector>
 
 class Token;
+class Settings;
 
 namespace tinyxml2 {
     class XMLDocument;
@@ -282,6 +284,7 @@ public:
     };
     std::map<std::string, Container> containers;
     const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
+    const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
 
     class ArgumentChecks {
     public:
@@ -324,6 +327,7 @@ public:
             int arg;
             int arg2;
             long long value;
+            std::string baseType;
         };
         std::vector<MinSize> minsizes;
 
@@ -405,7 +409,6 @@ public:
             return MathLib::isInt(op1);
         }
     };
-    static std::vector<InvalidArgValue> getInvalidArgValues(const std::string &validExpr);
 
     const ArgumentChecks::IteratorInfo *getArgIteratorInfo(const Token *ftok, int argnr) const {
         const ArgumentChecks *arg = getarg(ftok, argnr);
@@ -475,7 +478,7 @@ public:
     std::vector<std::string> defines; // to provide some library defines
 
     struct SmartPointer {
-        std::string name = "";
+        std::string name;
         bool unique = false;
     };
 
@@ -547,13 +550,11 @@ public:
      */
     std::string getFunctionName(const Token *ftok) const;
 
-    static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback="");
+    static bool isContainerYield(const Token * const cond, Library::Container::Yield y, const std::string& fallback=emptyString);
 
     /** Suppress/check a type */
     enum class TypeCheck { def, check, suppress };
     TypeCheck getTypeCheck(const std::string &check, const std::string &typeName) const;
-
-    bool bugHunting;
 
 private:
     // load a <function> xml node
@@ -561,11 +562,11 @@ private:
 
     class ExportedFunctions {
     public:
-        void addPrefix(const std::string& prefix) {
-            mPrefixes.insert(prefix);
+        void addPrefix(std::string prefix) {
+            mPrefixes.insert(std::move(prefix));
         }
-        void addSuffix(const std::string& suffix) {
-            mSuffixes.insert(suffix);
+        void addSuffix(std::string suffix) {
+            mSuffixes.insert(std::move(suffix));
         }
         bool isPrefix(const std::string& prefix) const {
             return (mPrefixes.find(prefix) != mPrefixes.end());
@@ -649,6 +650,10 @@ private:
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
+
+std::shared_ptr<Token> createTokenFromExpression(const std::string& returnValue,
+                                                 const Settings* settings,
+                                                 std::unordered_map<nonneg int, const Token*>* lookupVarId = nullptr);
 
 /// @}
 //---------------------------------------------------------------------------

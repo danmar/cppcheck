@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,12 +20,16 @@
 #ifndef THREADRESULT_H
 #define THREADRESULT_H
 
-#include <QMutex>
-#include <QObject>
-#include <QStringList>
 #include "color.h"
 #include "errorlogger.h"
 #include "importproject.h"
+
+#include <list>
+#include <string>
+
+#include <QMutex>
+#include <QObject>
+#include <QStringList>
 
 class ErrorItem;
 
@@ -40,7 +44,7 @@ class ThreadResult : public QObject, public ErrorLogger {
     Q_OBJECT
 public:
     ThreadResult();
-    virtual ~ThreadResult();
+    ~ThreadResult() override;
 
     /**
      * @brief Get next unprocessed file
@@ -75,7 +79,6 @@ public:
      */
     void reportOut(const std::string &outmsg, Color c = Color::Reset) override;
     void reportErr(const ErrorMessage &msg) override;
-    void bughuntingReport(const std::string &str) override;
 
 public slots:
 
@@ -112,9 +115,6 @@ signals:
      * @param item Error data
      */
     void debugError(const ErrorItem &item);
-
-    /** @brief bug hunting report */
-    void bughuntingReportLine(QString line);
 
 protected:
 

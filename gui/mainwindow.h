@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,22 +19,30 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QFileDialog>
-#include <QStringList>
-
+#include "library.h"
 #include "settings.h"
 #include "platforms.h"
-#include "ui_mainwindow.h"
+
+#include <QFileDialog>
+#include <QMainWindow>
+#include <QStringList>
 
 class ThreadHandler;
 class TranslationHandler;
 class ScratchPad;
 class ProjectFile;
+class ApplicationList;
 class QAction;
 class QActionGroup;
 class QSettings;
 class QTimer;
+class QLineEdit;
+class ImportProject;
+class QCloseEvent;
+class QObject;
+namespace Ui {
+    class MainWindow;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -54,7 +62,7 @@ public:
 
     MainWindow(TranslationHandler* th, QSettings* settings);
     MainWindow(const MainWindow &) = delete;
-    virtual ~MainWindow();
+    ~MainWindow() override;
     MainWindow &operator=(const MainWindow &) = delete;
 
     /**
@@ -71,13 +79,6 @@ public:
     void analyzeCode(const QString& code, const QString& filename);
 
 public slots:
-
-    /** Update "Functions" tab */
-    void updateFunctionContractsTab();
-
-    /** Update "Variables" tab */
-    void updateVariableContractsTab();
-
     /** @brief Slot for analyze files menu item */
     void analyzeFiles();
 
@@ -226,18 +227,6 @@ protected slots:
 
     /** Suppress error ids */
     void suppressIds(QStringList ids);
-
-    /** Edit contract for function */
-    void editFunctionContract(QString function);
-
-    /** Edit constraints for variable */
-    void editVariableContract(QString var);
-
-    /** Delete contract for function */
-    void deleteFunctionContract(const QString& function);
-
-    /** Edit constraints for variable */
-    void deleteVariableContract(const QString& var);
 
 private:
 
@@ -430,7 +419,7 @@ private:
     TranslationHandler *mTranslation;
 
     /** @brief Class holding all UI components */
-    Ui::MainWindow mUI;
+    Ui::MainWindow *mUI;
 
     /** @brief Current analyzed directory. */
     QString mCurrentDirectory;
@@ -471,6 +460,9 @@ private:
      * List of MRU menu actions. Needs also to store the separator.
      */
     QAction *mRecentProjectActs[MaxRecentProjects + 1];
+
+    QString mCppcheckCfgAbout;
+    QString mCppcheckCfgProductName;
 };
 /// @}
 #endif // MAINWINDOW_H

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,13 +20,25 @@
 #define STATSDIALOG_H
 
 #include <QDialog>
-#ifdef HAVE_QCHART
-#include <QtCharts>
-#endif
-#include "ui_stats.h"
 
 class ProjectFile;
 class CheckStatistics;
+class QObject;
+class QWidget;
+namespace Ui {
+    class StatsDialog;
+}
+
+#ifdef HAVE_QCHART
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+namespace QtCharts {
+#endif
+class QChartView;
+class QLineSeries;
+#if (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
+}
+#endif
+#endif
 
 /// @addtogroup GUI
 /// @{
@@ -39,6 +51,7 @@ class StatsDialog : public QDialog {
     Q_OBJECT
 public:
     explicit StatsDialog(QWidget *parent = nullptr);
+    ~StatsDialog() override;
 
     /**
      * @brief Sets the project to extract statistics from
@@ -69,11 +82,16 @@ private slots:
     void copyToClipboard();
     void pdfExport();
 #ifdef HAVE_QCHART
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
     QChartView *createChart(const QString &statsFile, const QString &tool);
     QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
+#else
+    QtCharts::QChartView *createChart(const QString &statsFile, const QString &tool);
+    QtCharts::QLineSeries *numberOfReports(const QString &fileName, const QString &severity) const;
+#endif
 #endif
 private:
-    Ui::StatsDialog mUI;
+    Ui::StatsDialog *mUI;
     const CheckStatistics *mStatistics;
 };
 

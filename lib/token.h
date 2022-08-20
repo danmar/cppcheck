@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,12 +65,28 @@ struct ScopeInfo2 {
     std::set<std::string> usingNamespaces;
 };
 
+enum class TokenDebug { None, ValueFlow, ValueType };
+
 struct TokenImpl {
     nonneg int mVarId;
     nonneg int mFileIndex;
     nonneg int mLineNumber;
     nonneg int mColumn;
     nonneg int mExprId;
+
+    /**
+     * A value from 0-100 that provides a rough idea about where in the token
+     * list this token is located.
+     */
+    nonneg int mProgressValue;
+
+    /**
+     * Token index. Position in token list
+     */
+    nonneg int mIndex;
+
+    /** Bitfield bit count. */
+    unsigned char mBits;
 
     // AST..
     Token *mAstOperand1;
@@ -85,17 +101,6 @@ struct TokenImpl {
         const ::Type* mType;
         const Enumerator *mEnumerator;
     };
-
-    /**
-     * A value from 0-100 that provides a rough idea about where in the token
-     * list this token is located.
-     */
-    nonneg int mProgressValue;
-
-    /**
-     * Token index. Position in token list
-     */
-    nonneg int mIndex;
 
     // original name like size_t
     std::string* mOriginalName;
@@ -124,33 +129,33 @@ struct TokenImpl {
     // For memoization, to speed up parsing of huge arrays #8897
     enum class Cpp11init {UNKNOWN, CPP11INIT, NOINIT} mCpp11init;
 
-    /** Bitfield bit count. */
-    unsigned char mBits;
+    TokenDebug mDebug;
 
     void setCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint value);
     bool getCppcheckAttribute(CppcheckAttributes::Type type, MathLib::bigint *value) const;
 
     TokenImpl()
-        : mVarId(0)
-        , mFileIndex(0)
-        , mLineNumber(0)
-        , mColumn(0)
-        , mExprId(0)
-        , mAstOperand1(nullptr)
-        , mAstOperand2(nullptr)
-        , mAstParent(nullptr)
-        , mScope(nullptr)
-        , mFunction(nullptr) // Initialize whole union
-        , mProgressValue(0)
-        , mIndex(0)
-        , mOriginalName(nullptr)
-        , mValueType(nullptr)
-        , mValues(nullptr)
-        , mTemplateSimplifierPointers(nullptr)
-        , mScopeInfo(nullptr)
-        , mCppcheckAttributes(nullptr)
-        , mCpp11init(Cpp11init::UNKNOWN)
-        , mBits(0)
+        : mVarId(0),
+        mFileIndex(0),
+        mLineNumber(0),
+        mColumn(0),
+        mExprId(0),
+        mProgressValue(0),
+        mIndex(0),
+        mBits(0),
+        mAstOperand1(nullptr),
+        mAstOperand2(nullptr),
+        mAstParent(nullptr),
+        mScope(nullptr),
+        mFunction(nullptr),   // Initialize whole union
+        mOriginalName(nullptr),
+        mValueType(nullptr),
+        mValues(nullptr),
+        mTemplateSimplifierPointers(nullptr),
+        mScopeInfo(nullptr),
+        mCppcheckAttributes(nullptr),
+        mCpp11init(Cpp11init::UNKNOWN),
+        mDebug(TokenDebug::None)
     {}
 
     ~TokenImpl();
@@ -173,11 +178,10 @@ class CPPCHECKLIB Token {
 private:
     TokensFrontBack* mTokensFrontBack;
 
-    // Not implemented..
-    Token(const Token &);
-    Token operator=(const Token &);
-
 public:
+    Token(const Token &) = delete;
+    Token& operator=(const Token &) = delete;
+
     enum Type {
         eVariable, eType, eFunction, eKeyword, eName, // Names: Variable (varId), Type (typeId, later), Function (FuncId, later), Language keyword, Name (unknown identifier)
         eNumber, eString, eChar, eBoolean, eLiteral, eEnumerator, // Literals: Number, String, Character, Boolean, User defined literal (C++11), Enumerator
@@ -350,16 +354,6 @@ public:
      * @param settings Settings
      **/
     static nonneg int getStrSize(const Token *tok, const Settings *const settings);
-
-    /**
-     * @return char of C-string at index (possible escaped "\\n")
-     *
-     * Should be called for %%str%% tokens only.
-     *
-     * @param tok token with C-string
-     * @param index position of character
-     **/
-    static std::string getCharAt(const Token *tok, MathLib::bigint index);
 
     const ValueType *valueType() const {
         return mImpl->mValueType;
@@ -602,6 +596,20 @@ public:
         setFlag(fIncompleteVar, b);
     }
 
+    bool isSimplifiedTypedef() const {
+        return getFlag(fIsSimplifiedTypedef);
+    }
+    void isSimplifiedTypedef(bool b) {
+        setFlag(fIsSimplifiedTypedef, b);
+    }
+
+    bool isIncompleteConstant() const {
+        return getFlag(fIsIncompleteConstant);
+    }
+    void isIncompleteConstant(bool b) {
+        setFlag(fIsIncompleteConstant, b);
+    }
+
     bool isConstexpr() const {
         return getFlag(fConstexpr);
     }
@@ -644,11 +652,32 @@ public:
         setFlag(fIsInline, b);
     }
 
+    bool isRestrict() const {
+        return getFlag(fIsRestrict);
+    }
+    void isRestrict(bool b) {
+        setFlag(fIsRestrict, b);
+    }
+
+    bool isRemovedVoidParameter() const {
+        return getFlag(fIsRemovedVoidParameter);
+    }
+    void setRemovedVoidParameter(bool b) {
+        setFlag(fIsRemovedVoidParameter, b);
+    }
+
     bool isTemplate() const {
         return getFlag(fIsTemplate);
     }
     void isTemplate(bool b) {
         setFlag(fIsTemplate, b);
+    }
+
+    bool isSimplifiedScope() const {
+        return getFlag(fIsSimplifedScope);
+    }
+    void isSimplifiedScope(bool b) {
+        setFlag(fIsSimplifedScope, b);
     }
 
     bool isBitfield() const {
@@ -685,12 +714,12 @@ public:
     }
 
     bool isCChar() const {
-        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', "")) ||
-                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "") && mStr.length() == 3));
+        return (((mTokType == eString) && isPrefixStringCharLiteral(mStr, '"', emptyString)) ||
+                ((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString) && mStr.length() == 3));
     }
 
     bool isCMultiChar() const {
-        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', "")) &&
+        return (((mTokType ==  eChar) && isPrefixStringCharLiteral(mStr, '\'', emptyString)) &&
                 (mStr.length() > 3));
     }
     /**
@@ -1156,8 +1185,6 @@ public:
         return mImpl->mValues->front().intvalue;
     }
 
-    bool isImpossibleIntValue(const MathLib::bigint val) const;
-
     const ValueFlow::Value* getValue(const MathLib::bigint val) const;
 
     const ValueFlow::Value* getMaxValue(bool condition, MathLib::bigint path = 0) const;
@@ -1172,7 +1199,7 @@ public:
     const ValueFlow::Value* getContainerSizeValue(const MathLib::bigint val) const;
 
     const Token *getValueTokenMaxStrLength() const;
-    const Token *getValueTokenMinStrSize(const Settings *settings) const;
+    const Token *getValueTokenMinStrSize(const Settings *settings, MathLib::bigint* path = nullptr) const;
 
     /** Add token value. Return true if value is added. */
     bool addValue(const ValueFlow::Value &value);
@@ -1254,7 +1281,12 @@ private:
         fIsSplitVarDeclEq       = (1 << 30), // set to true when variable declaration with initialization is split up ('int a=5;' => 'int a; a=5;')
         fIsImplicitInt          = (1U << 31),   // Is "int" token implicitly added?
         fIsInline               = (1ULL << 32), // Is this a inline type
-        fIsTemplate             = (1ULL << 33)
+        fIsTemplate             = (1ULL << 33),
+        fIsSimplifedScope       = (1ULL << 34), // scope added when simplifying e.g. if (int i = ...; ...)
+        fIsRemovedVoidParameter = (1ULL << 35), // A void function parameter has been removed
+        fIsIncompleteConstant   = (1ULL << 36),
+        fIsRestrict             = (1ULL << 37), // Is this a restrict pointer type
+        fIsSimplifiedTypedef    = (1ULL << 38),
     };
 
     Token::Type mTokType;
@@ -1362,10 +1394,6 @@ public:
      */
     bool isCalculation() const;
 
-    void clearAst() {
-        mImpl->mAstOperand1 = mImpl->mAstOperand2 = mImpl->mAstParent = nullptr;
-    }
-
     void clearValueFlow() {
         delete mImpl->mValues;
         mImpl->mValues = nullptr;
@@ -1398,6 +1426,13 @@ public:
     }
     TokenImpl::Cpp11init isCpp11init() const {
         return mImpl->mCpp11init;
+    }
+
+    TokenDebug getTokenDebug() const {
+        return mImpl->mDebug;
+    }
+    void setTokenDebug(TokenDebug td) {
+        mImpl->mDebug = td;
     }
 };
 

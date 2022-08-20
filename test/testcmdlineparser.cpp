@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "cmdlineparser.h"
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "redirect.h"
@@ -42,7 +41,7 @@ private:
     Settings settings;
     CmdLineParser defParser;
 
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(nooptions);
         TEST_CASE(helpshort);
         TEST_CASE(helplong);
@@ -105,6 +104,7 @@ private:
         TEST_CASE(reportProgressTest); // "Test" suffix to avoid hiding the parent's reportProgress
         TEST_CASE(stdc99);
         TEST_CASE(stdcpp11);
+        TEST_CASE(stdunknown);
         TEST_CASE(platform);
         TEST_CASE(plistEmpty);
         TEST_CASE(plistDoesNotExist);
@@ -710,6 +710,22 @@ private:
         settings.standards.cpp = Standards::CPP03;
         ASSERT(defParser.parseFromArgs(3, argv));
         ASSERT(settings.standards.cpp == Standards::CPP11);
+    }
+
+    void stdunknown() {
+        REDIRECT;
+        {
+            CLEAR_REDIRECT_OUTPUT;
+            const char *const argv[] = {"cppcheck", "--std=d++11", "file.cpp"};
+            ASSERT(!defParser.parseFromArgs(3, argv));
+            ASSERT_EQUALS("cppcheck: error: unknown --std value 'd++11'\n", GET_REDIRECT_OUTPUT);
+        }
+        {
+            CLEAR_REDIRECT_OUTPUT;
+            const char *const argv[] = {"cppcheck", "--std=cplusplus11", "file.cpp"};
+            TODO_ASSERT(!defParser.parseFromArgs(3, argv));
+            TODO_ASSERT_EQUALS("cppcheck: error: unknown --std value 'cplusplus11'\n", "", GET_REDIRECT_OUTPUT);
+        }
     }
 
     void platform() {

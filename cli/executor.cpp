@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,16 +16,12 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "executor.h"
 
-//---------------------------------------------------------------------------
-#ifndef bughuntingchecksH
-#define bughuntingchecksH
-//---------------------------------------------------------------------------
+Executor::Executor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger)
+    : mFiles(files), mSettings(settings), mErrorLogger(errorLogger)
+{}
 
-#include "exprengine.h"
-#include <vector>
+Executor::~Executor()
+{}
 
-void addBughuntingChecks(std::vector<ExprEngine::Callback> *callbacks);
-
-//---------------------------------------------------------------------------
-#endif // bughuntingchecksH

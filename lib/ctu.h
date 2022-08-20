@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,10 +26,8 @@
 #include "check.h"
 #include "errorlogger.h"
 #include "mathlib.h"
-#include "utils.h"
 #include "valueflow.h"
 
-#include <algorithm>
 #include <list>
 #include <map>
 #include <string>
@@ -54,25 +52,25 @@ namespace CTU {
     public:
         enum class InvalidValueType { null, uninit, bufferOverflow };
 
-        std::string toString() const OVERRIDE;
+        std::string toString() const override;
 
         struct Location {
             Location() = default;
             Location(const Tokenizer *tokenizer, const Token *tok);
             Location(const std::string &fileName, nonneg int lineNumber, nonneg int column) : fileName(fileName), lineNumber(lineNumber), column(column) {}
             std::string fileName;
-            nonneg int lineNumber;
-            nonneg int column;
+            nonneg int lineNumber{};
+            nonneg int column{};
         };
 
         struct UnsafeUsage {
             UnsafeUsage() = default;
             UnsafeUsage(const std::string &myId, nonneg int myArgNr, const std::string &myArgumentName, const Location &location, MathLib::bigint value) : myId(myId), myArgNr(myArgNr), myArgumentName(myArgumentName), location(location), value(value) {}
             std::string myId;
-            nonneg int myArgNr;
+            nonneg int myArgNr{};
             std::string myArgumentName;
             Location location;
-            MathLib::bigint value;
+            MathLib::bigint value{};
             std::string toString() const;
         };
 
@@ -85,7 +83,7 @@ namespace CTU {
             CallBase(const Tokenizer *tokenizer, const Token *callToken);
             virtual ~CallBase() {}
             std::string callId;
-            int callArgNr;
+            int callArgNr{};
             std::string callFunctionName;
             Location location;
         protected:
@@ -120,7 +118,7 @@ namespace CTU {
             bool loadFromXml(const tinyxml2::XMLElement *xmlElement);
 
             std::string myId;
-            nonneg int myArgNr;
+            nonneg int myArgNr{};
         };
 
         std::list<FunctionCall> functionCalls;

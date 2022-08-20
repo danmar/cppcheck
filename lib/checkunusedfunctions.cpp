@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -73,6 +73,9 @@ void CheckUnusedFunctions::parseTokens(const Tokenizer &tokenizer, const char Fi
 
         // Don't warn about functions that are marked by __attribute__((constructor)) or __attribute__((destructor))
         if (func->isAttributeConstructor() || func->isAttributeDestructor() || func->type != Function::eFunction || func->isOperator())
+            continue;
+
+        if (func->isExtern())
             continue;
 
         // Don't care about templates
@@ -302,7 +305,7 @@ static bool isOperatorFunction(const std::string & funcName)
 
 
 
-bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings)
+bool CheckUnusedFunctions::check(ErrorLogger * const errorLogger, const Settings& settings) const
 {
     bool errors = false;
     for (std::map<std::string, FunctionUsage>::const_iterator it = mFunctions.begin(); it != mFunctions.end(); ++it) {
@@ -390,7 +393,7 @@ std::string CheckUnusedFunctions::analyzerInfo() const
 namespace {
     struct Location {
         Location() : lineNumber(0) {}
-        Location(const std::string &f, const int l) : fileName(f), lineNumber(l) {}
+        Location(std::string f, const int l) : fileName(std::move(f)), lineNumber(l) {}
         std::string fileName;
         int lineNumber;
     };

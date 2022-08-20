@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,7 @@ class Token;
 /** @brief Simple container to be thrown when internal error is detected. */
 struct InternalError {
     enum Type {AST, SYNTAX, UNKNOWN_MACRO, INTERNAL, LIMIT, INSTANTIATION};
-    InternalError(const Token *tok, const std::string &errorMsg, Type type = INTERNAL);
+    InternalError(const Token *tok, std::string errorMsg, Type type = INTERNAL);
     const Token *token;
     std::string errorMessage;
     Type type;
@@ -122,8 +122,8 @@ struct CWE {
     unsigned short id;
 };
 
-typedef std::pair<const Token *, std::string> ErrorPathItem;
-typedef std::list<ErrorPathItem> ErrorPath;
+using ErrorPathItem = std::pair<const Token *, std::string>;
+using ErrorPath = std::list<ErrorPathItem>;
 
 /// @}
 //---------------------------------------------------------------------------

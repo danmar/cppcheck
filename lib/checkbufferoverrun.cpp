@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -202,7 +202,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
                 return ChildrenToVisit::op1_and_op2;
             });
         }
-    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings)) {
+    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings, path)) {
         Dimension dim;
         dim.tok = nullptr;
         dim.num = Token::getStrArraySize(stringLiteral);
@@ -317,6 +317,21 @@ void CheckBufferOverrun::arrayIndex()
         MathLib::bigint path = 0;
         if (!getDimensionsEtc(tok->astOperand1(), mSettings, &dimensions, &errorPath, &mightBeLarger, &path))
             continue;
+
+        const Variable* const var = array->variable();
+        if (var && var->isArgument() && var->scope()) {
+            const Token* changeTok = var->scope()->bodyStart;
+            bool isChanged = false;
+            while ((changeTok = findVariableChanged(changeTok->next(), var->scope()->bodyEnd, /*indirect*/ 0, var->declarationId(),
+                                                    /*globalvar*/ false, mSettings, mTokenizer->isCPP()))) {
+                if (!Token::simpleMatch(changeTok->astParent(), "[")) {
+                    isChanged = true;
+                    break;
+                }
+            }
+            if (isChanged)
+                continue;
+        }
 
         // Positive index
         if (!mightBeLarger) { // TODO check arrays with dim 1 also
@@ -563,7 +578,7 @@ ValueFlow::Value CheckBufferOverrun::getBufferSize(const Token *bufTok) const
 }
 //---------------------------------------------------------------------------
 
-static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::MinSize &minsize, const std::vector<const Token *> &args, const MathLib::bigint bufferSize, const Settings *settings)
+static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::MinSize &minsize, const std::vector<const Token *> &args, const MathLib::bigint bufferSize, const Settings *settings, const Tokenizer* tokenizer)
 {
     const Token * const arg = (minsize.arg > 0 && minsize.arg - 1 < args.size()) ? args[minsize.arg - 1] : nullptr;
     const Token * const arg2 = (minsize.arg2 > 0 && minsize.arg2 - 1 < args.size()) ? args[minsize.arg2 - 1] : nullptr;
@@ -589,8 +604,13 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
         if (arg && arg2 && arg->hasKnownIntValue() && arg2->hasKnownIntValue())
             return (arg->getKnownIntValue() * arg2->getKnownIntValue()) <= bufferSize;
         break;
-    case Library::ArgumentChecks::MinSize::Type::VALUE:
-        return minsize.value <= bufferSize;
+    case Library::ArgumentChecks::MinSize::Type::VALUE: {
+        MathLib::bigint myMinsize = minsize.value;
+        unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
+        if (baseSize != 0)
+            myMinsize *= baseSize;
+        return myMinsize <= bufferSize;
+    }
     case Library::ArgumentChecks::MinSize::Type::NONE:
         break;
     }
@@ -644,7 +664,7 @@ void CheckBufferOverrun::bufferOverflow()
                     }
                 }
                 const bool error = std::none_of(minsizes->begin(), minsizes->end(), [=](const Library::ArgumentChecks::MinSize &minsize) {
-                    return checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings);
+                    return checkBufferSize(tok, minsize, args, bufferSize.intvalue, mSettings, mTokenizer);
                 });
                 if (error)
                     bufferOverflowError(args[argnr], &bufferSize, (bufferSize.intvalue == 1) ? Certainty::inconclusive : Certainty::normal);
@@ -734,9 +754,18 @@ void CheckBufferOverrun::stringNotZeroTerminated()
             const ValueFlow::Value &bufferSize = getBufferSize(args[0]);
             if (bufferSize.intvalue < 0 || sizeToken->getKnownIntValue() < bufferSize.intvalue)
                 continue;
-            const Token *srcValue = args[1]->getValueTokenMaxStrLength();
-            if (srcValue && Token::getStrLength(srcValue) < sizeToken->getKnownIntValue())
-                continue;
+            if (Token::simpleMatch(args[1], "(") && Token::simpleMatch(args[1]->astOperand1(), ". c_str") && args[1]->astOperand1()->astOperand1()) {
+                const std::list<ValueFlow::Value>& contValues = args[1]->astOperand1()->astOperand1()->values();
+                auto it = std::find_if(contValues.begin(), contValues.end(), [](const ValueFlow::Value& value) {
+                    return value.isContainerSizeValue() && !value.isImpossible();
+                });
+                if (it != contValues.end() && it->intvalue < sizeToken->getKnownIntValue())
+                    continue;
+            } else {
+                const Token* srcValue = args[1]->getValueTokenMaxStrLength();
+                if (srcValue && Token::getStrLength(srcValue) < sizeToken->getKnownIntValue())
+                    continue;
+            }
             // Is the buffer zero terminated after the call?
             bool isZeroTerminated = false;
             for (const Token *tok2 = tok->next()->link(); tok2 != scope->bodyEnd; tok2 = tok2->next()) {
@@ -1068,4 +1097,66 @@ void CheckBufferOverrun::objectIndexError(const Token *tok, const ValueFlow::Val
                 "The address of local variable '" + name + "' " + verb + " accessed at non-zero index.",
                 CWE758,
                 Certainty::normal);
+}
+
+static bool isVLAIndex(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (tok->varId() != 0U)
+        return true;
+    if (tok->str() == "?") {
+        // this is a VLA index if both expressions around the ":" is VLA index
+        if (tok->astOperand2() &&
+            tok->astOperand2()->str() == ":" &&
+            isVLAIndex(tok->astOperand2()->astOperand1()) &&
+            isVLAIndex(tok->astOperand2()->astOperand2()))
+            return true;
+        return false;
+    }
+    return isVLAIndex(tok->astOperand1()) || isVLAIndex(tok->astOperand2());
+}
+
+void CheckBufferOverrun::negativeArraySize()
+{
+    const SymbolDatabase* symbolDatabase = mTokenizer->getSymbolDatabase();
+    for (const Variable* var : symbolDatabase->variableList()) {
+        if (!var || !var->isArray())
+            continue;
+        const Token* const nameToken = var->nameToken();
+        if (!Token::Match(nameToken, "%var% [") || !nameToken->next()->astOperand2())
+            continue;
+        const ValueFlow::Value* sz = nameToken->next()->astOperand2()->getValueLE(-1, mSettings);
+        // don't warn about constant negative index because that is a compiler error
+        if (sz && isVLAIndex(nameToken->next()->astOperand2()))
+            negativeArraySizeError(nameToken);
+    }
+
+    for (const Scope* functionScope : symbolDatabase->functionScopes) {
+        for (const Token* tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+            if (!tok->isKeyword() || tok->str() != "new" || !tok->astOperand1() || tok->astOperand1()->str() != "[")
+                continue;
+            const Token* valOperand = tok->astOperand1()->astOperand2();
+            if (!valOperand)
+                continue;
+            const ValueFlow::Value* sz = valOperand->getValueLE(-1, mSettings);
+            if (sz)
+                negativeMemoryAllocationSizeError(tok);
+        }
+    }
+}
+
+void CheckBufferOverrun::negativeArraySizeError(const Token* tok)
+{
+    const std::string arrayName = tok ? tok->expressionString() : std::string();
+    const std::string line1 = arrayName.empty() ? std::string() : ("$symbol:" + arrayName + '\n');
+    reportError(tok, Severity::error, "negativeArraySize",
+                line1 +
+                "Declaration of array '" + arrayName + "' with negative size is undefined behaviour", CWE758, Certainty::safe);
+}
+
+void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok)
+{
+    reportError(tok, Severity::error, "negativeMemoryAllocationSize",
+                "Memory allocation size is negative.", CWE131, Certainty::safe);
 }

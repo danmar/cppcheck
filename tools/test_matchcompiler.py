@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #
 # Cppcheck - A tool for static C/C++ code analysis
-# Copyright (C) 2007-2017 Cppcheck team.
+# Copyright (C) 2007-2021 Cppcheck team.
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -190,6 +190,11 @@ class MatchCompilerTest(unittest.TestCase):
         self.assertEqual(
             'if (match16(parent->tokAt(-3)) && tok->strAt(1) == MatchCompiler::makeConstString(")"))',
             output)
+
+    def test_parseMatchSkipComments(self):
+        input = '// TODO: suggest Token::exactMatch() for Token::simpleMatch() when pattern contains no whitespaces'
+        output = self.mc._replaceTokenMatch(input, 0, "foo.cpp")
+        self.assertEqual(output, '// TODO: suggest Token::exactMatch() for Token::simpleMatch() when pattern contains no whitespaces')
 
 if __name__ == '__main__':
     unittest.main()

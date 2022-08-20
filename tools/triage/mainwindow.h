@@ -1,9 +1,28 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2021 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
-#include <QString>
 #include <QFileSystemModel>
+#include <QMainWindow>
+#include <QRegularExpression>
+#include <QString>
 
 class QListWidgetItem;
 class QTextStream;
@@ -15,18 +34,18 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    explicit MainWindow(QWidget *parent = Q_NULLPTR);
+    explicit MainWindow(QWidget *parent = nullptr);
     MainWindow(const MainWindow &) = delete;
     MainWindow &operator=(const MainWindow &) = delete;
-    ~MainWindow();
+    ~MainWindow() override;
 
 public slots:
     void loadFile();
     void loadFromClipboard();
-    void filter(QString filter);
+    void filter(const QString& filter);
     void showResult(QListWidgetItem *item);
     void refreshResults();
-    void fileTreeFilter(QString str);
+    void fileTreeFilter(const QString &str);
     void findInFilesClicked();
     void directorytreeDoubleClick();
     void searchResultsDoubleClick();
@@ -43,7 +62,7 @@ private:
 
     QStringList mAllErrors;
     QFileSystemModel mFSmodel;
-    const QRegExp mVersionRe;
+    const QRegularExpression mVersionRe;
 
     const QStringList hFiles;
     const QStringList srcFiles;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,7 +26,6 @@
 #include "config.h"
 #include "errortypes.h"
 #include "tokenize.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <string>
@@ -53,7 +52,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** run checks, the token list is not simplified */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         if (!tokenizer->isCPP()) {
             return;
         }
@@ -194,6 +193,9 @@ private:
     void string_c_strError(const Token* tok);
     void string_c_strReturn(const Token* tok);
     void string_c_strParam(const Token* tok, nonneg int number);
+    void string_c_strConstructor(const Token* tok);
+    void string_c_strAssignment(const Token* tok);
+    void string_c_strConcat(const Token* tok);
 
     void outOfBoundsError(const Token *tok, const std::string &containerName, const ValueFlow::Value *containerSize, const std::string &index, const ValueFlow::Value *indexValue);
     void outOfBoundsIndexExpressionError(const Token *tok, const Token *index);
@@ -218,9 +220,11 @@ private:
 
     void uselessCallsReturnValueError(const Token* tok, const std::string& varname, const std::string& function);
     void uselessCallsSwapError(const Token* tok, const std::string& varname);
-    void uselessCallsSubstrError(const Token* tok, bool empty);
+    enum class SubstrErrorType { EMPTY, COPY, PREFIX, PREFIX_CONCAT };
+    void uselessCallsSubstrError(const Token* tok, SubstrErrorType type);
     void uselessCallsEmptyError(const Token* tok);
     void uselessCallsRemoveError(const Token* tok, const std::string& function);
+    void uselessCallsConstructorError(const Token* tok);
 
     void dereferenceInvalidIteratorError(const Token* deref, const std::string& iterName);
     void dereferenceInvalidIteratorError(const Token* tok, const ValueFlow::Value *value, bool inconclusive);
@@ -234,7 +238,7 @@ private:
     void globalLockGuardError(const Token *tok);
     void localMutexError(const Token *tok);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         ErrorPath errorPath;
         CheckStl c(nullptr, settings, errorLogger);
         c.outOfBoundsError(nullptr, "container", nullptr, "x", nullptr);
@@ -264,13 +268,13 @@ private:
         c.redundantIfRemoveError(nullptr);
         c.uselessCallsReturnValueError(nullptr, "str", "find");
         c.uselessCallsSwapError(nullptr, "str");
-        c.uselessCallsSubstrError(nullptr, false);
+        c.uselessCallsSubstrError(nullptr, SubstrErrorType::COPY);
         c.uselessCallsEmptyError(nullptr);
         c.uselessCallsRemoveError(nullptr, "remove");
         c.dereferenceInvalidIteratorError(nullptr, "i");
         c.readingEmptyStlContainerError(nullptr);
-        c.useStlAlgorithmError(nullptr, "");
-        c.knownEmptyContainerError(nullptr, "");
+        c.useStlAlgorithmError(nullptr, emptyString);
+        c.knownEmptyContainerError(nullptr, emptyString);
         c.globalLockGuardError(nullptr);
         c.localMutexError(nullptr);
     }
@@ -279,7 +283,7 @@ private:
         return "STL usage";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Check for invalid usage of STL:\n"
                "- out of bounds errors\n"
                "- misuse of iterators when iterating through a container\n"

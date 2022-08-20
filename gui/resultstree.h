@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,10 +20,11 @@
 #ifndef RESULTSTREE_H
 #define RESULTSTREE_H
 
-#include <QTreeView>
-#include <QStandardItemModel>
 #include "errortypes.h"
 #include "showtypes.h"
+
+#include <QStandardItemModel>
+#include <QTreeView>
 
 class ApplicationList;
 class Report;
@@ -34,6 +35,8 @@ class QWidget;
 class QItemSelectionModel;
 class ThreadHandler;
 class QContextMenuEvent;
+class QKeyEvent;
+class QObject;
 class QSettings;
 
 /// @addtogroup GUI
@@ -48,7 +51,7 @@ class ResultsTree : public QTreeView {
     Q_OBJECT
 public:
     explicit ResultsTree(QWidget * parent = nullptr);
-    virtual ~ResultsTree();
+    ~ResultsTree() override;
     void initialize(QSettings *settings, ApplicationList *list, ThreadHandler *checkThreadHandler);
 
     /**
@@ -204,8 +207,6 @@ signals:
     /** Suppress Ids */
     void suppressIds(QStringList ids);
 
-    /** Edit contract for function */
-    void editFunctionContract(QString function);
 public slots:
 
     /**
@@ -282,11 +283,6 @@ protected slots:
      * @brief Slot for context menu item to open the folder containing the current file.
      */
     void openContainingFolder();
-
-    /**
-     * @brief Allow user to edit contract to fix bughunting warning
-     */
-    void editContract();
 
     /**
      * @brief Slot for selection change in the results tree.

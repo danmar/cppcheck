@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -167,7 +167,7 @@ bool TestFixture::assertEquals(const char * const filename, const unsigned int l
     return expected == actual;
 }
 
-std::string TestFixture::deleteLineNumber(const std::string &message) const
+std::string TestFixture::deleteLineNumber(const std::string &message)
 {
     std::string result(message);
     // delete line number in "...:NUMBER:..."
@@ -175,8 +175,8 @@ std::string TestFixture::deleteLineNumber(const std::string &message) const
     while ((pos = result.find(':', pos)) != std::string::npos) {
         // get number
         if (pos + 1 == result.find_first_of("0123456789", pos + 1)) {
-            std::string::size_type after;
-            if ((after = result.find_first_not_of("0123456789", pos + 1)) != std::string::npos
+            std::string::size_type after = result.find_first_not_of("0123456789", pos + 1);
+            if (after != std::string::npos
                 && result.at(after) == ':') {
                 // erase NUMBER
                 result.erase(pos + 1, after - pos - 1);
@@ -290,7 +290,7 @@ void TestFixture::assertNoThrowFail(const char * const filename, const unsigned 
 
 }
 
-void TestFixture::complainMissingLib(const char * const libname) const
+void TestFixture::complainMissingLib(const char * const libname)
 {
     missingLibs.insert(libname);
 }

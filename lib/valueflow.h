@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,7 +23,6 @@
 
 #include "config.h"
 #include "mathlib.h"
-#include "utils.h"
 
 #include <algorithm>
 #include <cassert>
@@ -43,6 +42,7 @@ class Token;
 class TokenList;
 class ValueType;
 class Variable;
+class Scope;
 
 template<class T>
 class ValuePtr;
@@ -83,8 +83,8 @@ namespace ValueFlow {
     };
     class CPPCHECKLIB Value {
     public:
-        typedef std::pair<const Token *, std::string> ErrorPathItem;
-        typedef std::list<ErrorPathItem> ErrorPath;
+        using ErrorPathItem = std::pair<const Token *, std::string>;
+        using ErrorPath = std::list<ErrorPathItem>;
         enum class Bound { Upper, Lower, Point };
 
         explicit Value(long long val = 0, Bound b = Bound::Point)
@@ -93,7 +93,6 @@ namespace ValueFlow {
             intvalue(val),
             tokvalue(nullptr),
             floatValue(0.0),
-            moveKind(MoveKind::NonMovedVariable),
             varvalue(val),
             condition(nullptr),
             varId(0U),
@@ -102,9 +101,11 @@ namespace ValueFlow {
             macro(false),
             defaultArg(false),
             indirect(0),
+            moveKind(MoveKind::NonMovedVariable),
             path(0),
             wideintvalue(val),
             subexpressions(),
+            capturetok(nullptr),
             lifetimeKind(LifetimeKind::Object),
             lifetimeScope(LifetimeScope::Local),
             valueKind(ValueKind::Possible)
@@ -250,6 +251,8 @@ namespace ValueFlow {
 
         std::string infoString() const;
 
+        std::string toString() const;
+
         enum class ValueType {
             INT,
             TOK,
@@ -328,9 +331,6 @@ namespace ValueFlow {
         /** float value */
         double floatValue;
 
-        /** kind of moved  */
-        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
-
         /** For calculated values - variable value that calculated value depends on */
         long long varvalue;
 
@@ -338,6 +338,8 @@ namespace ValueFlow {
         const Token *condition;
 
         ErrorPath errorPath;
+
+        ErrorPath debugPath;
 
         /** For calculated values - varId that calculated value depends on */
         nonneg int varId;
@@ -356,6 +358,9 @@ namespace ValueFlow {
 
         int indirect;
 
+        /** kind of moved  */
+        enum class MoveKind {NonMovedVariable, MovedVariable, ForwardedVariable} moveKind;
+
         /** Path id */
         MathLib::bigint path;
 
@@ -363,6 +368,9 @@ namespace ValueFlow {
         long long wideintvalue;
 
         std::vector<std::string> subexpressions;
+
+        // Set to where a lifetime is captured by value
+        const Token* capturetok;
 
         enum class LifetimeKind {
             // Pointer points to a member of lifetime
@@ -458,22 +466,24 @@ namespace ValueFlow {
     std::vector<ValueFlow::Value> isOutOfBounds(const Value& size, const Token* indexTok, bool possible = true);
 }
 
+ValueFlow::Value asImpossible(ValueFlow::Value v);
+
 bool isContainerSizeChanged(const Token* tok, const Settings* settings = nullptr, int depth = 20);
 
 struct LifetimeToken {
     const Token* token;
-    bool addressOf;
     ValueFlow::Value::ErrorPath errorPath;
+    bool addressOf;
     bool inconclusive;
 
-    LifetimeToken() : token(nullptr), addressOf(false), errorPath(), inconclusive(false) {}
+    LifetimeToken() : token(nullptr), errorPath(), addressOf(false), inconclusive(false) {}
 
     LifetimeToken(const Token* token, ValueFlow::Value::ErrorPath errorPath)
-        : token(token), addressOf(false), errorPath(std::move(errorPath)), inconclusive(false)
+        : token(token), errorPath(std::move(errorPath)), addressOf(false), inconclusive(false)
     {}
 
     LifetimeToken(const Token* token, bool addressOf, ValueFlow::Value::ErrorPath errorPath)
-        : token(token), addressOf(addressOf), errorPath(std::move(errorPath)), inconclusive(false)
+        : token(token), errorPath(std::move(errorPath)), addressOf(addressOf), inconclusive(false)
     {}
 
     static std::vector<LifetimeToken> setAddressOf(std::vector<LifetimeToken> v, bool b) {
@@ -497,6 +507,10 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
 
 CPPCHECKLIB ValuePtr<InferModel> makeIntegralInferModel();
 
+const Token* solveExprValue(const Token* expr,
+                            const std::function<std::vector<MathLib::bigint>(const Token*)>& eval,
+                            ValueFlow::Value& value);
+
 std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
                                              bool escape = false,
                                              ValueFlow::Value::ErrorPath errorPath = ValueFlow::Value::ErrorPath{});
@@ -518,5 +532,9 @@ CPPCHECKLIB ValueFlow::Value getLifetimeObjValue(const Token *tok, bool inconclu
 CPPCHECKLIB std::vector<ValueFlow::Value> getLifetimeObjValues(const Token* tok,
                                                                bool inconclusive = false,
                                                                MathLib::bigint path = 0);
+
+const Token* getEndOfExprScope(const Token* tok, const Scope* defaultScope = nullptr, bool smallest = true);
+
+void combineValueProperties(const ValueFlow::Value& value1, const ValueFlow::Value& value2, ValueFlow::Value* result);
 
 #endif // valueflowH

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "platform.h"
 #include "testsuite.h"
 
@@ -28,7 +27,7 @@ public:
     TestPlatform() : TestFixture("TestPlatform") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(empty);
         TEST_CASE(valid_config_native_1);
         TEST_CASE(valid_config_native_2);
@@ -37,7 +36,7 @@ private:
         TEST_CASE(valid_config_file_3);
         TEST_CASE(valid_config_file_4);
         TEST_CASE(invalid_config_file_1);
-        // TEST_CASE(empty_elements); // TODO: Trac issue #8409
+        TEST_CASE(empty_elements);
     }
 
     static bool readPlatform(cppcheck::Platform& platform, const char* xmldata) {
@@ -263,7 +262,7 @@ private:
         ASSERT_EQUALS(0, platform.long_long_bit);
     }
 
-    void invalid_config_file_1() {
+    void invalid_config_file_1() const {
         // Invalid XML file: mismatching elements "boolt" vs "bool".
         const char xmldata[] = "<?xml version=\"1.0\"?>\n"
                                "<platform>\n"
@@ -287,7 +286,6 @@ private:
         ASSERT(!readPlatform(platform, xmldata));
     }
 
-#if 0 // @TODO: Enable when Trac issue #8409 has been fixed
     void empty_elements() {
         // Valid platform configuration without any usable information.
         // Similar like an empty file.
@@ -311,18 +309,10 @@ private:
                                " </platform>";
         cppcheck::Platform platform;
         ASSERT(platform.platform(cppcheck::Platform::Win64));
-        ASSERT(readPlatform(platform, xmldata));
+        ASSERT(!readPlatform(platform, xmldata));
         ASSERT_EQUALS(platform.PlatformFile, platform.platformType);
         ASSERT(!platform.isWindowsPlatform());
-        ASSERT_EQUALS(8, platform.char_bit);
-        ASSERT_EQUALS('\0', platform.defaultSign);
-        ASSERT_EQUALS(1, platform.sizeof_bool);
-        ASSERT_EQUALS(2, platform.sizeof_short);
-        ASSERT_EQUALS(4, platform.sizeof_int);
-        ASSERT_EQUALS(4, platform.sizeof_long);
-        ASSERT_EQUALS(8, platform.sizeof_long_long);
     }
-#endif
 };
 
 REGISTER_TEST(TestPlatform)

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,12 @@
 
 #include <QDialog>
 #include <QString>
-#include "ui_about.h"
 
+class QObject;
 class QWidget;
+namespace Ui {
+    class About;
+}
 
 /// @addtogroup GUI
 /// @{
@@ -39,8 +42,10 @@ public:
                 const QString &extraVersion,
                 QWidget *parent = nullptr);
 
+    ~AboutDialog() override;
+
 private:
-    Ui::About mUI;
+    Ui::About* mUI;
 };
 /// @}
 #endif // ABOUT_DIALOG_H

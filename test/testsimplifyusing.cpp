@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -39,7 +38,7 @@ private:
     Settings settings1;
     Settings settings2;
 
-    void run() OVERRIDE {
+    void run() override {
         settings0.severity.enable(Severity::style);
         settings2.severity.enable(Severity::style);
 
@@ -73,6 +72,7 @@ private:
         TEST_CASE(simplifyUsing23);
         TEST_CASE(simplifyUsing24);
         TEST_CASE(simplifyUsing25);
+        TEST_CASE(simplifyUsing26); // #11090
 
         TEST_CASE(simplifyUsing8970);
         TEST_CASE(simplifyUsing8971);
@@ -615,6 +615,34 @@ private:
                                 "namespace vtkm { "
                                 "struct VecTraits<UnusualType> : VecTraits < vtkm :: Id > { } ; "
                                 "}";
+        ASSERT_EQUALS(expected, tok(code));
+    }
+
+    void simplifyUsing26() { // #11090
+        const char code[] = "namespace M {\n"
+                            "    struct A;\n"
+                            "    struct B;\n"
+                            "    struct C;\n"
+                            "    template<typename T>\n"
+                            "    struct F {};\n"
+                            "    template<>\n"
+                            "    struct F<B> : F<A> {};\n"
+                            "    template<>\n"
+                            "    struct F<C> : F<A> {};\n"
+                            "}\n"
+                            "namespace N {\n"
+                            "    using namespace M;\n"
+                            "    using A = void;\n"
+                            "}\n";
+        const char expected[] = "namespace M { "
+                                "struct A ; struct B ; struct C ; "
+                                "struct F<C> ; struct F<B> ; struct F<A> ; "
+                                "struct F<B> : F<A> { } ; struct F<C> : F<A> { } ; "
+                                "} "
+                                "namespace N { "
+                                "using namespace M ; "
+                                "} "
+                                "struct M :: F<A> { } ;";
         ASSERT_EQUALS(expected, tok(code));
     }
 

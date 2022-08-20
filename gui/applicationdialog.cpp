@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,29 +18,32 @@
 
 #include "applicationdialog.h"
 
+#include "application.h"
+#include "common.h"
+
+#include "ui_applicationdialog.h"
+
 #include <QDialogButtonBox>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QPushButton>
-
-#include "application.h"
-#include "common.h"
 
 
 ApplicationDialog::ApplicationDialog(const QString &title,
                                      Application &app,
                                      QWidget *parent) :
     QDialog(parent),
+    mUI(new Ui::ApplicationDialog),
     mApplication(app)
 {
-    mUI.setupUi(this);
+    mUI->setupUi(this);
 
-    connect(mUI.mButtonBrowse, &QPushButton::clicked, this, &ApplicationDialog::browse);
-    connect(mUI.mButtons, &QDialogButtonBox::accepted, this, &ApplicationDialog::ok);
-    connect(mUI.mButtons, &QDialogButtonBox::rejected, this, &ApplicationDialog::reject);
-    mUI.mPath->setText(app.getPath());
-    mUI.mName->setText(app.getName());
-    mUI.mParameters->setText(app.getParameters());
+    connect(mUI->mButtonBrowse, &QPushButton::clicked, this, &ApplicationDialog::browse);
+    connect(mUI->mButtons, &QDialogButtonBox::accepted, this, &ApplicationDialog::ok);
+    connect(mUI->mButtons, &QDialogButtonBox::rejected, this, &ApplicationDialog::reject);
+    mUI->mPath->setText(app.getPath());
+    mUI->mName->setText(app.getName());
+    mUI->mParameters->setText(app.getParameters());
     setWindowTitle(title);
     adjustSize();
 }
@@ -48,7 +51,7 @@ ApplicationDialog::ApplicationDialog(const QString &title,
 
 ApplicationDialog::~ApplicationDialog()
 {
-    //dtor
+    delete mUI;
 }
 
 void ApplicationDialog::browse()
@@ -67,13 +70,13 @@ void ApplicationDialog::browse()
     if (!selectedFile.isEmpty()) {
         setPath(SETTINGS_LAST_APP_PATH, selectedFile);
         QString path(QDir::toNativeSeparators(selectedFile));
-        mUI.mPath->setText(path);
+        mUI->mPath->setText(path);
     }
 }
 
 void ApplicationDialog::ok()
 {
-    if (mUI.mName->text().isEmpty() || mUI.mPath->text().isEmpty()) {
+    if (mUI->mName->text().isEmpty() || mUI->mPath->text().isEmpty()) {
         QMessageBox msg(QMessageBox::Warning,
                         tr("Cppcheck"),
                         tr("You must specify a name, a path and optionally parameters for the application!"),
@@ -85,9 +88,9 @@ void ApplicationDialog::ok()
         reject();
     } else {
         // Convert possible native (Windows) path to internal presentation format
-        mApplication.setName(mUI.mName->text());
-        mApplication.setPath(QDir::fromNativeSeparators(mUI.mPath->text()));
-        mApplication.setParameters(mUI.mParameters->text());
+        mApplication.setName(mUI->mName->text());
+        mApplication.setPath(QDir::fromNativeSeparators(mUI->mPath->text()));
+        mApplication.setParameters(mUI->mParameters->text());
 
         accept();
     }

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "checksizeof.h"
-#include "config.h"
 #include "errortypes.h"
 #include "settings.h"
 #include "testsuite.h"
@@ -38,7 +37,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::warning);
         settings.severity.enable(Severity::portability);
         settings.certainty.enable(Certainty::inconclusive);
@@ -428,6 +427,55 @@ private:
               "  return (end - source) / sizeof(encode_block_type) * sizeof(encode_block_type);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("struct S { T* t; };\n" // #10179
+              "int f(S* s) {\n"
+              "    return g(sizeof(*s->t) / 4);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    const char* a[N];\n"
+              "    for (int i = 0; i < (int)(sizeof(a) / sizeof(char*)); i++) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("int f(int** p) {\n"
+              "    return sizeof(p[0]) / 4;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n", errout.str());
+
+        check("struct S {\n"
+              "    unsigned char* s;\n"
+              "};\n"
+              "struct T {\n"
+              "    S s[38];\n"
+              "};\n"
+              "void f(T* t) {\n"
+              "    for (size_t i = 0; i < sizeof(t->s) / sizeof(t->s[0]); i++) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n"
+              "    struct T {\n"
+              "        char* c[3];\n"
+              "    } t[1];\n"
+              "};\n"
+              "void f(S* s) {\n"
+              "    for (int i = 0; i != sizeof(s->t[0].c) / sizeof(char*); i++) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int32_t* buf, size_t len) {\n"
+              "    for (int i = 0; i < len / sizeof(buf[0]); i++) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int32_t*** buf, size_t len) {\n"
+              "    for (int i = 0; i < len / sizeof(**buf[0]); i++) {}\n"
+              "    for (int i = 0; i < len / sizeof(*buf[0][0]); i++) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void checkPointerSizeof() {
@@ -723,7 +771,9 @@ private:
         check("void foo(memoryMapEntry_t* entry, memoryMapEntry_t* memoryMapEnd) {\n"
               "    memmove(entry, entry + 1, (memoryMapEnd - entry) / sizeof(entry));\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2]: (warning) Division by result of sizeof(). memmove() expects a size in bytes, did you intend to multiply instead?\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:2]: (warning, inconclusive) Division of result of sizeof() on pointer type.\n"
+                      "[test.cpp:2]: (warning) Division by result of sizeof(). memmove() expects a size in bytes, did you intend to multiply instead?\n",
+                      errout.str());
 
         check("Foo* allocFoo(int num) {\n"
               "    return malloc(num / sizeof(Foo));\n"
@@ -734,6 +784,14 @@ private:
               "  char str[100];\n"
               "  strncpy(str, xyz, sizeof(str)/sizeof(str[0]));\n"
               "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n" // #9648
+              "    int a[5] = { 0 };\n"
+              "    int b[5];\n"
+              "    memcpy(b, a, ((sizeof(a) / sizeof(a[0])) - 1) * sizeof(a[0]));\n"
+              "    memcpy(b, a, sizeof(a[0]) * ((sizeof(a) / sizeof(a[0])) - 1));\n"
+              "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 

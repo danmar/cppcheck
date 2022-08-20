@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -94,7 +94,7 @@ void CheckFunctions::checkProhibitedFunctions()
 }
 
 //---------------------------------------------------------------------------
-// Check <valid> and <not-bool>
+// Check <valid>, <strz> and <not-bool>
 //---------------------------------------------------------------------------
 void CheckFunctions::invalidFunctionUsage()
 {
@@ -125,14 +125,59 @@ void CheckFunctions::invalidFunctionUsage()
                     else if (!mSettings->library.isIntArgValid(functionToken, argnr, 1))
                         invalidFunctionArgError(argtok, functionToken->str(), argnr, nullptr, mSettings->library.validarg(functionToken, argnr));
                 }
-
+                // check <strz>
                 if (mSettings->library.isargstrz(functionToken, argnr)) {
                     if (Token::Match(argtok, "& %var% !![") && argtok->next() && argtok->next()->valueType()) {
                         const ValueType * valueType = argtok->next()->valueType();
                         const Variable * variable = argtok->next()->variable();
-                        if (valueType->type == ValueType::Type::CHAR && !variable->isArray() && !variable->isGlobal() &&
+                        if ((valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T || (valueType->type == ValueType::Type::RECORD && Token::Match(argtok, "& %var% . %var% ,|)"))) &&
+                            !variable->isArray() &&
+                            (variable->isConst() || !variable->isGlobal()) &&
                             (!argtok->next()->hasKnownValue() || argtok->next()->getValue(0) == nullptr)) {
                             invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                        }
+                    }
+                    const ValueType* const valueType = argtok->valueType();
+                    const Variable* const variable = argtok->variable();
+                    // Is non-null terminated local variable of type char (e.g. char buf[] = {'x'};) ?
+                    if (variable && variable->isLocal()
+                        && valueType && (valueType->type == ValueType::Type::CHAR || valueType->type == ValueType::Type::WCHAR_T)
+                        && !isVariablesChanged(variable->declEndToken(), functionToken, 0 /*indirect*/, { variable }, mSettings, mTokenizer->isCPP())) {
+                        const Token* varTok = variable->declEndToken();
+                        auto count = -1; // Find out explicitly set count, e.g.: char buf[3] = {...}. Variable 'count' is set to 3 then.
+                        if (varTok && Token::simpleMatch(varTok->astOperand1(), "["))
+                        {
+                            const Token* const countTok = varTok->astOperand1()->astOperand2();
+                            if (countTok && countTok->hasKnownIntValue())
+                                count = countTok->getKnownIntValue();
+                        }
+                        if (Token::simpleMatch(varTok, "= {")) {
+                            varTok = varTok->tokAt(1);
+                            auto charsUntilFirstZero = 0;
+                            bool search = true;
+                            while (search && varTok && !Token::simpleMatch(varTok->next(), "}")) {
+                                varTok = varTok->next();
+                                if (!Token::simpleMatch(varTok, ",")) {
+                                    if (Token::Match(varTok, "%op%")) {
+                                        varTok = varTok->next();
+                                        continue;
+                                    }
+                                    ++charsUntilFirstZero;
+                                    if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() == 0)
+                                        search=false; // stop counting for cases like char buf[3] = {'x', '\0', 'y'};
+                                }
+                            }
+                            if (varTok && varTok->hasKnownIntValue() && varTok->getKnownIntValue() != 0
+                                && (count == -1 || (count > 0 && count <= charsUntilFirstZero))) {
+                                invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                            }
+                        } else if (count > -1 && Token::Match(varTok, "= %str%")) {
+                            const Token* strTok = varTok->getValueTokenMinStrSize(mSettings);
+                            if (strTok) {
+                                const int strSize = Token::getStrArraySize(strTok);
+                                if (strSize > count && strTok->str().find('\0') == std::string::npos)
+                                    invalidFunctionArgStrError(argtok, functionToken->str(), argnr);
+                            }
                         }
                     }
                 }
@@ -563,10 +608,10 @@ void CheckFunctions::checkLibraryMatchFunctions()
         else if (insideNew)
             continue;
 
-        if (!Token::Match(tok, "%name% (") || Token::Match(tok, "asm|sizeof|catch"))
+        if (tok->isKeyword() || !Token::Match(tok, "%name% ("))
             continue;
 
-        if (tok->varId() != 0 || tok->type() || tok->isStandardType() || tok->isControlFlowKeyword())
+        if (tok->varId() != 0 || tok->type() || tok->isStandardType())
             continue;
 
         if (tok->linkAt(1)->strAt(1) == "(")
@@ -579,7 +624,16 @@ void CheckFunctions::checkLibraryMatchFunctions()
             continue;
 
         const std::string &functionName = mSettings->library.getFunctionName(tok);
-        if (functionName.empty() || mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
+        if (functionName.empty())
+            continue;
+
+        if (mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
+            continue;
+
+        const Token* start = tok;
+        while (Token::Match(start->tokAt(-2), "%name% ::"))
+            start = start->tokAt(-2);
+        if (mSettings->library.detectContainerOrIterator(start))
             continue;
 
         reportError(tok,
@@ -614,7 +668,7 @@ void CheckFunctions::returnLocalStdMove()
             if (retval->variable() && retval->variable()->isLocal() && !retval->variable()->isVolatile())
                 copyElisionError(retval);
             // RVO
-            if (Token::Match(retval, "(|{") && !retval->isCast())
+            if (Token::Match(retval, "(|{") && !retval->isCast() && !(retval->valueType() && retval->valueType()->reference != Reference::None))
                 copyElisionError(retval);
         }
     }

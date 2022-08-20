@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,44 +18,47 @@
 
 #include "resultstree.h"
 
-#include <QApplication>
-#include <QDebug>
-#include <QList>
-#include <QMap>
-#include <QVariant>
-#include <QMenu>
-#include <QSignalMapper>
-#include <QProcess>
-#include <QDir>
-#include <QMessageBox>
-#include <QAction>
-#include <QFileInfo>
-#include <QFileDialog>
-#include <QClipboard>
-#include <QDesktopServices>
-#include <QUrl>
-#include <QKeyEvent>
-#include <QSettings>
+#include "application.h"
+#include "applicationlist.h"
 #include "common.h"
 #include "erroritem.h"
-#include "applicationlist.h"
-#include "report.h"
-#include "application.h"
-#include "projectfile.h"
-#include "showtypes.h"
-#include "threadhandler.h"
 #include "path.h"
+#include "projectfile.h"
+#include "report.h"
+#include "showtypes.h"
+#include "suppressions.h"
+#include "threadhandler.h"
 #include "xmlreportv2.h"
+
+#include <string>
+#include <utility>
+
+#include <QAction>
+#include <QApplication>
+#include <QClipboard>
+#include <QDebug>
+#include <QDesktopServices>
+#include <QDir>
+#include <QFileInfo>
+#include <QFileDialog>
+#include <QKeyEvent>
+#include <QList>
+#include <QMap>
+#include <QMenu>
+#include <QMessageBox>
+#include <QProcess>
+#include <QSettings>
+#include <QSignalMapper>
+#include <QUrl>
+#include <QVariant>
 
 static const char COLUMN[] = "column";
 static const char CWE[] = "cwe";
 static const char ERRORID[] = "id";
 static const char FILENAME[] = "file";
 static const char FILE0[] = "file0";
-static const char FUNCTION[] = "function";
 static const char HASH[] = "hash";
 static const char HIDE[] = "hide";
-static const char INCOMPLETE[] = "incomplete";
 static const char INCONCLUSIVE[] = "inconclusive";
 static const char LINE[] = "line";
 static const char MESSAGE[] = "message";
@@ -68,11 +71,6 @@ static const char TAGS[] = "tags";
 // These must match column headers given in ResultsTree::translate()
 static const int COLUMN_SINCE_DATE = 6;
 static const int COLUMN_TAGS       = 7;
-
-static QString getFunction(QStandardItem *item)
-{
-    return item->data().toMap().value("function").toString();
-}
 
 ResultsTree::ResultsTree(QWidget * parent) :
     QTreeView(parent),
@@ -182,7 +180,6 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     line.file = realfile;
     line.line = loc.line;
     line.errorId = item.errorId;
-    line.incomplete = item.incomplete;
     line.cwe = item.cwe;
     line.hash = item.hash;
     line.inconclusive = item.inconclusive;
@@ -214,12 +211,10 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
     data[LINE]  = loc.line;
     data[COLUMN] = loc.column;
     data[ERRORID]  = item.errorId;
-    data[INCOMPLETE] = item.incomplete;
     data[CWE] = item.cwe;
     data[HASH] = item.hash;
     data[INCONCLUSIVE] = item.inconclusive;
     data[FILE0] = stripPath(item.file0, true);
-    data[FUNCTION] = item.function;
     data[SINCEDATE] = item.sinceDate;
     data[SYMBOLNAMES] = item.symbolNames;
     data[TAGS] = line.tags;
@@ -251,7 +246,6 @@ bool ResultsTree::addErrorItem(const ErrorItem &item)
             child_data[LINE]  = e.line;
             child_data[COLUMN] = e.column;
             child_data[ERRORID]  = line.errorId;
-            child_data[INCOMPLETE] = line.incomplete;
             child_data[CWE] = line.cwe;
             child_data[HASH] = line.hash;
             child_data[INCONCLUSIVE] = line.inconclusive;
@@ -316,7 +310,19 @@ QStandardItem *ResultsTree::addBacktraceFiles(QStandardItem *parent,
         list[0]->setIcon(QIcon(icon));
     }
 
-    //TODO Does this leak memory? Should items from list be deleted?
+    /* TODO: the list items leak memory
+        Indirect leak of 80624 byte(s) in 5039 object(s) allocated from:
+     #0 0xa15a2d in operator new(unsigned long) (/mnt/s/GitHub/cppcheck-fw/cmake-build-debug-wsl-kali-clang-asan-ubsan/bin/cppcheck-gui+0xa15a2d)
+     #1 0xdda276 in ResultsTree::createNormalItem(QString const&) /mnt/s/GitHub/cppcheck-fw/gui/resultstree.cpp:122:27
+     #2 0xde4290 in ResultsTree::addBacktraceFiles(QStandardItem*, ErrorLine const&, bool, QString const&, bool) /mnt/s/GitHub/cppcheck-fw/gui/resultstree.cpp:289:13
+     #3 0xddd754 in ResultsTree::addErrorItem(ErrorItem const&) /mnt/s/GitHub/cppcheck-fw/gui/resultstree.cpp:199:30
+     #4 0xe37046 in ResultsView::error(ErrorItem const&) /mnt/s/GitHub/cppcheck-fw/gui/resultsview.cpp:129:21
+     #5 0xd2448d in QtPrivate::FunctorCall<QtPrivate::IndexesList<0>, QtPrivate::List<ErrorItem const&>, void, void (ResultsView::*)(ErrorItem const&)>::call(void (ResultsView::*)(ErrorItem const&), ResultsView*, void**) /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h:152:13
+     #6 0xd2402c in void QtPrivate::FunctionPointer<void (ResultsView::*)(ErrorItem const&)>::call<QtPrivate::List<ErrorItem const&>, void>(void (ResultsView::*)(ErrorItem const&), ResultsView*, void**) /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h:185:13
+     #7 0xd23b45 in QtPrivate::QSlotObject<void (ResultsView::*)(ErrorItem const&), QtPrivate::List<ErrorItem const&>, void>::impl(int, QtPrivate::QSlotObjectBase*, QObject*, void**, bool*) /usr/include/x86_64-linux-gnu/qt5/QtCore/qobjectdefs_impl.h:418:17
+     #8 0x7fd2536cc0dd in QObject::event(QEvent*) (/usr/lib/x86_64-linux-gnu/libQt5Core.so.5+0x2dc0dd)
+     #9 0x7fd2541836be in QApplicationPrivate::notify_helper(QObject*, QEvent*) (/usr/lib/x86_64-linux-gnu/libQt5Widgets.so.5+0x1636be)
+     */
 
     return list[0];
 }
@@ -644,15 +650,6 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                 menu.addSeparator();
             }
 
-            const bool bughunting = !multipleSelection && mContextItem->data().toMap().value("id").toString().startsWith("bughunting");
-
-            if (bughunting && !getFunction(mContextItem).isEmpty()) {
-                QAction *editContract = new QAction(tr("Edit contract.."), &menu);
-                connect(editContract, &QAction::triggered, this, &ResultsTree::editContract);
-                menu.addAction(editContract);
-                menu.addSeparator();
-            }
-
             //Create an action for the application
             QAction *recheckSelectedFiles   = new QAction(tr("Recheck"), &menu);
             QAction *copy                   = new QAction(tr("Copy"), &menu);
@@ -676,15 +673,10 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
             menu.addAction(hide);
             menu.addAction(hideallid);
 
-            if (!bughunting) {
-                QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
-                menu.addAction(suppress);
-                connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
-            } else {
-                QAction *suppress = new QAction(tr("Suppress"), &menu);
-                menu.addAction(suppress);
-                connect(suppress, &QAction::triggered, this, &ResultsTree::suppressHash);
-            }
+            QAction *suppress = new QAction(tr("Suppress selected id(s)"), &menu);
+            menu.addAction(suppress);
+            connect(suppress, &QAction::triggered, this, &ResultsTree::suppressSelectedIds);
+
             menu.addSeparator();
             menu.addAction(opencontainingfolder);
 
@@ -706,7 +698,7 @@ void ResultsTree::contextMenuEvent(QContextMenuEvent * e)
                     });
                 }
 
-                foreach (const QString tagstr, currentProject->getTags()) {
+                for (const QString& tagstr : currentProject->getTags()) {
                     QAction *action = new QAction(tagstr, tagMenu);
                     tagMenu->addAction(action);
                     connect(action, &QAction::triggered, [=]() {
@@ -826,7 +818,8 @@ void ResultsTree::startApplication(QStandardItem *target, int application)
 
         const QString cmdLine = QString("%1 %2").arg(program).arg(params);
 
-        bool success = QProcess::startDetached(cmdLine);
+        // this is reported as deprecated in Qt 5.15.2 but no longer in Qt 6
+        bool success = SUPPRESS_DEPRECATED_WARNING(QProcess::startDetached(cmdLine));
         if (!success) {
             QString text = tr("Could not start %1\n\nPlease check the application path and parameters are correct.").arg(program);
 
@@ -893,9 +886,8 @@ void ResultsTree::copy()
     if (!mSelectionModel)
         return;
 
-    QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QString text;
-    foreach (QModelIndex index, selectedRows) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent()) {
             text += item->text() + '\n';
@@ -926,8 +918,7 @@ void ResultsTree::hideResult()
     if (!mSelectionModel)
         return;
 
-    QModelIndexList selectedRows = mSelectionModel->selectedRows();
-    foreach (QModelIndex index, selectedRows) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         //Set the "hide" flag for this item
         QVariantMap data = item->data().toMap();
@@ -944,9 +935,8 @@ void ResultsTree::recheckSelectedFiles()
     if (!mSelectionModel)
         return;
 
-    QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QStringList selectedItems;
-    foreach (QModelIndex index, selectedRows) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         while (item->parent())
             item = item->parent();
@@ -1029,7 +1019,7 @@ void ResultsTree::suppressSelectedIds()
 
     QModelIndexList selectedRows = mSelectionModel->selectedRows();
     QSet<QString> selectedIds;
-    foreach (QModelIndex index, selectedRows) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent())
             continue;
@@ -1058,7 +1048,7 @@ void ResultsTree::suppressSelectedIds()
     }
 
 
-    emit suppressIds(selectedIds.toList());
+    emit suppressIds(selectedIds.values());
 }
 
 void ResultsTree::suppressHash()
@@ -1068,7 +1058,7 @@ void ResultsTree::suppressHash()
 
     // Extract selected warnings
     QSet<QStandardItem *> selectedWarnings;
-    foreach (QModelIndex index, mSelectionModel->selectedRows()) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         if (!item->parent())
             continue;
@@ -1109,18 +1099,13 @@ void ResultsTree::openContainingFolder()
     }
 }
 
-void ResultsTree::editContract()
-{
-    emit editFunctionContract(getFunction(mContextItem));
-}
-
 void ResultsTree::tagSelectedItems(const QString &tag)
 {
     if (!mSelectionModel)
         return;
     bool isTagged = false;
     ProjectFile *currentProject = ProjectFile::getActiveProject();
-    foreach (QModelIndex index, mSelectionModel->selectedRows()) {
+    for (QModelIndex index : mSelectionModel->selectedRows()) {
         QStandardItem *item = mModel.itemFromIndex(index);
         QVariantMap data = item->data().toMap();
         if (data.contains("tags")) {
@@ -1262,7 +1247,7 @@ void ResultsTree::updateFromOldReport(const QString &filename)
                 error->setData(data);
                 fileItem->child(j, COLUMN_SINCE_DATE)->setText(oldErrors[oldErrorIndex].sinceDate);
             } else if (oldErrorIndex < 0 || data[SINCEDATE].toString().isEmpty()) {
-                const QString sinceDate = QDate::currentDate().toString(Qt::SystemLocaleShortDate);
+                const QString sinceDate = QLocale::system().dateFormat(QLocale::ShortFormat);
                 data[SINCEDATE] = sinceDate;
                 error->setData(data);
                 fileItem->child(j, COLUMN_SINCE_DATE)->setText(sinceDate);
@@ -1289,7 +1274,6 @@ void ResultsTree::readErrorItem(const QStandardItem *error, ErrorItem *item) con
     item->summary = data[SUMMARY].toString();
     item->message = data[MESSAGE].toString();
     item->errorId = data[ERRORID].toString();
-    item->incomplete = data[INCOMPLETE].toBool();
     item->cwe = data[CWE].toInt();
     item->hash = data[HASH].toULongLong();
     item->inconclusive = data[INCONCLUSIVE].toBool();

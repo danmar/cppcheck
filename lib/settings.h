@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,7 +34,6 @@
 #include <atomic>
 #include <cstdint>
 #include <list>
-#include <map>
 #include <set>
 #include <string>
 #include <vector>
@@ -97,7 +96,7 @@ private:
 public:
     Settings();
 
-    void loadCppcheckCfg(const std::string &executable);
+    void loadCppcheckCfg();
 
     /** @brief addons, either filename of python/json file or json data */
     std::list<std::string> addons;
@@ -107,16 +106,6 @@ public:
 
     /** @brief Paths used as base for conversion to relative paths. */
     std::vector<std::string> basePaths;
-
-    /** @brief Bug hunting */
-    bool bugHunting;
-
-    /** @brief Max time for bug hunting analysis in seconds, after
-     * timeout the analysis will just stop. */
-    int bugHuntingCheckFunctionMaxTime;
-
-    /** Filename for bug hunting report */
-    std::string bugHuntingReport;
 
     /** @brief --cppcheck-build-dir. Always uses / as path separator. No trailing path separator. */
     std::string buildDir;
@@ -134,9 +123,6 @@ public:
 
     /** Check for incomplete info in library files? */
     bool checkLibrary;
-
-    /** @brief List of selected Visual Studio configurations that should be checks */
-    std::list<std::string> checkVsConfigs;
 
     /** @brief check unknown function return values */
     std::set<std::string> checkUnknownFunctionReturn;
@@ -156,11 +142,14 @@ public:
     /** @brief include paths excluded from checking the configuration */
     std::set<std::string> configExcludePaths;
 
+    /** cppcheck.cfg: Custom product name */
+    std::string cppcheckCfgProductName;
+
+    /** cppcheck.cfg: About text */
+    std::string cppcheckCfgAbout;
+
     /** @brief Are we running from DACA script? */
     bool daca;
-
-    /** @brief Debug bug hunting */
-    bool debugBugHunting;
 
     /** @brief Is --debug-normal given? */
     bool debugnormal;
@@ -201,14 +190,6 @@ public:
     /** @brief Force checking the files with "too many" configurations (--force). */
     bool force;
 
-    std::map<std::string, std::string> functionContracts;
-
-    struct VariableContracts {
-        std::string minValue;
-        std::string maxValue;
-    };
-    std::map<std::string, VariableContracts> variableContracts;
-
     /** @brief List of include paths, e.g. "my/includes/" which should be used
         for finding include files inside source files. (-I) */
     std::list<std::string> includePaths;
@@ -231,8 +212,10 @@ public:
     /** Library */
     Library library;
 
+#ifdef THREADING_MODEL_FORK
     /** @brief Load average value */
     int loadAverage;
+#endif
 
     /** @brief Maximum number of configurations to check before bailing.
         Default is 12. (--max-configs=N) */
@@ -274,7 +257,7 @@ public:
     class CPPCHECKLIB Rule {
     public:
         Rule()
-            : tokenlist("simple")         // use simple tokenlist
+            : tokenlist("normal")         // use normal tokenlist
             , id("rule")                  // default id
             , severity(Severity::style) { // default severity
         }

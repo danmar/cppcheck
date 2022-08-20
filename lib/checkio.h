@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,6 @@
 #include "check.h"
 #include "config.h"
 #include "errortypes.h"
-#include "utils.h"
 
 #include <ostream>
 #include <string>
@@ -50,7 +49,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks on the normal token list */
-    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger) override {
         CheckIO checkIO(tokenizer, settings, errorLogger);
 
         checkIO.checkWrongPrintfScanfArguments();
@@ -77,6 +76,9 @@ private:
         ArgumentInfo(const Token *arg, const Settings *settings, bool _isCPP);
         ~ArgumentInfo();
 
+        ArgumentInfo(const ArgumentInfo &) = delete;
+        ArgumentInfo& operator= (const ArgumentInfo &) = delete;
+
         bool isArrayOrPointer() const;
         bool isComplexType() const;
         bool isKnownType() const;
@@ -92,10 +94,6 @@ private:
         bool _template;
         bool address;
         bool isCPP;
-
-    private:
-        ArgumentInfo(const ArgumentInfo &); // not implemented
-        ArgumentInfo operator = (const ArgumentInfo &); // not implemented
     };
 
     void checkFormatString(const Token * const tok,
@@ -134,7 +132,7 @@ private:
     static void argumentType(std::ostream & os, const ArgumentInfo * argInfo);
     static Severity::SeverityType getSeverity(const ArgumentInfo *argInfo);
 
-    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckIO c(nullptr, settings, errorLogger);
 
         c.coutCerrMisusageError(nullptr,  "cout");
@@ -166,7 +164,7 @@ private:
         return "IO using format string";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "Check format string input/output operations.\n"
                "- Bad usage of the function 'sprintf' (overlapping data)\n"
                "- Missing or wrong width specifiers in 'scanf' format string\n"

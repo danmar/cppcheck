@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,50 +34,18 @@
 #include <iomanip>
 #include <memory>
 #include <string>
+#include <utility>
 
 #include <tinyxml2.h>
 
-InternalError::InternalError(const Token *tok, const std::string &errorMsg, Type type) :
-    token(tok), errorMessage(errorMsg), type(type)
-{
-    switch (type) {
-    case AST:
-        id = "internalAstError";
-        break;
-    case SYNTAX:
-        id = "syntaxError";
-        break;
-    case UNKNOWN_MACRO:
-        id = "unknownMacro";
-        break;
-    case INTERNAL:
-        id = "cppcheckError";
-        break;
-    case LIMIT:
-        id = "cppcheckLimit";
-        break;
-    case INSTANTIATION:
-        id = "instantiationError";
-        break;
-    }
-}
-
-static std::size_t calculateWarningHash(const TokenList *tokenList, const std::string &msg)
-{
-    if (!tokenList)
-        return 0;
-    return std::hash<std::string> {}(msg + "\n" + tokenList->front()->stringifyList(false, true, false, false, false));
-}
-
 ErrorMessage::ErrorMessage()
-    : incomplete(false), severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
+    : severity(Severity::none), cwe(0U), certainty(Certainty::normal), hash(0)
 {}
 
-ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, Certainty::CertaintyLevel certainty) :
-    callStack(callStack), // locations for this error message
-    id(id),               // set the message id
-    file0(file1),
-    incomplete(false),
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, Certainty::CertaintyLevel certainty) :
+    callStack(std::move(callStack)), // locations for this error message
+    id(std::move(id)),               // set the message id
+    file0(std::move(file1)),
     severity(severity),   // severity for this error message
     cwe(0U),
     certainty(certainty),
@@ -89,11 +57,10 @@ ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::
 
 
 
-ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::string& file1, Severity::SeverityType severity, const std::string &msg, const std::string &id, const CWE &cwe, Certainty::CertaintyLevel certainty) :
-    callStack(callStack), // locations for this error message
-    id(id),               // set the message id
-    file0(file1),
-    incomplete(false),
+ErrorMessage::ErrorMessage(std::list<FileLocation> callStack, std::string file1, Severity::SeverityType severity, const std::string &msg, std::string id, const CWE &cwe, Certainty::CertaintyLevel certainty) :
+    callStack(std::move(callStack)), // locations for this error message
+    id(std::move(id)),               // set the message id
+    file0(std::move(file1)),
     severity(severity),   // severity for this error message
     cwe(cwe.id),
     certainty(certainty),
@@ -103,8 +70,8 @@ ErrorMessage::ErrorMessage(const std::list<FileLocation> &callStack, const std::
     setmsg(msg);
 }
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, Certainty::CertaintyLevel certainty)
-    : id(id), incomplete(false), severity(severity), cwe(0U), certainty(certainty), hash(0)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, Certainty::CertaintyLevel certainty)
+    : id(std::move(id)), severity(severity), cwe(0U), certainty(certainty), hash(0)
 {
     // Format callstack
     for (std::list<const Token *>::const_iterator it = callstack.begin(); it != callstack.end(); ++it) {
@@ -122,8 +89,8 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 }
 
 
-ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, const std::string& id, const std::string& msg, const CWE &cwe, Certainty::CertaintyLevel certainty, bool bugHunting)
-    : id(id), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
+ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const TokenList* list, Severity::SeverityType severity, std::string id, const std::string& msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
+    : id(std::move(id)), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
     for (const Token *tok: callstack) {
@@ -139,16 +106,11 @@ ErrorMessage::ErrorMessage(const std::list<const Token*>& callstack, const Token
 
     setmsg(msg);
 
-    std::ostringstream hashWarning;
-    for (const Token *tok: callstack)
-        hashWarning << std::hex << (tok ? tok->index() : 0) << " ";
-    hashWarning << mShortMessage;
-
-    hash = bugHunting ? calculateWarningHash(list, hashWarning.str()) : 0;
+    hash = 0; // calculateWarningHash(list, hashWarning.str());
 }
 
-ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty, bool bugHunting)
-    : id(id), incomplete(false), severity(severity), cwe(cwe.id), certainty(certainty)
+ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenList, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty)
+    : id(id), severity(severity), cwe(cwe.id), certainty(certainty)
 {
     // Format callstack
     for (const ErrorPathItem& e: errorPath) {
@@ -171,17 +133,11 @@ ErrorMessage::ErrorMessage(const ErrorPath &errorPath, const TokenList *tokenLis
 
     setmsg(msg);
 
-    std::ostringstream hashWarning;
-    for (const ErrorPathItem &e: errorPath)
-        hashWarning << std::hex << (e.first ? e.first->index() : 0) << " ";
-    hashWarning << mShortMessage;
-
-    hash = bugHunting ? calculateWarningHash(tokenList, hashWarning.str()) : 0;
+    hash = 0; // calculateWarningHash(tokenList, hashWarning.str());
 }
 
 ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
-    : incomplete(false),
-    severity(Severity::none),
+    : severity(Severity::none),
     cwe(0U),
     certainty(Certainty::normal)
 {
@@ -220,6 +176,8 @@ ErrorMessage::ErrorMessage(const tinyxml2::XMLElement * const errmsg)
             const int line = strline ? std::atoi(strline) : 0;
             const int column = strcolumn ? std::atoi(strcolumn) : 0;
             callStack.emplace_front(file, info, line, column);
+        } else if (std::strcmp(e->Name(),"symbol")==0) {
+            mSymbolNames += e->GetText();
         }
     }
 }
@@ -384,7 +342,7 @@ bool ErrorMessage::deserialize(const std::string &data)
     return true;
 }
 
-std::string ErrorMessage::getXMLHeader()
+std::string ErrorMessage::getXMLHeader(const std::string& productName)
 {
     tinyxml2::XMLPrinter printer;
 
@@ -396,6 +354,8 @@ std::string ErrorMessage::getXMLHeader()
 
     printer.PushAttribute("version", 2);
     printer.OpenElement("cppcheck", false);
+    if (!productName.empty())
+        printer.PushAttribute("product-name", productName.c_str());
     printer.PushAttribute("version", CppCheck::version());
     printer.CloseElement(false);
     printer.OpenElement("errors", false);
@@ -505,7 +465,7 @@ static std::string readCode(const std::string &file, int linenr, int column, con
     std::string::size_type pos = 0;
     while ((pos = line.find('\t', pos)) != std::string::npos)
         line[pos] = ' ';
-    return line + endl + std::string((column>0 ? column-1 : column), ' ') + '^';
+    return line + endl + std::string((column>0 ? column-1 : 0), ' ') + '^';
 }
 
 static void replaceColors(std::string& source)
@@ -665,8 +625,8 @@ ErrorMessage::FileLocation::FileLocation(const Token* tok, const TokenList* toke
     : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok))
 {}
 
-ErrorMessage::FileLocation::FileLocation(const Token* tok, const std::string &info, const TokenList* tokenList)
-    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(info)
+ErrorMessage::FileLocation::FileLocation(const Token* tok, std::string info, const TokenList* tokenList)
+    : fileIndex(tok->fileIndex()), line(tok->linenr()), column(tok->column()), mOrigFileName(tokenList->getOrigFile(tok)), mFileName(tokenList->file(tok)), mInfo(std::move(info))
 {}
 
 std::string ErrorMessage::FileLocation::getfile(bool convert) const
@@ -857,7 +817,7 @@ std::string replaceStr(std::string s, const std::string &from, const std::string
             pos1++;
             continue;
         }
-        s = s.substr(0,pos1) + to + s.substr(pos2);
+        s.replace(pos1, from.size(), to);
         pos1 += to.size();
     }
     return s;

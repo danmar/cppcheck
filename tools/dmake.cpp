@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 // Generate Makefile for cppcheck
 
 #include <algorithm>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <iostream>
 #include <string>
 #include <vector>
@@ -55,9 +55,6 @@ static std::string objfiles(const std::vector<std::string> &files)
 
 static void getDeps(const std::string &filename, std::vector<std::string> &depfiles)
 {
-    if (filename == "externals/z3_version.h")
-        return;
-
     static const std::vector<std::string> externalfolders{"externals", "externals/picojson", "externals/simplecpp", "externals/tinyxml2" };
 
     // Is the dependency already included?
@@ -239,26 +236,23 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
-    // Z3 is an optional dependency now..
-    makeConditionalVariable(fout, "USE_Z3", "no");
-    fout << "ifeq ($(USE_Z3),yes)\n"
-         << "    CPPFLAGS += -DUSE_Z3\n"
-         << "    LIBS += -lz3\n"
-         << "endif\n";
-
     // use match compiler..
     fout << "# use match compiler\n";
     fout << "ifeq ($(SRCDIR),build)\n"
          << "    $(warning Usage of SRCDIR to activate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)\n"
          << "    MATCHCOMPILER:=yes\n"
          << "endif\n";
+    // TODO: bail out when matchcompiler.py fails (i.e. invalid PYTHON_INTERPRETER specified)
+    // TODO: handle "PYTHON_INTERPRETER="
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
          << "    # Find available Python interpreter\n"
-         << "    PYTHON_INTERPRETER := $(shell which python)\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        PYTHON_INTERPRETER := $(shell which python3)\n"
          << "    endif\n"
-         << "    ifndef PYTHON_INTERPRETER\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
+         << "        PYTHON_INTERPRETER := $(shell which python)\n"
+         << "    endif\n"
+         << "    ifeq ($(PYTHON_INTERPRETER),)\n"
          << "        $(error Did not find a Python interpreter)\n"
          << "    endif\n"
          << "    ifdef VERIFY\n"
@@ -287,11 +281,15 @@ int main(int argc, char **argv)
          << "ifndef COMSPEC\n"
          << "    ifdef ComSpec\n"
          << "        #### ComSpec is defined on some WIN32's.\n"
-         << "        COMSPEC=$(ComSpec)\n"
+         << "        WINNT=1\n"
+         << "\n"
+         << "        ifneq (,$(findstring /cygdrive/,$(PATH)))\n"
+         << "            CYGWIN=1\n"
+         << "        endif # CYGWIN\n"
          << "    endif # ComSpec\n"
          << "endif # COMSPEC\n"
          << "\n"
-         << "ifdef COMSPEC\n"
+         << "ifdef WINNT\n"
          << "    #### Maybe Windows\n"
          << "    ifndef CPPCHK_GLIBCXX_DEBUG\n"
          << "        CPPCHK_GLIBCXX_DEBUG=\n"
@@ -302,7 +300,7 @@ int main(int argc, char **argv)
          << "    else\n"
          << "        RDYNAMIC=-lshlwapi\n"
          << "    endif\n"
-         << "else # !COMSPEC\n"
+         << "else # !WINNT\n"
          << "    uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')\n"
          << "\n"
          << "    ifeq ($(uname_S),Linux)\n"
@@ -317,19 +315,20 @@ int main(int argc, char **argv)
          << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
          << "    endif # GNU/kFreeBSD\n"
          << "\n"
-         << "endif # COMSPEC\n"
+         << "    LDFLAGS=-pthread\n"
+         << "\n"
+         << "endif # WINNT\n"
          << "\n";
 
     // tinymxl2 requires __STRICT_ANSI__ to be undefined to compile under CYGWIN.
-    fout << "# Set the UNDEF_STRICT_ANSI flag to address compile time warnings\n"
-         << "# with tinyxml2 and Cygwin.\n"
-         << "ifdef COMSPEC\n"
-         << "    uname_S := $(shell uname -s)\n"
-         << "\n"
-         << "    ifneq (,$(findstring CYGWIN,$(uname_S)))\n"
-         << "        UNDEF_STRICT_ANSI=-U__STRICT_ANSI__\n"
-         << "    endif # CYGWIN\n"
-         << "endif # COMSPEC\n"
+    fout << "ifdef CYGWIN\n"
+         << "    # Set the UNDEF_STRICT_ANSI flag to address compile time warnings\n"
+         << "    # with tinyxml2 and Cygwin.\n"
+         << "    UNDEF_STRICT_ANSI=-U__STRICT_ANSI__\n"
+         << "    \n"
+         << "    # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
+         << "    CXXFLAGS+=-Wl,--stack,8388608\n"
+         << "endif # CYGWIN\n"
          << "\n";
 
     // skip "-D_GLIBCXX_DEBUG" if clang, since it breaks the build
@@ -374,18 +373,8 @@ int main(int argc, char **argv)
                                 "-g");
     }
 
-    fout << "# Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
-         << "ifdef COMSPEC\n"
-         << "    uname_S := $(shell uname -s)\n"
-         << "\n"
-         << "    ifneq (,$(findstring CYGWIN,$(uname_S)))\n"
-         << "        CXXFLAGS+=-Wl,--stack,8388608\n"
-         << "    endif # CYGWIN\n"
-         << "endif # COMSPEC\n"
-         << "\n";
-
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
-         << "    override CXXFLAGS += -std=c++0x\n"
+         << "    override CXXFLAGS += -std=gnu++0x -pipe\n"
          << "else ifeq (clang++, $(findstring clang++,$(CXX)))\n"
          << "    override CXXFLAGS += -std=c++0x\n"
          << "else ifeq ($(CXX), c++)\n"
@@ -426,7 +415,7 @@ int main(int argc, char **argv)
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
-    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o\n";
+    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";
@@ -438,10 +427,8 @@ int main(int argc, char **argv)
     fout << "\t$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)\n\n";
     fout << "run-dmake: dmake\n";
     fout << "\t./dmake\n\n";
-    fout << "generate_cfg_tests: tools/generate_cfg_tests.o $(EXTOBJ)\n";
-    fout << "\tg++ -isystem externals/tinyxml2 -o generate_cfg_tests tools/generate_cfg_tests.o $(EXTOBJ)\n";
     fout << "clean:\n";
-    fout << "\trm -f build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
+    fout << "\trm -f build/*.cpp build/*.o lib/*.o cli/*.o test/*.o tools/*.o externals/*/*.o testrunner dmake cppcheck cppcheck.exe cppcheck.1\n\n";
     fout << "man:\tman/cppcheck.1\n\n";
     fout << "man/cppcheck.1:\t$(MAN_SOURCE)\n\n";
     fout << "\t$(XP) $(DB2MAN) $(MAN_SOURCE)\n\n";
@@ -498,7 +485,9 @@ int main(int argc, char **argv)
     fout << ".PHONY: validatePlatforms\n";
     fout << "%.checked:%.xml\n";
     fout << "\txmllint --noout --relaxng platforms/cppcheck-platforms.rng $<\n";
-    fout << "validatePlatforms: ${PlatformFilesCHECKED}\n\n";
+    fout << "validatePlatforms: ${PlatformFilesCHECKED}\n";
+    fout << "\txmllint --noout platforms/cppcheck-platforms.rng\n";
+    fout << "\n";
     fout << "# Validate XML output (to detect regressions)\n";
     fout << "/tmp/errorlist.xml: cppcheck\n";
     fout << "\t./cppcheck --errorlist >$@\n";
@@ -511,7 +500,11 @@ int main(int argc, char **argv)
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/errorlist.xml\n";
     fout << "\txmllint --noout --relaxng cppcheck-errors.rng /tmp/example.xml\n";
     fout << "\ncheckCWEEntries: /tmp/errorlist.xml\n";
-    fout << "\t./tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
+    // TODO: handle "PYTHON_INTERPRETER="
+    fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python3)))\n";
+    fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(shell which python)))\n";
+    fout << "\t$(eval PYTHON_INTERPRETER := $(if $(PYTHON_INTERPRETER),$(PYTHON_INTERPRETER),$(error Did not find a Python interpreter)))\n";
+    fout << "\t$(PYTHON_INTERPRETER) tools/listErrorsWithoutCWE.py -F /tmp/errorlist.xml\n";
     fout << ".PHONY: validateRules\n";
     fout << "validateRules:\n";
     fout << "\txmllint --noout rules/*.xml\n";
@@ -521,7 +514,7 @@ int main(int argc, char **argv)
     compilefiles(fout, libfiles, "${INCLUDE_FOR_LIB}");
     compilefiles(fout, clifiles, "${INCLUDE_FOR_CLI}");
     compilefiles(fout, testfiles, "${INCLUDE_FOR_TEST}");
-    compilefiles(fout, extfiles, "");
+    compilefiles(fout, extfiles, emptyString);
     compilefiles(fout, toolsfiles, "${INCLUDE_FOR_LIB}");
 
     return 0;

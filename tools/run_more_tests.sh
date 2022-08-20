@@ -11,7 +11,7 @@ if test -f ./bin/cppcheck; then
     CPPCHECK=$(pwd)/bin/cppcheck
 fi
 
-python $DIR/extracttests.py --code=$(pwd)/test1 $1
+python3 $DIR/extracttests.py --code=$(pwd)/test1 $1
 
 cd test1
 

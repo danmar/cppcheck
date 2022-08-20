@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ struct ReverseTraversal {
         return true;
     }
 
-    Token* getParentFunction(Token* tok)
+    static Token* getParentFunction(Token* tok)
     {
         if (!tok)
             return nullptr;
@@ -90,7 +90,7 @@ struct ReverseTraversal {
         return nullptr;
     }
 
-    Token* getTopFunction(Token* tok)
+    static Token* getTopFunction(Token* tok)
     {
         if (!tok)
             return nullptr;

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2019 Cppcheck team.
+ * Copyright (C) 2007-2021 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,15 +16,17 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QObject>
+#include "benchmarksimple.h"
+
+#include "settings.h"
+#include "tokenize.h"
+
+#include <sstream>
+
+#include <QByteArray>
 #include <QFile>
 #include <QString>
-#include <QByteArray>
-#include <sstream>
-#include "benchmarksimple.h"
-#include "tokenize.h"
-#include "token.h"
-#include "settings.h"
+#include <QtTest>
 
 void BenchmarkSimple::tokenize()
 {
@@ -39,40 +41,6 @@ void BenchmarkSimple::tokenize()
     std::istringstream istr(data.constData());
     QBENCHMARK {
         tokenizer.tokenize(istr, "test.cpp");
-    }
-}
-
-void BenchmarkSimple::simplify()
-{
-    QFile file(QString(SRCDIR) + "/../../data/benchmark/simple.cpp");
-    QByteArray data = file.readAll();
-
-    Settings settings;
-    settings.debugwarnings = true;
-
-    // tokenize..
-    Tokenizer tokenizer(&settings, this);
-    std::istringstream istr(data.constData());
-    tokenizer.tokenize(istr, "test.cpp");
-    QBENCHMARK {
-        tokenizer.simplifyTokenList2();
-    }
-}
-
-void BenchmarkSimple::tokenizeAndSimplify()
-{
-    QFile file(QString(SRCDIR) + "/../../data/benchmark/simple.cpp");
-    QByteArray data = file.readAll();
-
-    Settings settings;
-    settings.debugwarnings = true;
-
-    // tokenize..
-    Tokenizer tokenizer(&settings, this);
-    std::istringstream istr(data.constData());
-    QBENCHMARK {
-        tokenizer.tokenize(istr, "test.cpp");
-        tokenizer.simplifyTokenList2();
     }
 }
 

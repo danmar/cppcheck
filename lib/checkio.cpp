@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,6 @@
 #include "symboldatabase.h"
 #include "token.h"
 #include "tokenize.h"
-#include "utils.h"
 #include "valueflow.h"
 
 #include <algorithm>
@@ -975,7 +974,6 @@ void CheckIO::checkFormatString(const Token * const tok,
                         bool done = false;
                         while (!done) {
                             if (i == formatString.end()) {
-                                done = true;
                                 break;
                             }
                             switch (*i) {
@@ -1342,7 +1340,7 @@ CheckIO::ArgumentInfo::ArgumentInfo(const Token * arg, const Settings *settings,
 
     // Use AST type info
     // TODO: This is a bailout so that old code is used in simple cases. Remove the old code and always use the AST type.
-    if (!Token::Match(arg, "%str% ,|)") && !(Token::Match(arg,"%var%") && arg->variable() && arg->variable()->isArray())) {
+    if (!Token::Match(arg, "%str% ,|)") && !(arg->variable() && arg->variable()->isArray())) {
         const Token *top = arg;
         while (top->str() == "(" && !top->isCast())
             top = top->next();

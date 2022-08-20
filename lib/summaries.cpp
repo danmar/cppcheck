@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -61,7 +61,7 @@ std::string Summaries::create(const Tokenizer *tokenizer, const std::string &cfg
         auto join = [](const std::set<std::string> &data) -> std::string {
             std::string ret;
             const char *sep = "";
-            for (std::string d: data)
+            for (const std::string &d: data)
             {
                 ret += sep + d;
                 sep = ",";

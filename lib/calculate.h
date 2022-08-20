@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,7 +42,7 @@ inline bool isEqual(float x, float y)
 template<class T>
 bool isZero(T x)
 {
-    return isEqual<T>(x, T(0));
+    return isEqual(x, T(0));
 }
 
 template<class R, class T>
@@ -69,7 +69,7 @@ R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
         }
         return wrap(x / y);
     case '%':
-        if (isZero(y)) {
+        if (isZero(MathLib::bigint(y))) {
             if (error)
                 *error = true;
             return R{};
@@ -111,6 +111,8 @@ R calculate(const std::string& s, const T& x, const T& y, bool* error = nullptr)
         return wrap(x >= y);
     case '<=':
         return wrap(x <= y);
+    case '<=>':
+        return wrap(x - y);
     }
     throw InternalError(nullptr, "Unknown operator: " + s);
 }

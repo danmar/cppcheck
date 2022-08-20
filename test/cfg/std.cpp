@@ -21,15 +21,609 @@
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
+#define __STDC_WANT_LIB_EXT1__ 1
 #include <ctime>
 #include <cwchar>
 #include <fstream>
 #include <functional>
+#ifndef __STDC_NO_THREADS__
+    #include <threads.h>
+#endif
 #include <iomanip>
+#include <ios>
 #include <iostream>
 #include <istream>
 #include <iterator>
 #include <vector>
+
+int zerodiv_ldexp()
+{
+    int i = std::ldexp(0.0, 42.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_ilogb()
+{
+    int i = std::ilogb(1.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_hypot()
+{
+    int i = std::hypot(0.0, 0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fmod()
+{
+    int i = std::fmod(0.0, 42.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fmin()
+{
+    int i = std::fmin(0.0, 0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fmax()
+{
+    int i = std::fmax(0.0, 0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_floor()
+{
+    int i = std::floor(0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fabs()
+{
+    int i = std::fabs(-0.0) + std::fabs(+0.0) + std::fabs(0.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_fdim()
+{
+    int i = std::fdim(1.0, 1.0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_trunc()
+{
+    int i = std::trunc(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_ceil()
+{
+    int i = std::ceil(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_sqrt()
+{
+    int i = std::sqrt(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_cbrt()
+{
+    int i = std::cbrt(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_erf()
+{
+    int i = std::erf(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_erfc()
+{
+    int i = std::erfc(42);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_asin()
+{
+    int i = std::asin(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_acos()
+{
+    int i = std::acos(1);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_asinh()
+{
+    int i = std::asinh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_acosh()
+{
+    int i = std::acosh(1);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_log1p()
+{
+    int i = std::log1p(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_nearbyint()
+{
+    int i = std::nearbyint(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_round()
+{
+    int i = std::round(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_sinh()
+{
+    int i = std::sinh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_tanh()
+{
+    int i = std::tanh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_atanh()
+{
+    int i = std::atanh(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_atan()
+{
+    int i = std::atan(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_sin()
+{
+    int i = std::sin(0)+std::sin(M_PI)+std::sin(2*M_PI);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int zerodiv_expm1()
+{
+    int i = std::expm1(0);
+    // cppcheck-suppress zerodiv
+    return 42 / i;
+}
+
+int moduloofone_cos()
+{
+    int i = std::cos(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
+int moduloofone_exp()
+{
+    int i = std::exp(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
+int moduloofone_exp2()
+{
+    int i = std::exp2(0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
+int moduloofone_pow()
+{
+    int i = std::pow(2, 0);
+    // cppcheck-suppress moduloofone
+    return 42 % i;
+}
+
+char* invalidFunctionArgStr_strncpy(char * destination)
+{
+    // Copies the first num characters of source to destination.
+    // If the end of the source C string (which is signaled by a null-character)
+    // is found before num characters have been copied, destination
+    // is padded with zeros until a total of num characters have been written to it.
+    const char source = 'x';
+    const std::size_t num = 1U;
+    return strncpy(destination, &source, num);
+}
+
+void invalidFunctionArgStr_fprintf(FILE *stream, const char *format)
+{
+    const char formatBuf[] = {'%','d'};
+    // cppcheck-suppress invalidFunctionArgStr
+    (void)fprintf(stream,formatBuf,42);
+    (void)fprintf(stream,format,42);
+}
+
+void invalidFunctionArgStr_fopen(const char * const fileName, const char * const mode)
+{
+    const char fileNameBuf[] = {'f','i','l','e'};
+    const char modeBuf[] = {'r'};
+    // cppcheck-suppress invalidFunctionArgStr
+    FILE *fp = fopen(fileName, modeBuf);
+    fclose(fp);
+    // cppcheck-suppress invalidFunctionArgStr
+    fp = fopen(fileNameBuf, mode);
+    fclose(fp);
+}
+
+float invalidFunctionArg_remquo (float x, float y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquof(x,0.0f,quo);
+    return std::remquo(x,y,quo);
+}
+
+double invalidFunctionArg_remquo (double x, double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0f,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0L,quo);
+    return std::remquo(x,y,quo);
+}
+
+double invalidFunctionArg_remquo (long double x, long double y, int* quo )
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquo(x,0.0L,quo);
+    // cppcheck-suppress invalidFunctionArg
+    (void) std::remquol(x,0.0L,quo);
+    return std::remquo(x,y,quo);
+}
+
+void invalidFunctionArg_remainderl(long double f1, long double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderl(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderl(f1,0.0L);
+    (void)std::remainderl(f1,f2);
+}
+
+void invalidFunctionArg_remainder(double f1, double f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainder(f1,0.0);
+    (void)std::remainder(f1,f2);
+}
+
+void invalidFunctionArg_remainderf(float f1, float f2)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderf(f1,0.0);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::remainderf(f1,0.0f);
+    (void)std::remainderf(f1,f2);
+}
+
+void uninitvar_std_fstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    std::string s;
+    const char *ptr;
+    std::ios_base::openmode m;
+
+    fs.open(s, mode);
+    // cppcheck-suppress uninitvar
+    fs.open(ptr, mode);
+    // TODO cppcheck-suppress uninitvar
+    fs.open(filename, m);
+    // TODO cppcheck-suppress uninitvar
+    fs.open(strFileName, m);
+    fs.open(s);
+    // TODO cppcheck-suppress uninitvar
+    fs.open(ptr);
+}
+
+void uninitvar_std_ifstream_open(std::ifstream &ifs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    std::string s;
+    const char *ptr;
+    std::ios_base::openmode m;
+
+    ifs.open(s, mode);
+    // cppcheck-suppress uninitvar
+    ifs.open(ptr, mode);
+    // TODO cppcheck-suppress uninitvar
+    ifs.open(filename, m);
+    // TODO cppcheck-suppress uninitvar
+    ifs.open(strFileName, m);
+    ifs.open(s);
+    // TODO cppcheck-suppress uninitvar
+    ifs.open(ptr);
+}
+
+void uninitvar_std_ofstream_open(std::ofstream &os, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    std::string s;
+    const char *ptr;
+    std::ios_base::openmode m;
+
+    os.open(s, mode);
+    // cppcheck-suppress uninitvar
+    os.open(ptr, mode);
+    // TODO cppcheck-suppress uninitvar
+    os.open(filename, m);
+    // TODO cppcheck-suppress uninitvar
+    os.open(strFileName, m);
+    os.open(s);
+    // TODO cppcheck-suppress uninitvar
+    os.open(ptr);
+}
+
+void nullPointer_std_filebuf_open(std::filebuf &fb, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    (void)fb.open(nullptr, mode);
+    (void)fb.open(filename, mode);
+    (void)fb.open(strFileName, mode);
+}
+
+void nullPointer_std_ofstream_open(std::ofstream &os, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    os.open(nullptr, mode);
+    os.open(filename, mode);
+    os.open(strFileName, mode);
+    // cppcheck-suppress nullPointer
+    os.open(nullptr);
+    os.open(filename);
+    os.open(strFileName);
+}
+
+void nullPointer_std_fstream_open(std::fstream &fs, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    fs.open(nullptr, mode);
+    fs.open(filename, mode);
+    fs.open(strFileName, mode);
+    // cppcheck-suppress nullPointer
+    fs.open(nullptr);
+    fs.open(filename);
+    fs.open(strFileName);
+}
+
+void nullPointer_std_ifstream_open(std::ifstream &is, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
+{
+    // cppcheck-suppress nullPointer
+    is.open(nullptr, mode);
+    is.open(filename, mode);
+    is.open(strFileName, mode);
+    // cppcheck-suppress nullPointer
+    is.open(nullptr);
+    is.open(filename);
+    is.open(strFileName);
+}
+
+void bufferAccessOutOfBounds_std_fstream_write(std::fstream &fs, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)fs.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)fs.write(buf,43);
+    (void)fs.write(buf,n);
+    (void)fs.write(s,n);
+}
+
+void bufferAccessOutOfBounds_std_ostream_write(std::ostream &os, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)os.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)os.write(buf,43);
+    (void)os.write(buf,n);
+    (void)os.write(s,n);
+}
+
+void bufferAccessOutOfBounds_std_ostringstream_write(std::ostringstream &oss, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)oss.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)oss.write(buf,43);
+    (void)oss.write(buf,n);
+    (void)oss.write(s,n);
+}
+
+void bufferAccessOutOfBounds_std_ofstream_write(std::ofstream &os, const char* s, std::streamsize n)
+{
+    char buf[42] = {0};
+    (void)os.write(buf,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)os.write(buf,43);
+    (void)os.write(buf,n);
+    (void)os.write(s,n);
+}
+
+void invalidFunctionArg_fesetexceptflag(fexcept_t* flagp, int excepts)
+{
+    (void)std::fesetexceptflag(flagp, excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fesetexceptflag(flagp, 0);
+    (void)std::fesetexceptflag(flagp, FE_DIVBYZERO);
+    (void)std::fesetexceptflag(flagp, FE_INEXACT);
+    (void)std::fesetexceptflag(flagp, FE_INVALID);
+    (void)std::fesetexceptflag(flagp, FE_OVERFLOW);
+    (void)std::fesetexceptflag(flagp, FE_UNDERFLOW);
+    (void)std::fesetexceptflag(flagp, FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fesetexceptflag(flagp, FE_ALL_EXCEPT+1);
+}
+
+void invalidFunctionArg_fetestexcept(int excepts)
+{
+    (void)std::fetestexcept(excepts);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fetestexcept(0);
+    (void)std::fetestexcept(FE_DIVBYZERO);
+    (void)std::fetestexcept(FE_INEXACT);
+    (void)std::fetestexcept(FE_INVALID);
+    (void)std::fetestexcept(FE_OVERFLOW);
+    (void)std::fetestexcept(FE_UNDERFLOW);
+    (void)std::fetestexcept(FE_ALL_EXCEPT);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fetestexcept(FE_ALL_EXCEPT+1);
+}
+
+void nullPointer_fprintf(FILE *Stream, char *Format, int Argument)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::fprintf(Stream, nullptr, Argument);
+    // no warning is expected
+    (void)std::fprintf(Stream, Format, Argument);
+}
+
+void bufferAccessOutOfBounds_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
+{
+    wchar_t buf[42];
+    (void)std::wcsftime(buf, 42, format, timeptr);
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    (void)std::wcsftime(buf, 43, format, timeptr);
+    (void)std::wcsftime(ptr, maxsize, format, timeptr);
+}
+
+int qsort_cmpfunc (const void * a, const void * b) {
+    return (*static_cast<const int*>(a) - *static_cast<const int*>(b));
+}
+void nullPointer_qsort(void *base, std::size_t n, std::size_t size, int (*cmp)(const void *, const void *))
+{
+    // cppcheck-suppress nullPointer
+    std::qsort(nullptr, n, size, qsort_cmpfunc);
+    // cppcheck-suppress nullPointer
+    std::qsort(base, n, size, nullptr);
+    std::qsort(base, n, size, qsort_cmpfunc);
+}
+
+void nullPointer_vfprintf(FILE *Stream, const char *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::vfprintf(Stream, nullptr, Arg);
+    (void)std::vfprintf(Stream, Format, Arg);
+}
+
+void nullPointer_vfwprintf(FILE *Stream, wchar_t *Format, va_list Arg)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::vfwprintf(Stream, nullptr, Arg);
+    (void)std::vfwprintf(Stream, Format, Arg);
+}
+
+void *bufferAccessOutOfBounds_memchr(void *s, int c, size_t n)
+{
+    char buf[42]={0};
+    (void)std::memchr(buf,c,42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)std::memchr(buf,c,43);
+    return std::memchr(s,c,n);
+}
+
+// As with all bounds-checked functions, localtime_s is only guaranteed to be available if __STDC_LIB_EXT1__ is defined by the implementation and if the user defines __STDC_WANT_LIB_EXT1__ to the integer constant 1 before including time.h.
+#ifdef __STDC_LIB_EXT1__
+void uninitvar_localtime_s(const std::time_t *restrict time, struct tm *restrict result)
+{
+    const std::time_t *restrict Time;
+    // TODO cppcheck-suppress uninitvar
+    (void)std::localtime_s(Time, result);
+    (void)std::localtime_s(time, result);
+}
+
+void nullPointer_localtime_s(const std::time_t *restrict time, struct tm *restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::localtime_s(NULL, result);
+    // cppcheck-suppress nullPointer
+    (void)std::localtime_s(time, NULL);
+    (void)std::localtime_s(time, result);
+}
+#endif // __STDC_LIB_EXT1__
+
+size_t nullPointer_strftime(char *s, size_t max, const char *fmt, const struct tm *p)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::strftime(NULL,max,fmt,p);
+    // cppcheck-suppress nullPointer
+    (void) std::strftime(s,max,NULL,p);
+    // cppcheck-suppress nullPointer
+    (void) std::strftime(s,max,fmt,NULL);
+    return std::strftime(s,max,fmt,p);
+}
+
+size_t bufferAccessOutOfBounds_wcsrtombs(char * dest, const wchar_t ** src, size_t len, mbstate_t * ps)
+{
+    char buf[42];
+    (void)std::wcsrtombs(buf,src,42,ps);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)std::wcsrtombs(buf,src,43,ps);
+    return std::wcsrtombs(dest,src,len,ps);
+}
+
+void invalidFunctionArg_std_string_substr(const std::string &str, std::size_t pos, std::size_t len) {
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(-1,len);
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(pos,-1);
+    // no warning is expected for
+    (void)str.substr(pos,len);
+    (void)str.substr(pos, std::string::npos);
+}
+
+void invalidFunctionArg_std_wstring_substr(const std::wstring &str, std::size_t pos, std::size_t len) {
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(-1,len);
+    // cppcheck-suppress invalidFunctionArg
+    (void)str.substr(pos,-1);
+    // no warning is expected for
+    (void)str.substr(pos,len);
+    (void)str.substr(pos, std::wstring::npos);
+}
 
 double invalidFunctionArg_log10(double d = 0.0) {
     // cppcheck-suppress invalidFunctionArg
@@ -43,19 +637,19 @@ void uninitvar_std_next(const std::vector<int> &v, int count)
     if (std::next(v.begin(), count) != v.end()) {}
 
     std::vector<int>::iterator it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(it) != v.end()) {}
 
     std::vector<int>::const_iterator const_it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(const_it) != v.end()) {}
 
     std::vector<int>::reverse_iterator rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(rit) != v.rend()) {}
 
     std::vector<int>::const_reverse_iterator const_rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::next(const_rit) != v.rend()) {}
 }
 
@@ -66,19 +660,19 @@ void uninitvar_std_prev(const std::vector<int> &v, int count)
     if (std::prev(v.begin(), count) != v.end()) {}
 
     std::vector<int>::iterator it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(it) != v.end()) {}
 
     std::vector<int>::const_iterator const_it;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(const_it) != v.end()) {}
 
     std::vector<int>::reverse_iterator rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(rit) != v.rend()) {}
 
     std::vector<int>::const_reverse_iterator const_rit;
-    // TODO-cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::prev(const_rit) != v.rend()) {}
 }
 
@@ -90,12 +684,36 @@ void overlappingWriteFunction_wcscat(wchar_t *src, wchar_t *dest)
     (void)wcscat(src, src);
 }
 
+void overlappingWriteFunction_wcsxfrm(wchar_t *s1, wchar_t *s2, size_t n)
+{
+    // No warning shall be shown:
+    (void)wcsxfrm(s1, s2, n);
+}
+
 char * overlappingWriteFunction_strcat(char *src, char *dest)
 {
     // No warning shall be shown:
     (void)strcat(dest, src);
     // cppcheck-suppress overlappingWriteFunction
     return strcat(src, src);
+}
+
+int nullPointer_wcsncmp(const wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::wcsncmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void) std::wcsncmp(s1,NULL,n);
+    return std::wcsncmp(s1,s2,n);
+}
+
+wchar_t* nullPointer_wcsncpy(wchar_t *s, const wchar_t *cs, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::wcsncpy(NULL,cs,n);
+    // cppcheck-suppress nullPointer
+    (void) std::wcsncpy(s,NULL,n);
+    return std::wcsncpy(s,cs,n);
 }
 
 char * overlappingWriteFunction_strncat(char *src, char *dest, const std::size_t count)
@@ -1211,12 +1829,127 @@ void uninitvar_fseek(void)
     (void)std::fseek(stream,offset,origin);
 }
 
+void invalidFunctionArg_fseek(FILE* stream, long int offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)std::fseek(stream, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)std::fseek(stream, offset, origin);
+    (void)std::fseek(stream, offset, SEEK_SET);
+    (void)std::fseek(stream, offset, SEEK_CUR);
+    (void)std::fseek(stream, offset, SEEK_END);
+}
+
+void invalidFunctionArgBool_fseek(FILE* stream, long int offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)std::fseek(stream, offset, true);
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)std::fseek(stream, offset, false);
+}
+
 void uninitvar_fsetpos(void)
 {
     FILE* stream;
     fpos_t *ptr;
     // cppcheck-suppress uninitvar
     (void)std::fsetpos(stream,ptr);
+}
+
+wchar_t* nullPointer_fgetws(wchar_t* buffer, int n, FILE* stream)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::fgetws(NULL,n,stream);
+    // cppcheck-suppress nullPointer
+    (void)std::fgetws(buffer,n,NULL);
+    // No warning is expected
+    return std::fgetws(buffer, n, stream);
+}
+
+void nullPointer_wmemcmp(const wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::wmemcmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)std::wmemcmp(s1,NULL,n);
+    (void)std::wmemcmp(s1,s2,n);
+}
+
+
+void nullPointer_memcmp(const void *s1, const void *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::memcmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)std::memcmp(s1,NULL,n);
+    (void)std::memcmp(s1,s2,n);
+}
+
+void nullPointer_strncat(char *d, char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::strncat(NULL,s,n);
+    // cppcheck-suppress nullPointer
+    (void)std::strncat(d,NULL,n);
+    // no warning is expected for
+    (void)std::strncat(d,s,n);
+}
+
+void nullPointer_strcpy(char *dest, const char * const source)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::strcpy(NULL,source);
+    // cppcheck-suppress nullPointer
+    (void)std::strcpy(dest,NULL);
+
+    // no warning shall be shown for
+    (void)std::strcpy(dest,source);
+}
+
+void nullPointer_strcat(char *dest, const char * const source)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::strcat(NULL,source);
+    // cppcheck-suppress nullPointer
+    (void)std::strcat(dest,NULL);
+
+    // no warning shall be shown for
+    (void)std::strcat(dest,source);
+}
+
+void nullPointer_strncpy(char *d, const char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::strncpy(NULL,s,n);
+    // cppcheck-suppress nullPointer
+    (void)std::strncpy(d,NULL,n);
+    // no warning is expected for
+    (void)std::strncpy(d,s,n);
+}
+
+void nullPointer_strncmp(const char *s1, const char *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::strncmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)std::strncmp(s1,NULL,n);
+    (void)std::strncmp(s1,s2,n);
+}
+
+char* nullPointer_fgets(char *buffer, int n, FILE *stream)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::fgets(NULL,n,stream);
+    // cppcheck-suppress nullPointer
+    (void)std::fgets(buffer,n,NULL);
+    // No warning is expected
+    return std::fgets(buffer, n, stream);
 }
 
 void uninitvar_fgets(void)
@@ -1984,7 +2717,7 @@ void uninitvar_longjmp(void)
 void uninitvar_malloc(void)
 {
     size_t size;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar, cstyleCast]
     int *p = (int*)std::malloc(size);
     free(p);
 }
@@ -2216,7 +2949,7 @@ void uninivar_bsearch(void)
     void* base;
     size_t num;
     size_t size;
-    // cppcheck-suppress uninitvar
+    // cppcheck-suppress [uninitvar, cstyleCast]
     (void)std::bsearch(key,base,num,size,(int (*)(const void*,const void*))strcmp);
 }
 
@@ -2226,11 +2959,11 @@ void minsize_bsearch(const void* key, const void* base,
 {
     int Base[3] = {42, 43, 44};
 
-    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp);
-    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp);
-    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,Base,2,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,Base,3,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
+    (void)std::bsearch(key,Base,4,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
 
-    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*))strcmp);
+    (void)std::bsearch(key,base,2,size,(int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
 }
 
 void uninitvar_qsort(void)
@@ -2239,7 +2972,7 @@ void uninitvar_qsort(void)
     size_t n;
     size_t size;
     // cppcheck-suppress uninitvar
-    (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp);
+    (void)std::qsort(base,n,size, (int (*)(const void*,const void*))strcmp); // cppcheck-suppress cstyleCast
 }
 
 void uninitvar_putc(void)
@@ -2434,6 +3167,30 @@ void uninivar_setbuf(void)
     char *buf;
     // cppcheck-suppress uninitvar
     (void)std::setbuf(stream,buf);
+}
+
+void nullPointer_setbuf(FILE *stream, char *buf)
+{
+    // cppcheck-suppress nullPointer
+    std::setbuf(NULL,buf);
+    std::setbuf(stream,NULL);
+    std::setbuf(stream,buf);
+}
+
+int bufferAccessOutOfBounds_setvbuf(FILE* stream, int mode, size_t size)
+{
+    char buf[42]={0};
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void) std::setvbuf(stream, buf, mode, 43);
+    return std::setvbuf(stream, buf, mode, 42);
+}
+
+int nullPointer_setvbuf(FILE* stream, char *buf, int mode, size_t size)
+{
+    // cppcheck-suppress nullPointer
+    (void) std::setvbuf(NULL, buf, mode, size);
+    (void) std::setvbuf(stream, NULL, mode, size);
+    return std::setvbuf(stream, buf, mode, size);
 }
 
 void uninivar_setvbuf(void)
@@ -3215,6 +3972,46 @@ void uninitvar_system(void)
     (void)std::system(c);
 }
 
+#ifndef __STDC_NO_THREADS__
+
+void nullPointer_mtx_destroy( mtx_t *mutex )
+{
+    // cppcheck-suppress nullPointer
+    mtx_destroy(nullptr);
+    mtx_destroy(mutex);
+}
+
+void nullPointer_mtx_lock( mtx_t *mutex )
+{
+    // cppcheck-suppress nullPointer
+    mtx_lock(nullptr);
+    mtx_lock(mutex);
+}
+
+void nullPointer_mtx_trylock( mtx_t *mutex )
+{
+    // cppcheck-suppress nullPointer
+    mtx_trylock(nullptr);
+    mtx_trylock(mutex);
+}
+
+int nullPointer_mtx_timedlock( mtx_t *mutex, const struct timespec *time_point )
+{
+    // cppcheck-suppress nullPointer
+    (void) mtx_timedlock(nullptr, time_point);
+    // cppcheck-suppress nullPointer
+    (void) mtx_timedlock(mutex, nullptr);
+    return mtx_timedlock(mutex, time_point);
+}
+#endif
+
+void nullPointer_system(char *c)
+{
+    // If a null pointer is given, command processor is checked for existence
+    (void)std::system(NULL);
+    (void)std::system(c);
+}
+
 void uninitvar_setw(void)
 {
     int i;
@@ -3386,15 +4183,15 @@ void nullPointer_asctime(void)
     (void)std::asctime(0);
 }
 
-void nullPointer_wcsftime(size_t maxsize)
+void nullPointer_wcsftime(wchar_t* ptr, size_t maxsize, const wchar_t* format, const struct tm* timeptr)
 {
-    wchar_t* ptr = 0;
-    wchar_t* format = 0;
-    struct tm* timeptr = 0;
     // cppcheck-suppress nullPointer
-    (void)std::wcsftime(ptr,maxsize,format,timeptr);
+    (void)std::wcsftime(NULL, maxsize, format, timeptr);
     // cppcheck-suppress nullPointer
-    (void)std::wcsftime(0,maxsize,0,0);
+    (void)std::wcsftime(ptr, maxsize, NULL, timeptr);
+    // cppcheck-suppress nullPointer
+    (void)std::wcsftime(ptr, maxsize, format, NULL);
+    (void)std::wcsftime(ptr, maxsize, format, timeptr);
 }
 
 void nullPointer_fegetenv(void)
@@ -3466,16 +4263,38 @@ void nullPointer_atof(void)
     (void)std::atof(0);
 }
 
-void nullPointer_memcmp(char *p)
+void nullPointer_memcpy(void *s1, const void *s2, size_t n)
 {
     // cppcheck-suppress nullPointer
-    (void)std::memcmp(p, 0, 123);
+    (void)std::memcpy(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)std::memcpy(s1,NULL,n);
+    (void)std::memcpy(s1,s2,n);
 }
 
-void nullPointer_wmemcmp(wchar_t *p)
+void nullPointer_memmove(void *s1, void *s2, size_t n)
 {
     // cppcheck-suppress nullPointer
-    (void)std::wmemcmp(p, 0, 123);
+    (void)std::memmove(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)std::memmove(s1,NULL,n);
+    (void)std::memmove(s1,s2,n);
+}
+
+void nullPointer_wmemmove(wchar_t* s1, const wchar_t* s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::wmemmove(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)std::wmemmove(s1,NULL,n);
+    (void)std::wmemmove(s1,s2,n);
+}
+
+void nullPointer_wmemset(wchar_t* s, wchar_t c, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)std::wmemset(NULL,c,n);
+    (void)std::wmemset(s,c,n);
 }
 
 ///////////////////////////////////////////////////////////////////////
@@ -3500,7 +4319,7 @@ void stdalgorithm(const std::list<int> &ints1, const std::list<int> &ints2)
     // #9455
     std::list<int>::const_iterator uninitItBegin;
     std::list<int>::const_iterator uninitItEnd;
-    // @todo cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     if (std::find(uninitItBegin, uninitItEnd, 123) == uninitItEnd) {}
 
     // <!-- InputIterator std::find_if(InputIterator first, InputIterator last, UnaryPredicate val) -->
@@ -3631,8 +4450,51 @@ void stdbind()
     // TODO cppcheck-suppress ignoredReturnValue #9369
     std::bind(stdbind_helper, 1);
 
-    // cppcheck-suppress unreadVariable
+    // TODO cppcheck-suppress unreadVariable
     auto f1 = std::bind(stdbind_helper, _1);
-    // cppcheck-suppress unreadVariable
+    // TODO cppcheck-suppress unreadVariable
     auto f2 = std::bind(stdbind_helper, 10);
 }
+
+class A
+{
+    std::vector<std::string> m_str;
+
+public:
+
+    A() {}
+
+    // cppcheck-suppress functionConst
+    void begin_const_iterator(void)
+    {
+        for (std::vector<std::string>::const_iterator it = m_str.begin(); it != m_str.end(); ++it) {;}
+    }
+    // cppcheck-suppress functionConst
+    void cbegin_const_iterator(void)
+    {
+        for (std::vector<std::string>::const_iterator it = m_str.cbegin(); it != m_str.cend(); ++it) {;}
+    }
+    // cppcheck-suppress functionConst
+    void crbegin_const_iterator(void)
+    {
+        for (std::vector<std::string>::const_reverse_iterator it = m_str.crbegin(); it != m_str.crend(); ++it) {;}
+    }
+    // cppcheck-suppress functionConst
+    void rbegin_const_iterator(void)
+    {
+        for (std::vector<std::string>::const_reverse_iterator it = m_str.rbegin(); it != m_str.rend(); ++it) {;}
+    }
+    // cppcheck-suppress functionConst
+    void cbegin_auto(void)
+    {
+        for (auto it = m_str.cbegin(); it != m_str.cend(); ++it) {;}
+    }
+    void baz_begin_no_const_iterator(void)
+    {
+        for (std::vector<std::string>::iterator it = m_str.begin(); it != m_str.end(); ++it) {;}
+    }
+    void rbegin_no_const_iterator(void)
+    {
+        for (std::vector<std::string>::reverse_iterator it = m_str.rbegin(); it != m_str.rend(); ++it) {;}
+    }
+};

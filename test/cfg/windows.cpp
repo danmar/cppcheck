@@ -8,11 +8,71 @@
 //
 
 #include <windows.h>
+#include <stdio.h>
 #include <direct.h>
 #include <stdlib.h>
 #include <time.h>
 #include <memory.h>
 #include <mbstring.h>
+#include <wchar.h>
+#include <atlstr.h>
+
+int stringCompare_mbscmp(const unsigned char *string1, const unsigned char *string2)
+{
+    // cppcheck-suppress stringCompare
+    (void) _mbscmp(string1, string1);
+    // cppcheck-suppress staticStringCompare
+    (void) _mbscmp("x", "x");
+    return _mbscmp(string1, string2);
+}
+
+int stringCompare_mbscmp_l(const unsigned char *string1, const unsigned char *string2, _locale_t locale)
+{
+    // cppcheck-suppress stringCompare
+    (void) _mbscmp_l(string1, string1, locale);
+    // cppcheck-suppress staticStringCompare
+    (void) _mbscmp_l("x", "x", locale);
+    return _mbscmp_l(string1, string2, locale);
+}
+
+int ignoredReturnValue__wtoi_l(const wchar_t *str, _locale_t locale)
+{
+    // cppcheck-suppress ignoredReturnValue
+    _wtoi_l(str,locale);
+    return _wtoi_l(str,locale);
+}
+
+int ignoredReturnValue__atoi_l(const char *str, _locale_t locale)
+{
+    // cppcheck-suppress ignoredReturnValue
+    _atoi_l(str,locale);
+    return _atoi_l(str,locale);
+}
+
+void invalidFunctionArg__fseeki64(FILE* stream, __int64 offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)_fseeki64(stream, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)_fseeki64(stream, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)_fseeki64(stream, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)_fseeki64(stream, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)_fseeki64(stream, offset, origin);
+    (void)_fseeki64(stream, offset, SEEK_SET);
+    (void)_fseeki64(stream, offset, SEEK_CUR);
+    (void)_fseeki64(stream, offset, SEEK_END);
+}
+
+void invalidFunctionArgBool__fseeki64(FILE* stream, __int64 offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)_fseeki64(stream, offset, true);
+    // cppcheck-suppress invalidFunctionArgBool
+    (void)_fseeki64(stream, offset, false);
+}
 
 unsigned char * overlappingWriteFunction__mbscat(unsigned char *src, unsigned char *dest)
 {
@@ -201,6 +261,7 @@ void validCode()
     void *pMem1 = _malloca(1);
     _freea(pMem1);
     // Memory from _alloca must not be freed
+    // cppcheck-suppress _allocaCalled
     void *pMem2 = _alloca(10);
     memset(pMem2, 0, 10);
 
@@ -264,6 +325,7 @@ void validCode()
     wordInit = HIWORD(dwordInit);
     // cppcheck-suppress redundantAssignment
     byteInit = HIBYTE(wordInit);
+    // cppcheck-suppress knownConditionTrueFalse
     if (byteInit) {}
 
     bool boolVar;
@@ -487,7 +549,7 @@ void memleak_HeapAlloc()
 void memleak_LocalAlloc()
 {
     LPTSTR pszBuf;
-    // cppcheck-suppress LocalAllocCalled
+    // cppcheck-suppress [LocalAllocCalled, cstyleCast]
     pszBuf = (LPTSTR)LocalAlloc(LPTR, MAX_PATH*sizeof(TCHAR));
     (void)LocalSize(pszBuf);
     (void)LocalFlags(pszBuf);
@@ -623,6 +685,7 @@ void ignoredReturnValue()
     // cppcheck-suppress leakReturnValNotUsed
     _malloca(10);
     // cppcheck-suppress ignoredReturnValue
+    // cppcheck-suppress _allocaCalled
     _alloca(5);
 
     // cppcheck-suppress ignoredReturnValue
@@ -685,6 +748,7 @@ void invalidFunctionArg()
     _freea(pMem);
     // FIXME cppcheck-suppress unreadVariable
     // cppcheck-suppress invalidFunctionArg
+    // cppcheck-suppress _allocaCalled
     pMem = _alloca(-5);
 }
 
@@ -741,6 +805,10 @@ void uninitvar()
     // cppcheck-suppress uninitvar
     // cppcheck-suppress ignoredReturnValue
     _fileno(pFileUninit);
+}
+
+void unreferencedParameter(int i) {
+    UNREFERENCED_PARAMETER(i);
 }
 
 void errorPrintf()
@@ -1035,3 +1103,11 @@ public:
 IMPLEMENT_DYNAMIC(MyClass, CObject)
 IMPLEMENT_DYNCREATE(MyClass, CObject)
 IMPLEMENT_SERIAL(MyClass,CObject, 42)
+
+void invalidPrintfArgType_StructMember(double d) { // #9672
+  typedef struct { CString st; } my_struct_t;
+
+  my_struct_t my_struct;
+  // cppcheck-suppress invalidPrintfArgType_sint
+  my_struct.st.Format("%d", d);
+}

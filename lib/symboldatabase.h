@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,11 @@
 //---------------------------------------------------------------------------
 
 #include "config.h"
+#include "errortypes.h"
 #include "library.h"
 #include "mathlib.h"
+#include "sourcelocation.h"
 #include "token.h"
-#include "utils.h"
 
 #include <cctype>
 #include <iosfwd>
@@ -108,7 +109,7 @@ public:
     const Token * typeEnd;
     MathLib::bigint sizeOf;
 
-    Type(const Token* classDef_ = nullptr, const Scope* classScope_ = nullptr, const Scope* enclosingScope_ = nullptr) :
+    explicit Type(const Token* classDef_ = nullptr, const Scope* classScope_ = nullptr, const Scope* enclosingScope_ = nullptr) :
         classDef(classDef_),
         classScope(classScope_),
         enclosingScope(enclosingScope_),
@@ -380,6 +381,12 @@ public:
     }
 
     /**
+     * Is variable a member of a user-defined type.
+     * @return true if member, false if not or unknown
+     */
+    bool isMember() const;
+
+    /**
      * Is variable mutable.
      * @return true if mutable, false if not
      */
@@ -587,7 +594,8 @@ public:
         return getFlag(fIsSmartPointer);
     }
 
-    const Type *smartPointerType() const;
+    const Type* smartPointerType() const;
+    const Type* iteratorType() const;
 
     /**
      * Checks if the variable is of any of the STL types passed as arguments ('std::')
@@ -911,11 +919,11 @@ public:
     std::list<Variable> argumentList; ///< argument list
     nonneg int initArgCount;        ///< number of args with default values
     Type type;                        ///< constructor, destructor, ...
-    AccessControl access;             ///< public/protected/private
     const Token *noexceptArg;         ///< noexcept token
     const Token *throwArg;            ///< throw token
     const Token *templateDef;         ///< points to 'template <' before function
     const Token *functionPointerUsage; ///< function pointer usage
+    AccessControl access;             ///< public/protected/private
 
     bool argsMatch(const Scope *scope, const Token *first, const Token *second, const std::string &path, nonneg int path_length) const;
 
@@ -1034,10 +1042,10 @@ public:
     std::multimap<std::string, const Function *> functionMap;
     std::list<Variable> varlist;
     const Scope *nestedIn;
-    std::list<Scope *> nestedList;
+    std::vector<Scope *> nestedList;
     nonneg int numConstructors;
     nonneg int numCopyOrMoveConstructors;
-    std::list<UsingInfo> usingList;
+    std::vector<UsingInfo> usingList;
     ScopeType type;
     Type* definedType;
     std::map<std::string, Type*> definedTypesMap;
@@ -1131,7 +1139,7 @@ public:
      */
     const Function *findFunction(const Token *tok, bool requireConst=false) const;
 
-    const Scope *findRecordInNestedList(const std::string & name) const;
+    const Scope *findRecordInNestedList(const std::string & name, bool isC = false) const;
     Scope *findRecordInNestedList(const std::string & name) {
         return const_cast<Scope *>(const_cast<const Scope *>(this)->findRecordInNestedList(name));
     }
@@ -1218,6 +1226,7 @@ public:
     enum Sign { UNKNOWN_SIGN, SIGNED, UNSIGNED } sign;
     enum Type {
         UNKNOWN_TYPE,
+        POD,
         NONSTD,
         RECORD,
         SMART_POINTER,
@@ -1251,6 +1260,7 @@ public:
     ///< container element type.
     std::string originalTypeName;    ///< original type name as written in the source code. eg. this might be "uint8_t"
     ///< when type is CHAR.
+    ErrorPath debugPath; ///< debug path to the type
 
     ValueType()
         : sign(UNKNOWN_SIGN),
@@ -1263,7 +1273,8 @@ public:
         smartPointerTypeToken(nullptr),
         smartPointer(nullptr),
         container(nullptr),
-        containerTypeToken(nullptr)
+        containerTypeToken(nullptr),
+        debugPath()
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p)
         : sign(s),
@@ -1276,7 +1287,8 @@ public:
         smartPointerTypeToken(nullptr),
         smartPointer(nullptr),
         container(nullptr),
-        containerTypeToken(nullptr)
+        containerTypeToken(nullptr),
+        debugPath()
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c)
         : sign(s),
@@ -1289,7 +1301,8 @@ public:
         smartPointerTypeToken(nullptr),
         smartPointer(nullptr),
         container(nullptr),
-        containerTypeToken(nullptr)
+        containerTypeToken(nullptr),
+        debugPath()
     {}
     ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string& otn)
         : sign(s),
@@ -1303,7 +1316,8 @@ public:
         smartPointer(nullptr),
         container(nullptr),
         containerTypeToken(nullptr),
-        originalTypeName(otn)
+        originalTypeName(otn),
+        debugPath()
     {}
 
     static ValueType parseDecl(const Token *type, const Settings *settings);
@@ -1334,8 +1348,13 @@ public:
 
     MathLib::bigint typeSize(const cppcheck::Platform &platform, bool p=false) const;
 
+    /// Check if type is the same ignoring const and references
+    bool isTypeEqual(const ValueType* that) const;
+
     std::string str() const;
     std::string dump() const;
+
+    void setDebugPath(const Token* tok, SourceLocation ctx, SourceLocation local = SourceLocation::current());
 };
 
 
@@ -1345,7 +1364,7 @@ public:
     SymbolDatabase(const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger);
     ~SymbolDatabase();
 
-    /** @brief Information about all namespaces/classes/structrues */
+    /** @brief Information about all namespaces/classes/structures */
     std::list<Scope> scopeList;
 
     /** @brief Fast access to function scopes */
@@ -1375,9 +1394,9 @@ public:
     /** For unit testing only */
     const Scope *findScopeByName(const std::string& name) const;
 
-    const Type* findType(const Token *startTok, const Scope *startScope) const;
-    Type* findType(const Token *startTok, Scope *startScope) const {
-        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope)));
+    const Type* findType(const Token *startTok, const Scope *startScope, bool lookOutside = false) const;
+    Type* findType(const Token *startTok, Scope *startScope, bool lookOutside = false) const {
+        return const_cast<Type*>(this->findType(startTok, const_cast<const Scope *>(startScope), lookOutside));
     }
 
     const Scope *findScope(const Token *tok, const Scope *startScope) const;
@@ -1452,11 +1471,15 @@ private:
     void createSymbolDatabaseSetScopePointers();
     void createSymbolDatabaseSetFunctionPointers(bool firstPass);
     void createSymbolDatabaseSetVariablePointers();
+    // cppcheck-suppress functionConst
     void createSymbolDatabaseSetTypePointers();
     void createSymbolDatabaseSetSmartPointerType();
     void createSymbolDatabaseEnums();
     void createSymbolDatabaseEscapeFunctions();
+    // cppcheck-suppress functionConst
     void createSymbolDatabaseIncompleteVars();
+
+    void debugSymbolDatabase() const;
 
     void addClassFunction(Scope **scope, const Token **tok, const Token *argStart);
     Function *addGlobalFunctionDecl(Scope*& scope, const Token* tok, const Token *argStart, const Token* funcStart);
@@ -1468,19 +1491,19 @@ private:
     Function *findFunctionInScope(const Token *func, const Scope *ns, const std::string & path, nonneg int path_length);
     const Type *findVariableTypeInBase(const Scope *scope, const Token *typeTok) const;
 
-    typedef std::map<unsigned int, unsigned int> MemberIdMap;
-    typedef std::map<unsigned int, MemberIdMap> VarIdMap;
+    using MemberIdMap = std::map<unsigned int, unsigned int>;
+    using VarIdMap = std::map<unsigned int, MemberIdMap>;
 
     void fixVarId(VarIdMap & varIds, const Token * vartok, Token * membertok, const Variable * membervar);
 
     /** Whether iName is a keyword as defined in http://en.cppreference.com/w/c/keyword and http://en.cppreference.com/w/cpp/keyword*/
     bool isReservedName(const std::string& iName) const;
 
-    const Enumerator * findEnumerator(const Token * tok) const;
+    const Enumerator * findEnumerator(const Token * tok, std::set<std::string>& tokensThatAreNotEnumeratorValues) const;
 
-    void setValueType(Token *tok, const ValueType &valuetype);
-    void setValueType(Token *tok, const Variable &var);
-    void setValueType(Token *tok, const Enumerator &enumerator);
+    void setValueType(Token* tok, const ValueType& valuetype, SourceLocation loc = SourceLocation::current());
+    void setValueType(Token* tok, const Variable& var, SourceLocation loc = SourceLocation::current());
+    void setValueType(Token* tok, const Enumerator& enumerator, SourceLocation loc = SourceLocation::current());
 
     const Tokenizer *mTokenizer;
     const Settings *mSettings;
@@ -1494,9 +1517,6 @@ private:
 
     bool mIsCpp;
     ValueType::Sign mDefaultSignedness;
-
-    /** "negative cache" list of tokens that we find are not enumeration values */
-    mutable std::set<std::string> mTokensThatAreNotEnumeratorValues;
 };
 
 

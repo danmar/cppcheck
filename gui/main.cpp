@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,22 +16,25 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <QApplication>
-#include <QCoreApplication>
-#include <QMetaType>
-#include <QStringList>
-#include <QSettings>
-#ifdef _WIN32
-#include <QMessageBox>
-#include "aboutdialog.h"
-#else
-#include <iostream>
-#endif
 #include "cppcheck.h"
 #include "common.h"
 #include "mainwindow.h"
 #include "erroritem.h"
 #include "translationhandler.h"
+
+#ifdef _WIN32
+#include "aboutdialog.h"
+
+#include <QMessageBox>
+#else
+#include <iostream>
+#endif
+#include <string>
+
+#include <QApplication>
+#include <QCoreApplication>
+#include <QStringList>
+#include <QSettings>
 
 
 static void ShowUsage();
@@ -41,7 +44,7 @@ static bool CheckArgs(const QStringList &args);
 int main(int argc, char *argv[])
 {
 
-#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0))
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 6, 0)) && (QT_VERSION < QT_VERSION_CHECK(6, 0, 0))
     QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 #endif
@@ -54,7 +57,7 @@ int main(int argc, char *argv[])
     QSettings* settings = new QSettings("Cppcheck", "Cppcheck-GUI", &app);
 
     // Set data dir..
-    foreach (const QString arg, app.arguments()) {
+    for (const QString& arg : QApplication::arguments()) {
         if (arg.startsWith("--data-dir=")) {
             settings->setValue("DATADIR", arg.mid(11));
             return 0;

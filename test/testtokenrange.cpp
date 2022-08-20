@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "config.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "token.h"
@@ -37,7 +36,7 @@ public:
     TestTokenRange() : TestFixture("TestTokenRange") {}
 
 private:
-    void run() OVERRIDE {
+    void run() override {
         TEST_CASE(enumerationToEnd);
         TEST_CASE(untilHelperToEnd);
         TEST_CASE(untilHelperPartWay);
@@ -46,7 +45,7 @@ private:
         TEST_CASE(exampleAlgorithms);
     }
 
-    std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) const {
+    static std::string testTokenRange(ConstTokenRange range, const Token* start, const Token* end) {
         auto tokenToString = [](const Token* t) {
             return t ? t->str() : "<null>";
         };

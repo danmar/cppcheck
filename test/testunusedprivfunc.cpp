@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 #include "checkclass.h"
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -39,7 +38,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::style);
 
         TEST_CASE(test1);
@@ -48,6 +47,7 @@ private:
         TEST_CASE(test4);
         TEST_CASE(test5);
         TEST_CASE(test6); // ticket #2602
+        TEST_CASE(test7); // ticket #9282
 
         // [ 2236547 ] False positive --style unused function, called via pointer
         TEST_CASE(func_pointer1);
@@ -56,6 +56,7 @@ private:
         TEST_CASE(func_pointer4); // ticket #2807
         TEST_CASE(func_pointer5); // ticket #2233
         TEST_CASE(func_pointer6); // ticket #4787
+        TEST_CASE(func_pointer7); // ticket #10516
 
         TEST_CASE(ctor);
         TEST_CASE(ctor2);
@@ -251,6 +252,16 @@ private:
         ASSERT_EQUALS("", errout.str());
     }
 
+    void test7() { // ticket #9282
+        check("class C {\n"
+              "    double f1() const noexcept, f2(double) const noexcept;\n"
+              "    void f3() const noexcept;\n"
+              "};\n"
+              "double C::f1() const noexcept { f3(); }\n"
+              "void C::f3() const noexcept {}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
 
 
 
@@ -347,6 +358,32 @@ private:
               "        f(\"test\");\n"
               "    }\n"
               "};");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void func_pointer7() { // #10516
+        check("class C {\n"
+              "    static void f() {}\n"
+              "    static constexpr void(*p)() = f;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    static void f() {}\n"
+              "    static constexpr void(*p)() = &f;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    static void f() {}\n"
+              "    static constexpr void(*p)() = C::f;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("class C {\n"
+              "    static void f() {}\n"
+              "    static constexpr void(*p)() = &C::f;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
@@ -557,6 +594,20 @@ private:
               "    void f() { }\n"
               "};");
         ASSERT_EQUALS("[test.cpp:5]: (style) Unused private function: 'Foo::f'\n", errout.str());
+
+        check("struct F;\n" // #10265
+              "struct S {\n"
+              "    int i{};\n"
+              "    friend struct F;\n"
+              "private:\n"
+              "    int f() const { return i; }\n"
+              "};\n"
+              "struct F {\n"
+              "    bool operator()(const S& lhs, const S& rhs) const {\n"
+              "        return lhs.f() < rhs.f();\n"
+              "    }\n"
+              "};");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void borland1() {

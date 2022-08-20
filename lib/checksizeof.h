@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,7 @@ public:
         : Check(myName(), tokenizer, settings, errorLogger) {}
 
     /** @brief Run checks against the normal token list */
-    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) OVERRIDE {
+    void runChecks(const Tokenizer* tokenizer, const Settings* settings, ErrorLogger* errorLogger) override {
         CheckSizeof checkSizeof(tokenizer, settings, errorLogger);
 
         // Checks
@@ -101,7 +101,7 @@ private:
     void sizeofDereferencedVoidPointerError(const Token *tok, const std::string &varname);
     void arithOperationsOnVoidPointerError(const Token* tok, const std::string &varname, const std::string &vartype);
 
-    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const OVERRIDE {
+    void getErrorMessages(ErrorLogger* errorLogger, const Settings* settings) const override {
         CheckSizeof c(nullptr, settings, errorLogger);
 
         c.sizeofForArrayParameterError(nullptr);
@@ -122,7 +122,7 @@ private:
         return "Sizeof";
     }
 
-    std::string classInfo() const OVERRIDE {
+    std::string classInfo() const override {
         return "sizeof() usage checks\n"
                "- sizeof for array given as function argument\n"
                "- sizeof for numeric given as function argument\n"

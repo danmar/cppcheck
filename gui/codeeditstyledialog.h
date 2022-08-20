@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,23 @@
 #ifndef CODEEDITSTYLEDIALOG_H
 #define CODEEDITSTYLEDIALOG_H
 
-#include <QDialog>
 #include "codeeditorstyle.h"
+
+#include <QDialog>
 
 class CodeEditor;
 class SelectColorButton;
 class SelectFontWeightCombo;
+class QObject;
 class QPushButton;
+class QWidget;
 
 class StyleEditDialog : public QDialog {
     Q_OBJECT
 public:
     explicit StyleEditDialog(const CodeEditorStyle& newStyle,
                              QWidget *parent = nullptr);
-    virtual ~StyleEditDialog() {}
+    ~StyleEditDialog() override {}
 
     CodeEditorStyle getStyle();
 

@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,9 @@
 #include "token.h"
 #include "tokenize.h"
 #include "tokenlist.h"
+#include "utils.h"
 
+#include <algorithm>
 #include <cstdint>
 #include <cstring>
 #include <iterator>  // back_inserter
@@ -437,7 +439,7 @@ static std::list<std::pair<const Token *, MathLib::bigint>> getUnsafeFunction(co
 {
     std::list<std::pair<const Token *, MathLib::bigint>> ret;
     const Variable * const argvar = scope->function->getArgumentVar(argnr);
-    if (!argvar->isPointer() && !argvar->isReference())
+    if (!argvar->isArrayOrPointer() && !argvar->isReference())
         return ret;
     for (const Token *tok2 = scope->bodyStart; tok2 != scope->bodyEnd; tok2 = tok2->next()) {
         if (Token::Match(tok2, ")|else {")) {

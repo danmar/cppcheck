@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -66,8 +66,8 @@ public:
         value shiftRight(const value &v) const;
     };
 
-    typedef long long bigint;
-    typedef unsigned long long biguint;
+    using bigint = long long;
+    using biguint = unsigned long long;
     static const int bigint_bits;
 
     static bigint toLongNumber(const std::string & str);
@@ -106,7 +106,6 @@ public:
     static std::string multiply(const std::string & first, const std::string & second);
     static std::string divide(const std::string & first, const std::string & second);
     static std::string mod(const std::string & first, const std::string & second);
-    static std::string incdec(const std::string & var, const std::string & op);
     static std::string calculate(const std::string & first, const std::string & second, char action);
 
     static std::string sin(const std::string & tok);

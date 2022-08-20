@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,9 +19,9 @@
 #ifndef CODEEDITORSTYLE_H
 #define CODEEDITORSTYLE_H
 
-#include <QString>
 #include <QColor>
 #include <QFont>
+#include <QString>
 
 const QString SETTINGS_STYLE_GROUP("EditorStyle");
 const QString SETTINGS_STYLE_TYPE("StyleType");
@@ -50,14 +50,22 @@ class QSettings;
 class CodeEditorStyle {
 public:
     explicit CodeEditorStyle(
-        const QColor& CtrlFGColor, const QColor& CtrlBGColor,
-        const QColor& HiLiBGColor,
-        const QColor& LnNumFGColor, const QColor& LnNumBGColor,
-        const QColor& KeyWdFGColor, const QFont::Weight& KeyWdWeight,
-        const QColor& ClsFGColor, const QFont::Weight& ClsWeight,
-        const QColor& QteFGColor, const QFont::Weight& QteWeight,
-        const QColor& CmtFGColor, const QFont::Weight& CmtWeight,
-        const QColor& SymbFGColor, const QColor& SymbBGColor,
+        // cppcheck-suppress naming-varname - TODO: fix this
+        QColor CtrlFGColor, QColor CtrlBGColor,
+        // cppcheck-suppress naming-varname - TODO: fix this
+        QColor HiLiBGColor,
+        // cppcheck-suppress naming-varname - TODO: fix this
+        QColor LnNumFGColor, QColor LnNumBGColor,
+        // cppcheck-suppress naming-varname - TODO: fix this
+        QColor KeyWdFGColor, const QFont::Weight& KeyWdWeight,
+        // cppcheck-suppress naming-varname - TODO: fix this
+        QColor ClsFGColor, const QFont::Weight& ClsWeight,
+        // cppcheck-suppress naming-varname - TODO: fix this
+        QColor QteFGColor, const QFont::Weight& QteWeight,
+        // cppcheck-suppress naming-varname - TODO: fix this
+        QColor CmtFGColor, const QFont::Weight& CmtWeight,
+        // cppcheck-suppress naming-varname - TODO: fix this
+        QColor SymbFGColor, QColor SymbBGColor,
         const QFont::Weight& SymbWeight);
     ~CodeEditorStyle() {}
 

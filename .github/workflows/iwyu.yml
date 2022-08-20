@@ -1,0 +1,60 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: include-what-you-use
+
+on: workflow_dispatch
+
+jobs:
+  build:
+
+    runs-on: ubuntu-22.04
+
+    container:
+      image: "kalilinux/kali-rolling"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # TODO: the necessary packages are excessive - mostly because of Qt - use a pre-built image
+      - name: Install missing software
+        run: |
+          apt-get update
+          apt-get install -y cmake g++ make libpcre3-dev
+          apt-get install -y qtbase5-dev qttools5-dev libqt5charts5-dev
+          apt-get install -y wget iwyu
+
+      - name: Prepare CMake
+        run: |
+          cmake -S . -B cmake.output -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DCMAKE_GLOBAL_AUTOGEN_TARGET=On -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On -DCPPCHK_GLIBCXX_DEBUG=Off -DUSE_MATCHCOMPILER=Off
+
+      - name: Prepare CMake dependencies
+        run: |
+          # make sure the precompiled headers exist
+          #make -C cmake.output lib/CMakeFiles/lib_objs.dir/cmake_pch.hxx.cxx
+          #make -C cmake.output test/CMakeFiles/testrunner.dir/cmake_pch.hxx.cxx
+          # make sure the auto-generated GUI sources exist
+          make -C cmake.output autogen
+          # make sure the auto-generated GUI dependencies exist
+          make -C cmake.output gui-build-deps
+
+      - name: Build Qt mappings
+        run: |
+          wget https://raw.githubusercontent.com/include-what-you-use/include-what-you-use/master/mapgen/iwyu-mapgen-qt.py
+          python3 iwyu-mapgen-qt.py /usr/include/x86_64-linux-gnu/qt5/ > qt5.imp
+
+      # TODO: the mapping file causes a massive slowdown so we cannot use it at the moment.
+      #       add "-Xiwyu --mapping_file=qt5.imp" at the end of the whole command if we can use them.
+      - name: iwyu_tool
+        run: |
+          # do not fail for now so the output is being saved
+          iwyu_tool -p cmake.output -j $(nproc) -- -w > iwyu.log || true
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Qt Mappings
+          path: ./qt5.imp
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Logs
+          path: ./*.log

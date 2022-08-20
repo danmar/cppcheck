@@ -1,8 +1,29 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2022 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "codeeditor.h"
 
-#include <QShortcut>
-#include <QPainter>
 #include "codeeditorstyle.h"
+
+#include <QPainter>
+#include <QShortcut>
+
+class QTextDocument;
 
 
 Highlighter::Highlighter(QTextDocument *parent,
@@ -24,62 +45,66 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "case"
                     << "catch"
                     << "char"
-                    << "char8_­t"
-                    << "char16_­t"
-                    << "char32_­t"
+                    << "char8_t"
+                    << "char16_t"
+                    << "char32_t"
                     << "class"
                     << "concept"
                     << "const"
                     << "consteval"
                     << "constexpr"
                     << "constinit"
-                    << "const_­cast"
+                    << "const_cast"
                     << "continue"
-                    << "co_­await"
-                    << "co_­return"
-                    << "co_­yield"
+                    << "co_await"
+                    << "co_return"
+                    << "co_yield"
                     << "decltype"
                     << "default"
                     << "delete"
                     << "do"
                     << "double"
-                    << "dynamic_­cast"
+                    << "dynamic_cast"
                     << "else"
                     << "enum"
                     << "explicit"
                     << "export"
                     << "extern"
                     << "false"
+                    << "final"
                     << "float"
                     << "for"
                     << "friend"
                     << "goto"
                     << "if"
+                    << "import"
                     << "inline"
                     << "int"
                     << "long"
+                    << "module"
                     << "mutable"
                     << "namespace"
                     << "new"
                     << "noexcept"
                     << "nullptr"
                     << "operator"
+                    << "override"
                     << "private"
                     << "protected"
                     << "public"
-                    << "reinterpret_­cast"
+                    << "reinterpret_cast"
                     << "requires"
                     << "return"
                     << "short"
                     << "signed"
                     << "static"
-                    << "static_­assert"
-                    << "static_­cast"
+                    << "static_assert"
+                    << "static_cast"
                     << "struct"
                     << "switch"
                     << "template"
                     << "this"
-                    << "thread_­local"
+                    << "thread_local"
                     << "throw"
                     << "true"
                     << "try"
@@ -91,9 +116,9 @@ Highlighter::Highlighter(QTextDocument *parent,
                     << "virtual"
                     << "void"
                     << "volatile"
-                    << "wchar_­t"
+                    << "wchar_t"
                     << "while";
-    foreach (const QString &pattern, keywordPatterns) {
+    for (const QString &pattern : keywordPatterns) {
         rule.pattern = QRegularExpression("\\b" + pattern + "\\b");
         rule.format = mKeywordFormat;
         rule.ruleRole = RuleRole::Keyword;
@@ -109,7 +134,9 @@ Highlighter::Highlighter(QTextDocument *parent,
 
     mQuotationFormat.setForeground(mWidgetStyle->quoteColor);
     mQuotationFormat.setFontWeight(mWidgetStyle->quoteWeight);
-    rule.pattern = QRegularExpression("\".*\"");
+    // We use lazy `*?` instead greed `*` quantifier to find the real end of the c-string.
+    // We use negative lookbehind assertion `(?<!\)` to ignore `\"` sequience in the c-string.
+    rule.pattern = QRegularExpression("\".*?(?<!\\\\)\"");
     rule.format = mQuotationFormat;
     rule.ruleRole = RuleRole::Quote;
     mHighlightingRules.append(rule);
@@ -130,14 +157,16 @@ Highlighter::Highlighter(QTextDocument *parent,
     mSymbolFormat.setBackground(mWidgetStyle->symbolBGColor);
     mSymbolFormat.setFontWeight(mWidgetStyle->symbolWeight);
 
-    mCommentStartExpression = QRegularExpression("/\\*");
+    // We use negative lookbehind assertion `(?<!/)`
+    // to ignore case: single line comment and line of asterisk
+    mCommentStartExpression = QRegularExpression("(?<!/)/\\*");
     mCommentEndExpression = QRegularExpression("\\*/");
 }
 
 void Highlighter::setSymbols(const QStringList &symbols)
 {
     mHighlightingRulesWithSymbols = mHighlightingRules;
-    foreach (const QString &sym, symbols) {
+    for (const QString &sym : symbols) {
         HighlightingRule rule;
         rule.pattern = QRegularExpression("\\b" + sym + "\\b");
         rule.format = mSymbolFormat;
@@ -172,7 +201,7 @@ void Highlighter::setStyle(const CodeEditorStyle &newStyle)
 
 void Highlighter::highlightBlock(const QString &text)
 {
-    foreach (const HighlightingRule &rule, mHighlightingRulesWithSymbols) {
+    for (const HighlightingRule &rule : mHighlightingRulesWithSymbols) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern.globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();
@@ -240,8 +269,13 @@ CodeEditor::CodeEditor(QWidget *parent) :
     setObjectName("CodeEditor");
     setStyleSheet(generateStyleString());
 
+#if (QT_VERSION >= QT_VERSION_CHECK(6, 0, 0))
+    QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_C),this);
+    QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL | Qt::Key_A),this);
+#else
     QShortcut *copyText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C),this);
     QShortcut *allText = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_A),this);
+#endif
 
     connect(this, SIGNAL(blockCountChanged(int)), this, SLOT(updateLineNumberAreaWidth(int)));
     connect(this, SIGNAL(updateRequest(QRect,int)), this, SLOT(updateLineNumberArea(QRect,int)));
@@ -318,7 +352,11 @@ int CodeEditor::lineNumberAreaWidth()
         ++digits;
     }
 
+#if (QT_VERSION >= QT_VERSION_CHECK(5, 11, 0))
+    int space = 3 + fontMetrics().horizontalAdvance(QLatin1Char('9')) * digits;
+#else
     int space = 3 + fontMetrics().width(QLatin1Char('9')) * digits;
+#endif
     return space;
 }
 

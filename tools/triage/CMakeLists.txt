@@ -1,5 +1,5 @@
 if (BUILD_GUI AND BUILD_TESTS)
-    if (CMAKE_BUILD_TYPE MATCHES "Release")
+    if (CMAKE_BUILD_TYPE STREQUAL "Release")
         add_definitions(-DQT_NO_DEBUG)
         add_definitions(-DQT_NO_DEBUG_OUTPUT)
         add_definitions(-DQT_NO_WARNING_OUTPUT)
@@ -10,7 +10,7 @@ if (BUILD_GUI AND BUILD_TESTS)
     file(GLOB hdrs "*.h")
     file(GLOB srcs "*.cpp")
     file(GLOB uis  "*.ui")
-    qt5_wrap_ui(uis_hdrs ${uis})
+    qt_wrap_ui(uis_hdrs ${uis})
 
     add_custom_target(triage-build-ui-deps SOURCES ${hdrs} ${uis_hdrs})
     add_executable(
@@ -22,11 +22,11 @@ if (BUILD_GUI AND BUILD_TESTS)
         ${PROJECT_SOURCE_DIR}/gui/codeeditor.cpp)
     set_target_properties(triage PROPERTIES AUTOMOC ON)
     target_include_directories(triage PRIVATE ${PROJECT_SOURCE_DIR}/lib/ ${PROJECT_SOURCE_DIR}/gui/)
-    target_link_libraries(triage Qt5::Core Qt5::Gui Qt5::Widgets)
+    target_link_libraries(triage ${QT_CORE_LIB} ${QT_GUI_LIB} ${QT_WIDGETS_LIB})
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
-        if (NOT CMAKE_CXX_COMPILER_VERSION VERSION_LESS "8.0.0")
-            # Q_UNUSED() in generated code
-            target_compile_options(triage PRIVATE -Wno-extra-semi-stmt)
-        endif()
+        # Q_UNUSED() in generated code
+        target_compile_options_safe(triage -Wno-extra-semi-stmt)
+        # caused by Qt generated moc code
+        target_compile_options_safe(triage -Wno-redundant-parens)
     endif()
 endif()

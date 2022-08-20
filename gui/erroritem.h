@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,10 +19,11 @@
 #ifndef ERRORITEM_H
 #define ERRORITEM_H
 
-#include <QString>
-#include <QMetaType>
-#include <QList>
 #include "errorlogger.h"
+
+#include <QList>
+#include <QMetaType>
+#include <QString>
 
 /// @addtogroup GUI
 /// @{
@@ -80,10 +81,8 @@ public:
     QString tool() const;
 
     QString file0;
-    QString function;
     QString errorId;
     Severity::SeverityType severity;
-    bool incomplete;
     bool inconclusive;
     QString summary;
     QString message;
@@ -113,7 +112,6 @@ public:
     int line;
     QString file0;
     QString errorId;
-    bool incomplete;
     int cwe;
     unsigned long long hash;
     bool inconclusive;

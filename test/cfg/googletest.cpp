@@ -29,7 +29,7 @@ namespace ExampleNamespace {
 
 TEST(ASSERT, ASSERT)
 {
-    int *a = (int*)calloc(10,sizeof(int));
+    int *a = (int*)calloc(10,sizeof(int)); // cppcheck-suppress cstyleCast
     ASSERT_TRUE(a != nullptr);
 
     a[0] = 10;
@@ -71,8 +71,8 @@ TEST(Test, warning_in_assert_macros)
     ASSERT_GE(i, i);
 
     unsigned int u = errno;
-    // cppcheck-suppress unsignedPositive
+    // cppcheck-suppress [unsignedPositive]
     ASSERT_GE(u, 0);
-    // cppcheck-suppress unsignedLessThanZero
+    // cppcheck-suppress [unsignedLessThanZero]
     ASSERT_LT(u, 0);
 }

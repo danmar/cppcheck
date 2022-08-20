@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,16 +21,15 @@
 #include "path.h"
 #include "utils.h"
 
-#include <algorithm>
-#include <cctype>
 #include <cstddef>
+#include <utility>
 
-PathMatch::PathMatch(const std::vector<std::string> &excludedPaths, bool caseSensitive)
-    : mExcludedPaths(excludedPaths), mCaseSensitive(caseSensitive)
+PathMatch::PathMatch(std::vector<std::string> excludedPaths, bool caseSensitive)
+    : mExcludedPaths(std::move(excludedPaths)), mCaseSensitive(caseSensitive)
 {
     if (!mCaseSensitive)
         for (std::string& excludedPath : mExcludedPaths)
-            std::transform(excludedPath.begin(), excludedPath.end(), excludedPath.begin(), ::tolower);
+            strTolower(excludedPath);
     mWorkingDirectory.push_back(Path::getCurrentPath());
 }
 
@@ -44,7 +43,7 @@ bool PathMatch::match(const std::string &path) const
 
         std::string findpath = Path::fromNativeSeparators(path);
         if (!mCaseSensitive)
-            std::transform(findpath.begin(), findpath.end(), findpath.begin(), ::tolower);
+            strTolower(findpath);
 
         // Filtering directory name
         if (endsWith(excludedPath,'/')) {

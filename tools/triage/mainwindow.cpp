@@ -1,17 +1,39 @@
+/*
+ * Cppcheck - A tool for static C/C++ code analysis
+ * Copyright (C) 2007-2021 Cppcheck team.
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
 #include "mainwindow.h"
+
 #include "ui_mainwindow.h"
+
+#include <cstdlib>
+#include <ctime>
+
 #include <QClipboard>
-#include <QProcess>
-#include <QFile>
-#include <QTextStream>
 #include <QDir>
 #include <QDirIterator>
-#include <QFileInfo>
+#include <QFile>
 #include <QFileDialog>
-#include <QProgressDialog>
+#include <QFileInfo>
 #include <QMimeDatabase>
-#include <ctime>
-#include <cstdlib>
+#include <QProcess>
+#include <QProgressDialog>
+#include <QRegularExpression>
+#include <QTextStream>
 
 const QString WORK_FOLDER(QDir::homePath() + "/triage");
 const QString DACA2_PACKAGES(QDir::homePath() + "/daca2-packages");
@@ -21,12 +43,12 @@ const int MAX_ERRORS = 100;
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mVersionRe("^(master|main|your|head|[12].[0-9][0-9]?) (.*)"),
+    mVersionRe("^(master|main|your|head|[12].[0-9][0-9]?) (.*)$"),
     hFiles{"*.hpp", "*.h", "*.hxx", "*.hh", "*.tpp", "*.txx", "*.ipp", "*.ixx"},
     srcFiles{"*.cpp", "*.cxx", "*.cc", "*.c++", "*.C", "*.c", "*.cl"}
 {
     ui->setupUi(this);
-    std::srand(static_cast<unsigned int>(std::time(Q_NULLPTR)));
+    std::srand(static_cast<unsigned int>(std::time(nullptr)));
     QDir workFolder(WORK_FOLDER);
     if (!workFolder.exists()) {
         workFolder.mkdir(WORK_FOLDER);
@@ -89,9 +111,13 @@ void MainWindow::load(QTextStream &textStream)
             if (!errorMessage.isEmpty())
                 mAllErrors << errorMessage;
             errorMessage.clear();
-        } else if (!url.isEmpty() && QRegExp(".*: (error|warning|style|note):.*").exactMatch(line)) {
-            if (mVersionRe.exactMatch(line)) {
-                const QString version = mVersionRe.cap(1);
+        } else if (!url.isEmpty()) {
+            static const QRegularExpression severityRe("^.*: (error|warning|style|note):.*$");
+            if (severityRe.match(line).hasMatch())
+                continue;
+            const QRegularExpressionMatch matchRes = mVersionRe.match(line);
+            if (matchRes.hasMatch()) {
+                const QString version = matchRes.captured(1);
                 if (versions.indexOf(version) < 0)
                     versions << version;
             }
@@ -121,7 +147,7 @@ void MainWindow::refreshResults()
     filter(ui->version->currentText());
 }
 
-void MainWindow::filter(QString filter)
+void MainWindow::filter(const QString& filter)
 {
     QStringList allErrors;
 
@@ -237,15 +263,16 @@ void MainWindow::showResult(QListWidgetItem *item)
     const QStringList lines = item->text().split("\n");
     if (lines.size() < 2)
         return;
-    const QString url = lines[0];
+    const QString &url = lines[0];
     QString msg = lines[1];
-    if (mVersionRe.exactMatch(msg))
-        msg = mVersionRe.cap(2);
+    const QRegularExpressionMatch matchRes = mVersionRe.match(msg);
+    if (matchRes.hasMatch())
+        msg = matchRes.captured(2);
     const QString archiveName = url.mid(url.lastIndexOf("/") + 1);
     const int pos1 = msg.indexOf(":");
     const int pos2 = msg.indexOf(":", pos1+1);
     const QString fileName = WORK_FOLDER + '/' + msg.left(msg.indexOf(":"));
-    const int lineNumber = msg.midRef(pos1+1, pos2-pos1-1).toInt();
+    const int lineNumber = msg.mid(pos1+1, pos2-pos1-1).toInt();
 
     if (!QFileInfo::exists(fileName)) {
         const QString daca2archiveFile {DACA2_PACKAGES + '/' + archiveName.mid(0,archiveName.indexOf(".tar.")) + ".tar.xz"};
@@ -287,7 +314,7 @@ void MainWindow::showSrcFile(const QString &fileName, const QString &url, const 
     }
 }
 
-void MainWindow::fileTreeFilter(QString str)
+void MainWindow::fileTreeFilter(const QString &str)
 {
     mFSmodel.setNameFilters(QStringList{"*" + str + "*"});
     mFSmodel.setNameFilterDisables(false);
@@ -320,12 +347,11 @@ void MainWindow::findInFilesClicked()
 
         QFile file(fileName);
         if (file.open(QIODevice::ReadOnly)) {
-            QString line;
             int lineN = 0;
             QTextStream in(&file);
             while (!in.atEnd()) {
                 ++lineN;
-                line = in.readLine();
+                QString line = in.readLine();
                 if (line.contains(text, Qt::CaseInsensitive)) {
                     ui->inFilesResult->addItem(fileName.mid(common_path_len) + QString{":"} + QString::number(lineN));
                 }
@@ -343,7 +369,7 @@ void MainWindow::searchResultsDoubleClick()
 {
     QString filename = ui->inFilesResult->currentItem()->text();
     const auto idx = filename.lastIndexOf(':');
-    const int line = filename.midRef(idx + 1).toInt();
+    const int line = filename.mid(idx + 1).toInt();
     showSrcFile(WORK_FOLDER + QString{"/"} + filename.left(idx), "", line);
 }
 

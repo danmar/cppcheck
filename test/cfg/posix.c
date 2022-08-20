@@ -7,13 +7,17 @@
 // No warnings about bad library configuration, unmatched suppressions, etc. exitcode=0
 //
 
+#include <aio.h>
 #include <stdlib.h>
 #include <stdio.h> // <- FILE
 #include <dirent.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
+#include <sys/sem.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <grp.h>
+#include <pwd.h>
 #include <dlfcn.h>
 #include <fcntl.h>
 // unavailable on some linux systems #include <ndbm.h>
@@ -26,8 +30,466 @@
 #include <stdarg.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <mqueue.h>
+#define _XOPEN_SOURCE
 #include <wchar.h>
 #include <string.h>
+#include <strings.h>
+
+int invalidFunctionArgStr_mq_send(mqd_t mqdes, const char *msg_ptr, size_t msg_len, unsigned msg_prio)
+{
+    // No warning is expected for:
+    const char msg = '0';
+    (void) mq_send(mqdes, &msg, 1, 0);
+    return mq_send(mqdes, msg_ptr, msg_len, 0);
+}
+
+void invalidFunctionArgStr_mbsnrtowcs(void)
+{
+    wchar_t wenough[10];
+    mbstate_t s;
+    memset (&s, '\0', sizeof (s));
+    const char* cp = "ABC";
+    wcscpy (wenough, L"DEF");
+    // No warning is expected for - #11119
+    if (mbsnrtowcs (wenough, &cp, 1, 10, &s) != 1 || wcscmp (wenough, L"AEF") != 0) {}
+}
+
+int nullPointer_getpwuid_r(uid_t uid, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getpwuid_r(uid, NULL, buffer, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwuid_r(uid, pwd, NULL, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwuid_r(uid, pwd, buffer, bufsize, NULL);
+    return getpwuid_r(uid, pwd, buffer, bufsize, result);
+}
+
+int nullPointer_getpwnam_r(const char *name, struct passwd *pwd, char *buffer, size_t bufsize, struct passwd **result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getpwnam_r(NULL, pwd, buffer, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwnam_r(name, NULL, buffer, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwnam_r(name, pwd, NULL, bufsize, result);
+    // cppcheck-suppress nullPointer
+    (void) getpwnam_r(name, pwd, buffer, bufsize, NULL);
+    return getpwnam_r(name, pwd, buffer, bufsize, result);
+}
+
+int nullPointer_fgetpwent_r(FILE *restrict stream, struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
+{
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(NULL, pwbuf, buf, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(stream, NULL, buf, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(stream, pwbuf, NULL, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) fgetpwent_r(stream, pwbuf, buf, buflen, NULL);
+    return fgetpwent_r(stream, pwbuf, buf, buflen, pwbufp);
+}
+
+int nullPointer_getpwent_r(struct passwd *restrict pwbuf, char *restrict buf, size_t buflen, struct passwd **restrict pwbufp)
+{
+    // cppcheck-suppress nullPointer
+    (void) getpwent_r(NULL, buf, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) getpwent_r(pwbuf, NULL, buflen, pwbufp);
+    // cppcheck-suppress nullPointer
+    (void) getpwent_r(pwbuf, buf, buflen, NULL);
+    return getpwent_r(pwbuf, buf, buflen, pwbufp);
+}
+
+int nullPointer_getgrgid_r(gid_t gid, struct group *restrict grp, char *restrict buf, size_t buflen, struct group **restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getgrgid_r(gid, NULL, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrgid_r(gid, grp, NULL, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrgid_r(gid, grp, buf, buflen, NULL);
+    return getgrgid_r(gid, grp, buf, buflen, result);
+}
+
+int nullPointer_getgrnam_r(const char *restrict name, struct group *restrict grp, char *restrict buf, size_t buflen, struct group **restrict result)
+{
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(NULL, grp, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(name, NULL, buf, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(name, grp, NULL, buflen, result);
+    // cppcheck-suppress nullPointer
+    (void) getgrnam_r(name, grp, buf, buflen, NULL);
+    return getgrnam_r(name, grp, buf, buflen, result);
+}
+
+void knownConditionTrueFalse_ffs(int i)
+{
+    // ffs() returns the position of the first bit set, or 0 if no bits are set in i.
+    const int x = ffs(0);
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 0) {} // always true
+    // cppcheck-suppress knownConditionTrueFalse
+    if (x == 1) {} // always false
+    if (ffs(i) == 0) {}
+}
+
+ssize_t nullPointer_readlink(const char *path, char *buf, size_t bufsiz)
+{
+    // cppcheck-suppress nullPointer
+    (void)readlink(NULL, buf, bufsiz);
+    // cppcheck-suppress nullPointer
+    (void)readlink(path, NULL, bufsiz);
+    return readlink(path, buf, bufsiz);
+}
+
+int nullPointer_readlinkat(int dirfd, const char *pathname, char *buf, size_t bufsiz)
+{
+    // cppcheck-suppress nullPointer
+    (void) readlinkat(dirfd, NULL, buf, bufsiz);
+    // cppcheck-suppress nullPointer
+    (void) readlinkat(dirfd, pathname, NULL, bufsiz);
+    return readlinkat(dirfd, pathname, buf, bufsiz);
+}
+
+ssize_t nullPointer_recv(int sockfd, void *buf, size_t len, int flags)
+{
+    // cppcheck-suppress nullPointer
+    (void) recv(sockfd, NULL, len, flags);
+    return recv(sockfd, buf, len, flags);
+}
+
+ssize_t nullPointer_recvfrom(int sockfd, void *buf, size_t len, int flags,
+                             struct sockaddr *src_addr, socklen_t *addrlen)
+{
+    // If src_addr is not NULL, and the underlying protocol provides the source address, this source address is filled in.
+    (void) recvfrom(sockfd, buf, len, flags, NULL, addrlen);
+    (void) recvfrom(sockfd, buf, len, flags, src_addr, NULL);
+    (void) recvfrom(sockfd, buf, len, flags, NULL, NULL);
+    // cppcheck-suppress nullPointer
+    (void) recvfrom(sockfd, NULL, len, flags, src_addr, addrlen);
+    return recvfrom(sockfd, buf, len, flags, src_addr, addrlen);
+}
+int nullPointer_semop(int semid, struct sembuf *sops, size_t nsops)
+{
+    // cppcheck-suppress nullPointer
+    (void)semop(semid, NULL, nsops);
+    return semop(semid, sops, nsops);
+}
+
+int nullPointer_socketpair(int domain, int t, int protocol, int sv[2])
+{
+    // cppcheck-suppress nullPointer
+    (void) socketpair(domain, t, protocol, NULL);
+    return socketpair(domain, t, protocol, sv);
+}
+
+void nullPointer_lcong48(unsigned short param[7])
+{
+    // cppcheck-suppress nullPointer
+    (void) lcong48(NULL);
+    return lcong48(param);
+}
+
+long int nullPointer_jrand48(unsigned short xsubi[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) jrand48(NULL);
+    return jrand48(xsubi);
+}
+
+long int nullPointer_nrand48(unsigned short xsubi[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) nrand48(NULL);
+    return nrand48(xsubi);
+}
+
+double nullPointer_erand48(unsigned short xsubi[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) erand48(NULL);
+    return erand48(xsubi);
+}
+
+unsigned short *nullPointer_seed48(unsigned short seed16v[3])
+{
+    // cppcheck-suppress nullPointer
+    (void) seed48(NULL);
+    return seed48(seed16v);
+}
+
+int nullPointer_getlogin_r(char *buf, size_t bufsize)
+{
+    // cppcheck-suppress nullPointer
+    (void)getlogin_r(NULL,bufsize);
+    return getlogin_r(buf,bufsize);
+}
+
+ssize_t uninitvar_pread(int fd, void *buf, size_t nbyte, off_t offset)
+{
+    int Fd;
+    // cppcheck-suppress uninitvar
+    (void)pread(Fd,buf,nbyte,offset);
+    size_t Nbyte;
+    // cppcheck-suppress uninitvar
+    (void)pread(fd,buf,Nbyte,offset);
+    off_t Offset;
+    // cppcheck-suppress uninitvar
+    (void)pread(fd,buf,nbyte,Offset);
+    return pread(fd,buf,nbyte,offset);
+}
+
+ssize_t nullPointer_pwrite(int fd, const void *buf, size_t nbyte, off_t offset)
+{
+    // cppcheck-suppress nullPointer
+    (void)pwrite(fd,NULL,nbyte,offset);
+    return pwrite(fd,buf,nbyte,offset);
+}
+
+int nullPointer_ttyname_r(int fd, char *buf, size_t buflen)
+{
+    // cppcheck-suppress nullPointer
+    (void)ttyname_r(fd,NULL,buflen);
+    return ttyname_r(fd,buf,buflen);
+}
+
+size_t bufferAccessOutOfBounds_wcsnrtombs(char *restrict dest, const wchar_t **restrict src, size_t nwc, size_t len, mbstate_t *restrict ps)
+{
+    char buf[42];
+    (void)wcsnrtombs(buf,src,nwc,42,ps);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    (void)wcsnrtombs(buf,src,nwc,43,ps);
+    return wcsnrtombs(dest,src,nwc,len,ps);
+}
+
+size_t nullPointer_wcsnrtombs(char *restrict dest, const wchar_t **restrict src, size_t nwc, size_t len, mbstate_t *restrict ps)
+{
+    // It is allowed to set the first arg to NULL
+    (void)wcsnrtombs(NULL,src,nwc,len,ps);
+    // cppcheck-suppress nullPointer
+    (void)wcsnrtombs(dest,NULL,nwc,len,ps);
+    // It is allowed to set the last arg to NULL
+    (void)wcsnrtombs(dest,src,nwc,len,NULL);
+    return wcsnrtombs(dest,src,nwc,len,ps);
+}
+
+int nullPointer_wcsncasecmp(const wchar_t *s1, const wchar_t *s2, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcsncasecmp(NULL,s2,n);
+    // cppcheck-suppress nullPointer
+    (void)wcsncasecmp(s1,NULL,n);
+    return wcsncasecmp(s1,s2,n);
+}
+
+int uninitvar_wcwidth(const wchar_t c)
+{
+    wchar_t wc;
+    // cppcheck-suppress uninitvar
+    (void)wcwidth(wc);
+    // No warning is expected
+    return wcwidth(c);
+}
+
+int nullPointer_wcsnlen(const wchar_t *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcsnlen(NULL, n);
+    // No warning is expected
+    return wcsnlen(s, n);
+}
+
+size_t bufferAccessOutOfBounds_wcsnlen(void) // #10997
+{
+    wchar_t buf[2]={L'4',L'2'};
+    size_t len = wcsnlen(buf,2);
+    // TODO cppcheck-suppress bufferAccessOutOfBounds
+    len+=wcsnlen(buf,3);
+    return len;
+}
+
+int nullPointer_gethostname(char *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)gethostname(NULL, n);
+    // No warning is expected
+    return gethostname(s, n);
+}
+
+int nullPointer_wcswidth(const wchar_t *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcswidth(NULL, n);
+    // No warning is expected
+    return wcswidth(s, n);
+}
+
+int nullPointer_aio_cancel(int fd, struct aiocb *aiocbp)
+{
+    // No warning is expected
+    (void)aio_cancel(fd, NULL);
+    // No warning is expected
+    return aio_cancel(fd, aiocbp);
+}
+
+int nullPointer_aio_fsync(int op, struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_fsync(op, NULL);
+    // No warning is expected
+    return aio_fsync(op, aiocbp);
+}
+
+ssize_t nullPointer_aio_return(struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_return(NULL);
+    // No warning is expected
+    return aio_return(aiocbp);
+}
+
+int nullPointer_aio_error(const struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_error(NULL);
+    // No warning is expected
+    return aio_error(aiocbp);
+}
+
+int nullPointer_aio_read(struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_read(NULL);
+    // No warning is expected
+    return aio_read(aiocbp);
+}
+
+int nullPointer_aio_write(struct aiocb *aiocbp)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_write(NULL);
+    // No warning is expected
+    return aio_write(aiocbp);
+}
+
+int nullPointer_aio_suspend(const struct aiocb *const aiocb_list[], int nitems, const struct timespec *restrict timeout)
+{
+    // cppcheck-suppress nullPointer
+    (void)aio_suspend(NULL, nitems, timeout);
+    // No warning is expected
+    return aio_suspend(aiocb_list, nitems, timeout);
+}
+
+// Note: Since glibc 2.28, this function symbol is no longer available to newly linked applications.
+void invalidFunctionArg_llseek(int fd, loff_t offset, int origin)
+{
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(-1, offset, SEEK_SET);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, -1);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, 3);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, 42+SEEK_SET);
+    // cppcheck-suppress llseekCalled
+    // cppcheck-suppress invalidFunctionArg
+    (void)llseek(fd, offset, SEEK_SET+42);
+    // No invalidFunctionArg warning is expected for
+    // cppcheck-suppress llseekCalled
+    (void)llseek(0, offset, origin);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, origin);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, SEEK_SET);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, SEEK_CUR);
+    // cppcheck-suppress llseekCalled
+    (void)llseek(fd, offset, SEEK_END);
+}
+
+void invalidFunctionArg_lseek64(int fd, off_t offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(-1, offset, SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek64(fd, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)lseek64(0, offset, origin);
+    (void)lseek64(fd, offset, origin);
+    (void)lseek64(fd, offset, SEEK_SET);
+    (void)lseek64(fd, offset, SEEK_CUR);
+    (void)lseek64(fd, offset, SEEK_END);
+}
+
+void invalidFunctionArg_lseek(int fd, off_t offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(-1, offset, SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)lseek(fd, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)lseek(0, offset, origin);
+    (void)lseek(fd, offset, origin);
+    (void)lseek(fd, offset, SEEK_SET);
+    (void)lseek(fd, offset, SEEK_CUR);
+    (void)lseek(fd, offset, SEEK_END);
+}
+
+void invalidFunctionArg_fseeko(FILE* stream, off_t offset, int origin)
+{
+    // cppcheck-suppress invalidFunctionArg
+    (void)fseeko(stream, offset, -1);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fseeko(stream, offset, 3);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fseeko(stream, offset, 42+SEEK_SET);
+    // cppcheck-suppress invalidFunctionArg
+    (void)fseeko(stream, offset, SEEK_SET+42);
+    // No warning is expected for
+    (void)fseeko(stream, offset, origin);
+    (void)fseeko(stream, offset, SEEK_SET);
+    (void)fseeko(stream, offset, SEEK_CUR);
+    (void)fseeko(stream, offset, SEEK_END);
+}
+
+wchar_t *nullPointer_wcpncpy(wchar_t *dest, const wchar_t *src, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    (void)wcpncpy(NULL, src, n);
+    // cppcheck-suppress nullPointer
+    (void)wcpncpy(dest, NULL, n);
+    return wcpncpy(dest, src, n);
+}
+
+int nullPointer_utimes(const char *path, const struct timeval times[2])
+{
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress utimesCalled
+    (void)utimes(NULL, times);
+    // cppcheck-suppress utimesCalled
+    return utimes(path, times);
+}
 
 char * overlappingWriteFunction_stpcpy(char *src, char *dest)
 {
@@ -35,6 +497,99 @@ char * overlappingWriteFunction_stpcpy(char *src, char *dest)
     (void) stpcpy(dest, src);
     // cppcheck-suppress overlappingWriteFunction
     return stpcpy(src, src);
+}
+
+int nullPointer_strcasecmp(char *a, char *b)
+{
+    // No warning shall be shown:
+    (void) strcasecmp(a, b);
+    // cppcheck-suppress nullPointer
+    (void) strcasecmp(a, NULL);
+    // cppcheck-suppress nullPointer
+    return strcasecmp(NULL, b);
+}
+
+int nullPointer_strncasecmp(char *a, char *b, size_t n)
+{
+    // No warning shall be shown:
+    (void) strncasecmp(a, b, n);
+    // cppcheck-suppress nullPointer
+    (void) strncasecmp(a, NULL, n);
+    // cppcheck-suppress nullPointer
+    return strncasecmp(NULL, b, n);
+}
+
+int nullPointer_bcmp(const void *a, const void *b, size_t n)
+{
+    // No nullPointer warning shall be shown:
+    // cppcheck-suppress bcmpCalled
+    (void) bcmp(a, b, n);
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress bcmpCalled
+    (void) bcmp(a, NULL, n);
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress bcmpCalled
+    return bcmp(NULL, b, n);
+}
+
+void nullPointer_bzero(void *s, size_t n)
+{
+    // cppcheck-suppress nullPointer
+    // cppcheck-suppress bzeroCalled
+    bzero(NULL,n);
+    // No nullPointer-warning shall be shown:
+    // cppcheck-suppress bzeroCalled
+    bzero(s,n);
+}
+
+void bufferAccessOutOfBounds_bzero(void *s, size_t n)
+{
+    char buf[42];
+    // cppcheck-suppress bufferAccessOutOfBounds
+    // cppcheck-suppress bzeroCalled
+    bzero(buf,43);
+    // cppcheck-suppress bzeroCalled
+    bzero(buf,42);
+    // No nullPointer-warning shall be shown:
+    // cppcheck-suppress bzeroCalled
+    bzero(s,n);
+}
+
+size_t bufferAccessOutOfBounds_strnlen(const char *s, size_t maxlen)
+{
+    const char buf[2]={'4','2'};
+    size_t len = strnlen(buf,2);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    len+=strnlen(buf,3);
+    return len;
+}
+
+size_t nullPointer_strnlen(const char *s, size_t maxlen)
+{
+    // No warning shall be shown:
+    (void) strnlen(s, maxlen);
+    // cppcheck-suppress nullPointer
+    return strnlen(NULL, maxlen);
+}
+
+char * nullPointer_stpcpy(char *src, char *dest)
+{
+    // No warning shall be shown:
+    (void) stpcpy(dest, src);
+    // cppcheck-suppress nullPointer
+    (void) stpcpy(dest, NULL);
+    // cppcheck-suppress nullPointer
+    return stpcpy(NULL, src);
+}
+
+char * nullPointer_strsep(char **stringptr, char *delim)
+{
+    // No warning shall be shown:
+    (void) strsep(stringptr, delim);
+    // cppcheck-suppress nullPointer
+    (void) strsep(stringptr, NULL);
+    // cppcheck-suppress nullPointer
+    return strsep(NULL, delim);
 }
 
 void overlappingWriteFunction_bcopy(char *buf, const size_t count)
@@ -45,8 +600,20 @@ void overlappingWriteFunction_bcopy(char *buf, const size_t count)
     // cppcheck-suppress bcopyCalled
     bcopy(&buf[0], &buf[3], 3U);    // no-overlap
     // cppcheck-suppress bcopyCalled
-    // cppcheck-suppress overlappingWriteFunction
-    bcopy(&buf[0], &buf[3], 4U);
+    bcopy(&buf[0], &buf[3], 4U);    // The result is correct, even when both areas overlap.
+}
+
+void nullPointer_bcopy(const void *src, void *dest, size_t n)
+{
+    // No warning shall be shown:
+    // cppcheck-suppress bcopyCalled
+    bcopy(src, dest, n);
+    // cppcheck-suppress bcopyCalled
+    // cppcheck-suppress nullPointer
+    bcopy(NULL, dest, n);
+    // cppcheck-suppress bcopyCalled
+    // cppcheck-suppress nullPointer
+    bcopy(src, NULL, n);
 }
 
 void overlappingWriteFunction_memccpy(unsigned char *src, unsigned char *dest, int c, size_t count)
@@ -82,6 +649,30 @@ void overlappingWriteFunction_swab(char *src, char *dest, ssize_t n)
     swab(dest, src, n);
     // cppcheck-suppress overlappingWriteFunction
     swab(src, src+3, 4);
+}
+
+void bufferAccessOutOfBounds_swab(char *src, char *dest, ssize_t n)
+{
+    // No warning shall be shown:
+    swab(dest, src, n);
+    char srcBuf[42] = {0};
+    char destBuf[42] = {0};
+    swab(srcBuf, dest, 42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    swab(srcBuf, dest, 43);
+    swab(src, destBuf, 42);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    swab(src, destBuf, 43);
+}
+
+void nullPointer_swab(char *src, char *dest, ssize_t n)
+{
+    // No warning shall be shown:
+    swab(dest, src, n);
+    // cppcheck-suppress nullPointer
+    swab(NULL, dest, n);
+    // cppcheck-suppress nullPointer
+    swab(src, NULL, n);
 }
 
 bool invalidFunctionArgBool_isascii(bool b, int c)
@@ -158,6 +749,23 @@ void validCode(va_list valist_arg1, va_list valist_arg2)
     if (handle) {
         dlclose(handle);
     }
+}
+
+ssize_t nullPointer_send(int socket, const void *buf, size_t len, int flags)
+{
+    // cppcheck-suppress nullPointer
+    (void) send(socket, NULL, len, flags);
+    return send(socket, buf, len, flags);
+}
+
+ssize_t nullPointer_sendto(int socket, const void *message, size_t length,
+                           int flags, const struct sockaddr *dest_addr,
+                           socklen_t dest_len)
+{
+    // cppcheck-suppress nullPointer
+    (void) sendto(socket, NULL, length, flags, dest_addr, dest_len);
+    (void) sendto(socket, message, length, flags, NULL, dest_len);
+    return sendto(socket, message, length, flags, dest_addr, dest_len);
 }
 
 void bufferAccessOutOfBounds(int fd)
@@ -266,6 +874,15 @@ void * memleak_mmap2() // #8327
     if (data != MAP_FAILED)
         return data;
     return NULL;
+}
+
+void * identicalCondition_mmap(int fd, size_t size) // #9940
+{
+    void* buffer = mmap(NULL, size, PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0);
+    if (buffer == MAP_FAILED) {
+        return NULL;
+    }
+    return buffer;
 }
 
 void resourceLeak_fdopen(int fd)
@@ -496,7 +1113,7 @@ void timet_h(struct timespec* ptp1)
     clock_settime(clk_id2, ptp1);
 
     struct timespec tp;
-    // TODO cppcheck-suppress uninitvar
+    // cppcheck-suppress uninitvar
     clock_settime(CLOCK_REALTIME, &tp); // #6577 - false negative
     // cppcheck-suppress uninitvar
     clock_settime(clk_id3, &tp);

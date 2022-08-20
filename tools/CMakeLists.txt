@@ -1,6 +1,6 @@
 set(srcs_lib pathmatch.cpp path.cpp)
 foreach(file ${srcs_lib})
-    if (NOT USE_MATCHCOMPILER_OPT MATCHES "Off")
+    if (NOT USE_MATCHCOMPILER_OPT STREQUAL "Off")
         set(src "${CMAKE_BINARY_DIR}/lib/build/mc_${file}")
         set_source_files_properties(${src} PROPERTIES GENERATED TRUE)
     else()
@@ -14,7 +14,7 @@ add_executable(dmake EXCLUDE_FROM_ALL
         ${CMAKE_SOURCE_DIR}/cli/filelister.cpp
         ${srcs_tools}
         ${CMAKE_SOURCE_DIR}/lib/utils.cpp
-        ${CMAKE_SOURCE_DIR}/externals/simplecpp/simplecpp.cpp
+        $<TARGET_OBJECTS:simplecpp_objs>
 )
 target_include_directories(dmake PRIVATE ${CMAKE_SOURCE_DIR}/cli ${CMAKE_SOURCE_DIR}/lib ${CMAKE_SOURCE_DIR}/externals/simplecpp)
 if (WIN32 AND NOT BORLAND)

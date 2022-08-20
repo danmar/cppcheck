@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,8 +23,8 @@
 
 #include "config.h"
 #include "token.h"
-#include "utils.h"
 
+#include <cstddef>
 #include <iosfwd>
 #include <string>
 #include <unordered_set>
@@ -43,6 +43,9 @@ class CPPCHECKLIB TokenList {
 public:
     explicit TokenList(const Settings* settings);
     ~TokenList();
+
+    TokenList(const TokenList &) = delete;
+    TokenList &operator=(const TokenList &) = delete;
 
     void setSettings(const Settings *settings) {
         mSettings = settings;
@@ -71,8 +74,8 @@ public:
      */
     static void deleteTokens(Token *tok);
 
-    void addtoken(std::string str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split = false);
-    void addtoken(std::string str, const Token *locationTok);
+    void addtoken(const std::string& str, const nonneg int lineno, const nonneg int column, const nonneg int fileno, bool split = false);
+    void addtoken(const std::string& str, const Token *locationTok);
 
     void addtoken(const Token *tok, const nonneg int lineno, const nonneg int column, const nonneg int fileno);
     void addtoken(const Token *tok, const Token *locationTok);
@@ -151,10 +154,10 @@ public:
     std::string fileLine(const Token *tok) const;
 
     /**
-     * Calculates a 64-bit checksum of the token list used to compare
-     * multiple token lists with each other as quickly as possible.
+     * Calculates a hash of the token list used to compare multiple
+     * token lists with each other as quickly as possible.
      */
-    unsigned long long calculateChecksum() const;
+    std::size_t calculateHash() const;
 
     /**
      * Create abstract syntax tree.
@@ -193,13 +196,6 @@ public:
     bool isKeyword(const std::string &str) const;
 
 private:
-
-    /** Disable copy constructor, no implementation */
-    TokenList(const TokenList &);
-
-    /** Disable assignment operator, no implementation */
-    TokenList &operator=(const TokenList &);
-
     void determineCppC();
 
     /** Token list */

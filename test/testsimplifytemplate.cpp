@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,6 @@
  */
 
 
-#include "config.h"
 #include "errortypes.h"
 #include "platform.h"
 #include "settings.h"
@@ -40,7 +39,7 @@ public:
 private:
     Settings settings;
 
-    void run() OVERRIDE {
+    void run() override {
         settings.severity.enable(Severity::portability);
 
         // If there are unused templates, keep those
@@ -218,6 +217,8 @@ private:
         TEST_CASE(template172); // #10258 crash
         TEST_CASE(template173); // #10332 crash
         TEST_CASE(template174); // #10506 hang
+        TEST_CASE(template175); // #10908
+        TEST_CASE(template176); // #11146
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -256,6 +257,7 @@ private:
         TEST_CASE(expandSpecialized2);
         TEST_CASE(expandSpecialized3); // #8671
         TEST_CASE(expandSpecialized4);
+        TEST_CASE(expandSpecialized5); // #10494
 
         TEST_CASE(templateAlias1);
         TEST_CASE(templateAlias2);
@@ -1139,7 +1141,7 @@ private:
                                 "return f1<B<A>> ( 0 , reinterpret_cast < B<A> * > ( E<void*> :: Int ( -1 ) ) ) ; "
                                 "} "
                                 "} ; "
-                                "int main ( void ) { "
+                                "int main ( ) { "
                                 "C<A> ca ; "
                                 "return 0 ; "
                                 "} "
@@ -4457,6 +4459,37 @@ private:
         ASSERT_EQUALS(exp, tok(code));
     }
 
+    void template175() // #10908
+    {
+        const char code[] = "template <typename T, int value> T Get() {return value;}\n"
+                            "char f() { Get<int,10>(); }\n";
+        const char exp[] = "int Get<int,10> ( ) ; "
+                           "char f ( ) { Get<int,10> ( ) ; } "
+                           "int Get<int,10> ( ) { return 10 ; }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template176() // #11146 don't crash
+    {
+        const char code[] = "struct a {\n"
+                            "    template <typename> class b {};\n"
+                            "};\n"
+                            "struct c {\n"
+                            "    template <typename> a::b<int> d();\n"
+                            "    ;\n"
+                            "};\n"
+                            "template <typename> a::b<int> c::d() {}\n"
+                            "template <> class a::b<int> c::d<int>() { return {}; };\n";
+        const char exp[] = "struct a { "
+                           "class b<int> c :: d<int> ( ) ; "
+                           "template < typename > class b { } ; "
+                           "} ; "
+                           "struct c { a :: b<int> d<int> ( ) ; } ; "
+                           "class a :: b<int> c :: d<int> ( ) { return { } ; } ; "
+                           "a :: b<int> c :: d<int> ( ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
     void template_specialization_1() {  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         const char code[] = "template <typename T> struct C {};\n"
                             "template <typename T> struct S {a};\n"
@@ -5561,6 +5594,45 @@ private:
                                     "class C<int> { } ;";
             ASSERT_EQUALS(expected, tok(code));
         }
+        {
+            const char code[] = "class A {};\n"
+                                "template<typename T> struct B;\n"
+                                "template<> struct B<A> {};\n"
+                                "int f() {\n"
+                                "    int B[1] = {};\n"
+                                "    return B[0];\n"
+                                "}\n";
+            const char expected[] = "class A { } ; "
+                                    "struct B<A> ; "
+                                    "template < typename T > struct B ; "
+                                    "struct B<A> { } ; "
+                                    "int f ( ) { "
+                                    "int B [ 1 ] = { } ; "
+                                    "return B [ 0 ] ; "
+                                    "}";
+            ASSERT_EQUALS(expected, tok(code));
+        }
+    }
+
+    void expandSpecialized5() {
+        const char code[] = "template<typename T> class hash;\n" // #10494
+                            "template<> class hash<int> {};\n"
+                            "int f(int i) {\n"
+                            "    int hash = i;\n"
+                            "    const int a[2]{};\n"
+                            "    return a[hash];\n"
+                            "}\n";
+
+        const char expected[] = "class hash<int> ; "
+                                "template < typename T > class hash ; "
+                                "class hash<int> { } ; "
+                                "int f ( int i ) { "
+                                "int hash ; hash = i ; "
+                                "const int a [ 2 ] { } ; "
+                                "return a [ hash ] ; "
+                                "}";
+
+        ASSERT_EQUALS(expected, tok(code));
     }
 
     void templateAlias1() {

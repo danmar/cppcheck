@@ -1,6 +1,6 @@
 /*
  * Cppcheck - A tool for static C/C++ code analysis
- * Copyright (C) 2007-2021 Cppcheck team.
+ * Copyright (C) 2007-2022 Cppcheck team.
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,7 +17,10 @@
  */
 
 #include "erroritem.h"
+
 #include "common.h"
+
+#include <list>
 
 QErrorPathItem::QErrorPathItem(const ErrorMessage::FileLocation &loc)
     : file(QString::fromStdString(loc.getfile(false)))
@@ -33,7 +36,6 @@ bool operator==(const QErrorPathItem &i1, const QErrorPathItem &i2)
 
 ErrorItem::ErrorItem()
     : severity(Severity::none)
-    , incomplete(false)
     , inconclusive(false)
     , cwe(-1)
     , hash(0)
@@ -41,10 +43,8 @@ ErrorItem::ErrorItem()
 
 ErrorItem::ErrorItem(const ErrorMessage &errmsg)
     : file0(QString::fromStdString(errmsg.file0))
-    , function(QString::fromStdString(errmsg.function))
     , errorId(QString::fromStdString(errmsg.id))
     , severity(errmsg.severity)
-    , incomplete(errmsg.incomplete)
     , inconclusive(errmsg.certainty == Certainty::inconclusive)
     , summary(QString::fromStdString(errmsg.shortMessage()))
     , message(QString::fromStdString(errmsg.verboseMessage()))
