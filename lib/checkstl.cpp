@@ -1993,7 +1993,7 @@ void CheckStl::string_c_str()
                     if (tok2 && Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
                         const Variable* var = tok2->tokAt(-5)->variable();
                         if (var && (var->isStlStringType() ||
-                                   (var->valueType() && var->valueType()->type == ValueType::ITERATOR && isStlStringType(var->valueType()->containerTypeToken)))) {
+                                    (var->valueType() && var->valueType()->type == ValueType::ITERATOR && isStlStringType(var->valueType()->containerTypeToken)))) {
                             string_c_strParam(tok, i->second);
                         } else if (Token::Match(tok2->tokAt(-9), "%name% . str ( )")) { // Check ss.str().c_str() as parameter
                             const Variable* ssVar = tok2->tokAt(-9)->variable();
