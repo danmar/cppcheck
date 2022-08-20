@@ -457,17 +457,6 @@ private:
               "}");
         ASSERT_EQUALS("[test.cpp:2]: (error) Invalid memset() argument nr 3. A non-boolean value is required.\n", errout.str());
 
-        // Ticket #8919
-        check("void f() {\n"
-              "    char tgt[7];\n"
-              "    char src[7 + 1] = \"1234567\";\n"
-              "    if (sizeof tgt > sizeof src) {\n"
-              "        memmove(&tgt, &src, sizeof src);\n"
-              "        memset(&tgt + sizeof src, 'x', sizeof tgt - sizeof src);\n"
-              "    }\n"
-              "}\n");
-        ASSERT_EQUALS("", errout.str());
-
         check("int boolArgZeroIsInvalidButOneIsValid(int a, int param) {\n"
               "  return div(a, param > 0);\n"
               "}");
