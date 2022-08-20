@@ -380,6 +380,12 @@ bool isVariableDecl(const Token* tok)
     return false;
 }
 
+bool isStlStringType(const Token* tok)
+{
+    return Token::Match(tok, "std :: string|wstring|u16string|u32string !!::") ||
+           (Token::simpleMatch(tok, "std :: basic_string <") && !Token::simpleMatch(tok->linkAt(3), "> ::"));
+}
+
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown)
 {
     if (!tok)
