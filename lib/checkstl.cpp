@@ -2012,10 +2012,11 @@ void CheckStl::string_c_str()
                 string_c_strConcat(tok);
             } else if (printPerformance && Token::simpleMatch(tok, "<<") && tok->astOperand2() && Token::simpleMatch(tok->astOperand2()->astOperand1(), ". c_str ( )")) {
                 const Token* str = tok->astOperand2()->astOperand1()->astOperand1();
-                if (Token::Match(str, "(|["))
+                if (Token::Match(str, "(|[") && !(str->valueType() && str->valueType()->type == ValueType::ITERATOR))
                     str = str->previous();
                 if (str && ((str->variable() && str->variable()->isStlStringType()) ||
-                            (str->function() && isStlStringType(str->function()->retDef)))) {
+                            (str->function() && isStlStringType(str->function()->retDef))) ||
+                            (str->valueType() && str->valueType()->type == ValueType::ITERATOR && isStlStringType(str->valueType()->containerTypeToken))) {
                     const Token* strm = tok;
                     while (Token::simpleMatch(strm, "<<"))
                         strm = strm->astOperand1();
