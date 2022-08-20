@@ -2015,8 +2015,8 @@ void CheckStl::string_c_str()
                 if (Token::Match(str, "(|[") && !(str->valueType() && str->valueType()->type == ValueType::ITERATOR))
                     str = str->previous();
                 if (str && ((str->variable() && str->variable()->isStlStringType()) ||
-                            (str->function() && isStlStringType(str->function()->retDef))) ||
-                            (str->valueType() && str->valueType()->type == ValueType::ITERATOR && isStlStringType(str->valueType()->containerTypeToken))) {
+                            (str->function() && isStlStringType(str->function()->retDef)) ||
+                            (str->valueType() && str->valueType()->type == ValueType::ITERATOR && isStlStringType(str->valueType()->containerTypeToken)))) {
                     const Token* strm = tok;
                     while (Token::simpleMatch(strm, "<<"))
                         strm = strm->astOperand1();
