@@ -283,7 +283,8 @@ public:
         static Action actionFrom(const std::string& actionName);
     };
     std::map<std::string, Container> containers;
-    const Container* detectContainer(const Token* typeStart, bool iterator = false) const;
+    const Container* detectContainer(const Token* typeStart) const;
+    const Container* detectIterator(const Token* typeStart) const;
     const Container* detectContainerOrIterator(const Token* typeStart, bool* isIterator = nullptr) const;
 
     class ArgumentChecks {
@@ -647,6 +648,9 @@ private:
         const std::map<std::string, AllocFunc>::const_iterator it = data.find(name);
         return (it == data.end()) ? nullptr : &it->second;
     }
+
+    enum DetectContainer { ContainerOnly, IteratorOnly, Both };
+    const Library::Container* detectContainerInternal(const Token* typeStart, DetectContainer detect, bool* isIterator = nullptr) const;
 };
 
 CPPCHECKLIB const Library::Container * getLibraryContainer(const Token * tok);
