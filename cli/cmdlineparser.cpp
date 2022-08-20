@@ -242,11 +242,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->addEnabled("information");
             }
 
-            else if (std::strncmp(argv[i], "--clang", 7) == 0) {
+            else if (std::strcmp(argv[i], "--clang") == 0) {
                 mSettings->clang = true;
-                if (std::strncmp(argv[i], "--clang=", 8) == 0) {
-                    mSettings->clangExecutable = argv[i] + 8;
-                }
+            }
+
+            else if (std::strncmp(argv[i], "--clang=", 8) == 0) {
+                mSettings->clang = true;
+                mSettings->clangExecutable = argv[i] + 8;
             }
 
             else if (std::strncmp(argv[i], "--config-exclude=",17) ==0) {
@@ -339,14 +341,19 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             }
 
             // Exception handling inside cppcheck client
-            else if (std::strcmp(argv[i], "--exception-handling") == 0)
+            else if (std::strcmp(argv[i], "--exception-handling") == 0) {
                 mSettings->exceptionHandling = true;
+            }
 
-            // TODO: only applied with Signal handling i.e. Linux
+            // Exception handling inside cppcheck client
             else if (std::strncmp(argv[i], "--exception-handling=", 21) == 0) {
+                const std::string exceptionOutfilename = argv[i] + 21;
+                if (exceptionOutfilename != "stderr" && exceptionOutfilename != "stdout") {
+                    printError("invalid '--exception-handling' argument");
+                    return false;
+                }
                 mSettings->exceptionHandling = true;
-                const std::string exceptionOutfilename = &(argv[i][21]);
-                CppCheckExecutor::setExceptionOutput((exceptionOutfilename=="stderr") ? stderr : stdout);
+                CppCheckExecutor::setExceptionOutput((exceptionOutfilename == "stderr") ? stderr : stdout);
             }
 
             // Filter errors
