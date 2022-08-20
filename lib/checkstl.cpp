@@ -2009,12 +2009,18 @@ void CheckStl::string_c_str()
                        ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable() && tok->previous()->variable()->isStlStringType()) ||
                         (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable() && tok->tokAt(-5)->variable()->isStlStringType()))) {
                 string_c_strConcat(tok);
-            } else if (printPerformance && tok->next() && tok->next()->variable() && tok->next()->variable()->isStlStringType() && Token::Match(tok, "<< %var% . c_str ( )")) {
-                const Token* strm = tok;
-                while (Token::simpleMatch(strm, "<<"))
-                    strm = strm->astOperand1();
-                if (strm && strm->variable() && strm->variable()->isStlType())
-                    string_c_strStream(tok);
+            } else if (printPerformance && Token::simpleMatch(tok, "<<") && tok->astOperand2() && Token::simpleMatch(tok->astOperand2()->astOperand1(), ". c_str ( )")) {
+                const Token* str = tok->astOperand2()->astOperand1()->astOperand1();
+                if (Token::Match(str, "(|["))
+                    str = str->previous();
+                if (str && ((str->variable() && str->variable()->isStlStringType()) ||
+                            (str->function() && isStlStringType(str->function()->retDef)))) {
+                    const Token* strm = tok;
+                    while (Token::simpleMatch(strm, "<<"))
+                        strm = strm->astOperand1();
+                    if (strm && strm->variable() && strm->variable()->isStlType())
+                        string_c_strStream(tok);
+                }
             }
 
             // Using c_str() to get the return value is only dangerous if the function returns a char*
