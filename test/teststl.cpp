@@ -3893,6 +3893,14 @@ private:
                       "[test.cpp:11]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n",
                       errout.str());
 
+        check("void f(const std::string& s);\n" // #8336
+              "void g(const std::vector<std::string>& v) {\n"
+              "    for (std::vector<std::string>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
+              "        f(it->c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n",
+                      errout.str());
+
         check("void svgFile(const std::string &content, const std::string &fileName, const double end = 1000., const double start = 0.);\n"
               "void Bar(std::string filename) {\n"
               "    std::string str = \"bar\";\n"
