@@ -1297,7 +1297,8 @@ void CheckOther::checkPassByReference()
         if (var->scope() && var->scope()->function->arg->link()->strAt(-1) == "...")
             continue; // references could not be used as va_start parameters (#5824)
 
-        if ((var->declEndToken() && var->declEndToken()->isExternC()) ||
+        const Token * const varDeclEndToken = var->declEndToken();
+        if ((varDeclEndToken && varDeclEndToken->isExternC()) ||
             (var->scope() && var->scope()->function && var->scope()->function->tokenDef && var->scope()->function->tokenDef->isExternC()))
             continue; // references cannot be used in functions in extern "C" blocks
 
