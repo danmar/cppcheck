@@ -925,8 +925,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                                     e.id,
                                     Certainty::normal);
 
-                if (errmsg.severity == Severity::error || mSettings.severity.isEnabled(errmsg.severity))
-                    reportErr(errmsg);
+                reportErr(errmsg);
             }
         }
 
