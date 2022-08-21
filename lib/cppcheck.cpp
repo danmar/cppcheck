@@ -918,7 +918,7 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                         locationList.push_back(loc);
                     }
                 }
-                ErrorMessage errmsg(locationList,
+                ErrorMessage errmsg(std::move(locationList),
                                     tokenizer.list.getSourceFilePath(),
                                     Severity::error,
                                     e.errorMessage,
