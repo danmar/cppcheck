@@ -1992,7 +1992,8 @@ void CheckStl::string_c_str()
                         break;
                     if (tok2 && Token::Match(tok2->tokAt(-4), ". c_str|data ( )")) {
                         const Variable* var = tok2->tokAt(-5)->variable();
-                        if (var && var->isStlStringType()) {
+                        if (var && (var->isStlStringType() ||
+                                    (var->valueType() && var->valueType()->type == ValueType::ITERATOR && isStlStringType(var->valueType()->containerTypeToken)))) {
                             string_c_strParam(tok, i->second);
                         } else if (Token::Match(tok2->tokAt(-9), "%name% . str ( )")) { // Check ss.str().c_str() as parameter
                             const Variable* ssVar = tok2->tokAt(-9)->variable();
@@ -2011,10 +2012,11 @@ void CheckStl::string_c_str()
                 string_c_strConcat(tok);
             } else if (printPerformance && Token::simpleMatch(tok, "<<") && tok->astOperand2() && Token::simpleMatch(tok->astOperand2()->astOperand1(), ". c_str ( )")) {
                 const Token* str = tok->astOperand2()->astOperand1()->astOperand1();
-                if (Token::Match(str, "(|["))
+                if (Token::Match(str, "(|[") && !(str->valueType() && str->valueType()->type == ValueType::ITERATOR))
                     str = str->previous();
                 if (str && ((str->variable() && str->variable()->isStlStringType()) ||
-                            (str->function() && isStlStringType(str->function()->retDef)))) {
+                            (str->function() && isStlStringType(str->function()->retDef)) ||
+                            (str->valueType() && str->valueType()->type == ValueType::ITERATOR && isStlStringType(str->valueType()->containerTypeToken)))) {
                     const Token* strm = tok;
                     while (Token::simpleMatch(strm, "<<"))
                         strm = strm->astOperand1();

@@ -3894,6 +3894,14 @@ private:
                       "[test.cpp:11]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n",
                       errout.str());
 
+        check("void f(const std::string& s);\n" // #8336
+              "void g(const std::vector<std::string>& v) {\n"
+              "    for (std::vector<std::string>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
+              "        f(it->c_str());\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (performance) Passing the result of c_str() to a function that takes std::string as argument no. 1 is slow and redundant.\n",
+                      errout.str());
+
         check("void svgFile(const std::string &content, const std::string &fileName, const double end = 1000., const double start = 0.);\n"
               "void Bar(std::string filename) {\n"
               "    std::string str = \"bar\";\n"
@@ -4068,19 +4076,28 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("struct T { std::string g(); std::string a[1]; }\n" // #7515
+        check("struct T {\n" // #7515
+              "    std::string g();\n"
+              "    std::string a[1];\n"
+              "    std::vector<std::string> v;\n"
+              "};\n"
               "void f(std::stringstream& strm, const std::string& s, T& t) {\n"
               "    strm << s.c_str();\n"
               "    strm << \"abc\" << s.c_str();\n"
               "    strm << \"abc\" << s.c_str() << \"def\";\n"
               "    strm << \"abc\" << t.g().c_str() << \"def\";\n"
               "    strm << t.a[0].c_str();\n"
+              "    strm << t.v.begin()->c_str();\n"
+              "    auto it = t.v.begin()\n"
+              "    strm << it->c_str();\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
-                      "[test.cpp:4]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
-                      "[test.cpp:5]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
-                      "[test.cpp:6]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
-                      "[test.cpp:7]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n",
+        ASSERT_EQUALS("[test.cpp:7]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:8]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:9]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:10]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:11]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:12]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n"
+                      "[test.cpp:14]: (performance) Passing the result of c_str() to a stream is slow and redundant.\n",
                       errout.str());
     }
 
