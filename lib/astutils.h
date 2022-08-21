@@ -162,6 +162,7 @@ std::string astCanonicalType(const Token *expr);
 const Token * astIsVariableComparison(const Token *tok, const std::string &comp, const std::string &rhs, const Token **vartok=nullptr);
 
 bool isVariableDecl(const Token* tok);
+bool isStlStringType(const Token* tok);
 
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown = false);
 

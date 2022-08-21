@@ -117,6 +117,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -1206,7 +1207,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
 
         const Token *tok2 = tok->tokAt(2);
         // skip over tokens to find variable or type
-        while (Token::Match(tok2, "%name% ::|.|[")) {
+        while (tok2 && !tok2->isStandardType() && Token::Match(tok2, "%name% ::|.|[")) {
             if (tok2->next()->str() == "[")
                 tok2 = tok2->linkAt(1)->next();
             else
@@ -1322,8 +1323,25 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 setTokenValue(tok->next(), value, settings);
             }
         } else if (!tok2->type()) {
-            const ValueType &vt = ValueType::parseDecl(tok2,settings);
-            const size_t sz = ValueFlow::getSizeOf(vt, settings);
+            const ValueType& vt = ValueType::parseDecl(tok2, settings);
+            size_t sz = ValueFlow::getSizeOf(vt, settings);
+            const Token* brac = tok2->astParent();
+            while (Token::simpleMatch(brac, "[")) {
+                const Token* num = brac->astOperand2();
+                if (num && ((num->isNumber() && MathLib::isInt(num->str())) || num->tokType() == Token::eChar)) {
+                    try {
+                        MathLib::biguint dim = MathLib::toULongNumber(num->str());
+                        sz *= dim;
+                        brac = brac->astParent();
+                        continue;
+                    }
+                    catch (const std::exception& /*e*/) {
+                        // Bad integer literal
+                    }
+                }
+                sz = 0;
+                break;
+            }
             if (sz > 0) {
                 ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
@@ -3322,14 +3340,15 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
         return {{tok, std::move(errorPath)}};
     if (var && var->declarationId() == tok->varId()) {
         if (var->isReference() || var->isRValueReference()) {
-            if (!var->declEndToken())
+            const Token * const varDeclEndToken = var->declEndToken();
+            if (!varDeclEndToken)
                 return {{tok, true, std::move(errorPath)}};
             if (var->isArgument()) {
-                errorPath.emplace_back(var->declEndToken(), "Passed to reference.");
+                errorPath.emplace_back(varDeclEndToken, "Passed to reference.");
                 return {{tok, true, std::move(errorPath)}};
-            } else if (Token::simpleMatch(var->declEndToken(), "=")) {
-                errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
-                const Token *vartok = var->declEndToken()->astOperand2();
+            } else if (Token::simpleMatch(varDeclEndToken, "=")) {
+                errorPath.emplace_back(varDeclEndToken, "Assigned to reference.");
+                const Token *vartok = varDeclEndToken->astOperand2();
                 const bool temporary = isTemporary(true, vartok, nullptr, true);
                 const bool nonlocal = var->isStatic() || var->isGlobal();
                 if (vartok == tok || (nonlocal && temporary) ||
@@ -4003,6 +4022,8 @@ struct LifetimeStore {
             return;
         if (!argtok)
             return;
+        if (!tok)
+            return;
         for (const ValueFlow::Value &v : argtok->values()) {
             if (!v.isLifetimeValue())
                 continue;
@@ -4013,7 +4034,8 @@ struct LifetimeStore {
             er.insert(er.end(), errorPath.begin(), errorPath.end());
             if (!var)
                 continue;
-            for (const Token *tok3 = tok; tok3 && tok3 != var->declEndToken(); tok3 = tok3->previous()) {
+            const Token * const varDeclEndToken = var->declEndToken();
+            for (const Token *tok3 = tok; tok3 && tok3 != varDeclEndToken; tok3 = tok3->previous()) {
                 if (tok3->varId() == var->declarationId()) {
                     LifetimeStore{tok3, message, type, inconclusive}.byVal(tok, tokenlist, errorLogger, settings, pred);
                     break;
@@ -4832,20 +4854,20 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
             Token * varTok;
             if (Token::Match(tok, "%var% . reset|clear (") && tok->next()->originalName().empty()) {
                 varTok = tok;
+
+                const Variable *var = tok->variable();
+                if (!var || (!var->isLocal() && !var->isArgument()))
+                    continue;
+
                 ValueFlow::Value value;
                 value.valueType = ValueFlow::Value::ValueType::MOVED;
                 value.moveKind = ValueFlow::Value::MoveKind::NonMovedVariable;
                 value.errorPath.emplace_back(tok, "Calling " + tok->next()->expressionString() + " makes " + tok->str() + " 'non-moved'");
                 value.setKnown();
-                std::list<ValueFlow::Value> values;
-                values.push_back(value);
 
-                const Variable *var = varTok->variable();
-                if (!var || (!var->isLocal() && !var->isArgument()))
-                    continue;
+                setTokenValue(tok, value, settings);
                 const Token * const endOfVarScope = var->scope()->bodyEnd;
-                setTokenValue(varTok, value, settings);
-                valueFlowForward(varTok->next(), endOfVarScope, varTok, values, tokenlist);
+                valueFlowForward(tok->next(), endOfVarScope, tok, std::move(value), tokenlist);
                 continue;
             }
             ValueFlow::Value::MoveKind moveKind;
@@ -4868,20 +4890,20 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
                 continue;
             const Token * const endOfVarScope = var->scope()->bodyEnd;
 
-            ValueFlow::Value value;
-            value.valueType = ValueFlow::Value::ValueType::MOVED;
-            value.moveKind = moveKind;
-            if (moveKind == ValueFlow::Value::MoveKind::MovedVariable)
-                value.errorPath.emplace_back(tok, "Calling std::move(" + varTok->str() + ")");
-            else // if (moveKind == ValueFlow::Value::ForwardedVariable)
-                value.errorPath.emplace_back(tok, "Calling std::forward(" + varTok->str() + ")");
-            value.setKnown();
-            std::list<ValueFlow::Value> values;
-            values.push_back(value);
             const Token * openParentesisOfMove = findOpenParentesisOfMove(varTok);
             const Token * endOfFunctionCall = findEndOfFunctionCallForParameter(openParentesisOfMove);
-            if (endOfFunctionCall)
-                valueFlowForward(const_cast<Token*>(endOfFunctionCall), endOfVarScope, varTok, values, tokenlist);
+            if (endOfFunctionCall) {
+                ValueFlow::Value value;
+                value.valueType = ValueFlow::Value::ValueType::MOVED;
+                value.moveKind = moveKind;
+                if (moveKind == ValueFlow::Value::MoveKind::MovedVariable)
+                    value.errorPath.emplace_back(tok, "Calling std::move(" + varTok->str() + ")");
+                else // if (moveKind == ValueFlow::Value::ForwardedVariable)
+                    value.errorPath.emplace_back(tok, "Calling std::forward(" + varTok->str() + ")");
+                value.setKnown();
+
+                valueFlowForward(const_cast<Token*>(endOfFunctionCall), endOfVarScope, varTok, std::move(value), tokenlist);
+            }
         }
     }
 }
@@ -6696,12 +6718,11 @@ static void valueFlowForLoopSimplifyAfter(Token* fortok, nonneg int varid, const
         endToken = fortok->scope()->bodyEnd;
 
     Token* blockTok = fortok->linkAt(1)->linkAt(1);
-    std::list<ValueFlow::Value> values;
-    values.emplace_back(num);
-    values.back().errorPath.emplace_back(fortok,"After for loop, " + var->name() + " has value " + values.back().infoString());
-
     if (blockTok != endToken) {
-        valueFlowForward(blockTok->next(), endToken, vartok, values, tokenlist);
+        ValueFlow::Value v{num};
+        v.errorPath.emplace_back(fortok,"After for loop, " + var->name() + " has value " + v.infoString());
+
+        valueFlowForward(blockTok->next(), endToken, vartok, v, tokenlist);
     }
 }
 
@@ -7790,11 +7811,9 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                     valueFlowForwardAssign(inTok, var, values, constValue, true, tokenlist, errorLogger, settings);
 
                 } else if (Token::Match(tok, "%var% ;")) {
-                    std::list<ValueFlow::Value> values;
                     ValueFlow::Value v(0);
                     v.setKnown();
-                    values.push_back(v);
-                    valueFlowForwardAssign(tok, var, values, false, true, tokenlist, errorLogger, settings);
+                    valueFlowForwardAssign(tok, var, {std::move(v)}, false, true, tokenlist, errorLogger, settings);
                 }
             }
         } else if (astIsLHS(tok) && Token::Match(tok->astParent(), ". %name% (") &&
@@ -7803,11 +7822,9 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
             Token* ftok = tok->astParent()->tokAt(2);
             if (Token::simpleMatch(tok->astParent(), ". reset (")) {
                 if (Token::simpleMatch(ftok, "( )")) {
-                    std::list<ValueFlow::Value> values;
                     ValueFlow::Value v(0);
                     v.setKnown();
-                    values.push_back(v);
-                    valueFlowForwardAssign(ftok, tok, vars, values, false, tokenlist, errorLogger, settings);
+                    valueFlowForwardAssign(ftok, tok, vars, {std::move(v)}, false, tokenlist, errorLogger, settings);
                 } else {
                     tok->removeValues(std::mem_fn(&ValueFlow::Value::isIntValue));
                     Token* inTok = ftok->astOperand2();
@@ -7829,11 +7846,9 @@ static void valueFlowSmartPointer(TokenList *tokenlist, ErrorLogger * errorLogge
                 }
                 if (hasParentReset)
                     continue;
-                std::list<ValueFlow::Value> values;
                 ValueFlow::Value v(0);
                 v.setKnown();
-                values.push_back(v);
-                valueFlowForwardAssign(ftok, tok, vars, values, false, tokenlist, errorLogger, settings);
+                valueFlowForwardAssign(ftok, tok, vars, {std::move(v)}, false, tokenlist, errorLogger, settings);
             } else if (Token::simpleMatch(tok->astParent(), ". get ( )")) {
                 ValueFlow::Value v = makeSymbolic(tok);
                 setTokenValue(tok->astParent()->tokAt(2), v, settings);
@@ -8125,11 +8140,14 @@ static void valueFlowContainerSize(TokenList* tokenlist,
                 values = getContainerSizeFromConstructor(constructorArgs, var->valueType(), settings, known);
             }
         }
+
+        if (constSize) {
+            valueFlowForwardConst(var->nameToken()->next(), var->scope()->bodyEnd, var, values, settings);
+            continue;
+        }
+
         for (const ValueFlow::Value& value : values) {
-            if (constSize)
-                valueFlowForwardConst(var->nameToken()->next(), var->scope()->bodyEnd, var, values, settings);
-            else
-                valueFlowForward(var->nameToken()->next(), var->nameToken(), value, tokenlist);
+            valueFlowForward(var->nameToken()->next(), var->nameToken(), value, tokenlist);
         }
     }
 
@@ -8348,8 +8366,7 @@ static void valueFlowDynamicBufferSize(TokenList* tokenlist, SymbolDatabase* sym
             value.errorPath.emplace_back(tok->tokAt(2), "Assign " + tok->strAt(1) + ", buffer with size " + MathLib::toString(sizeValue));
             value.valueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
             value.setKnown();
-            const std::list<ValueFlow::Value> values{value};
-            valueFlowForward(const_cast<Token*>(rhs), functionScope->bodyEnd, tok->next(), values, tokenlist);
+            valueFlowForward(const_cast<Token*>(rhs), functionScope->bodyEnd, tok->next(), std::move(value), tokenlist);
         }
     }
 }

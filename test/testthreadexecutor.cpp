@@ -25,6 +25,7 @@
 #include <cstddef>
 #include <map>
 #include <ostream>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>

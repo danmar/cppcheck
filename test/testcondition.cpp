@@ -27,6 +27,7 @@
 
 #include <iosfwd>
 #include <map>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -4297,6 +4298,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'g()==1' is always false\n"
                       "[test.cpp:3]: (style) Condition 'g()==-1' is always true\n",
                       errout.str());
+
+        // #9817
+        check("void f(float x) {\n"
+              "    if (x <= 0) {}\n"
+              "    else if (x < 1) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()

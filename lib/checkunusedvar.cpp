@@ -715,7 +715,7 @@ void CheckUnusedVar::checkFunctionVariableUsage_iterateScopes(const Scope* const
             else if (mTokenizer->isC() ||
                      i->typeEndToken()->isStandardType() ||
                      isRecordTypeWithoutSideEffects(i->type()) ||
-                     mSettings->library.detectContainer(i->typeStartToken(), /*iterator*/ false) ||
+                     mSettings->library.detectContainer(i->typeStartToken()) ||
                      i->isStlType())
                 type = Variables::standard;
             if (type == Variables::none || isPartOfClassStructUnion(i->typeStartToken()))
@@ -1448,6 +1448,9 @@ void CheckUnusedVar::checkStructMemberUsage()
                     }
                 }
             }
+
+            if (bailout)
+                break;
         }
         if (bailout)
             continue;
@@ -1471,6 +1474,9 @@ void CheckUnusedVar::checkStructMemberUsage()
                         addrTok = addrTok->next();
                 } while (addrTok);
             }
+
+            if (bailout)
+                break;
         }
         if (bailout)
             continue;

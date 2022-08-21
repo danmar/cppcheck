@@ -2588,11 +2588,13 @@ void CheckClass::checkVirtualFunctionCallInConstructor()
             getFirstVirtualFunctionCallStack(virtualFunctionCallsMap, callToken, callstack);
             if (callstack.empty())
                 continue;
-            if (!(callstack.back()->function()->hasVirtualSpecifier() || callstack.back()->function()->hasOverrideSpecifier()))
+            const Function* const func = callstack.back()->function();
+            if (!(func->hasVirtualSpecifier() || func->hasOverrideSpecifier()))
                 continue;
-            if (callstack.back()->function()->isPure())
+            if (func->isPure())
                 pureVirtualFunctionCallInConstructorError(scope->function, callstack, callstack.back()->str());
-            else if (!callstack.back()->function()->hasFinalSpecifier())
+            else if (!func->hasFinalSpecifier() &&
+                     !(func->nestedIn && func->nestedIn->classDef && func->nestedIn->classDef->isFinalType()))
                 virtualFunctionCallInConstructorError(scope->function, callstack, callstack.back()->str());
         }
     }

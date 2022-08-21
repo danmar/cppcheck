@@ -51,6 +51,8 @@
     || defined(__clang__) \
     || defined(__CPPCHECK__)
 #  define NORETURN [[noreturn]]
+#elif defined(__GNUC__)
+#  define NORETURN __attribute__((noreturn))
 #else
 #  define NORETURN
 #endif
@@ -129,5 +131,16 @@ static const std::string emptyString;
 #define SUPPRESS_FLOAT_EQUAL_WARNING(...) __VA_ARGS__
 #endif
 
+#if !defined(NO_WINDOWS_SEH) && defined(_WIN32) && defined(_MSC_VER)
+#define USE_WINDOWS_SEH
+#endif
+
+#if !defined(NO_UNIX_BACKTRACE_SUPPORT) && defined(__GNUC__) && defined(__GLIBC__) && !defined(__CYGWIN__) && !defined(__MINGW32__) && !defined(__NetBSD__) && !defined(__SVR4) && !defined(__QNX__)
+#define USE_UNIX_BACKTRACE_SUPPORT
+#endif
+
+#if !defined(NO_UNIX_SIGNAL_HANDLING) && defined(__GNUC__) && !defined(__MINGW32__) && !defined(__OS2__)
+#define USE_UNIX_SIGNAL_HANDLING
+#endif
 
 #endif // configH

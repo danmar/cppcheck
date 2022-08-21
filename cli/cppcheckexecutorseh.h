@@ -16,29 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef CPPCHECKEXECUTORSEH_H
+#define CPPCHECKEXECUTORSEH_H
 
-#include "analyzerinfo.h"
-#include "testsuite.h"
+#include "config.h"
 
-#include <sstream>
+#ifdef USE_WINDOWS_SEH
 
-class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
-public:
-    TestAnalyzerInformation() : TestFixture("TestAnalyzerInformation") {}
+class CppCheckExecutor;
+class CppCheck;
 
-private:
+int check_wrapper_seh(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&), CppCheck& cppcheck);
 
-    void run() override {
-        TEST_CASE(getAnalyzerInfoFile);
-    }
+#endif
 
-    void getAnalyzerInfoFile() const {
-        const char filesTxt[] = "file1.a4::file1.c\n";
-        std::istringstream f1(filesTxt);
-        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", ""));
-        std::istringstream f2(filesTxt);
-        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f2, "./file1.c", ""));
-    }
-};
-
-REGISTER_TEST(TestAnalyzerInformation)
+#endif // CPPCHECKEXECUTORSEH_H

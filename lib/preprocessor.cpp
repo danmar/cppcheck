@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <iterator> // back_inserter
 #include <memory>
+#include <sstream>
 #include <utility>
 
 #include <simplecpp.h>
@@ -909,10 +910,8 @@ bool Preprocessor::validateCfg(const std::string &cfg, const std::list<simplecpp
 void Preprocessor::validateCfgError(const std::string &file, const unsigned int line, const std::string &cfg, const std::string &macro)
 {
     const std::string id = "ConfigurationNotChecked";
-    std::list<ErrorMessage::FileLocation> locationList;
-    const ErrorMessage::FileLocation loc(file, line, 0);
-    locationList.push_back(loc);
-    const ErrorMessage errmsg(locationList, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, Certainty::normal);
+    ErrorMessage::FileLocation loc(file, line, 0);
+    const ErrorMessage errmsg({std::move(loc)}, mFile0, Severity::information, "Skipping configuration '" + cfg + "' since the value of '" + macro + "' is unknown. Use -D if you want to check it. You can use -U to skip it explicitly.", id, Certainty::normal);
     mErrorLogger->reportInfo(errmsg);
 }
 

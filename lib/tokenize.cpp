@@ -44,6 +44,7 @@
 #include <exception>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <type_traits>
@@ -3466,7 +3467,7 @@ public:
 
 void VariableMap::enterScope()
 {
-    mScopeInfo.push(std::vector<std::pair<std::string, nonneg int>>());
+    mScopeInfo.emplace(/*std::vector<std::pair<std::string, nonneg int>>()*/);
 }
 
 bool VariableMap::leaveScope()
@@ -3840,7 +3841,7 @@ void Tokenizer::setVarIdPass1()
 
     std::stack<VarIdScopeInfo> scopeStack;
 
-    scopeStack.push(VarIdScopeInfo());
+    scopeStack.emplace(/*VarIdScopeInfo()*/);
     std::stack<const Token *> functionDeclEndStack;
     const Token *functionDeclEndToken = nullptr;
     bool initlist = false;
@@ -3864,7 +3865,7 @@ void Tokenizer::setVarIdPass1()
                 if (!variableMap.leaveScope())
                     cppcheckError(tok);
             } else if (tok->str() == "{") {
-                scopeStack.push(VarIdScopeInfo(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/ false, *variableMap.getVarId()));
+                scopeStack.emplace(true, scopeStack.top().isStructInit || tok->strAt(-1) == "=", /*isEnum=*/ false, *variableMap.getVarId());
 
                 // check if this '{' is a start of an "if" body
                 const Token * ifToken = tok->previous();
@@ -3918,7 +3919,7 @@ void Tokenizer::setVarIdPass1()
                             variableMap.enterScope();
                     }
                     initlist = false;
-                    scopeStack.push(VarIdScopeInfo(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), *variableMap.getVarId()));
+                    scopeStack.emplace(isExecutable, scopeStack.top().isStructInit || tok->strAt(-1) == "=", isEnumStart(tok), *variableMap.getVarId());
                 } else { /* if (tok->str() == "}") */
                     bool isNamespace = false;
                     for (const Token *tok1 = tok->link()->previous(); tok1 && tok1->isName(); tok1 = tok1->previous()) {
@@ -3952,7 +3953,7 @@ void Tokenizer::setVarIdPass1()
 
                     scopeStack.pop();
                     if (scopeStack.empty()) {  // should be impossible
-                        scopeStack.push(VarIdScopeInfo());
+                        scopeStack.emplace(/*VarIdScopeInfo()*/);
                     }
                 }
             }
@@ -5263,6 +5264,8 @@ void Tokenizer::dump(std::ostream &out) const
             out << " link=\"" << tok->link() << '\"';
         if (tok->varId() > 0)
             out << " varId=\"" << MathLib::toString(tok->varId()) << '\"';
+        if (tok->exprId() > 0)
+            out << " exprId=\"" << MathLib::toString(tok->exprId()) << '\"';
         if (tok->variable())
             out << " variable=\"" << tok->variable() << '\"';
         if (tok->function())
@@ -8424,8 +8427,17 @@ void Tokenizer::simplifyKeyword()
 
             // final:
             // 1) struct name final { };   <- struct is final
-            if (Token::Match(tok->previous(), "struct|class|union %type% final [:{]")) {
-                tok->deleteNext();
+            if (Token::Match(tok->previous(), "struct|class|union %type%")) {
+                Token* finalTok = tok->next();
+                if (Token::simpleMatch(finalTok, "<")) { // specialization
+                    finalTok = finalTok->findClosingBracket();
+                    if (finalTok)
+                        finalTok = finalTok->next();
+                }
+                if (Token::Match(finalTok, "final [:{]")) {
+                    finalTok->deleteThis();
+                    tok->previous()->isFinalType(true);
+                }
             }
 
             // noexcept -> noexcept(true)
@@ -9221,10 +9233,16 @@ void Tokenizer::simplifyOperatorName()
                     break;
                 }
                 done = false;
-            } else if (Token::Match(par, "\"\" %name% (|;|<")) {
+            } else if (Token::Match(par, "\"\" %name% )| (|;|<")) {
                 op += "\"\"";
                 op += par->strAt(1);
                 par = par->tokAt(2);
+                if (par->str() == ")") {
+                    par->link()->deleteThis();
+                    par = par->next();
+                    par->deletePrevious();
+                    tok = par->tokAt(-3);
+                }
                 done = true;
             } else if (par->str() == "::") {
                 op += par->str();

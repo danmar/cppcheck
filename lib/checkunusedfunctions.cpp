@@ -36,7 +36,7 @@
 #include <cstring>
 #include <istream>
 #include <memory>
-
+#include <sstream>
 #include <utility>
 #include <vector>
 

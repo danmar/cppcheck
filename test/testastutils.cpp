@@ -27,6 +27,7 @@
 
 #include <cstring>
 #include <iosfwd>
+#include <sstream>
 
 class TestAstUtils : public TestFixture {
 public:

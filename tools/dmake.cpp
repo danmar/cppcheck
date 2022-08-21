@@ -374,7 +374,7 @@ int main(int argc, char **argv)
     }
 
     fout << "ifeq (g++, $(findstring g++,$(CXX)))\n"
-         << "    override CXXFLAGS += -std=gnu++0x\n"
+         << "    override CXXFLAGS += -std=gnu++0x -pipe\n"
          << "else ifeq (clang++, $(findstring clang++,$(CXX)))\n"
          << "    override CXXFLAGS += -std=c++0x\n"
          << "else ifeq ($(CXX), c++)\n"
@@ -415,7 +415,7 @@ int main(int argc, char **argv)
     fout << "cppcheck: $(LIBOBJ) $(CLIOBJ) $(EXTOBJ)\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "all:\tcppcheck testrunner\n\n";
-    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/filelister.o\n";
+    fout << "testrunner: $(TESTOBJ) $(LIBOBJ) $(EXTOBJ) cli/executor.o cli/processexecutor.o cli/threadexecutor.o cli/cmdlineparser.o cli/cppcheckexecutor.o cli/cppcheckexecutorseh.o cli/cppcheckexecutorsig.o cli/stacktrace.o cli/filelister.o\n";
     fout << "\t$(CXX) $(CPPFLAGS) $(CXXFLAGS) -o $@ $^ $(LIBS) $(LDFLAGS) $(RDYNAMIC)\n\n";
     fout << "test:\tall\n";
     fout << "\t./testrunner\n\n";

@@ -374,9 +374,16 @@ bool isVariableDecl(const Token* tok)
         return false;
     if (var->nameToken() == tok)
         return true;
-    if (Token::Match(var->declEndToken(), "; %var%") && var->declEndToken()->next() == tok)
+    const Token * const varDeclEndToken = var->declEndToken();
+    if (Token::Match(varDeclEndToken, "; %var%") && varDeclEndToken->next() == tok)
         return true;
     return false;
+}
+
+bool isStlStringType(const Token* tok)
+{
+    return Token::Match(tok, "std :: string|wstring|u16string|u32string !!::") ||
+           (Token::simpleMatch(tok, "std :: basic_string <") && !Token::simpleMatch(tok->linkAt(3), "> ::"));
 }
 
 bool isTemporary(bool cpp, const Token* tok, const Library* library, bool unknown)
@@ -1068,16 +1075,17 @@ std::vector<ReferenceToken> followAllReferences(const Token* tok,
         if (var->nameToken() == tok || isStructuredBindingVariable(var)) {
             return {{tok, std::move(errors)}};
         } else if (var->isReference() || var->isRValueReference()) {
-            if (!var->declEndToken())
+            const Token * const varDeclEndToken = var->declEndToken();
+            if (!varDeclEndToken)
                 return {{tok, std::move(errors)}};
             if (var->isArgument()) {
-                errors.emplace_back(var->declEndToken(), "Passed to reference.");
+                errors.emplace_back(varDeclEndToken, "Passed to reference.");
                 return {{tok, std::move(errors)}};
-            } else if (Token::simpleMatch(var->declEndToken(), "=")) {
-                if (astHasToken(var->declEndToken(), tok))
+            } else if (Token::simpleMatch(varDeclEndToken, "=")) {
+                if (astHasToken(varDeclEndToken, tok))
                     return std::vector<ReferenceToken>{};
-                errors.emplace_back(var->declEndToken(), "Assigned to reference.");
-                const Token *vartok = var->declEndToken()->astOperand2();
+                errors.emplace_back(varDeclEndToken, "Assigned to reference.");
+                const Token *vartok = varDeclEndToken->astOperand2();
                 if (vartok == tok || (!temporary && isTemporary(true, vartok, nullptr, true) &&
                                       (var->isConst() || var->isRValueReference())))
                     return {{tok, std::move(errors)}};
@@ -2482,10 +2490,11 @@ static bool isExpressionChangedAt(const F& getExprTok,
             return true;
         bool aliased = false;
         // If we can't find the expression then assume it is an alias
-        if (!getExprTok())
+        auto expr = getExprTok();
+        if (!expr)
             aliased = true;
         if (!aliased)
-            aliased = isAliasOf(tok, getExprTok());
+            aliased = isAliasOf(tok, expr);
         if (!aliased)
             return false;
         if (isVariableChanged(tok, 1, settings, cpp, depth))

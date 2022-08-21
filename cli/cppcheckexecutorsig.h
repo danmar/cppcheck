@@ -16,29 +16,18 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#ifndef CPPCHECKEXECUTORSIG_H
+#define CPPCHECKEXECUTORSIG_H
 
-#include "analyzerinfo.h"
-#include "testsuite.h"
+#include "config.h"
 
-#include <sstream>
+#if defined(USE_UNIX_SIGNAL_HANDLING)
 
-class TestAnalyzerInformation : public TestFixture, private AnalyzerInformation {
-public:
-    TestAnalyzerInformation() : TestFixture("TestAnalyzerInformation") {}
+class CppCheckExecutor;
+class CppCheck;
 
-private:
+int check_wrapper_sig(CppCheckExecutor& executor, int (CppCheckExecutor::*f)(CppCheck&), CppCheck& cppcheck);
 
-    void run() override {
-        TEST_CASE(getAnalyzerInfoFile);
-    }
+#endif // CPPCHECKEXECUTORSIG_H
 
-    void getAnalyzerInfoFile() const {
-        const char filesTxt[] = "file1.a4::file1.c\n";
-        std::istringstream f1(filesTxt);
-        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f1, "file1.c", ""));
-        std::istringstream f2(filesTxt);
-        ASSERT_EQUALS("file1.a4", getAnalyzerInfoFileFromFilesTxt(f2, "./file1.c", ""));
-    }
-};
-
-REGISTER_TEST(TestAnalyzerInformation)
+#endif // CPPCHECKEXECUTORSIG_H

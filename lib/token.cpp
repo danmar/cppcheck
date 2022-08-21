@@ -40,6 +40,7 @@
 #include <iterator>
 #include <map>
 #include <set>
+#include <sstream>
 #include <stack>
 #include <unordered_set>
 #include <utility>
@@ -1844,7 +1845,7 @@ const ValueFlow::Value * Token::getInvalidValue(const Token *ftok, nonneg int ar
     return ret;
 }
 
-const Token *Token::getValueTokenMinStrSize(const Settings *settings) const
+const Token *Token::getValueTokenMinStrSize(const Settings *settings, MathLib::bigint* path) const
 {
     if (!mImpl->mValues)
         return nullptr;
@@ -1857,6 +1858,8 @@ const Token *Token::getValueTokenMinStrSize(const Settings *settings) const
             if (!ret || size < minsize) {
                 minsize = size;
                 ret = it->tokvalue;
+                if (path)
+                    *path = it->path;
             }
         }
     }

@@ -26,6 +26,7 @@
 
 #include <iosfwd>
 #include <list>
+#include <sstream>
 #include <string>
 #include <vector>
 
@@ -7438,6 +7439,14 @@ private:
                                  "}\n"
                                  "S::~S() = default;\n");
         ASSERT_EQUALS("", errout.str());
+
+        checkVirtualFunctionCall("struct Base: { virtual void wibble() = 0; virtual ~Base() {} };\n" // #11167
+                                 "struct D final : public Base {\n"
+                                 "    void wibble() override;\n"
+                                 "    D() {}\n"
+                                 "    virtual ~D() { wibble(); }\n"
+                                 "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void pureVirtualFunctionCall() {
@@ -7552,6 +7561,14 @@ private:
                                  "    }\n"
                                  "    virtual void VirtualMethod() = 0;\n"
                                  "};");
+        ASSERT_EQUALS("", errout.str());
+
+        // #10559
+        checkVirtualFunctionCall("struct S {\n"
+                                 "    S(const int x) : m(std::bind(&S::f, this, x, 42)) {}\n"
+                                 "    virtual int f(const int x, const int y) = 0;\n"
+                                 "    std::function<int()> m;\n"
+                                 "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 

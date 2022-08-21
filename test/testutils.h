@@ -30,6 +30,7 @@
 #include <iosfwd>
 #include <list>
 #include <ostream>
+#include <sstream>
 #include <string>
 
 class Token;

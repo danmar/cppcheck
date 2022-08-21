@@ -357,7 +357,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                     reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
                     break;
                 }
-                ifnest.push(std::make_pair(tok2->link(), false));
+                ifnest.emplace(tok2->link(), false);
                 justbreak = false;
             } else if (Token::simpleMatch(tok2, "while (")) {
                 tok2 = tok2->tokAt(1)->link()->next();
@@ -420,7 +420,7 @@ void CheckOther::checkSwitchCaseFallThrough()
                             reportError(_tokenizer->tokens(), Severity::debug, "debug", errmsg.str());
                             break;
                         }
-                        ifnest.push(std::make_pair(tok2->link(), justbreak));
+                        ifnest.emplace(tok2->link(), justbreak);
                         justbreak = false;
                     } else {
                         justbreak &= ifnest.top().second;

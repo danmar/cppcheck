@@ -202,7 +202,7 @@ static bool getDimensionsEtc(const Token * const arrayToken, const Settings *set
                 return ChildrenToVisit::op1_and_op2;
             });
         }
-    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings)) {
+    } else if (const Token *stringLiteral = array->getValueTokenMinStrSize(settings, path)) {
         Dimension dim;
         dim.tok = nullptr;
         dim.num = Token::getStrArraySize(stringLiteral);
@@ -1141,7 +1141,7 @@ void CheckBufferOverrun::negativeArraySize()
                 continue;
             const ValueFlow::Value* sz = valOperand->getValueLE(-1, mSettings);
             if (sz)
-                negativeMemoryAllocationSizeError(tok);
+                negativeMemoryAllocationSizeError(tok, sz);
         }
     }
 }
@@ -1155,8 +1155,11 @@ void CheckBufferOverrun::negativeArraySizeError(const Token* tok)
                 "Declaration of array '" + arrayName + "' with negative size is undefined behaviour", CWE758, Certainty::safe);
 }
 
-void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok)
+void CheckBufferOverrun::negativeMemoryAllocationSizeError(const Token* tok, const ValueFlow::Value* value)
 {
-    reportError(tok, Severity::error, "negativeMemoryAllocationSize",
-                "Memory allocation size is negative.", CWE131, Certainty::safe);
+    const std::string msg = "Memory allocation size is negative.";
+    const ErrorPath errorPath = getErrorPath(tok, value, msg);
+    const bool inconclusive = value != nullptr && !value->isKnown();
+    reportError(errorPath, inconclusive ? Severity::warning : Severity::error, "negativeMemoryAllocationSize",
+                msg, CWE131, inconclusive ? Certainty::inconclusive : Certainty::safe);
 }
