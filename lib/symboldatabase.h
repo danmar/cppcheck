@@ -1320,7 +1320,7 @@ public:
         debugPath()
     {}
 
-    static ValueType parseDecl(const Token *type, const Settings *settings);
+    static ValueType parseDecl(const Token *type, const Settings *settings, bool isCpp);
 
     static Type typeFromString(const std::string &typestr, bool longType);
 

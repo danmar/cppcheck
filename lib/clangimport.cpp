@@ -628,7 +628,7 @@ void clangimport::AstNode::setValueType(Token *tok)
         if (!decl.front())
             break;
 
-        ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings);
+        ValueType valueType = ValueType::parseDecl(decl.front(), mData->mSettings, true); // TODO: set isCpp
         if (valueType.type != ValueType::Type::UNKNOWN_TYPE) {
             tok->setValueType(new ValueType(valueType));
             break;
@@ -1542,7 +1542,7 @@ static void setValues(Tokenizer *tokenizer, SymbolDatabase *symbolDatabase)
 
     for (Token *tok = const_cast<Token*>(tokenizer->tokens()); tok; tok = tok->next()) {
         if (Token::simpleMatch(tok, "sizeof (")) {
-            ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings);
+            ValueType vt = ValueType::parseDecl(tok->tokAt(2), settings, tokenizer->isCPP());
             int sz = vt.typeSize(*settings, true);
             if (sz <= 0)
                 continue;
