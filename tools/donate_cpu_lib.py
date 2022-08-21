@@ -34,10 +34,10 @@ def detect_make():
 
     for m in make_cmds:
         try:
-            print('{} --version'.format(m))
-            subprocess.call([m, '--version'])
+            #print('{} --version'.format(m))
+            subprocess.call([m, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except OSError as e:
-            print("'{}' not found ({})".format(m, e))
+            #print("'{}' not found ({})".format(m, e))
             continue
 
         print("using '{}'".format(m))
@@ -62,8 +62,8 @@ def check_requirements():
 
     for app in apps:
         try:
-            print('{} --version'.format(app))
-            subprocess.call([app, '--version'])
+            #print('{} --version'.format(app))
+            subprocess.call([app, '--version'], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
         except OSError:
             print("Error: '{}' is required".format(app))
             result = False
