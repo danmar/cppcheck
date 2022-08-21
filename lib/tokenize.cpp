@@ -9496,7 +9496,7 @@ void Tokenizer::printUnknownTypes() const
             }
         }
 
-        unknowns.emplace_back(name, nameTok);
+        unknowns.emplace_back(std::move(name), nameTok);
     }
 
     if (!unknowns.empty()) {

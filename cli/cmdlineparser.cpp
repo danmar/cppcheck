@@ -67,7 +67,7 @@ static void addFilesToList(const std::string& fileList, std::vector<std::string>
         std::string fileName;
         while (std::getline(*files, fileName)) { // next line
             if (!fileName.empty()) {
-                pathNames.emplace_back(fileName);
+                pathNames.emplace_back(std::move(fileName));
             }
         }
     }
@@ -87,7 +87,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
                 if (!endsWith(pathName, '/'))
                     pathName += '/';
 
-                pathNames->emplace_back(pathName);
+                pathNames->emplace_back(std::move(pathName));
             }
         }
         return true;
@@ -200,7 +200,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 if (!endsWith(path,'/'))
                     path += '/';
 
-                mSettings->includePaths.emplace_back(path);
+                mSettings->includePaths.emplace_back(std::move(path));
             }
 
             // User undef
@@ -423,7 +423,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         if (!endsWith(path, '/'))
                             path += '/';
                     }
-                    mIgnoredPaths.emplace_back(path);
+                    mIgnoredPaths.emplace_back(std::move(path));
                 }
             }
 
@@ -722,7 +722,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
             else if (std::strncmp(argv[i], "--rule=", 7) == 0) {
                 Settings::Rule rule;
                 rule.pattern = 7 + argv[i];
-                mSettings->rules.emplace_back(rule);
+                mSettings->rules.emplace_back(std::move(rule));
             }
 
             // Rule file
@@ -760,7 +760,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         }
 
                         if (!rule.pattern.empty())
-                            mSettings->rules.emplace_back(rule);
+                            mSettings->rules.emplace_back(std::move(rule));
                     }
                 } else {
                     printError("unable to load rule-file: " + std::string(12+argv[i]));

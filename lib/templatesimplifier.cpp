@@ -704,7 +704,7 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
                                                      instantiation);
 
     if (it == mTemplateInstantiations.end())
-        mTemplateInstantiations.emplace_back(instantiation);
+        mTemplateInstantiations.emplace_back(std::move(instantiation));
 }
 
 static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
@@ -2207,9 +2207,9 @@ void TemplateSimplifier::expandTemplate(
                 }
 
                 if (copy)
-                    newInstantiations.emplace_back(mTokenList.back(), scope);
+                    newInstantiations.emplace_back(mTokenList.back(), std::move(scope));
                 else if (!inTemplateDefinition)
-                    newInstantiations.emplace_back(tok3, scope);
+                    newInstantiations.emplace_back(tok3, std::move(scope));
             }
 
             // link() newly tokens manually

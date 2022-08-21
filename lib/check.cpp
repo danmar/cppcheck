@@ -96,20 +96,20 @@ std::string Check::getMessageId(const ValueFlow::Value &value, const char id[])
     return id;
 }
 
-ErrorPath Check::getErrorPath(const Token* errtok, const ValueFlow::Value* value, const std::string& bug) const
+ErrorPath Check::getErrorPath(const Token* errtok, const ValueFlow::Value* value, std::string bug) const
 {
     ErrorPath errorPath;
     if (!value) {
-        errorPath.emplace_back(errtok, bug);
+        errorPath.emplace_back(errtok, std::move(bug));
     } else if (mSettings->verbose || mSettings->xml || !mSettings->templateLocation.empty()) {
         errorPath = value->errorPath;
-        errorPath.emplace_back(errtok, bug);
+        errorPath.emplace_back(errtok, std::move(bug));
     } else {
         if (value->condition)
             errorPath.emplace_back(value->condition, "condition '" + value->condition->expressionString() + "'");
         //else if (!value->isKnown() || value->defaultArg)
         //    errorPath = value->callstack;
-        errorPath.emplace_back(errtok, bug);
+        errorPath.emplace_back(errtok, std::move(bug));
     }
     return errorPath;
 }
