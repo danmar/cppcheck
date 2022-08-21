@@ -141,7 +141,7 @@ def checkout_cppcheck_version(repo_path, version, cppcheck_path):
 
 def get_cppcheck_info(cppcheck_path):
     try:
-        return subprocess.check_output(['git', 'show', "--pretty=%h (%ci)", 'HEAD', '--no-patch', '--no-notes'], cwd=cppcheck_path).decode('utf-8').strip()
+        return subprocess.check_output(['git', 'show', "--pretty=%h (%ci)", 'HEAD', '--no-patch', '--no-notes'], universal_newlines=True, cwd=cppcheck_path).strip()
     except:
         return ''
 
@@ -361,9 +361,9 @@ def __run_command(cmd, print_cmd=True):
     start_time = time.time()
     comm = None
     if sys.platform == 'win32':
-        p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        p = subprocess.Popen(shlex.split(cmd, comments=False, posix=False), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     else:
-        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, preexec_fn=os.setsid)
+        p = subprocess.Popen(shlex.split(cmd), stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True, preexec_fn=os.setsid)
     try:
         comm = p.communicate(timeout=CPPCHECK_TIMEOUT)
         return_code = p.returncode
@@ -387,8 +387,7 @@ def __run_command(cmd, print_cmd=True):
             os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
             comm = p.communicate()
     stop_time = time.time()
-    stdout = comm[0].decode(encoding='utf-8', errors='ignore')
-    stderr = comm[1].decode(encoding='utf-8', errors='ignore')
+    stdout, stderr = comm
     elapsed_time = stop_time - start_time
     return return_code, stdout, stderr, elapsed_time
 
