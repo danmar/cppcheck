@@ -2179,6 +2179,10 @@ void TemplateSimplifier::expandTemplate(
                         continue;
                 }
 
+                // don't add instantiations in template definitions
+                if (!templates.empty())
+                    continue;
+
                 std::string scope;
                 const Token *prev = tok3;
                 for (; Token::Match(prev->tokAt(-2), "%name% ::"); prev = prev->tokAt(-2)) {
@@ -2202,13 +2206,10 @@ void TemplateSimplifier::expandTemplate(
                     }
                 }
 
-                // don't add instantiations in template definitions
-                if (templates.empty()) {
-                    if (copy)
-                        newInstantiations.emplace_back(mTokenList.back(), scope);
-                    else if (!inTemplateDefinition)
-                        newInstantiations.emplace_back(tok3, scope);
-                }
+                if (copy)
+                    newInstantiations.emplace_back(mTokenList.back(), scope);
+                else if (!inTemplateDefinition)
+                    newInstantiations.emplace_back(tok3, scope);
             }
 
             // link() newly tokens manually
