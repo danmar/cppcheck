@@ -50,9 +50,9 @@ const Token* findExpression(const nonneg int exprid,
                             const Token* end,
                             const std::function<bool(const Token*)>& pred)
 {
-    if (!precedes(start, end))
-        return nullptr;
     if (exprid == 0)
+        return nullptr;
+    if (!precedes(start, end))
         return nullptr;
     for (const Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->exprId() != exprid)
@@ -575,7 +575,7 @@ static std::vector<const Token*> getParentMembers(const Token* tok)
         return {};
     if (!Token::simpleMatch(tok->astParent(), "."))
         return {tok};
-    const Token* parent = tok;
+    const Token* parent = tok->astParent();
     while (Token::simpleMatch(parent->astParent(), "."))
         parent = parent->astParent();
     std::vector<const Token*> result;
@@ -885,7 +885,7 @@ bool isAliasOf(const Token* tok, const Token* expr, bool* inconclusive)
                                 [&](const Token* aliasTok) {
                     return aliasTok->exprId() == childTok->exprId();
                 })) {
-                    if (val.isInconclusive() && inconclusive) { // NOLINT
+                    if (val.isInconclusive() && inconclusive != nullptr) {
                         value = &val;
                     } else {
                         return true;
@@ -1168,8 +1168,10 @@ const Token* followReferences(const Token* tok, ErrorPath* errors)
 static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
 {
     ValueFlow::Value v1 = getLifetimeObjValue(tok1);
+    if (!v1.isLifetimeValue())
+        return false;
     ValueFlow::Value v2 = getLifetimeObjValue(tok2);
-    if (!v1.isLifetimeValue() || !v2.isLifetimeValue())
+    if (!v2.isLifetimeValue())
         return false;
     return v1.tokvalue == v2.tokvalue;
 }
@@ -1227,10 +1229,12 @@ static inline bool isSameConstantValue(bool macro, const Token* tok1, const Toke
             return tok->astOperand2();
         return tok;
     };
-    tok1 = adjustForCast(tok1);
-    tok2 = adjustForCast(tok2);
 
-    if (!tok1->isNumber() || !tok2->isNumber())
+    tok1 = adjustForCast(tok1);
+    if (!tok1->isNumber())
+        return false;
+    tok2 = adjustForCast(tok2);
+    if (!tok2->isNumber())
         return false;
 
     if (macro && (tok1->isExpandedMacro() || tok2->isExpandedMacro() || tok1->isTemplateArg() || tok2->isTemplateArg()))
@@ -1403,20 +1407,20 @@ bool isSameExpression(bool cpp, bool macro, const Token *tok1, const Token *tok2
                 value = &condTok->astOperand2()->values().front();
                 varTok1 = condTok->astOperand1();
             }
-            if (Token::simpleMatch(exprTok, "!"))
+            const bool exprIsNot = Token::simpleMatch(exprTok, "!");
+            if (exprIsNot)
                 varTok2 = exprTok->astOperand1();
             bool compare = false;
             if (value) {
-                if (value->intvalue == 0 && Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "==")) {
+                if (value->intvalue == 0 && exprIsNot && Token::simpleMatch(condTok, "==")) {
                     compare = true;
-                } else if (value->intvalue == 0 && !Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "!=")) {
+                } else if (value->intvalue == 0 && !exprIsNot && Token::simpleMatch(condTok, "!=")) {
                     compare = true;
-                } else if (value->intvalue != 0 && Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "!=")) {
+                } else if (value->intvalue != 0 && exprIsNot && Token::simpleMatch(condTok, "!=")) {
                     compare = true;
-                } else if (value->intvalue != 0 && !Token::simpleMatch(exprTok, "!") && Token::simpleMatch(condTok, "==")) {
+                } else if (value->intvalue != 0 && !exprIsNot && Token::simpleMatch(condTok, "==")) {
                     compare = true;
                 }
-
             }
             if (compare && astIsBoolLike(varTok1) && astIsBoolLike(varTok2))
                 return isSameExpression(cpp, macro, varTok1, varTok2, library, pure, followVar, errors);
@@ -2133,20 +2137,21 @@ std::vector<const Variable*> getArgumentVars(const Token* tok, int argnr)
         else
             return result;
     }
-    if (Token::Match(tok->previous(), "%type% (|{") || Token::simpleMatch(tok, "{") || tok->variable()) {
-        const bool constructor = Token::simpleMatch(tok, "{") || (tok->variable() && tok->variable()->nameToken() == tok);
+    if (tok->variable() || Token::simpleMatch(tok, "{") || Token::Match(tok->previous(), "%type% (|{")) {
         const Type* type = Token::typeOf(tok);
         if (!type)
             return result;
         const Scope* typeScope = type->classScope;
         if (!typeScope)
             return result;
+        const bool tokIsBrace = Token::simpleMatch(tok, "{");
         // Aggregate constructor
-        if (Token::simpleMatch(tok, "{") && typeScope->numConstructors == 0 && argnr < typeScope->varlist.size()) {
+        if (tokIsBrace && typeScope->numConstructors == 0 && argnr < typeScope->varlist.size()) {
             auto it = std::next(typeScope->varlist.begin(), argnr);
             return {&*it};
         }
         const int argCount = numberOfArguments(tok);
+        const bool constructor = tokIsBrace || (tok->variable() && tok->variable()->nameToken() == tok);
         for (const Function &function : typeScope->functionList) {
             if (function.argCount() < argCount)
                 continue;
@@ -3356,9 +3361,9 @@ static bool hasVolatileCastOrVar(const Token *expr)
     bool ret = false;
     visitAstNodes(expr,
                   [&ret](const Token *tok) {
-        if (Token::simpleMatch(tok, "( volatile"))
+        if (tok->variable() && tok->variable()->isVolatile())
             ret = true;
-        else if (tok->variable() && tok->variable()->isVolatile())
+        else if (Token::simpleMatch(tok, "( volatile"))
             ret = true;
         return ret ? ChildrenToVisit::none : ChildrenToVisit::op1_and_op2;
     });
