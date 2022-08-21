@@ -1876,12 +1876,10 @@ bool isUniqueExpression(const Token* tok)
                    v.isPointer() == var->isPointer() &&
                    v.name() != var->name();
         };
-        bool other = std::any_of(scope->varlist.cbegin(), scope->varlist.cend(), pred);
-        if (other)
+        if (std::any_of(scope->varlist.cbegin(), scope->varlist.cend(), pred))
             return false;
         if (fun) {
-            other = std::any_of(fun->argumentList.cbegin(), fun->argumentList.cend(), pred);
-            if (other)
+            if (std::any_of(fun->argumentList.cbegin(), fun->argumentList.cend(), pred))
                 return false;
         }
     } else if (!isUniqueExpression(tok->astOperand1())) {
