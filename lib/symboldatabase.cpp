@@ -4272,12 +4272,8 @@ const Function * Function::getOverriddenFunctionRecursive(const ::Type* baseType
 
 const Variable* Function::getArgumentVar(nonneg int num) const
 {
-    for (std::list<Variable>::const_iterator i = argumentList.begin(); i != argumentList.end(); ++i) {
-        if (i->index() == num)
-            return (&*i);
-        else if (i->index() > num)
-            return nullptr;
-    }
+    if (num < argumentList.size())
+        return &argumentList[num];
     return nullptr;
 }
 

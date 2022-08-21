@@ -354,7 +354,7 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
         return No;
 
     // Get return pointer..
-    int varid = 0;
+    const Variable* var = nullptr;
     for (const Token *tok2 = func->functionScope->bodyStart; tok2 != func->functionScope->bodyEnd; tok2 = tok2->next()) {
         if (const Token *endOfLambda = findLambdaEndToken(tok2))
             tok2 = endOfLambda;
@@ -371,24 +371,24 @@ CheckMemoryLeak::AllocType CheckMemoryLeak::functionReturnType(const Function* f
             if (Token::Match(tok, ".|::"))
                 tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
             if (tok)
-                varid = tok->varId();
+                var = tok->variable();
             break;
         }
     }
 
     // Not returning pointer value..
-    if (varid == 0)
+    if (!var)
         return No;
 
     // If variable is not local then alloctype shall be "No"
     // Todo: there can be false negatives about mismatching allocation/deallocation.
     //       => Generate "alloc ; use ;" if variable is not local?
-    const Variable *var = mTokenizer_->getSymbolDatabase()->getVariableFromVarId(varid);
-    if (!var || !var->isLocal() || var->isStatic())
+    if (!var->isLocal() || var->isStatic())
         return No;
 
     // Check if return pointer is allocated..
     AllocType allocType = No;
+    nonneg int varid = var->declarationId();
     for (const Token* tok = func->functionScope->bodyStart; tok != func->functionScope->bodyEnd; tok = tok->next()) {
         if (Token::Match(tok, "%varid% =", varid)) {
             allocType = getAllocationType(tok->tokAt(2), varid, callstack);
@@ -452,12 +452,6 @@ bool CheckMemoryLeakInFunction::test_white_list(const std::string &funcname, con
 //     a = malloc(10); a = realloc(a, 100);
 //---------------------------------------------------------------------------
 
-static bool isNoArgument(const SymbolDatabase* symbolDatabase, nonneg int varid)
-{
-    const Variable* var = symbolDatabase->getVariableFromVarId(varid);
-    return var && !var->isArgument();
-}
-
 void CheckMemoryLeakInFunction::checkReallocUsage()
 {
     // only check functions
@@ -497,7 +491,7 @@ void CheckMemoryLeakInFunction::checkReallocUsage()
                 if (!arg || !tok2)
                     continue;
 
-                if (!((tok->varId() == arg->varId()) && isNoArgument(symbolDatabase, tok->varId())))
+                if (!(tok->varId() == arg->varId() && tok->variable() && !tok->variable()->isArgument()))
                     continue;
 
                 // Check that another copy of the pointer wasn't saved earlier in the function

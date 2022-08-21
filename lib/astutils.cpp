@@ -1865,21 +1865,22 @@ bool isUniqueExpression(const Token* tok)
         const Type * varType = var->type();
         // Iterate over the variables in scope and the parameters of the function if possible
         const Function * fun = scope->function;
-        const std::list<Variable>* setOfVars[] = {&scope->varlist, fun ? &fun->argumentList : nullptr};
 
-        for (const std::list<Variable>* vars:setOfVars) {
-            if (!vars)
-                continue;
-            bool other = std::any_of(vars->cbegin(), vars->cend(), [=](const Variable &v) {
-                if (varType)
-                    return v.type() && v.type()->name() == varType->name() && v.name() != var->name();
-                return v.isFloatingType() == var->isFloatingType() &&
-                v.isEnumType() == var->isEnumType() &&
-                v.isClass() == var->isClass() &&
-                v.isArray() == var->isArray() &&
-                v.isPointer() == var->isPointer() &&
-                v.name() != var->name();
-            });
+        auto pred = [=](const Variable& v) {
+            if (varType)
+                return v.type() && v.type()->name() == varType->name() && v.name() != var->name();
+            return v.isFloatingType() == var->isFloatingType() &&
+                   v.isEnumType() == var->isEnumType() &&
+                   v.isClass() == var->isClass() &&
+                   v.isArray() == var->isArray() &&
+                   v.isPointer() == var->isPointer() &&
+                   v.name() != var->name();
+        };
+        bool other = std::any_of(scope->varlist.cbegin(), scope->varlist.cend(), pred);
+        if (other)
+            return false;
+        if (fun) {
+            other = std::any_of(fun->argumentList.cbegin(), fun->argumentList.cend(), pred);
             if (other)
                 return false;
         }
