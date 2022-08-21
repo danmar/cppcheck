@@ -911,11 +911,12 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                     ErrorMessage::FileLocation loc(e.token, &tokenizer.list);
                     locationList.push_back(loc);
                 } else {
-                    ErrorMessage::FileLocation loc(tokenizer.list.getSourceFilePath(), 0, 0);
                     ErrorMessage::FileLocation loc2(filename, 0, 0);
                     locationList.push_back(loc2);
-                    if (filename != tokenizer.list.getSourceFilePath())
+                    if (filename != tokenizer.list.getSourceFilePath()) {
+                        ErrorMessage::FileLocation loc(tokenizer.list.getSourceFilePath(), 0, 0);
                         locationList.push_back(loc);
+                    }
                 }
                 ErrorMessage errmsg(locationList,
                                     tokenizer.list.getSourceFilePath(),
