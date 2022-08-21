@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.30"
+CLIENT_VERSION = "1.3.31"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -25,20 +25,55 @@ CPPCHECK_REPO_URL = "https://github.com/danmar/cppcheck.git"
 # Return code that is used to mark a timed out analysis
 RETURN_CODE_TIMEOUT = -999
 
+__make_cmd = None
+
+def detect_make():
+    make_cmds = ['make', 'mingw32-make']
+    if sys.platform == 'win32':
+        make_cmds.append('msbuild.exe')
+
+    for m in make_cmds:
+        try:
+            print('{} --version'.format(m))
+            subprocess.call([m, '--version'])
+        except OSError as e:
+            print("'{}' not found ({})".format(m, e))
+            continue
+
+        print("using '{}'".format(m))
+        return m
+
+    print("Error: a make command ({}) is required".format(','.join(make_cmds)))
+    return None
+
 
 def check_requirements():
     result = True
-    for app in ['g++', 'git', 'make', 'wget', 'gdb']:
+
+    global __make_cmd
+    __make_cmd = detect_make()
+    if __make_cmd is None:
+        result = False
+
+    apps = ['git', 'wget']
+    if __make_cmd in ['make', 'mingw32-make']:
+        apps.append('g++')
+        apps.append('gdb')
+
+    for app in apps:
         try:
+            print('{} --version'.format(app))
             subprocess.call([app, '--version'])
         except OSError:
             print("Error: '{}' is required".format(app))
             result = False
+
     try:
         import psutil
     except ImportError as e:
         print("Error: {}. Module is required.".format(e))
         result = False
+
     return result
 
 
@@ -112,23 +147,46 @@ def get_cppcheck_info(cppcheck_path):
 
 
 def compile_version(cppcheck_path, jobs):
-    if os.path.isfile(os.path.join(cppcheck_path, 'cppcheck')):
+    if __make_cmd == "msbuild.exe":
+        if os.path.isfile(os.path.join(cppcheck_path, 'bin', 'cppcheck.exe')):
+            return True
+    elif __make_cmd == 'mingw32-make':
+        if os.path.isfile(os.path.join(cppcheck_path, 'cppcheck.exe')):
+            return True
+    elif os.path.isfile(os.path.join(cppcheck_path, 'cppcheck')):
         return True
     # Build
     ret = compile_cppcheck(cppcheck_path, jobs)
     # Clean intermediate build files
-    subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', 'cppcheck'], cwd=cppcheck_path)
+    if __make_cmd == "msbuild.exe":
+        exclude_bin = 'bin'
+    elif __make_cmd == 'mingw32-make':
+        exclude_bin = 'cppcheck.exe'
+    else:
+        exclude_bin = 'cppcheck'
+    # TODO: how to support multiple compiler on the same machine? this will clean msbuild.exe files in a mingw32-make build and vice versa
+    subprocess.call(['git', 'clean', '-f', '-d', '-x', '--exclude', exclude_bin], cwd=cppcheck_path)
     return ret
 
 
 def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
-        if sys.platform == 'win32':
-            subprocess.check_call(['MSBuild.exe', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release', '/property:Platform=x64'], cwd=cppcheck_path)
-            subprocess.check_call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'], cwd=cppcheck_path)
+        if __make_cmd == 'msbuild.exe':
+            # TODO: run matchcompiler
+            # TODO: always uses all available threads
+            subprocess.check_call([__make_cmd, jobs.replace('j', 'm:', 1), '-t:cli', os.path.join(cppcheck_path, 'cppcheck.sln'), '/property:Configuration=Release;Platform=x64'], cwd=cppcheck_path)
+            subprocess.check_call([os.path.join(cppcheck_path, 'bin', 'cppcheck.exe'), '--version'], cwd=os.path.join(cppcheck_path, 'bin'))
         else:
-            subprocess.check_call(['make', jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w'], cwd=cppcheck_path)
+            rdynamic = ''
+            build_env = os.environ
+            if __make_cmd == 'mingw32-make':
+                # TODO: MinGW will always link even if no changes are present
+                # assume Python is in PATH for now
+                build_env['PYTHON_INTERPRETER'] = 'python3'
+                # TODO: MinGW is not detected by Makefile - so work around it for now
+                rdynamic = 'RDYNAMIC=-lshlwapi'
+            subprocess.check_call([__make_cmd, jobs, 'MATCHCOMPILER=yes', 'CXXFLAGS=-O2 -g -w', rdynamic], cwd=cppcheck_path, env=build_env)
             subprocess.check_call([os.path.join(cppcheck_path, 'cppcheck'), '--version'], cwd=cppcheck_path)
     except:
         return False
@@ -335,12 +393,15 @@ def scan_package(cppcheck_path, source_path, jobs, libraries, capture_callstack=
     options = libs + ' --showtime=top5 --check-library --inconclusive --enable=style,information --inline-suppr --template=daca2'
     options += ' -D__GNUC__ --platform=unix64'
     options_rp = options + ' -rp={}'.format(dir_to_scan)
-    if sys.platform == 'win32':
+    if __make_cmd == 'msbuild.exe':
         cppcheck_cmd = os.path.join(cppcheck_path, 'bin', 'cppcheck.exe') + ' ' + options_rp
         cmd = cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     else:
+        nice_cmd = 'nice'
+        if __make_cmd == 'mingw32-make':
+            nice_cmd = ''
         cppcheck_cmd = os.path.join(cppcheck_path, 'cppcheck') + ' ' + options_rp
-        cmd = 'nice ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
+        cmd = nice_cmd + ' ' + cppcheck_cmd + ' ' + jobs + ' ' + dir_to_scan
     returncode, stdout, stderr, elapsed_time = __run_command(cmd)
 
     # collect messages
@@ -507,6 +568,10 @@ def __send_all(connection, data):
 
 
 def upload_results(package, results, server_address):
+    if not __make_cmd == 'make':
+        print('Error: Information upload not performed - only make build binaries are currently fully supported')
+        return False
+
     print('Uploading results.. ' + str(len(results)) + ' bytes')
     max_retries = 4
     for retry in range(max_retries):
@@ -527,6 +592,10 @@ def upload_results(package, results, server_address):
 
 
 def upload_info(package, info_output, server_address):
+    if not __make_cmd == 'make':
+        print('Error: Information upload not performed - only make build binaries are currently fully supported')
+        return False
+
     print('Uploading information output.. ' + str(len(info_output)) + ' bytes')
     max_retries = 3
     for retry in range(max_retries):
@@ -623,6 +692,11 @@ class LibraryIncludes:
 
 
 def get_compiler_version():
+    if __make_cmd == 'msbuild.exe':
+        # TODO: shorted version string
+        _, _, stderr, _ = __run_command('cl.exe', False)
+        return stderr.split('\n')[0]
+
     _, stdout, _, _ = __run_command('g++ --version', False)
     return stdout.split('\n')[0]
 
