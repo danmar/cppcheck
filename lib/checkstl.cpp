@@ -2155,7 +2155,7 @@ void CheckStl::string_c_strConcat(const Token* tok)
 
 void CheckStl::string_c_strStream(const Token* tok)
 {
-    std::string msg = "Passing the result of c_str() to a stream is slow and redundant.\n";
+    std::string msg = "Passing the result of c_str() to a stream is slow and redundant.\n"
                       "Passing a const char* to a stream requires a call to strlen(). Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrStream", msg, CWE704, Certainty::normal);
 }
