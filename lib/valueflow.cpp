@@ -117,6 +117,7 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
@@ -451,7 +452,7 @@ static std::vector<ValueType> getParentValueTypes(const Token* tok,
         const ValueType* vtCont = contTok->valueType();
         if (!vtCont->containerTypeToken)
             return {};
-        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings, true); // TODO: set isCpp
         return {std::move(vtParent)};
     }
     if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
@@ -806,7 +807,7 @@ static void setTokenValue(Token* tok,
         if (contains({ValueFlow::Value::ValueType::INT, ValueFlow::Value::ValueType::SYMBOLIC}, value.valueType) &&
             Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
             return;
-        const ValueType &valueType = ValueType::parseDecl(castType, settings);
+        const ValueType &valueType = ValueType::parseDecl(castType, settings, true); // TODO: set isCpp
         if (value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
             valueType.sign == ValueType::SIGNED && tok->valueType() &&
             ValueFlow::getSizeOf(*tok->valueType(), settings) >= ValueFlow::getSizeOf(valueType, settings))
@@ -1107,7 +1108,7 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 
 static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 {
-    const ValueType &valueType = ValueType::parseDecl(typeTok, settings);
+    const ValueType &valueType = ValueType::parseDecl(typeTok, settings, true); // TODO: set isCpp
     if (valueType.pointer > 0)
         return settings->sizeof_pointer;
     if (valueType.type == ValueType::Type::BOOL || valueType.type == ValueType::Type::CHAR)
@@ -1206,7 +1207,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
 
         const Token *tok2 = tok->tokAt(2);
         // skip over tokens to find variable or type
-        while (Token::Match(tok2, "%name% ::|.|[")) {
+        while (tok2 && !tok2->isStandardType() && Token::Match(tok2, "%name% ::|.|[")) {
             if (tok2->next()->str() == "[")
                 tok2 = tok2->linkAt(1)->next();
             else
@@ -1322,8 +1323,25 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 setTokenValue(tok->next(), value, settings);
             }
         } else if (!tok2->type()) {
-            const ValueType &vt = ValueType::parseDecl(tok2,settings);
-            const size_t sz = ValueFlow::getSizeOf(vt, settings);
+            const ValueType& vt = ValueType::parseDecl(tok2, settings, true); // TODO: set isCpp
+            size_t sz = ValueFlow::getSizeOf(vt, settings);
+            const Token* brac = tok2->astParent();
+            while (Token::simpleMatch(brac, "[")) {
+                const Token* num = brac->astOperand2();
+                if (num && ((num->isNumber() && MathLib::isInt(num->str())) || num->tokType() == Token::eChar)) {
+                    try {
+                        MathLib::biguint dim = MathLib::toULongNumber(num->str());
+                        sz *= dim;
+                        brac = brac->astParent();
+                        continue;
+                    }
+                    catch (const std::exception& /*e*/) {
+                        // Bad integer literal
+                    }
+                }
+                sz = 0;
+                break;
+            }
             if (sz > 0) {
                 ValueFlow::Value value(sz);
                 if (!tok2->isTemplateArg() && settings->platformType != cppcheck::Platform::Unspecified)
@@ -3322,14 +3340,15 @@ static std::vector<LifetimeToken> getLifetimeTokens(const Token* tok,
         return {{tok, std::move(errorPath)}};
     if (var && var->declarationId() == tok->varId()) {
         if (var->isReference() || var->isRValueReference()) {
-            if (!var->declEndToken())
+            const Token * const varDeclEndToken = var->declEndToken();
+            if (!varDeclEndToken)
                 return {{tok, true, std::move(errorPath)}};
             if (var->isArgument()) {
-                errorPath.emplace_back(var->declEndToken(), "Passed to reference.");
+                errorPath.emplace_back(varDeclEndToken, "Passed to reference.");
                 return {{tok, true, std::move(errorPath)}};
-            } else if (Token::simpleMatch(var->declEndToken(), "=")) {
-                errorPath.emplace_back(var->declEndToken(), "Assigned to reference.");
-                const Token *vartok = var->declEndToken()->astOperand2();
+            } else if (Token::simpleMatch(varDeclEndToken, "=")) {
+                errorPath.emplace_back(varDeclEndToken, "Assigned to reference.");
+                const Token *vartok = varDeclEndToken->astOperand2();
                 const bool temporary = isTemporary(true, vartok, nullptr, true);
                 const bool nonlocal = var->isStatic() || var->isGlobal();
                 if (vartok == tok || (nonlocal && temporary) ||
@@ -4003,6 +4022,8 @@ struct LifetimeStore {
             return;
         if (!argtok)
             return;
+        if (!tok)
+            return;
         for (const ValueFlow::Value &v : argtok->values()) {
             if (!v.isLifetimeValue())
                 continue;
@@ -4013,7 +4034,8 @@ struct LifetimeStore {
             er.insert(er.end(), errorPath.begin(), errorPath.end());
             if (!var)
                 continue;
-            for (const Token *tok3 = tok; tok3 && tok3 != var->declEndToken(); tok3 = tok3->previous()) {
+            const Token * const varDeclEndToken = var->declEndToken();
+            for (const Token *tok3 = tok; tok3 && tok3 != varDeclEndToken; tok3 = tok3->previous()) {
                 if (tok3->varId() == var->declarationId()) {
                     LifetimeStore{tok3, message, type, inconclusive}.byVal(tok, tokenlist, errorLogger, settings, pred);
                     break;
@@ -4648,7 +4670,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             bool isContainerOfPointers = true;
             const Token* containerTypeToken = tok->valueType()->containerTypeToken;
             if (containerTypeToken) {
-                ValueType vt = ValueType::parseDecl(containerTypeToken, settings);
+                ValueType vt = ValueType::parseDecl(containerTypeToken, settings, true); // TODO: set isCpp
                 isContainerOfPointers = vt.pointer > 0;
             }
 
@@ -8028,7 +8050,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
         if (valueType->container->stdStringLike) {
             initList = astIsGenericChar(args[0]) && !astIsPointer(args[0]);
         } else if (containerTypeToken && settings) {
-            ValueType vt = ValueType::parseDecl(containerTypeToken, settings);
+            ValueType vt = ValueType::parseDecl(containerTypeToken, settings, true); // TODO: set isCpp
             if (vt.pointer > 0 && astIsPointer(args[0]))
                 initList = true;
             else if (vt.type == ValueType::ITERATOR && astIsIterator(args[0]))
@@ -8412,7 +8434,7 @@ static bool getMinMaxValues(const std::string &typestr, const Settings *settings
         return false;
     typeTokens.simplifyPlatformTypes();
     typeTokens.simplifyStdType();
-    const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings);
+    const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings, true); // TODO: set isCpp
     return getMinMaxValues(&vt, *settings, minvalue, maxvalue);
 }
 

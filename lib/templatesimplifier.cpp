@@ -32,6 +32,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
+#include <sstream>
 #include <stack>
 #include <utility>
 
@@ -227,6 +228,14 @@ TemplateSimplifier::TokenAndName::TokenAndName(Token *token, std::string scope, 
 
 TemplateSimplifier::TokenAndName::TokenAndName(const TokenAndName& other) :
     mToken(other.mToken), mScope(other.mScope), mName(other.mName), mFullName(other.mFullName),
+    mNameToken(other.mNameToken), mParamEnd(other.mParamEnd), mFlags(other.mFlags)
+{
+    if (mToken)
+        mToken->templateSimplifierPointer(this);
+}
+
+TemplateSimplifier::TokenAndName::TokenAndName(TokenAndName&& other) :
+    mToken(other.mToken), mScope(std::move(other.mScope)), mName(std::move(other.mName)), mFullName(std::move(other.mFullName)),
     mNameToken(other.mNameToken), mParamEnd(other.mParamEnd), mFlags(other.mFlags)
 {
     if (mToken)

@@ -28,6 +28,7 @@
 
 #include <iosfwd>
 #include <map>
+#include <sstream>
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -66,6 +67,7 @@ private:
         TEST_CASE(zeroDiv14); // #1169
         TEST_CASE(zeroDiv15); // #8319
         TEST_CASE(zeroDiv16); // #11158
+        TEST_CASE(zeroDiv17); // #9931
 
         TEST_CASE(zeroDivCond); // division by zero / useless condition
 
@@ -633,6 +635,15 @@ private:
               "        number = x;\n"
               "    }\n"
               "    return a;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+    }
+
+    void zeroDiv17() { // #9931
+        check("int f(int len) {\n"
+              "    int sz = sizeof(void*[255]) / 255;\n"
+              "    int x = len % sz;\n"
+              "    return x;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
@@ -5060,6 +5071,12 @@ private:
               "    float (*p);\n"
               "}\n", "test.cpp");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int i) {\n"
+              "    void();\n"
+              "    return i;\n"
+              "}\n", "test.cpp");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void trac2084() {
@@ -5948,6 +5965,15 @@ private:
               "   }\n"
               "}");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:5]: (style) The comparison 'Diag == 0' is always true.\n", errout.str());
+
+        // #9744
+        check("void f(const std::vector<int>& ints) {\n"
+              "    int i = 0;\n"
+              "    for (int p = 0; i < ints.size(); ++i) {\n"
+              "        if (p == 0) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3] -> [test.cpp:4]: (style) The comparison 'p == 0' is always true.\n", errout.str());
     }
 
     void duplicateExpression8() {

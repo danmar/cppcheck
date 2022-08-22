@@ -23,7 +23,6 @@
 
 #include "config.h"
 
-#include <sstream>
 #include <string>
 
 /// @addtogroup Core
@@ -74,9 +73,7 @@ public:
     static biguint toULongNumber(const std::string & str);
 
     template<class T> static std::string toString(T value) {
-        std::ostringstream result;
-        result << value;
-        return result.str();
+        return std::to_string(value);
     }
     static double toDoubleNumber(const std::string & str);
 

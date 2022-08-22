@@ -162,8 +162,6 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
             continue;
 
         if (var.isArray()) {
-            Alloc alloc = ARRAY;
-            const std::map<nonneg int, VariableValue> variableValue;
             bool init = false;
             for (const Token *parent = var.nameToken(); parent; parent = parent->astParent()) {
                 if (parent->str() == "=") {
@@ -171,8 +169,11 @@ void CheckUninitVar::checkScope(const Scope* scope, const std::set<std::string> 
                     break;
                 }
             }
-            if (!init)
+            if (!init) {
+                Alloc alloc = ARRAY;
+                const std::map<nonneg int, VariableValue> variableValue;
                 checkScopeForVariable(tok, var, nullptr, nullptr, &alloc, emptyString, variableValue);
+            }
             continue;
         }
         if (stdtype || var.isPointer()) {
@@ -444,8 +445,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
             const Token *condVarTok = nullptr;
             if (alwaysFalse)
                 ;
-            else if (Token::simpleMatch(tok, "if (") &&
-                     astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
+            else if (astIsVariableComparison(tok->next()->astOperand2(), "!=", "0", &condVarTok)) {
                 const std::map<nonneg int,VariableValue>::const_iterator it = variableValue.find(condVarTok->varId());
                 if (it != variableValue.end() && it->second != 0)
                     return true;   // this scope is not fully analysed => return true
@@ -453,7 +453,7 @@ bool CheckUninitVar::checkScopeForVariable(const Token *tok, const Variable& var
                     condVarId = condVarTok->varId();
                     condVarValue = !VariableValue(0);
                 }
-            } else if (Token::simpleMatch(tok, "if (") && Token::Match(tok->next()->astOperand2(), "==|!=")) {
+            } else if (Token::Match(tok->next()->astOperand2(), "==|!=")) {
                 const Token *condition = tok->next()->astOperand2();
                 const Token *lhs = condition->astOperand1();
                 const Token *rhs = condition->astOperand2();

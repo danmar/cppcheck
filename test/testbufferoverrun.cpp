@@ -31,6 +31,7 @@
 #include <iosfwd>
 #include <map>
 #include <list>
+#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -3585,6 +3586,19 @@ private:
               "    f(\"bbb\", 3);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f(int i, const char* a) {\n" // #11140
+              "    (void)a[i];\n"
+              "}\n"
+              "void g() {\n"
+              "    for (int i = 0; \"01234\"[i]; ++i)\n"
+              "        f(i, \"56789\");\n"
+              "}\n"
+              "void h() {\n"
+              "    for (int i = 0; \"012\"[i]; ++i)\n"
+              "        f(i, \"345\");\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 
@@ -4897,6 +4911,15 @@ private:
               "   a = (int *)alloca( -10 );\n"
               "}");
         TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Memory allocation size is negative.\n", "", errout.str());
+
+        check("int* f(int n) {\n" // #11145
+              "    int d = -1;\n"
+              "    for (int i = 0; i < n; ++i)\n"
+              "        d = std::max(i, d);\n"
+              "    int* p = new int[d];\n"
+              "    return p;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning, inconclusive) Memory allocation size is negative.\n", errout.str());
     }
 
     void negativeArraySize() {

@@ -68,9 +68,7 @@ void CheckVaarg::va_start_argument()
                 if (var && var->isReference())
                     referenceAs_va_start_error(param2, var->name());
                 if (var && var->index() + 2 < function->argCount() && printWarnings) {
-                    std::list<Variable>::const_reverse_iterator it = function->argumentList.rbegin();
-                    ++it;
-                    wrongParameterTo_va_start_error(tok, var->name(), it->name());
+                    wrongParameterTo_va_start_error(tok, var->name(), function->argumentList[function->argumentList.size()-2].name());
                 }
                 tok = tok->linkAt(1);
             }

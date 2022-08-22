@@ -26,6 +26,7 @@
 
 #include <iosfwd>
 #include <list>
+#include <sstream>
 #include <string>
 
 #include <tinyxml2.h>

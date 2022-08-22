@@ -680,6 +680,13 @@ public:
         setFlag(fIsSimplifedScope, b);
     }
 
+    bool isFinalType() const {
+        return getFlag(fIsFinalType);
+    }
+    void isFinalType(bool b) {
+        setFlag(fIsFinalType, b);
+    }
+
     bool isBitfield() const {
         return mImpl->mBits > 0;
     }
@@ -1287,6 +1294,7 @@ private:
         fIsIncompleteConstant   = (1ULL << 36),
         fIsRestrict             = (1ULL << 37), // Is this a restrict pointer type
         fIsSimplifiedTypedef    = (1ULL << 38),
+        fIsFinalType            = (1ULL << 39), // Is this a type with final specifier
     };
 
     Token::Type mTokType;

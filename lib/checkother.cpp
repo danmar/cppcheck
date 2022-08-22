@@ -41,6 +41,7 @@
 #include <memory>
 #include <ostream>
 #include <set>
+#include <sstream>
 #include <utility>
 #include <numeric>
 
@@ -1296,7 +1297,8 @@ void CheckOther::checkPassByReference()
         if (var->scope() && var->scope()->function->arg->link()->strAt(-1) == "...")
             continue; // references could not be used as va_start parameters (#5824)
 
-        if ((var->declEndToken() && var->declEndToken()->isExternC()) ||
+        const Token * const varDeclEndToken = var->declEndToken();
+        if ((varDeclEndToken && varDeclEndToken->isExternC()) ||
             (var->scope() && var->scope()->function && var->scope()->function->tokenDef && var->scope()->function->tokenDef->isExternC()))
             continue; // references cannot be used in functions in extern "C" blocks
 
@@ -2062,7 +2064,8 @@ void CheckOther::checkMisusedScopedObject()
                 && Token::Match(tok->linkAt(2), ")|} ; !!}")
                 && (!tok->next()->function() || // is not a function on this scope
                     tok->next()->function()->isConstructor()) // or is function in this scope and it's a ctor
-                && !Token::simpleMatch(tok->tokAt(2)->astParent(), ";")) { // for loop condition
+                && !Token::simpleMatch(tok->tokAt(2)->astParent(), ";") // for loop condition
+                && tok->next()->str() != "void") {
                 if (const Token* arg = tok->tokAt(2)->astOperand2()) {
                     if (!isConstStatement(arg, mTokenizer->isCPP()))
                         continue;

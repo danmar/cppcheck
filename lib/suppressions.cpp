@@ -31,6 +31,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional> // std::bind, std::placeholders
+#include <sstream>
 
 #include <tinyxml2.h>
 

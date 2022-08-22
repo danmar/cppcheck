@@ -40,5 +40,17 @@ if (MSVC AND DISABLE_CRTDBG_MAP_ALLOC)
     add_definitions(-DDISABLE_CRTDBG_MAP_ALLOC)
 endif()
 
+if (NO_UNIX_SIGNAL_HANDLING)
+    add_definitions(-DNO_UNIX_SIGNAL_HANDLING)
+endif()
+
+if (NO_UNIX_BACKTRACE_SUPPORT)
+    add_definitions(-DNO_UNIX_BACKTRACE_SUPPORT)
+endif()
+
+if (NO_WINDOWS_SEH)
+    add_definitions(-DNO_WINDOWS_SEH)
+endif()
+
 file(TO_CMAKE_PATH ${FILESDIR} _filesdir)
 add_definitions(-DFILESDIR="${_filesdir}")

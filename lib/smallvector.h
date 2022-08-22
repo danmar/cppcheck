@@ -42,7 +42,16 @@ struct TaggedAllocator : std::allocator<T>
 };
 
 template<typename T, std::size_t N = DefaultSmallVectorSize>
-using SmallVector = std::vector<T, TaggedAllocator<T, N>>;
+class SmallVector : public std::vector<T, TaggedAllocator<T, N>>
+{
+public:
+    template<class ... Ts>
+    SmallVector(Ts&&... ts)
+        : std::vector<T, TaggedAllocator<T, N>>(std::forward<Ts>(ts)...)
+    {
+        this->reserve(N);
+    }
+};
 #endif
 
 #endif

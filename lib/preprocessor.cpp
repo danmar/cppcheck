@@ -31,6 +31,7 @@
 #include <cstddef>
 #include <iterator> // back_inserter
 #include <memory>
+#include <sstream>
 #include <utility>
 
 #include <simplecpp.h>

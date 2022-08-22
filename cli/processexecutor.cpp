@@ -39,6 +39,7 @@
 #include <functional>
 #include <iostream>
 #include <list>
+#include <sstream>
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
