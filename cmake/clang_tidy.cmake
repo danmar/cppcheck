@@ -1,12 +1,3 @@
-if (NOT NPROC)
-    include(ProcessorCount)
-    ProcessorCount(NPROC)
-    if(NPROC EQUAL 0)
-        message(FATAL_ERROR "could not get processor count")
-    endif()
-endif()
-message(STATUS "NPROC=${NPROC}")
-
 if (NOT CMAKE_DISABLE_PRECOMPILE_HEADERS)
     # clang-tidy and clang need to have the same version when precompiled headers are beign used
     if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
@@ -25,6 +16,13 @@ if (RUN_CLANG_TIDY_NAMES)
     find_program(RUN_CLANG_TIDY NAMES ${RUN_CLANG_TIDY_NAMES})
     message(STATUS "RUN_CLANG_TIDY=${RUN_CLANG_TIDY}")
     if (RUN_CLANG_TIDY)
+        include(ProcessorCount)
+        ProcessorCount(NPROC)
+        if(NPROC EQUAL 0)
+            message(FATAL_ERROR "could not get processor count")
+        endif()
+        message(STATUS "NPROC=${NPROC}")
+
         # disable all compiler warnings since we are just interested in the tidy ones
         add_custom_target(run-clang-tidy ${PYTHON_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet)
         if (BUILD_GUI)
