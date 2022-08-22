@@ -2016,7 +2016,7 @@ void CheckStl::string_c_str()
                        ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable() && tok->previous()->variable()->isStlStringType()) ||
                         (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable() && tok->tokAt(-5)->variable()->isStlStringType()))) {
                 string_c_strConcat(tok);
-            } else if (printPerformance && Token::simpleMatch(tok, "<<") && tok->astOperand2() && Token::simpleMatch(tok->astOperand2()->astOperand1(), ". c_str ( )")) {
+            } else if (printPerformance && Token::simpleMatch(tok, "<<") && tok->astOperand2() && Token::Match(tok->astOperand2()->astOperand1(), ". c_str|data ( )")) {
                 const Token* str = tok->astOperand2()->astOperand1()->astOperand1();
                 if (isString(str)) {
                     const Token* strm = tok;
