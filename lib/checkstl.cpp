@@ -2016,12 +2016,15 @@ void CheckStl::string_c_str()
                        ((Token::Match(tok->previous(), "%var% + %var% . c_str|data ( )") && tok->previous()->variable() && tok->previous()->variable()->isStlStringType()) ||
                         (Token::Match(tok->tokAt(-5), "%var% . c_str|data ( ) + %var%") && tok->tokAt(-5)->variable() && tok->tokAt(-5)->variable()->isStlStringType()))) {
                 string_c_strConcat(tok);
-            } else if (printPerformance && tok->next() && tok->next()->variable() && tok->next()->variable()->isStlStringType() && Token::Match(tok, "<< %var% . c_str ( )")) {
-                const Token* strm = tok;
-                while (Token::simpleMatch(strm, "<<"))
-                    strm = strm->astOperand1();
-                if (strm && strm->variable() && strm->variable()->isStlType())
-                    string_c_strStream(tok);
+            } else if (printPerformance && Token::simpleMatch(tok, "<<") && tok->astOperand2() && Token::simpleMatch(tok->astOperand2()->astOperand1(), ". c_str ( )")) {
+                const Token* str = tok->astOperand2()->astOperand1()->astOperand1();
+                if (isString(str)) {
+                    const Token* strm = tok;
+                    while (Token::simpleMatch(strm, "<<"))
+                        strm = strm->astOperand1();
+                    if (strm && strm->variable() && strm->variable()->isStlType())
+                        string_c_strStream(tok);
+                }
             }
 
             // Using c_str() to get the return value is only dangerous if the function returns a char*
@@ -2152,7 +2155,8 @@ void CheckStl::string_c_strConcat(const Token* tok)
 
 void CheckStl::string_c_strStream(const Token* tok)
 {
-    std::string msg = "Passing the result of c_str() to a stream is slow and redundant.\nSolve that by directly passing the string.";
+    std::string msg = "Passing the result of c_str() to a stream is slow and redundant.\n";
+                      "Passing a const char* to a stream requires a call to strlen(). Solve that by directly passing the string.";
     reportError(tok, Severity::performance, "stlcstrStream", msg, CWE704, Certainty::normal);
 }
 
