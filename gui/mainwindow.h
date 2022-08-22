@@ -230,6 +230,8 @@ protected slots:
 
 private:
 
+    bool isCppcheckPremium() const;
+
     /** Get filename for last results */
     QString getLastResults() const;
 

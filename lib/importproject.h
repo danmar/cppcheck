@@ -178,6 +178,11 @@ namespace CppcheckXml {
     const char Name[] = "name";
     const char VSConfigurationElementName[] = "vs-configurations";
     const char VSConfigurationName[] = "config";
+    // Cppcheck Premium
+    const char BughuntingElementName[] = "bug-hunting";
+    const char CodingStandardsElementName[] = "coding-standards";
+    const char CodingStandardElementName[] = "coding-standard";
+    const char CertIntPrecisionElementName[] = "cert-c-int-precision";
 }
 
 /// @}
