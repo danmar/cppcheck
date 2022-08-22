@@ -26,7 +26,7 @@ if (RUN_CLANG_TIDY_NAMES)
     message(STATUS "RUN_CLANG_TIDY=${RUN_CLANG_TIDY}")
     if (RUN_CLANG_TIDY)
         # disable all compiler warnings since we are just interested in the tidy ones
-        add_custom_target(run-clang-tidy ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet)
+        add_custom_target(run-clang-tidy ${PYTHON_EXECUTABLE} ${RUN_CLANG_TIDY} -p=${CMAKE_BINARY_DIR} -j ${NPROC} -quiet)
         if (BUILD_GUI)
             add_dependencies(run-clang-tidy gui-build-deps)
             if (BUILD_TESTS)
