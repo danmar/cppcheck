@@ -1940,8 +1940,8 @@ void CheckStl::string_c_str()
       if (Token::Match(str, "(|[") && !(str->valueType() && str->valueType()->type == ValueType::ITERATOR))
           str = str->previous();
       return str && ((str->variable() && str->variable()->isStlStringType()) || // variable
-          (str->function() && isStlStringType(str->function()->retDef)) || // function returning string
-          (str->valueType() && str->valueType()->type == ValueType::ITERATOR && isStlStringType(str->valueType()->containerTypeToken))); // iterator pointing to string
+                     (str->function() && isStlStringType(str->function()->retDef)) || // function returning string
+                     (str->valueType() && str->valueType()->type == ValueType::ITERATOR && isStlStringType(str->valueType()->containerTypeToken))); // iterator pointing to string
     };
 
     // Try to detect common problems when using string::c_str()
@@ -2006,7 +2006,6 @@ void CheckStl::string_c_str()
                             if (ssVar && ssVar->isStlType(stl_string_stream))
                                 string_c_strParam(tok, i->second);
                         }
-
                     }
                 }
             } else if (printPerformance && Token::Match(tok, "%var% (|{ %var% . c_str|data ( )") &&
