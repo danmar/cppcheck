@@ -113,7 +113,7 @@ stage
 # CLion
 /.idea
 /.metadata/
-/cmake-*
+/cmake-build-*
 /.run
 
 # clang tooling temporary files
