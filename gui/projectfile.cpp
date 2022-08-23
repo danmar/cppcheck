@@ -74,6 +74,11 @@ void ProjectFile::clear()
     mVsConfigurations.clear();
     mTags.clear();
     mWarningTags.clear();
+
+    // Premium
+    mBughunting = false;
+    mCertIntPrecision = 0;
+    mCodingStandards.clear();
 }
 
 bool ProjectFile::read(const QString &filename)
@@ -195,6 +200,15 @@ bool ProjectFile::read(const QString &filename)
             // VSConfiguration
             if (xmlReader.name() == QString(CppcheckXml::VSConfigurationElementName))
                 readVsConfigurations(xmlReader);
+
+            // Cppcheck Premium
+            if (xmlReader.name() == QString(CppcheckXml::BughuntingElementName))
+                mBughunting = true;
+            if (xmlReader.name() == QString(CppcheckXml::CodingStandardsElementName))
+                readStringList(mAddons, xmlReader, CppcheckXml::CodingStandardElementName);
+            if (xmlReader.name() == QString(CppcheckXml::CertIntPrecisionElementName))
+                mCertIntPrecision = readInt(xmlReader, 0);
+
             break;
 
         case QXmlStreamReader::EndElement:
@@ -926,6 +940,23 @@ bool ProjectFile::write(const QString &filename)
             }
             xmlWriter.writeEndElement();
         }
+    }
+
+    // Cppcheck Premium
+    if (mBughunting) {
+        xmlWriter.writeStartElement(CppcheckXml::BughuntingElementName);
+        xmlWriter.writeEndElement();
+    }
+
+    writeStringList(xmlWriter,
+                    mCodingStandards,
+                    CppcheckXml::CodingStandardsElementName,
+                    CppcheckXml::CodingStandardElementName);
+
+    if (mCertIntPrecision > 0) {
+        xmlWriter.writeStartElement(CppcheckXml::CertIntPrecisionElementName);
+        xmlWriter.writeCharacters(QString::number(mCertIntPrecision));
+        xmlWriter.writeEndElement();
     }
 
     xmlWriter.writeEndDocument();

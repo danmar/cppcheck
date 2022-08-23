@@ -239,6 +239,9 @@ public:
     /** @brief plist output (--plist-output=&lt;dir&gt;) */
     std::string plistOutput;
 
+    /** @brief Extra arguments for Cppcheck Premium addon */
+    std::string premiumArgs;
+
     /** @brief Using -E for debugging purposes */
     bool preprocessOnly;
 
