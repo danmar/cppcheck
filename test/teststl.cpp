@@ -3900,7 +3900,7 @@ private:
               "    std::string a[1];\n"
               "    struct U { std::string s; } u;"
               "};\n"
-              "namespace N { namespace O { std::string s; } }\n"              
+              "namespace N { namespace O { std::string s; } }\n"
               "void g(const std::vector<std::string>& v, T& t) {\n"
               "    for (std::vector<std::string>::const_iterator it = v.begin(); it != v.end(); ++it)\n"
               "        f(it->c_str());\n"
