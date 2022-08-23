@@ -1937,10 +1937,10 @@ void CheckStl::string_c_str()
     }
 
     auto isString = [](const Token* str) -> bool {
+        while (Token::Match(str, "::|."))
+            str = str->astOperand2();
         if (Token::Match(str, "(|[") && !(str->valueType() && str->valueType()->type == ValueType::ITERATOR))
             str = str->previous();
-        else if (Token::simpleMatch(str, "."))
-            str = str->astOperand2();
         return str && ((str->variable() && str->variable()->isStlStringType()) || // variable
                        (str->function() && isStlStringType(str->function()->retDef)) || // function returning string
                        (str->valueType() && str->valueType()->type == ValueType::ITERATOR && isStlStringType(str->valueType()->containerTypeToken))); // iterator pointing to string
