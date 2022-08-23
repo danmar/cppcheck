@@ -114,6 +114,7 @@ man/*.html
 .idea
 /.metadata/
 cmake-*
+/.run
 
 # clang tooling temporary files
 .clangd/
