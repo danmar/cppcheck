@@ -205,7 +205,7 @@ bool ProjectFile::read(const QString &filename)
             if (xmlReader.name() == QString(CppcheckXml::BughuntingElementName))
                 mBughunting = true;
             if (xmlReader.name() == QString(CppcheckXml::CodingStandardsElementName))
-                readStringList(mAddons, xmlReader, CppcheckXml::CodingStandardElementName);
+                readStringList(mCodingStandards, xmlReader, CppcheckXml::CodingStandardElementName);
             if (xmlReader.name() == QString(CppcheckXml::CertIntPrecisionElementName))
                 mCertIntPrecision = readInt(xmlReader, 0);
 

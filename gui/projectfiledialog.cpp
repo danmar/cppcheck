@@ -452,6 +452,7 @@ void ProjectFileDialog::saveToProjectFile(ProjectFile *projectFile) const
         codingStandards << CODING_STANDARD_AUTOSAR;
     projectFile->setCodingStandards(codingStandards);
     projectFile->setCertIntPrecision(mUI->mEditCertIntPrecision->text().toInt());
+    projectFile->setBughunting(mUI->mBughunting->isChecked());
     projectFile->setClangAnalyzer(mUI->mToolClangAnalyzer->isChecked());
     projectFile->setClangTidy(mUI->mToolClangTidy->isChecked());
 #if (QT_VERSION >= QT_VERSION_CHECK(5, 14, 0))
