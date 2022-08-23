@@ -9,9 +9,6 @@ jobs:
 
     runs-on: ubuntu-22.04
 
-    container:
-      image: "ubuntu:22.04"
-
     env:
       QT_VERSION: 5.15.2
 
@@ -20,11 +17,16 @@ jobs:
 
       - name: Install missing software
         run: |
-          apt-get update
-          apt-get install -y cmake clang-14 make
-          apt-get install -y libpcre3-dev
-          apt-get install -y libffi7 # work around missing dependency for Qt install step
-          apt-get install -y clang-tidy-14
+          sudo apt-get update
+          sudo apt-get install -y cmake make
+          sudo apt-get install -y libpcre3-dev
+          sudo apt-get install -y libffi7 # work around missing dependency for Qt install step
+
+      - name: Install clang
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 14
 
       - name: Cache Qt ${{ env.QT_VERSION }}
         id: cache-qt
@@ -36,7 +38,6 @@ jobs:
       - name: Install Qt ${{ env.QT_VERSION }}
         uses: jurplel/install-qt-action@v2
         with:
-          install-deps: 'nosudo'
           version: ${{ env.QT_VERSION }}
           modules: 'qtcharts'
           cached: ${{ steps.cache-qt.outputs.cache-hit }}
