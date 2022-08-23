@@ -17,6 +17,7 @@
  */
 
 #include "processexecutor.h"
+#include "redirect.h"
 #include "settings.h"
 #include "testsuite.h"
 #include "testutils.h"
@@ -41,7 +42,7 @@ private:
      * Execute check using n jobs for y files which are have
      * identical data, given within data.
      */
-    void check(unsigned int jobs, int files, int result, const std::string &data) {
+    void check(unsigned int jobs, int files, int result, const std::string &data, SHOWTIME_MODES showtime = SHOWTIME_MODES::SHOWTIME_NONE) {
         errout.str("");
         output.str("");
 
@@ -53,6 +54,7 @@ private:
         }
 
         settings.jobs = jobs;
+        settings.showtime = showtime;
         ProcessExecutor executor(filemap, settings, *this);
         std::vector<ScopedFile> scopedfiles;
         scopedfiles.reserve(filemap.size());
@@ -68,6 +70,7 @@ private:
 
         TEST_CASE(deadlock_with_many_errors);
         TEST_CASE(many_threads);
+        TEST_CASE(many_threads_showtime);
         TEST_CASE(no_errors_more_files);
         TEST_CASE(no_errors_less_files);
         TEST_CASE(no_errors_equal_amount_files);
@@ -95,6 +98,17 @@ private:
               "  char *a = malloc(10);\n"
               "  return 0;\n"
               "}");
+    }
+
+    // #11249 - reports TSAN errors
+    void many_threads_showtime() {
+        REDIRECT;
+        check(16, 100, 100,
+              "int main()\n"
+              "{\n"
+              "  char *a = malloc(10);\n"
+              "  return 0;\n"
+              "}", SHOWTIME_MODES::SHOWTIME_SUMMARY);
     }
 
     void no_errors_more_files() {

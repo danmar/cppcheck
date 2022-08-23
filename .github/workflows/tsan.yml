@@ -1,6 +1,6 @@
 # Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
 # Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
-name: address sanitizer
+name: thread sanitizer
 
 on: [push, pull_request]
 
@@ -9,11 +9,11 @@ jobs:
 
     runs-on: ubuntu-22.04
 
+    env:
+      TSAN_OPTIONS: halt_on_error=1
+
     container:
       image: "ubuntu:22.04"
-
-    env:
-      ASAN_OPTIONS: detect_stack_use_after_return=1
 
     steps:
       - uses: actions/checkout@v2
@@ -31,7 +31,7 @@ jobs:
 
       - name: CMake
         run: |
-          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_ADDRESS=On -DENABLE_CHECK_INTERNAL=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
+          cmake -S . -B cmake.output -DCMAKE_BUILD_TYPE=RelWithDebInfo -DHAVE_RULES=On -DBUILD_TESTS=On -DUSE_MATCHCOMPILER=Verify -DANALYZE_THREAD=On -DUSE_THREADS=On -DENABLE_CHECK_INTERNAL=On -DCPPCHK_GLIBCXX_DEBUG=Off -DCMAKE_DISABLE_PRECOMPILE_HEADERS=On
         env:
           CC: clang-14
           CXX: clang++-14
@@ -47,7 +47,7 @@ jobs:
       - name: Run tests
         run: ./cmake.output/bin/testrunner
 
-      # TODO: re-enable - was being killed because of incresaed memory usage
+      # TODO: disabled for now as it takes around 40 minutes to finish
       # TODO: no gui/temp/*.cpp files available
       - name: Self check
         if: false
