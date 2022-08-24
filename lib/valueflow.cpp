@@ -1195,7 +1195,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
     } else if (Token::simpleMatch(tok, "sizeof (")) {
         if (tok->next()->astOperand2() && !tok->next()->astOperand2()->isLiteral() && tok->next()->astOperand2()->valueType() &&
             (tok->next()->astOperand2()->valueType()->pointer == 0 || // <- TODO this is a bailout, abort when there are array->pointer conversions
-             tok->next()->astOperand2()->variable() && !tok->next()->astOperand2()->variable()->isArray()) &&
+             (tok->next()->astOperand2()->variable() && !tok->next()->astOperand2()->variable()->isArray())) &&
             !tok->next()->astOperand2()->valueType()->isEnum()) { // <- TODO this is a bailout, handle enum with non-int types
             const size_t sz = ValueFlow::getSizeOf(*tok->next()->astOperand2()->valueType(), settings);
             if (sz) {
