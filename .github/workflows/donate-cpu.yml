@@ -1,0 +1,31 @@
+# Syntax reference https://help.github.com/en/actions/reference/workflow-syntax-for-github-actions
+# Environment reference https://help.github.com/en/actions/reference/virtual-environments-for-github-hosted-runners
+name: donate-cpu
+
+on: [push, pull_request]
+
+jobs:
+  make:
+
+    runs-on: ubuntu-22.04
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.10'
+
+      - name: Install missing software
+        run: |
+          sudo apt-get install gdb
+
+      - name: Install missing Python packages
+        run: |
+          python -m pip install packaging
+          python -m pip install psutil          
+
+      - name: Run donate-cpu
+        run: |
+          python tools/donate-cpu.py -j$(nproc) --no-upload --package=ftp://ftp.de.debian.org/debian/pool/main/c/chaos-marmosets/chaos-marmosets_0.1.1.orig.tar.xz
