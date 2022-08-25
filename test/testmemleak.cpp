@@ -1582,7 +1582,7 @@ private:
               "    delete p;\n"
               "    p = 0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:7]: (error) Mismatching allocation and deallocation: S::p\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (error) Mismatching allocation and deallocation: S::p\n", errout.str());
     }
 
     void mismatch2() { // #5659
