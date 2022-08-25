@@ -1571,7 +1571,7 @@ private:
               "    delete [] pkt_buffer;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:14]: (error) Mismatching allocation and deallocation: A::pkt_buffer\n", errout.str());
-        
+
         check("struct S {\n" // 5678
               "    ~S();\n"
               "    void f();\n"
