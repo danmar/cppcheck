@@ -1174,15 +1174,15 @@ void CmdLineParser::printHelp()
 
     if (isCppcheckPremium()) {
         std::cout << "    --premium=<option>\n"
-                  << "                     Coding standards:\n"
-                  << "                      * autosar           Autosar (partial)\n"
-                  << "                      * cert-c-2016       Cert C 2016 checking\n"
-                  << "                      * cert-c++-2016     Cert C++ 2016 checking (partial)\n"
-                  << "                      * misra-c-2012      Misra C 2012\n"
-                  << "                      * misra-c++-2008    Misra C++ 2008 (partial)\n"
-                  << "                     Other:\n"
-                  << "                      * bughunting       Soundy analysis\n"
-                  << "                      * cert-c-int-precision=BITS  integer precision to use in Cert C analysis.\n";
+                  << "                         Coding standards:\n"
+                  << "                          * autosar           Autosar (partial)\n"
+                  << "                          * cert-c-2016       Cert C 2016 checking\n"
+                  << "                          * cert-c++-2016     Cert C++ 2016 checking (partial)\n"
+                  << "                          * misra-c-2012      Misra C 2012\n"
+                  << "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
+                  << "                         Other:\n"
+                  << "                          * bughunting        Soundy analysis\n"
+                  << "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n";
     }
 
     std::cout <<
