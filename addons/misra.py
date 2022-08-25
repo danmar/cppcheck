@@ -4428,10 +4428,6 @@ class MisraChecker:
             self.executeCheck(2209, self.misra_22_9, cfg)
             self.executeCheck(2210, self.misra_22_10, cfg)
 
-            # Premium MISRA checking, deep analysis
-            if cfgNumber == 0 and self.path_premium_addon:
-                cppcheckdata.cmd_output([self.path_premium_addon, '--cli', '--misra', dumpfile])
-
     def analyse_ctu_info(self, ctu_info_files):
         all_typedef_info = []
         all_tagname_info = []
@@ -4690,14 +4686,6 @@ def main():
                 sys.exit(exitCode)
 
     checker.analyse_ctu_info(ctu_info_files)
-
-    if args.file_list and checker.path_premium_addon:
-        premium_command = [checker.path_premium_addon, '--misra', '--file-list', args.file_list]
-        if args.cli:
-            premium_command.append('--cli')
-        for line in cppcheckdata.cmd_output(premium_command).split('\n'):
-            if re.search(r'"errorId".*:.*"misra-', line) is not None:
-                print(line.strip())
 
     if settings.verify:
         sys.exit(exitCode)
