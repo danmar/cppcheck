@@ -638,7 +638,7 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
 
                     // several types of allocation/deallocation?
                     if (memberDealloc != CheckMemoryLeak::No && memberDealloc != dealloc)
-                      dealloc = CheckMemoryLeak::Many;
+                        dealloc = CheckMemoryLeak::Many;
 
                     memberDealloc = dealloc;
                 }
