@@ -230,10 +230,10 @@ while True:
 
             def get_client_version_head():
                 cmd = 'python3' + ' ' + os.path.join(tree_path, 'tools', 'donate-cpu.py') + ' ' + '--version'
-                p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL)
+                p = subprocess.Popen(cmd.split(), stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, universal_newlines=True)
                 try:
                     comm = p.communicate()
-                    return comm[0].decode(encoding='utf-8', errors='ignore').strip()
+                    return comm[0]
                 except:
                     return None
 
