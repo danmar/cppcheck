@@ -4443,92 +4443,96 @@ class MisraChecker:
         def is_different_location(loc1, loc2):
             return loc1['file'] != loc2['file'] or loc1['line'] != loc2['line']
 
-        for filename in ctu_info_files:
-            for line in open(filename, 'rt'):
-                if not line.startswith('{'):
-                    continue
+        try:
+            for filename in ctu_info_files:
+                for line in open(filename, 'rt'):
+                    if not line.startswith('{'):
+                        continue
 
-                s = json.loads(line)
-                summary_type = s['summary']
-                summary_data = s['data']
+                    s = json.loads(line)
+                    summary_type = s['summary']
+                    summary_data = s['data']
 
-                if summary_type == 'MisraTypedefInfo':
-                    for new_typedef_info in summary_data:
-                        found = False
-                        for old_typedef_info in all_typedef_info:
-                            if old_typedef_info['name'] == new_typedef_info['name']:
-                                found = True
-                                if is_different_location(old_typedef_info, new_typedef_info):
-                                    self.reportError(Location(old_typedef_info), 5, 6)
-                                    self.reportError(Location(new_typedef_info), 5, 6)
-                                else:
-                                    if new_typedef_info['used']:
-                                        old_typedef_info['used'] = True
-                                break
-                        if not found:
-                            all_typedef_info.append(new_typedef_info)
+                    if summary_type == 'MisraTypedefInfo':
+                        for new_typedef_info in summary_data:
+                            found = False
+                            for old_typedef_info in all_typedef_info:
+                                if old_typedef_info['name'] == new_typedef_info['name']:
+                                    found = True
+                                    if is_different_location(old_typedef_info, new_typedef_info):
+                                        self.reportError(Location(old_typedef_info), 5, 6)
+                                        self.reportError(Location(new_typedef_info), 5, 6)
+                                    else:
+                                        if new_typedef_info['used']:
+                                            old_typedef_info['used'] = True
+                                    break
+                            if not found:
+                                all_typedef_info.append(new_typedef_info)
 
-                if summary_type == 'MisraTagName':
-                    for new_tagname_info in summary_data:
-                        found = False
-                        for old_tagname_info in all_tagname_info:
-                            if old_tagname_info['name'] == new_tagname_info['name']:
-                                found = True
-                                if is_different_location(old_tagname_info, new_tagname_info):
-                                    self.reportError(Location(old_tagname_info), 5, 7)
-                                    self.reportError(Location(new_tagname_info), 5, 7)
-                                else:
-                                    if new_tagname_info['used']:
-                                        old_tagname_info['used'] = True
-                                break
-                        if not found:
-                            all_tagname_info.append(new_tagname_info)
+                    if summary_type == 'MisraTagName':
+                        for new_tagname_info in summary_data:
+                            found = False
+                            for old_tagname_info in all_tagname_info:
+                                if old_tagname_info['name'] == new_tagname_info['name']:
+                                    found = True
+                                    if is_different_location(old_tagname_info, new_tagname_info):
+                                        self.reportError(Location(old_tagname_info), 5, 7)
+                                        self.reportError(Location(new_tagname_info), 5, 7)
+                                    else:
+                                        if new_tagname_info['used']:
+                                            old_tagname_info['used'] = True
+                                    break
+                            if not found:
+                                all_tagname_info.append(new_tagname_info)
 
-                if summary_type == 'MisraMacro':
-                    for new_macro in summary_data:
-                        found = False
-                        for old_macro in all_macro_info:
-                            if old_macro['name'] == new_macro['name']:
-                                found = True
-                                if new_macro['used']:
-                                    old_macro['used'] = True
-                                break
-                        if not found:
-                            all_macro_info.append(new_macro)
+                    if summary_type == 'MisraMacro':
+                        for new_macro in summary_data:
+                            found = False
+                            for old_macro in all_macro_info:
+                                if old_macro['name'] == new_macro['name']:
+                                    found = True
+                                    if new_macro['used']:
+                                        old_macro['used'] = True
+                                    break
+                            if not found:
+                                all_macro_info.append(new_macro)
 
-                if summary_type == 'MisraExternalIdentifiers':
-                    for s in summary_data:
-                        is_declaration = s['decl']
-                        if is_declaration:
-                            all_external_identifiers = all_external_identifiers_decl
-                        else:
-                            all_external_identifiers = all_external_identifiers_def
+                    if summary_type == 'MisraExternalIdentifiers':
+                        for s in summary_data:
+                            is_declaration = s['decl']
+                            if is_declaration:
+                                all_external_identifiers = all_external_identifiers_decl
+                            else:
+                                all_external_identifiers = all_external_identifiers_def
 
-                        name = s['name']
-                        if name in all_external_identifiers and is_different_location(s, all_external_identifiers[name]):
-                            num = 5 if is_declaration else 6
-                            self.reportError(Location(s), 8, num)
-                            self.reportError(Location(all_external_identifiers[name]), 8, num)
-                        all_external_identifiers[name] = s
+                            name = s['name']
+                            if name in all_external_identifiers and is_different_location(s, all_external_identifiers[name]):
+                                num = 5 if is_declaration else 6
+                                self.reportError(Location(s), 8, num)
+                                self.reportError(Location(all_external_identifiers[name]), 8, num)
+                            all_external_identifiers[name] = s
 
-                if summary_type == 'MisraInternalIdentifiers':
-                    for s in summary_data:
-                        if s['name'] in all_internal_identifiers:
-                            if not s['inlinefunc'] or s['file'] != all_internal_identifiers[s['name']]['file']:
-                                self.reportError(Location(s), 5, 9)
-                                self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
-                        all_internal_identifiers[s['name']] = s
+                    if summary_type == 'MisraInternalIdentifiers':
+                        for s in summary_data:
+                            if s['name'] in all_internal_identifiers:
+                                if not s['inlinefunc'] or s['file'] != all_internal_identifiers[s['name']]['file']:
+                                    self.reportError(Location(s), 5, 9)
+                                    self.reportError(Location(all_internal_identifiers[s['name']]), 5, 9)
+                            all_internal_identifiers[s['name']] = s
 
-                if summary_type == 'MisraLocalIdentifiers':
-                    for s in summary_data:
-                        all_local_identifiers[s['name']] = s
+                    if summary_type == 'MisraLocalIdentifiers':
+                        for s in summary_data:
+                            all_local_identifiers[s['name']] = s
 
-                if summary_type == 'MisraUsage':
-                    for s in summary_data:
-                        if s['name'] in all_usage_files:
-                            all_usage_files[s['name']].append(s['file'])
-                        else:
-                            all_usage_files[s['name']] = [s['file']]
+                    if summary_type == 'MisraUsage':
+                        for s in summary_data:
+                            if s['name'] in all_usage_files:
+                                all_usage_files[s['name']].append(s['file'])
+                            else:
+                                all_usage_files[s['name']] = [s['file']]
+
+        except FileNotFoundError:
+            return
 
         for ti in all_typedef_info:
             if not ti['used']:
