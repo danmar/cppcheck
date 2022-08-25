@@ -173,7 +173,7 @@ def compile_cppcheck(cppcheck_path, jobs):
     print('Compiling {}'.format(os.path.basename(cppcheck_path)))
     try:
         if __make_cmd == 'msbuild.exe':
-            # TODO: run matchcompiler
+            subprocess.check_call(['python3', os.path.join('tools', 'matchcompiler.py'), '--write-dir', 'lib'], cwd=cppcheck_path)
             build_env = os.environ
             # append to cl.exe options - need to omit dash or slash since a dash is being prepended
             build_env["_CL_"] = jobs.replace('j', 'MP', 1)
