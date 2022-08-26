@@ -358,7 +358,7 @@ CTU::FileInfo *CTU::getFileInfo(const Tokenizer *tokenizer)
                     fileInfo->functionCalls.push_back(functionCall);
                 }
                 // array
-                if (argtok->variable() && argtok->variable()->isArray() && argtok->variable()->dimensions().size()==1 && argtok->variable()->dimension(0)>1) {
+                if (argtok->variable() && argtok->variable()->isArray() && argtok->variable()->dimensions().size() == 1) {
                     FileInfo::FunctionCall functionCall;
                     functionCall.callValueType = ValueFlow::Value::ValueType::BUFFER_SIZE;
                     functionCall.callId = getFunctionId(tokenizer, tokFunction);

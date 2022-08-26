@@ -5118,6 +5118,23 @@ private:
         ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:1]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n"
                       "[test.cpp:6] -> [test.cpp:2]: (error) Array index out of bounds; 's' buffer size is 2 and it is accessed at offset 2.\n",
                       errout.str());
+
+        // #5140
+        ctu("void g(const char* argv[]) { std::cout << \"argv: \" << argv[4] << std::endl; }\n"
+            "void f() {\n"
+            "    const char* argv[] = { \"test\" };\n"
+            "    g(argv);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 4.\n",
+                      errout.str());
+
+        ctu("void g(const char* argv[]) { std::cout << \"argv: \" << argv[5] << std::endl; }\n"
+            "void f() {\n"
+            "    const char* argv[1] = { \"test\" };\n"
+            "    g(argv);\n"
+            "}\n");
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:1]: (error) Array index out of bounds; 'argv' buffer size is 1 and it is accessed at offset 5.\n",
+                      errout.str());
     }
 
     void ctu_variable() {
