@@ -1728,6 +1728,8 @@ static bool functionModifiesArguments(const Function* f)
 
 bool isConstFunctionCall(const Token* ftok, const Library& library)
 {
+    if (isSizeOfEtc(ftok))
+        return true;
     if (!Token::Match(ftok, "%name% ("))
         return false;
     if (const Function* f = ftok->function()) {

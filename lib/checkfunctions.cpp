@@ -718,33 +718,12 @@ void CheckFunctions::useStandardLibrary()
         if (!condToken->isComparisonOp())
             continue;
 
-        const auto checkBoundaryType = [](const Token* t, const bool rightOp) -> bool {
-            const auto *const till = rightOp ? ";" : ">"; // valid end of expression
-
-            bool result = nullptr != t;
-            for (; result && nullptr != t && t->str() == till; t = t->next()) {
-                if (t->isNumber()) {
-                    continue;
-                } else if (t->isVariable() && !t->variable()->isArray()) {
-                    continue;
-                } else if (t->isArithmeticalOp()) {
-                    continue;
-                } else if (Token::simpleMatch(t, "sizeof (")) {
-                    t = t->next()->link();
-                    continue;
-                } else if (Token::Match(t, "(|)")) {
-                    continue;
-                } else {
-                    result = false;
-                }
-            }
-            return result && nullptr != t;
-        };
-
         const auto& secondOp = condToken->str();
-        const bool isLess = "<" == secondOp && checkBoundaryType(condToken->astOperand2(), true) &&
+        const bool isLess = "<" == secondOp &&
+                            isConstExpression(condToken->astOperand2(), mSettings->library, true, mTokenizer->isCPP()) &&
                             condToken->astOperand1()->varId() == idxVarId;
-        const bool isMore = ">" == secondOp && checkBoundaryType(condToken->astOperand1(), false) &&
+        const bool isMore = ">" == secondOp &&
+                            isConstExpression(condToken->astOperand1(), mSettings->library, true, mTokenizer->isCPP()) &&
                             condToken->astOperand2()->varId() == idxVarId;
 
         if (!(isLess || isMore))
