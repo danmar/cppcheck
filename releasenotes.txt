@@ -4,3 +4,4 @@ release notes for cppcheck-2.9
 - replaced hardcoded check for pipe() buffer size by library configuration option (LCppC backport)
 - on Windows the callstack is now being written to the output specific via "--exception-handling"
 - make it possible to disable the various exception handling parts via the CMake options "NO_UNIX_SIGNAL_HANDLING", "NO_UNIX_BACKTRACE_SUPPORT" and "NO_WINDOWS_SEH"
+- detect more redundant calls of std::string::c_str(), std::string::substr(), and unnecessary copies of containers
