@@ -525,7 +525,7 @@ private:
         ASSERT(v->isPointerArray());
         ASSERT_EQUALS(1U, v->dimensions().size());
         ASSERT_EQUALS(1U, v->dimension(0));
-        
+
         v = db->getVariableFromVarId(2);
         ASSERT(v != nullptr);
 
