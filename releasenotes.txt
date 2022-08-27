@@ -5,3 +5,14 @@ release notes for cppcheck-2.9
 - on Windows the callstack is now being written to the output specific via "--exception-handling"
 - make it possible to disable the various exception handling parts via the CMake options "NO_UNIX_SIGNAL_HANDLING", "NO_UNIX_BACKTRACE_SUPPORT" and "NO_WINDOWS_SEH"
 - detect more redundant calls of std::string::c_str(), std::string::substr(), and unnecessary copies of containers
+- Add a `match` function to addon similiar to `Token::Match` used internally by cppcheck:
+    - `|` for either-or tokens(ie `struct|class` to match either `struct` or `class`)
+    - `!!` to negate a token
+    - It supports the `%any%`, `%assign%`, `%comp%`, `%name%`, `%op%`, `%or%`, `%oror%`, and `%var%` keywords
+    - It supports `(*)`, `{*}`, `[*]`, and `<*>` to match links
+    - `@` can be added to bind the token to a name
+    - `**` can be used to match until a token
+- Add math functions which can be used in library function definition. This enables evaluation of more math functions in ValueFlow
+- Further improve lifetim analysis with `this` pointers
+- Propagate condition values from outer function calls
+- Add debug intrinscs `debug_valueflow` and `debug_valuetype` to show more detail including source backtraces
