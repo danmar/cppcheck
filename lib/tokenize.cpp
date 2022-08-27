@@ -1390,10 +1390,19 @@ void Tokenizer::simplifyTypedef()
                     if (sameStartEnd)
                         typeEnd = typeStart;
 
+                    // Is this a "T()" expression where T is a pointer type?
+                    const bool isPointerTypeCall = !inOperator && Token::Match(tok2, "%name% ( )") && !pointers.empty();
+
                     // start substituting at the typedef name by replacing it with the type
                     Token* replStart = tok2; // track first replaced token
                     for (Token* tok3 = typeStart; tok3->str() != ";"; tok3 = tok3->next())
                         tok3->isSimplifiedTypedef(true);
+                    if (isPointerTypeCall) {
+                        tok2->deleteThis();
+                        tok2->insertToken("0");
+                        tok2 = tok2->next();
+                        tok2->next()->insertToken("0");
+                    }
                     tok2->str(typeStart->str());
 
                     // restore qualification if it was removed
