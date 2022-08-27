@@ -564,6 +564,14 @@ size_t bufferAccessOutOfBounds_strnlen(const char *s, size_t maxlen)
     return len;
 }
 
+void bufferAccessOutOfBounds_wcpncpy()
+{
+    wchar_t s[16];
+    wcpncpy(s, L"abc", 16);
+    // cppcheck-suppress bufferAccessOutOfBounds
+    wcpncpy(s, L"abc", 17);
+}
+
 size_t nullPointer_strnlen(const char *s, size_t maxlen)
 {
     // No warning shall be shown:
