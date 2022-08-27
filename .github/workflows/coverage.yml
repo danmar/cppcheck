@@ -15,6 +15,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ runner.os }}
+
       - name: Install missing software on ubuntu
         run: |
           sudo apt-get update
@@ -26,6 +31,7 @@ jobs:
 
       - name: Compile instrumented
         run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           make -j$(nproc) test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes
           
       - name: Generate coverage report
