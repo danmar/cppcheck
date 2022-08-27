@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-18.04, ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -27,12 +27,6 @@ jobs:
           sudo apt-get install libxml2-utils
           sudo apt-get install libtinyxml2-dev
           sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
-
-      # required so a default Qt installation is configured
-      - name: Install missing software on ubuntu 18.04
-        if: matrix.os == 'ubuntu-18.04'
-        run: |
-          sudo apt-get install qt5-default
 
       # packages for strict cfg checks
       - name: Install missing software on ubuntu 22.04
