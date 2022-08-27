@@ -32,7 +32,7 @@ void QString1(QString s)
 int QString2()
 {
     QString s;
-    // FIXME cppcheck-suppress reademptycontainer
+    // cppcheck-suppress knownConditionTrueFalse
     return s.size();
 }
 
