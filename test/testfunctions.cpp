@@ -1866,8 +1866,7 @@ private:
               "    for (i = 0; count > i; ++i)\n"
               "        (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memcpy instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memcpy instead of loop.\n", errout.str());
     }
 
     void checkUseStandardLibrary2() {
@@ -1875,8 +1874,7 @@ private:
               "    for (size_t i = 0; i < count; i++) {\n"
               "        (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];\n"
               "}}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memcpy instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memcpy instead of loop.\n", errout.str());
     }
 
     void checkUseStandardLibrary3() {
@@ -1885,8 +1883,7 @@ private:
               "    for (i = 0; count > i; i++)\n"
               "        ((char*)dst)[i] = ((const char*)src)[i];\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memcpy instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memcpy instead of loop.\n", errout.str());
     }
 
     void checkUseStandardLibrary4() {
@@ -1894,8 +1891,7 @@ private:
               "    for (size_t i = 0; i < size; i += 1) {\n"
               "        ((int8_t*)dst)[i] = ((int8_t*)src)[i];\n"
               "}}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memcpy instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memcpy instead of loop.\n", errout.str());
     }
 
     // different indexes
@@ -1933,8 +1929,7 @@ private:
               "    for (i = 0; i < count; ++i)\n"
               "        (reinterpret_cast<int8_t*>(dest))[i] = static_cast<const int8_t>(0);\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memset instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memset instead of loop.\n", errout.str());
     }
 
     void checkUseStandardLibrary9() {
@@ -1942,8 +1937,7 @@ private:
               "    for (size_t i = 0; i < count; i++) {\n"
               "        (reinterpret_cast<uint8_t*>(dest))[i] = (static_cast<const uint8_t>(0));\n"
               "}}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
     }
 
     void checkUseStandardLibrary10() {
@@ -1952,8 +1946,7 @@ private:
               "    for (i = 0; i < size; i++)\n"
               "        ((char*)dst)[i] = (const char)0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memset instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Consider using std::memset instead of loop.\n", errout.str());
     }
 
     void checkUseStandardLibrary11() {
@@ -1961,8 +1954,7 @@ private:
               "    for (size_t i = 0; i < size; i += 1) {\n"
               "        ((int8_t*)dst)[i] = ((int8_t)0);\n"
               "}}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
     }
 
     void checkUseStandardLibrary12() {
@@ -1970,8 +1962,7 @@ private:
               "    for (size_t i = 0; i < size; i += 1) {\n"
               "        ((int8_t*)dst)[i] = 42;\n"
               "}}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
     }
 
     void checkUseStandardLibrary13() {
@@ -1979,8 +1970,7 @@ private:
               "    for (size_t i = 0; i < count; i++) {\n"
               "        reinterpret_cast<unsigned char*>(dest)[i] = '0';\n"
               "}}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
     }
 
     void checkUseStandardLibrary14() {
@@ -1988,8 +1978,7 @@ private:
               "    for (size_t i = 0; i < sizeof(int)*(15 + 42/2 - 7); i++) {\n"
               "        reinterpret_cast<unsigned char*>(dest)[i] = '0';\n"
               "}}\n");
-        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop. "
-                      "Also library function could work faster in general cases.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:3]: (style) Consider using std::memset instead of loop.\n", errout.str());
     }
 };
 

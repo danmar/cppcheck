@@ -731,9 +731,9 @@ void CheckFunctions::useStandardLibrary()
 
         // 3. we expect idx incrementing by 1
         const bool inc = stepToken->str() == "++" && stepToken->astOperand1()->varId() == idxVarId;
-        const bool plusOne = stepToken->str() == "+=" &&
+        const bool plusOne = stepToken->isBinaryOp() && stepToken->str() == "+=" &&
                              stepToken->astOperand1()->varId() == idxVarId &&
-                             stepToken->astOperand2() != nullptr && stepToken->astOperand2()->str() == "1";
+                             stepToken->astOperand2()->str() == "1";
         if (!inc && !plusOne)
             continue;
 
@@ -758,7 +758,7 @@ void CheckFunctions::useStandardLibrary()
 
         const static std::string memsetName = mTokenizer->isCPP() ? "std::memset" : "memset";
         // ((char*)dst)[i] = 0;
-        if (Token::Match(tok, "{ ( ( unsigned| uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = %char%|%num% ; }", idxVarId)) {
+        if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = %char%|%num% ; }", idxVarId)) {
             useStandardLibraryError(tok->next(), memsetName);
             continue;
         }
@@ -771,14 +771,14 @@ void CheckFunctions::useStandardLibrary()
         }
 
         // (reinterpret_cast<uint8_t*>(dest))[i] = static_cast<const uint8_t>(0);
-        if (Token::Match(tok, "{ (| reinterpret_cast < unsigned| uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
-                         "(| static_cast < const| unsigned| uint8_t|int8_t|char > ( %char%|%num% ) )| ; }", idxVarId)) {
+        if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
+                         "(| static_cast < const| uint8_t|int8_t|char > ( %char%|%num% ) )| ; }", idxVarId)) {
             useStandardLibraryError(tok->next(), memsetName);
             continue;
         }
 
         // (reinterpret_cast<int8_t*>(dest))[i] = 0;
-        if (Token::Match(tok, "{ (| reinterpret_cast < unsigned| uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
+        if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
                          "%char%|%num% ; }", idxVarId)) {
             useStandardLibraryError(tok->next(), memsetName);
             continue;
@@ -790,5 +790,5 @@ void CheckFunctions::useStandardLibraryError(const Token *tok, const std::string
 {
     reportError(tok, Severity::style,
                 "useStandardLibrary",
-                "Consider using " + expected + " instead of loop. Also library function could work faster in general cases.");
+                "Consider using " + expected + " instead of loop.");
 }
