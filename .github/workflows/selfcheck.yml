@@ -18,6 +18,11 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: selfcheck-${{ runner.os }}
+
       - name: Cache Qt ${{ env.QT_VERSION }}
         id: cache-qt
         uses: actions/cache@v1  # not v2!
@@ -35,7 +40,7 @@ jobs:
       # TODO: cache this - perform same build as for the other self check
       - name: Self check (build)
         run: |
-          make clean
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           make -j$(nproc) -s CXXFLAGS="-O2 -w" MATCHCOMPILER=yes
 
       - name: CMake
