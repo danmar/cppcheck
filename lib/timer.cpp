@@ -47,7 +47,12 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
     std::cout << std::endl;
     TimerResultsData overallData;
 
-    std::vector<dataElementType> data(mResults.begin(), mResults.end());
+    std::vector<dataElementType> data;
+    data.reserve(mResults.size());
+    {
+        std::lock_guard<std::mutex> l(mResultsSync);
+        data.insert(data.begin(), mResults.begin(), mResults.end());
+    }
     std::sort(data.begin(), data.end(), more_second_sec);
 
     size_t ordinal = 1; // maybe it would be nice to have an ordinal in output later!
@@ -67,6 +72,8 @@ void TimerResults::showResults(SHOWTIME_MODES mode) const
 
 void TimerResults::addResults(const std::string& str, std::clock_t clocks)
 {
+    std::lock_guard<std::mutex> l(mResultsSync);
+
     mResults[str].mClocks += clocks;
     mResults[str].mNumberOfResults++;
 }

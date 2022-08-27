@@ -1225,6 +1225,17 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
             }
         } else if (strcmp(node->Name(), CppcheckXml::TagWarningsElementName) == 0)
             ; // TODO
+        // Cppcheck Premium features
+        else if (strcmp(node->Name(), CppcheckXml::BughuntingElementName) == 0)
+            temp.premiumArgs += " --bughunting";
+        else if (strcmp(node->Name(), CppcheckXml::CertIntPrecisionElementName) == 0)
+            temp.premiumArgs += std::string(" --cert-c-int-precision=") + (node->GetText() ? node->GetText() : "0");
+        else if (strcmp(node->Name(), CppcheckXml::CodingStandardsElementName) == 0) {
+            for (const tinyxml2::XMLElement *child = node->FirstChildElement(); child; child = child->NextSiblingElement()) {
+                if (strcmp(child->Name(), CppcheckXml::CodingStandardElementName) == 0 && child->GetText())
+                    temp.premiumArgs += std::string(" --") + child->GetText();
+            }
+        }
         else
             return false;
     }
@@ -1237,6 +1248,11 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
     settings->addons = temp.addons;
     settings->clang = temp.clang;
     settings->clangTidy = temp.clangTidy;
+
+    if (!settings->premiumArgs.empty())
+        settings->premiumArgs += temp.premiumArgs;
+    else if (!temp.premiumArgs.empty())
+        settings->premiumArgs = temp.premiumArgs.substr(1);
 
     for (const std::string &p : paths)
         guiProject.pathNames.push_back(p);

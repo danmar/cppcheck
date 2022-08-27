@@ -946,6 +946,20 @@ Settings MainWindow::getCppcheckSettings()
             json += " }";
             result.addons.push_back(json.toStdString());
         }
+
+        if (isCppcheckPremium()) {
+            QString premiumArgs;
+            if (mProjectFile->getBughunting())
+                premiumArgs += " --bughunting";
+            if (mProjectFile->getCertIntPrecision() > 0)
+                premiumArgs += " --cert-c-int-precision=" + QString::number(mProjectFile->getCertIntPrecision());
+            if (mProjectFile->getAddons().contains("misra"))
+                premiumArgs += " --misra-c-2012";
+            for (const QString& c: mProjectFile->getCodingStandards()) {
+                premiumArgs += " --" + c;
+            }
+            result.premiumArgs = premiumArgs.mid(1).toStdString();
+        }
     }
 
     // Include directories (and files) are searched in listed order.
@@ -1664,7 +1678,7 @@ void MainWindow::newProjectFile()
     mProjectFile->setFilename(filepath);
     mProjectFile->setBuildDir(filename.left(filename.indexOf(".")) + "-cppcheck-build-dir");
 
-    ProjectFileDialog dlg(mProjectFile, this);
+    ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
     if (dlg.exec() == QDialog::Accepted) {
         addProjectMRU(filepath);
         analyzeProject(mProjectFile);
@@ -1695,7 +1709,7 @@ void MainWindow::editProjectFile()
         return;
     }
 
-    ProjectFileDialog dlg(mProjectFile, this);
+    ProjectFileDialog dlg(mProjectFile, isCppcheckPremium(), this);
     if (dlg.exec() == QDialog::Accepted) {
         mProjectFile->write();
         analyzeProject(mProjectFile);
@@ -1863,4 +1877,8 @@ void MainWindow::suppressIds(QStringList ids)
 
     mProjectFile->setSuppressions(suppressions);
     mProjectFile->write();
+}
+
+bool MainWindow::isCppcheckPremium() const {
+    return mCppcheckCfgProductName.startsWith("Cppcheck Premium ");
 }

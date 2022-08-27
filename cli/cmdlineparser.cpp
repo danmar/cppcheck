@@ -608,6 +608,13 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 }
             }
 
+            // Special Cppcheck Premium options
+            else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
+                if (!mSettings->premiumArgs.size())
+                    mSettings->premiumArgs += " ";
+                mSettings->premiumArgs += "--" + std::string(argv[i] + 10);
+            }
+
             // --project
             else if (std::strncmp(argv[i], "--project=", 10) == 0) {
                 mSettings->checkAllConfigurations = false; // Can be overridden with --max-configs or --force
@@ -1001,9 +1008,6 @@ void CmdLineParser::printHelp()
         "                         addon json files or through this command line option.\n"
         "                         If not present, Cppcheck will try \"python3\" first and\n"
         "                         then \"python\".\n"
-        "    --bug-hunting\n"
-        "                         Enable noisy and soundy analysis. The normal Cppcheck\n"
-        "                         analysis is turned off.\n"
         "    --cppcheck-build-dir=<dir>\n"
         "                         Cppcheck work folder. Advantages:\n"
         "                          * whole program analysis\n"
@@ -1124,26 +1128,15 @@ void CmdLineParser::printHelp()
     "                         distributed with Cppcheck is loaded automatically.\n"
     "                         For more information about library files, read the\n"
     "                         manual.\n"
-    "    --max-ctu-depth=N    Max depth in whole program analysis. The default value\n"
-    "                         is 2. A larger value will mean more errors can be found\n"
-    "                         but also means the analysis will be slower.\n"
-    "    --output-file=<file> Write results to file, rather than standard error.\n"
-    "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
-    "                         Studio Solution (*.sln), Visual Studio Project\n"
-    "                         (*.vcxproj), compile database (compile_commands.json),\n"
-    "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
-    "                         include paths, defines, platform and undefines in\n"
-    "                         the specified file will be used.\n"
-    "    --project-configuration=<config>\n"
-    "                         If used together with a Visual Studio Solution (*.sln)\n"
-    "                         or Visual Studio Project (*.vcxproj) you can limit\n"
-    "                         the configuration cppcheck should check.\n"
-    "                         For example: '--project-configuration=Release|Win32'\n"
     "    --max-configs=<limit>\n"
     "                         Maximum number of configurations to check in a file\n"
     "                         before skipping it. Default is '12'. If used together\n"
     "                         with '--force', the last option is the one that is\n"
     "                         effective.\n"
+    "    --max-ctu-depth=N    Max depth in whole program analysis. The default value\n"
+    "                         is 2. A larger value will mean more errors can be found\n"
+    "                         but also means the analysis will be slower.\n"
+    "    --output-file=<file> Write results to file, rather than standard error.\n"
     "    --platform=<type>, --platform=<file>\n"
     "                         Specifies platform specific types and sizes. The\n"
     "                         available builtin platforms are:\n"
@@ -1177,17 +1170,43 @@ void CmdLineParser::printHelp()
     "                          * unspecified\n"
     "                                 Unknown type sizes\n"
     "    --plist-output=<path>\n"
-    "                         Generate Clang-plist output files in folder.\n"
-    "    -q, --quiet          Do not show progress reports.\n"
-    "    -rp=<paths>, --relative-paths=<paths>\n"
-    "                         Use relative paths in output. When given, <paths> are\n"
-    "                         used as base. You can separate multiple paths by ';'.\n"
-    "                         Otherwise path where source files are searched is used.\n"
-    "                         We use string comparison to create relative paths, so\n"
-    "                         using e.g. ~ for home folder does not work. It is\n"
-    "                         currently only possible to apply the base paths to\n"
-    "                         files that are on a lower level in the directory tree.\n"
-    "    --report-progress    Report progress messages while checking a file.\n"
+    "                         Generate Clang-plist output files in folder.\n";
+
+    if (isCppcheckPremium()) {
+        std::cout << "    --premium=<option>\n"
+                  << "                         Coding standards:\n"
+                  << "                          * autosar           Autosar (partial)\n"
+                  << "                          * cert-c-2016       Cert C 2016 checking\n"
+                  << "                          * cert-c++-2016     Cert C++ 2016 checking (partial)\n"
+                  << "                          * misra-c-2012      Misra C 2012\n"
+                  << "                          * misra-c++-2008    Misra C++ 2008 (partial)\n"
+                  << "                         Other:\n"
+                  << "                          * bughunting        Soundy analysis\n"
+                  << "                          * cert-c-int-precision=BITS  Integer precision to use in Cert C analysis.\n";
+    }
+
+    std::cout <<
+        "    --project=<file>     Run Cppcheck on project. The <file> can be a Visual\n"
+        "                         Studio Solution (*.sln), Visual Studio Project\n"
+        "                         (*.vcxproj), compile database (compile_commands.json),\n"
+        "                         or Borland C++ Builder 6 (*.bpr). The files to analyse,\n"
+        "                         include paths, defines, platform and undefines in\n"
+        "                         the specified file will be used.\n"
+        "    --project-configuration=<config>\n"
+        "                         If used together with a Visual Studio Solution (*.sln)\n"
+        "                         or Visual Studio Project (*.vcxproj) you can limit\n"
+        "                         the configuration cppcheck should check.\n"
+        "                         For example: '--project-configuration=Release|Win32'\n"
+        "    -q, --quiet          Do not show progress reports.\n"
+        "    -rp=<paths>, --relative-paths=<paths>\n"
+        "                         Use relative paths in output. When given, <paths> are\n"
+        "                         used as base. You can separate multiple paths by ';'.\n"
+        "                         Otherwise path where source files are searched is used.\n"
+        "                         We use string comparison to create relative paths, so\n"
+        "                         using e.g. ~ for home folder does not work. It is\n"
+        "                         currently only possible to apply the base paths to\n"
+        "                         files that are on a lower level in the directory tree.\n"
+        "    --report-progress    Report progress messages while checking a file.\n"
 #ifdef HAVE_RULES
     "    --rule=<rule>        Match regular expression.\n"
     "    --rule-file=<file>   Use given rule file. For more information, see:\n"
@@ -1265,9 +1284,6 @@ void CmdLineParser::printHelp()
     "    -v, --verbose        Output more detailed error information.\n"
     "    --version            Print out version number.\n"
     "    --xml                Write results in xml format to error stream (stderr).\n"
-    "    --xml-version=<version>\n"
-    "                         Select the XML file version. Also implies --xml.\n"
-    "                         Currently only version 2 is available. The default version is 2.\n"
     "\n"
     "Example usage:\n"
     "  # Recursively check the current folder. Print the progress on the screen and\n"
@@ -1291,4 +1307,10 @@ void CmdLineParser::printHelp()
     " * picojson -- loading compile database.\n"
     " * pcre -- rules.\n"
     " * qt -- used in GUI\n";
+}
+
+bool CmdLineParser::isCppcheckPremium() const {
+    if (mSettings->cppcheckCfgProductName.empty())
+        mSettings->loadCppcheckCfg();
+    return mSettings->cppcheckCfgProductName.compare(0, 16, "Cppcheck Premium") == 0;
 }

@@ -452,7 +452,7 @@ static std::vector<ValueType> getParentValueTypes(const Token* tok,
         const ValueType* vtCont = contTok->valueType();
         if (!vtCont->containerTypeToken)
             return {};
-        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings);
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings, true); // TODO: set isCpp
         return {std::move(vtParent)};
     }
     if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
@@ -807,7 +807,7 @@ static void setTokenValue(Token* tok,
         if (contains({ValueFlow::Value::ValueType::INT, ValueFlow::Value::ValueType::SYMBOLIC}, value.valueType) &&
             Token::simpleMatch(parent->astOperand1(), "dynamic_cast"))
             return;
-        const ValueType &valueType = ValueType::parseDecl(castType, settings);
+        const ValueType &valueType = ValueType::parseDecl(castType, settings, true); // TODO: set isCpp
         if (value.isImpossible() && value.isIntValue() && value.intvalue < 0 && astIsUnsigned(tok) &&
             valueType.sign == ValueType::SIGNED && tok->valueType() &&
             ValueFlow::getSizeOf(*tok->valueType(), settings) >= ValueFlow::getSizeOf(valueType, settings))
@@ -1108,7 +1108,7 @@ static void setTokenValueCast(Token *parent, const ValueType &valueType, const V
 
 static nonneg int getSizeOfType(const Token *typeTok, const Settings *settings)
 {
-    const ValueType &valueType = ValueType::parseDecl(typeTok, settings);
+    const ValueType &valueType = ValueType::parseDecl(typeTok, settings, true); // TODO: set isCpp
     if (valueType.pointer > 0)
         return settings->sizeof_pointer;
     if (valueType.type == ValueType::Type::BOOL || valueType.type == ValueType::Type::CHAR)
@@ -1194,7 +1194,8 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
         setTokenValue(tok, value, settings);
     } else if (Token::simpleMatch(tok, "sizeof (")) {
         if (tok->next()->astOperand2() && !tok->next()->astOperand2()->isLiteral() && tok->next()->astOperand2()->valueType() &&
-            tok->next()->astOperand2()->valueType()->pointer == 0 && // <- TODO this is a bailout, abort when there are array->pointer conversions
+            (tok->next()->astOperand2()->valueType()->pointer == 0 || // <- TODO this is a bailout, abort when there are array->pointer conversions
+             (tok->next()->astOperand2()->variable() && !tok->next()->astOperand2()->variable()->isArray())) &&
             !tok->next()->astOperand2()->valueType()->isEnum()) { // <- TODO this is a bailout, handle enum with non-int types
             const size_t sz = ValueFlow::getSizeOf(*tok->next()->astOperand2()->valueType(), settings);
             if (sz) {
@@ -1323,7 +1324,7 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 setTokenValue(tok->next(), value, settings);
             }
         } else if (!tok2->type()) {
-            const ValueType& vt = ValueType::parseDecl(tok2, settings);
+            const ValueType& vt = ValueType::parseDecl(tok2, settings, true); // TODO: set isCpp
             size_t sz = ValueFlow::getSizeOf(vt, settings);
             const Token* brac = tok2->astParent();
             while (Token::simpleMatch(brac, "[")) {
@@ -4670,7 +4671,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             bool isContainerOfPointers = true;
             const Token* containerTypeToken = tok->valueType()->containerTypeToken;
             if (containerTypeToken) {
-                ValueType vt = ValueType::parseDecl(containerTypeToken, settings);
+                ValueType vt = ValueType::parseDecl(containerTypeToken, settings, true); // TODO: set isCpp
                 isContainerOfPointers = vt.pointer > 0;
             }
 
@@ -8050,7 +8051,7 @@ static std::vector<ValueFlow::Value> getInitListSize(const Token* tok,
         if (valueType->container->stdStringLike) {
             initList = astIsGenericChar(args[0]) && !astIsPointer(args[0]);
         } else if (containerTypeToken && settings) {
-            ValueType vt = ValueType::parseDecl(containerTypeToken, settings);
+            ValueType vt = ValueType::parseDecl(containerTypeToken, settings, true); // TODO: set isCpp
             if (vt.pointer > 0 && astIsPointer(args[0]))
                 initList = true;
             else if (vt.type == ValueType::ITERATOR && astIsIterator(args[0]))
@@ -8434,7 +8435,7 @@ static bool getMinMaxValues(const std::string &typestr, const Settings *settings
         return false;
     typeTokens.simplifyPlatformTypes();
     typeTokens.simplifyStdType();
-    const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings);
+    const ValueType &vt = ValueType::parseDecl(typeTokens.front(), settings, true); // TODO: set isCpp
     return getMinMaxValues(&vt, *settings, minvalue, maxvalue);
 }
 

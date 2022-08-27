@@ -89,7 +89,7 @@ namespace {
         std::string args;       // special extra arguments
         std::string python;     // script interpreter
         bool ctu = false;
-        std::string runScript{};
+        std::string runScript;
 
         static std::string getFullPath(const std::string &fileName, const std::string &exename) {
             if (Path::fileExists(fileName))
@@ -275,6 +275,7 @@ static void createDumpFile(const Settings& settings,
 static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &file,
+                                const std::string &premiumArgs,
                                 std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
 {
     const std::string redirect = "2>&1";
@@ -308,6 +309,8 @@ static std::string executeAddon(const AddonInfo &addonInfo,
     if (addonInfo.executable.empty())
         args = cmdFileName(addonInfo.runScript) + " " + cmdFileName(addonInfo.scriptFile);
     args += std::string(args.empty() ? "" : " ") + "--cli" + addonInfo.args;
+    if (!premiumArgs.empty() && !addonInfo.executable.empty())
+        args += " " + premiumArgs;
 
     const std::string fileArg = (endsWith(file, FILELIST, sizeof(FILELIST)-1) ? " --file-list " : " ") + cmdFileName(file);
     args += fileArg;
@@ -1366,7 +1369,7 @@ void CppCheck::executeAddons(const std::vector<std::string>& files)
             continue;
 
         const std::string results =
-            executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mExecuteCommand);
+            executeAddon(addonInfo, mSettings.addonPython, fileList.empty() ? files[0] : fileList, mSettings.premiumArgs, mExecuteCommand);
         std::istringstream istr(results);
         std::string line;
 

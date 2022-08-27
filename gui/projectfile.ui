@@ -773,24 +773,26 @@
             </property>
            </widget>
           </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_12">
+         <property name="title">
+          <string>Coding standards</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_20">
           <item>
-           <widget class="QLabel" name="label">
+           <widget class="QCheckBox" name="mMisraC2012">
             <property name="text">
-             <string>Coding standards</string>
+             <string>Misra C 2012</string>
             </property>
            </widget>
           </item>
           <item>
-           <widget class="QCheckBox" name="mAddonMisra">
-            <property name="text">
-             <string>MISRA C 2012</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <layout class="QHBoxLayout" name="mLayoutMisraRuleTexts">
             <item>
-             <widget class="QLabel" name="label_2">
+             <widget class="QLabel" name="mLabelMisraFile">
               <property name="text">
                <string>MISRA rule texts</string>
               </property>
@@ -811,6 +813,57 @@
              </widget>
             </item>
            </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mPremiumCertC">
+            <property name="text">
+             <string>Cert C</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_10">
+            <item>
+             <widget class="QLabel" name="mLabelCertIntPrecision">
+              <property name="text">
+               <string>CERT-INT35-C:  int precision (if size equals precision, you can leave empty)</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="mEditCertIntPrecision"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mMisraCpp2008">
+            <property name="text">
+             <string>Misra C++ 2008</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="mAutosar">
+            <property name="text">
+             <string>Autosar</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="mGroupboxBughunting">
+         <property name="title">
+          <string>Bug hunting</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_21">
+          <item>
+           <widget class="QCheckBox" name="mBughunting">
+            <property name="text">
+             <string>Bug hunting</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

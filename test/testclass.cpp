@@ -665,6 +665,12 @@ private:
                                   "        : public fn_traits<void, decltype(&T::operator())> {};\n"
                                   "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #10594
+        checkDuplInheritedMembers("template<int i> struct A { bool a = true; };\n"
+                                  "struct B { bool a; };\n"
+                                  "template<> struct A<1> : B {};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
 #define checkCopyConstructor(code) checkCopyConstructor_(code, __FILE__, __LINE__)

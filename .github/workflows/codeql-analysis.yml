@@ -2,6 +2,10 @@ name: "CodeQL"
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+  security-events: write
+
 jobs:
   analyze:
     name: Analyze

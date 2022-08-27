@@ -333,6 +333,36 @@ public:
     /** Get tags for a warning */
     QString getWarningTags(std::size_t hash) const;
 
+    /** Bughunting (Cppcheck Premium) */
+    void setBughunting(bool bughunting) {
+        mBughunting = bughunting;
+    }
+    bool getBughunting() const {
+        return mBughunting;
+    }
+
+    /** @brief Get list of coding standards (checked by Cppcheck Premium). */
+    QStringList getCodingStandards() const {
+        return mCodingStandards;
+    }
+
+    /**
+     * @brief Set list of coding standards (checked by Cppcheck Premium).
+     * @param codingStandards List of coding standards.
+     */
+    void setCodingStandards(QStringList codingStandards) {
+        mCodingStandards = std::move(codingStandards);
+    }
+
+    /** Cert C: int precision */
+    void setCertIntPrecision(int p) {
+        mCertIntPrecision = p;
+    }
+    int getCertIntPrecision() const {
+        return mCertIntPrecision;
+    }
+
+
     /**
      * @brief Write project file (to disk).
      * @param filename Filename to use.
@@ -542,6 +572,15 @@ private:
      * @brief List of addons.
      */
     QStringList mAddons;
+
+    bool mBughunting;
+
+    /**
+     * @brief List of coding standards, checked by Cppcheck Premium.
+     */
+    QStringList mCodingStandards;
+
+    int mCertIntPrecision;
 
     /** @brief Execute clang analyzer? */
     bool mClangAnalyzer;

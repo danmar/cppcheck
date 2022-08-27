@@ -22,12 +22,14 @@
 #define clangimportH
 //---------------------------------------------------------------------------
 
+#include "config.h"
+
 #include <istream>
 
 class Tokenizer;
 
 namespace clangimport {
-    void parseClangAstDump(Tokenizer *tokenizer, std::istream &f);
+    void CPPCHECKLIB parseClangAstDump(Tokenizer *tokenizer, std::istream &f);
 }
 
 #endif

@@ -1105,9 +1105,9 @@ IMPLEMENT_DYNCREATE(MyClass, CObject)
 IMPLEMENT_SERIAL(MyClass,CObject, 42)
 
 void invalidPrintfArgType_StructMember(double d) { // #9672
-  typedef struct { CString st; } my_struct_t;
+    typedef struct { CString st; } my_struct_t;
 
-  my_struct_t my_struct;
-  // cppcheck-suppress invalidPrintfArgType_sint
-  my_struct.st.Format("%d", d);
+    my_struct_t my_struct;
+    // cppcheck-suppress invalidPrintfArgType_sint
+    my_struct.st.Format("%d", d);
 }

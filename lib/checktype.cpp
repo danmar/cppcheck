@@ -410,7 +410,7 @@ void CheckType::checkFloatToIntegerOverflow()
             while (scope && scope->type != Scope::ScopeType::eLambda && scope->type != Scope::ScopeType::eFunction)
                 scope = scope->nestedIn;
             if (scope && scope->type == Scope::ScopeType::eFunction && scope->function && scope->function->retDef) {
-                const ValueType &valueType = ValueType::parseDecl(scope->function->retDef, mSettings);
+                const ValueType &valueType = ValueType::parseDecl(scope->function->retDef, mSettings, mTokenizer->isCPP());
                 vtfloat = tok->astOperand1()->valueType();
                 floatValues = &tok->astOperand1()->values();
                 checkFloatToIntegerOverflow(tok, &valueType, vtfloat, floatValues);

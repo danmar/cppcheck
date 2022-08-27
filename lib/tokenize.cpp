@@ -3153,7 +3153,7 @@ void Tokenizer::arraySize()
         if (!tok->isName() || !Token::Match(tok, "%var% [ ] ="))
             continue;
         bool addlength = false;
-        if (Token::Match(tok, "%var% [ ] = { %str% } ;")) {
+        if (Token::Match(tok->previous(), "!!* %var% [ ] = { %str% } ;")) {
             Token *t = tok->tokAt(3);
             t->deleteNext();
             t->next()->deleteNext();
