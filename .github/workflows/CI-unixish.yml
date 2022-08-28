@@ -24,9 +24,7 @@ jobs:
         if: contains(matrix.os, 'ubuntu')
         run: |
           sudo apt-get update
-          sudo apt-get install libxml2-utils
-          sudo apt-get install libtinyxml2-dev
-          sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
+          sudo apt-get install libxml2-utils libtinyxml2-dev qtbase5-dev qttools5-dev libqt5charts5-dev qtchooser
 
       # packages for strict cfg checks
       - name: Install missing software on ubuntu 22.04
