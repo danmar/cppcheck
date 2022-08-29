@@ -783,9 +783,6 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             return Error(ErrorCode::BAD_ATTRIBUTE_VALUE, valueattr);
                         ac.minsizes.emplace_back(type, 0);
                         ac.minsizes.back().value = minsizevalue;
-                        const char* baseTypeAttr = argnode->Attribute("baseType");
-                        if (baseTypeAttr)
-                            ac.minsizes.back().baseType = baseTypeAttr;
                     } else {
                         const char *argattr = argnode->Attribute("arg");
                         if (!argattr)
@@ -804,6 +801,9 @@ Library::Error Library::loadFunction(const tinyxml2::XMLElement * const node, co
                             ac.minsizes.back().arg2 = arg2attr[0] - '0';
                         }
                     }
+                    const char* baseTypeAttr = argnode->Attribute("baseType"); // used by VALUE, ARGVALUE
+                    if (baseTypeAttr)
+                        ac.minsizes.back().baseType = baseTypeAttr;
                 }
 
                 else if (argnodename == "iterator") {
