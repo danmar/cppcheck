@@ -453,6 +453,12 @@ jobs:
           qmake CONFIG+=debug HAVE_QCHART=yes
           make -j$(nproc) compiler_uic_make_all mocables
 
+      - name: Generate triage UI files
+        run: |
+          pushd tools/triage
+          qmake CONFIG+=debug
+          make -j$(nproc) compiler_uic_make_all mocables
+
       - name: Self check
         run: |
           ec=0
@@ -465,5 +471,5 @@ jobs:
           # self check test and tools
           ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings test/*.cpp tools/*.cpp || ec=1
           # triage
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib --library=qt -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings tools/triage || ec=1
+          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib --library=qt -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
           exit $ec
