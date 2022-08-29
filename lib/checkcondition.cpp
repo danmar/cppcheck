@@ -1521,11 +1521,11 @@ void CheckCondition::alwaysTrueFalse()
             const bool ternaryExpression = Token::simpleMatch(tok->astParent(), "?");
             const bool isReturn = Token::simpleMatch(astTop, "return");
             const bool returnExpression = isReturn && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
-            const bool callExpression = Token::simpleMatch(tok, "(") && !(tok->previous() && tok->previous()->function()); // don't warn for user-defined functions
+            const bool callExpression = Token::simpleMatch(tok, "(");
             if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression || returnExpression || callExpression))
                 continue;
             // only warn for functions returning bool
-            if (isReturn && callExpression && !(scope->function && scope->function->retDef && scope->function->retDef->str() == "bool") && !astIsBool(tok))
+            if (isReturn && callExpression && !(scope->function && scope->function->retDef && scope->function->retDef->str() == "bool"))
                 continue;
 
             const Token* expr1 = tok->astOperand1(), *expr2 = tok->astOperand2();
