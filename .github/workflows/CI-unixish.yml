@@ -379,12 +379,22 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
+      - name: Install missing software on ubuntu
+        run: |
+          sudo apt-get update
+          sudo apt-get install qtbase5-dev qttools5-dev libqt5charts5-dev
+
       - name: Self check (build)
         run: |
           # compile with verification and ast matchers
           make -j$(nproc) -s CPPFLAGS="-DCHECK_INTERNAL" CXXFLAGS="-g -O2" MATCHCOMPILER=yes VERIFY=1
 
-      # Run self check after "Build GUI" to include generated headers in analysis
+      - name: Generate UI files
+        run: |
+          pushd gui
+          qmake CONFIG+=debug HAVE_QCHART=yes
+          make -j$(nproc) compiler_uic_make_all mocables
+
       - name: Self check
         run: |
           ec=0
