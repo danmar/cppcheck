@@ -4323,6 +4323,10 @@ private:
               "    return (int)0;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f() { return 3; }\n"
+              "int g() { return f(); }\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
