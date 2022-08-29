@@ -4312,10 +4312,12 @@ private:
               "    for (; !s.empty();) {}\n"
               "    for (; s.empty();) {}\n"
               "    if (s.empty()) {}\n"
+              "    if ((bool)0) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition '!s.empty()' is always false\n"
                       "[test.cpp:4]: (style) Condition 's.empty()' is always true\n"
-                      "[test.cpp:5]: (style) Condition 's.empty()' is always true\n",
+                      "[test.cpp:5]: (style) Condition 's.empty()' is always true\n"
+                      "[test.cpp:6]: (style) Condition '(bool)0' is always false\n",
                       errout.str());
 
         check("int f(bool b) {\n"
