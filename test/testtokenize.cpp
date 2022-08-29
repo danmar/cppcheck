@@ -366,6 +366,7 @@ private:
         // a = b = 0;
         TEST_CASE(multipleAssignment);
 
+        TEST_CASE(platformWin);
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
         TEST_CASE(platformWin32AStringCat); // ticket #5015
