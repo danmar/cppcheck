@@ -32,8 +32,8 @@ jobs:
       - name: Compile instrumented
         run: |
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
-          make -j$(nproc) test CXXFLAGS="-g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes
-          
+          make -j$(nproc) all CXXFLAGS="-g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes
+
       - name: Generate coverage report
         run: |
           rm -rf coverage_report
