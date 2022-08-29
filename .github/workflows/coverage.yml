@@ -34,11 +34,13 @@ jobs:
           export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           make -j$(nproc) all CXXFLAGS="-g -fprofile-arcs -ftest-coverage" HAVE_RULES=yes
 
-      - name: Generate coverage report
+      - name: Run instrumented tests
         run: |
-          rm -rf coverage_report
           ./testrunner
           test/cfg/runtests.sh
+
+      - name: Generate coverage report
+        run: |
           gcov lib/*.cpp -o lib/
           lcov --directory ./ --capture --output-file lcov_tmp.info -b ./
           lcov --extract lcov_tmp.info "$(pwd)/*" --output-file lcov.info
