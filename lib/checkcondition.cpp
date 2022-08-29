@@ -1516,14 +1516,11 @@ void CheckCondition::alwaysTrueFalse()
                 tok->astParent() && Token::Match(tok->astTop()->astOperand1(), "if|while") && !tok->astTop()->astOperand1()->isConstexpr() &&
                 (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
             const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
-            const bool compExpr = Token::Match(tok, "%comp%|!|("); // a compare expression
+            const bool compExpr = Token::Match(tok, "%comp%|!|(") && !(tok->isCast() || isCPPCast(tok)); // a compare expression
             const bool ternaryExpression = Token::simpleMatch(tok->astParent(), "?");
-            bool isReturn = false;
-            const bool returnExpression = (isReturn = Token::simpleMatch(tok->astTop(), "return")) && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
+            const bool returnExpression = Token::simpleMatch(tok->astTop(), "return") && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
 
             if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression || returnExpression))
-                continue;
-            if (isReturn && tok->str() == "(" && !(scope->function && scope->function->retDef && scope->function->retDef->str() == "bool"))
                 continue;
 
             const Token* expr1 = tok->astOperand1(), *expr2 = tok->astOperand2();

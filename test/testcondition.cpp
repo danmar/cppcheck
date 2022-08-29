@@ -4318,13 +4318,11 @@ private:
                       "[test.cpp:5]: (style) Condition 's.empty()' is always true\n",
                       errout.str());
 
-        check("int f() {\n"
-              "    return (int)0;\n"
-              "}\n"
-              "bool g() {\n"
+        check("int f(bool b) {\n"
+              "    if (b) return static_cast<int>(1);\n"
               "    return (int)0;\n"
               "}\n");
-        ASSERT_EQUALS("[test.cpp:5]: (style) Condition '(int)0' is always false\n", errout.str());
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
