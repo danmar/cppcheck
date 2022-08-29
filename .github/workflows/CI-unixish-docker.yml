@@ -4,12 +4,15 @@ name: CI-unixish-docker
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
-  build:
+  build_cmake:
 
     strategy:
       matrix:
-        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04"]
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04"]
       fail-fast: false # Prefer quick result
 
     runs-on: ubuntu-22.04
@@ -23,15 +26,19 @@ jobs:
       - name: Install missing software on CentOS 7
         if: matrix.image == 'centos:7'
         run: |
-          yum install -y cmake gcc-c++ make which python3
-          yum install -y pcre-devel
+          yum install -y cmake gcc-c++ make pcre-devel
 
       - name: Install missing software on ubuntu
         if: matrix.image != 'centos:7'
         run: |
           apt-get update
-          apt-get install -y cmake g++ make python3 libxml2-utils
-          apt-get install -y libpcre3-dev
+          apt-get install -y cmake g++ make libxml2-utils libpcre3-dev
+
+      # required so a default Qt installation is configured
+      - name: Install missing software on ubuntu 18.04
+        if: false # matrix.os == 'ubuntu-18.04'
+        run: |
+          sudo apt-get install qt5-default
 
       # tests require CMake 3.4
       - name: Test CMake build (no tests)
@@ -52,9 +59,34 @@ jobs:
           cmake --build . --target check -- -j$(nproc)
           cd ..
 
+  build_make:
+
+    strategy:
+      matrix:
+        image: ["centos:7", "ubuntu:14.04", "ubuntu:16.04", "ubuntu:18.04"]
+      fail-fast: false # Prefer quick result
+
+    runs-on: ubuntu-22.04
+
+    container:
+      image: ${{ matrix.image }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Install missing software on CentOS 7
+        if: matrix.image == 'centos:7'
+        run: |
+          yum install -y gcc-c++ make which python3 pcre-devel
+
+      - name: Install missing software on ubuntu
+        if: matrix.image != 'centos:7'
+        run: |
+          apt-get update
+          apt-get install -y g++ make python3 libxml2-utils libpcre3-dev
+
       - name: Build cppcheck
         run: |
-          make clean
           make -j$(nproc) HAVE_RULES=yes
 
       - name: Build test
@@ -65,10 +97,12 @@ jobs:
         run: |
           make -j$(nproc) check HAVE_RULES=yes
 
+      # requires python3
       - name: Run extra tests
         run: |
           tools/generate_and_run_more_tests.sh
 
+      # requires which
       - name: Validate
         run: |
           make -j$(nproc) checkCWEEntries validateXML

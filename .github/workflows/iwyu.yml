@@ -4,6 +4,9 @@ name: include-what-you-use
 
 on: workflow_dispatch
 
+permissions:
+  contents: read
+
 jobs:
   build:
 
