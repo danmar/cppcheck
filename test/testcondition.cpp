@@ -4307,15 +4307,38 @@ private:
         ASSERT_EQUALS("", errout.str());
 
         // #10426
-        check("void f() {\n"
+        check("int f() {\n"
               "    std::string s;\n"
               "    for (; !s.empty();) {}\n"
               "    for (; s.empty();) {}\n"
               "    if (s.empty()) {}\n"
+              "    if ((bool)0) {}\n"
+              "    return s.empty();"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition '!s.empty()' is always false\n"
                       "[test.cpp:4]: (style) Condition 's.empty()' is always true\n"
-                      "[test.cpp:5]: (style) Condition 's.empty()' is always true\n",
+                      "[test.cpp:5]: (style) Condition 's.empty()' is always true\n"
+                      "[test.cpp:6]: (style) Condition '(bool)0' is always false\n",
+                      errout.str());
+
+        check("int f(bool b) {\n"
+              "    if (b) return static_cast<int>(1);\n"
+              "    return (int)0;\n"
+              "}\n"
+              "bool g(bool b) {\n"
+              "    if (b) return static_cast<int>(1);\n"
+              "    return (int)0;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:6]: (style) Condition 'static_cast<int>(1)' is always true\n"
+                      "[test.cpp:7]: (style) Condition '(int)0' is always false\n",
+                      errout.str());
+
+        check("int f() { return 3; }\n"
+              "int g() { return f(); }\n"
+              "int h() { if (f()) {} }\n"
+              "int i() { return f() == 3; }\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f()' is always true\n"
+                      "[test.cpp:4]: (style) Condition 'f()==3' is always true\n",
                       errout.str());
     }
 

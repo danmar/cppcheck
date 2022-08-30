@@ -29,7 +29,7 @@ void QString1(QString s)
     }
 }
 
-int QString2()
+bool QString2()
 {
     QString s;
     // cppcheck-suppress knownConditionTrueFalse
