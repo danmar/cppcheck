@@ -81,6 +81,8 @@ def overviewReport() -> str:
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
+    # TODO: how to get these messages?
+    #html += '<a href="">checkLibraryCheckType report</a><br>\n'
     html += '<br>\n'
     html += 'Debug warnings:<br>\n'
     html += '<a href="head-debug">debug</a><br>\n'
