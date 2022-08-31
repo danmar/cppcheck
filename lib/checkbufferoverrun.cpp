@@ -655,7 +655,7 @@ void CheckBufferOverrun::bufferOverflow()
                 if (bufferSize.intvalue <= 0)
                     continue;
                 // buffer size == 1 => do not warn for dynamic memory
-                if (bufferSize.intvalue == 1 && args[argnr]->str() == ".") { // TODO: check if parent was allocated dynamically
+                if (bufferSize.intvalue == 1 && Token::simpleMatch(argtok->astParent(), ".")) { // TODO: check if parent was allocated dynamically
                     const Token *tok2 = argtok;
                     while (Token::simpleMatch(tok2->astParent(), "."))
                         tok2 = tok2->astParent();

@@ -3225,6 +3225,15 @@ private:
               "    free(p);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: p\n", errout.str());
+
+        check("typedef struct { char buf[1]; } S;\n"
+              "S* f() {\n"
+              "    S* s = NULL;\n"
+              "    s = (S*)malloc(sizeof(S) + 10);\n"
+              "    sprintf((char*)s->buf, \"abc\");\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_errorpath() {
