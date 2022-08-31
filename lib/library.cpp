@@ -102,14 +102,14 @@ Library::Error Library::load(const char exename[], const char path[])
         }
 
         std::list<std::string> cfgfolders;
-#ifdef FILESDIR
-        cfgfolders.emplace_back(FILESDIR "/cfg");
-#endif
         if (exename) {
             const std::string exepath(Path::fromNativeSeparators(Path::getPathFromFilename(exename)));
             cfgfolders.push_back(exepath + "cfg");
             cfgfolders.push_back(exepath);
         }
+#ifdef FILESDIR
+        cfgfolders.emplace_back(FILESDIR "/cfg");
+#endif
 
         while (error == tinyxml2::XML_ERROR_FILE_NOT_FOUND && !cfgfolders.empty()) {
             const std::string cfgfolder(cfgfolders.back());
