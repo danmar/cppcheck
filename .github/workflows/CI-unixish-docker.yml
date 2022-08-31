@@ -48,7 +48,6 @@ jobs:
           cd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On ..
           cmake --build . -- -j$(nproc)
-          cd ..
 
       - name: Test CMake build
         if: matrix.image == 'ubuntu:22.10'
@@ -57,7 +56,6 @@ jobs:
           cd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On ..
           cmake --build . --target check -- -j$(nproc)
-          cd ..
 
   build_make:
 
