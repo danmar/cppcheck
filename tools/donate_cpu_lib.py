@@ -28,9 +28,12 @@ RETURN_CODE_TIMEOUT = -999
 __make_cmd = None
 
 def detect_make():
-    make_cmds = ['make', 'mingw32-make']
+    make_cmds = ['make']
     if sys.platform == 'win32':
+        make_cmds.append('mingw32-make')
         make_cmds.append('msbuild.exe')
+        # look for the more specialized tool first
+        make_cmds.reverse()
 
     for m in make_cmds:
         try:
