@@ -777,7 +777,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
                     rhs = rhs->astParent();
                 }
                 while (rhs->isCast()) {
-                    rhs = rhs->astOperand1();
+                    rhs = rhs->astOperand2() ? rhs->astOperand2() : rhs->astOperand1();
                 }
                 if (rhs->varId() == tok->varId()) {
                     // simple assignment
@@ -814,7 +814,7 @@ const Token * CheckLeakAutoVar::checkTokenInsideExpression(const Token * const t
         if (returnValue.compare(0, 3, "arg") == 0)
             // the function returns one of its argument, we need to process a potential assignment
             return openingPar;
-        return openingPar->link();
+        return isCPPCast(tok->astParent()) ? openingPar : openingPar->link();
     }
 
     return nullptr;
