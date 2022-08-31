@@ -917,8 +917,14 @@ void CheckLeakAutoVar::functionCall(const Token *tokName, const Token *tokOpenin
             const bool isnull = arg->hasKnownIntValue() && arg->values().front().intvalue == 0;
 
             // Is variable allocated?
-            if (!isnull && (!af || af->arg == argNr))
-                changeAllocStatus(varInfo, allocation, tokName, arg);
+            if (!isnull && (!af || af->arg == argNr)) {
+                const Library::AllocFunc* deallocFunc = mSettings->library.getDeallocFuncInfo(tokName);
+                VarInfo::AllocInfo dealloc(deallocFunc ? deallocFunc->groupId : 0, VarInfo::DEALLOC, tokName);                
+                if (dealloc.type == 0)
+                    changeAllocStatus(varInfo, allocation, tokName, arg);
+                else
+                    changeAllocStatus(varInfo, dealloc, tokName, arg);
+            }
         }
         // Check smart pointer
         else if (Token::Match(arg, "%name% < %type%") && mSettings->library.isSmartPointer(argTypeStartTok)) {

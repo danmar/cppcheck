@@ -2432,6 +2432,12 @@ private:
               "    asm goto(\"assembler code\");\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("void f() {\n"
+              "    FILE* p = fopen(\"abc.txt\", \"r\");\n"
+              "    if (fclose(p) != 0) {}\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void ptrptr() {
