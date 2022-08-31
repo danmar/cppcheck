@@ -632,13 +632,13 @@ void CheckMemoryLeakInClass::variable(const Scope *scope, const Token *tokVarnam
                     if (destructor)
                         deallocInDestructor = true;
 
-                    // several types of allocation/deallocation?
-                    if (memberDealloc != CheckMemoryLeak::No && memberDealloc != dealloc)
-                        dealloc = CheckMemoryLeak::Many;
-
                     if (dealloc != CheckMemoryLeak::Many && memberAlloc != CheckMemoryLeak::No && memberAlloc != Many && memberAlloc != dealloc) {
                         mismatchAllocDealloc({tok}, classname + "::" + varname);
                     }
+
+                    // several types of allocation/deallocation?
+                    if (memberDealloc != CheckMemoryLeak::No && memberDealloc != dealloc)
+                        dealloc = CheckMemoryLeak::Many;
 
                     memberDealloc = dealloc;
                 }

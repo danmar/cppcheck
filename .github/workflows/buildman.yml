@@ -2,6 +2,9 @@ name: Build manual
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   convert_via_pandoc:
     runs-on: ubuntu-22.04

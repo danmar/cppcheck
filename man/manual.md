@@ -957,3 +957,63 @@ Example usage:
     ./cppcheck gui/test.cpp --xml 2> err.xml
     htmlreport/cppcheck-htmlreport --file=err.xml --report-dir=test1 --source-dir=.
 
+# Cppcheck Premium
+
+## Bug hunting
+
+This is analysis that is more noisy than normal analysis. Most warnings will be false positives (cppcheck will wrongly claim that there are bugs). The design goal is to not have more than roughly 5 - 10 false positives in each file.
+
+It is not intended to be used in normal CI or regular static analysis by developers. The noise makes it useless for that.
+
+It is intended to be used when you are looking for bugs and you really can accept noise. For example:
+ * You have developed a brand new feature and want to ensure that there are no bugs.
+ * Maybe as part of release testing your product you can run bug hunting on modified files.
+ * Etc
+
+Technically, analysis that is "sound" will detect all bugs. Analysis that is "soundy" has the goal to detect most bugs and it tries to keep the noise at an reasonable level.
+
+The Cppcheck bug hunting analysis is "soundy".
+
+Command:
+
+    cppcheck --premium=bughunting ....
+
+## Coding standards
+
+Command to active Autosar checkers:
+
+    cppcheck --premium=autosar ....
+
+Command to active Cert C checkers:
+
+    cppcheck --premium=cert-c ....
+
+Command to active Cert C++ checkers:
+
+    cppcheck --premium=cert-c++ ....
+
+Command to active Misra C++ 2008 checkers:
+
+    cppcheck --premium=misra-c++-2008 ....
+
+## Licenses
+
+### Individual license
+
+A license that is connected to your computer. You can check any code you want.
+
+### LOC license
+
+A license that allows you to run cppcheck on a limited number of lines of code. It can only be used for certain licensed paths in a repository.
+
+#### Running analysis
+
+Commands:
+
+    cd check-path
+
+    # Calculate lines of code and validate the license
+    premiumaddon --check-loc-license some-path/license-file > cppcheck-premium-loc
+
+    # Run cppcheck analysis
+    cppcheck <usual cppcheck parameters>

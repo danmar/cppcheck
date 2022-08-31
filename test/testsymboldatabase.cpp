@@ -126,6 +126,7 @@ private:
         settings2.checkUnusedTemplates = true;
 
         TEST_CASE(array);
+        TEST_CASE(array_ptr);
         TEST_CASE(stlarray1);
         TEST_CASE(stlarray2);
 
@@ -509,6 +510,29 @@ private:
         ASSERT(v->isArray());
         ASSERT_EQUALS(1U, v->dimensions().size());
         ASSERT_EQUALS(12U, v->dimension(0));
+    }
+
+    void array_ptr() {
+        GET_SYMBOL_DB("const char* a[] = { \"abc\" };\n"
+                      "const char* b[] = { \"def\", \"ghijkl\" };");
+        ASSERT(db != nullptr);
+
+        ASSERT(db->variableList().size() == 3); // the first one is not used
+        const Variable* v = db->getVariableFromVarId(1);
+        ASSERT(v != nullptr);
+
+        ASSERT(v->isArray());
+        ASSERT(v->isPointerArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(1U, v->dimension(0));
+
+        v = db->getVariableFromVarId(2);
+        ASSERT(v != nullptr);
+
+        ASSERT(v->isArray());
+        ASSERT(v->isPointerArray());
+        ASSERT_EQUALS(1U, v->dimensions().size());
+        ASSERT_EQUALS(2U, v->dimension(0));
     }
 
     void stlarray1() {

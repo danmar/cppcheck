@@ -593,10 +593,16 @@ static bool checkBufferSize(const Token *ftok, const Library::ArgumentChecks::Mi
                 return Token::getStrLength(strtoken) < bufferSize;
         }
         break;
-    case Library::ArgumentChecks::MinSize::Type::ARGVALUE:
-        if (arg && arg->hasKnownIntValue())
-            return arg->getKnownIntValue() <= bufferSize;
+    case Library::ArgumentChecks::MinSize::Type::ARGVALUE: {
+        if (arg && arg->hasKnownIntValue()) {
+            MathLib::bigint myMinsize = arg->getKnownIntValue();
+            unsigned int baseSize = tokenizer->sizeOfType(minsize.baseType);
+            if (baseSize != 0)
+                myMinsize *= baseSize;
+            return myMinsize <= bufferSize;
+        }
         break;
+    }
     case Library::ArgumentChecks::MinSize::Type::SIZEOF:
         // TODO
         break;
