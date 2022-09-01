@@ -220,6 +220,7 @@ private:
         TEST_CASE(template174); // #10506 hang
         TEST_CASE(template175); // #10908
         TEST_CASE(template176); // #11146
+        TEST_CASE(template177);
         TEST_CASE(template_specialization_1);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_specialization_2);  // #7868 - template specialization template <typename T> struct S<C<T>> {..};
         TEST_CASE(template_enum);  // #6299 Syntax error in complex enum declaration (including template)
@@ -4488,6 +4489,16 @@ private:
                            "struct c { a :: b<int> d<int> ( ) ; } ; "
                            "class a :: b<int> c :: d<int> ( ) { return { } ; } ; "
                            "a :: b<int> c :: d<int> ( ) { }";
+        ASSERT_EQUALS(exp, tok(code));
+    }
+
+    void template177() {
+        const char code[] = "template <typename Encoding, typename Allocator>\n"
+                            "class C { xyz<Encoding, Allocator> x; };\n"
+                            "C<UTF8<>, MemoryPoolAllocator<>> c;";
+        const char exp[] = "class C<UTF8<>,MemoryPoolAllocator<>> ; "
+                           "C<UTF8<>,MemoryPoolAllocator<>> c ; "
+                           "class C<UTF8<>,MemoryPoolAllocator<>> { xyz < UTF8 < > , MemoryPoolAllocator < > > x ; } ;";
         ASSERT_EQUALS(exp, tok(code));
     }
 

@@ -2966,7 +2966,7 @@ std::string TemplateSimplifier::getNewName(
             ++indentlevel;
         else if (indentlevel > 0 && Token::Match(tok3, "> ,|>|::"))
             --indentlevel;
-        if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
+        else if (indentlevel == 0 && Token::Match(tok3->previous(), "[<,]")) {
             mTypesUsedInTemplateInstantiation.emplace_back(tok3, "");
         }
         if (Token::Match(tok3, "(|["))
