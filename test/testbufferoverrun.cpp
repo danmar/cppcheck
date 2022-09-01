@@ -2524,6 +2524,15 @@ private:
               "    snprintf(str, sizeof(str), \"%hu\", port);\n"
               "}", settings0, "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int x) {\n" // #11020
+              "    const char* p = (x == 0 ? \"12345\" : \"ABC\");\n"
+              "    int s = 0;\n"
+              "    for (int i = 0; p[i]; i++)\n"
+              "        s += p[i];\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_same_struct_and_var_name() {
