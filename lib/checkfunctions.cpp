@@ -270,7 +270,7 @@ void CheckFunctions::checkIgnoredReturnValue()
                 !WRONG_DATA(!tok->next()->astOperand1(), tok)) {
                 const Library::UseRetValType retvalTy = mSettings->library.getUseRetValType(tok);
                 const bool warn = (tok->function() && tok->function()->isAttributeNodiscard()) || // avoid duplicate warnings for resource-allocating functions
-                                  (retvalTy == Library::UseRetValType::DEFAULT && mSettings->library.getReallocFuncInfo(tok) == nullptr);
+                                  (retvalTy == Library::UseRetValType::DEFAULT && mSettings->library.getAllocFuncInfo(tok) == nullptr);
                 if (mSettings->severity.isEnabled(Severity::warning) && warn)
                     ignoredReturnValueError(tok, tok->next()->astOperand1()->expressionString());
                 else if (mSettings->severity.isEnabled(Severity::style) &&
