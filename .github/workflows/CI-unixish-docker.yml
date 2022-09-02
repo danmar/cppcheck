@@ -51,7 +51,7 @@ jobs:
         with:
           key: ${{ github.workflow }}-${{ matrix.image }}
 
-      # tests require CMake 3.4
+      # tests require CMake 3.9 - no ccache available
       - name: Test CMake build (no tests)
         if: matrix.image == 'ubuntu:14.04'
         run: |
@@ -60,9 +60,9 @@ jobs:
           cmake -G "Unix Makefiles" -DHAVE_RULES=On ..
           cmake --build . -- -j$(nproc)
 
-      # tests require CMake 3.4
+      # tests require CMake 3.9 - ccache available
       - name: Test CMake build (no tests)
-        if: matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:22.10'
+        if: matrix.image == 'centos:7' || matrix.image == 'ubuntu:16:04'
         run: |
           mkdir cmake.output
           cd cmake.output
@@ -70,7 +70,7 @@ jobs:
           cmake --build . -- -j$(nproc)
 
       - name: Test CMake build
-        if: matrix.image == 'ubuntu:22.10'
+        if: matrix.image != 'centos:7' && matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:16.04'
         run: |
           mkdir cmake.output
           cd cmake.output
