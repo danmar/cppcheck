@@ -1122,6 +1122,8 @@ bool Library::isScopeNoReturn(const Token *end, std::string *unknownFunc) const
         return false;
     }
     if (Token::Match(start,"[;{}]") && Token::Match(funcname, "%name% )| (")) {
+        if (funcname->isKeyword())
+            return false;
         if (funcname->str() == "exit")
             return true;
         if (!isnotnoreturn(funcname)) {
