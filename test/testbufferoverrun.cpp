@@ -2524,6 +2524,15 @@ private:
               "    snprintf(str, sizeof(str), \"%hu\", port);\n"
               "}", settings0, "test.c");
         ASSERT_EQUALS("", errout.str());
+
+        check("int f(int x) {\n" // #11020
+              "    const char* p = (x == 0 ? \"12345\" : \"ABC\");\n"
+              "    int s = 0;\n"
+              "    for (int i = 0; p[i]; i++)\n"
+              "        s += p[i];\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void array_index_same_struct_and_var_name() {
@@ -3225,6 +3234,15 @@ private:
               "    free(p);\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (error) Buffer is accessed out of bounds: p\n", errout.str());
+
+        check("typedef struct { char buf[1]; } S;\n"
+              "S* f() {\n"
+              "    S* s = NULL;\n"
+              "    s = (S*)malloc(sizeof(S) + 10);\n"
+              "    sprintf((char*)s->buf, \"abc\");\n"
+              "    return s;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void buffer_overrun_errorpath() {
