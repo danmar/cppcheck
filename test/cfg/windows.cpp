@@ -960,27 +960,27 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
 
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
-    (void) CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, uninit_dwCreationFlags, lpThreadId);
+    CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, uninit_dwCreationFlags, lpThreadId);
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
-    (void) CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, uninit_lpParameter, dwCreationFlags, lpThreadId);
+    CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, uninit_lpParameter, dwCreationFlags, lpThreadId);
     // @todo uninitvar shall be reported
     // cppcheck-suppress leakReturnValNotUsed
-    (void) CreateThread(lpThreadAttributes, dwStackSize, uninit_lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+     CreateThread(lpThreadAttributes, dwStackSize, uninit_lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
-    (void) CreateThread(lpThreadAttributes, uninit_dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    CreateThread(lpThreadAttributes, uninit_dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
     // @todo uninitvar shall be reported
     // cppcheck-suppress leakReturnValNotUsed
-    (void) CreateThread(uninit_lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    CreateThread(uninit_lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
 
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress nullPointer
-    (void) CreateThread(lpThreadAttributes, dwStackSize, 0, lpParameter, dwCreationFlags, lpThreadId);
+    CreateThread(lpThreadAttributes, dwStackSize, 0, lpParameter, dwCreationFlags, lpThreadId);
 
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress invalidFunctionArg
-    (void) CreateThread(lpThreadAttributes, -1, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    CreateThread(lpThreadAttributes, -1, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
 
     // no warning shall be shown for
     return CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
