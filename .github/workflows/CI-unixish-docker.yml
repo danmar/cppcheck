@@ -111,3 +111,10 @@ jobs:
         run: |
           ./cppcheck --addon=threadsafety addons/test/threadsafety
           ./cppcheck --addon=threadsafety --std=c++03 addons/test/threadsafety
+
+      - name: Generate Qt help file on ubuntu 18.04
+        if: false # matrix.os == 'ubuntu-18.04'
+        run: |
+          pushd gui/help
+          qcollectiongenerator online-help.qhcp -o online-help.qhc
+
