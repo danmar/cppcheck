@@ -32,6 +32,10 @@ if __name__ == "__main__":
 
     print(args)
 
+    if not lib.check_requirements():
+        print("Error: Check requirements")
+        sys.exit(1)
+
     work_path = os.path.abspath(args.work_path)
     if not os.path.exists(work_path):
         os.makedirs(work_path)
