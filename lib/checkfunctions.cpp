@@ -621,6 +621,9 @@ void CheckFunctions::checkLibraryMatchFunctions()
         if (tok->function())
             continue;
 
+        if (Token::simpleMatch(tok->astTop(), "throw"))
+            continue;
+
         if (!mSettings->library.isNotLibraryFunction(tok))
             continue;
 
@@ -629,6 +632,9 @@ void CheckFunctions::checkLibraryMatchFunctions()
             continue;
 
         if (mSettings->library.functions.find(functionName) != mSettings->library.functions.end())
+            continue;
+
+        if (mSettings->library.podtype(tok->expressionString()))
             continue;
 
         const Token* start = tok;

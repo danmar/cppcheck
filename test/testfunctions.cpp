@@ -1831,7 +1831,16 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
+        check("void f(std::uint64_t& u) {\n"
+              "    u = std::uint32_t(u) * std::uint64_t(100);\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("void f() { throw(1); }\n"); // #8958
+        ASSERT_EQUALS("", errout.str());
+
+        check("using namespace std;\n"
+              "void f() { throw range_error(\"abc\"); }\n");
         ASSERT_EQUALS("", errout.str());
 
         check("class C {\n" // #9002
