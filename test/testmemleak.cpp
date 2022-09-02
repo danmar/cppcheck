@@ -2312,6 +2312,7 @@ private:
         TEST_CASE(getAllocationType);
 
         TEST_CASE(crash1); // #10729
+        TEST_CASE(castToVoid); // #9653
     }
 
     void functionParameter() {
@@ -2841,6 +2842,15 @@ private:
               "    extern void *malloc (size_t size);\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+    }
+
+    void castToVoid() {
+        check("void f() {\n" // #9653
+              "    (void)open(devnull, O_RDONLY);\n"
+              "    static_cast<void>(open(devnull, O_WRONLY));\n"
+              "    static_cast<int>(open(devnull, O_WRONLY));\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (error) Return value of allocation function 'open' is not stored.\n", errout.str());
     }
 };
 REGISTER_TEST(TestMemleakNoVar)
