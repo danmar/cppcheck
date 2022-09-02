@@ -4,19 +4,19 @@ foreach(file ${srcs_lib})
         set(src "${CMAKE_BINARY_DIR}/lib/build/mc_${file}")
         set_source_files_properties(${src} PROPERTIES GENERATED TRUE)
     else()
-        set(src "${CMAKE_SOURCE_DIR}/lib/${file}")
+        set(src "${PROJECT_SOURCE_DIR}/lib/${file}")
     endif()
     set(srcs_tools ${srcs_tools} ${src})
 endforeach()
 
 add_executable(dmake EXCLUDE_FROM_ALL
         dmake.cpp
-        ${CMAKE_SOURCE_DIR}/cli/filelister.cpp
+        ${PROJECT_SOURCE_DIR}/cli/filelister.cpp
         ${srcs_tools}
-        ${CMAKE_SOURCE_DIR}/lib/utils.cpp
+        ${PROJECT_SOURCE_DIR}/lib/utils.cpp
         $<TARGET_OBJECTS:simplecpp_objs>
 )
-target_include_directories(dmake PRIVATE ${CMAKE_SOURCE_DIR}/cli ${CMAKE_SOURCE_DIR}/lib ${CMAKE_SOURCE_DIR}/externals/simplecpp)
+target_include_directories(dmake PRIVATE ${PROJECT_SOURCE_DIR}/cli ${PROJECT_SOURCE_DIR}/lib ${PROJECT_SOURCE_DIR}/externals/simplecpp)
 if (WIN32 AND NOT BORLAND)
     if(NOT MINGW)
         target_link_libraries(dmake Shlwapi.lib)
@@ -26,5 +26,5 @@ if (WIN32 AND NOT BORLAND)
 endif()
 
 add_custom_target(run-dmake $<TARGET_FILE:dmake>
-        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+        WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
         DEPENDS dmake)
