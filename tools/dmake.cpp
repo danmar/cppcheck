@@ -236,14 +236,13 @@ int main(int argc, char **argv)
     fout << "# To compile with rules, use 'make HAVE_RULES=yes'\n";
     makeConditionalVariable(fout, "HAVE_RULES", "no");
 
-    // use match compiler..
-    fout << "# use match compiler\n";
-    fout << "ifeq ($(SRCDIR),build)\n"
-         << "    $(warning Usage of SRCDIR to activate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)\n"
-         << "    MATCHCOMPILER:=yes\n"
+    fout << "ifdef SRCDIR\n"
+         << "    $(error Usage of SRCDIR to activate match compiler has been removed. Use MATCHCOMPILER=yes instead.)\n"
          << "endif\n";
     // TODO: bail out when matchcompiler.py fails (i.e. invalid PYTHON_INTERPRETER specified)
     // TODO: handle "PYTHON_INTERPRETER="
+    // use match compiler..
+    fout << "# use match compiler\n";
     fout << "ifeq ($(MATCHCOMPILER),yes)\n"
          << "    # Find available Python interpreter\n"
          << "    ifeq ($(PYTHON_INTERPRETER),)\n"

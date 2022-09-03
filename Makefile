@@ -5,11 +5,10 @@ ifndef HAVE_RULES
     HAVE_RULES=no
 endif
 
-# use match compiler
-ifeq ($(SRCDIR),build)
-    $(warning Usage of SRCDIR to activate match compiler is deprecated. Use MATCHCOMPILER=yes instead.)
-    MATCHCOMPILER:=yes
+ifdef SRCDIR
+    $(error Usage of SRCDIR to activate match compiler has been removed. Use MATCHCOMPILER=yes instead.)
 endif
+# use match compiler
 ifeq ($(MATCHCOMPILER),yes)
     # Find available Python interpreter
     ifeq ($(PYTHON_INTERPRETER),)
