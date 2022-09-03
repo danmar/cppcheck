@@ -1504,7 +1504,8 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::simpleMatch(tok, ":"))
                 continue;
-            if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
+            if (tok->isComparisonOp() && 
+                isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
                 continue;
             if (isConstVarExpression(tok, [](const Token* tok) {
                 return Token::Match(tok, "[|(|&|+|-|*|/|%|^|>>|<<") && !Token::simpleMatch(tok, "( )");
