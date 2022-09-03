@@ -23,7 +23,7 @@ jobs:
       - name: Install missing software on ubuntu
         run: |
           sudo apt-get update
-          sudo apt-get install libxml2-utils lcov libcppunit-dev
+          sudo apt-get install libxml2-utils lcov
 
       - name: Install missing Python packages on ubuntu
         run: |
