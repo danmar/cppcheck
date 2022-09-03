@@ -58,7 +58,7 @@ ifdef WINNT
     endif # !CPPCHK_GLIBCXX_DEBUG
 
     ifeq ($(MSYSTEM),MINGW32 MINGW64)
-        LDFLAGS=-lshlwapi
+        LDFLAGS+=-lshlwapi
     else
         RDYNAMIC=-lshlwapi
     endif
@@ -77,7 +77,7 @@ else # !WINNT
         endif # !CPPCHK_GLIBCXX_DEBUG
     endif # GNU/kFreeBSD
 
-    LDFLAGS=-pthread
+    LDFLAGS+=-pthread
 
 endif # WINNT
 

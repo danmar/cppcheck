@@ -296,7 +296,7 @@ int main(int argc, char **argv)
          << "    endif # !CPPCHK_GLIBCXX_DEBUG\n"
          << "\n"
          << "    ifeq ($(MSYSTEM),MINGW32 MINGW64)\n"
-         << "        LDFLAGS=-lshlwapi\n"
+         << "        LDFLAGS+=-lshlwapi\n"
          << "    else\n"
          << "        RDYNAMIC=-lshlwapi\n"
          << "    endif\n"
@@ -315,7 +315,7 @@ int main(int argc, char **argv)
          << "        endif # !CPPCHK_GLIBCXX_DEBUG\n"
          << "    endif # GNU/kFreeBSD\n"
          << "\n"
-         << "    LDFLAGS=-pthread\n"
+         << "    LDFLAGS+=-pthread\n"
          << "\n"
          << "endif # WINNT\n"
          << "\n";
