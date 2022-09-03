@@ -1305,12 +1305,12 @@ void CmdLineParser::printHelp()
     "\n"
     "For more information:\n"
     "    " << manualUrl << "\n"
-    "\n"
-    "Many thanks to the 3rd party libraries we use:\n"
-    " * tinyxml2 -- loading project/library/ctu files.\n"
-    " * picojson -- loading compile database.\n"
-    " * pcre -- rules.\n"
-    " * qt -- used in GUI\n";
+        "\n"
+        "Many thanks to the 3rd party libraries we use:\n"
+        " * tinyxml2 -- loading project/library/ctu files.\n"
+        " * picojson -- loading compile database.\n"
+        " * pcre -- rules.\n"
+        " * qt -- used in GUI\n";
 }
 
 bool CmdLineParser::isCppcheckPremium() const {
