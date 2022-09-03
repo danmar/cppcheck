@@ -2893,8 +2893,8 @@ void CheckClass::overrideError(const Function *funcInBase, const Function *funcI
 
     ErrorPath errorPath;
     if (funcInBase && funcInDerived) {
-        errorPath.push_back(ErrorPathItem(funcInBase->tokenDef, "Virtual " + funcType + " in base class"));
-        errorPath.push_back(ErrorPathItem(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class"));
+        errorPath.emplace_back(funcInBase->tokenDef, "Virtual " + funcType + " in base class");
+        errorPath.emplace_back(funcInDerived->tokenDef, char(std::toupper(funcType[0])) + funcType.substr(1) + " in derived class");
     }
 
     reportError(errorPath, Severity::style, "missingOverride",
