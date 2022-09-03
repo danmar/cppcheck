@@ -119,7 +119,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         std::sort(depfiles.begin(), depfiles.end());
         for (const std::string &depfile : depfiles)
             fout << " " << depfile;
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CPPFILESDIR) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
     }
 }
 
@@ -267,9 +267,7 @@ int main(int argc, char **argv)
 
     // explicit files dir..
     fout << "ifdef FILESDIR\n"
-         << "    CPPFILESDIR=-DFILESDIR=\\\"$(FILESDIR)\\\"\n"
-         << "else\n"
-         << "    CPPFILESDIR=\n"
+         << "    CPPFLAGS+=-DFILESDIR=\\\"$(FILESDIR)\\\"\n"
          << "endif\n\n";
 
     // enable backtrac
