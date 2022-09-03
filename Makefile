@@ -84,14 +84,11 @@ ifdef WINNT
         $(info MSYSTEM=$(MSYSTEM))
     endif
 
-    ifeq ($(MSYSTEM),MINGW32 MINGW64)
-        ifeq ($(VERBOSE),1)
-            $(info MINGW found)
-        endif
-        LDFLAGS+=-lshlwapi
-    else
-        RDYNAMIC=-lshlwapi
+    ifneq ($(MSYSTEM),MINGW32 MINGW64)
+        RDYNAMIC=
     endif
+
+    LDFLAGS+=-lshlwapi
 else # !WINNT
     ifeq ($(VERBOSE),1)
         $(info WINNT not found)
