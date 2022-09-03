@@ -610,7 +610,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Special Cppcheck Premium options
             else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
-                if (!mSettings->premiumArgs.size())
+                if (!mSettings->premiumArgs.empty())
                     mSettings->premiumArgs += " ";
                 mSettings->premiumArgs += "--" + std::string(argv[i] + 10);
             }
