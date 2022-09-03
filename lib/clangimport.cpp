@@ -208,7 +208,7 @@ namespace clangimport {
             Decl(Token *def, Variable *var) : def(def), enumerator(nullptr), function(nullptr), scope(nullptr), var(var) {}
             Decl(Token *def, Function *function) : def(def), enumerator(nullptr), function(function), scope(nullptr), var(nullptr) {}
             Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator), function(nullptr), scope(nullptr), var(nullptr) {}
-            void ref(Token *tok) {
+            void ref(Token *tok) const {
                 if (enumerator)
                     tok->enumerator(enumerator);
                 if (function)
