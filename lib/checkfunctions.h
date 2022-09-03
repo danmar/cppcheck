@@ -73,6 +73,7 @@ public:
         checkFunctions.memsetZeroBytes();
         checkFunctions.memsetInvalid2ndParam();
         checkFunctions.returnLocalStdMove();
+        checkFunctions.useStandardLibrary();
     }
 
     /** Check for functions that should not be used */
@@ -103,6 +104,8 @@ public:
     /** @brief %Check for copy elision by RVO|NRVO */
     void returnLocalStdMove();
 
+    void useStandardLibrary();
+
     /** @brief --check-library: warn for unconfigured function calls */
     void checkLibraryMatchFunctions();
 
@@ -122,6 +125,7 @@ private:
     void memsetValueOutOfRangeError(const Token *tok, const std::string &value);
     void missingReturnError(const Token *tok);
     void copyElisionError(const Token *tok);
+    void useStandardLibraryError(const Token *tok, const std::string& expected);
 
     void getErrorMessages(ErrorLogger *errorLogger, const Settings *settings) const override {
         CheckFunctions c(nullptr, settings, errorLogger);
@@ -141,6 +145,7 @@ private:
         c.memsetValueOutOfRangeError(nullptr,  "varname");
         c.missingReturnError(nullptr);
         c.copyElisionError(nullptr);
+        c.useStandardLibraryError(nullptr, "memcpy");
     }
 
     static std::string myName() {
@@ -156,7 +161,8 @@ private:
                "- memset() third argument is zero\n"
                "- memset() with a value out of range as the 2nd parameter\n"
                "- memset() with a float as the 2nd parameter\n"
-               "- copy elision optimization for returning value affected by std::move\n";
+               "- copy elision optimization for returning value affected by std::move\n"
+               "- use memcpy()/memset() instead of for loop\n";
     }
 };
 /// @}
