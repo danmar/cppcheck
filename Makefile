@@ -8,6 +8,9 @@ endif
 ifdef SRCDIR
     $(error Usage of SRCDIR to activate match compiler has been removed. Use MATCHCOMPILER=yes instead.)
 endif
+ifndef MATCHCOMPILER
+    MATCHCOMPILER=
+endif
 # use match compiler
 ifeq ($(MATCHCOMPILER),yes)
     # Find available Python interpreter
@@ -28,6 +31,10 @@ ifeq ($(MATCHCOMPILER),yes)
     libcppdir:=build
 else
     libcppdir:=lib
+endif
+
+ifndef CPPFLAGS
+    CPPFLAGS=
 endif
 
 ifdef FILESDIR

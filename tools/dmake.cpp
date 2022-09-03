@@ -239,6 +239,10 @@ int main(int argc, char **argv)
     fout << "ifdef SRCDIR\n"
          << "    $(error Usage of SRCDIR to activate match compiler has been removed. Use MATCHCOMPILER=yes instead.)\n"
          << "endif\n";
+    // avoid undefined variable
+    fout << "ifndef MATCHCOMPILER\n"
+         << "    MATCHCOMPILER=\n"
+         << "endif\n";
     // TODO: bail out when matchcompiler.py fails (i.e. invalid PYTHON_INTERPRETER specified)
     // TODO: handle "PYTHON_INTERPRETER="
     // use match compiler..
@@ -262,6 +266,11 @@ int main(int argc, char **argv)
          << "    libcppdir:=build\n"
          << "else\n"
          << "    libcppdir:=lib\n"
+         << "endif\n\n";
+
+    // avoid undefined variable
+    fout << "ifndef CPPFLAGS\n"
+         << "    CPPFLAGS=\n"
          << "endif\n\n";
 
     // explicit files dir..
