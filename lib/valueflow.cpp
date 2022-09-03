@@ -6349,8 +6349,7 @@ struct StartIteratorInferModel : IteratorInferModel {
     }
 };
 
-static bool isIntegralOnlyOperator(const Token* tok)
-{
+static bool isIntegralOnlyOperator(const Token* tok) {
     return Token::Match(tok, "%|<<|>>|&|^|~|%or%");
 }
 
@@ -6370,7 +6369,6 @@ static bool isIntegral(const Token* tok)
     if (Token::Match(tok, "+|-|*|/") && tok->isBinaryOp())
         return isIntegral(tok->astOperand1()) && isIntegral(tok->astOperand2());
     return false;
-
 }
 
 static void valueFlowInferCondition(TokenList* tokenlist,

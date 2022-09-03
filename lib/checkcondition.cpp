@@ -1467,7 +1467,7 @@ void CheckCondition::alwaysTrueFalse()
                 if (f->functionScope && Token::Match(f->functionScope->bodyStart, "{ return true|false ;"))
                     continue;
             }
-            const Token *condition = nullptr;
+            const Token* condition = nullptr;
             {
                 // is this a condition..
                 const Token *parent = tok->astParent();
@@ -1481,8 +1481,8 @@ void CheckCondition::alwaysTrueFalse()
                     condition = parent->previous();
                 else if (Token::simpleMatch(parent, "return"))
                     condition = parent;
-                else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() && 
-                    Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
+                else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() &&
+                         Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
                     condition = parent->astParent()->astParent()->previous();
                 else
                     continue;
@@ -1500,12 +1500,18 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::Match(tok, "! %num%|%bool%|%char%"))
                 continue;
-            if (Token::Match(tok, "%oror%|&&") && (tok->astOperand1()->hasKnownIntValue() || tok->astOperand2()->hasKnownIntValue()))
+            if (Token::Match(tok, "%oror%|&&") &&
+                (tok->astOperand1()->hasKnownIntValue() || tok->astOperand2()->hasKnownIntValue()))
                 continue;
             if (Token::simpleMatch(tok, ":"))
                 continue;
-            if (tok->isComparisonOp() && 
-                isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
+            if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(),
+                                                          true,
+                                                          tok->astOperand1(),
+                                                          tok->astOperand2(),
+                                                          mSettings->library,
+                                                          true,
+                                                          true))
                 continue;
             if (isConstVarExpression(tok, [](const Token* tok) {
                 return Token::Match(tok, "[|(|&|+|-|*|/|%|^|>>|<<") && !Token::simpleMatch(tok, "( )");
@@ -1517,7 +1523,7 @@ void CheckCondition::alwaysTrueFalse()
             {
                 const ValueFlow::Value *zeroValue = nullptr;
                 const Token *nonZeroExpr = nullptr;
-                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr) || 
+                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr) ||
                     CheckOther::testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr))
                     continue;
             }

@@ -652,9 +652,7 @@ static bool isInConstructorList(const Token* tok)
     return Token::simpleMatch(parent, ":") && !Token::simpleMatch(parent->astParent(), "?");
 }
 
-std::vector<ValueType> getParentValueTypes(const Token* tok,
-                                                  const Settings* settings,
-                                                  const Token** parent)
+std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* settings, const Token** parent)
 {
     if (!tok)
         return {};
@@ -1346,7 +1344,7 @@ static bool isForLoopCondition(const Token * const tok)
            parent->astParent()->astParent()->astOperand1()->str() == "for";
 }
 
-bool isUsedAsBool(const Token * const tok)
+bool isUsedAsBool(const Token* const tok)
 {
     if (!tok)
         return false;
@@ -1363,7 +1361,8 @@ bool isUsedAsBool(const Token * const tok)
         return isUsedAsBool(parent);
     if (parent->isUnaryOp("*"))
         return isUsedAsBool(parent);
-    if (Token::Match(parent, "==|!=") && tok->astSibling()->hasKnownIntValue() && tok->astSibling()->values().front().intvalue == 0)
+    if (Token::Match(parent, "==|!=") && tok->astSibling()->hasKnownIntValue() &&
+        tok->astSibling()->values().front().intvalue == 0)
         return true;
     if (parent->str() == "(" && astIsRHS(tok) && Token::Match(parent->astOperand1(), "if|while"))
         return true;
