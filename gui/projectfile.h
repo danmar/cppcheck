@@ -415,9 +415,9 @@ protected:
      */
     void readImportProject(QXmlStreamReader &reader);
 
-    bool readBool(QXmlStreamReader &reader);
+    static bool readBool(QXmlStreamReader &reader);
 
-    int readInt(QXmlStreamReader &reader, int defaultValue);
+    static int readInt(QXmlStreamReader &reader, int defaultValue);
 
     /**
      * @brief Read list of include directories from XML.
@@ -473,7 +473,7 @@ protected:
      * @param reader       XML stream reader
      * @param elementname  elementname for each string
      */
-    void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
+    static void readStringList(QStringList &stringlist, QXmlStreamReader &reader, const char elementname[]);
 
     /**
      * @brief Write string list
