@@ -119,7 +119,7 @@ static void compilefiles(std::ostream &fout, const std::vector<std::string> &fil
         std::sort(depfiles.begin(), depfiles.end());
         for (const std::string &depfile : depfiles)
             fout << " " << depfile;
-        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS)" << (external?" -w":"") << " $(UNDEF_STRICT_ANSI) -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
+        fout << "\n\t$(CXX) " << args << " $(CPPFLAGS) $(CXXFLAGS)" << (external?" -w":"") << " -c -o " << objfile(file) << " " << builddir(file) << "\n\n";
     }
 }
 
@@ -320,9 +320,9 @@ int main(int argc, char **argv)
 
     // tinymxl2 requires __STRICT_ANSI__ to be undefined to compile under CYGWIN.
     fout << "ifdef CYGWIN\n"
-         << "    # Set the UNDEF_STRICT_ANSI flag to address compile time warnings\n"
+         << "    # Set the flag to address compile time warnings\n"
          << "    # with tinyxml2 and Cygwin.\n"
-         << "    UNDEF_STRICT_ANSI=-U__STRICT_ANSI__\n"
+         << "    CPPFLAGS+=-U__STRICT_ANSI__\n"
          << "    \n"
          << "    # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
          << "    CXXFLAGS+=-Wl,--stack,8388608\n"
