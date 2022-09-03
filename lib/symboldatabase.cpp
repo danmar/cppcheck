@@ -3926,6 +3926,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         out << " isInlineKeyword=\"true\"";
                     if (function->isStatic())
                         out << " isStatic=\"true\"";
+                    if (function->isAttributeNoreturn())
+                        out << " isAttributeNoreturn=\"true\"";
                     if (const Function* overriddenFunction = function->getOverriddenFunction())
                         out << " overriddenFunction=\"" << overriddenFunction << "\"";
                     if (function->argCount() == 0U)
