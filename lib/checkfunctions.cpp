@@ -689,3 +689,112 @@ void CheckFunctions::copyElisionError(const Token *tok)
                 "Using std::move for returning object by-value from function will affect copy elision optimization."
                 " More: https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines#Rf-return-move-local");
 }
+
+void CheckFunctions::useStandardLibrary()
+{
+    if (!mSettings->severity.isEnabled(Severity::style))
+        return;
+
+    for (const Scope& scope: mTokenizer->getSymbolDatabase()->scopeList) {
+        if (scope.type != Scope::ScopeType::eFor)
+            continue;
+
+        const Token *forToken = scope.classDef;
+        // for ( initToken ; condToken ; stepToken )
+        const Token* initToken = getInitTok(forToken);
+        if (!initToken)
+            continue;
+        const Token* condToken = getCondTok(forToken);
+        if (!condToken)
+            continue;
+        const Token* stepToken = getStepTok(forToken);
+        if (!stepToken)
+            continue;
+
+        // 1. we expect that idx variable will be initialized with 0
+        const Token* idxToken = initToken->astOperand1();
+        const Token* initVal = initToken->astOperand2();
+        if (!idxToken || !initVal || !initVal->hasKnownIntValue() || initVal->getKnownIntValue() != 0)
+            continue;
+        const auto idxVarId = idxToken->varId();
+        if (0 == idxVarId)
+            continue;
+
+        // 2. we expect that idx will be less of some variable
+        if (!condToken->isComparisonOp())
+            continue;
+
+        const auto& secondOp = condToken->str();
+        const bool isLess = "<" == secondOp &&
+                            isConstExpression(condToken->astOperand2(), mSettings->library, true, mTokenizer->isCPP()) &&
+                            condToken->astOperand1()->varId() == idxVarId;
+        const bool isMore = ">" == secondOp &&
+                            isConstExpression(condToken->astOperand1(), mSettings->library, true, mTokenizer->isCPP()) &&
+                            condToken->astOperand2()->varId() == idxVarId;
+
+        if (!(isLess || isMore))
+            continue;
+
+        // 3. we expect idx incrementing by 1
+        const bool inc = stepToken->str() == "++" && stepToken->astOperand1()->varId() == idxVarId;
+        const bool plusOne = stepToken->isBinaryOp() && stepToken->str() == "+=" &&
+                             stepToken->astOperand1()->varId() == idxVarId &&
+                             stepToken->astOperand2()->str() == "1";
+        if (!inc && !plusOne)
+            continue;
+
+        // technically using void* here is not correct but some compilers could allow it
+
+        const Token *tok = scope.bodyStart;
+        const std::string memcpyName = mTokenizer->isCPP() ? "std::memcpy" : "memcpy";
+        // (reinterpret_cast<uint8_t*>(dest))[i] = (reinterpret_cast<const uint8_t*>(src))[i];
+        if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
+                         "(| reinterpret_cast < const| uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memcpyName);
+            continue;
+        }
+
+        // ((char*)dst)[i] = ((const char*)src)[i];
+        if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = "
+                         "( ( const| uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memcpyName);
+            continue;
+        }
+
+
+        const static std::string memsetName = mTokenizer->isCPP() ? "std::memset" : "memset";
+        // ((char*)dst)[i] = 0;
+        if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = %char%|%num% ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memsetName);
+            continue;
+        }
+
+        // ((char*)dst)[i] = (const char*)0;
+        if (Token::Match(tok, "{ ( ( uint8_t|int8_t|char|void * ) (| %var% ) )| [ %varid% ] = "
+                         "( const| uint8_t|int8_t|char ) (| %char%|%num% )| ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memsetName);
+            continue;
+        }
+
+        // (reinterpret_cast<uint8_t*>(dest))[i] = static_cast<const uint8_t>(0);
+        if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
+                         "(| static_cast < const| uint8_t|int8_t|char > ( %char%|%num% ) )| ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memsetName);
+            continue;
+        }
+
+        // (reinterpret_cast<int8_t*>(dest))[i] = 0;
+        if (Token::Match(tok, "{ (| reinterpret_cast < uint8_t|int8_t|char|void * > ( %var% ) )| [ %varid% ] = "
+                         "%char%|%num% ; }", idxVarId)) {
+            useStandardLibraryError(tok->next(), memsetName);
+            continue;
+        }
+    }
+}
+
+void CheckFunctions::useStandardLibraryError(const Token *tok, const std::string& expected)
+{
+    reportError(tok, Severity::style,
+                "useStandardLibrary",
+                "Consider using " + expected + " instead of loop.");
+}

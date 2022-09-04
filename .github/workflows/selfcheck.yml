@@ -21,7 +21,7 @@ jobs:
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
         with:
-          key: selfcheck-${{ runner.os }}
+          key: ${{ github.workflow }}-${{ runner.os }}
 
       - name: Cache Qt ${{ env.QT_VERSION }}
         id: cache-qt

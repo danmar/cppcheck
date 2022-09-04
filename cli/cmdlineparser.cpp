@@ -610,7 +610,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Special Cppcheck Premium options
             else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
-                if (!mSettings->premiumArgs.size())
+                if (!mSettings->premiumArgs.empty())
                     mSettings->premiumArgs += " ";
                 mSettings->premiumArgs += "--" + std::string(argv[i] + 10);
             }
@@ -1305,12 +1305,12 @@ void CmdLineParser::printHelp()
     "\n"
     "For more information:\n"
     "    " << manualUrl << "\n"
-    "\n"
-    "Many thanks to the 3rd party libraries we use:\n"
-    " * tinyxml2 -- loading project/library/ctu files.\n"
-    " * picojson -- loading compile database.\n"
-    " * pcre -- rules.\n"
-    " * qt -- used in GUI\n";
+        "\n"
+        "Many thanks to the 3rd party libraries we use:\n"
+        " * tinyxml2 -- loading project/library/ctu files.\n"
+        " * picojson -- loading compile database.\n"
+        " * pcre -- rules.\n"
+        " * qt -- used in GUI\n";
 }
 
 bool CmdLineParser::isCppcheckPremium() const {

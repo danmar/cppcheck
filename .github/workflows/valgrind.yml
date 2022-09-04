@@ -15,7 +15,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        
+
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.workflow }}-${{ runner.os }}
+
       - name: Prepare
         run: |
           sudo apt-get update
@@ -38,10 +43,12 @@ jobs:
 
       - name: Build cppcheck
         run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           CXXFLAGS="-O1 -g" make -j$(nproc) HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Build test
         run: |
+          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           CXXFLAGS="-O1 -g" make -j$(nproc) testrunner HAVE_RULES=yes MATCHCOMPILER=yes
 
       - name: Run valgrind
