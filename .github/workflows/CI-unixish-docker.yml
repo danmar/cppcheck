@@ -27,9 +27,11 @@ jobs:
         if: matrix.image == 'centos:7'
         run: |
           yum install -y cmake gcc-c++ make pcre-devel
+          yum --enablerepo=extras install -y epel-release
+          yum install -y ccache
 
       - name: Install missing software on ubuntu
-        if: matrix.image != 'centos:7'
+        if: contains(matrix.image, 'ubuntu')
         run: |
           apt-get update
           apt-get install -y cmake g++ make libxml2-utils libpcre3-dev
@@ -40,24 +42,40 @@ jobs:
         run: |
           sudo apt-get install qt5-default
 
-      # tests require CMake 3.4
+      # needs to be called after the package installation since
+      # - it doesn't call "apt-get update"
+      # - it doesn't support centos
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        if: matrix.image != 'ubuntu:14.04' # no support for --set-config
+        with:
+          key: ${{ github.workflow }}-${{ matrix.image }}
+
+      # tests require CMake 3.9 - no ccache available
       - name: Test CMake build (no tests)
-        if: matrix.image != 'ubuntu:22.10'
+        if: matrix.image == 'ubuntu:14.04'
         run: |
           mkdir cmake.output
           cd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On ..
           cmake --build . -- -j$(nproc)
-          cd ..
+
+      # tests require CMake 3.9 - ccache available
+      - name: Test CMake build (no tests)
+        if: matrix.image == 'centos:7' || matrix.image == 'ubuntu:16:04'
+        run: |
+          mkdir cmake.output
+          cd cmake.output
+          cmake -G "Unix Makefiles" -DHAVE_RULES=On -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache ..
+          cmake --build . -- -j$(nproc)
 
       - name: Test CMake build
-        if: matrix.image == 'ubuntu:22.10'
+        if: matrix.image != 'centos:7' && matrix.image != 'ubuntu:14.04' && matrix.image != 'ubuntu:16.04'
         run: |
           mkdir cmake.output
           cd cmake.output
           cmake -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On ..
           cmake --build . --target check -- -j$(nproc)
-          cd ..
 
   build_make:
 
@@ -82,7 +100,7 @@ jobs:
           yum install -y ccache
 
       - name: Install missing software on ubuntu
-        if: matrix.image != 'centos:7'
+        if: contains(matrix.image, 'ubuntu')
         run: |
           apt-get update
           apt-get install -y g++ make python3 libxml2-utils libpcre3-dev
