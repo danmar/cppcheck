@@ -53,11 +53,11 @@ jobs:
         run: ./cmake.output/bin/testrunner
 
       # TODO: disabled for now as it takes around 40 minutes to finish
-      # TODO: no gui/temp/*.cpp files available
+      # set --error-exitcode=0 so we only fail on sanitizer issues - since it uses threads for execution it will exit the whole process on the first issue
       - name: Self check
         if: false
         run: |
-          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings"
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ --error-exitcode=0 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings"
           ec=0
           ./cmake.output/bin/cppcheck $selfcheck_options --addon=naming.json cli lib || ec=1
           ./cmake.output/bin/cppcheck $selfcheck_options -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
