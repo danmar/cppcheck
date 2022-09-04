@@ -82,14 +82,14 @@ public:
         report(msg, MessageType::REPORT_INFO);
     }
 
-    void writeEnd(const std::string& str) {
+    void writeEnd(const std::string& str) const {
         writeToPipe(CHILD_END, str);
     }
 
 private:
     enum class MessageType {REPORT_ERROR, REPORT_INFO};
 
-    void report(const ErrorMessage &msg, MessageType msgType) {
+    void report(const ErrorMessage &msg, MessageType msgType) const {
         PipeSignal pipeSignal;
         switch (msgType) {
         case MessageType::REPORT_ERROR:
