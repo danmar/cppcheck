@@ -62,7 +62,7 @@ jobs:
 
       # tests require CMake 3.9 - ccache available
       - name: Test CMake build (no tests)
-        if: matrix.image == 'centos:7' || matrix.image == 'ubuntu:16:04'
+        if: matrix.image == 'centos:7' || matrix.image == 'ubuntu:16.04'
         run: |
           mkdir cmake.output
           cd cmake.output
