@@ -378,91 +378,6 @@ const Token *parseCompareInt(const Token *tok, ValueFlow::Value &true_value, Val
     });
 }
 
-static bool isInConstructorList(const Token* tok)
-{
-    if (!tok)
-        return false;
-    if (!astIsRHS(tok))
-        return false;
-    const Token* parent = tok->astParent();
-    if (!Token::Match(parent, "{|("))
-        return false;
-    if (!Token::Match(parent->previous(), "%var% {|("))
-        return false;
-    if (!parent->astOperand1() || !parent->astOperand2())
-        return false;
-    do {
-        parent = parent->astParent();
-    } while (Token::simpleMatch(parent, ","));
-    return Token::simpleMatch(parent, ":") && !Token::simpleMatch(parent->astParent(), "?");
-}
-
-static std::vector<ValueType> getParentValueTypes(const Token* tok,
-                                                  const Settings* settings = nullptr,
-                                                  const Token** parent = nullptr)
-{
-    if (!tok)
-        return {};
-    if (!tok->astParent())
-        return {};
-    if (isInConstructorList(tok)) {
-        if (parent)
-            *parent = tok->astParent()->astOperand1();
-        if (tok->astParent()->astOperand1()->valueType())
-            return {*tok->astParent()->astOperand1()->valueType()};
-        return {};
-    } else if (Token::Match(tok->astParent(), "(|{|,")) {
-        int argn = -1;
-        const Token* ftok = getTokenArgumentFunction(tok, argn);
-        const Token* typeTok = nullptr;
-        if (ftok && argn >= 0) {
-            if (ftok->function()) {
-                std::vector<ValueType> result;
-                const Token* nameTok = nullptr;
-                for (const Variable* var : getArgumentVars(ftok, argn)) {
-                    if (!var)
-                        continue;
-                    if (!var->valueType())
-                        continue;
-                    nameTok = var->nameToken();
-                    result.push_back(*var->valueType());
-                }
-                if (result.size() == 1 && nameTok && parent) {
-                    *parent = nameTok;
-                }
-                return result;
-            } else if (const Type* t = Token::typeOf(ftok, &typeTok)) {
-                if (astIsPointer(typeTok))
-                    return {*typeTok->valueType()};
-                const Scope* scope = t->classScope;
-                // Check for aggregate constructors
-                if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
-                    (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) < scope->varlist.size()) {
-                    assert(argn < scope->varlist.size());
-                    auto it = std::next(scope->varlist.begin(), argn);
-                    if (it->valueType())
-                        return {*it->valueType()};
-                }
-            }
-        }
-    }
-    if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
-        astIsContainer(tok->astParent()->tokAt(-2)->astOperand1())) {
-        const Token* contTok = tok->astParent()->tokAt(-2)->astOperand1();
-        const ValueType* vtCont = contTok->valueType();
-        if (!vtCont->containerTypeToken)
-            return {};
-        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings, true); // TODO: set isCpp
-        return {std::move(vtParent)};
-    }
-    if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
-        *parent = tok->astParent();
-    }
-    if (tok->astParent()->valueType())
-        return {*tok->astParent()->valueType()};
-    return {};
-}
-
 static bool isEscapeScope(const Token* tok, TokenList * tokenlist, bool unknown = false)
 {
     if (!Token::simpleMatch(tok, "{"))
@@ -6434,6 +6349,28 @@ struct StartIteratorInferModel : IteratorInferModel {
     }
 };
 
+static bool isIntegralOnlyOperator(const Token* tok) {
+    return Token::Match(tok, "%|<<|>>|&|^|~|%or%");
+}
+
+static bool isIntegral(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (astIsIntegral(tok, false))
+        return true;
+    if (tok->valueType())
+        return false;
+    // These operators only work on integers
+    if (isIntegralOnlyOperator(tok))
+        return true;
+    if (isIntegralOnlyOperator(tok->astParent()))
+        return true;
+    if (Token::Match(tok, "+|-|*|/") && tok->isBinaryOp())
+        return isIntegral(tok->astOperand1()) && isIntegral(tok->astOperand2());
+    return false;
+}
+
 static void valueFlowInferCondition(TokenList* tokenlist,
                                     const Settings* settings)
 {
@@ -6463,7 +6400,7 @@ static void valueFlowInferCondition(TokenList* tokenlist,
                         setTokenValue(tok, value, settings);
                     }
                 }
-            } else {
+            } else if (isIntegral(tok->astOperand1()) && isIntegral(tok->astOperand2())) {
                 std::vector<ValueFlow::Value> result =
                     infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
                 for (const ValueFlow::Value& value : result) {

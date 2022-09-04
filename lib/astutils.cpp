@@ -633,6 +633,89 @@ const Token* getParentLifetime(bool cpp, const Token* tok, const Library* librar
     return *it;
 }
 
+static bool isInConstructorList(const Token* tok)
+{
+    if (!tok)
+        return false;
+    if (!astIsRHS(tok))
+        return false;
+    const Token* parent = tok->astParent();
+    if (!Token::Match(parent, "{|("))
+        return false;
+    if (!Token::Match(parent->previous(), "%var% {|("))
+        return false;
+    if (!parent->astOperand1() || !parent->astOperand2())
+        return false;
+    do {
+        parent = parent->astParent();
+    } while (Token::simpleMatch(parent, ","));
+    return Token::simpleMatch(parent, ":") && !Token::simpleMatch(parent->astParent(), "?");
+}
+
+std::vector<ValueType> getParentValueTypes(const Token* tok, const Settings* settings, const Token** parent)
+{
+    if (!tok)
+        return {};
+    if (!tok->astParent())
+        return {};
+    if (isInConstructorList(tok)) {
+        if (parent)
+            *parent = tok->astParent()->astOperand1();
+        if (tok->astParent()->astOperand1()->valueType())
+            return {*tok->astParent()->astOperand1()->valueType()};
+        return {};
+    } else if (Token::Match(tok->astParent(), "(|{|,")) {
+        int argn = -1;
+        const Token* ftok = getTokenArgumentFunction(tok, argn);
+        const Token* typeTok = nullptr;
+        if (ftok && argn >= 0) {
+            if (ftok->function()) {
+                std::vector<ValueType> result;
+                const Token* nameTok = nullptr;
+                for (const Variable* var : getArgumentVars(ftok, argn)) {
+                    if (!var)
+                        continue;
+                    if (!var->valueType())
+                        continue;
+                    nameTok = var->nameToken();
+                    result.push_back(*var->valueType());
+                }
+                if (result.size() == 1 && nameTok && parent) {
+                    *parent = nameTok;
+                }
+                return result;
+            } else if (const Type* t = Token::typeOf(ftok, &typeTok)) {
+                if (astIsPointer(typeTok))
+                    return {*typeTok->valueType()};
+                const Scope* scope = t->classScope;
+                // Check for aggregate constructors
+                if (scope && scope->numConstructors == 0 && t->derivedFrom.empty() &&
+                    (t->isClassType() || t->isStructType()) && numberOfArguments(ftok) < scope->varlist.size()) {
+                    assert(argn < scope->varlist.size());
+                    auto it = std::next(scope->varlist.begin(), argn);
+                    if (it->valueType())
+                        return {*it->valueType()};
+                }
+            }
+        }
+    }
+    if (settings && Token::Match(tok->astParent()->tokAt(-2), ". push_back|push_front|insert|push (") &&
+        astIsContainer(tok->astParent()->tokAt(-2)->astOperand1())) {
+        const Token* contTok = tok->astParent()->tokAt(-2)->astOperand1();
+        const ValueType* vtCont = contTok->valueType();
+        if (!vtCont->containerTypeToken)
+            return {};
+        ValueType vtParent = ValueType::parseDecl(vtCont->containerTypeToken, settings, true); // TODO: set isCpp
+        return {std::move(vtParent)};
+    }
+    if (Token::Match(tok->astParent(), "return|(|{|%assign%") && parent) {
+        *parent = tok->astParent();
+    }
+    if (tok->astParent()->valueType())
+        return {*tok->astParent()->valueType()};
+    return {};
+}
+
 bool astIsLHS(const Token* tok)
 {
     if (!tok)
@@ -1261,69 +1344,39 @@ static bool isForLoopCondition(const Token * const tok)
            parent->astParent()->astParent()->astOperand1()->str() == "for";
 }
 
-static bool isZeroConstant(const Token *tok)
-{
-    while (tok && tok->isCast())
-        tok = tok->astOperand2() ? tok->astOperand2() : tok->astOperand1();
-    return Token::simpleMatch(tok, "0") && !tok->isExpandedMacro();
-}
-
-/**
- * Is token used a boolean (cast to a bool, or used as a condition somewhere)
- * @param tok the token to check
- * @param checkingParent true if we are checking a parent. This is used to know
- * what we are checking. For instance in `if (i == 2)`, isUsedAsBool("==") is
- * true whereas isUsedAsBool("i") is false, but it might call
- * isUsedAsBool_internal("==") which must not return true
- */
-static bool isUsedAsBool_internal(const Token * const tok, bool checkingParent)
+bool isUsedAsBool(const Token* const tok)
 {
     if (!tok)
         return false;
-    const Token::Type type = tok->tokType();
-    if (type == Token::eBitOp || type == Token::eIncDecOp || (type == Token::eArithmeticalOp && !tok->isUnaryOp("*")))
-        // those operators don't return a bool
-        return false;
-    if (type == Token::eComparisonOp) {
-        if (!checkingParent)
-            // this operator returns a bool
-            return true;
-        if (Token::Match(tok, "==|!="))
-            return isZeroConstant(tok->astOperand1()) || isZeroConstant(tok->astOperand2());
-        return false;
-    }
-    if (type == Token::eLogicalOp)
-        return true;
     if (astIsBool(tok))
         return true;
-
-    const Token * const parent = tok->astParent();
+    if (Token::Match(tok, "!|&&|%oror%|%comp%"))
+        return true;
+    const Token* parent = tok->astParent();
     if (!parent)
         return false;
-    if (parent->str() == "(" && parent->astOperand2() == tok) {
-        if (Token::Match(parent->astOperand1(), "if|while"))
-            return true;
-
-        if (!parent->isCast()) { // casts are handled via the recursive call, as astIsBool will be true
-            // is it a call to a function ?
-            int argnr;
-            const Token *const func = getTokenArgumentFunction(tok, argnr);
-            if (!func || !func->function())
-                return false;
-            const Variable *var = func->function()->getArgumentVar(argnr);
-            return var && (var->getTypeName() == "bool");
-        }
-    } else if (isForLoopCondition(tok))
+    if (Token::Match(parent, "&&|!|%oror%"))
         return true;
-    else if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
+    if (parent->isCast())
+        return isUsedAsBool(parent);
+    if (parent->isUnaryOp("*"))
+        return isUsedAsBool(parent);
+    if (Token::Match(parent, "==|!=") && tok->astSibling()->hasKnownIntValue() &&
+        tok->astSibling()->values().front().intvalue == 0)
         return true;
-
-    return isUsedAsBool_internal(parent, true);
-}
-
-bool isUsedAsBool(const Token * const tok)
-{
-    return isUsedAsBool_internal(tok, false);
+    if (parent->str() == "(" && astIsRHS(tok) && Token::Match(parent->astOperand1(), "if|while"))
+        return true;
+    if (Token::simpleMatch(parent, "?") && astIsLHS(tok))
+        return true;
+    if (isForLoopCondition(tok))
+        return true;
+    if (!Token::Match(parent, "%cop%")) {
+        std::vector<ValueType> vtParents = getParentValueTypes(tok);
+        return std::any_of(vtParents.begin(), vtParents.end(), [&](const ValueType& vt) {
+            return vt.pointer == 0 && vt.type == ValueType::BOOL;
+        });
+    }
+    return false;
 }
 
 static bool astIsBoolLike(const Token* tok)

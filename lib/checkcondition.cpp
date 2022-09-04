@@ -1467,6 +1467,7 @@ void CheckCondition::alwaysTrueFalse()
                 if (f->functionScope && Token::Match(f->functionScope->bodyStart, "{ return true|false ;"))
                     continue;
             }
+            const Token* condition = nullptr;
             {
                 // is this a condition..
                 const Token *parent = tok->astParent();
@@ -1474,29 +1475,43 @@ void CheckCondition::alwaysTrueFalse()
                     parent = parent->astParent();
                 if (!parent)
                     continue;
-                const Token *condition = nullptr;
                 if (parent->str() == "?" && precedes(tok, parent))
-                    condition = parent->astOperand1();
+                    condition = parent;
                 else if (Token::Match(parent->previous(), "if|while ("))
-                    condition = parent->astOperand2();
+                    condition = parent->previous();
                 else if (Token::simpleMatch(parent, "return"))
-                    condition = parent->astOperand1();
-                else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() && Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
-                    condition = parent->astOperand1();
+                    condition = parent;
+                else if (parent->str() == ";" && parent->astParent() && parent->astParent()->astParent() &&
+                         Token::simpleMatch(parent->astParent()->astParent()->previous(), "for ("))
+                    condition = parent->astParent()->astParent()->previous();
                 else
                     continue;
-                (void)condition;
             }
             // Skip already diagnosed values
             if (diag(tok, false))
+                continue;
+            if (condition->isConstexpr())
+                continue;
+            if (!isUsedAsBool(tok))
+                continue;
+            if (Token::simpleMatch(tok->astParent(), "return") && Token::Match(tok, ".|%var%|%assign%"))
                 continue;
             if (Token::Match(tok, "%num%|%bool%|%char%"))
                 continue;
             if (Token::Match(tok, "! %num%|%bool%|%char%"))
                 continue;
-            if (Token::Match(tok, "%oror%|&&|:"))
+            if (Token::Match(tok, "%oror%|&&") &&
+                (tok->astOperand1()->hasKnownIntValue() || tok->astOperand2()->hasKnownIntValue()))
                 continue;
-            if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(), true, tok->astOperand1(), tok->astOperand2(), mSettings->library, true, true))
+            if (Token::simpleMatch(tok, ":"))
+                continue;
+            if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(),
+                                                          true,
+                                                          tok->astOperand1(),
+                                                          tok->astOperand2(),
+                                                          mSettings->library,
+                                                          true,
+                                                          true))
                 continue;
             if (isConstVarExpression(tok, [](const Token* tok) {
                 return Token::Match(tok, "[|(|&|+|-|*|/|%|^|>>|<<") && !Token::simpleMatch(tok, "( )");
@@ -1508,31 +1523,10 @@ void CheckCondition::alwaysTrueFalse()
             {
                 const ValueFlow::Value *zeroValue = nullptr;
                 const Token *nonZeroExpr = nullptr;
-                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr) || CheckOther::testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr))
+                if (CheckOther::comparisonNonZeroExpressionLessThanZero(tok, &zeroValue, &nonZeroExpr) ||
+                    CheckOther::testIfNonZeroExpressionIsPositive(tok, &zeroValue, &nonZeroExpr))
                     continue;
             }
-
-            const Token* astTop = tok->astTop();
-            const bool constIfWhileExpression =
-                tok->astParent() && Token::Match(astTop->astOperand1(), "if|while") && !astTop->astOperand1()->isConstexpr() &&
-                (Token::Match(tok->astParent(), "%oror%|&&") || Token::Match(tok->astParent()->astOperand1(), "if|while"));
-            const bool constValExpr = tok->isNumber() && Token::Match(tok->astParent(),"%oror%|&&|?"); // just one number in boolean expression
-            const bool compExpr = Token::Match(tok, "%comp%|!"); // a compare expression
-            const bool ternaryExpression = Token::simpleMatch(tok->astParent(), "?");
-            const bool isReturn = Token::simpleMatch(astTop, "return");
-            const bool returnExpression = isReturn && (tok->isComparisonOp() || Token::Match(tok, "&&|%oror%"));
-            const bool callExpression = Token::simpleMatch(tok, "(");
-            if (!(constIfWhileExpression || constValExpr || compExpr || ternaryExpression || returnExpression || callExpression))
-                continue;
-            // only warn for functions returning bool
-            if (isReturn && callExpression && !(scope->function && scope->function->retDef && scope->function->retDef->str() == "bool"))
-                continue;
-
-            const Token* expr1 = tok->astOperand1(), *expr2 = tok->astOperand2();
-            const bool isUnknown = (expr1 && expr1->valueType() && expr1->valueType()->type == ValueType::UNKNOWN_TYPE) ||
-                                   (expr2 && expr2->valueType() && expr2->valueType()->type == ValueType::UNKNOWN_TYPE);
-            if (isUnknown)
-                continue;
 
             // Don't warn when there are expanded macros..
             bool isExpandedMacro = false;
@@ -1573,9 +1567,6 @@ void CheckCondition::alwaysTrueFalse()
                 return ChildrenToVisit::none;
             });
             if (hasSizeof)
-                continue;
-
-            if (isIfConstexpr(tok))
                 continue;
 
             alwaysTrueFalseError(tok, &tok->values().front());

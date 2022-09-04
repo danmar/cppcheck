@@ -3336,7 +3336,7 @@ private:
               "    const int b = 52;\n"
               "    return a+b;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'a+b' is always true\n", errout.str());
 
         check("int f() {\n"
               "    int a = 50;\n"
@@ -4318,7 +4318,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition '!s.empty()' is always false\n"
                       "[test.cpp:4]: (style) Condition 's.empty()' is always true\n"
                       "[test.cpp:5]: (style) Condition 's.empty()' is always true\n"
-                      "[test.cpp:6]: (style) Condition '(bool)0' is always false\n",
+                      "[test.cpp:6]: (style) Condition '(bool)0' is always false\n"
+                      "[test.cpp:7]: (style) Condition 's.empty()' is always true\n",
                       errout.str());
 
         check("int f(bool b) {\n"

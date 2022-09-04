@@ -180,6 +180,10 @@ const Token* getParentMember(const Token * tok);
 const Token* getParentLifetime(const Token* tok);
 const Token* getParentLifetime(bool cpp, const Token* tok, const Library* library);
 
+std::vector<ValueType> getParentValueTypes(const Token* tok,
+                                           const Settings* settings = nullptr,
+                                           const Token** parent = nullptr);
+
 bool astIsLHS(const Token* tok);
 bool astIsRHS(const Token* tok);
 
