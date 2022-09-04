@@ -178,13 +178,12 @@ jobs:
     steps:
       - uses: actions/checkout@v2
 
-      # coreutils contains "g++" and "nproc"
+      # coreutils contains "g++" (default is "c++") and "nproc"
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
           brew install coreutils
 
-      # TODO: can we use c++ instead?
       - name: Check syntax with NONNEG
         run: |
           ls lib/*.cpp | xargs -n 1 -P $(nproc) g++ -fsyntax-only -std=c++0x -Ilib -Iexternals -Iexternals/picojson -Iexternals/simplecpp -Iexternals/tinyxml2 -DNONNEG
