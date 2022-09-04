@@ -1494,7 +1494,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (!isUsedAsBool(tok))
                 continue;
-            if (Token::simpleMatch(tok->astParent(), "return") && Token::Match(tok, "%var%|."))
+            if (Token::simpleMatch(tok->astParent(), "return") && Token::Match(tok, ".|%var%|%assign%"))
                 continue;
             if (Token::Match(tok, "%num%|%bool%|%char%"))
                 continue;
