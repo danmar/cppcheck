@@ -16,7 +16,7 @@ import copy
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.50"
+CLIENT_VERSION = "1.3.51"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -219,8 +219,6 @@ def compile_cppcheck(cppcheck_path):
                 # TODO: MinGW will always link even if no changes are present
                 # assume Python is in PATH for now
                 build_env['PYTHON_INTERPRETER'] = 'python3'
-                # TODO: MinGW is not detected by Makefile - so work around it for now
-                build_cmd.append('RDYNAMIC=-lshlwapi')
             subprocess.check_call(build_cmd, cwd=cppcheck_path, env=build_env)
     except Exception as e:
         print('Compilation failed: {}'.format(e))

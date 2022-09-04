@@ -490,9 +490,6 @@ int main(int argc, char **argv)
          << "    CPPFLAGS+=-DFILESDIR=\\\"$(FILESDIR)\\\"\n"
          << "endif\n\n";
 
-    // enable backtrac
-    fout << "RDYNAMIC=-rdynamic\n";
-
     // The _GLIBCXX_DEBUG doesn't work in cygwin or other Win32 systems.
     fout << "# Set the CPPCHK_GLIBCXX_DEBUG flag. This flag is not used in release Makefiles.\n"
          << "# The _GLIBCXX_DEBUG define doesn't work in Cygwin or other Win32 systems.\n"
@@ -528,16 +525,6 @@ int main(int argc, char **argv)
          << "    ifndef CPPCHK_GLIBCXX_DEBUG\n"
          << "        CPPCHK_GLIBCXX_DEBUG=\n"
          << "    endif # !CPPCHK_GLIBCXX_DEBUG\n"
-         << "\n"
-         << "    ifeq ($(VERBOSE),1)\n"
-         << "        $(info MSYSTEM=$(MSYSTEM))\n"
-         << "    endif\n"
-         << "\n"
-         << "    ifneq ($(MSYSTEM),MINGW32 MINGW64)\n"
-         << "        RDYNAMIC=\n"
-         << "    endif\n"
-         << "\n"
-         << "    LDFLAGS+=-lshlwapi\n"
          << "else # !WINNT\n"
          << "    ifeq ($(VERBOSE),1)\n"
          << "        $(info WINNT not found)\n"
@@ -564,6 +551,19 @@ int main(int argc, char **argv)
          << "    LDFLAGS+=-pthread\n"
          << "\n"
          << "endif # WINNT\n"
+         << "\n";
+
+    fout << "\n"
+         << "ifeq ($(VERBOSE),1)\n"
+         << "    $(info MSYSTEM=$(MSYSTEM))\n"
+         << "endif\n"
+         << "\n"
+         << "ifneq ($(MSYSTEM),MINGW32 MINGW64)\n"
+         << "    RDYNAMIC=\n"
+         << "    LDFLAGS+=-lshlwapi\n"
+         << "else\n"
+         << "    RDYNAMIC=-rdynamic\n" // enable backtrac
+         << "endif\n"
          << "\n";
 
     // tinymxl2 requires __STRICT_ANSI__ to be undefined to compile under CYGWIN.
