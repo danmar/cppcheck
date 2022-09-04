@@ -276,7 +276,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-20.04, ubuntu-22.04, macos-11, macos-12]
+        os: [ubuntu-20.04, ubuntu-22.04] # only needs to build on ubuntu
       fail-fast: false # Prefer quick result
 
     runs-on: ${{ matrix.os }}
@@ -285,7 +285,6 @@ jobs:
       - uses: actions/checkout@v2
 
       - name: Build Fuzzer
-        if: contains(matrix.os, 'ubuntu')
         run: |
           pushd oss-fuzz
           make -j$(nproc) CXX=clang++ CXXFLAGS="-fsanitize=address" fuzz-client translate
