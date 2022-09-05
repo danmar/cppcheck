@@ -129,7 +129,7 @@ if __name__ == "__main__":
             print("No files to process")
             continue
 
-        results_to_diff = []
+        results_to_diff = list()
 
         main_crashed = False
         your_crashed = False
@@ -188,6 +188,7 @@ if __name__ == "__main__":
             myfile.write(package + '\n')
             diff = lib.diff_results('main', results_to_diff[0], 'your', results_to_diff[1])
             if diff != '':
+                myfile.write(f'libraries:{libraries}\n')
                 myfile.write('diff:\n' + diff + '\n')
 
         with open(timing_file, 'a') as myfile:
