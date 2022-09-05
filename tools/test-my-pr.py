@@ -188,7 +188,7 @@ if __name__ == "__main__":
             myfile.write(package + '\n')
             diff = lib.diff_results('main', results_to_diff[0], 'your', results_to_diff[1])
             if not main_crashed and not your_crashed and diff != '':
-                myfile.write(f'libraries:{libraries}\n')
+                myfile.write('libraries:' + libraries +'\n')
                 myfile.write('diff:\n' + diff + '\n')
 
         if not main_crashed and not your_crashed:
