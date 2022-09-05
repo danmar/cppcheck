@@ -4341,6 +4341,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f()' is always true\n"
                       "[test.cpp:4]: (style) Condition 'f()==3' is always true\n",
                       errout.str());
+
+        check("int f() {\n"
+              "    const char *n;\n"
+              "    return((n=42) &&\n"
+              "           *n == 'A');\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
