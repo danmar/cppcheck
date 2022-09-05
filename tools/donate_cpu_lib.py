@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.33"
+CLIENT_VERSION = "1.3.34"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -303,18 +303,22 @@ def download_package(work_path, package, bandwidth_limit):
     return destfile
 
 
-def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
+def unpack_package(work_path, tgz, cpp_only=False, c_only=False, skip_files=None):
     print('Unpacking..')
     temp_path = os.path.join(work_path, 'temp')
     __remove_tree(temp_path)
     os.mkdir(temp_path)
 
     header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
-    source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
+    cpp_source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
     c_source_endings = ('.c',)
 
-    if not cpp_only:
-        source_endings = source_endings + c_source_endings
+    if cpp_only:
+        source_endings = cpp_source_endings
+    elif c_only:
+        source_endings = c_source_endings
+    else:
+        source_endings = cpp_source_endings + c_source_endings
 
     source_found = False
     if tarfile.is_tarfile(tgz):
