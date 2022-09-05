@@ -1194,6 +1194,15 @@ private:
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(10, values.back().intvalue);
 
+        code  = "void f() {\n" // #11294
+                "    struct S { int i; };\n"
+                "    const S a[] = { 1, 2 };\n"
+                "    x = sizeof(a) / ( sizeof(a[0]) );\n"
+                "}";
+        values = tokenValues(code, "/");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(2, values.back().intvalue);
+
 #define CHECK(A, B, C, D)                         \
     do {                                      \
         code = "enum " A " E " B " { E0, E1 };\n" \
