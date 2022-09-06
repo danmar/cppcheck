@@ -175,6 +175,7 @@ jobs:
           python -m pytest test-helloworld.py || exit /b !errorlevel!
           python -m pytest test-inline-suppress.py || exit /b !errorlevel!
           python -m pytest test-more-projects.py || exit /b !errorlevel!
+          python -m pytest test-other.py || exit /b !errorlevel!
           python -m pytest test-proj2.py || exit /b !errorlevel!
           python -m pytest test-suppress-syntaxError.py || exit /b !errorlevel!
 

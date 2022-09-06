@@ -1,15 +1,18 @@
-unusedPrivateFunction:test/testbufferoverrun.cpp
-unusedPrivateFunction:test/testcmdlineparser.cpp
 shadowFunction
 bitwiseOnBoolean
 
 # temporary suppressions - fix the warnings!
-unusedPrivateFunction:test/test*.cpp
 useStlAlgorithm
 simplifyUsing:lib/valueptr.h
+varid0:gui/projectfile.cpp
+
+# warnings in Qt generated code we cannot fix
 symbolDatabaseWarning:gui/temp/moc_*.cpp
 simplifyUsing:gui/temp/moc_*.cpp
-symbolDatabaseWarning:tools/triage/moc_*.cpp
+funcArgNamesDifferent:gui/temp/moc_*.cpp
+symbolDatabaseWarning:tools/triage/temp/moc_*.cpp
+naming-varname:gui/temp/ui_*.h
+functionStatic:gui/temp/ui_fileview.h
 
 # --debug-warnings suppressions
 valueFlowBailout
@@ -17,7 +20,4 @@ valueFlowBailoutIncompleteVar
 autoNoType
 bailoutUninitVar
 
-*:gui/test/*
-*:test/test.cxx
-*:test/cfg/*
 *:externals/*/*

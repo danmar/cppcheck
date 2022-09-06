@@ -165,6 +165,7 @@ private:
         return !val.isTokValue();
     }
 
+    // cppcheck-suppress unusedPrivateFunction
     static bool isNotLifetimeValue(const ValueFlow::Value& val) {
         return !val.isLifetimeValue();
     }
