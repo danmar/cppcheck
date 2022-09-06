@@ -287,7 +287,6 @@ void pointerLessThanZero_aligned_alloc(void)
 
 void unusedRetVal_aligned_alloc(void)
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     aligned_alloc(8, 16);
 }

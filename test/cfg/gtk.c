@@ -73,7 +73,6 @@ void validCode(int argInt, GHashTableIter * hash_table_iter, GHashTable * hash_t
 
 void g_malloc_test()
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     g_malloc(8);
 
@@ -86,7 +85,6 @@ void g_malloc_test()
 
 void g_malloc0_test()
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     g_malloc0(8);
 
@@ -99,7 +97,6 @@ void g_malloc0_test()
 
 void g_malloc_n_test()
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     g_malloc_n(8, 1);
 
@@ -112,7 +109,6 @@ void g_malloc_n_test()
 
 void g_malloc0_n_test()
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     g_malloc0_n(8, 1);
 
@@ -125,7 +121,6 @@ void g_malloc0_n_test()
 
 void g_try_malloc_test()
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     g_try_malloc(8);
 
@@ -138,7 +133,6 @@ void g_try_malloc_test()
 
 void g_try_malloc0_test()
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     g_try_malloc0(8);
 
@@ -151,7 +145,6 @@ void g_try_malloc0_test()
 
 void g_try_malloc_n_test()
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     g_try_malloc_n(8, 1);
 
@@ -164,7 +157,6 @@ void g_try_malloc_n_test()
 
 void g_try_malloc0_n_test()
 {
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     g_try_malloc0_n(8, 1);
 
@@ -374,7 +366,6 @@ void g_error_new_test()
     printf("%p", pNew1);
     g_error_free(pNew1);
 
-    // cppcheck-suppress ignoredReturnValue
     // cppcheck-suppress leakReturnValNotUsed
     g_error_new(1, -2, "a %d", 1);
 
