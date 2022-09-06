@@ -130,3 +130,27 @@ Is reported for valid patterns we are using.
 `readability-suspicious-call-argument`<br>
 
 To be evaluated.
+
+`portability-std-allocator-const`<br>
+
+Only necessary for code which is exclusively compiled with `libc++`. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
+
+`modernize-deprecated-ios-base-aliases`<br>
+
+Warns about aliases which are removed in C++20. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
+
+`bugprone-unchecked-optional-access`<br>
+
+We are not using any `optional` implementation. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
+
+`modernize-replace-auto-ptr`<br>
+
+Still available until C++17. It is unlikely such code will ever be introduced. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
+
+`readability-identifier-naming`<br>
+
+We are currently using our own `naming.json` to enforce naming schemes. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
+
+`portability-simd-intrinsics`<br>
+
+We are not using SIMD instructions and it suggests to use `std::experiemental::` features which might not be commonly available. Also disabled for performance reasons - see https://github.com/llvm/llvm-project/issues/57527#issuecomment-1237935132.
