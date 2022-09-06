@@ -212,65 +212,64 @@ jobs:
         if: contains(matrix.os, 'macos')
         run: |
           brew install coreutils qt@5
+          # expose qmake
+          brew link qt@5 --force
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
-        if: contains(matrix.os, 'ubuntu')
         with:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
-      - name: Build GUI on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+      - name: Build GUI
         run: |
-          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          export PATH="$(brew --prefix)/opt/ccache/libexec:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           pushd gui
-          qmake CONFIG+=debug HAVE_QCHART=yes
+          qmake CONFIG+=debug  CONFIG+=ccache HAVE_QCHART=yes
           make -j$(nproc)
 
-      - name: Run GUI tests on ubuntu
+      # TODO: binaries are in a different location on macos
+      - name: Build and Run GUI tests
         if: contains(matrix.os, 'ubuntu')
         run: |
-          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          export PATH="$(brew --prefix)/opt/ccache/libexec:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           pushd gui/test/cppchecklibrarydata
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           ./test-cppchecklibrarydata
           popd
           pushd gui/test/filelist
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           # TODO: requires X session
           #./test-filelist
           popd
           pushd gui/test/projectfile
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           ./test-projectfile
           popd
           pushd gui/test/translationhandler
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           # TODO: requires X session
           #./test-translationhandler
           popd
           pushd gui/test/xmlreportv2
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           # TODO: requires X session
           #./test-xmlreportv2
 
-      - name: Generate Qt help file on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+      - name: Generate Qt help file
         run: |
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
 
-      - name: Build triage on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+      - name: Build triage
         run: |
-          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          export PATH="$(brew --prefix)/opt/ccache/libexec:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           pushd tools/triage
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
 
   build_fuzz:
