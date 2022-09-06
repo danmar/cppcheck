@@ -610,7 +610,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
             // Special Cppcheck Premium options
             else if (std::strncmp(argv[i], "--premium=", 10) == 0 && isCppcheckPremium()) {
-                if (!mSettings->premiumArgs.size())
+                if (!mSettings->premiumArgs.empty())
                     mSettings->premiumArgs += " ";
                 mSettings->premiumArgs += "--" + std::string(argv[i] + 10);
             }
@@ -992,6 +992,10 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 
 void CmdLineParser::printHelp()
 {
+    const std::string manualUrl(isCppcheckPremium() ?
+                                "https://cppcheck.sourceforge.io/manual.pdf" :
+                                "https://files.cppchecksolutions.com/manual.pdf");
+
     std::cout << "Cppcheck - A tool for static C/C++ code analysis\n"
         "\n"
         "Syntax:\n"
@@ -1300,13 +1304,13 @@ void CmdLineParser::printHelp()
     "  cppcheck -I inc1/ -I inc2/ f.cpp\n"
     "\n"
     "For more information:\n"
-    "    https://cppcheck.sourceforge.io/manual.pdf\n"
-    "\n"
-    "Many thanks to the 3rd party libraries we use:\n"
-    " * tinyxml2 -- loading project/library/ctu files.\n"
-    " * picojson -- loading compile database.\n"
-    " * pcre -- rules.\n"
-    " * qt -- used in GUI\n";
+    "    " << manualUrl << "\n"
+        "\n"
+        "Many thanks to the 3rd party libraries we use:\n"
+        " * tinyxml2 -- loading project/library/ctu files.\n"
+        " * picojson -- loading compile database.\n"
+        " * pcre -- rules.\n"
+        " * qt -- used in GUI\n";
 }
 
 bool CmdLineParser::isCppcheckPremium() const {

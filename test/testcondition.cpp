@@ -1309,7 +1309,7 @@ private:
         check("int f(char c) {\n"
               "  return (c <= 'a' && c >= 'z');\n"
               "}", "test.cpp", false);
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:2]: (style) Condition 'c>='z'' is always false\n", errout.str());
     }
 
     void incorrectLogicOperator7() { // opposite expressions
@@ -3336,7 +3336,7 @@ private:
               "    const int b = 52;\n"
               "    return a+b;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4]: (style) Condition 'a+b' is always true\n", errout.str());
 
         check("int f() {\n"
               "    int a = 50;\n"
@@ -4318,7 +4318,8 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition '!s.empty()' is always false\n"
                       "[test.cpp:4]: (style) Condition 's.empty()' is always true\n"
                       "[test.cpp:5]: (style) Condition 's.empty()' is always true\n"
-                      "[test.cpp:6]: (style) Condition '(bool)0' is always false\n",
+                      "[test.cpp:6]: (style) Condition '(bool)0' is always false\n"
+                      "[test.cpp:7]: (style) Condition 's.empty()' is always true\n",
                       errout.str());
 
         check("int f(bool b) {\n"
@@ -4340,6 +4341,13 @@ private:
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'f()' is always true\n"
                       "[test.cpp:4]: (style) Condition 'f()==3' is always true\n",
                       errout.str());
+
+        check("int f() {\n"
+              "    const char *n;\n"
+              "    return((n=42) &&\n"
+              "           *n == 'A');\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void alwaysTrueSymbolic()
@@ -4706,6 +4714,11 @@ private:
         // #11098
         check("void f(unsigned int x) { if (x == -1u) {} }\n");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(const int *p, const int *q) {\n"
+              "    return p != NULL && q != NULL && p == NULL;\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2]: (style) Condition 'p==NULL' is always false\n", errout.str());
     }
 
     void alwaysTrueContainer() {

@@ -28,12 +28,10 @@ jobs:
         run: |
           wget https://github.com/uncrustify/uncrustify/archive/refs/tags/uncrustify-0.72.0.tar.gz
           tar xzvf uncrustify-0.72.0.tar.gz && cd uncrustify-uncrustify-0.72.0 
-          mkdir build 
-          cd build 
-          cmake -DCMAKE_BUILD_TYPE=Release ..
-          cmake --build . -- -j$(nproc) -s
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -- -j$(nproc) -s
           mkdir ~/uncrustify 
-          cp uncrustify ~/uncrustify/
+          cd build && cp uncrustify ~/uncrustify/
 
       - name: Uncrustify check
         run: |
