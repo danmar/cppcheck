@@ -33,7 +33,6 @@ else()
 endif()
 
 add_library(lib_objs OBJECT ${srcs_lib} ${hdrs})
-target_include_directories(lib_objs SYSTEM PRIVATE ${PROJECT_SOURCE_DIR}/externals/)
 if(USE_BUNDLED_TINYXML2)
     target_include_directories(lib_objs SYSTEM PRIVATE ${PROJECT_SOURCE_DIR}/externals/tinyxml2/)
 endif()
