@@ -1308,7 +1308,7 @@ static inline bool isSameConstantValue(bool macro, const Token* tok1, const Toke
         return false;
 
     auto adjustForCast = [](const Token* tok) {
-        if (Token::Match(tok->previous(), "%type% (|{") && tok->previous()->isStandardType() && tok->astOperand2())
+        if (tok->astOperand2() && Token::Match(tok->previous(), "%type% (|{") && tok->previous()->isStandardType())
             return tok->astOperand2();
         return tok;
     };

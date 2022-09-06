@@ -1985,9 +1985,12 @@ static bool isConditionKnown(const Token* tok, bool then)
     if (then)
         op = "&&";
     const Token* parent = tok->astParent();
-    while (parent && (parent->str() == op || parent->str() == "!"))
+    while (parent && (parent->str() == op || parent->str() == "!" || parent->isCast()))
         parent = parent->astParent();
-    return Token::Match(parent, "(|;");
+    const Token* top = tok->astTop();
+    if (top && Token::Match(top->previous(), "if|while|for ("))
+        return parent == top || Token::simpleMatch(parent, ";");
+    return parent && parent->str() != op;
 }
 
 static const std::string& invertAssign(const std::string& assign)
@@ -6354,11 +6357,15 @@ static bool isIntegralOnlyOperator(const Token* tok) {
     return Token::Match(tok, "%|<<|>>|&|^|~|%or%");
 }
 
-static bool isIntegral(const Token* tok)
+static bool isIntegralOrPointer(const Token* tok)
 {
     if (!tok)
         return false;
     if (astIsIntegral(tok, false))
+        return true;
+    if (astIsPointer(tok))
+        return true;
+    if (Token::Match(tok, "NULL|nullptr"))
         return true;
     if (tok->valueType())
         return false;
@@ -6368,7 +6375,7 @@ static bool isIntegral(const Token* tok)
     if (isIntegralOnlyOperator(tok->astParent()))
         return true;
     if (Token::Match(tok, "+|-|*|/") && tok->isBinaryOp())
-        return isIntegral(tok->astOperand1()) && isIntegral(tok->astOperand2());
+        return isIntegralOrPointer(tok->astOperand1()) && isIntegralOrPointer(tok->astOperand2());
     return false;
 }
 
@@ -6401,7 +6408,7 @@ static void valueFlowInferCondition(TokenList* tokenlist,
                         setTokenValue(tok, value, settings);
                     }
                 }
-            } else if (isIntegral(tok->astOperand1()) && isIntegral(tok->astOperand2())) {
+            } else if (isIntegralOrPointer(tok->astOperand1()) && isIntegralOrPointer(tok->astOperand2())) {
                 std::vector<ValueFlow::Value> result =
                     infer(IntegralInferModel{}, tok->str(), tok->astOperand1()->values(), tok->astOperand2()->values());
                 for (const ValueFlow::Value& value : result) {

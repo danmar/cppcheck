@@ -129,7 +129,7 @@ if __name__ == "__main__":
             print("No files to process")
             continue
 
-        results_to_diff = []
+        results_to_diff = list()
 
         main_crashed = False
         your_crashed = False
@@ -187,14 +187,16 @@ if __name__ == "__main__":
         with open(result_file, 'a') as myfile:
             myfile.write(package + '\n')
             diff = lib.diff_results('main', results_to_diff[0], 'your', results_to_diff[1])
-            if diff != '':
+            if not main_crashed and not your_crashed and diff != '':
+                myfile.write('libraries:' + ','.join(libraries) +'\n')
                 myfile.write('diff:\n' + diff + '\n')
 
-        with open(timing_file, 'a') as myfile:
-            myfile.write('{:{package_width}} {:{timing_width}} {:{timing_width}} {:{timing_width}}\n'.format(
-                package, format_float(time_main),
-                format_float(time_your), format_float(time_your, time_main),
-                package_width=package_width, timing_width=timing_width))
+        if not main_crashed and not your_crashed:
+            with open(timing_file, 'a') as myfile:
+                myfile.write('{:{package_width}} {:{timing_width}} {:{timing_width}} {:{timing_width}}\n'.format(
+                    package, format_float(time_main),
+                    format_float(time_your), format_float(time_your, time_main),
+                    package_width=package_width, timing_width=timing_width))
 
         packages_processed += 1
         print(str(packages_processed) + ' of ' + str(args.p) + ' packages processed\n')
