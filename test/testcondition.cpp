@@ -4290,7 +4290,8 @@ private:
               "    if(f < 10) {}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i>9.9' is always true\n"
-                      "[test.cpp:5]: (style) Condition 'f<10' is always true\n", errout.str());
+                      "[test.cpp:5]: (style) Condition 'f<10' is always true\n",
+                      errout.str());
         check("constexpr int f() {\n" // #11238
               "    return 1;\n"
               "}\n"
