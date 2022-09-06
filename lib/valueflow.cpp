@@ -1164,10 +1164,11 @@ static Token * valueFlowSetConstantValue(Token *tok, const Settings *settings, b
                 value.setKnown();
             setTokenValue(tok, value, settings);
             setTokenValue(tok->next(), value, settings);
-        } else if (Token::Match(tok, "sizeof ( %var% ) / sizeof (") && tok->next()->astParent() == tok->tokAt(4)) {
+        } else if (Token::Match(tok, "sizeof ( %var% ) /") && tok->next()->astParent() == tok->tokAt(4) &&
+                   tok->tokAt(4)->astOperand2() && Token::simpleMatch(tok->tokAt(4)->astOperand2()->previous(), "sizeof (")) {
             // Get number of elements in array
             const Token *sz1 = tok->tokAt(2);
-            const Token *sz2 = tok->tokAt(6); // left parenthesis
+            const Token *sz2 = tok->tokAt(4)->astOperand2(); // left parenthesis of sizeof on rhs
             const nonneg int varid1 = sz1->varId();
             if (varid1 &&
                 sz1->variable() &&
