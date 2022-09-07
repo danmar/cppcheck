@@ -672,7 +672,7 @@ class LibraryIncludes:
 
         for library, includes in include_mappings.items():
             re_includes = [re.escape(inc) for inc in includes]
-            re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
+            re_expr = '^[ \\t]*#[ \\t]*include[ \\t]*(' + '|'.join(re_includes) + ')'
             re_obj = re.compile(re_expr, re.MULTILINE)
             self.__library_includes_re[library] = re_obj
 
