@@ -1890,8 +1890,9 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (error) Array 'ia[10]' accessed at index 19, which is out of bounds.\n", errout.str());
     }
 
+    // #6370
     void array_index_69()
-    { // #6370
+    {
         check("void f() {\n"
               "    const int e[] = {0,10,20,30};\n"
               "    int a[4];\n"
