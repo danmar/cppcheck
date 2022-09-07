@@ -5084,7 +5084,7 @@ static void valueFlowSymbolic(TokenList* tokenlist, SymbolDatabase* symboldataba
     }
 }
 
-static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth=10)
+static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth = 10)
 {
     if (depth < 0)
         return nullptr;
@@ -5098,14 +5098,14 @@ static const Token* isStrlenOf(const Token* tok, const Token* expr, int depth=10
         if (tok->astOperand2()->exprId() == expr->exprId())
             return tok;
     } else {
-        for(const ValueFlow::Value& v:tok->values()) {
+        for (const ValueFlow::Value& v : tok->values()) {
             if (!v.isSymbolicValue())
                 continue;
             if (!v.isKnown())
                 continue;
             if (v.intvalue != 0)
                 continue;
-            if (const Token* next = isStrlenOf(v.tokvalue, expr, depth-1))
+            if (const Token* next = isStrlenOf(v.tokvalue, expr, depth - 1))
                 return next;
         }
     }
@@ -5166,8 +5166,10 @@ static void valueFlowSymbolicOperators(TokenList* tokenlist, SymbolDatabase* sym
                     continue;
                 std::vector<ValueFlow::Value> values = {makeSymbolic(vartok)};
                 std::unordered_set<nonneg int> ids = {vartok->exprId()};
-                std::copy_if(
-                    vartok->values().begin(), vartok->values().end(), std::back_inserter(values), [&](const ValueFlow::Value& v) {
+                std::copy_if(vartok->values().begin(),
+                             vartok->values().end(),
+                             std::back_inserter(values),
+                             [&](const ValueFlow::Value& v) {
                     if (!v.isSymbolicValue())
                         return false;
                     if (!v.tokvalue)
@@ -5183,7 +5185,7 @@ static void valueFlowSymbolicOperators(TokenList* tokenlist, SymbolDatabase* sym
                     continue;
                 if (!indexTok)
                     continue;
-                for(const ValueFlow::Value& value:indexTok->values()) {
+                for (const ValueFlow::Value& value : indexTok->values()) {
                     if (!value.isSymbolicValue())
                         continue;
                     if (value.intvalue != 0)
@@ -5203,7 +5205,6 @@ static void valueFlowSymbolicOperators(TokenList* tokenlist, SymbolDatabase* sym
                     setTokenValue(tok, v, tokenlist->getSettings());
                 }
             }
-
         }
     }
 }
