@@ -2661,6 +2661,26 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
+
+        code = "int f() {\n"
+               "    std::string a;\n"
+               "    std::string b=\"42\";\n"
+               "    std::swap(b, a);\n"
+               "    int x = b.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
+
+        code = "int f() {\n"
+               "    std::string a;\n"
+               "    std::string b=\"42\";\n"
+               "    std::swap(b, a);\n"
+               "    int x = a.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 2));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
     }
 
     void valueFlowAfterCondition() {

@@ -7578,7 +7578,7 @@ struct ContainerExpressionAnalyzer : ExpressionAnalyzer {
         if (isLikelyStreamRead(isCPP(), tok->astParent()))
             return Action::Invalid;
         if (astIsContainer(tok) && isContainerSizeChanged(tok, getSettings()))
-            return Action::Invalid;
+            return read | Action::Invalid;
         return read;
     }
 };
