@@ -1576,7 +1576,7 @@ void CheckCondition::alwaysTrueFalse()
     }
 }
 
-void CheckCondition::alwaysTrueFalseError(const Token *tok, const Token* condition, const ValueFlow::Value *value)
+void CheckCondition::alwaysTrueFalseError(const Token* tok, const Token* condition, const ValueFlow::Value* value)
 {
     const bool alwaysTrue = value && (value->intvalue != 0);
     const std::string expr = tok ? tok->expressionString() : std::string("x");
