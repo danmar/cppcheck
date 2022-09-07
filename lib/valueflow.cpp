@@ -1433,16 +1433,20 @@ static void valueFlowArrayElement(TokenList* tokenlist, const Settings* settings
         for (const ValueFlow::Value& arrayValue : arrayTok->values()) {
             if (!arrayValue.isTokValue())
                 continue;
+            if (arrayValue.isImpossible())
+                continue;
             for (const ValueFlow::Value& indexValue : indexTok->values()) {
                 if (!indexValue.isIntValue())
                     continue;
-                if (arrayValue.varId != 0 && indexValue.varId != 0 &&
+                if (indexValue.isImpossible())
+                    continue;
+                if (!arrayValue.isKnown() && !indexValue.isKnown() && arrayValue.varId != 0 && indexValue.varId != 0 &&
                     !(arrayValue.varId == indexValue.varId && arrayValue.varvalue == indexValue.varvalue))
                     continue;
 
                 ValueFlow::Value result(0);
                 result.condition = arrayValue.condition ? arrayValue.condition : indexValue.condition;
-                result.setInconclusive(arrayValue.isInconclusive() | indexValue.isInconclusive());
+                result.setInconclusive(arrayValue.isInconclusive() || indexValue.isInconclusive());
                 result.varId = (arrayValue.varId != 0) ? arrayValue.varId : indexValue.varId;
                 result.varvalue = (result.varId == arrayValue.varId) ? arrayValue.intvalue : indexValue.intvalue;
                 if (arrayValue.valueKind == indexValue.valueKind)
