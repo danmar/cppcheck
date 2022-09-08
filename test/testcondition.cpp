@@ -1397,7 +1397,9 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6] -> [test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:6] -> [test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n",
+            errout.str());
 
         check("struct A {\n"
               "    void f();\n"
@@ -1427,7 +1429,9 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n",
+            errout.str());
 
         check("struct A {\n"
               "    void f() const;\n"
@@ -1440,7 +1444,8 @@ private:
               "    return;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:8]: (style) Condition 'a>x' is always false\n"
-          "[test.cpp:8]: (style) Condition 'a<y' is always false\n", errout.str());
+                      "[test.cpp:8]: (style) Condition 'a<y' is always false\n",
+                      errout.str());
 
         check("struct A {\n"
               "    void f();\n"
@@ -1471,9 +1476,8 @@ private:
               "    return;\n"
               "}");
         ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'a>x' is always false\n"
-          "[test.cpp:5]: (style) Condition 'a<y' is always false\n", errout.str());
-
-
+                      "[test.cpp:5]: (style) Condition 'a<y' is always false\n",
+                      errout.str());
     }
 
     void incorrectLogicOperator13() {
