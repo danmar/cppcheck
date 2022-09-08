@@ -2500,6 +2500,22 @@ private:
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
                       errout.str());
 
+        check("void f1(int x) {\n"
+              "    if (x == 1 || x == 2) {\n"
+              "        if (x == 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("",
+                      errout.str());
+
+        check("void f1(int x) {\n"
+              "    if (x == 1 || x == 2) {\n"
+              "        if (x == 2) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("",
+                      errout.str());
+
         check("void f3(int x) {\n"
               "    if (x < 1 || x > 3) {\n"
               "        if (x == 3) {}\n"
