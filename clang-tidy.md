@@ -119,7 +119,6 @@ Is reported for valid patterns we are using.
 `performance-inefficient-string-concatenation`<br>
 `misc-throw-by-value-catch-by-reference`<br>
 `readability-avoid-const-params-in-decls`<br>
-`readability-non-const-parameter`<br>
 `bugprone-signed-char-misuse`<br>
 `bugprone-suspicious-include`<br>
 `readability-redundant-access-specifiers`<br>
