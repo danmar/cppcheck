@@ -1430,7 +1430,7 @@ static void valueFlowArrayElement(TokenList* tokenlist, const Settings* settings
             arrayTok = tok->astOperand1();
         } else if (Token::Match(tok->tokAt(-2), ". %name% (") && astIsContainer(tok->tokAt(-2)->astOperand1())) {
             arrayTok = tok->tokAt(-2)->astOperand1();
-            const Library::Container *container = getLibraryContainer(arrayTok);
+            const Library::Container* container = getLibraryContainer(arrayTok);
             if (!container || container->stdAssociativeLike)
                 continue;
             Library::Container::Yield yield = container->getYield(tok->strAt(-1));
