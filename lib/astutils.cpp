@@ -1632,8 +1632,8 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     }
 
     if (cond1->str() != cond2->str() && (cond1->str() == "||" || cond2->str() == "||")) {
-        const Token * orCond = nullptr;
-        const Token * otherCond = nullptr;
+        const Token* orCond = nullptr;
+        const Token* otherCond = nullptr;
         if (cond1->str() == "||") {
             orCond = cond1;
             otherCond = cond2;
@@ -1642,8 +1642,8 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
             orCond = cond2;
             otherCond = cond1;
         }
-        return isOppositeCond(isNot, cpp, orCond->astOperand1(), otherCond, library, pure, followVar, errors) && 
-        isOppositeCond(isNot, cpp, orCond->astOperand2(), otherCond, library, pure, followVar, errors);
+        return isOppositeCond(isNot, cpp, orCond->astOperand1(), otherCond, library, pure, followVar, errors) &&
+               isOppositeCond(isNot, cpp, orCond->astOperand2(), otherCond, library, pure, followVar, errors);
     }
 
     if (cond1->str() == "!") {

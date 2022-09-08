@@ -3060,7 +3060,8 @@ struct SameExpressionAnalyzer : ExpressionAnalyzer {
         : ExpressionAnalyzer(e, val, t)
     {}
 
-    bool match(const Token* tok) const override {
+    bool match(const Token* tok) const override
+    {
         return isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
     }
 };
