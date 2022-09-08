@@ -15,12 +15,67 @@ defaults:
 
 jobs:
 
+  build_qt:
+    strategy:
+      matrix:
+        os: [windows-2019, windows-2022]
+        qt_ver: [5.15.2, 6.2.4, 6.3.1]
+      fail-fast: false
+
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up Visual Studio environment
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64 # no 32-bit Qt available
+
+      - name: Cache Qt ${{ matrix.qt_ver }}
+        id: cache-qt
+        uses: actions/cache@v1  # not v2!
+        with:
+          path: ../Qt
+          key: Windows-QtCache-${{ matrix.qt_ver }}-qtcharts
+
+      - name: Install Qt ${{ matrix.qt_ver }}
+        uses: jurplel/install-qt-action@v2
+        with:
+          aqtversion: '==2.0.6'
+          version: ${{ matrix.qt_ver }}
+          modules: 'qtcharts'
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+
+      - name: Build GUI release (qmake)
+        if: startsWith(matrix.qt_ver, '5')
+        run: |
+          cd gui || exit /b !errorlevel!
+          qmake HAVE_QCHART=yes || exit /b !errorlevel!
+          nmake release || exit /b !errorlevel!
+        env:
+          CL: /MP
+
+      - name: Deploy GUI
+        if: startsWith(matrix.qt_ver, '5')
+        run: |
+          windeployqt Build\gui || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
+          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
+
+      - name: Build GUI release (CMake)
+        if: startsWith(matrix.qt_ver, '6')
+        run: |
+          cmake -S . -B build -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_QT6=On || exit /b !errorlevel!
+          cmake --build build --target cppcheck-gui || exit /b !errorlevel!
+
+      # TODO: deploy with CMake/Qt6
+
   build:
     strategy:
       matrix:
         os: [windows-2019, windows-2022]
         arch: [x64, x86]
-        qt_ver: ['', 5.15.2, 6.2.4, 6.3.1]
       fail-fast: false
 
     runs-on: ${{ matrix.os }}
@@ -31,16 +86,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
 
       - name: Set up Python 3.10
-        if: matrix.qt_ver == ''
         uses: actions/setup-python@v2
         with:
           python-version: '3.10'
 
       - name: Set up Visual Studio environment
-        if: matrix.arch == 'x64' || matrix.qt_ver == ''
         uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: ${{ matrix.arch }}
@@ -48,7 +100,6 @@ jobs:
       - name: Cache PCRE
         id: cache-pcre
         uses: actions/cache@v2
-        if: matrix.qt_ver == ''
         with:
           path: |
             externals\pcre.h
@@ -57,12 +108,12 @@ jobs:
           key: pcre-${{ env.PCRE_VERSION }}-${{ matrix.arch }}-bin-win
 
       - name: Download PCRE
-        if: matrix.qt_ver == '' && steps.cache-pcre.outputs.cache-hit != 'true'
+        if: steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           curl -fsSL https://github.com/pfultz2/pcre/archive/refs/tags/%PCRE_VERSION%.zip -o pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
 
       - name: Install PCRE
-        if: matrix.qt_ver == '' && steps.cache-pcre.outputs.cache-hit != 'true'
+        if: steps.cache-pcre.outputs.cache-hit != 'true'
         run: |
           7z x pcre-%PCRE_VERSION%.zip || exit /b !errorlevel!
           cd pcre-%PCRE_VERSION% || exit /b !errorlevel!
@@ -77,57 +128,14 @@ jobs:
         env:
           CL: /MP
 
-      - name: Cache Qt ${{ matrix.qt_ver }}
-        if: matrix.qt_ver != '' && matrix.arch == 'x64'
-        id: cache-qt
-        uses: actions/cache@v1  # not v2!
-        with:
-          path: ../Qt
-          key: Windows-QtCache-${{ matrix.qt_ver }}-qtcharts
-
-      # no 32-bit Qt available
-      - name: Install Qt ${{ matrix.qt_ver }}
-        if: matrix.qt_ver != '' && matrix.arch == 'x64'
-        uses: jurplel/install-qt-action@v2
-        with:
-          aqtversion: '==2.0.6'
-          version: ${{ matrix.qt_ver }}
-          modules: 'qtcharts'
-          cached: ${{ steps.cache-qt.outputs.cache-hit }}
-
       - name: Install missing Python packages
-        if: matrix.qt_ver == ''
         run: |
           python -m pip install pip --upgrade || exit /b !errorlevel!
           python -m pip install pytest || exit /b !errorlevel!
           python -m pip install pytest-custom_exit_code || exit /b !errorlevel!
 
-      - name: Build GUI release (qmake)
-        if: startsWith(matrix.qt_ver, '5') && matrix.arch == 'x64'
-        run: |
-          cd gui || exit /b !errorlevel!
-          qmake HAVE_QCHART=yes || exit /b !errorlevel!
-          nmake release || exit /b !errorlevel!
-        env:
-          CL: /MP
-      
-      - name: Deploy GUI
-        if: startsWith(matrix.qt_ver, '5') && matrix.arch == 'x64'
-        run: |
-          windeployqt Build\gui || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.ilk || exit /b !errorlevel!
-          del Build\gui\cppcheck-gui.pdb || exit /b !errorlevel!
-
-      - name: Build GUI release (CMake)
-        if: startsWith(matrix.qt_ver, '6') && matrix.arch == 'x64'
-        run: |
-          cmake -S . -B build -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_QT6=On || exit /b !errorlevel!
-          cmake --build build --target cppcheck-gui || exit /b !errorlevel!
-
-      # TODO: deploy with Qt6
-
       - name: Run CMake
-        if: false && matrix.qt_ver == ''
+        if: false # TODO: enable
         run: |
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
@@ -136,7 +144,6 @@ jobs:
           cmake -S . -B build -DBUILD_TESTS=On || exit /b !errorlevel!
 
       - name: Build CLI debug configuration using MSBuild
-        if: matrix.qt_ver == ''
         run: |
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
@@ -146,11 +153,9 @@ jobs:
           msbuild -m cppcheck.sln /p:Configuration=Debug-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Debug test
-        if: matrix.qt_ver == ''
         run: .\bin\debug\testrunner.exe || exit /b !errorlevel!
 
       - name: Build CLI release configuration using MSBuild
-        if: matrix.qt_ver == ''
         run: |
           set ARCH=${{ matrix.arch }}
           if "${{ matrix.arch }}" == "x86" (
@@ -160,11 +165,9 @@ jobs:
           msbuild -m cppcheck.sln /p:Configuration=Release-PCRE;Platform=%ARCH% -maxcpucount || exit /b !errorlevel!
 
       - name: Run Release test
-        if: matrix.qt_ver == ''
         run: .\bin\testrunner.exe || exit /b !errorlevel!
 
       - name: Run test/cli
-        if: matrix.qt_ver == ''
         run: |
           :: since FILESDIR is not set copy the binary to the root so the addons are found
           :: copy .\build\bin\Release\cppcheck.exe .\cppcheck.exe || exit /b !errorlevel!
@@ -180,7 +183,6 @@ jobs:
           python -m pytest test-suppress-syntaxError.py || exit /b !errorlevel!
 
       - name: Test addons
-        if: matrix.qt_ver == ''
         run: |
           .\cppcheck --addon=threadsafety addons\test\threadsafety || exit /b !errorlevel!
           .\cppcheck --addon=threadsafety --std=c++03 addons\test\threadsafety || exit /b !errorlevel!
