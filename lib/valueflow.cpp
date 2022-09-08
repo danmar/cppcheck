@@ -5224,7 +5224,8 @@ static void valueFlowForwardConst(Token* start,
                                   const Token* end,
                                   const Variable* var,
                                   const ContainerOfValue& values,
-                                  const Settings* const settings, int = 0)
+                                  const Settings* const settings,
+                                  int = 0)
 {
     for (Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() == var->declarationId()) {
@@ -8123,12 +8124,12 @@ static void valueFlowContainerSize(TokenList* tokenlist,
 
     // after assignment
     for (const Scope *functionScope : symboldatabase->functionScopes) {
-        for (Token *tok = const_cast<Token*>(functionScope->bodyStart); tok != functionScope->bodyEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(functionScope->bodyStart); tok != functionScope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
-                Token *containerTok = tok->next();
+                Token* containerTok = tok->next();
                 if (containerTok->exprId() == 0)
                     continue;
-                if (containerTok->valueType() && containerTok->valueType()->container && 
+                if (containerTok->valueType() && containerTok->valueType()->container &&
                     containerTok->valueType()->container->stdStringLike) {
                     valueFlowContainerSetTokValue(tokenlist, containerTok, containerTok->tokAt(2));
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));

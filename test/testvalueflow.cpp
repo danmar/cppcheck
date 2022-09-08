@@ -6300,30 +6300,31 @@ private:
         ASSERT_EQUALS(false, testValueOfX(code, 5U, 0));
     }
 
-    void valueFlowContainerElement() {
-        const char *code;
+    void valueFlowContainerElement()
+    {
+        const char* code;
 
         LOAD_LIB_2(settings.library, "std.cfg");
 
         code = "int f() {\n"
-                "    std::vector<int> v = {1, 2, 3, 4};\n"
-                "    int x = v[1];\n"
-                "    return x;\n"
-                "}\n";
+               "    std::vector<int> v = {1, 2, 3, 4};\n"
+               "    int x = v[1];\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 2));
 
         code = "int f() {\n"
-                "    std::vector<int> v = {1, 2, 3, 4};\n"
-                "    int x = v.at(1);\n"
-                "    return x;\n"
-                "}\n";
+               "    std::vector<int> v = {1, 2, 3, 4};\n"
+               "    int x = v.at(1);\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 2));
 
         code = "int f() {\n"
-                "    std::string s = \"hello\";\n"
-                "    int x = s[1];\n"
-                "    return x;\n"
-                "}\n";
+               "    std::string s = \"hello\";\n"
+               "    int x = s[1];\n"
+               "    return x;\n"
+               "}\n";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 'e'));
     }
 
