@@ -65,7 +65,9 @@ static void addFilesToList(const std::string& fileList, std::vector<std::string>
     }
     if (files && *files) {
         std::string fileName;
+        // cppcheck-suppress accessMoved - FP
         while (std::getline(*files, fileName)) { // next line
+            // cppcheck-suppress accessMoved - FP
             if (!fileName.empty()) {
                 pathNames.emplace_back(std::move(fileName));
             }
@@ -78,6 +80,7 @@ static bool addIncludePathsToList(const std::string& fileList, std::list<std::st
     std::ifstream files(fileList);
     if (files) {
         std::string pathName;
+        // cppcheck-suppress accessMoved - FP
         while (std::getline(files, pathName)) { // next line
             if (!pathName.empty()) {
                 pathName = Path::removeQuotationMarks(pathName);
