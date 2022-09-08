@@ -1421,14 +1421,26 @@ static void valueFlowArrayBool(TokenList *tokenlist)
 static void valueFlowArrayElement(TokenList* tokenlist, const Settings* settings)
 {
     for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "["))
-            continue;
-        if (!tok->isBinaryOp())
-            continue;
         if (tok->hasKnownIntValue())
             continue;
-        const Token* indexTok = tok->astOperand2();
-        const Token* arrayTok = tok->astOperand1();
+        const Token* indexTok = nullptr;
+        const Token* arrayTok = nullptr;
+        if (Token::simpleMatch(tok, "[") && tok->isBinaryOp()) {
+            indexTok = tok->astOperand2();
+            arrayTok = tok->astOperand1();
+        } else if (Token::Match(tok->tokAt(-2), ". %name% (") && astIsContainer(tok->tokAt(-2)->astOperand1())) {
+            arrayTok = tok->tokAt(-2)->astOperand1();
+            const Library::Container *container = getLibraryContainer(arrayTok);
+            if (!container || container->stdAssociativeLike)
+                continue;
+            Library::Container::Yield yield = container->getYield(tok->strAt(-1));
+            if (yield != Library::Container::Yield::AT_INDEX)
+                continue;
+            indexTok = tok->astOperand2();
+        }
+
+        if (!indexTok || !arrayTok)
+            continue;
 
         for (const ValueFlow::Value& arrayValue : arrayTok->values()) {
             if (!arrayValue.isTokValue())
