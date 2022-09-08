@@ -329,7 +329,7 @@ protected:
      *
      * @param severity Severity
      */
-    QString severityToIcon(Severity::SeverityType severity) const;
+    static QString severityToIcon(Severity::SeverityType severity);
 
     /**
      * @brief Helper function to open an error within target with application*
@@ -354,7 +354,7 @@ protected:
      * @param target The error tree item containing the filename/full path
      * @param fullPath Whether or not to retrieve the full path or only the filename.
      */
-    QString getFilePath(QStandardItem *target, bool fullPath);
+    static QString getFilePath(QStandardItem *target, bool fullPath);
 
     /**
      * @brief Context menu event (user right clicked on the tree)

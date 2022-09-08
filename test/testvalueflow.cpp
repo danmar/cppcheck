@@ -534,13 +534,13 @@ private:
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
     }
 
-    std::list<ValueFlow::Value> removeSymbolic(std::list<ValueFlow::Value> values)
+    static std::list<ValueFlow::Value> removeSymbolic(std::list<ValueFlow::Value> values)
     {
         values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         return values;
     }
 
-    std::list<ValueFlow::Value> removeImpossible(std::list<ValueFlow::Value> values)
+    static std::list<ValueFlow::Value> removeImpossible(std::list<ValueFlow::Value> values)
     {
         values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
         return values;

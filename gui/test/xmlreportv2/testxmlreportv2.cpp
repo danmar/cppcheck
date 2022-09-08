@@ -23,7 +23,7 @@
 
 #include <QtTest>
 
-void TestXmlReportV2::readXml()
+void TestXmlReportV2::readXml() const
 {
     const QString filepath(QString(SRCDIR) + "/../data/xmlfiles/xmlreport_v2.xml");
     XmlReportV2 report(filepath);

@@ -4407,7 +4407,7 @@ struct Lambda {
     std::unordered_map<const Variable*, std::pair<const Token*, LifetimeCapture>> explicitCaptures;
     LifetimeCapture implicitCapture;
 
-    std::vector<const Token*> getCaptures() {
+    std::vector<const Token*> getCaptures() const {
         return getArguments(capture);
     }
 
