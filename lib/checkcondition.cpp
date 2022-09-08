@@ -1507,7 +1507,7 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::simpleMatch(tok, ":"))
                 continue;
-            if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(),
+            if (tok->isComparisonOp() && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1()) && isSameExpression(mTokenizer->isCPP(),
                                                           true,
                                                           tok->astOperand1(),
                                                           tok->astOperand2(),
