@@ -1616,6 +1616,9 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if (!cond1 || !cond2)
         return false;
 
+    if (isSameExpression(cpp, true, cond1, cond2, library, pure, followVar, errors))
+        return false;
+
     if (!isNot && cond1->str() == "&&" && cond2->str() == "&&") {
         for (const Token* tok1: {
             cond1->astOperand1(), cond1->astOperand2()
