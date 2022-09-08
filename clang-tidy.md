@@ -120,7 +120,6 @@ Is reported for valid patterns we are using.
 `misc-throw-by-value-catch-by-reference`<br>
 `readability-avoid-const-params-in-decls`<br>
 `readability-non-const-parameter`<br>
-`bugprone-suspicious-string-compare`<br>
 `bugprone-signed-char-misuse`<br>
 `bugprone-suspicious-include`<br>
 `readability-redundant-access-specifiers`<br>
