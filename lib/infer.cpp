@@ -321,21 +321,21 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
             ValueFlow::Value value(diff.getScalar());
             addToErrorPath(value, refs);
             setValueKind(value, refs);
-            result.push_back(value);
+            result.push_back(std::move(value));
         } else {
             if (!diff.minvalue.empty()) {
                 ValueFlow::Value value(diff.minvalue.front() - 1);
                 value.setImpossible();
                 value.bound = ValueFlow::Value::Bound::Upper;
                 addToErrorPath(value, diff.minRef);
-                result.push_back(value);
+                result.push_back(std::move(value));
             }
             if (!diff.maxvalue.empty()) {
                 ValueFlow::Value value(diff.maxvalue.front() + 1);
                 value.setImpossible();
                 value.bound = ValueFlow::Value::Bound::Lower;
                 addToErrorPath(value, diff.maxRef);
-                result.push_back(value);
+                result.push_back(std::move(value));
             }
         }
     } else if ((op == "!=" || op == "==") && lhs.isScalarOrEmpty() && rhs.isScalarOrEmpty()) {
@@ -344,7 +344,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
             ValueFlow::Value value(calculate(op, lhs.getScalar(), rhs.getScalar()));
             addToErrorPath(value, refs);
             setValueKind(value, refs);
-            result.push_back(value);
+            result.push_back(std::move(value));
         } else {
             std::vector<const ValueFlow::Value*> refs;
             if (lhs.isScalar() && inferNotEqual(rhsValues, lhs.getScalar()))
@@ -355,7 +355,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
                 ValueFlow::Value value(op == "!=");
                 addToErrorPath(value, refs);
                 setValueKind(value, refs);
-                result.push_back(value);
+                result.push_back(std::move(value));
             }
         }
     } else {
@@ -365,7 +365,7 @@ std::vector<ValueFlow::Value> infer(const ValuePtr<InferModel>& model,
             ValueFlow::Value value(r.front());
             addToErrorPath(value, refs);
             setValueKind(value, refs);
-            result.push_back(value);
+            result.push_back(std::move(value));
         }
     }
 

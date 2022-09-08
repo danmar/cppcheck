@@ -656,7 +656,7 @@ void Tokenizer::simplifyTypedef()
                 info.className = className;
                 info.bodyEnd = tok->link();
                 info.bodyEnd2 = tok->link();
-                spaceInfo.push_back(info);
+                spaceInfo.push_back(std::move(info));
 
                 hasClass = false;
             } else if (spaceInfo.size() > 1 && tok->str() == "}" && spaceInfo.back().bodyEnd == tok) {
@@ -1070,7 +1070,7 @@ void Tokenizer::simplifyTypedef()
         typedefInfo.lineNumber = typeName->linenr();
         typedefInfo.column = typeName->column();
         typedefInfo.used = false;
-        mTypedefInfo.push_back(typedefInfo);
+        mTypedefInfo.push_back(std::move(typedefInfo));
 
         while (!done) {
             std::string pattern = typeName->str();
@@ -9389,7 +9389,7 @@ void Tokenizer::removeUnnecessaryQualification()
             if (!tok)
                 return;
             info.bodyEnd = tok->link();
-            classInfo.push_back(info);
+            classInfo.push_back(std::move(info));
         } else if (!classInfo.empty()) {
             if (tok == classInfo.back().bodyEnd)
                 classInfo.pop_back();

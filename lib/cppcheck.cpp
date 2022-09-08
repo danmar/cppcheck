@@ -417,7 +417,7 @@ static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMe
                             Certainty::normal);
 
         if (line.compare(pos3, 10, ": warning:") == 0) {
-            warnings->push_back(errmsg);
+            warnings->push_back(std::move(errmsg));
             continue;
         }
 
@@ -909,13 +909,13 @@ unsigned int CppCheck::checkFile(const std::string& filename, const std::string 
                 std::list<ErrorMessage::FileLocation> locationList;
                 if (e.token) {
                     ErrorMessage::FileLocation loc(e.token, &tokenizer.list);
-                    locationList.push_back(loc);
+                    locationList.push_back(std::move(loc));
                 } else {
                     ErrorMessage::FileLocation loc2(filename, 0, 0);
-                    locationList.push_back(loc2);
+                    locationList.push_back(std::move(loc2));
                     if (filename != tokenizer.list.getSourceFilePath()) {
                         ErrorMessage::FileLocation loc(tokenizer.list.getSourceFilePath(), 0, 0);
-                        locationList.push_back(loc);
+                        locationList.push_back(std::move(loc));
                     }
                 }
                 ErrorMessage errmsg(std::move(locationList),
@@ -1463,7 +1463,7 @@ void CppCheck::tooManyConfigsError(const std::string &file, const int numberOfCo
     if (!file.empty()) {
         ErrorMessage::FileLocation location;
         location.setfile(file);
-        loclist.push_back(location);
+        loclist.push_back(std::move(location));
     }
 
     std::ostringstream msg;
@@ -1501,7 +1501,7 @@ void CppCheck::purgedConfigurationMessage(const std::string &file, const std::st
     if (!file.empty()) {
         ErrorMessage::FileLocation location;
         location.setfile(file);
-        loclist.push_back(location);
+        loclist.push_back(std::move(location));
     }
 
     ErrorMessage errmsg(loclist,

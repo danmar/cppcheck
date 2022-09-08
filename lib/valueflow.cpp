@@ -5646,7 +5646,7 @@ static void insertNegateKnown(std::list<ValueFlow::Value>& values, const std::li
             continue;
         value.intvalue = !value.intvalue;
         value.setKnown();
-        values.push_back(value);
+        values.push_back(std::move(value));
     }
 }
 
@@ -6258,10 +6258,10 @@ struct SimpleConditionHandler : ConditionHandler {
             if (vartok->str() == "=" && vartok->astOperand1() && vartok->astOperand2())
                 vartok = vartok->astOperand1();
             Condition cond;
-            cond.true_values.push_back(true_value);
-            cond.false_values.push_back(false_value);
+            cond.true_values.push_back(std::move(true_value));
+            cond.false_values.push_back(std::move(false_value));
             cond.vartok = vartok;
-            conds.push_back(cond);
+            conds.push_back(std::move(cond));
         });
         if (!conds.empty())
             return conds;
@@ -6475,7 +6475,7 @@ struct SymbolicConditionHandler : SimpleConditionHandler {
                 cond.false_values = {false_value};
                 cond.vartok = vartok;
                 cond.inverted = inverted;
-                result.push_back(cond);
+                result.push_back(std::move(cond));
             }
         };
         addCond(tok->astOperand1(), tok->astOperand2(), false);
@@ -6920,7 +6920,7 @@ bool productParams(const std::unordered_map<Key, std::list<ValueFlow::Value>>& v
                     }
                 }
                 arg[p.first] = value;
-                new_args.push_back(arg);
+                new_args.push_back(std::move(arg));
             }
             std::copy(new_args.begin(), new_args.end(), std::back_inserter(args));
         });
@@ -7224,7 +7224,7 @@ static void valueFlowFunctionDefaultParameter(TokenList* tokenlist, SymbolDataba
                     v.defaultArg = true;
                     v.changeKnownToPossible();
                     if (v.isPossible())
-                        argvalues.push_back(v);
+                        argvalues.push_back(std::move(v));
                 }
                 if (!argvalues.empty())
                     valueFlowInjectParameter(tokenlist, var, scope, argvalues);
@@ -8158,10 +8158,10 @@ struct ContainerConditionHandler : ConditionHandler {
             true_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             false_value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
             Condition cond;
-            cond.true_values.push_back(true_value);
-            cond.false_values.push_back(false_value);
+            cond.true_values.push_back(std::move(true_value));
+            cond.false_values.push_back(std::move(false_value));
             cond.vartok = vartok;
-            conds.push_back(cond);
+            conds.push_back(std::move(cond));
         });
         if (!conds.empty())
             return conds;
