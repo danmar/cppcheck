@@ -178,7 +178,7 @@ void TokenList::determineCppC()
     }
 }
 
-int TokenList::appendFileIfNew(const std::string &fileName)
+int TokenList::appendFileIfNew(std::string fileName)
 {
     // Has this file been tokenized already?
     for (int i = 0; i < mFiles.size(); ++i)
@@ -186,7 +186,7 @@ int TokenList::appendFileIfNew(const std::string &fileName)
             return i;
 
     // The "mFiles" vector remembers what files have been tokenized..
-    mFiles.push_back(fileName);
+    mFiles.push_back(std::move(fileName));
 
     // Update mIsC and mIsCpp properties
     if (mFiles.size() == 1) { // Update only useful if first file added to _files

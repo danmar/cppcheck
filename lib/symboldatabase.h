@@ -1164,8 +1164,8 @@ public:
 
     const Function *getDestructor() const;
 
-    void addFunction(const Function & func) {
-        functionList.push_back(func);
+    void addFunction(Function func) {
+        functionList.push_back(std::move(func));
 
         const Function * back = &functionList.back();
 

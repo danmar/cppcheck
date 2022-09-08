@@ -57,6 +57,11 @@ private:
         settings2.checkUnusedTemplates = true;
         settings_windows.checkUnusedTemplates = true;
 
+        // library=qt
+        settings0.libraries.emplace_back("qt");
+        settings1.libraries.emplace_back("qt");
+        settings2.libraries.emplace_back("qt");
+
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize4);

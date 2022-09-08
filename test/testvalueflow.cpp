@@ -159,6 +159,7 @@ private:
         TEST_CASE(valueFlowNotNull);
         TEST_CASE(valueFlowSymbolic);
         TEST_CASE(valueFlowSymbolicIdentity);
+        TEST_CASE(valueFlowSymbolicStrlen);
         TEST_CASE(valueFlowSmartPointer);
     }
 
@@ -2664,6 +2665,26 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
+
+        code = "int f() {\n"
+               "    std::string a;\n"
+               "    std::string b=\"42\";\n"
+               "    std::swap(b, a);\n"
+               "    int x = b.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
+
+        code = "int f() {\n"
+               "    std::string a;\n"
+               "    std::string b=\"42\";\n"
+               "    std::swap(b, a);\n"
+               "    int x = a.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 2));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
     }
 
     void valueFlowAfterCondition() {
@@ -7535,6 +7556,27 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "a", 0));
+    }
+
+    void valueFlowSymbolicStrlen()
+    {
+        const char* code;
+
+        code = "int f(char *s) {\n"
+               "    size_t len = strlen(s);\n"
+               "    int x = s[len];\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "int f(char *s, size_t i) {\n"
+               "    if (i < strlen(s)) {\n"
+               "      int x = s[i];\n"
+               "      return x;\n"
+               "    }\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 0));
     }
 
     void valueFlowSmartPointer()

@@ -110,7 +110,7 @@ static std::vector<std::string> getSummaryFiles(const std::string &filename)
             continue;
         std::string f = line.substr(0,colon);
         f[dotA + 1] = 's';
-        ret.push_back(f);
+        ret.push_back(std::move(f));
     }
     return ret;
 }

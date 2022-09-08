@@ -2146,9 +2146,9 @@ bool Token::addValue(const ValueFlow::Value &value)
             if (v.varId == 0)
                 v.varId = mImpl->mVarId;
             if (v.isKnown() && v.isIntValue())
-                mImpl->mValues->push_front(v);
+                mImpl->mValues->push_front(std::move(v));
             else
-                mImpl->mValues->push_back(v);
+                mImpl->mValues->push_back(std::move(v));
         }
     } else {
         ValueFlow::Value v(value);

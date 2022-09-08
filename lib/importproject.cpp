@@ -164,7 +164,7 @@ void ImportProject::FileSettings::setIncludePaths(const std::string &basepath, c
         if (s[0] == '/' || (s.size() > 1U && s.compare(1,2,":/") == 0)) {
             if (!endsWith(s,'/'))
                 s += '/';
-            includePaths.push_back(s);
+            includePaths.push_back(std::move(s));
             continue;
         }
 
@@ -312,7 +312,7 @@ void ImportProject::FileSettings::parseCommand(std::string command)
             if (i.size() > 1 && i[0] == '\"' && i.back() == '\"')
                 i = unescape(i.substr(1, i.size() - 2));
             if (std::find(includePaths.begin(), includePaths.end(), i) == includePaths.end())
-                includePaths.push_back(i);
+                includePaths.push_back(std::move(i));
         } else if (F=='s' && fval.compare(0,2,"td") == 0) {
             ++pos;
             const std::string stdval = readUntil(command, &pos, " ");
@@ -341,8 +341,8 @@ void ImportProject::FileSettings::parseCommand(std::string command)
             }
         } else if (F == 'i' && fval == "system") {
             ++pos;
-            const std::string isystem = readUntil(command, &pos, " ");
-            systemIncludePaths.push_back(isystem);
+            std::string isystem = readUntil(command, &pos, " ");
+            systemIncludePaths.push_back(std::move(isystem));
         } else if (F=='m') {
             if (fval == "unicode") {
                 defs += "UNICODE";
@@ -444,7 +444,7 @@ bool ImportProject::importCompileCommands(std::istream &istr)
         fs.parseCommand(command); // read settings; -D, -I, -U, -std, -m*, -f*
         std::map<std::string, std::string, cppcheck::stricmp> variables;
         fs.setIncludePaths(directory, fs.includePaths, variables);
-        fileSettings.push_back(fs);
+        fileSettings.push_back(std::move(fs));
     }
 
     return true;
@@ -804,7 +804,7 @@ bool ImportProject::importVcxproj(const std::string &filename, std::map<std::str
             }
             fs.setDefines(fs.defines);
             fs.setIncludePaths(Path::getPathFromFilename(filename), toStringList(includePath + ';' + additionalIncludePaths), variables);
-            fileSettings.push_back(fs);
+            fileSettings.push_back(std::move(fs));
         }
     }
 
@@ -1071,7 +1071,7 @@ bool ImportProject::importBcb6Prj(const std::string &projectFilename)
         fs.setIncludePaths(projectDir, toStringList(includePath), variables);
         fs.setDefines(cppMode ? cppDefines : defines);
         fs.filename = Path::simplifyPath(Path::isAbsolute(c) ? c : projectDir + c);
-        fileSettings.push_back(fs);
+        fileSettings.push_back(std::move(fs));
     }
 
     return true;
@@ -1180,7 +1180,7 @@ bool ImportProject::importCppcheckGuiProject(std::istream &istr, Settings *setti
                 s.lineNumber = child->IntAttribute("lineNumber", Suppressions::Suppression::NO_LINE);
                 s.symbolName = read(child->Attribute("symbolName"), "");
                 std::istringstream(read(child->Attribute("hash"), "0")) >> s.hash;
-                suppressions.push_back(s);
+                suppressions.push_back(std::move(s));
             }
         } else if (strcmp(node->Name(), CppcheckXml::VSConfigurationElementName) == 0)
             guiProject.checkVsConfigs = readXmlStringList(node, emptyString, CppcheckXml::VSConfigurationName, nullptr);
