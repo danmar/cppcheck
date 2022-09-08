@@ -123,7 +123,6 @@ Is reported for valid patterns we are using.
 `bugprone-suspicious-string-compare`<br>
 `bugprone-signed-char-misuse`<br>
 `bugprone-suspicious-include`<br>
-`modernize-replace-random-shuffle`<br>
 `readability-redundant-access-specifiers`<br>
 `performance-noexcept-move-constructor`<br>
 `concurrency-mt-unsafe`<br>
