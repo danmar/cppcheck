@@ -3052,6 +3052,19 @@ struct ExpressionAnalyzer : SingleValueFlowAnalyzer {
     }
 };
 
+struct SameExpressionAnalyzer : ExpressionAnalyzer {
+
+    SameExpressionAnalyzer() : ExpressionAnalyzer() {}
+
+    SameExpressionAnalyzer(const Token* e, const ValueFlow::Value& val, const TokenList* t)
+        : ExpressionAnalyzer(e, val, t)
+    {}
+
+    bool match(const Token* tok) const override {
+        return isSameExpression(isCPP(), true, expr, tok, getSettings()->library, true, true);
+    }
+};
+
 struct OppositeExpressionAnalyzer : ExpressionAnalyzer {
     bool isNot;
 
@@ -4923,7 +4936,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             {
                 for (const Token* condTok2 : getConditions(condTok, "&&")) {
                     if (is1) {
-                        ExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
+                        SameExpressionAnalyzer a1(condTok2, makeConditionValue(1, condTok2, true), tokenlist);
                         valueFlowGenericForward(startTok, startTok->link(), a1, settings);
                     }
 
@@ -4938,7 +4951,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
             if (Token::simpleMatch(startTok->link(), "} else {")) {
                 startTok = startTok->link()->tokAt(2);
                 for (const Token* condTok2:conds) {
-                    ExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
+                    SameExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
                     valueFlowGenericForward(startTok, startTok->link(), a1, settings);
 
                     if (is1) {
@@ -4958,7 +4971,7 @@ static void valueFlowConditionExpressions(TokenList *tokenlist, SymbolDatabase* 
                         continue;
                 }
                 for (const Token* condTok2:conds) {
-                    ExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
+                    SameExpressionAnalyzer a1(condTok2, makeConditionValue(0, condTok2, false), tokenlist);
                     valueFlowGenericForward(startTok->link()->next(), scope2->bodyEnd, a1, settings);
 
                     if (is1) {

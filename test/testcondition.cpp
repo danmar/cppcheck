@@ -105,6 +105,7 @@ private:
         TEST_CASE(oppositeInnerCondition2);
         TEST_CASE(oppositeInnerCondition3);
         TEST_CASE(oppositeInnerConditionAnd);
+        TEST_CASE(oppositeInnerConditionOr);
         TEST_CASE(oppositeInnerConditionEmpty);
         TEST_CASE(oppositeInnerConditionFollowVar);
 
@@ -2485,6 +2486,22 @@ private:
         check("void f(bool x, const int a, const int b) {\n"
               "        if(x && a < b)\n"
               "            if( x && a > b){}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+    }
+
+    void oppositeInnerConditionOr() {
+        check("void f1(int x) {\n"
+              "    if (x == 1 || x == 2) {\n"
+              "        if (x == 3) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+
+        check("void f3(int x) {\n"
+              "    if (x < 1 || x > 3) {\n"
+              "        if (x == 3) {}\n"
+              "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
     }
