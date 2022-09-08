@@ -9076,7 +9076,9 @@ void Tokenizer::simplifyQtSignalsSlots()
 {
     if (isC())
         return;
-    if (std::none_of(mSettings->libraries.cbegin(), mSettings->libraries.cend(), [](const std::string& lib) { return lib == "qt";}))
+    if (std::none_of(mSettings->libraries.cbegin(), mSettings->libraries.cend(), [](const std::string& lib) {
+        return lib == "qt";
+    }))
         return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // check for emit which can be outside of class
