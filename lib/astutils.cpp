@@ -1616,6 +1616,9 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
     if (!cond1 || !cond2)
         return false;
 
+    if (isSameExpression(cpp, true, cond1, cond2, library, pure, followVar, errors))
+        return false;
+
     if (!isNot && cond1->str() == "&&" && cond2->str() == "&&") {
         for (const Token* tok1: {
             cond1->astOperand1(), cond1->astOperand2()
@@ -1629,6 +1632,21 @@ bool isOppositeCond(bool isNot, bool cpp, const Token * const cond1, const Token
                 }
             }
         }
+    }
+
+    if (cond1->str() != cond2->str() && (cond1->str() == "||" || cond2->str() == "||")) {
+        const Token* orCond = nullptr;
+        const Token* otherCond = nullptr;
+        if (cond1->str() == "||") {
+            orCond = cond1;
+            otherCond = cond2;
+        }
+        if (cond2->str() == "||") {
+            orCond = cond2;
+            otherCond = cond1;
+        }
+        return isOppositeCond(isNot, cpp, orCond->astOperand1(), otherCond, library, pure, followVar, errors) &&
+               isOppositeCond(isNot, cpp, orCond->astOperand2(), otherCond, library, pure, followVar, errors);
     }
 
     if (cond1->str() == "!") {
