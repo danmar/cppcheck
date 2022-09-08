@@ -73,7 +73,8 @@ endif()
 find_package(Threads REQUIRED)
 
 if (USE_BOOST)
-    find_package(Boost COMPONENTS container QUIET)
+    # we are using the header-only "container" component
+    find_package(Boost QUIET)
 endif()
 
 find_program(LIBXML2_XMLLINT_EXECUTABLE xmllint)
