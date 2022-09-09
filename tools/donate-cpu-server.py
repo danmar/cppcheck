@@ -868,7 +868,6 @@ def check_library_report(result_path: str, message_id: str) -> str:
 
 # Lists all checkLibrary* messages regarding the given function name
 def check_library_function_name(result_path: str, function_name: str) -> str:
-    print('check_library_function_name')
     function_name = urllib.parse.unquote_plus(function_name)
     output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
@@ -991,7 +990,6 @@ class HttpClientThread(Thread):
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryUseIgnore')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url.startswith('check_library-'):
-                print('check library function !')
                 function_name = url[len('check_library-'):]
                 text = check_library_function_name(self.resultPath + '/' + 'info_output', function_name)
                 httpGetResponse(self.connection, text, 'text/plain')
@@ -1084,7 +1082,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         try:
                             text_received = bytes_received.decode('utf-8', 'ignore')
                         except UnicodeDecodeError as e:
-                            print('Error: Decoding failed: ' + str(e))
+                            print('Error: Decoding failed (write): ' + str(e))
                             data = ''
                             break
                         t = 0.0
@@ -1153,7 +1151,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                         try:
                             text_received = bytes_received.decode('utf-8', 'ignore')
                         except UnicodeDecodeError as e:
-                            print('Error: Decoding failed: ' + str(e))
+                            print('Error: Decoding failed (write_info): ' + str(e))
                             data = ''
                             break
                         t = 0.0
