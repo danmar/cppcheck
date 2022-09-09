@@ -825,7 +825,7 @@ def check_library_report(result_path: str, message_id: str) -> str:
         metric = 'functions'
         m_column = 'Function'
 
-    functions_shown_max = 50000
+    functions_shown_max = 5000
     html = '<html><head><title>' + message_id + ' report</title></head><body>\n'
     html += '<h1>' + message_id + ' report</h1>\n'
     html += 'Top ' + str(functions_shown_max) + ' ' + metric + ' are shown.'
