@@ -78,11 +78,12 @@ def overviewReport() -> str:
     html += '<a href="time_lt.html">Time report (improved)</a><br>\n'
     html += '<a href="time_gt.html">Time report (regressed)</a><br>\n'
     html += '<a href="time_slow.html">Time report (slowest)</a><br>\n'
+    html += '<br>\n'
+    html += '--check-library:<br>\n'
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
-    # TODO: how to get these messages?
-    #html += '<a href="">checkLibraryCheckType report</a><br>\n'
+    html += '<a href="check_library_check_type_report.html">checkLibraryCheckType report</a><br>\n'
     html += '<br>\n'
     html += 'Debug warnings:<br>\n'
     html += '<a href="head-debug">debug</a><br>\n'
@@ -812,20 +813,26 @@ def timeReportSlow(resultPath: str) -> str:
 
 
 def check_library_report(result_path: str, message_id: str) -> str:
-    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore'):
+    if message_id not in ('checkLibraryNoReturn', 'checkLibraryFunction', 'checkLibraryUseIgnore', 'checkLibraryCheckType'):
         error_message = 'Invalid value ' + message_id + ' for message_id parameter.'
         print(error_message)
         return error_message
 
+    if message_id == 'checkLibraryCheckType':
+        metric = 'types'
+        m_column = 'Type'
+    else:
+        metric = 'functions'
+        m_column = 'Function'
+
     functions_shown_max = 50000
     html = '<html><head><title>' + message_id + ' report</title></head><body>\n'
     html += '<h1>' + message_id + ' report</h1>\n'
-    html += 'Top ' + str(functions_shown_max) + ' functions are shown.'
+    html += 'Top ' + str(functions_shown_max) + ' ' + metric + ' are shown.'
     html += '<pre>\n'
     column_widths = [10, 100]
     html += '<b>'
-    html += 'Count'.rjust(column_widths[0]) + ' ' + \
-            'Function'
+    html += 'Count'.rjust(column_widths[0]) + ' ' + m_column
     html += '</b>\n'
 
     function_counts = {}
@@ -848,6 +855,8 @@ def check_library_report(result_path: str, message_id: str) -> str:
             if line.endswith('[' + message_id + ']\n'):
                 if message_id == 'checkLibraryFunction':
                     function_name = line[(line.find('for function ') + len('for function ')):line.rfind('[') - 1]
+                elif message_id == 'checkLibraryCheckType':
+                    function_name = line[(line.find('configuration for ') + len('configuration for ')):line.rfind('[') - 1]
                 else:
                     function_name = line[(line.find(': Function ') + len(': Function ')):line.rfind('should have') - 1]
                 function_counts[function_name] = function_counts.setdefault(function_name, 0) + 1
@@ -869,6 +878,10 @@ def check_library_report(result_path: str, message_id: str) -> str:
 # Lists all checkLibrary* messages regarding the given function name
 def check_library_function_name(result_path: str, function_name: str) -> str:
     function_name = urllib.parse.unquote_plus(function_name)
+    if function_name.endswith('()'):
+        id = '[checkLibrary'
+    else:
+        id = '[checkLibraryCheckType]'
     output_lines_list = []
     for filename in glob.glob(result_path + '/*'):
         if not os.path.isfile(filename) or filename.endswith('.diff'):
@@ -885,8 +898,8 @@ def check_library_function_name(result_path: str, function_name: str) -> str:
                 info_messages = True
             if not info_messages:
                 continue
-            if '[checkLibrary' in line:
-                if (' ' + function_name) in line:
+            if id in line:
+                if (' ' + function_name + ' ') in line:
                     if url:
                         output_lines_list.append(url)
                         url = None
@@ -988,6 +1001,9 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, text, 'text/html')
             elif url == 'check_library_use_ignore_report.html':
                 text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryUseIgnore')
+                httpGetResponse(self.connection, text, 'text/html')
+            elif url == 'check_library_check_type_report.html':
+                text = check_library_report(self.resultPath + '/' + 'info_output', message_id='checkLibraryCheckType')
                 httpGetResponse(self.connection, text, 'text/html')
             elif url.startswith('check_library-'):
                 function_name = url[len('check_library-'):]
