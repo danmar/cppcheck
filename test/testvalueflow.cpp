@@ -158,6 +158,7 @@ private:
         TEST_CASE(valueFlowNotNull);
         TEST_CASE(valueFlowSymbolic);
         TEST_CASE(valueFlowSymbolicIdentity);
+        TEST_CASE(valueFlowSymbolicStrlen);
         TEST_CASE(valueFlowSmartPointer);
     }
 
@@ -165,6 +166,7 @@ private:
         return !val.isTokValue();
     }
 
+    // cppcheck-suppress unusedPrivateFunction
     static bool isNotLifetimeValue(const ValueFlow::Value& val) {
         return !val.isLifetimeValue();
     }
@@ -532,13 +534,13 @@ private:
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
     }
 
-    std::list<ValueFlow::Value> removeSymbolic(std::list<ValueFlow::Value> values)
+    static std::list<ValueFlow::Value> removeSymbolic(std::list<ValueFlow::Value> values)
     {
         values.remove_if(std::mem_fn(&ValueFlow::Value::isSymbolicValue));
         return values;
     }
 
-    std::list<ValueFlow::Value> removeImpossible(std::list<ValueFlow::Value> values)
+    static std::list<ValueFlow::Value> removeImpossible(std::list<ValueFlow::Value> values)
     {
         values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
         return values;
@@ -1193,6 +1195,15 @@ private:
         values = tokenValues(code,"/");
         ASSERT_EQUALS(1U, values.size());
         ASSERT_EQUALS(10, values.back().intvalue);
+
+        code  = "void f() {\n" // #11294
+                "    struct S { int i; };\n"
+                "    const S a[] = { 1, 2 };\n"
+                "    x = sizeof(a) / ( sizeof(a[0]) );\n"
+                "}";
+        values = tokenValues(code, "/");
+        ASSERT_EQUALS(1U, values.size());
+        ASSERT_EQUALS(2, values.back().intvalue);
 
 #define CHECK(A, B, C, D)                         \
     do {                                      \
@@ -2651,6 +2662,26 @@ private:
                "}";
         ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 1));
         ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
+
+        code = "int f() {\n"
+               "    std::string a;\n"
+               "    std::string b=\"42\";\n"
+               "    std::swap(b, a);\n"
+               "    int x = b.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 0));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 2));
+
+        code = "int f() {\n"
+               "    std::string a;\n"
+               "    std::string b=\"42\";\n"
+               "    std::swap(b, a);\n"
+               "    int x = a.size();\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 6U, 2));
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 6U, 0));
     }
 
     void valueFlowAfterCondition() {
@@ -5089,6 +5120,7 @@ private:
                "  return((n=42) && *n == 'A');\n"
                "}";
         values = tokenValues(code, "n ==");
+        values.remove_if(&isNotUninitValue);
         ASSERT_EQUALS(true, values.empty());
 
         // #8233
@@ -7489,6 +7521,27 @@ private:
                "    return x;\n"
                "}\n";
         ASSERT_EQUALS(false, testValueOfXKnown(code, 3U, "a", 0));
+    }
+
+    void valueFlowSymbolicStrlen()
+    {
+        const char* code;
+
+        code = "int f(char *s) {\n"
+               "    size_t len = strlen(s);\n"
+               "    int x = s[len];\n"
+               "    return x;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXKnown(code, 4U, 0));
+
+        code = "int f(char *s, size_t i) {\n"
+               "    if (i < strlen(s)) {\n"
+               "      int x = s[i];\n"
+               "      return x;\n"
+               "    }\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 0));
     }
 
     void valueFlowSmartPointer()

@@ -57,6 +57,7 @@ private:
         TEST_CASE(comparisonOfBoolWithInt7); // #4846 - (!x == true)
         TEST_CASE(comparisonOfBoolWithInt8); // #9165
         TEST_CASE(comparisonOfBoolWithInt9); // #9304
+        TEST_CASE(comparisonOfBoolWithInt10); // #10935
 
         TEST_CASE(checkComparisonOfFuncReturningBool1);
         TEST_CASE(checkComparisonOfFuncReturningBool2);

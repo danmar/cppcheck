@@ -1677,6 +1677,7 @@ private:
         }
     }
 
+    // cppcheck-suppress unusedPrivateFunction
     void simplifyKnownVariables29() { // ticket #1811
         {
             const char code[] = "int foo(int u, int v)\n"

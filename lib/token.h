@@ -401,6 +401,9 @@ public:
     bool isEnumerator() const {
         return mTokType == eEnumerator;
     }
+    bool isVariable() const {
+        return mTokType == eVariable;
+    }
     bool isOp() const {
         return (isConstOp() ||
                 isAssignmentOp() ||

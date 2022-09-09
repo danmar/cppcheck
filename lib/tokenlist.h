@@ -110,7 +110,7 @@ public:
     void deallocateTokens();
 
     /** append file name if seen the first time; return its index in any case */
-    int appendFileIfNew(const std::string &fileName);
+    int appendFileIfNew(std::string fileName);
 
     /** get first token of list */
     const Token *front() const {

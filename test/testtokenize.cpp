@@ -57,6 +57,11 @@ private:
         settings2.checkUnusedTemplates = true;
         settings_windows.checkUnusedTemplates = true;
 
+        // library=qt
+        settings0.libraries.emplace_back("qt");
+        settings1.libraries.emplace_back("qt");
+        settings2.libraries.emplace_back("qt");
+
         TEST_CASE(tokenize1);
         TEST_CASE(tokenize2);
         TEST_CASE(tokenize4);
@@ -366,6 +371,7 @@ private:
         // a = b = 0;
         TEST_CASE(multipleAssignment);
 
+        TEST_CASE(platformWin);
         TEST_CASE(platformWin32A);
         TEST_CASE(platformWin32W);
         TEST_CASE(platformWin32AStringCat); // ticket #5015

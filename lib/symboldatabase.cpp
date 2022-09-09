@@ -3319,7 +3319,7 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                 base.type = baseType;
 
             // save pattern for base class name
-            derivedFrom.push_back(base);
+            derivedFrom.push_back(std::move(base));
         } else
             tok2 = tok2->next();
     }
@@ -3926,6 +3926,8 @@ void SymbolDatabase::printXml(std::ostream &out) const
                         out << " isInlineKeyword=\"true\"";
                     if (function->isStatic())
                         out << " isStatic=\"true\"";
+                    if (function->isAttributeNoreturn())
+                        out << " isAttributeNoreturn=\"true\"";
                     if (const Function* overriddenFunction = function->getOverriddenFunction())
                         out << " overriddenFunction=\"" << overriddenFunction << "\"";
                     if (function->argCount() == 0U)

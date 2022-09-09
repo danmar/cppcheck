@@ -283,7 +283,6 @@
                       <attribute name="type">
                         <choice>
                           <value>strlen</value>
-                          <value>argvalue</value>
                           <value>sizeof</value>
                           <value>mul</value>
                         </choice>
@@ -306,6 +305,24 @@
                       <attribute name="value">
                         <ref name="MINSIZE-VALUE"/>
                       </attribute>
+                      <optional>
+                        <attribute name="baseType"><text/></attribute>
+                      </optional>
+                    </element>
+                    <element name="minsize">
+                      <attribute name="type">
+                        <choice>
+                          <value>argvalue</value>
+                        </choice>
+                      </attribute>
+                      <attribute name="arg">
+                        <ref name="ARGNO"/>
+                      </attribute>
+                      <optional>
+                        <attribute name="arg2">
+                          <ref name="ARGNO"/>
+                        </attribute>
+                      </optional>
                       <optional>
                         <attribute name="baseType"><text/></attribute>
                       </optional>

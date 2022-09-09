@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.32"
+CLIENT_VERSION = "1.3.34"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -303,18 +303,22 @@ def download_package(work_path, package, bandwidth_limit):
     return destfile
 
 
-def unpack_package(work_path, tgz, cpp_only=False, skip_files=None):
+def unpack_package(work_path, tgz, cpp_only=False, c_only=False, skip_files=None):
     print('Unpacking..')
     temp_path = os.path.join(work_path, 'temp')
     __remove_tree(temp_path)
     os.mkdir(temp_path)
 
     header_endings = ('.hpp', '.h++', '.hxx', '.hh', '.h')
-    source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
+    cpp_source_endings = ('.cpp', '.c++', '.cxx', '.cc', '.tpp', '.txx', '.ipp', '.ixx', '.qml')
     c_source_endings = ('.c',)
 
-    if not cpp_only:
-        source_endings = source_endings + c_source_endings
+    if cpp_only:
+        source_endings = cpp_source_endings
+    elif c_only:
+        source_endings = c_source_endings
+    else:
+        source_endings = cpp_source_endings + c_source_endings
 
     source_found = False
     if tarfile.is_tarfile(tgz):
@@ -653,7 +657,7 @@ class LibraryIncludes:
                             'openssl': ['<openssl/'],
                             'pcre': ['<pcre.h>', '"pcre.h"'],
                             'python': ['<Python.h>', '"Python.h"'],
-                            'qt': ['<QApplication>', '<QList>', '<QKeyEvent>', '<qlist.h>', '<QObject>', '<QFlags>', '<QFileDialog>', '<QTest>', '<QMessageBox>', '<QMetaType>', '<QString>', '<qobjectdefs.h>', '<qstring.h>', '<QWidget>', '<QtWidgets>', '<QtGui'],
+                            'qt': ['<QAbstractSeries>', '<QAction>', '<QActionGroup>', '<QApplication>', '<QByteArray>', '<QChartView>', '<QClipboard>', '<QCloseEvent>', '<QColor>', '<QColorDialog>', '<QComboBox>', '<QCoreApplication>', '<QCryptographicHash>', '<QDate>', '<QDateTime>', '<QDateTimeAxis>', '<QDebug>', '<QDesktopServices>', '<QDialog>', '<QDialogButtonBox>', '<QDir>', '<QElapsedTimer>', '<QFile>', '<QFileDialog>', '<QFileInfo>', '<QFileInfoList>', '<QFlags>', '<QFont>', '<QFormLayout>', '<QHelpContentWidget>', '<QHelpEngine>', '<QHelpIndexWidget>', '<QImageReader>', '<QInputDialog>', '<QKeyEvent>', '<QLabel>', '<QLineSeries>', '<QList>', '<qlist.h>', '<QLocale>', '<QMainWindow>', '<QMap>', '<QMenu>', '<QMessageBox>', '<QMetaType>', '<QMimeData>', '<QMimeDatabase>', '<QMimeType>', '<QMutex>', '<QObject>', '<qobjectdefs.h>', '<QPainter>', '<QPlainTextEdit>', '<QPrintDialog>', '<QPrinter>', '<QPrintPreviewDialog>', '<QProcess>', '<QPushButton>', '<QQueue>', '<QReadWriteLock>', '<QRegularExpression>', '<QRegularExpressionValidator>', '<QSet>', '<QSettings>', '<QShortcut>', '<QSignalMapper>', '<QStandardItemModel>', '<QString>', '<qstring.h>', '<QStringList>', '<QSyntaxHighlighter>', '<QTest>', '<QTextBrowser>', '<QTextDocument>', '<QTextEdit>', '<QTextStream>', '<QThread>', '<QTimer>', '<QTranslator>', '<QTreeView>', '<QtWidgets>', '<QUrl>', '<QValueAxis>', '<QVariant>', '<QWaitCondition>', '<QWidget>', '<QXmlStreamReader>', '<QXmlStreamWriter>', '<QtGui'],
                             'ruby': ['<ruby.h>', '<ruby/', '"ruby.h"'],
                             'sdl': ['<SDL.h>', '<SDL/SDL.h>', '<SDL2/SDL.h>'],
                             'sqlite3': ['<sqlite3.h>', '"sqlite3.h"'],

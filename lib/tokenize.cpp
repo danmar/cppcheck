@@ -656,7 +656,7 @@ void Tokenizer::simplifyTypedef()
                 info.className = className;
                 info.bodyEnd = tok->link();
                 info.bodyEnd2 = tok->link();
-                spaceInfo.push_back(info);
+                spaceInfo.push_back(std::move(info));
 
                 hasClass = false;
             } else if (spaceInfo.size() > 1 && tok->str() == "}" && spaceInfo.back().bodyEnd == tok) {
@@ -1070,7 +1070,7 @@ void Tokenizer::simplifyTypedef()
         typedefInfo.lineNumber = typeName->linenr();
         typedefInfo.column = typeName->column();
         typedefInfo.used = false;
-        mTypedefInfo.push_back(typedefInfo);
+        mTypedefInfo.push_back(std::move(typedefInfo));
 
         while (!done) {
             std::string pattern = typeName->str();
@@ -1390,10 +1390,19 @@ void Tokenizer::simplifyTypedef()
                     if (sameStartEnd)
                         typeEnd = typeStart;
 
+                    // Is this a "T()" expression where T is a pointer type?
+                    const bool isPointerTypeCall = !inOperator && Token::Match(tok2, "%name% ( )") && !pointers.empty();
+
                     // start substituting at the typedef name by replacing it with the type
                     Token* replStart = tok2; // track first replaced token
                     for (Token* tok3 = typeStart; tok3->str() != ";"; tok3 = tok3->next())
                         tok3->isSimplifiedTypedef(true);
+                    if (isPointerTypeCall) {
+                        tok2->deleteThis();
+                        tok2->insertToken("0");
+                        tok2 = tok2->next();
+                        tok2->next()->insertToken("0");
+                    }
                     tok2->str(typeStart->str());
 
                     // restore qualification if it was removed
@@ -5099,14 +5108,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
 
     // Link < with >
     createLinks2();
-
-    if (mTimerResults) {
-        Timer t("Tokenizer::tokenize::setVarId (2)", mSettings->showtime, mTimerResults);
-        setVarId();
-    }
-    else {
-        setVarId();
-    }
 
     // Mark C++ casts
     for (Token *tok = list.front(); tok; tok = tok->next()) {
@@ -9075,6 +9076,10 @@ void Tokenizer::simplifyQtSignalsSlots()
 {
     if (isC())
         return;
+    if (std::none_of(mSettings->libraries.cbegin(), mSettings->libraries.cend(), [](const std::string& lib) {
+        return lib == "qt";
+    }))
+        return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // check for emit which can be outside of class
         if (Token::Match(tok, "emit|Q_EMIT %name% (") &&
@@ -9386,7 +9391,7 @@ void Tokenizer::removeUnnecessaryQualification()
             if (!tok)
                 return;
             info.bodyEnd = tok->link();
-            classInfo.push_back(info);
+            classInfo.push_back(std::move(info));
         } else if (!classInfo.empty()) {
             if (tok == classInfo.back().bodyEnd)
                 classInfo.pop_back();

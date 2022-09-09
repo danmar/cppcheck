@@ -34,4 +34,4 @@ jobs:
       # MinGW will always link the binaries even if they already exist. The linking is also extremely slow. So just run the "check" target which includes all the binaries.
       - name: Build all and run test
         run: |
-          mingw32-make -j2 check
+          mingw32-make VERBOSE=1 -j2 check
