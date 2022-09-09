@@ -500,17 +500,6 @@ int main(int argc, char **argv)
          << "        endif\n"
          << "        #### ComSpec is defined on some WIN32's.\n"
          << "        WINNT=1\n"
-         << "\n"
-         << "        ifeq ($(VERBOSE),1)\n"
-         << "            $(info PATH=$(PATH))\n"
-         << "        endif\n"
-         << "\n"
-         << "        ifneq (,$(findstring /cygdrive/,$(PATH)))\n"
-         << "            ifeq ($(VERBOSE),1)\n"
-         << "                $(info /cygdrive/ found in PATH)\n"
-         << "            endif\n"
-         << "            CYGWIN=1\n"
-         << "        endif # CYGWIN\n"
          << "    endif # ComSpec\n"
          << "endif # COMSPEC\n"
          << "\n"
@@ -545,21 +534,6 @@ int main(int argc, char **argv)
          << "else\n"
          << "    RDYNAMIC=-rdynamic\n" // enable backtrac
          << "endif\n"
-         << "\n";
-
-    // tinymxl2 requires __STRICT_ANSI__ to be undefined to compile under CYGWIN.
-    fout << "ifdef CYGWIN\n"
-         << "    ifeq ($(VERBOSE),1)\n"
-         << "        $(info CYGWIN found)\n"
-         << "    endif\n"
-         << "\n"
-         << "    # Set the flag to address compile time warnings\n"
-         << "    # with tinyxml2 and Cygwin.\n"
-         << "    CPPFLAGS+=-U__STRICT_ANSI__\n"
-         << "    \n"
-         << "    # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.\n"
-         << "    CXXFLAGS+=-Wl,--stack,8388608\n"
-         << "endif # CYGWIN\n"
          << "\n";
 
     makeConditionalVariable(fout, "CXX", "g++");

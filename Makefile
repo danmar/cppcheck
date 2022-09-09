@@ -54,17 +54,6 @@ ifndef COMSPEC
         endif
         #### ComSpec is defined on some WIN32's.
         WINNT=1
-
-        ifeq ($(VERBOSE),1)
-            $(info PATH=$(PATH))
-        endif
-
-        ifneq (,$(findstring /cygdrive/,$(PATH)))
-            ifeq ($(VERBOSE),1)
-                $(info /cygdrive/ found in PATH)
-            endif
-            CYGWIN=1
-        endif # CYGWIN
     endif # ComSpec
 endif # COMSPEC
 
@@ -98,19 +87,6 @@ ifneq ($(MSYSTEM),MINGW32 MINGW64)
 else
     RDYNAMIC=-rdynamic
 endif
-
-ifdef CYGWIN
-    ifeq ($(VERBOSE),1)
-        $(info CYGWIN found)
-    endif
-
-    # Set the flag to address compile time warnings
-    # with tinyxml2 and Cygwin.
-    CPPFLAGS+=-U__STRICT_ANSI__
-    
-    # Increase stack size for Cygwin builds to avoid segmentation fault in limited recursive tests.
-    CXXFLAGS+=-Wl,--stack,8388608
-endif # CYGWIN
 
 ifndef CXX
     CXX=g++
