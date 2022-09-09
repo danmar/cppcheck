@@ -44,28 +44,17 @@ ifdef FILESDIR
     CPPFLAGS+=-DFILESDIR=\"$(FILESDIR)\"
 endif
 
-ifndef COMSPEC
+# COMSPEC is defined when msys2 or cygwin shell is being used
+# ComSpec is defined when cmd or ps (PowerShell) shell is being used
+ifdef ComSpec
     ifeq ($(VERBOSE),1)
-        $(info COMSPEC not found)
+        $(info ComSpec found)
     endif
-    ifdef ComSpec
-        ifeq ($(VERBOSE),1)
-            $(info ComSpec found)
-        endif
-        #### ComSpec is defined on some WIN32's.
-        WINNT=1
-    endif # ComSpec
-endif # COMSPEC
+    
+    WINNT=1
+endif # ComSpec
 
-ifdef WINNT
-    ifeq ($(VERBOSE),1)
-        $(info WINNT found)
-    endif
-else # !WINNT
-    ifeq ($(VERBOSE),1)
-        $(info WINNT not found)
-    endif
-
+ifndef WINNT
     uname_S := $(shell sh -c 'uname -s 2>/dev/null || echo not')
 
     ifeq ($(VERBOSE),1)
@@ -73,8 +62,7 @@ else # !WINNT
     endif
 
     LDFLAGS+=-pthread
-
-endif # WINNT
+endif # !WINNT
 
 
 ifeq ($(VERBOSE),1)
