@@ -7334,7 +7334,7 @@ void ValueType::setDebugPath(const Token* tok, SourceLocation ctx, SourceLocatio
         return;
     std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
                     " => " + local.function_name();
-    debugPath.emplace_back(tok, s);
+    debugPath.emplace_back(tok, std::move(s));
 }
 
 ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const ValueType *func)

@@ -169,7 +169,7 @@ static void setSourceLocation(ValueFlow::Value& v,
         return;
     std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
                     " => " + local.function_name() + ": " + debugString(v);
-    v.debugPath.emplace_back(tok, s);
+    v.debugPath.emplace_back(tok, std::move(s));
 }
 
 static void changeKnownToPossible(std::list<ValueFlow::Value> &values, int indirect=-1)
@@ -5391,8 +5391,8 @@ static void valueFlowForwardAssign(Token* const tok,
                 else if (value.bound == ValueFlow::Value::Bound::Upper)
                     valueKind = "greater than ";
             }
-            const std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + valueKind + value.infoString();
-            value.errorPath.emplace_back(tok, info);
+            std::string info = "Assignment '" + tok->astParent()->expressionString() + "', assigned value is " + valueKind + value.infoString();
+            value.errorPath.emplace_back(tok, std::move(info));
         }
     }
 
