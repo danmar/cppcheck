@@ -333,7 +333,7 @@ struct ForwardTraversal {
         return false;
     }
 
-    bool isEscapeScope(const Token* endBlock, bool& unknown) {
+    bool isEscapeScope(const Token* endBlock, bool& unknown) const {
         const Token* ftok = nullptr;
         bool r = isReturnScope(endBlock, &settings->library, &ftok);
         if (!r && ftok)
@@ -389,7 +389,7 @@ struct ForwardTraversal {
         return bail;
     }
 
-    bool reentersLoop(Token* endBlock, const Token* condTok, const Token* stepTok) {
+    bool reentersLoop(Token* endBlock, const Token* condTok, const Token* stepTok) const {
         if (!condTok)
             return true;
         if (Token::simpleMatch(condTok, ":"))

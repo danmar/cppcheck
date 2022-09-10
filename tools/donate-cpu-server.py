@@ -25,7 +25,7 @@ import html as html_lib
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-SERVER_VERSION = "1.3.26"
+SERVER_VERSION = "1.3.27"
 
 OLD_VERSION = '2.9'
 
@@ -81,6 +81,22 @@ def overviewReport() -> str:
     html += '<a href="check_library_function_report.html">checkLibraryFunction report</a><br>\n'
     html += '<a href="check_library_noreturn_report.html">checkLibraryNoReturn report</a><br>\n'
     html += '<a href="check_library_use_ignore_report.html">checkLibraryUseIgnore report</a><br>\n'
+    # TODO: how to get these messages?
+    #html += '<a href="">checkLibraryCheckType report</a><br>\n'
+    html += '<br>\n'
+    html += 'Debug warnings:<br>\n'
+    html += '<a href="head-debug">debug</a><br>\n'
+    html += '<a href="head-varid0">varid0</a><br>\n'
+    html += '<a href="head-valueType">valueType</a><br>\n'
+    html += '<a href="head-noparamend">noparamend</a><br>\n'
+    html += '<a href="head-simplifyTypedef">simplifyTypedef</a><br>\n'
+    html += '<a href="head-simplifyUsingUnmatchedBodyEnd">simplifyUsingUnmatchedBodyEnd</a><br>\n'
+    html += '<a href="head-simplifyUsing">simplifyUsing</a><br>\n'
+    #html += '<a href="head-autoNoType">autoNoType</a><br>\n'
+    #html += '<a href="head-valueFlowBailout">valueFlowBailout</a><br>\n'
+    #html += '<a href="head-bailoutUninitVar">bailoutUninitVar</a><br>\n'
+    #html += '<a href="head-symbolDatabaseWarning">symbolDatabaseWarning</a><br>\n'
+    #html += '<a href="head-valueFlowBailoutIncompleteVar">valueFlowBailoutIncompleteVar</a><br>\n'
     html += '<br>\n'
     html += 'Important errors:<br>\n'
     html += '<a href="head-cppcheckError">cppcheckError</a><br>\n'

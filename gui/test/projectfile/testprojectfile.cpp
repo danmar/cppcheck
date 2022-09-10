@@ -37,14 +37,14 @@ bool ImportProject::sourceFileExists(const std::string & /*file*/) {
     return true;
 }
 
-void TestProjectFile::loadInexisting()
+void TestProjectFile::loadInexisting() const
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/foo.cppcheck");
     ProjectFile pfile(filepath);
     QCOMPARE(pfile.read(), false);
 }
 
-void TestProjectFile::loadSimple()
+void TestProjectFile::loadSimple() const
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple.cppcheck");
     ProjectFile pfile(filepath);
@@ -67,7 +67,7 @@ void TestProjectFile::loadSimple()
 }
 
 // Test that project file with old 'ignore' element works
-void TestProjectFile::loadSimpleWithIgnore()
+void TestProjectFile::loadSimpleWithIgnore() const
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple_ignore.cppcheck");
     ProjectFile pfile(filepath);
@@ -89,7 +89,7 @@ void TestProjectFile::loadSimpleWithIgnore()
     QCOMPARE(defines[0], QString("FOO"));
 }
 
-void TestProjectFile::loadSimpleNoroot()
+void TestProjectFile::loadSimpleNoroot() const
 {
     const QString filepath(QString(SRCDIR) + "/../data/projectfiles/simple_noroot.cppcheck");
     ProjectFile pfile(filepath);

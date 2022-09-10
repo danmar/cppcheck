@@ -535,7 +535,7 @@ private:
         return values.size() == 1U && !values.front().isTokValue() ? values.front() : ValueFlow::Value();
     }
 
-    std::list<ValueFlow::Value> removeSymbolicTok(std::list<ValueFlow::Value> values)
+    static std::list<ValueFlow::Value> removeSymbolicTok(std::list<ValueFlow::Value> values)
     {
         values.remove_if([](const ValueFlow::Value& v) {
             return v.isSymbolicValue() || v.isTokValue();
@@ -543,7 +543,7 @@ private:
         return values;
     }
 
-    std::list<ValueFlow::Value> removeImpossible(std::list<ValueFlow::Value> values)
+    static std::list<ValueFlow::Value> removeImpossible(std::list<ValueFlow::Value> values)
     {
         values.remove_if(std::mem_fn(&ValueFlow::Value::isImpossible));
         return values;

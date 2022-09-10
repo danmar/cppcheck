@@ -316,7 +316,7 @@ protected:
     int getSuppressionIndex(const QString &shortText) const;
 
 private:
-    QStringList getProjectConfigs(const QString &fileName);
+    static QStringList getProjectConfigs(const QString &fileName);
 
     Ui::ProjectFile *mUI;
 

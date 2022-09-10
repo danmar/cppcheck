@@ -105,6 +105,7 @@ private:
         TEST_CASE(oppositeInnerCondition2);
         TEST_CASE(oppositeInnerCondition3);
         TEST_CASE(oppositeInnerConditionAnd);
+        TEST_CASE(oppositeInnerConditionOr);
         TEST_CASE(oppositeInnerConditionEmpty);
         TEST_CASE(oppositeInnerConditionFollowVar);
 
@@ -1389,6 +1390,52 @@ private:
         check("struct A {\n"
               "    void f() const;\n"
               "};\n"
+              "void foo(A a, A b) {\n"
+              "  A x = b;\n"
+              "  A y = b;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:5] -> [test.cpp:6] -> [test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n",
+            errout.str());
+
+        check("struct A {\n"
+              "    void f();\n"
+              "};\n"
+              "void foo(A a, A b) {\n"
+              "  A x = b;\n"
+              "  A y = b;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a, A b) {\n"
+              "  A x = b;\n"
+              "  A y = b;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void foo(A a, A b) {\n"
+              "  const A x = b;\n"
+              "  const A y = b;\n"
+              "  y.f();\n"
+              "  if (a > x && a < y)\n"
+              "    return;\n"
+              "}");
+        ASSERT_EQUALS(
+            "[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n",
+            errout.str());
+
+        check("struct A {\n"
+              "    void f() const;\n"
+              "};\n"
               "void foo(A a) {\n"
               "  A x = a;\n"
               "  A y = a;\n"
@@ -1396,7 +1443,9 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:5] -> [test.cpp:6] -> [test.cpp:8]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Condition 'a>x' is always false\n"
+                      "[test.cpp:8]: (style) Condition 'a<y' is always false\n",
+                      errout.str());
 
         check("struct A {\n"
               "    void f();\n"
@@ -1408,7 +1457,7 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:8]: (style) Condition 'a>x' is always false\n", errout.str());
 
         check("void foo(A a) {\n"
               "  A x = a;\n"
@@ -1417,7 +1466,7 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'a>x' is always false\n", errout.str());
 
         check("void foo(A a) {\n"
               "  const A x = a;\n"
@@ -1426,7 +1475,9 @@ private:
               "  if (a > x && a < y)\n"
               "    return;\n"
               "}");
-        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3] -> [test.cpp:5]: (warning) Logical conjunction always evaluates to false: a > x && a < y.\n", errout.str());
+        ASSERT_EQUALS("[test.cpp:5]: (style) Condition 'a>x' is always false\n"
+                      "[test.cpp:5]: (style) Condition 'a<y' is always false\n",
+                      errout.str());
     }
 
     void incorrectLogicOperator13() {
@@ -2487,6 +2538,46 @@ private:
               "            if( x && a > b){}\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n", errout.str());
+    }
+
+    void oppositeInnerConditionOr()
+    {
+        check("void f(int x) {\n"
+              "    if (x == 1 || x == 2) {\n"
+              "        if (x == 3) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x == 1 || x == 2) {\n"
+              "        if (x == 1) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x == 1 || x == 2) {\n"
+              "        if (x == 2) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(std::string x) {\n"
+              "    if (x == \"1\" || x == \"2\") {\n"
+              "        if (x == \"1\") {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("void f(int x) {\n"
+              "    if (x < 1 || x > 3) {\n"
+              "        if (x == 3) {}\n"
+              "    }\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:2] -> [test.cpp:3]: (warning) Opposite inner 'if' condition leads to a dead code block.\n",
+                      errout.str());
     }
 
     void oppositeInnerConditionEmpty() {
@@ -4283,6 +4374,16 @@ private:
               "};\n");
         ASSERT_EQUALS("", errout.str());
 
+        // #11203
+        check("void f() {\n"
+              "    int i = 10;\n"
+              "    if(i > 9.9){}\n"
+              "    float f = 9.9f;\n"
+              "    if(f < 10) {}\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:3]: (style) Condition 'i>9.9' is always true\n"
+                      "[test.cpp:5]: (style) Condition 'f<10' is always true\n",
+                      errout.str());
         check("constexpr int f() {\n" // #11238
               "    return 1;\n"
               "}\n"
