@@ -1423,14 +1423,26 @@ static void valueFlowArrayBool(TokenList *tokenlist)
 static void valueFlowArrayElement(TokenList* tokenlist, const Settings* settings)
 {
     for (Token* tok = tokenlist->front(); tok; tok = tok->next()) {
-        if (!Token::simpleMatch(tok, "["))
-            continue;
-        if (!tok->isBinaryOp())
-            continue;
         if (tok->hasKnownIntValue())
             continue;
-        const Token* indexTok = tok->astOperand2();
-        const Token* arrayTok = tok->astOperand1();
+        const Token* indexTok = nullptr;
+        const Token* arrayTok = nullptr;
+        if (Token::simpleMatch(tok, "[") && tok->isBinaryOp()) {
+            indexTok = tok->astOperand2();
+            arrayTok = tok->astOperand1();
+        } else if (Token::Match(tok->tokAt(-2), ". %name% (") && astIsContainer(tok->tokAt(-2)->astOperand1())) {
+            arrayTok = tok->tokAt(-2)->astOperand1();
+            const Library::Container* container = getLibraryContainer(arrayTok);
+            if (!container || container->stdAssociativeLike)
+                continue;
+            Library::Container::Yield yield = container->getYield(tok->strAt(-1));
+            if (yield != Library::Container::Yield::AT_INDEX)
+                continue;
+            indexTok = tok->astOperand2();
+        }
+
+        if (!indexTok || !arrayTok)
+            continue;
 
         for (const ValueFlow::Value& arrayValue : arrayTok->values()) {
             if (!arrayValue.isTokValue())
@@ -5291,7 +5303,8 @@ static void valueFlowForwardConst(Token* start,
                                   const Token* end,
                                   const Variable* var,
                                   const ContainerOfValue& values,
-                                  const Settings* const settings)
+                                  const Settings* const settings,
+                                  int = 0)
 {
     for (Token* tok = start; tok != end; tok = tok->next()) {
         if (tok->varId() == var->declarationId()) {
@@ -5335,6 +5348,15 @@ static void valueFlowForwardConst(Token* start,
             }();
         }
     }
+}
+
+static void valueFlowForwardConst(Token* start,
+                                  const Token* end,
+                                  const Variable* var,
+                                  const std::initializer_list<ValueFlow::Value>& values,
+                                  const Settings* const settings)
+{
+    valueFlowForwardConst(start, end, var, values, settings, 0);
 }
 
 static void valueFlowForwardAssign(Token* const tok,
@@ -8091,6 +8113,20 @@ static std::vector<ValueFlow::Value> getContainerSizeFromConstructor(const Token
     return getContainerSizeFromConstructorArgs(args, valueType->container, known);
 }
 
+static void valueFlowContainerSetTokValue(TokenList* tokenlist, const Token* tok, Token* initList)
+{
+    ValueFlow::Value value;
+    value.valueType = ValueFlow::Value::ValueType::TOK;
+    value.tokvalue = initList;
+    value.setKnown();
+    Token* start = initList->link() ? initList->link() : initList->next();
+    if (tok->variable() && tok->variable()->isConst()) {
+        valueFlowForwardConst(start, tok->variable()->scope()->bodyEnd, tok->variable(), {value}, tokenlist->getSettings());
+    } else {
+        valueFlowForward(start, tok, value, tokenlist);
+    }
+}
+
 static void valueFlowContainerSize(TokenList* tokenlist,
                                    SymbolDatabase* symboldatabase,
                                    ErrorLogger* /*errorLogger*/,
@@ -8146,7 +8182,8 @@ static void valueFlowContainerSize(TokenList* tokenlist,
             values.back().setKnown();
         if (!staticSize) {
             if (Token::simpleMatch(var->nameToken()->next(), "{")) {
-                const Token* initList = var->nameToken()->next();
+                Token* initList = var->nameToken()->next();
+                valueFlowContainerSetTokValue(tokenlist, var->nameToken(), initList);
                 values = getInitListSize(initList, var->valueType(), settings, known);
             } else if (Token::simpleMatch(var->nameToken()->next(), "(")) {
                 const Token* constructorArgs = var->nameToken()->next();
@@ -8166,24 +8203,27 @@ static void valueFlowContainerSize(TokenList* tokenlist,
 
     // after assignment
     for (const Scope *functionScope : symboldatabase->functionScopes) {
-        for (const Token *tok = functionScope->bodyStart; tok != functionScope->bodyEnd; tok = tok->next()) {
+        for (Token* tok = const_cast<Token*>(functionScope->bodyStart); tok != functionScope->bodyEnd; tok = tok->next()) {
             if (Token::Match(tok, "%name%|;|{|} %var% = %str% ;")) {
-                const Token *containerTok = tok->next();
+                Token* containerTok = tok->next();
                 if (containerTok->exprId() == 0)
                     continue;
-                if (containerTok->valueType() && containerTok->valueType()->container && containerTok->valueType()->container->stdStringLike) {
+                if (containerTok->valueType() && containerTok->valueType()->container &&
+                    containerTok->valueType()->container->stdStringLike) {
+                    valueFlowContainerSetTokValue(tokenlist, containerTok, containerTok->tokAt(2));
                     ValueFlow::Value value(Token::getStrLength(containerTok->tokAt(2)));
                     value.valueType = ValueFlow::Value::ValueType::CONTAINER_SIZE;
                     value.setKnown();
                     valueFlowForward(containerTok->next(), containerTok, value, tokenlist);
                 }
             } else if (Token::Match(tok, "%name%|;|{|}|> %var% = {") && Token::simpleMatch(tok->linkAt(3), "} ;")) {
-                const Token* containerTok = tok->next();
+                Token* containerTok = tok->next();
                 if (containerTok->exprId() == 0)
                     continue;
                 if (astIsContainer(containerTok) && containerTok->valueType()->container->size_templateArgNo < 0) {
                     std::vector<ValueFlow::Value> values =
                         getInitListSize(tok->tokAt(3), containerTok->valueType(), settings);
+                    valueFlowContainerSetTokValue(tokenlist, containerTok, tok->tokAt(3));
                     for (const ValueFlow::Value& value : values)
                         valueFlowForward(containerTok->next(), containerTok, value, tokenlist);
                 }
