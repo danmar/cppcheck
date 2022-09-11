@@ -2897,6 +2897,60 @@ bool isConstVarExpression(const Token *tok, std::function<bool(const Token*)> sk
     return false;
 }
 
+static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
+{
+    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
+
+    int argnr;
+    const Token* ftok = getTokenArgumentFunction(tok, argnr);
+    if (!ftok)
+        return ExprUsage::None;
+    if (ftok->function()) {
+        std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
+        for (const Variable* arg : args) {
+            if (!arg)
+                continue;
+            if (arg->isReference())
+                return ExprUsage::PassedByReference;
+        }
+        if (!args.empty() && indirect == 0 && !addressOf)
+            return ExprUsage::Used;
+    } else {
+        const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
+        if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
+            return ExprUsage::Used;
+        bool hasIndirect = false;
+        const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
+        if (isuninitbad && (!addressOf || isnullbad))
+            return ExprUsage::Used;
+    }
+    return ExprUsage::Inconclusive;
+}
+
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
+{
+    if (indirect > 0 && tok->astParent()) {
+        if (Token::Match(tok->astParent(), "%assign%") && astIsRHS(tok))
+            return ExprUsage::NotUsed;
+        if (tok->astParent()->isConstOp())
+            return ExprUsage::NotUsed;
+        if (tok->astParent()->isCast())
+            return ExprUsage::NotUsed;
+    }
+    if (indirect == 0) {
+        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::simpleMatch(tok->astParent(), "=") &&
+            !tok->astParent()->isUnaryOp("&"))
+            return ExprUsage::Used;
+        if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok))
+            return ExprUsage::Used;
+        // Function call or index
+        if (Token::Match(tok->astParent(), "(|[") && !tok->astParent()->isCast() &&
+            (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
+            return ExprUsage::Used;
+    }
+    return getFunctionUsage(tok, indirect, settings);
+}
+
 static void getLHSVariablesRecursive(std::vector<const Variable*>& vars, const Token* tok)
 {
     if (!tok)

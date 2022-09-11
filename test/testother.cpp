@@ -259,6 +259,7 @@ private:
         TEST_CASE(partiallyMoved);
         TEST_CASE(moveAndLambda);
         TEST_CASE(moveInLoop);
+        TEST_CASE(moveCallback);
         TEST_CASE(forwardAndUsed);
 
         TEST_CASE(funcArgNamesDifferent);
@@ -9956,6 +9957,16 @@ private:
               "    }\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'l'.\n", errout.str());
+    }
+
+    void moveCallback()
+    {
+        check("bool f(std::function<void()>&& callback);\n"
+              "void func(std::function<void()> callback) {\n"
+              "    if(!f(std::move(callback)))\n"
+              "        callback();\n"
+              "}\n");
+        ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'callback'.\n", errout.str());
     }
 
     void forwardAndUsed() {

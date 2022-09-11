@@ -3228,6 +3228,8 @@ void CheckOther::checkAccessOfMovedVariable()
                 scopeStart = memberInitializationStart;
         }
         for (const Token* tok = scopeStart->next(); tok != scope->bodyEnd; tok = tok->next()) {
+            if (!tok->astParent())
+                continue;
             const ValueFlow::Value * movedValue = tok->getMovedValue();
             if (!movedValue || movedValue->moveKind == ValueFlow::Value::MoveKind::NonMovedVariable)
                 continue;
@@ -3242,31 +3244,18 @@ void CheckOther::checkAccessOfMovedVariable()
                 else
                     inconclusive = true;
             } else {
-                const bool variableChanged = isVariableChangedByFunctionCall(tok, 0, mSettings, &inconclusive);
-                accessOfMoved = !variableChanged && checkUninitVar.isVariableUsage(tok, false, CheckUninitVar::NO_ALLOC);
-                if (inconclusive) {
-                    accessOfMoved = !isMovedParameterAllowedForInconclusiveFunction(tok);
-                    if (accessOfMoved)
-                        inconclusive = false;
-                }
+                const ExprUsage usage = getExprUsage(tok, 0, mSettings);
+                if (usage == ExprUsage::Used)
+                    accessOfMoved = true;
+                if (usage == ExprUsage::PassedByReference)
+                    accessOfMoved = !isVariableChangedByFunctionCall(tok, 0, mSettings, &inconclusive);
+                else if (usage == ExprUsage::Inconclusive)
+                    inconclusive = true;
             }
             if (accessOfMoved || (inconclusive && reportInconclusive))
                 accessMovedError(tok, tok->str(), movedValue, inconclusive || movedValue->isInconclusive());
         }
     }
-}
-
-bool CheckOther::isMovedParameterAllowedForInconclusiveFunction(const Token * tok)
-{
-    if (Token::simpleMatch(tok->tokAt(-4), "std :: move ("))
-        return false;
-    const Token * tokAtM2 = tok->tokAt(-2);
-    if (Token::simpleMatch(tokAtM2, "> (") && tokAtM2->link()) {
-        const Token * leftAngle = tokAtM2->link();
-        if (Token::simpleMatch(leftAngle->tokAt(-3), "std :: forward <"))
-            return false;
-    }
-    return true;
 }
 
 void CheckOther::accessMovedError(const Token *tok, const std::string &varname, const ValueFlow::Value *value, bool inconclusive)
