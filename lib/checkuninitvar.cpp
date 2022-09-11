@@ -1561,51 +1561,6 @@ void CheckUninitVar::uninitStructMemberError(const Token *tok, const std::string
                 "$symbol:" + membername + "\nUninitialized struct member: $symbol", CWE_USE_OF_UNINITIALIZED_VARIABLE, Certainty::normal);
 }
 
-enum class ExprUsage { None, NotUsed, PassedByReference, Used };
-
-static ExprUsage getFunctionUsage(const Token* tok, int indirect, const Settings* settings)
-{
-    const bool addressOf = tok->astParent() && tok->astParent()->isUnaryOp("&");
-
-    int argnr;
-    const Token* ftok = getTokenArgumentFunction(tok, argnr);
-    if (!ftok)
-        return ExprUsage::None;
-    if (ftok->function()) {
-        std::vector<const Variable*> args = getArgumentVars(ftok, argnr);
-        for (const Variable* arg : args) {
-            if (!arg)
-                continue;
-            if (arg->isReference())
-                return ExprUsage::PassedByReference;
-        }
-    } else {
-        const bool isnullbad = settings->library.isnullargbad(ftok, argnr + 1);
-        if (indirect == 0 && astIsPointer(tok) && !addressOf && isnullbad)
-            return ExprUsage::Used;
-        bool hasIndirect = false;
-        const bool isuninitbad = settings->library.isuninitargbad(ftok, argnr + 1, indirect, &hasIndirect);
-        if (isuninitbad && (!addressOf || isnullbad))
-            return ExprUsage::Used;
-    }
-    return ExprUsage::None;
-}
-
-static ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
-{
-    if (indirect > 0 && tok->astParent()) {
-        if (Token::Match(tok->astParent(), "%assign%") && astIsRhs(tok))
-            return ExprUsage::NotUsed;
-        if (tok->astParent()->isConstOp())
-            return ExprUsage::NotUsed;
-        if (tok->astParent()->isCast())
-            return ExprUsage::NotUsed;
-    }
-    if (indirect == 0 && Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && tok->astParent()->str() != "=")
-        return ExprUsage::Used;
-    return getFunctionUsage(tok, indirect, settings);
-}
-
 static bool isLeafDot(const Token* tok)
 {
     if (!tok)

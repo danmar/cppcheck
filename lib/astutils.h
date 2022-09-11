@@ -392,6 +392,10 @@ bool isCPPCast(const Token* tok);
 
 bool isConstVarExpression(const Token* tok, std::function<bool(const Token*)> skipPredicate = nullptr);
 
+enum class ExprUsage { None, NotUsed, PassedByReference, Used, Inconclusive };
+
+ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings);
+
 const Variable *getLHSVariable(const Token *tok);
 
 const Token* getLHSVariableToken(const Token* tok);
