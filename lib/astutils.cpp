@@ -2938,12 +2938,14 @@ ExprUsage getExprUsage(const Token* tok, int indirect, const Settings* settings)
             return ExprUsage::NotUsed;
     }
     if (indirect == 0) {
-        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::simpleMatch(tok->astParent(), "=") && !tok->astParent()->isUnaryOp("&"))
+        if (Token::Match(tok->astParent(), "%cop%|%assign%|++|--") && !Token::simpleMatch(tok->astParent(), "=") &&
+            !tok->astParent()->isUnaryOp("&"))
             return ExprUsage::Used;
         if (Token::simpleMatch(tok->astParent(), "=") && astIsRHS(tok))
             return ExprUsage::Used;
         // Function call or index
-        if (Token::Match(tok->astParent(), "(|[") && !tok->astParent()->isCast() && (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
+        if (Token::Match(tok->astParent(), "(|[") && !tok->astParent()->isCast() &&
+            (astIsLHS(tok) || Token::simpleMatch(tok->astParent(), "( )")))
             return ExprUsage::Used;
     }
     return getFunctionUsage(tok, indirect, settings);

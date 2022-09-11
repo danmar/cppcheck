@@ -9959,12 +9959,13 @@ private:
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'l'.\n", errout.str());
     }
 
-    void moveCallback() {
+    void moveCallback()
+    {
         check("bool f(std::function<void()>&& callback);\n"
-                "void func(std::function<void()> callback) {\n"
-                "    if(!f(std::move(callback)))\n"
-                "        callback();\n"
-                "}\n");
+              "void func(std::function<void()> callback) {\n"
+              "    if(!f(std::move(callback)))\n"
+              "        callback();\n"
+              "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'callback'.\n", errout.str());
     }
 
