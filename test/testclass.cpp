@@ -3109,6 +3109,16 @@ private:
                       "  memset(b, 0, sizeof(b));\n"
                       "}");
         ASSERT_EQUALS("", errout.str());
+
+        // #1655
+        Settings s;
+        LOAD_LIB_2(s.library, "std.cfg");
+        checkNoMemset("void f() {\n"
+                      "    char c[] = \"abc\";\n"
+                      "    std::string s;\n"
+                      "    memcpy(&s, c, strlen(c) + 1);\n"
+                      "}\n", s);
+        ASSERT_EQUALS("[test.cpp:4]: (error) Using 'memcpy' on std::string.\n", errout.str());
     }
 
     void memsetOnInvalid() { // Ticket #5425

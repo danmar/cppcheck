@@ -1353,6 +1353,10 @@ void CheckClass::checkMemset()
 
                         if (numIndirToVariableType == 1)
                             type = var->typeScope();
+
+                        if (!type && mSettings->library.detectContainerOrIterator(var->typeStartToken())) {
+                            memsetError(tok, tok->str(), var->getTypeName(), {}, /*isContainer*/ true);
+                        }
                     }
                 }
 
@@ -1468,15 +1472,16 @@ void CheckClass::mallocOnClassError(const Token* tok, const std::string &memfunc
                 "since no constructor is called and class members remain uninitialized. Consider using 'new' instead.", CWE665, Certainty::normal);
 }
 
-void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type)
+void CheckClass::memsetError(const Token *tok, const std::string &memfunc, const std::string &classname, const std::string &type, bool isContainer)
 {
-    reportError(tok, Severity::error, "memsetClass",
-                "$symbol:" + memfunc +"\n"
-                "$symbol:" + classname +"\n"
-                "Using '" + memfunc + "' on " + type + " that contains a " + classname + ".\n"
-                "Using '" + memfunc + "' on " + type + " that contains a " + classname + " is unsafe, because constructor, destructor "
-                "and copy operator calls are omitted. These are necessary for this non-POD type to ensure that a valid object "
-                "is created.", CWE762, Certainty::normal);
+    const std::string typeStr = isContainer ? std::string() : (type + " that contains a ");
+    const std::string msg = "$symbol:" + memfunc + "\n"
+                            "$symbol:" + classname + "\n"
+                            "Using '" + memfunc + "' on " + typeStr + classname + ".\n"
+                            "Using '" + memfunc + "' on " + typeStr + classname + " is unsafe, because constructor, destructor "
+                            "and copy operator calls are omitted. These are necessary for this non-POD type to ensure that a valid object "
+                            "is created.";
+    reportError(tok, Severity::error, "memsetClass", msg, CWE762, Certainty::normal);
 }
 
 void CheckClass::memsetErrorReference(const Token *tok, const std::string &memfunc, const std::string &type)
