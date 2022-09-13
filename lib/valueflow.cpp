@@ -4818,8 +4818,10 @@ static void valueFlowAfterMove(TokenList* tokenlist, SymbolDatabase* symboldatab
                 value.setKnown();
 
                 setTokenValue(tok, value, settings);
-                const Token * const endOfVarScope = var->scope()->bodyEnd;
-                valueFlowForward(tok->next(), endOfVarScope, tok, std::move(value), tokenlist);
+                if (var->scope()) {
+                    const Token* const endOfVarScope = var->scope()->bodyEnd;
+                    valueFlowForward(tok->next(), endOfVarScope, tok, std::move(value), tokenlist);
+                }
                 continue;
             }
             ValueFlow::Value::MoveKind moveKind;
