@@ -27,6 +27,7 @@
 #include "errortypes.h"
 
 #include <string>
+#include <set>
 
 class Settings;
 class Token;
