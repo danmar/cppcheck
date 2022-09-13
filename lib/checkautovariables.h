@@ -127,6 +127,11 @@ private:
                "- suspicious assignment of pointer argument\n"
                "- useless assignment of function argument\n";
     }
+
+    /** returns true if tokvalue has already been diagnosed */
+    bool diag(const Token* tokvalue);
+
+    std::set<const Token*> mDiagDanglingTemp;
 };
 /// @}
 //---------------------------------------------------------------------------
