@@ -6789,6 +6789,15 @@ private:
                "  for (b c : {b{}, {}}) {}\n"
                "}\n";
         valueOfTok(code, "c");
+
+        code = "class T {\n"
+               "private slots:\n"
+               "    void f() { D& r = dynamic_cast<D&>(*m); }\n"
+               "    void g() { m.reset(new D); }\n"
+               "private:\n"
+               "    std::shared_ptr<B> m;\n"
+               "};\n";
+        valueOfTok(code, "r");
     }
 
     void valueFlowHang() {
