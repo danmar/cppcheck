@@ -1777,6 +1777,10 @@ static bool isBracketAccess(const Token* tok)
     return tok->variable()->nameToken() != tok;
 }
 
+static bool isConstant(const Token* tok) {
+    return Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL");
+}
+
 static bool isConstStatement(const Token *tok, bool cpp)
 {
     if (!tok)
@@ -1785,7 +1789,7 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (tok->varId() != 0)
         return true;
-    if (Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL"))
+    if (isConstant(tok))
         return true;
     if (Token::Match(tok, "*|&|&&") &&
         (Token::Match(tok->previous(), "::|.|const|volatile|restrict") || isVarDeclOp(tok)))
@@ -1944,7 +1948,7 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Found suspicious operator '" + tok->str() + "', result is not used.";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
-    else if (Token::Match(valueTok, "%str%|%num%|%bool%|%char%")) {
+    else if (isConstant(valueTok)) {
         std::string typeStr("string");
         if (valueTok->isNumber())
             typeStr = "numeric";
@@ -1952,6 +1956,8 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
             typeStr = "bool";
         else if (valueTok->tokType() == Token::eChar)
             typeStr = "character";
+        else if (isNullOperand(valueTok))
+            typeStr = "NULL";
         msg = "Redundant code: Found a statement that begins with " + typeStr + " constant.";
     }
     else if (!tok)
@@ -1966,7 +1972,7 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Redundant code: Found unused member access.";
     else if (tok->str() == "[" && tok->tokType() == Token::Type::eExtendedOp)
         msg = "Redundant code: Found unused array access.";
-    else {
+    else if (mSettings->debugwarnings) {
         reportError(tok, Severity::debug, "debug", "constStatementError not handled.");
         return;
     }
