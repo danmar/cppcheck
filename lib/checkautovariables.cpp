@@ -392,6 +392,13 @@ void CheckAutoVariables::errorUselessAssignmentPtrArg(const Token *tok)
                 "Assignment of function parameter has no effect outside the function. Did you forget dereferencing it?", CWE398, Certainty::normal);
 }
 
+bool CheckAutoVariables::diag(const Token* tokvalue)
+{
+    if (!tokvalue)
+        return true;
+    return !mDiagDanglingTemp.insert(tokvalue).second;
+}
+
 //---------------------------------------------------------------------------
 
 static bool isInScope(const Token * tok, const Scope * scope)
@@ -603,7 +610,8 @@ void CheckAutoVariables::checkVarLifetimeScope(const Token * start, const Token 
                         break;
                     } else if (!tokvalue->variable() &&
                                isDeadTemporary(mTokenizer->isCPP(), tokvalue, tok, &mSettings->library)) {
-                        errorDanglingTemporaryLifetime(tok, &val, tokvalue);
+                        if (!diag(tokvalue))
+                            errorDanglingTemporaryLifetime(tok, &val, tokvalue);
                         break;
                     }
                 }
