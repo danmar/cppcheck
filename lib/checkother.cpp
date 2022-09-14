@@ -1777,8 +1777,8 @@ static bool isBracketAccess(const Token* tok)
     return tok->variable()->nameToken() != tok;
 }
 
-namespace {
-    const char constantMatchStr[] = "%bool%|%num%|%str%|%char%|nullptr|NULL";
+static bool isConstant(const Token* tok) {
+    return Token::Match(tok, "%bool%|%num%|%str%|%char%|nullptr|NULL");
 }
 
 static bool isConstStatement(const Token *tok, bool cpp)
@@ -1789,7 +1789,7 @@ static bool isConstStatement(const Token *tok, bool cpp)
         return false;
     if (tok->varId() != 0)
         return true;
-    if (Token::Match(tok, constantMatchStr))
+    if (isConstant(tok))
         return true;
     if (Token::Match(tok, "*|&|&&") &&
         (Token::Match(tok->previous(), "::|.|const|volatile|restrict") || isVarDeclOp(tok)))
@@ -1948,7 +1948,7 @@ void CheckOther::constStatementError(const Token *tok, const std::string &type, 
         msg = "Found suspicious operator '" + tok->str() + "', result is not used.";
     else if (Token::Match(tok, "%var%"))
         msg = "Unused variable value '" + tok->str() + "'";
-    else if (Token::Match(valueTok, constantMatchStr)) {
+    else if (isConstant(valueTok)) {
         std::string typeStr("string");
         if (valueTok->isNumber())
             typeStr = "numeric";
