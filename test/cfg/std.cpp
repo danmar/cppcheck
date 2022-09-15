@@ -35,6 +35,7 @@
 #include <istream>
 #include <iterator>
 #include <vector>
+#include <unordered_set>
 #include <algorithm>
 
 int zerodiv_ldexp()
