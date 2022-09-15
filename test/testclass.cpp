@@ -3119,6 +3119,18 @@ private:
                       "    memcpy(&s, c, strlen(c) + 1);\n"
                       "}\n", s);
         ASSERT_EQUALS("[test.cpp:4]: (error) Using 'memcpy' on std::string.\n", errout.str());
+
+        checkNoMemset("template <typename T>\n"
+                      "    void f(T* dst, const T* src, int N) {\n"
+                      "    std::memcpy(dst, src, N * sizeof(T));\n"
+                      "}\n"
+                      "void g() {\n"
+                      "    typedef std::vector<int>* P;\n"
+                      "    P Src[2]{};\n"
+                      "    P Dst[2];\n"
+                      "    f<P>(Dst, Src, 2);\n"
+                      "}\n", s);
+        ASSERT_EQUALS("", errout.str());
     }
 
     void memsetOnInvalid() { // Ticket #5425
