@@ -25,7 +25,7 @@
 #include "tokenize.h"
 
 #include <map>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <utility>
 #include <vector>

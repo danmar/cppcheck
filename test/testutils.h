@@ -28,7 +28,7 @@
 
 #include <cstdio>
 #include <list>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 class Token;

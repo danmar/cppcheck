@@ -27,7 +27,7 @@
 #include "tokenize.h"
 
 #include <map>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
 #include <utility>

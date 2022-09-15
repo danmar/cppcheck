@@ -33,7 +33,7 @@
 #include <cstring>
 #include <list>
 #include <memory>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <string>
 

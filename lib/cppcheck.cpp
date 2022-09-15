@@ -49,7 +49,7 @@
 #include <memory>
 #include <new>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stdexcept>
 #include <string>
 #include <utility>

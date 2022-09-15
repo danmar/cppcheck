@@ -44,7 +44,7 @@
 #include <exception>
 #include <memory>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
 #include <type_traits>

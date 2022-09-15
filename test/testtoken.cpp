@@ -25,7 +25,7 @@
 #include "valueflow.h"
 
 #include <algorithm>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
 

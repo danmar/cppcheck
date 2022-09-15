@@ -31,7 +31,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <functional> // std::bind, std::placeholders
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <utility>
 
 #include <tinyxml2.h>

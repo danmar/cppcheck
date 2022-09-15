@@ -23,7 +23,7 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 
 
 class TestString : public TestFixture {

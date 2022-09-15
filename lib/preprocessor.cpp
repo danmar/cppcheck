@@ -31,7 +31,7 @@
 #include <cstddef>
 #include <iterator> // back_inserter
 #include <memory>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <utility>
 
 #include <simplecpp.h>

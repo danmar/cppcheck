@@ -21,7 +21,7 @@
 #include "token.h"
 #include "tokenlist.h"
 
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 class TestTokenList : public TestFixture {

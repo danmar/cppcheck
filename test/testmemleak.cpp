@@ -26,7 +26,7 @@
 
 #include <list>
 #include <memory>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 class TestMemleakInClass;

@@ -37,7 +37,7 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <string>
 #include <utility>
