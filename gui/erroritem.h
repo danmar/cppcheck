@@ -20,6 +20,7 @@
 #define ERRORITEM_H
 
 #include "errorlogger.h"
+#include "errortypes.h"
 
 #include <QList>
 #include <QMetaType>

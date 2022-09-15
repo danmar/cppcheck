@@ -26,7 +26,6 @@
 #include "tokenize.h"
 #include "tokenlist.h"
 
-#include <iosfwd>
 #include <map>
 #include <sstream>
 #include <string>

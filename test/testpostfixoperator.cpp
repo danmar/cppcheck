@@ -23,7 +23,6 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <sstream>
 
 class TestPostfixOperator : public TestFixture {

@@ -27,9 +27,7 @@
 #include "tokenlist.h"
 
 #include <cstdio>
-#include <iosfwd>
 #include <list>
-#include <ostream>
 #include <sstream>
 #include <string>
 

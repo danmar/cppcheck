@@ -34,7 +34,6 @@
 #include <cctype>
 #include <cstdlib>
 #include <cstring>
-#include <istream>
 #include <memory>
 #include <sstream>
 #include <utility>

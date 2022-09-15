@@ -21,11 +21,11 @@
 #include "testsuite.h"
 #include "testutils.h"
 #include "threadexecutor.h"
+#include "timer.h"
 
 #include <algorithm>
 #include <cstddef>
 #include <map>
-#include <ostream>
 #include <sstream>
 #include <string>
 #include <utility>

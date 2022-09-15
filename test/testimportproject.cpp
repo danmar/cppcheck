@@ -20,7 +20,6 @@
 #include "settings.h"
 #include "testsuite.h"
 
-#include <iosfwd>
 #include <list>
 #include <memory>
 #include <map>

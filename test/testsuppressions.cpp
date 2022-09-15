@@ -31,7 +31,6 @@
 #include <cstddef>
 #include <cstring>
 #include <functional>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <memory>

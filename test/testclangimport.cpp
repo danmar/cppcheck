@@ -23,7 +23,6 @@
 #include "testsuite.h"
 
 #include <cstdint>
-#include <iosfwd>
 #include <list>
 #include <memory>
 #include <sstream>

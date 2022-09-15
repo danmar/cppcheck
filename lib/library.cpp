@@ -31,7 +31,6 @@
 #include <climits>
 #include <cstdlib>
 #include <cstring>
-#include <iosfwd>
 #include <list>
 #include <memory>
 #include <sstream>

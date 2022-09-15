@@ -24,7 +24,6 @@
 #include "tokenize.h"
 
 #include <cstddef>
-#include <iosfwd>
 #include <sstream>
 #include <string>
 

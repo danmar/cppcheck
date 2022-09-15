@@ -22,7 +22,6 @@
 #include "testsuite.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <sstream>
 #include <string>
 

@@ -24,7 +24,6 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
 #include <memory>
 #include <sstream>
