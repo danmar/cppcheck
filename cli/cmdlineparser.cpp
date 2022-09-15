@@ -591,6 +591,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     printError(message);
                     return false;
                 }
+
+                // TODO: remove
+                // these are loaded via external files and thus have Settings::PlatformFile set instead.
+                // override the type so they behave like the regular platforms.
+                if (platform == "unix32-unsigned")
+                    mSettings->platformType = Settings::Unix32;
+                else if (platform == "unix64-unsigned")
+                    mSettings->platformType = Settings::Unix64;
             }
 
             // Write results in results.plist
