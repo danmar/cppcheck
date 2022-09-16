@@ -146,6 +146,12 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown) const
     return isPointerDeRef(tok, unknown, mSettings);
 }
 
+static bool isUnevaluated(const Token* tok) {
+    if (tok && Token::Match(tok->previous(), "sizeof|decltype ("))
+        return true;
+    return false;
+}
+
 bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Settings *settings)
 {
     unknown = false;
@@ -182,7 +188,7 @@ bool CheckNullPointer::isPointerDeRef(const Token *tok, bool &unknown, const Set
         return false;
 
     // Dereferencing pointer..
-    if (parent->isUnaryOp("*")) {
+    if (parent->isUnaryOp("*") && !isUnevaluated(parent->astParent())) {
         // declaration of function pointer
         if (tok->variable() && tok->variable()->nameToken() == tok)
             return false;
