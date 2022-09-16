@@ -45,6 +45,7 @@ using SourceLocation = std::source_location;
 #include <experimental/source_location>
 using SourceLocation = std::experimental::source_location;
 #else
+#include <cstdint>
 struct SourceLocation {
     static SourceLocation current() {
         return SourceLocation();
