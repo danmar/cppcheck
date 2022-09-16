@@ -30,6 +30,7 @@
 #include <list>
 #include <sstream> // IWYU pragma: keep
 #include <string>
+#include <utility>
 
 class Token;
 
@@ -72,7 +73,7 @@ private:
 
 class ScopedFile {
 public:
-    ScopedFile(const std::string &name, const std::string &content) : mName(name) {
+    ScopedFile(std::string name, const std::string &content) : mName(std::move(name)) {
         std::ofstream of(mName);
         of << content;
     }
