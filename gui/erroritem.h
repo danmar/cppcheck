@@ -102,6 +102,7 @@ public:
     static bool sameCID(const ErrorItem &errorItem1, const ErrorItem &errorItem2);
 };
 
+// NOLINTNEXTLINE(performance-no-int-to-ptr)
 Q_DECLARE_METATYPE(ErrorItem)
 
 /**
