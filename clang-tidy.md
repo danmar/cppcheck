@@ -110,24 +110,29 @@ Work in progress.
 
 Is reported for valid patterns we are using.
 
+`readability-suspicious-call-argument`<br>
+
+Produces a lot of false positives since it is too vague in its analysis.
+
+`performance-inefficient-string-concatenation`<br>
+
+Produces many warnings which very much look like false ppsitives (needs to be reported upstream).
+
+`bugprone-suspicious-include`<br>
+
+Causes warnings with `*.cpp` includes in Qt generated files.
+
 `modernize-avoid-c-arrays`<br>
 `readability-container-size-empty`<br>
 `bugprone-branch-clone`<br>
 `readability-const-return-type`<br>
-`performance-unnecessary-value-param`<br>
 `modernize-return-braced-init-list`<br>
-`performance-inefficient-string-concatenation`<br>
 `misc-throw-by-value-catch-by-reference`<br>
 `readability-avoid-const-params-in-decls`<br>
-`readability-non-const-parameter`<br>
-`bugprone-suspicious-string-compare`<br>
 `bugprone-signed-char-misuse`<br>
-`bugprone-suspicious-include`<br>
-`modernize-replace-random-shuffle`<br>
 `readability-redundant-access-specifiers`<br>
 `performance-noexcept-move-constructor`<br>
 `concurrency-mt-unsafe`<br>
-`readability-suspicious-call-argument`<br>
 
 To be evaluated.
 

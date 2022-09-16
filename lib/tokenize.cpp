@@ -5471,7 +5471,7 @@ static std::string getExpression(const Token *tok)
         line = prev->str() + " " + line;
     line += "!!!" + tok->str() + "!!!";
     for (const Token *next = tok->next(); next && !Token::Match(next, "[;{}]"); next = next->next())
-        line = line + " " + next->str();
+        line += " " + next->str();
     return line;
 }
 

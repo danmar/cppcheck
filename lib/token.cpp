@@ -627,7 +627,7 @@ bool Token::simpleMatch(const Token *tok, const char pattern[], size_t pattern_l
     while (*current) {
         const std::size_t length = next - current;
 
-        if (!tok || length != tok->mStr.length() || std::strncmp(current, tok->mStr.c_str(), length))
+        if (!tok || length != tok->mStr.length() || std::strncmp(current, tok->mStr.c_str(), length) != 0)
             return false;
 
         current = next;
@@ -2307,7 +2307,7 @@ std::string Token::typeStr(const Token* tok)
 
 void Token::scopeInfo(std::shared_ptr<ScopeInfo2> newScopeInfo)
 {
-    mImpl->mScopeInfo = newScopeInfo;
+    mImpl->mScopeInfo = std::move(newScopeInfo);
 }
 std::shared_ptr<ScopeInfo2> Token::scopeInfo() const
 {

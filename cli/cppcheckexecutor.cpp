@@ -575,8 +575,9 @@ bool CppCheckExecutor::tryLoadLibrary(Library& destination, const std::string& b
 /**
  * Execute a shell command and read the output from it. Returns true if command terminated successfully.
  */
-// cppcheck-suppress passedByValue - "exe" copy needed in _WIN32 code
-bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, const std::string &redirect, std::string *output_)
+// cppcheck-suppress passedByValue - used as callback so we need to preserve the signature
+// NOLINTNEXTLINE(performance-unnecessary-value-param) - used as callback so we need to preserve the signature
+bool CppCheckExecutor::executeCommand(std::string exe, std::vector<std::string> args, std::string redirect, std::string *output_)
 {
     output_->clear();
 

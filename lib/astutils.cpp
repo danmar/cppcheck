@@ -1260,7 +1260,7 @@ static bool isSameLifetime(const Token * const tok1, const Token * const tok2)
     return v1.tokvalue == v2.tokvalue;
 }
 
-static bool compareKnownValue(const Token * const tok1, const Token * const tok2, std::function<bool(const ValueFlow::Value&, const ValueFlow::Value&, bool)> compare)
+static bool compareKnownValue(const Token * const tok1, const Token * const tok2, const std::function<bool(const ValueFlow::Value&, const ValueFlow::Value&, bool)> &compare)
 {
     static const auto isKnownFn = std::mem_fn(&ValueFlow::Value::isKnown);
 

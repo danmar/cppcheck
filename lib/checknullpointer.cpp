@@ -551,6 +551,7 @@ std::string CheckNullPointer::MyFileInfo::toString() const
     return CTU::toString(unsafeUsage);
 }
 
+// NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
 static bool isUnsafeUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;

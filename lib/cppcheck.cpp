@@ -276,7 +276,7 @@ static std::string executeAddon(const AddonInfo &addonInfo,
                                 const std::string &defaultPythonExe,
                                 const std::string &file,
                                 const std::string &premiumArgs,
-                                std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> executeCommand)
+                                const std::function<bool(std::string,std::vector<std::string>,std::string,std::string*)> &executeCommand)
 {
     const std::string redirect = "2>&1";
 
@@ -377,7 +377,7 @@ const char * CppCheck::extraVersion()
     return ExtraVersion;
 }
 
-static bool reportClangErrors(std::istream &is, std::function<void(const ErrorMessage&)> reportErr, std::vector<ErrorMessage> *warnings)
+static bool reportClangErrors(std::istream &is, const std::function<void(const ErrorMessage&)>& reportErr, std::vector<ErrorMessage> *warnings)
 {
     std::string line;
     while (std::getline(is, line)) {
