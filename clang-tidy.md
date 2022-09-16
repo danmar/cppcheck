@@ -126,7 +126,6 @@ Causes warnings with `*.cpp` includes in Qt generated files.
 `readability-container-size-empty`<br>
 `bugprone-branch-clone`<br>
 `readability-const-return-type`<br>
-`performance-unnecessary-value-param`<br>
 `modernize-return-braced-init-list`<br>
 `misc-throw-by-value-catch-by-reference`<br>
 `readability-avoid-const-params-in-decls`<br>

@@ -1990,7 +1990,7 @@ static void valueFlowReverse(TokenList* tokenlist,
                              const Settings* = nullptr,
                              SourceLocation loc = SourceLocation::current())
 {
-    std::list<ValueFlow::Value> values = {val};
+    std::list<ValueFlow::Value> values = {std::move(val)};
     if (val2.varId != 0)
         values.push_back(val2);
     valueFlowReverse(tok, nullptr, varToken, values, tokenlist, loc);
@@ -4504,7 +4504,7 @@ static void valueFlowLifetime(TokenList *tokenlist, SymbolDatabase*, ErrorLogger
             };
 
             bool update = false;
-            auto captureVariable = [&](const Token* tok2, LifetimeCapture c, std::function<bool(const Token*)> pred) {
+            auto captureVariable = [&](const Token* tok2, LifetimeCapture c, const std::function<bool(const Token*)> &pred) {
                 if (varids.count(tok->varId()) > 0)
                     return;
                 if (c == LifetimeCapture::ByReference) {
@@ -6405,7 +6405,7 @@ ValueFlow::Value inferCondition(const std::string& op, const Token* varTok, Math
     return ValueFlow::Value{};
 }
 
-ValueFlow::Value inferCondition(std::string op, MathLib::bigint val, const Token* varTok)
+ValueFlow::Value inferCondition(const std::string &op, MathLib::bigint val, const Token* varTok)
 {
     if (!varTok)
         return ValueFlow::Value{};
@@ -8928,7 +8928,7 @@ std::string ValueFlow::eitherTheConditionIsRedundant(const Token *condition)
 
 const ValueFlow::Value* ValueFlow::findValue(const std::list<ValueFlow::Value>& values,
                                              const Settings* settings,
-                                             std::function<bool(const ValueFlow::Value&)> pred)
+                                             const std::function<bool(const ValueFlow::Value&)> &pred)
 {
     const ValueFlow::Value* ret = nullptr;
     for (const ValueFlow::Value& v : values) {
