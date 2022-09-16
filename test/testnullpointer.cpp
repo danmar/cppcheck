@@ -26,10 +26,9 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
 #include <map>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
 #include <utility>

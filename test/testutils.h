@@ -27,10 +27,8 @@
 #include "tokenlist.h"
 
 #include <cstdio>
-#include <iosfwd>
 #include <list>
-#include <ostream>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 class Token;

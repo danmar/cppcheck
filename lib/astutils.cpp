@@ -34,6 +34,7 @@
 #include "checkclass.h"
 
 #include <algorithm>
+#include <cassert>
 #include <functional>
 #include <initializer_list>
 #include <iterator>

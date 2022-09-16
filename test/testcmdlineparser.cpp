@@ -27,6 +27,7 @@
 #include "testsuite.h"
 #include "timer.h"
 
+#include <cstdio>
 #include <list>
 #include <set>
 #include <string>

@@ -33,7 +33,6 @@
 #include <cstdint>
 #include <cstring>
 #include <iterator>  // back_inserter
-#include <ostream>
 #include <sstream>
 #include <utility>
 
