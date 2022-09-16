@@ -4341,6 +4341,15 @@ private:
             "        g(x);\n"
             "}");
         ASSERT_EQUALS("", errout.str());
+
+        ctu("size_t f(int* p) {\n"
+            "    size_t len = sizeof(*p);\n"
+            "    return len;\n"
+            "}\n"
+            "void g() {\n"
+            "    f(NULL);\n"
+            "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 };
 
