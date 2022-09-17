@@ -338,7 +338,6 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 const std::string temp = argv[i]+17;
                 std::istringstream iss(temp);
                 if (!(iss >> mSettings->exitCode)) {
-                    mSettings->exitCode = 0;
                     printError("argument must be an integer. Try something like '--error-exitcode=1'.");
                     return false;
                 }
