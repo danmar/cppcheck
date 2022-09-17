@@ -63,20 +63,10 @@ if (BUILD_TESTS)
         set(SKIP_TESTS "" CACHE STRING "A list of tests to skip")
 
         function(add_fixture NAME)
-            set(options)
-            set(oneValueArgs WORKING_DIRECTORY)
-            set(multiValueArgs)
-
-            cmake_parse_arguments(PARSE "${options}" "${oneValueArgs}" "${multiValueArgs}" ${ARGN})
-
             if (${NAME} IN_LIST SKIP_TESTS)
             elseif(TEST ${NAME})
             else()
-                set(WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
-                if (PARSE_WORKING_DIRECTORY)
-                    set(WORKING_DIRECTORY ${PARSE_WORKING_DIRECTORY})
-                endif()
-                add_test(NAME ${NAME} COMMAND testrunner ${NAME} WORKING_DIRECTORY ${WORKING_DIRECTORY})
+                add_test(NAME ${NAME} COMMAND testrunner ${NAME} WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})
             endif()
         endfunction()
 
