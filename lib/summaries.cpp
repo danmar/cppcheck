@@ -26,9 +26,10 @@
 #include "tokenlist.h"
 
 #include <algorithm>
-#include <fstream>
+#include <fstream> // IWYU pragma: keep
 #include <map>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
+#include <utility>
 #include <vector>
 
 

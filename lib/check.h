@@ -26,6 +26,7 @@
 
 #include <list>
 #include <string>
+#include <utility>
 
 namespace tinyxml2 {
     class XMLElement;
@@ -61,8 +62,8 @@ public:
     explicit Check(const std::string &aname);
 
     /** This constructor is used when running checks. */
-    Check(const std::string &aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
-        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(aname) {}
+    Check(std::string aname, const Tokenizer *tokenizer, const Settings *settings, ErrorLogger *errorLogger)
+        : mTokenizer(tokenizer), mSettings(settings), mErrorLogger(errorLogger), mName(std::move(aname)) {}
 
     virtual ~Check() {
         if (!mTokenizer)
@@ -154,7 +155,7 @@ protected:
 
     void reportError(const ErrorPath &errorPath, Severity::SeverityType severity, const char id[], const std::string &msg, const CWE &cwe, Certainty::CertaintyLevel certainty);
 
-    ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, const std::string& bug) const;
+    ErrorPath getErrorPath(const Token* errtok, const ValueFlow::Value* value, std::string bug) const;
 
     /**
      * Use WRONG_DATA in checkers when you check for wrong data. That

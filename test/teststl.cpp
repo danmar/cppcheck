@@ -24,8 +24,7 @@
 #include "tokenize.h"
 
 #include <cstddef>
-#include <iosfwd>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 

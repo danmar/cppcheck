@@ -31,10 +31,9 @@
 #include <climits>
 #include <cstdlib>
 #include <cstring>
-#include <iosfwd>
 #include <list>
 #include <memory>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <string>
 
@@ -521,7 +520,7 @@ Library::Error Library::load(const tinyxml2::XMLDocument &doc)
                         struct Container::RangeItemRecordTypeItem member;
                         member.name = memberName ? memberName : "";
                         member.templateParameter = memberTemplateParameter ? std::atoi(memberTemplateParameter) : -1;
-                        container.rangeItemRecordType.emplace_back(member);
+                        container.rangeItemRecordType.emplace_back(std::move(member));
                     }
                 } else
                     unknown_elements.insert(containerNodeName);

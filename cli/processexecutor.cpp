@@ -39,7 +39,7 @@
 #include <functional>
 #include <iostream>
 #include <list>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>
@@ -171,7 +171,7 @@ int ProcessExecutor::handleRead(int rpipe, unsigned int &result)
             // Alert only about unique errors
             std::string errmsg = msg.toString(mSettings.verbose);
             if (std::find(mErrorList.begin(), mErrorList.end(), errmsg) == mErrorList.end()) {
-                mErrorList.emplace_back(errmsg);
+                mErrorList.emplace_back(std::move(errmsg));
                 if (type == PipeWriter::REPORT_ERROR)
                     mErrorLogger.reportErr(msg);
                 else

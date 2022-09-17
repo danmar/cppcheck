@@ -24,10 +24,9 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
 #include <memory>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 
 class TestMemleakInClass;

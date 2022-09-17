@@ -19,12 +19,14 @@
 #if defined(__GNUC__) && (defined(_WIN32) || defined(__CYGWIN__))
 #undef __STRICT_ANSI__
 #endif
+
 #include "path.h"
 #include "utils.h"
 
 #include <algorithm>
 #include <cstdlib>
 #include <fstream>
+#include <utility>
 
 #ifndef _WIN32
 #include <unistd.h>

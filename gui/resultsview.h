@@ -212,6 +212,7 @@ signals:
      *
      * @param hidden true if there are some hidden results, or false if there are not
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void resultsHidden(bool hidden);
 
     /**
@@ -219,9 +220,11 @@ signals:
      *
      * @param selectedFilesList list of selected files
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void checkSelected(QStringList selectedFilesList);
 
     /** Suppress Ids */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void suppressIds(QStringList ids);
 
     /**
@@ -231,6 +234,7 @@ signals:
      * @param type Type of error to show/hide
      * @param show Should specified errors be shown (true) or hidden (false)
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void showResults(ShowTypes::ShowType type, bool show);
 
     /**
@@ -239,6 +243,7 @@ signals:
      *
      * @param show Should specified errors be shown (true) or hidden (false)
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void showCppcheckResults(bool show);
 
     /**
@@ -247,6 +252,7 @@ signals:
      *
      * @param show Should specified errors be shown (true) or hidden (false)
      */
+    // NOLINTNEXTLINE(readability-inconsistent-declaration-parameter-name) - caused by generated MOC code
     void showClangResults(bool show);
 
     /**

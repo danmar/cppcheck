@@ -19,7 +19,7 @@
 #ifndef CPPCHECKEXECUTORSEH_H
 #define CPPCHECKEXECUTORSEH_H
 
-#include "config.h"
+#include "config.h" // IWYU pragma: keep
 
 #ifdef USE_WINDOWS_SEH
 
