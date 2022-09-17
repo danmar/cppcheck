@@ -35,6 +35,7 @@ if (BUILD_TESTS)
 
     add_dependencies(testrunner copy_cfg)
     add_dependencies(testrunner copy_addons)
+    add_dependencies(testrunner copy_platforms)
     add_dependencies(testrunner run-dmake)
 
     if (LIBXML2_XMLLINT_EXECUTABLE)
