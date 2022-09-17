@@ -1337,9 +1337,11 @@ void CheckUnusedVar::checkFunctionVariableUsage()
                 }
             }
             // variable has not been written but has been modified
-            else if (usage._modified && !usage._write && !usage._allocateMemory && var && !var->isStlType())
+            else if (usage._modified && !usage._write && !usage._allocateMemory && var && !var->isStlType()) {
+                if (var->isStatic()) // static variables are initialized by default
+                    continue;
                 unassignedVariableError(usage._var->nameToken(), varname);
-
+            }
             // variable has been read but not written
             else if (!usage._write && !usage._allocateMemory && var && !var->isStlType() && !isEmptyType(var->type()))
                 unassignedVariableError(usage._var->nameToken(), varname);

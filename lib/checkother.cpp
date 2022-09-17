@@ -1990,6 +1990,8 @@ void CheckOther::checkZeroDivision()
             continue;
         if (!tok->valueType() || !tok->valueType()->isIntegral())
             continue;
+        if (tok->scope() && tok->scope()->type == Scope::eEnum) // don't warn for compile-time error
+            continue;
 
         // Value flow..
         const ValueFlow::Value *value = tok->astOperand2()->getValue(0LL);

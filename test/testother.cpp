@@ -794,6 +794,14 @@ private:
               "    return remainder;\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
+
+        // #11315
+        checkP("#define STATIC_ASSERT(c) \\\n"
+               "do { enum { sa = 1/(int)(!!(c)) }; } while (0)\n"
+               "void f() {\n"
+               "    STATIC_ASSERT(sizeof(int) == sizeof(FOO));\n"
+               "}\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void nanInArithmeticExpression() {
