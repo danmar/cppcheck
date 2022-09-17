@@ -128,6 +128,8 @@ void CmdLineParser::printError(const std::string &message)
     printMessage("error: " + message);
 }
 
+// TODO: normalize/simplify/native all path parameters
+// TODO: error out on all missing given files/paths
 bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
 {
     bool def = false;
