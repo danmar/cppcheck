@@ -70,12 +70,6 @@ if (BUILD_TESTS)
             endif()
         endfunction()
 
-        function(fixture_cost NAME COST)
-            if(TEST ${NAME})
-                set_tests_properties(${NAME} PROPERTIES COST ${COST})
-            endif()
-        endfunction()
-
         foreach(SRC ${srcs})
             file(STRINGS ${SRC} FIXTURE_LINE REGEX "^REGISTER_TEST\\([a-zA-z0-9]+\\)$")
             foreach(_fixture_line ${FIXTURE_LINE})
@@ -151,6 +145,12 @@ if (BUILD_TESTS)
         add_cfg(windows.cpp INCONCLUSIVE NAME windows32W PLATFORM win32W)
         add_cfg(windows.cpp INCONCLUSIVE NAME windows64 PLATFORM win64)
         add_cfg(wxwidgets.cpp INCONCLUSIVE)
+
+        function(fixture_cost NAME COST)
+            if(TEST ${NAME})
+                set_tests_properties(${NAME} PROPERTIES COST ${COST})
+            endif()
+        endfunction()
 
         # Set cost of the more expensive tests to help improve parallel scheduling
         # of tests
