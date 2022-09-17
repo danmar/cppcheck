@@ -95,8 +95,8 @@ private:
         TEST_CASE(exitcodeSuppressionsOld);
         TEST_CASE(exitcodeSuppressions);
         TEST_CASE(exitcodeSuppressionsNoFile);
-        //TEST_CASE(fileList);
-        //TEST_CASE(fileListNoFile);
+        TEST_CASE(fileList);
+        TEST_CASE(fileListNoFile);
         // TEST_CASE(fileListStdin);  // Disabled since hangs the test run
         TEST_CASE(fileListInvalid);
         TEST_CASE(inlineSuppr);
@@ -717,28 +717,23 @@ private:
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", GET_REDIRECT_OUTPUT);
     }
 
-    // TODO: AddressSanitizer: stack-buffer-overflow
-    // TODO: nothing is read since the file does not exist
-    /*
-       void fileList() {
+    void fileList() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
-        ASSERT_EQUALS(true, defParser.parseFromArgs(4, argv));
+        ASSERT_EQUALS(true, defParser.parseFromArgs(3, argv));
+        // TODO: nothing is read since the file does not exist
         // TODO: settings are not being reset after each test
         //TODO_ASSERT_EQUALS(4, 1, defParser.getPathNames().size());
         ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
-       }
-     */
+    }
 
     // TODO: should fail since the file is missing
-    /*
-       void fileListNoFile() {
+    void fileListNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
-        TODO_ASSERT_EQUALS(false, true, defParser.parseFromArgs(4, argv));
-        TODO_ASSERT_EQUALS("cppcheck: error: error: couldn't open the file: \"files.txt\".\n", "", GET_REDIRECT_OUTPUT);
-       }
-     */
+        TODO_ASSERT_EQUALS(false, true, defParser.parseFromArgs(3, argv));
+        TODO_ASSERT_EQUALS("cppcheck: error: couldn't open the file: \"files.txt\".\n", "", GET_REDIRECT_OUTPUT);
+    }
 
     /*    void fileListStdin() {
             // TODO: Give it some stdin to read from, fails because the list of
