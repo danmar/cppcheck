@@ -120,9 +120,10 @@ namespace cppcheck {
          * load platform file
          * @param exename application path
          * @param filename platform filename
+         * @param verbose log verbose information about the lookup
          * @return returns true if file was loaded successfully
          */
-        bool loadPlatformFile(const char exename[], const std::string &filename);
+        bool loadPlatformFile(const char exename[], const std::string &filename, bool verbose = false);
 
         /** load platform from xml document, primarily for testing */
         bool loadFromXmlDocument(const tinyxml2::XMLDocument *doc);

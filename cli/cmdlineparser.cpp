@@ -584,7 +584,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                     mSettings->platform(Settings::Native);
                 else if (platform == "unspecified")
                     mSettings->platform(Settings::Unspecified);
-                else if (!mSettings->loadPlatformFile(argv[0], platform)) {
+                else if (!mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
                     std::string message("unrecognized platform: \"");
                     message += platform;
                     message += "\".";
@@ -656,7 +656,7 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                         mSettings->platform(Settings::Native);
                     else if (platform == "unspecified" || platform == "Unspecified" || platform.empty())
                         ;
-                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform) && !mSettings->loadPlatformFile(argv[0], platform)) {
+                    else if (!mSettings->loadPlatformFile(projectFile.c_str(), platform, mSettings->verbose) && !mSettings->loadPlatformFile(argv[0], platform, mSettings->verbose)) {
                         std::string message("unrecognized platform: \"");
                         message += platform;
                         message += "\".";
