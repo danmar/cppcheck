@@ -53,15 +53,16 @@
 #include <unistd.h>
 #endif
 
-static void addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
+static bool addFilesToList(const std::string& fileList, std::vector<std::string>& pathNames)
 {
-    // To keep things initially simple, if the file can't be opened, just be silent and move on.
     std::istream *files;
     std::ifstream infile;
     if (fileList == "-") { // read from stdin
         files = &std::cin;
     } else {
         infile.open(fileList);
+        if (!infile.is_open())
+            return false;
         files = &infile;
     }
     if (files && *files) {
@@ -74,6 +75,7 @@ static void addFilesToList(const std::string& fileList, std::vector<std::string>
             }
         }
     }
+    return true;
 }
 
 static bool addIncludePathsToList(const std::string& fileList, std::list<std::string>* pathNames)
@@ -381,9 +383,14 @@ bool CmdLineParser::parseFromArgs(int argc, const char* const argv[])
                 mSettings->fileFilters.emplace_back(argv[i] + 14);
 
             // file list specified
-            else if (std::strncmp(argv[i], "--file-list=", 12) == 0)
+            else if (std::strncmp(argv[i], "--file-list=", 12) == 0) {
                 // open this file and read every input file (1 file name per line)
-                addFilesToList(12 + argv[i], mPathNames);
+                const std::string fileList = argv[i] + 12;
+                if (!addFilesToList(fileList, mPathNames)) {
+                    printError("couldn't open the file: \"" + fileList + "\".");
+                    return false;
+                }
+            }
 
             // Force checking of files that have "too many" configurations
             else if (std::strcmp(argv[i], "-f") == 0 || std::strcmp(argv[i], "--force") == 0)

@@ -41,7 +41,7 @@ public:
 
 private:
     Settings settings; // TODO: reset after each test
-    CmdLineParser defParser;
+    CmdLineParser defParser; // TODO: reset after each test
 
     void run() override {
         TEST_CASE(nooptions);
@@ -708,22 +708,21 @@ private:
         ASSERT_EQUALS("cppcheck: error: unrecognized command line option: \"--exitcode-suppressions\".\n", GET_REDIRECT_OUTPUT);
     }
 
+    // TODO: file does not exist
     void fileList() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
-        ASSERT_EQUALS(true, defParser.parseFromArgs(3, argv));
-        // TODO: nothing is read since the file does not exist
+        TODO_ASSERT_EQUALS(true, false, defParser.parseFromArgs(3, argv));
         // TODO: settings are not being reset after each test
         //TODO_ASSERT_EQUALS(4, 1, defParser.getPathNames().size());
-        ASSERT_EQUALS("", GET_REDIRECT_OUTPUT);
+        TODO_ASSERT_EQUALS("", "cppcheck: error: couldn't open the file: \"files.txt\".\n", GET_REDIRECT_OUTPUT);
     }
 
-    // TODO: should fail since the file is missing
     void fileListNoFile() {
         REDIRECT;
         const char * const argv[] = {"cppcheck", "--file-list=files.txt", "file.cpp"};
-        TODO_ASSERT_EQUALS(false, true, defParser.parseFromArgs(3, argv));
-        TODO_ASSERT_EQUALS("cppcheck: error: couldn't open the file: \"files.txt\".\n", "", GET_REDIRECT_OUTPUT);
+        ASSERT_EQUALS(false, defParser.parseFromArgs(3, argv));
+        ASSERT_EQUALS("cppcheck: error: couldn't open the file: \"files.txt\".\n", GET_REDIRECT_OUTPUT);
     }
 
     /*    void fileListStdin() {
