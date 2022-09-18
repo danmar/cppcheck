@@ -5223,16 +5223,11 @@ static void valueFlowSymbolicOperators(TokenList* tokenlist, SymbolDatabase* sym
                         continue;
                     if (value.intvalue != 0)
                         continue;
-                    if (value.bound == ValueFlow::Value::Bound::Upper)
-                        continue;
-                    if (value.isImpossible() && value.bound != ValueFlow::Value::Bound::Lower)
-                        continue;
-                    if (value.isKnown() && value.bound != ValueFlow::Value::Bound::Point)
-                        continue;
                     const Token* strlenTok = isStrlenOf(value.tokvalue, arrayTok);
                     if (!strlenTok)
                         continue;
                     ValueFlow::Value v = value;
+                    v.bound = ValueFlow::Value::Bound::Point;
                     v.valueType = ValueFlow::Value::ValueType::INT;
                     v.errorPath.emplace_back(strlenTok, "Return index of string to the first element that is 0");
                     setTokenValue(tok, v, tokenlist->getSettings());
@@ -8865,7 +8860,7 @@ void ValueFlow::setValues(TokenList *tokenlist, SymbolDatabase* symboldatabase, 
 
     std::size_t values = 0;
     std::size_t n = 4;
-    while (n > 0 && values < getTotalValues(tokenlist)) {
+    while (n > 0 && values != getTotalValues(tokenlist)) {
         values = getTotalValues(tokenlist);
         valueFlowImpossibleValues(tokenlist, settings);
         valueFlowSymbolicOperators(tokenlist, symboldatabase);
