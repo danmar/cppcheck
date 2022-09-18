@@ -4014,6 +4014,31 @@ private:
     }
 };
 
+static bool isOwningVariables(const std::list<Variable>& vars, int depth = 10)
+{
+    if (depth < 0)
+        return false;
+    return vars.empty() || std::all_of(vars.begin(), vars.end(), [&](const Variable& var) {
+        if (var.isReference() || var.isPointer())
+            return false;
+        const ValueType* vt = var.valueType();
+        if (vt) {
+            if (vt->pointer > 0)
+                return false;
+            if (vt->isPrimitive())
+                return true;
+            if (vt->isEnum())
+                return true;
+            // TODO: Check container inner type
+            if (vt->type == ValueType::CONTAINER && vt->container)
+                return !vt->container->view;
+            if (vt->typeScope)
+                return isOwningVariables(vt->typeScope->varlist, depth - 1);
+        }
+        return false;
+    });
+}
+
 static void valueFlowLifetimeUserConstructor(Token* tok,
                                              const Function* constructor,
                                              const std::string& name,
@@ -4087,7 +4112,7 @@ static void valueFlowLifetimeUserConstructor(Token* tok,
             else
                 ls.byVal(tok, tokenlist, errorLogger, settings);
         });
-    } else if (!constructor->nestedIn->varlist.empty()) {
+    } else if (!isOwningVariables(constructor->nestedIn->varlist)) {
         LifetimeStore::forEach(args,
                                "Passed to constructor of '" + name + "'.",
                                ValueFlow::Value::LifetimeKind::SubObject,
@@ -4299,7 +4324,7 @@ static void valueFlowLifetimeClassConstructor(Token* tok,
     const Scope* scope = t->classScope;
     if (!scope)
         return;
-    // Only support aggregate constructors for now
+    // Aggregate constructor
     if (t->derivedFrom.empty() && (t->isClassType() || t->isStructType())) {
         std::vector<const Token*> args = getArguments(tok);
         if (scope->numConstructors == 0) {
