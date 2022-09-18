@@ -7542,6 +7542,15 @@ private:
                "    return 0;\n"
                "}\n";
         ASSERT_EQUALS(true, testValueOfXImpossible(code, 4U, 0));
+
+        code = "int f(char *s, size_t i) {\n"
+               "    if (i < strlen(s)) {\n"
+               "      int x = s[i] != ' ';\n"
+               "      return x;\n"
+               "    }\n"
+               "    return 0;\n"
+               "}\n";
+        ASSERT_EQUALS(false, testValueOfXKnown(code, 4U, 1));
     }
 
     void valueFlowSmartPointer()
