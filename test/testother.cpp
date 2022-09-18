@@ -259,6 +259,7 @@ private:
         TEST_CASE(moveAndLambda);
         TEST_CASE(moveInLoop);
         TEST_CASE(moveCallback);
+        TEST_CASE(moveClassVariable);
         TEST_CASE(forwardAndUsed);
 
         TEST_CASE(funcArgNamesDifferent);
@@ -9974,6 +9975,21 @@ private:
               "        callback();\n"
               "}\n");
         ASSERT_EQUALS("[test.cpp:4]: (warning) Access of moved variable 'callback'.\n", errout.str());
+    }
+
+    void moveClassVariable()
+    {
+        check("struct B {\n"
+              "    virtual void f();\n"
+              "};\n"
+              "struct D : B {\n"
+              "    void f() override {\n"
+              "        auto p = std::unique_ptr<D>(new D(std::move(m)));\n"
+              "    }\n"
+              "    D(std::unique_ptr<int> c) : m(std::move(c)) {}\n"
+              "    std::unique_ptr<int> m;\n"
+              "};\n");
+        ASSERT_EQUALS("", errout.str());
     }
 
     void forwardAndUsed() {
