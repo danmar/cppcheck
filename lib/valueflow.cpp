@@ -4014,7 +4014,7 @@ private:
     }
 };
 
-static bool isOwningVariables(const std::list<Variable>& vars, int depth=10)
+static bool isOwningVariables(const std::list<Variable>& vars, int depth = 10)
 {
     if (depth < 0)
         return false;
@@ -4033,7 +4033,7 @@ static bool isOwningVariables(const std::list<Variable>& vars, int depth=10)
             if (vt->type == ValueType::CONTAINER && vt->container)
                 return !vt->container->view;
             if (vt->typeScope)
-                return isOwningVariables(vt->typeScope->varlist, depth-1);
+                return isOwningVariables(vt->typeScope->varlist, depth - 1);
         }
         return false;
     });

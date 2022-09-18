@@ -3673,7 +3673,8 @@ private:
               "void T::f() {\n"
               "    U u(p->g().c_str());\n"
               "    if (u.h()) {}\n"
-              "}\n", true);
+              "}\n",
+              true);
         ASSERT_EQUALS("", errout.str());
     }
 
