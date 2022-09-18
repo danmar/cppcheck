@@ -9980,15 +9980,15 @@ private:
     void moveClassVariable()
     {
         check("struct B {\n"
-                "    virtual void f();\n"
-                "};\n"
-                "struct D : B {\n"
-                "    void f() override {\n"
-                "        auto p = std::unique_ptr<D>(new D(std::move(m)));\n"
-                "    }\n"
-                "    D(std::unique_ptr<int> c) : m(std::move(c)) {}\n"
-                "    std::unique_ptr<int> m;\n"
-                "};\n");
+              "    virtual void f();\n"
+              "};\n"
+              "struct D : B {\n"
+              "    void f() override {\n"
+              "        auto p = std::unique_ptr<D>(new D(std::move(m)));\n"
+              "    }\n"
+              "    D(std::unique_ptr<int> c) : m(std::move(c)) {}\n"
+              "    std::unique_ptr<int> m;\n"
+              "};\n");
         ASSERT_EQUALS("", errout.str());
     }
 
