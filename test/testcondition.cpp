@@ -5441,7 +5441,7 @@ private:
               "}\n");
         ASSERT_EQUALS("", errout.str());
 
-        check("struct S {\n"
+        check("struct S {\n" // #9406
               "    S() : b(false) {}\n"
               "    void f() {\n"
               "        if (b) b = true;\n"
