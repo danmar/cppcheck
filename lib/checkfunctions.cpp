@@ -310,7 +310,7 @@ void CheckFunctions::checkMissingReturn()
             continue;
         if (Token::Match(function->retDef, "%name% (") && function->retDef->isUpperCaseName())
             continue;
-        if (Token::Match(function->retDef, "std :: enable_if|enable_if_t"))
+        if (mTokenizer->isCPP() && Token::Match(function->retDef, "std :: enable_if|enable_if_t"))
             continue;
         if (Function::returnsVoid(function, true))
             continue;
