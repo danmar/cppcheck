@@ -1725,6 +1725,9 @@ private:
         ASSERT_EQUALS("[test.cpp:2]: (error) Found a exit path from function with non-void return type that has missing return statement\n"
                       "[test.cpp:10]: (error) Found a exit path from function with non-void return type that has missing return statement\n",
                       errout.str());
+
+        check("std::enable_if_t<sizeof(uint64_t) == 8> f() {}"); // #11171
+        ASSERT_EQUALS("", errout.str());
     }
 
     // NRVO check
