@@ -5432,6 +5432,15 @@ private:
               "}");
         ASSERT_EQUALS("", errout.str());
 
+        check("bool f(bool b) {\n"
+              "    if (b)\n"
+              "        b = false;\n"
+              "    else\n"
+              "        g();\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
         check("struct S {\n"
               "    S() : b(false) {}\n"
               "    void f() {\n"

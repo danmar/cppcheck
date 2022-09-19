@@ -1750,15 +1750,10 @@ void CheckCondition::checkDuplicateConditionalAssign()
                 continue;
             const Token *blockTok = tok->next()->link()->next();
             const Token *condTok = tok->next()->astOperand2();
-            if (!Token::Match(condTok, "==|!=|%var%|!"))
+            const bool isBoolVar = Token::Match(condTok, "!| %var%");
+            if (!isBoolVar && !Token::Match(condTok, "==|!="))
                 continue;
-            bool isNegation = false;
-            if (condTok->str() == "!") {
-               if (!Token::Match(condTok, "! %var%"))
-                   continue;
-               isNegation = true;
-            }
-            if (condTok->str() == "!=" && Token::simpleMatch(blockTok->link(), "} else {"))
+            if ((isBoolVar || condTok->str() == "!=") && Token::simpleMatch(blockTok->link(), "} else {"))
                 continue;
             if (!blockTok->next())
                 continue;
@@ -1768,9 +1763,10 @@ void CheckCondition::checkDuplicateConditionalAssign()
             if (nextAfterAstRightmostLeaf(assignTok) != blockTok->link()->previous())
                 continue;
             bool isRedundant = false;
-            if (condTok->varId() || isNegation) { // bool variable
+            if (isBoolVar) {
                 if (!astIsBool(condTok))
                     continue;
+                const bool isNegation = condTok->str() == "!";
                 if (!(assignTok->astOperand1() && assignTok->astOperand1()->varId() == (isNegation ? condTok->next() : condTok)->varId()))
                     continue;
                 if (!(assignTok->astOperand2() && assignTok->astOperand2()->hasKnownIntValue()))
