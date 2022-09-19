@@ -2997,6 +2997,13 @@ void uninitvar_copy_n(const std::vector<int>& v)
     std::copy_n(v.begin(), -1, dst);
 }
 
+void uninitvar_iota(std::vector<int>& v)
+{
+    int i;
+    // cppcheck-suppress uninitvar
+    std::iota(v.begin(), v.end(), i);
+}
+
 void uninitvar_putc(void)
 {
     int c;
