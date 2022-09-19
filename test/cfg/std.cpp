@@ -37,6 +37,7 @@
 #include <vector>
 #include <unordered_set>
 #include <algorithm>
+#include <numeric>
 
 int zerodiv_ldexp()
 {
