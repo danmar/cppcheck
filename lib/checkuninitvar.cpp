@@ -1659,6 +1659,7 @@ Check::FileInfo *CheckUninitVar::getFileInfo(const Tokenizer *tokenizer, const S
     return checker.getFileInfo();
 }
 
+// NOLINTNEXTLINE(readability-non-const-parameter) - used as callback so we need to preserve the signature
 static bool isVariableUsage(const Check *check, const Token *vartok, MathLib::bigint *value)
 {
     (void)value;

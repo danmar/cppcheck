@@ -44,7 +44,7 @@
 #include <exception>
 #include <memory>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
 #include <type_traits>
@@ -3348,7 +3348,7 @@ void Tokenizer::calculateScopes()
         tok->scopeInfo(nullptr);
 
     std::string nextScopeNameAddition;
-    std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>(emptyString, nullptr);
+    std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>("", nullptr);
     list.front()->scopeInfo(primaryScope);
 
     for (Token* tok = list.front(); tok; tok = tok->next()) {
@@ -5471,7 +5471,7 @@ static std::string getExpression(const Token *tok)
         line = prev->str() + " " + line;
     line += "!!!" + tok->str() + "!!!";
     for (const Token *next = tok->next(); next && !Token::Match(next, "[;{}]"); next = next->next())
-        line = line + " " + next->str();
+        line += " " + next->str();
     return line;
 }
 

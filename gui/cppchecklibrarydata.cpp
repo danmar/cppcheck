@@ -19,6 +19,7 @@
 #include "cppchecklibrarydata.h"
 
 #include <stdexcept>
+#include <string>
 
 #include <QXmlStreamReader>
 #include <QVariant>

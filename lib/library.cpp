@@ -31,10 +31,9 @@
 #include <climits>
 #include <cstdlib>
 #include <cstring>
-#include <iosfwd>
 #include <list>
 #include <memory>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <string>
 

@@ -40,7 +40,7 @@
 #include <iostream>
 #include <list>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <utility>
 
 #ifdef HAVE_RULES

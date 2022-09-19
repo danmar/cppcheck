@@ -39,7 +39,7 @@
 #include <functional>
 #include <iostream>
 #include <list>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <sys/select.h>
 #include <sys/wait.h>
 #include <unistd.h>

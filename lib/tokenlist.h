@@ -116,6 +116,7 @@ public:
     const Token *front() const {
         return mTokensFrontBack.front;
     }
+    // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *front() {
         return mTokensFrontBack.front;
     }
@@ -124,6 +125,7 @@ public:
     const Token *back() const {
         return mTokensFrontBack.back;
     }
+    // NOLINTNEXTLINE(readability-make-member-function-const) - do not allow usage of mutable pointer from const object
     Token *back() {
         return mTokensFrontBack.back;
     }

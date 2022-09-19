@@ -18,6 +18,8 @@
 
 #include "application.h"
 
+#include <utility>
+
 Application::Application(QString name, QString path,
                          QString params)
     : mName(std::move(name))

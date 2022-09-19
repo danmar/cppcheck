@@ -15,7 +15,7 @@ import shlex
 # Version scheme (MAJOR.MINOR.PATCH) should orientate on "Semantic Versioning" https://semver.org/
 # Every change in this script should result in increasing the version number accordingly (exceptions may be cosmetic
 # changes)
-CLIENT_VERSION = "1.3.35"
+CLIENT_VERSION = "1.3.36"
 
 # Timeout for analysis with Cppcheck in seconds
 CPPCHECK_TIMEOUT = 30 * 60
@@ -672,7 +672,7 @@ class LibraryIncludes:
 
         for library, includes in include_mappings.items():
             re_includes = [re.escape(inc) for inc in includes]
-            re_expr = '^[ \t]*#[ \t]*include[ \t]*(' + '|'.join(re_includes) + ')'
+            re_expr = '^[ \\t]*#[ \\t]*include[ \\t]*(?:' + '|'.join(re_includes) + ')'
             re_obj = re.compile(re_expr, re.MULTILINE)
             self.__library_includes_re[library] = re_obj
 

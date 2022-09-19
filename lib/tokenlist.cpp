@@ -31,7 +31,6 @@
 
 #include <algorithm>
 #include <cctype>
-#include <cstring>
 #include <exception>
 #include <functional>
 #include <utility>
