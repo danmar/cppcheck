@@ -35,6 +35,7 @@
 #include <istream>
 #include <iterator>
 #include <vector>
+#include <unordered_set>
 #include <algorithm>
 
 int zerodiv_ldexp()
@@ -825,6 +826,13 @@ std::bitset<10> std_bitset_count_ignoredReturnValue()
     // cppcheck-suppress ignoredReturnValue
     b1.count();
     return b1;
+}
+
+void std_unordered_set_count_ignoredReturnValue(const std::unordered_set<int>& u)
+{
+    int i;
+    // cppcheck-suppress [uninitvar, ignoredReturnValue]
+    u.count(i);
 }
 
 void valid_code()
@@ -2988,6 +2996,13 @@ void uninitvar_merge(const std::vector<int>& a, const std::vector<int>& b)
     std::vector<int>::iterator dst;
     // cppcheck-suppress uninitvar
     std::merge(a.begin(), a.end(), b.begin(), b.end(), dst);
+}
+
+void uninitvar_push_heap(std::vector<int>& v)
+{
+    std::vector<int>::iterator end;
+    // cppcheck-suppress uninitvar
+    std::push_heap(v.begin(), end);
 }
 
 void uninitvar_copy_n(const std::vector<int>& v)
