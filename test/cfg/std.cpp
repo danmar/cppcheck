@@ -402,6 +402,13 @@ void uninitvar_std_ofstream_open(std::ofstream &os, const std::string &strFileNa
     os.open(ptr);
 }
 
+void uninitvar_std_ofstream_precision(std::ofstream& os)
+{
+    std::streamsize s;
+    // cppcheck-suppress uninitvar
+    os.precision(s);
+}
+
 void nullPointer_std_filebuf_open(std::filebuf &fb, const std::string &strFileName, const char* filename, std::ios_base::openmode mode)
 {
     // cppcheck-suppress nullPointer
