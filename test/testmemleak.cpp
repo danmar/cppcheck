@@ -2847,7 +2847,7 @@ private:
     void openDevNull() {
         check("void f() {\n" // #9653
               "    (void)open(\"/dev/null\", O_RDONLY);\n"
-              "    open(\"/dev/null\", O_WRONLY));\n"
+              "    open(\"/dev/null\", O_WRONLY);\n"
               "}\n");
         ASSERT_EQUALS("", errout.str());
     }
