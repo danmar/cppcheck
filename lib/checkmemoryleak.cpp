@@ -278,7 +278,7 @@ bool CheckMemoryLeak::isOpenDevNull(const Token *tok) const
 {
     if (mSettings_->posix() && tok->str() == "open" && numberOfArguments(tok) == 2) {
         const Token* arg = getArguments(tok).at(0);
-        if (Token::Match(arg, "\"/dev/null\""))
+        if (Token::simpleMatch(arg, "\"/dev/null\""))
             return true;
     }
     return false;
