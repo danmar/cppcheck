@@ -22,7 +22,6 @@ jobs:
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
-        if: contains(matrix.os, 'ubuntu')
         with:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
@@ -36,7 +35,7 @@ jobs:
       - name: Install missing software on macos
         if: contains(matrix.os, 'macos')
         run: |
-          brew install coreutils qt@5
+          brew install coreutils qt@5 tinyxml2
 
       - name: CMake build on ubuntu (with GUI / system tinyxml2)
         if: contains(matrix.os, 'ubuntu')
@@ -44,8 +43,13 @@ jobs:
           cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache
           cmake --build cmake.output.tinyxml2 -- -j$(nproc)
 
+      - name: CMake build on macos (with GUI / system tinyxml2)
+        if: contains(matrix.os, 'macos')
+        run: |
+          cmake -S . -B cmake.output.tinyxml2 -G "Unix Makefiles" -DHAVE_RULES=On -DBUILD_TESTS=On -DBUILD_GUI=On -DWITH_QCHART=On -DUSE_BUNDLED_TINYXML2=Off -DCMAKE_C_COMPILER_LAUNCHER=ccache -DCMAKE_CXX_COMPILER_LAUNCHER=ccache -DQt5_DIR=$(brew --prefix qt@5)/lib/cmake/Qt5
+          cmake --build cmake.output.tinyxml2 -- -j$(nproc)
+
       - name: Run CMake test (system tinyxml2)
-        if: contains(matrix.os, 'ubuntu')
         run: |
           cmake --build cmake.output.tinyxml2 --target check -- -j$(nproc)
 
@@ -208,65 +212,64 @@ jobs:
         if: contains(matrix.os, 'macos')
         run: |
           brew install coreutils qt@5
+          # expose qmake
+          brew link qt@5 --force
 
       - name: ccache
         uses: hendrikmuhs/ccache-action@v1.2
-        if: contains(matrix.os, 'ubuntu')
         with:
           key: ${{ github.workflow }}-${{ github.job }}-${{ matrix.os }}
 
-      - name: Build GUI on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+      - name: Build GUI
         run: |
-          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          export PATH="$(brew --prefix)/opt/ccache/libexec:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           pushd gui
-          qmake CONFIG+=debug HAVE_QCHART=yes
+          qmake CONFIG+=debug  CONFIG+=ccache HAVE_QCHART=yes
           make -j$(nproc)
 
-      - name: Run GUI tests on ubuntu
+      # TODO: binaries are in a different location on macos
+      - name: Build and Run GUI tests
         if: contains(matrix.os, 'ubuntu')
         run: |
-          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          export PATH="$(brew --prefix)/opt/ccache/libexec:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           pushd gui/test/cppchecklibrarydata
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           ./test-cppchecklibrarydata
           popd
           pushd gui/test/filelist
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           # TODO: requires X session
           #./test-filelist
           popd
           pushd gui/test/projectfile
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           ./test-projectfile
           popd
           pushd gui/test/translationhandler
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           # TODO: requires X session
           #./test-translationhandler
           popd
           pushd gui/test/xmlreportv2
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
           # TODO: requires X session
           #./test-xmlreportv2
 
-      - name: Generate Qt help file on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+      - name: Generate Qt help file
         run: |
           pushd gui/help
           qhelpgenerator online-help.qhcp -o online-help.qhc
 
-      - name: Build triage on ubuntu
-        if: contains(matrix.os, 'ubuntu')
+      - name: Build triage
         run: |
-          export PATH="/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
+          export PATH="$(brew --prefix)/opt/ccache/libexec:/usr/lib/ccache:/usr/local/opt/ccache/libexec:$PATH"
           pushd tools/triage
-          qmake CONFIG+=debug
+          qmake CONFIG+=debug CONFIG+=ccache
           make -j$(nproc)
 
   build_fuzz:
@@ -447,17 +450,36 @@ jobs:
           qmake CONFIG+=debug HAVE_QCHART=yes
           make -j$(nproc) compiler_uic_make_all mocables
 
+      - name: Generate triage UI files
+        run: |
+          pushd tools/triage
+          qmake CONFIG+=debug
+          make -j$(nproc) compiler_uic_make_all mocables
+
       - name: Self check
         run: |
+          selfcheck_options="-q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings"
           ec=0
+          
+          # work around missingInclude not being reported with -j and the --check-config requirement for detailed warnings 
+          ./cppcheck $selfcheck_options cli lib --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
+          ./cppcheck $selfcheck_options -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
+          ./cppcheck $selfcheck_options -Icli test/*.cpp tools/*.cpp --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
+          ./cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp --check-config --suppress=missingIncludeSystem --suppress=unmatchedSuppression || ec=1
+          
+          # early exit
+          if [ $ec -eq 1 ]; then
+            exit $ec
+          fi
+          
           # self check lib/cli
           mkdir b1
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 --cppcheck-build-dir=b1 -D__CPPCHECK__ --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings cli lib || ec=1
+          ./cppcheck $selfcheck_options --cppcheck-build-dir=b1 --addon=naming.json cli lib || ec=1
           # check gui with qt settings
           mkdir b2
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 --cppcheck-build-dir=b2 -D__CPPCHECK__ -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib --library=qt --addon=naming.json -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings gui/*.cpp gui/temp/*.cpp || ec=1
+          ./cppcheck $selfcheck_options --cppcheck-build-dir=b2 -DQT_VERSION=0x050000 -DQ_MOC_OUTPUT_REVISION=67 --library=qt --addon=naming.json -Igui/temp -Igui gui/*.cpp gui/temp/*.cpp || ec=1
           # self check test and tools
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Icli -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings test/*.cpp tools/*.cpp || ec=1
+          ./cppcheck $selfcheck_options -Icli test/*.cpp tools/*.cpp || ec=1
           # triage
-          ./cppcheck -q -j$(nproc) --std=c++11 --template=selfcheck --showtime=top5 -D__CPPCHECK__ -DQ_MOC_OUTPUT_REVISION=67 --error-exitcode=1 --inline-suppr --suppressions-list=.selfcheck_suppressions --library=cppcheck-lib --library=qt -Ilib -Iexternals/simplecpp/ -Iexternals/tinyxml2/ -Igui --inconclusive --enable=style,performance,portability,warning,missingInclude,internal --exception-handling --debug-warnings tools/triage || ec=1
+          ./cppcheck $selfcheck_options -DQ_MOC_OUTPUT_REVISION=67 --library=qt -Itools/triage/temp -Igui tools/triage/*.cpp tools/triage/temp/*.cpp || ec=1
           exit $ec

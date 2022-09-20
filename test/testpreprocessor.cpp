@@ -30,12 +30,11 @@
 
 #include <atomic>
 #include <cstring>
-#include <iosfwd>
 #include <list>
 #include <map>
 #include <memory>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
 

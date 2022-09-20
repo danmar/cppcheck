@@ -41,7 +41,7 @@
 #include <iomanip>
 #include <iostream>
 #include <limits>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <string>
 #include <type_traits>
@@ -3319,7 +3319,7 @@ const Token *Type::initBaseInfo(const Token *tok, const Token *tok1)
                 base.type = baseType;
 
             // save pattern for base class name
-            derivedFrom.push_back(base);
+            derivedFrom.push_back(std::move(base));
         } else
             tok2 = tok2->next();
     }
@@ -7334,7 +7334,7 @@ void ValueType::setDebugPath(const Token* tok, SourceLocation ctx, SourceLocatio
         return;
     std::string s = Path::stripDirectoryPart(file) + ":" + MathLib::toString(ctx.line()) + ": " + ctx.function_name() +
                     " => " + local.function_name();
-    debugPath.emplace_back(tok, s);
+    debugPath.emplace_back(tok, std::move(s));
 }
 
 ValueType::MatchResult ValueType::matchParameter(const ValueType *call, const ValueType *func)

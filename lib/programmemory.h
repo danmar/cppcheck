@@ -28,6 +28,7 @@
 #include <map>
 #include <string>
 #include <unordered_map>
+#include <utility>
 
 class Token;
 class Settings;
@@ -66,7 +67,7 @@ struct ProgramMemory {
 
     ProgramMemory() = default;
 
-    explicit ProgramMemory(const Map& values) : mValues(values) {}
+    explicit ProgramMemory(Map values) : mValues(std::move(values)) {}
 
     void setValue(const Token* expr, const ValueFlow::Value& value);
     const ValueFlow::Value* getValue(nonneg int exprid, bool impossible = false) const;

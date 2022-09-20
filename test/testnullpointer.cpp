@@ -26,10 +26,9 @@
 #include "token.h"
 #include "tokenize.h"
 
-#include <iosfwd>
 #include <list>
 #include <map>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <unordered_map>
 #include <utility>
@@ -4341,6 +4340,15 @@ private:
             "    if (x)\n"
             "        g(x);\n"
             "}");
+        ASSERT_EQUALS("", errout.str());
+
+        ctu("size_t f(int* p) {\n"
+            "    size_t len = sizeof(*p);\n"
+            "    return len;\n"
+            "}\n"
+            "void g() {\n"
+            "    f(NULL);\n"
+            "}\n");
         ASSERT_EQUALS("", errout.str());
     }
 };

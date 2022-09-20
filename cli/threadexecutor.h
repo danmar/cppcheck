@@ -41,7 +41,7 @@ class ThreadExecutor : public Executor {
 public:
     ThreadExecutor(const std::map<std::string, std::size_t> &files, Settings &settings, ErrorLogger &errorLogger);
     ThreadExecutor(const ThreadExecutor &) = delete;
-    ~ThreadExecutor();
+    ~ThreadExecutor() override;
     void operator=(const ThreadExecutor &) = delete;
 
     unsigned int check() override;

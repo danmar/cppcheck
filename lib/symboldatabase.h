@@ -1164,8 +1164,8 @@ public:
 
     const Function *getDestructor() const;
 
-    void addFunction(const Function & func) {
-        functionList.push_back(func);
+    void addFunction(Function func) {
+        functionList.push_back(std::move(func));
 
         const Function * back = &functionList.back();
 
@@ -1304,7 +1304,7 @@ public:
         containerTypeToken(nullptr),
         debugPath()
     {}
-    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, const std::string& otn)
+    ValueType(enum Sign s, enum Type t, nonneg int p, nonneg int c, std::string otn)
         : sign(s),
         type(t),
         bits(0),
@@ -1316,7 +1316,7 @@ public:
         smartPointer(nullptr),
         container(nullptr),
         containerTypeToken(nullptr),
-        originalTypeName(otn),
+        originalTypeName(std::move(otn)),
         debugPath()
     {}
 

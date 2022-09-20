@@ -20,11 +20,10 @@
 #include "settings.h"
 #include "testsuite.h"
 
-#include <iosfwd>
 #include <list>
 #include <memory>
 #include <map>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <string>
 #include <vector>
 

@@ -32,7 +32,7 @@
 #include <iostream>
 #include <map>
 #include <memory>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <utility>
 
@@ -704,7 +704,7 @@ void TemplateSimplifier::addInstantiation(Token *token, const std::string &scope
                                                      instantiation);
 
     if (it == mTemplateInstantiations.end())
-        mTemplateInstantiations.emplace_back(instantiation);
+        mTemplateInstantiations.emplace_back(std::move(instantiation));
 }
 
 static void getFunctionArguments(const Token *nameToken, std::vector<const Token *> &args)
@@ -2179,6 +2179,10 @@ void TemplateSimplifier::expandTemplate(
                         continue;
                 }
 
+                // don't add instantiations in template definitions
+                if (!templates.empty())
+                    continue;
+
                 std::string scope;
                 const Token *prev = tok3;
                 for (; Token::Match(prev->tokAt(-2), "%name% ::"); prev = prev->tokAt(-2)) {
@@ -2202,13 +2206,10 @@ void TemplateSimplifier::expandTemplate(
                     }
                 }
 
-                // don't add instantiations in template definitions
-                if (templates.empty()) {
-                    if (copy)
-                        newInstantiations.emplace_back(mTokenList.back(), scope);
-                    else if (!inTemplateDefinition)
-                        newInstantiations.emplace_back(tok3, scope);
-                }
+                if (copy)
+                    newInstantiations.emplace_back(mTokenList.back(), std::move(scope));
+                else if (!inTemplateDefinition)
+                    newInstantiations.emplace_back(tok3, std::move(scope));
             }
 
             // link() newly tokens manually

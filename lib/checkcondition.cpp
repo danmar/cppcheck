@@ -37,7 +37,6 @@
 #include <limits>
 #include <list>
 #include <memory>
-#include <ostream>
 #include <set>
 #include <sstream>
 #include <utility>
@@ -1507,13 +1506,14 @@ void CheckCondition::alwaysTrueFalse()
                 continue;
             if (Token::simpleMatch(tok, ":"))
                 continue;
-            if (tok->isComparisonOp() && isSameExpression(mTokenizer->isCPP(),
-                                                          true,
-                                                          tok->astOperand1(),
-                                                          tok->astOperand2(),
-                                                          mSettings->library,
-                                                          true,
-                                                          true))
+            if (tok->isComparisonOp() && isWithoutSideEffects(mTokenizer->isCPP(), tok->astOperand1()) &&
+                isSameExpression(mTokenizer->isCPP(),
+                                 true,
+                                 tok->astOperand1(),
+                                 tok->astOperand2(),
+                                 mSettings->library,
+                                 true,
+                                 true))
                 continue;
             if (isConstVarExpression(tok, [](const Token* tok) {
                 return Token::Match(tok, "[|(|&|+|-|*|/|%|^|>>|<<") && !Token::simpleMatch(tok, "( )");
@@ -1750,9 +1750,10 @@ void CheckCondition::checkDuplicateConditionalAssign()
                 continue;
             const Token *blockTok = tok->next()->link()->next();
             const Token *condTok = tok->next()->astOperand2();
-            if (!Token::Match(condTok, "==|!="))
+            const bool isBoolVar = Token::Match(condTok, "!| %var%");
+            if (!isBoolVar && !Token::Match(condTok, "==|!="))
                 continue;
-            if (condTok->str() == "!=" && Token::simpleMatch(blockTok->link(), "} else {"))
+            if ((isBoolVar || condTok->str() == "!=") && Token::simpleMatch(blockTok->link(), "} else {"))
                 continue;
             if (!blockTok->next())
                 continue;
@@ -1761,18 +1762,33 @@ void CheckCondition::checkDuplicateConditionalAssign()
                 continue;
             if (nextAfterAstRightmostLeaf(assignTok) != blockTok->link()->previous())
                 continue;
-            if (!isSameExpression(
-                    mTokenizer->isCPP(), true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
-                continue;
-            if (!isSameExpression(
-                    mTokenizer->isCPP(), true, condTok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
-                continue;
-            duplicateConditionalAssignError(condTok, assignTok);
+            bool isRedundant = false;
+            if (isBoolVar) {
+                if (!astIsBool(condTok))
+                    continue;
+                const bool isNegation = condTok->str() == "!";
+                if (!(assignTok->astOperand1() && assignTok->astOperand1()->varId() == (isNegation ? condTok->next() : condTok)->varId()))
+                    continue;
+                if (!(assignTok->astOperand2() && assignTok->astOperand2()->hasKnownIntValue()))
+                    continue;
+                const MathLib::bigint val = assignTok->astOperand2()->getKnownIntValue();
+                if (val < 0 || val > 1)
+                    continue;
+                isRedundant = (isNegation && val == 0) || (!isNegation && val == 1);
+            } else { // comparison
+                if (!isSameExpression(
+                        mTokenizer->isCPP(), true, condTok->astOperand1(), assignTok->astOperand1(), mSettings->library, true, true))
+                    continue;
+                if (!isSameExpression(
+                        mTokenizer->isCPP(), true, condTok->astOperand2(), assignTok->astOperand2(), mSettings->library, true, true))
+                    continue;
+            }
+            duplicateConditionalAssignError(condTok, assignTok, isRedundant);
         }
     }
 }
 
-void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok)
+void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const Token* assignTok, bool isRedundant)
 {
     ErrorPath errors;
     std::string msg = "Duplicate expression for the condition and assignment.";
@@ -1782,7 +1798,8 @@ void CheckCondition::duplicateConditionalAssignError(const Token *condTok, const
             errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "'");
             errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "' is redundant");
         } else {
-            msg = "The statement 'if (" + condTok->expressionString() + ") " + assignTok->expressionString() + "' is logically equivalent to '" + assignTok->expressionString() + "'.";
+            msg = "The statement 'if (" + condTok->expressionString() + ") " + assignTok->expressionString();
+            msg += isRedundant ? "' is redundant." : "' is logically equivalent to '" + assignTok->expressionString() + "'.";
             errors.emplace_back(assignTok, "Assignment '" + assignTok->expressionString() + "'");
             errors.emplace_back(condTok, "Condition '" + condTok->expressionString() + "' is redundant");
         }

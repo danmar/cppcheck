@@ -37,7 +37,7 @@
 #include <map>
 #include <memory>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <string>
 #include <utility>
@@ -208,7 +208,7 @@ namespace clangimport {
             Decl(Token *def, Variable *var) : def(def), enumerator(nullptr), function(nullptr), scope(nullptr), var(var) {}
             Decl(Token *def, Function *function) : def(def), enumerator(nullptr), function(function), scope(nullptr), var(nullptr) {}
             Decl(Token *def, Enumerator *enumerator) : def(def), enumerator(enumerator), function(nullptr), scope(nullptr), var(nullptr) {}
-            void ref(Token *tok) {
+            void ref(Token *tok) const {
                 if (enumerator)
                     tok->enumerator(enumerator);
                 if (function)
@@ -638,7 +638,7 @@ void clangimport::AstNode::setValueType(Token *tok)
 
 Scope *clangimport::AstNode::createScope(TokenList *tokenList, Scope::ScopeType scopeType, AstNodePtr astNode, const Token *def)
 {
-    std::vector<AstNodePtr> children2{astNode};
+    std::vector<AstNodePtr> children2{std::move(astNode)};
     return createScope(tokenList, scopeType, children2, def);
 }
 
@@ -1607,9 +1607,9 @@ void clangimport::parseClangAstDump(Tokenizer *tokenizer, std::istream &f)
         AstNodePtr newNode = std::make_shared<AstNode>(nodeType, ext, &data);
         tree[level - 1]->children.push_back(newNode);
         if (level >= tree.size())
-            tree.push_back(newNode);
+            tree.push_back(std::move(newNode));
         else
-            tree[level] = newNode;
+            tree[level] = std::move(newNode);
     }
 
     if (!tree.empty())

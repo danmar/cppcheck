@@ -44,7 +44,7 @@
 #include <exception>
 #include <memory>
 #include <set>
-#include <sstream>
+#include <sstream> // IWYU pragma: keep
 #include <stack>
 #include <stdexcept>
 #include <type_traits>
@@ -656,7 +656,7 @@ void Tokenizer::simplifyTypedef()
                 info.className = className;
                 info.bodyEnd = tok->link();
                 info.bodyEnd2 = tok->link();
-                spaceInfo.push_back(info);
+                spaceInfo.push_back(std::move(info));
 
                 hasClass = false;
             } else if (spaceInfo.size() > 1 && tok->str() == "}" && spaceInfo.back().bodyEnd == tok) {
@@ -1070,7 +1070,7 @@ void Tokenizer::simplifyTypedef()
         typedefInfo.lineNumber = typeName->linenr();
         typedefInfo.column = typeName->column();
         typedefInfo.used = false;
-        mTypedefInfo.push_back(typedefInfo);
+        mTypedefInfo.push_back(std::move(typedefInfo));
 
         while (!done) {
             std::string pattern = typeName->str();
@@ -3018,7 +3018,7 @@ void Tokenizer::simplifyExternC()
                 tok->linkAt(2)->deleteThis(); // }
                 tok->deleteNext(2); // "C" {
             } else {
-                while ((tok2 = tok2->next()) && !Token::simpleMatch(tok2, ";"))
+                while ((tok2 = tok2->next()) && !Token::Match(tok2, "[;{]"))
                     tok2->isExternC(true);
                 tok->deleteNext(); // "C"
             }
@@ -3348,7 +3348,7 @@ void Tokenizer::calculateScopes()
         tok->scopeInfo(nullptr);
 
     std::string nextScopeNameAddition;
-    std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>(emptyString, nullptr);
+    std::shared_ptr<ScopeInfo2> primaryScope = std::make_shared<ScopeInfo2>("", nullptr);
     list.front()->scopeInfo(primaryScope);
 
     for (Token* tok = list.front(); tok; tok = tok->next()) {
@@ -5109,14 +5109,6 @@ bool Tokenizer::simplifyTokenList1(const char FileName[])
     // Link < with >
     createLinks2();
 
-    if (mTimerResults) {
-        Timer t("Tokenizer::tokenize::setVarId (2)", mSettings->showtime, mTimerResults);
-        setVarId();
-    }
-    else {
-        setVarId();
-    }
-
     // Mark C++ casts
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         if (Token::Match(tok, "const_cast|dynamic_cast|reinterpret_cast|static_cast <") && Token::simpleMatch(tok->linkAt(1), "> (")) {
@@ -5255,6 +5247,10 @@ void Tokenizer::dump(std::ostream &out) const
             else if (tok->tokType() == Token::eLogicalOp)
                 out << " isLogicalOp=\"true\"";
         }
+        if (tok->isCast())
+            out << " isCast=\"true\"";
+        if (tok->isExternC())
+            out << " externLang=\"C\"";
         if (tok->isExpandedMacro())
             out << " isExpandedMacro=\"true\"";
         if (tok->isRemovedVoidParameter())
@@ -5477,7 +5473,7 @@ static std::string getExpression(const Token *tok)
         line = prev->str() + " " + line;
     line += "!!!" + tok->str() + "!!!";
     for (const Token *next = tok->next(); next && !Token::Match(next, "[;{}]"); next = next->next())
-        line = line + " " + next->str();
+        line += " " + next->str();
     return line;
 }
 
@@ -9084,6 +9080,10 @@ void Tokenizer::simplifyQtSignalsSlots()
 {
     if (isC())
         return;
+    if (std::none_of(mSettings->libraries.cbegin(), mSettings->libraries.cend(), [](const std::string& lib) {
+        return lib == "qt";
+    }))
+        return;
     for (Token *tok = list.front(); tok; tok = tok->next()) {
         // check for emit which can be outside of class
         if (Token::Match(tok, "emit|Q_EMIT %name% (") &&
@@ -9395,7 +9395,7 @@ void Tokenizer::removeUnnecessaryQualification()
             if (!tok)
                 return;
             info.bodyEnd = tok->link();
-            classInfo.push_back(info);
+            classInfo.push_back(std::move(info));
         } else if (!classInfo.empty()) {
             if (tok == classInfo.back().bodyEnd)
                 classInfo.pop_back();
@@ -9500,7 +9500,7 @@ void Tokenizer::printUnknownTypes() const
             }
         }
 
-        unknowns.emplace_back(name, nameTok);
+        unknowns.emplace_back(std::move(name), nameTok);
     }
 
     if (!unknowns.empty()) {

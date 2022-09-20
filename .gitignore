@@ -55,6 +55,7 @@ build/
 /gui/debug/
 /gui/release/
 /gui/temp/
+/triage/temp
 
 # Other (generated) GUI files
 /gui/*.qm

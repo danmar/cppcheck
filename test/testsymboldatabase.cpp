@@ -5893,12 +5893,14 @@ private:
     }
 
     void findFunction11() {
+        settings1.libraries.emplace_back("qt");
         GET_SYMBOL_DB("class Fred : public QObject {\n"
                       "    Q_OBJECT\n"
                       "private slots:\n"
                       "    void foo();\n"
                       "};\n"
                       "void Fred::foo() { }");
+        settings1.libraries.pop_back();
         ASSERT_EQUALS("", errout.str());
 
         const Token *f = Token::findsimplematch(tokenizer.tokens(), "foo ( ) {");

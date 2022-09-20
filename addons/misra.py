@@ -1293,6 +1293,7 @@ class MisraChecker:
         # by rule number (in hundreds).
         # ie rule 1.2 becomes 102
         self.ruleTexts = dict()
+        self.ruleText_filename = None
 
         # Dictionary of dictionaries for rules to suppress
         # Dict1 is keyed by rule number in the hundreds format of
@@ -4074,7 +4075,10 @@ class MisraChecker:
                     misra_severity = self.ruleTexts[ruleNum].misra_severity
                 cppcheck_severity = self.ruleTexts[ruleNum].cppcheck_severity
             elif len(self.ruleTexts) == 0:
-                errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
+                if self.ruleText_filename is None:
+                    errmsg = 'misra violation (use --rule-texts=<file> to get proper output)'
+                else:
+                    errmsg = 'misra violation (rule-texts-file not found: ' + self.ruleText_filename + ')'
                 if self.path_premium_addon:
                     for line in cppcheckdata.cmd_output([self.path_premium_addon, '--cli', '--get-rule-text=' + errorId]).split('\n'):
                         if len(line) > 1 and not line.startswith('{'):
@@ -4090,7 +4094,7 @@ class MisraChecker:
 
             # If this is new violation then record it and show it. If not then
             # skip it since it has already been displayed.
-            if not this_violation in self.existing_violations:
+            if this_violation not in self.existing_violations:
                 self.existing_violations.add(this_violation)
                 cppcheckdata.reportError(location, cppcheck_severity, errmsg, 'misra', errorId, misra_severity)
 
@@ -4637,13 +4641,17 @@ def main():
     if args.rule_texts:
         filename = os.path.expanduser(args.rule_texts)
         filename = os.path.normpath(filename)
-        if not os.path.isfile(filename):
-            print('Fatal error: file is not found: ' + filename)
-            sys.exit(1)
-        checker.loadRuleTexts(filename)
-        if args.verify_rule_texts:
-            checker.verifyRuleTexts()
-            sys.exit(0)
+        checker.ruleText_filename = filename
+        if os.path.isfile(filename):
+            checker.loadRuleTexts(filename)
+            if args.verify_rule_texts:
+                checker.verifyRuleTexts()
+                sys.exit(0)
+        else:
+            if args.verify_rule_texts:
+                print('Fatal error: file is not found: ' + filename)
+                sys.exit(1)
+
 
     if args.verify_rule_texts and not args.rule_texts:
         print("Error: Please specify rule texts file with --rule-texts=<file>")
