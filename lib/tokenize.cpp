@@ -5247,6 +5247,8 @@ void Tokenizer::dump(std::ostream &out) const
             else if (tok->tokType() == Token::eLogicalOp)
                 out << " isLogicalOp=\"true\"";
         }
+        if (tok->isCast())
+            out << " isCast=\"true\"";
         if (tok->isExternC())
             out << " externLang=\"C\"";
         if (tok->isExpandedMacro())

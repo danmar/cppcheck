@@ -4073,21 +4073,21 @@ private:
               "    if (init)\n"
               "        init = false;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) The statement 'if (init) init=false' is logically equivalent to 'init=false'.\n", errout.str());
 
         check("void f() {\n"
               "    static bool init(true);\n"
               "    if (init)\n"
               "        init = false;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) The statement 'if (init) init=false' is logically equivalent to 'init=false'.\n", errout.str());
 
         check("void f() {\n"
               "    static bool init{ true };\n"
               "    if (init)\n"
               "        init = false;\n"
               "}\n");
-        ASSERT_EQUALS("", errout.str());
+        ASSERT_EQUALS("[test.cpp:4] -> [test.cpp:3]: (style) The statement 'if (init) init=false' is logically equivalent to 'init=false'.\n", errout.str());
 
         // #10248
         check("void f() {\n"
@@ -5431,6 +5431,39 @@ private:
               "    }\n"
               "}");
         ASSERT_EQUALS("", errout.str());
+
+        check("bool f(bool b) {\n"
+              "    if (b)\n"
+              "        b = false;\n"
+              "    else\n"
+              "        g();\n"
+              "    return b;\n"
+              "}\n");
+        ASSERT_EQUALS("", errout.str());
+
+        check("struct S {\n" // #9406
+              "    S() : b(false) {}\n"
+              "    void f() {\n"
+              "        if (b) b = true;\n"
+              "        if (b) b = false;\n"
+              "        if (!b) b = true;\n"
+              "        if (!b) b = false;\n"
+              "    }\n"
+              "    bool b;\n"
+              "};\n");
+        ASSERT_EQUALS("test.cpp:4:style:The statement 'if (b) b=true' is redundant.\n"
+                      "test.cpp:4:note:Assignment 'b=true'\n"
+                      "test.cpp:4:note:Condition 'b' is redundant\n"
+                      "test.cpp:5:style:The statement 'if (b) b=false' is logically equivalent to 'b=false'.\n"
+                      "test.cpp:5:note:Assignment 'b=false'\n"
+                      "test.cpp:5:note:Condition 'b' is redundant\n"
+                      "test.cpp:6:style:The statement 'if (!b) b=true' is logically equivalent to 'b=true'.\n"
+                      "test.cpp:6:note:Assignment 'b=true'\n"
+                      "test.cpp:6:note:Condition '!b' is redundant\n"
+                      "test.cpp:7:style:The statement 'if (!b) b=false' is redundant.\n"
+                      "test.cpp:7:note:Assignment 'b=false'\n"
+                      "test.cpp:7:note:Condition '!b' is redundant\n",
+                      errout.str());
     }
 
     void checkAssignmentInCondition() {
