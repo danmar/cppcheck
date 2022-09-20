@@ -1764,10 +1764,13 @@ void CheckCondition::checkDuplicateConditionalAssign()
                 continue;
             bool isRedundant = false;
             if (isBoolVar) {
-                if (!astIsBool(condTok))
-                    continue;
                 const bool isNegation = condTok->str() == "!";
-                if (!(assignTok->astOperand1() && assignTok->astOperand1()->varId() == (isNegation ? condTok->next() : condTok)->varId()))
+                const Token* const varTok = isNegation ? condTok->next() : condTok;
+                const ValueType* vt = varTok->variable() ? varTok->variable()->valueType() : nullptr;
+                if (!(vt && vt->type == ValueType::Type::BOOL && !vt->pointer))
+                    continue;
+
+                if (!(assignTok->astOperand1() && assignTok->astOperand1()->varId() == varTok->varId()))
                     continue;
                 if (!(assignTok->astOperand2() && assignTok->astOperand2()->hasKnownIntValue()))
                     continue;
