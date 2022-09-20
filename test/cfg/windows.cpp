@@ -960,24 +960,24 @@ HANDLE test_CreateThread(LPSECURITY_ATTRIBUTES lpThreadAttributes,
     CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, uninit_dwCreationFlags, lpThreadId);
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
-    CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, uninit_lpParameter, dwCreationFlags, lpThreadId);
+    (void) CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, uninit_lpParameter, dwCreationFlags, lpThreadId);
     // @todo uninitvar shall be reported
     // cppcheck-suppress leakReturnValNotUsed
-     CreateThread(lpThreadAttributes, dwStackSize, uninit_lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    (void) CreateThread(lpThreadAttributes, dwStackSize, uninit_lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress uninitvar
-    CreateThread(lpThreadAttributes, uninit_dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    (void) CreateThread(lpThreadAttributes, uninit_dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
     // @todo uninitvar shall be reported
     // cppcheck-suppress leakReturnValNotUsed
-    CreateThread(uninit_lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    (void) CreateThread(uninit_lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
 
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress nullPointer
-    CreateThread(lpThreadAttributes, dwStackSize, 0, lpParameter, dwCreationFlags, lpThreadId);
+    (void) CreateThread(lpThreadAttributes, dwStackSize, 0, lpParameter, dwCreationFlags, lpThreadId);
 
     // cppcheck-suppress leakReturnValNotUsed
     // cppcheck-suppress invalidFunctionArg
-    CreateThread(lpThreadAttributes, -1, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
+    (void) CreateThread(lpThreadAttributes, -1, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);
 
     // no warning shall be shown for
     return CreateThread(lpThreadAttributes, dwStackSize, lpStartAddress, lpParameter, dwCreationFlags, lpThreadId);

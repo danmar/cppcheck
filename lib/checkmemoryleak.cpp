@@ -274,6 +274,16 @@ bool CheckMemoryLeak::isReopenStandardStream(const Token *tok) const
     return false;
 }
 
+bool CheckMemoryLeak::isOpenDevNull(const Token *tok) const
+{
+    if (mSettings_->posix() && tok->str() == "open" && numberOfArguments(tok) == 2) {
+        const Token* arg = getArguments(tok).at(0);
+        if (Token::Match(arg, "\"/dev/null\""))
+            return true;
+    }
+    return false;
+}
+
 //--------------------------------------------------------------------------
 
 
@@ -1053,6 +1063,8 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
 
         if (isReopenStandardStream(tok))
             continue;
+        if (isOpenDevNull(tok))
+            continue;
 
         // get ast parent, skip casts
         const Token *parent = isNew ? tok->astParent() : tok->next()->astParent();
@@ -1065,22 +1077,10 @@ void CheckMemoryLeakNoVar::checkForUnusedReturnValue(const Scope *scope)
             warn = typeTok && (typeTok->isStandardType() || mSettings->library.detectContainer(typeTok));
         }
 
-        auto isCastToVoid = [](const Token* parTok) -> bool {
-            if (parTok->astParent() && parTok->astParent()->isCast()) {
-                if (parTok->astParent()->astOperand2()) {
-                    return Token::simpleMatch(parTok->astParent()->astOperand1(), "static_cast < void >");
-                }
-                return parTok->astParent()->astOperand1() && Token::simpleMatch(parTok->astParent(), "( void )");
-            }
-            return false;
-        };
-
         if (!parent && warn) {
             // Check if we are in a C++11 constructor
             const Token * closingBrace = Token::findmatch(tok, "}|;");
             if (closingBrace->str() == "}" && Token::Match(closingBrace->link()->tokAt(-1), "%name%") && (!isNew && precedes(tok, closingBrace->link())))
-                continue;
-            if (isCastToVoid(tok->next()))
                 continue;
             returnValueNotUsedError(tok, tok->str());
         } else if (Token::Match(parent, "%comp%|!|,|%oror%|&&|:")) {
