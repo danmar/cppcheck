@@ -53,8 +53,8 @@ public:
     }
     ValuePtr(ValuePtr&& rhs) : mPtr(std::move(rhs.mPtr)), mClone(std::move(rhs.mClone)) {}
 
-    pointer release() {
-        return mPtr.release();
+    void release() {
+        return mPtr.reset();
     }
 
     T* get() NOEXCEPT {
