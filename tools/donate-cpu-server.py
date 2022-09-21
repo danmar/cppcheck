@@ -1139,6 +1139,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
 
             pos = data.find('\n')
             if pos < 10:
+                print_ts('Data is less than 10 characters. Ignoring result data.')
                 continue
             url = data[:pos]
             print_ts('write:' + url)
@@ -1148,10 +1149,10 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if res is None:
                 res = re.match(r'https?://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
-                print_ts('results not written. res is None.')
+                print_ts('res is None. Ignoring result data.')
                 continue
             if url not in packages:
-                print_ts('results not written. url is not in packages.')
+                print_ts('Url is not in packages. Ignoring result data.')
                 continue
             # Verify that head was compared to correct OLD_VERSION
             versions_found = False
@@ -1161,14 +1162,14 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
                     versions_found = True
                     if OLD_VERSION not in line.split():
                         print_ts('Compared to wrong old version. Should be ' + OLD_VERSION + '. Versions compared: ' +
-                              line)
-                        print_ts('Ignoring data.')
+                              line + '. Ignoring result data.')
                         old_version_wrong = True
                     break
             if not versions_found:
-                print_ts('Cppcheck versions missing in result data. Ignoring data.')
+                print_ts('Cppcheck versions missing in result data. Ignoring result data.')
                 continue
             if old_version_wrong:
+                print_ts('Unexpected old version. Ignoring result data.')
                 continue
             print_ts('results added for package ' + res.group(1))
             filename = os.path.join(resultPath, res.group(1))
@@ -1209,6 +1210,7 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
 
             pos = data.find('\n')
             if pos < 10:
+                print_ts('Data is less than 10 characters. Ignoring information data.')
                 continue
             url = data[:pos]
             print_ts('write_info:' + url)
@@ -1218,10 +1220,10 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if res is None:
                 res = re.match(r'https://cppcheck\.sf\.net/([a-z]+).tgz', url)
             if res is None:
-                print_ts('info output not written. res is None.')
+                print_ts('res is None. Ignoring information data.')
                 continue
             if url not in packages:
-                print_ts('info output not written. url is not in packages.')
+                print_ts('Url is not in packages. Ignoring information data.')
                 continue
             print_ts('adding info output for package ' + res.group(1))
             info_path = resultPath + '/' + 'info_output'
