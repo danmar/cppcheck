@@ -3110,6 +3110,18 @@ private:
                       "}");
         ASSERT_EQUALS("", errout.str());
 
+        // #8619
+        checkNoMemset("struct S { std::vector<int> m; };\n"
+                      "void f() {\n"
+                      "    std::vector<S> v(5);\n"
+                      "    memset(&v[0], 0, sizeof(S) * v.size());\n"
+                      "    memset(&v[0], 0, v.size() * sizeof(S));\n"
+                      "}\n");
+        TODO_ASSERT_EQUALS("[test.cpp:4]: (error) Using 'memset' on struct that contains a 'std::vector'.\n"
+                           "[test.cpp:5]: (error) Using 'memset' on struct that contains a 'std::vector'.\n",
+                           "[test.cpp:4]: (error) Using 'memset' on struct that contains a 'std::vector'.\n",
+                           errout.str());
+
         // #1655
         Settings s;
         LOAD_LIB_2(s.library, "std.cfg");
