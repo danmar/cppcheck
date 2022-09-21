@@ -180,7 +180,9 @@ def latestReport(latestResults: list) -> str:
     return html
 
 
-def crashReport(results_path: str) -> str:
+def crashReport(results_path: str, query_params: dict):
+    pkgs = '' if query_params.get('pkgs') == '1' else None
+
     html = '<html><head><title>Crash report</title></head><body>\n'
     html += '<h1>Crash report</h1>\n'
     html += '<pre>\n'
@@ -192,6 +194,7 @@ def crashReport(results_path: str) -> str:
             continue
         with open(filename, 'rt') as file_:
             datestr = None
+            package_url = None
             for line in file_:
                 line = line.strip()
                 if line.startswith('cppcheck: '):
@@ -203,6 +206,8 @@ def crashReport(results_path: str) -> str:
                         continue
                 if datestr is None and line.startswith(str(current_year) + '-') or line.startswith(str(current_year - 1) + '-'):
                     datestr = line
+                elif pkgs is not None and package_url is None and line.startswith('ftp://'):
+                    package_url = line
                 elif line.startswith('count:'):
                     if line.find('Crash') < 0:
                         break
@@ -215,6 +220,8 @@ def crashReport(results_path: str) -> str:
                     if counts[1] == 'Crash!':
                         c_head = 'Crash'
                     html += fmt(package, datestr, c_version, c_head) + '\n'
+                    if package_url is not None:
+                        pkgs += '{}\n'.format(package_url)
                     if c_head != 'Crash':
                         break
                 elif line.find(' received signal ') != -1:
@@ -272,7 +279,9 @@ def crashReport(results_path: str) -> str:
     html += '</pre>\n'
 
     html += '</body></html>\n'
-    return html
+    if pkgs is not None:
+        return pkgs, 'text/plain'
+    return html, 'text/html'
 
 
 def timeoutReport(results_path: str) -> str:
@@ -963,8 +972,8 @@ class HttpClientThread(Thread):
                 html = latestReport(self.latestResults)
                 httpGetResponse(self.connection, html, 'text/html')
             elif url == '/crash.html':
-                html = crashReport(self.resultPath)
-                httpGetResponse(self.connection, html, 'text/html')
+                text, mime = crashReport(self.resultPath, queryParams)
+                httpGetResponse(self.connection, text, mime)
             elif url == '/timeout.html':
                 html = timeoutReport(self.resultPath)
                 httpGetResponse(self.connection, html, 'text/html')
