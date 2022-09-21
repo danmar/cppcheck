@@ -1019,9 +1019,8 @@ class HttpClientThread(Thread):
                     print_ts('HTTP/1.1 404 Not Found')
                     self.connection.send(b'HTTP/1.1 404 Not Found\r\n\r\n')
                 else:
-                    f = open(filename, 'rt')
-                    data = f.read()
-                    f.close()
+                    with open(filename, 'rt') as f:
+                        data = f.read()
                     httpGetResponse(self.connection, data, 'text/plain')
         except:
             tb = "".join(traceback.format_exception(sys.exc_info()[0], sys.exc_info()[1], sys.exc_info()[2]))
@@ -1083,9 +1082,8 @@ def server(server_address_port: int, packages: list, packageIndex: int, resultPa
             if packageIndex >= len(packages):
                 packageIndex = 0
 
-            f = open('package-index.txt', 'wt')
-            f.write(str(packageIndex) + '\n')
-            f.close()
+            with open('package-index.txt', 'wt') as f:
+                f.write(str(packageIndex) + '\n')
 
             print_ts('get:' + pkg)
             connection.send(pkg.encode('utf-8', 'ignore'))
@@ -1246,9 +1244,8 @@ if __name__ == "__main__":
         print_ts("fatal: result path '{}' is missing".format(resultPath))
         sys.exit(1)
 
-    f = open('packages.txt', 'rt')
-    packages = [val.strip() for val in f.readlines()]
-    f.close()
+    with open('packages.txt', 'rt') as f:
+        packages = [val.strip() for val in f.readlines()]
 
     print_ts('packages: ' + str(len(packages)))
 
@@ -1258,11 +1255,10 @@ if __name__ == "__main__":
 
     packageIndex = 0
     if os.path.isfile('package-index.txt'):
-        f = open('package-index.txt', 'rt')
-        packageIndex = int(f.read())
+        with open('package-index.txt', 'rt') as f:
+            packageIndex = int(f.read())
         if packageIndex < 0 or packageIndex >= len(packages):
             packageIndex = 0
-        f.close()
 
     server_address_port = 8000
     if '--test' in sys.argv[1:]:
