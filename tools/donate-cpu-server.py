@@ -619,7 +619,8 @@ def headReport(resultsPath: str) -> str:
     return html
 
 
-def headMessageIdReport(resultPath: str, messageId: str) -> str:
+def headMessageIdReport(resultPath: str, messageId: str, query_params: dict) -> str:
+    pkgs = '' if query_params.get('pkgs') == '1' else None
     text = messageId + '\n'
     e = '[' + messageId + ']\n'
     for filename in sorted(glob.glob(resultPath + '/*')):
@@ -639,8 +640,12 @@ def headMessageIdReport(resultPath: str, messageId: str) -> str:
             elif line.endswith(e):
                 if url:
                     text += url
+                    if pkgs is not None:
+                        pkgs += url
                     url = None
                 text += line
+    if pkgs is not None:
+        return pkgs
     return text
 
 
@@ -1000,7 +1005,7 @@ class HttpClientThread(Thread):
                 httpGetResponse(self.connection, text, 'text/plain')
             elif url.startswith('/head-'):
                 messageId = url[len('/head-'):]
-                text = headMessageIdReport(self.resultPath, messageId)
+                text = headMessageIdReport(self.resultPath, messageId, queryParams)
                 httpGetResponse(self.connection, text, 'text/plain')
             elif url == '/time_lt.html':
                 text = timeReport(self.resultPath, False)
